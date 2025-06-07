@@ -67,7 +67,7 @@ export default function Login() {
                 className="w-full text-teal-600 hover:bg-teal-50 py-2 mb-2"
                 onClick={() => {/* Show PIN login */}}
               >
-                <User className="w-4 h-4 mr-2" />
+                <span className="w-4 h-4 mr-2 flex items-center justify-center">👤</span>
                 Log in with another ID
               </Button>
             </div>
