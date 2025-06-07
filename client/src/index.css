@@ -113,9 +113,10 @@
   --radius: 0.5rem;
   
   /* Bank of Ireland Colors for dark mode */
-  --boi-green: hsl(142, 100%, 40%);
-  --boi-dark-green: hsl(142, 100%, 30%);
-  --boi-light-green: hsl(142, 45%, 15%);
+  --boi-teal: hsl(185, 70%, 40%);
+  --boi-dark-teal: hsl(185, 70%, 30%);
+  --boi-light-teal: hsl(185, 45%, 15%);
+  --boi-blue: hsl(210, 100%, 70%);
   --boi-gray: hsl(215, 25%, 80%);
   --boi-light-gray: hsl(215, 14%, 60%);
 }
@@ -132,12 +133,12 @@
 }
 
 @layer utilities {
-  .gradient-green {
-    background: linear-gradient(135deg, var(--boi-green) 0%, var(--boi-dark-green) 100%);
+  .gradient-teal {
+    background: linear-gradient(135deg, var(--boi-teal) 0%, var(--boi-dark-teal) 100%);
   }
   
   .balance-card {
-    background: linear-gradient(135deg, var(--boi-green) 0%, var(--boi-dark-green) 100%);
+    background: linear-gradient(135deg, var(--boi-teal) 0%, var(--boi-dark-teal) 100%);
   }
   
   .card-shadow {
@@ -146,5 +147,9 @@
   
   .transaction-item:hover {
     background-color: hsl(var(--muted));
+  }
+  
+  .boi-header {
+    background: linear-gradient(135deg, #2a898a 0%, #1f6565 100%);
   }
 }
