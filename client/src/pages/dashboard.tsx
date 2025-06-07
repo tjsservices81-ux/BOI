@@ -99,61 +99,61 @@ export default function Dashboard() {
             {/* Current Account */}
             <div className="flex items-center justify-between p-4 border-b border-gray-100">
               <div>
-                <p className="font-medium text-gray-900 text-sm">CURRENT ACCOUNT</p>
-                <p className="text-sm text-gray-500">-2091</p>
+                <p className="font-semibold text-sm" style={{ color: 'var(--boi-text-gray)' }}>CURRENT ACCOUNT</p>
+                <p className="text-sm" style={{ color: 'var(--boi-light-gray)' }}>-2091</p>
               </div>
               <div className="flex items-center">
                 <p className="text-lg font-semibold" style={{ color: 'var(--boi-teal)' }}>€ 2,322.40</p>
-                <ChevronRight className="h-5 w-5 text-gray-400 ml-2" />
+                <ChevronRight className="h-5 w-5" style={{ color: 'var(--boi-light-gray)' }} />
               </div>
             </div>
             
             {/* Credit Card */}
             <div className="flex items-center justify-between p-4 border-b border-gray-100">
               <div>
-                <p className="font-medium text-gray-900 text-sm">CREDIT CARD</p>
-                <p className="text-sm text-gray-500">-1820</p>
+                <p className="font-semibold text-sm" style={{ color: 'var(--boi-text-gray)' }}>CREDIT CARD</p>
+                <p className="text-sm" style={{ color: 'var(--boi-light-gray)' }}>-1820</p>
               </div>
               <div className="flex items-center">
                 <p className="text-lg font-semibold" style={{ color: 'var(--boi-teal)' }}>€2,000.00</p>
-                <ChevronRight className="h-5 w-5 text-gray-400 ml-2" />
+                <ChevronRight className="h-5 w-5" style={{ color: 'var(--boi-light-gray)' }} />
               </div>
             </div>
             
             {/* Savings Account */}
             <div className="flex items-center justify-between p-4 border-b border-gray-100">
               <div>
-                <p className="font-medium text-gray-900 text-sm">SAVINGS ACCOUNT</p>
-                <p className="text-sm text-gray-500">-0978</p>
+                <p className="font-semibold text-sm" style={{ color: 'var(--boi-text-gray)' }}>SAVINGS ACCOUNT</p>
+                <p className="text-sm" style={{ color: 'var(--boi-light-gray)' }}>-0978</p>
               </div>
               <div className="flex items-center">
                 <p className="text-lg font-semibold" style={{ color: 'var(--boi-teal)' }}>€7,500.00</p>
-                <ChevronRight className="h-5 w-5 text-gray-400 ml-2" />
+                <ChevronRight className="h-5 w-5" style={{ color: 'var(--boi-light-gray)' }} />
               </div>
             </div>
             
             {/* Personal Loan */}
             <div className="flex items-center justify-between p-4 border-b border-gray-100">
               <div>
-                <p className="font-medium text-gray-900 text-sm">PERSONAL LOAN</p>
-                <p className="text-sm text-gray-500">-8923</p>
+                <p className="font-semibold text-sm" style={{ color: 'var(--boi-text-gray)' }}>PERSONAL LOAN</p>
+                <p className="text-sm" style={{ color: 'var(--boi-light-gray)' }}>-8923</p>
               </div>
               <div className="flex items-center">
                 <p className="text-lg font-semibold" style={{ color: 'var(--boi-teal)' }}>€2,500.00</p>
-                <ChevronRight className="h-5 w-5 text-gray-400 ml-2" />
+                <ChevronRight className="h-5 w-5" style={{ color: 'var(--boi-light-gray)' }} />
               </div>
             </div>
             
             {/* Deposit */}
             <div className="flex items-center justify-between p-4">
               <div>
-                <p className="font-medium text-gray-900 text-sm">DEPOSIT - 7908</p>
+                <p className="font-semibold text-sm" style={{ color: 'var(--boi-text-gray)' }}>DEPOSIT - 7908</p>
                 <p className="text-sm" style={{ color: 'var(--boi-teal)' }}>365 MONTHLY SAVER</p>
                 <p className="text-xs" style={{ color: 'var(--boi-teal)' }}>Withdraw funds</p>
               </div>
               <div className="flex items-center">
-                <p className="text-lg font-semibold text-gray-400">€100.00</p>
-                <ChevronRight className="h-5 w-5 text-gray-400 ml-2" />
+                <p className="text-lg font-semibold" style={{ color: 'var(--boi-light-gray)' }}>€100.00</p>
+                <ChevronRight className="h-5 w-5" style={{ color: 'var(--boi-light-gray)' }} />
               </div>
             </div>
           </div>
@@ -222,24 +222,24 @@ export default function Dashboard() {
             </Button>
           </Link>
           <Link href="/bills">
-            <Button variant="ghost" className="flex flex-col items-center py-2 px-3 h-auto text-gray-500">
+            <Button variant="ghost" className="flex flex-col items-center py-2 px-3 h-auto" style={{ color: 'var(--boi-light-gray)' }}>
               <img src="/icon-footer-payments.svg" alt="Payments" className="w-6 h-6 mb-1" />
               <span className="text-xs font-medium">Payments</span>
             </Button>
           </Link>
           <Link href="/statements">
-            <Button variant="ghost" className="flex flex-col items-center py-2 px-3 h-auto text-gray-500">
+            <Button variant="ghost" className="flex flex-col items-center py-2 px-3 h-auto" style={{ color: 'var(--boi-light-gray)' }}>
               <img src="/roi_debit_card_consumer-200px.png" alt="Cards" className="w-6 h-6 mb-1 object-contain" />
               <span className="text-xs font-medium">Cards</span>
             </Button>
           </Link>
           <Link href="/profile">
-            <Button variant="ghost" className="flex flex-col items-center py-2 px-3 h-auto text-gray-500">
+            <Button variant="ghost" className="flex flex-col items-center py-2 px-3 h-auto" style={{ color: 'var(--boi-light-gray)' }}>
               <img src="/icon-footer-services.svg" alt="Services" className="w-6 h-6 mb-1" />
               <span className="text-xs font-medium">Services</span>
             </Button>
           </Link>
-          <Button variant="ghost" className="flex flex-col items-center py-2 px-3 h-auto text-gray-500">
+          <Button variant="ghost" className="flex flex-col items-center py-2 px-3 h-auto" style={{ color: 'var(--boi-light-gray)' }}>
             <img src="/icon-footer-apply.svg" alt="Apply" className="w-6 h-6 mb-1" />
             <span className="text-xs font-medium">Apply</span>
           </Button>
