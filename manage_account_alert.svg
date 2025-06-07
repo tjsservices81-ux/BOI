@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="30px" height="30px" viewBox="0 0 30 30" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 58 (84663) - https://sketch.com -->
+    <title>icon-new/user/solid</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <path d="M14.8345285,15 C21.9452514,16.2934206 22.8747047,18.3364657 22.9873625,25.5067158 C22.9944913,25.9650676 22.9983798,26.0445254 23,26.003708 L23,26.005 L22.9999551,26.08367 L22.9999551,26.08367 L22.9995679,26.5606746 C22.9995679,26.5606746 21.3067856,30 11.500378,30 C1.69353846,30 0.000864105346,26.5606746 0.000864105346,26.5606746 L0.000864105346,26.5606746 L0.000436182444,25.8206525 C0.00243381151,25.8658513 0.00751106954,25.7999561 0.0172821069,25.2736759 C0.146789896,18.2922741 1.13284211,16.2793794 8.16590353,15 C8.16590353,15 9.1671856,16.285366 11.500378,16.285366 C13.8332465,16.285366 14.8345285,15 14.8345285,15 Z M11.5,0 C16.6177378,0 17.5,3.24608217 17.5,7.25 C17.5,11.2542355 14.8132994,14.5 11.5,14.5 C8.1863813,14.5 5.5,11.2542355 5.5,7.25 C5.5,3.24608217 6.38183641,0 11.5,0 Z" id="path-1"></path>
+    </defs>
+    <g id="icon-new/user/solid" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="user-solid" transform="translate(4.000000, 0.000000)">
+            <mask id="mask-2" fill="white">
+                <use xlink:href="#path-1"></use>
+            </mask>
+            <use id="Mask" fill="#053C59" fill-rule="nonzero" xlink:href="#path-1"></use>
+            <g id="Colour/Secondary-Blue" mask="url(#mask-2)" fill="#053C59" fill-rule="nonzero">
+                <rect id="Rectangle-15" x="0" y="0" width="23" height="30"></rect>
+            </g>
+        </g>
+    </g>
+</svg>
