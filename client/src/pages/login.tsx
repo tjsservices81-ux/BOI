@@ -51,12 +51,12 @@ export default function Login() {
               <h2 className="text-lg font-medium text-gray-900 mb-2">Biometric login</h2>
             </div>
 
-            <Button className="w-full bg-teal-600 hover:bg-teal-700 text-white font-medium py-3 mb-4">
+            <Button className="w-full text-white font-medium py-3 mb-4" style={{ backgroundColor: 'var(--boi-teal)' }}>
               Log in
             </Button>
 
             <div className="text-center mb-4">
-              <Button variant="link" className="text-teal-600 text-sm">
+              <Button variant="link" className="text-sm" style={{ color: 'var(--boi-teal)' }}>
                 Forgot your PIN? 
               </Button>
             </div>
@@ -74,15 +74,15 @@ export default function Login() {
 
             <div className="space-y-2 text-sm">
               <div className="flex items-center p-3 bg-gray-50 rounded-lg">
-                <div className="w-6 h-6 mr-3 bg-gray-300 rounded flex items-center justify-center">
-                  <span className="text-xs">⋯</span>
+                <div className="w-6 h-6 mr-3 rounded flex items-center justify-center">
+                  <img src="/pass-font.svg" alt="PIN" className="w-4 h-4" />
                 </div>
                 <span className="text-gray-700">Use your PIN instead</span>
               </div>
               
               <div className="flex items-center p-3 bg-gray-50 rounded-lg">
-                <div className="w-6 h-6 mr-3 bg-gray-300 rounded flex items-center justify-center">
-                  <span className="text-xs">⋯</span>
+                <div className="w-6 h-6 mr-3 rounded flex items-center justify-center">
+                  <img src="/response_icon.svg" alt="Approval" className="w-4 h-4" />
                 </div>
                 <div>
                   <div className="text-gray-700">Waiting for your approval</div>
@@ -128,7 +128,8 @@ export default function Login() {
 
               <Button
                 type="submit"
-                className="w-full bg-teal-600 hover:bg-teal-700 text-white font-medium py-3"
+                className="w-full text-white font-medium py-3"
+                style={{ backgroundColor: 'var(--boi-teal)' }}
                 disabled={isLoading}
               >
                 {isLoading ? "Signing In..." : "Sign In"}
@@ -139,24 +140,18 @@ export default function Login() {
       </div>
 
       {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-md bg-teal-700 text-white">
+      <div className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-md text-white" style={{ backgroundColor: 'var(--boi-teal)' }}>
         <div className="flex items-center justify-around py-3">
           <div className="flex flex-col items-center">
-            <div className="w-6 h-6 mb-1 flex items-center justify-center">
-              <span className="text-xs">📍</span>
-            </div>
+            <img src="/branch-locator.svg" alt="ATM/Branch" className="w-6 h-6 mb-1 filter brightness-0 invert" />
             <span className="text-xs">ATM/Branch</span>
           </div>
           <div className="flex flex-col items-center">
-            <div className="w-6 h-6 mb-1 flex items-center justify-center">
-              <span className="text-xs">🔒</span>
-            </div>
+            <img src="/lock.svg" alt="Security" className="w-6 h-6 mb-1 filter brightness-0 invert" />
             <span className="text-xs">Security</span>
           </div>
           <div className="flex flex-col items-center">
-            <div className="w-6 h-6 mb-1 flex items-center justify-center">
-              <span className="text-xs">⋯</span>
-            </div>
+            <img src="/more-prelogin-icon.svg" alt="More" className="w-6 h-6 mb-1 filter brightness-0 invert" />
             <span className="text-xs">More</span>
           </div>
         </div>
