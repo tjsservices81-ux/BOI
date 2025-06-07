@@ -18,7 +18,8 @@ import {
   ShoppingCart,
   Fuel,
   ArrowDown,
-  Utensils
+  Utensils,
+  User
 } from "lucide-react";
 import type { Account, Transaction } from "@shared/schema";
 
@@ -105,7 +106,7 @@ export default function Dashboard() {
               <Link href="/transfer">
                 <Button variant="ghost" className="flex flex-col items-center p-3 h-auto hover:bg-gray-50">
                   <div className="w-12 h-12 bg-[var(--boi-light-green)] rounded-full flex items-center justify-center mb-2">
-                    <ArrowRightLeft className="text-[var(--boi-green)]" />
+                    <img src="/ArrowRightLeft.svg" alt="Transfer" className="w-6 h-6" style={{ filter: 'brightness(0) saturate(100%) invert(34%) sepia(70%) saturate(7496%) hue-rotate(133deg) brightness(95%) contrast(101%)' }} />
                   </div>
                   <span className="text-xs text-[var(--boi-gray)] font-medium">Transfer</span>
                 </Button>
@@ -114,7 +115,7 @@ export default function Dashboard() {
               <Link href="/bills">
                 <Button variant="ghost" className="flex flex-col items-center p-3 h-auto hover:bg-gray-50">
                   <div className="w-12 h-12 bg-[var(--boi-light-green)] rounded-full flex items-center justify-center mb-2">
-                    <FileText className="text-[var(--boi-green)]" />
+                    <img src="/payee.svg" alt="Bills" className="w-6 h-6" />
                   </div>
                   <span className="text-xs text-[var(--boi-gray)] font-medium">Bills</span>
                 </Button>
@@ -123,7 +124,7 @@ export default function Dashboard() {
               <Link href="/statements">
                 <Button variant="ghost" className="flex flex-col items-center p-3 h-auto hover:bg-gray-50">
                   <div className="w-12 h-12 bg-[var(--boi-light-green)] rounded-full flex items-center justify-center mb-2">
-                    <FileImage className="text-[var(--boi-green)]" />
+                    <img src="/statement.svg" alt="Statements" className="w-6 h-6" />
                   </div>
                   <span className="text-xs text-[var(--boi-gray)] font-medium">Statements</span>
                 </Button>
@@ -131,7 +132,7 @@ export default function Dashboard() {
               
               <Button variant="ghost" className="flex flex-col items-center p-3 h-auto hover:bg-gray-50">
                 <div className="w-12 h-12 bg-[var(--boi-light-green)] rounded-full flex items-center justify-center mb-2">
-                  <CreditCard className="text-[var(--boi-green)]" />
+                  <img src="/roi_debit_card_consumer-200px.png" alt="Cards" className="w-6 h-6 object-contain" />
                 </div>
                 <span className="text-xs text-[var(--boi-gray)] font-medium">Cards</span>
               </Button>

@@ -2,6 +2,63 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Bank of Ireland Custom Fonts */
+@font-face {
+  font-family: 'BlueMagic';
+  src: url('/BlueMagic3.eot');
+  src: url('/BlueMagic3.eot?#iefix') format('embedded-opentype'),
+       url('/BlueMagic3.woff2') format('woff2'),
+       url('/BlueMagic3.woff') format('woff'),
+       url('/BlueMagic3.ttf') format('truetype'),
+       url('/BlueMagic3.svg#BlueMagic3') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'OpenSans';
+  src: url('/OpenSans-Regular-webfont.eot');
+  src: url('/OpenSans-Regular-webfont.eot?#iefix') format('embedded-opentype'),
+       url('/OpenSans-Regular-webfont.woff') format('woff'),
+       url('/OpenSans-Regular-webfont.ttf') format('truetype'),
+       url('/OpenSans-Regular-webfont.svg#OpenSansRegular') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'OpenSans';
+  src: url('/OpenSans-Bold-webfont.eot');
+  src: url('/OpenSans-Bold-webfont.eot?#iefix') format('embedded-opentype'),
+       url('/OpenSans-Bold-webfont.woff') format('woff'),
+       url('/OpenSans-Bold-webfont.ttf') format('truetype'),
+       url('/OpenSans-Bold-webfont.svg#OpenSansBold') format('svg');
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'OpenSans';
+  src: url('/OpenSans-Light-webfont.eot');
+  src: url('/OpenSans-Light-webfont.eot?#iefix') format('embedded-opentype'),
+       url('/OpenSans-Light-webfont.woff') format('woff'),
+       url('/OpenSans-Light-webfont.ttf') format('truetype'),
+       url('/OpenSans-Light-webfont.svg#OpenSansLight') format('svg');
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'OpenSans';
+  src: url('/OpenSans-Semibold-webfont.eot');
+  src: url('/OpenSans-Semibold-webfont.eot?#iefix') format('embedded-opentype'),
+       url('/OpenSans-Semibold-webfont.woff') format('woff'),
+       url('/OpenSans-Semibold-webfont.ttf') format('truetype'),
+       url('/OpenSans-Semibold-webfont.svg#OpenSansSemibold') format('svg');
+  font-weight: 600;
+  font-style: normal;
+}
+
 :root {
   --background: hsl(0, 0%, 100%);
   --foreground: hsl(20, 14.3%, 4.1%);
@@ -25,9 +82,10 @@
   --radius: 0.5rem;
   
   /* Bank of Ireland Colors */
-  --boi-green: hsl(142, 100%, 33%);
-  --boi-dark-green: hsl(142, 100%, 21%);
-  --boi-light-green: hsl(142, 45%, 95%);
+  --boi-teal: hsl(185, 70%, 35%);
+  --boi-dark-teal: hsl(185, 70%, 25%);
+  --boi-light-teal: hsl(185, 45%, 95%);
+  --boi-blue: hsl(210, 100%, 60%);
   --boi-gray: hsl(215, 25%, 27%);
   --boi-light-gray: hsl(215, 14%, 54%);
 }
@@ -68,7 +126,8 @@
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    @apply antialiased bg-background text-foreground;
+    font-family: 'OpenSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
 }
 

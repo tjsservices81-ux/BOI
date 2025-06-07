@@ -33,10 +33,10 @@ export default function Login() {
   return (
     <div className="min-h-screen flex flex-col justify-center p-6 bg-gray-50">
       <div className="text-center mb-8">
-        <div className="w-16 h-16 bg-[var(--boi-green)] rounded-full flex items-center justify-center mx-auto mb-4">
-          <University className="text-white text-2xl" />
+        <div className="mx-auto mb-4 flex justify-center">
+          <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-16 w-auto" />
         </div>
-        <h1 className="text-2xl font-bold text-[var(--boi-gray)] mb-2">Bank of Ireland</h1>
+        <h1 className="text-2xl font-bold text-[var(--boi-gray)] mb-2" style={{ fontFamily: 'BlueMagic, OpenSans, sans-serif' }}>Bank of Ireland</h1>
         <p className="text-[var(--boi-light-gray)]">Secure Mobile Banking</p>
       </div>
 
@@ -81,6 +81,9 @@ export default function Login() {
                 >
                   {showPin ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </Button>
+              </div>
+              <div className="mt-2 text-xs text-gray-500">
+                Demo login: Customer Number: 12345678, PIN: 1234
               </div>
             </div>
 
