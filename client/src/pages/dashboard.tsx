@@ -62,30 +62,39 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       {/* Header with teal gradient matching real app */}
-      <div className="boi-header text-white relative">
-        <div className="flex items-center justify-between p-4">
-          <div className="flex items-center">
-            <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-8 w-auto filter brightness-0 invert mr-2" />
-          </div>
-          <div className="flex items-center space-x-4">
-            <Button size="icon" variant="ghost" className="text-white hover:bg-white hover:bg-opacity-20">
-              <User className="h-5 w-5" />
-            </Button>
-          </div>
+      <div className="text-white relative overflow-hidden" style={{ 
+        background: 'linear-gradient(135deg, var(--boi-teal) 0%, var(--boi-dark-teal) 100%)'
+      }}>
+        {/* Background scenic image at bottom */}
+        <div className="absolute bottom-0 left-0 right-0 h-20 opacity-20">
+          <img src="/background.jpg" alt="" className="w-full h-full object-cover object-bottom" />
         </div>
         
-        {/* Welcome section */}
-        <div className="px-4 pb-6">
-          <div className="bg-black bg-opacity-20 rounded-lg overflow-hidden mb-4">
-            <div className="h-32 relative" style={{
-              backgroundImage: 'url(/website-hp-main-705x635-eye.jpg)',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center'
-            }}>
-              <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-transparent"></div>
-              <div className="absolute bottom-4 left-4 text-white">
-                <p className="text-sm opacity-90">Welcome</p>
-                <p className="text-xs opacity-75">Last login: 14.07 GMT 27/06/2021</p>
+        <div className="relative z-10">
+          <div className="flex items-center justify-between p-4">
+            <div className="flex items-center">
+              <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-8 w-auto filter brightness-0 invert mr-2" />
+            </div>
+            <div className="flex items-center space-x-4">
+              <Button size="icon" variant="ghost" className="text-white hover:bg-white hover:bg-opacity-20">
+                <User className="h-5 w-5" />
+              </Button>
+            </div>
+          </div>
+          
+          {/* Welcome section */}
+          <div className="px-4 pb-6">
+            <div className="bg-black bg-opacity-20 rounded-lg overflow-hidden mb-4">
+              <div className="h-32 relative" style={{
+                backgroundImage: 'url(/website-hp-main-705x635-eye.jpg)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center'
+              }}>
+                <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-transparent"></div>
+                <div className="absolute bottom-4 left-4 text-white">
+                  <p className="text-sm opacity-90">Welcome</p>
+                  <p className="text-xs opacity-75">Last login: 14.07 GMT 27/06/2021</p>
+                </div>
               </div>
             </div>
           </div>

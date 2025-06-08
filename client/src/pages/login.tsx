@@ -31,9 +31,11 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 relative">
-      {/* Header with gradient */}
-      <div className="boi-header text-white p-4">
+    <div className="min-h-screen relative" style={{ 
+      background: 'linear-gradient(135deg, var(--boi-teal) 0%, var(--boi-dark-teal) 100%)'
+    }}>
+      {/* Header with gradient - matching screenshot */}
+      <div className="text-white p-4 pt-12">
         <div className="flex items-center justify-center">
           <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-8 w-auto filter brightness-0 invert" />
         </div>
