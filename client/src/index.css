@@ -81,12 +81,11 @@
   --ring: hsl(20, 14.3%, 4.1%);
   --radius: 0.5rem;
   
-  /* Bank of Ireland Colors - Exact match from screenshots */
-  --boi-teal: #5a9ba8;
-  --boi-dark-teal: #4a7b85;
-  --boi-light-teal: #e8f6f5;
-  --boi-blue: #1e3aff;
-  --boi-background-blue: #5B7AFF;
+  /* Bank of Ireland Colors - From actual app screenshot */
+  --boi-teal: #4a90a4;
+  --boi-dark-teal: #2d5a6b;
+  --boi-light-teal: #e8f4f5;
+  --boi-blue: #4285f4;
   --boi-gray: #2d2d2d;
   --boi-light-gray: #999999;
   --boi-text-gray: #333333;
@@ -151,7 +150,5 @@
     background-color: hsl(var(--muted));
   }
   
-  .boi-header {
-    background: linear-gradient(135deg, var(--boi-teal) 0%, var(--boi-dark-teal) 100%);
-  }
+
 }
