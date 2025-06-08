@@ -31,7 +31,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen relative" style={{ 
+    <div className="h-screen overflow-hidden flex flex-col relative" style={{ 
       background: 'linear-gradient(135deg, var(--boi-teal) 0%, var(--boi-dark-teal) 100%)'
     }}>
       {/* Header with gradient - matching screenshot */}
@@ -42,7 +42,7 @@ export default function Login() {
       </div>
 
       {/* Main content matching real app */}
-      <div className="px-4 py-8">
+      <div className="flex-1 flex items-center justify-center px-4">
         <Card className="mx-auto max-w-sm">
           <CardContent className="p-6">
             {/* Biometric Login Section */}

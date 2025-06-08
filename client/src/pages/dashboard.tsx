@@ -60,7 +60,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="h-screen bg-gray-50 overflow-hidden flex flex-col">
       {/* Header with teal gradient matching real app */}
       <div className="text-white relative overflow-hidden" style={{ 
         background: 'linear-gradient(135deg, var(--boi-teal) 0%, var(--boi-dark-teal) 100%)'
@@ -102,7 +102,7 @@ export default function Dashboard() {
       </div>
 
       {/* Accounts List - Matching real app layout */}
-      <div className="px-4 -mt-4 mb-6">
+      <div className="flex-1 overflow-y-auto px-4 -mt-4 mb-4">
         <div className="bg-white rounded-lg shadow-sm">
           <div className="space-y-0">
             {/* Current Account */}
@@ -222,7 +222,7 @@ export default function Dashboard() {
       </div>
 
       {/* Bottom Navigation - Using actual BOI assets */}
-      <div className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-md bg-white border-t border-gray-200">
+      <div className="bg-white border-t border-gray-200">
         <div className="flex items-center justify-around py-2">
           <Link href="/">
             <Button variant="ghost" className="flex flex-col items-center py-2 px-3 h-auto" style={{ color: 'var(--boi-teal)' }}>
