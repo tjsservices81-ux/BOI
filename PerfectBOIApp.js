@@ -8,7 +8,6 @@ import {
   Image,
   StatusBar,
   ImageBackground,
-  ScrollView,
   Dimensions,
 } from 'react-native';
 
@@ -27,120 +26,120 @@ const LoginScreen = ({ onLogin }) => {
       >
         <View style={styles.gradientOverlay} />
         
-        {/* Header with Bank of Ireland branding */}
-        <View style={styles.header}>
-          <View style={styles.logoSection}>
+        <SafeAreaView style={styles.safeArea}>
+          {/* Header with Bank of Ireland branding */}
+          <View style={styles.header}>
             <Text style={styles.bankTitle}>Bank of Ireland</Text>
             <Image
-              source={require('./boi_logo.svg')}
-              style={styles.logo}
+              source={require('./boi_logo.png')}
+              style={styles.logoImage}
               resizeMode="contain"
             />
           </View>
-        </View>
 
-        {/* Main content area */}
-        <View style={styles.mainContent}>
-          {/* Login card */}
-          <View style={styles.loginCard}>
-            {/* Biometric login section */}
-            <View style={styles.biometricSection}>
-              <Image
-                source={require('./Icons_Fingerprint.svg')}
-                style={styles.fingerprintIcon}
-                resizeMode="contain"
-              />
-              <Text style={styles.biometricTitle}>Biometric login</Text>
-            </View>
-
-            {/* Primary login button */}
-            <TouchableOpacity style={styles.loginButton} onPress={onLogin}>
-              <Text style={styles.loginButtonText}>Log in</Text>
-            </TouchableOpacity>
-
-            {/* Forgot PIN link */}
-            <View style={styles.forgotPinContainer}>
-              <TouchableOpacity style={styles.forgotPinButton}>
-                <Text style={styles.forgotPinText}>Forgot your PIN?</Text>
+          {/* Main content area */}
+          <View style={styles.mainContent}>
+            {/* Login card */}
+            <View style={styles.loginCard}>
+              {/* Biometric login section */}
+              <View style={styles.biometricSection}>
                 <Image
-                  source={require('./arrow.png')}
-                  style={styles.arrowIcon}
+                  source={require('./fingerprint.png')}
+                  style={styles.fingerprintIcon}
                   resizeMode="contain"
                 />
+                <Text style={styles.biometricTitle}>Biometric login</Text>
+              </View>
+
+              {/* Primary login button */}
+              <TouchableOpacity style={styles.loginButton} onPress={onLogin}>
+                <Text style={styles.loginButtonText}>Log in</Text>
+              </TouchableOpacity>
+
+              {/* Forgot PIN link */}
+              <View style={styles.forgotPinContainer}>
+                <TouchableOpacity style={styles.forgotPinButton}>
+                  <Text style={styles.forgotPinText}>Forgot your PIN?</Text>
+                  <Image
+                    source={require('./arrow.png')}
+                    style={styles.arrowIcon}
+                    resizeMode="contain"
+                  />
+                </TouchableOpacity>
+              </View>
+
+              {/* Alternative login options */}
+              <View style={styles.divider} />
+              
+              <TouchableOpacity style={styles.alternativeOption}>
+                <Image
+                  source={require('./user.png')}
+                  style={styles.optionSmallIcon}
+                  resizeMode="contain"
+                />
+                <Text style={styles.alternativeText}>Log in with another ID</Text>
+              </TouchableOpacity>
+
+              {/* PIN and approval options */}
+              <TouchableOpacity style={styles.optionRow}>
+                <View style={styles.optionIconWrapper}>
+                  <Image
+                    source={require('./dots.png')}
+                    style={styles.optionIcon}
+                    resizeMode="contain"
+                  />
+                </View>
+                <Text style={styles.optionText}>Use your PIN instead</Text>
+                <Text style={styles.chevronRight}>›</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.optionRow}>
+                <View style={styles.optionIconWrapper}>
+                  <Image
+                    source={require('./lock.png')}
+                    style={styles.optionIcon}
+                    resizeMode="contain"
+                  />
+                </View>
+                <View style={styles.optionTextContainer}>
+                  <Text style={styles.optionText}>Waiting for your approval</Text>
+                  <Text style={styles.optionSubtext}>Tap here to complete any unfinished actions</Text>
+                </View>
+                <Text style={styles.chevronRight}>›</Text>
               </TouchableOpacity>
             </View>
+          </View>
 
-            {/* Alternative login options */}
-            <View style={styles.divider} />
-            
-            <TouchableOpacity style={styles.alternativeOption}>
+          {/* Bottom navigation */}
+          <View style={styles.bottomNavigation}>
+            <TouchableOpacity style={styles.bottomNavItem}>
               <Image
-                source={require('./user.png')}
-                style={styles.optionSmallIcon}
+                source={require('./atm.png')}
+                style={styles.bottomNavIcon}
                 resizeMode="contain"
               />
-              <Text style={styles.alternativeText}>Log in with another ID</Text>
+              <Text style={styles.bottomNavText}>ATM/Branch</Text>
             </TouchableOpacity>
-
-            {/* PIN and approval options */}
-            <TouchableOpacity style={styles.optionRow}>
-              <View style={styles.optionIconWrapper}>
-                <Image
-                  source={require('./dots.png')}
-                  style={styles.optionIcon}
-                  resizeMode="contain"
-                />
-              </View>
-              <Text style={styles.optionText}>Use your PIN instead</Text>
-              <Text style={styles.chevronRight}>›</Text>
+            
+            <TouchableOpacity style={styles.bottomNavItem}>
+              <Image
+                source={require('./security.png')}
+                style={styles.bottomNavIcon}
+                resizeMode="contain"
+              />
+              <Text style={styles.bottomNavText}>Security</Text>
             </TouchableOpacity>
-
-            <TouchableOpacity style={styles.optionRow}>
-              <View style={styles.optionIconWrapper}>
-                <Image
-                  source={require('./lock.png')}
-                  style={styles.optionIcon}
-                  resizeMode="contain"
-                />
-              </View>
-              <View style={styles.optionTextContainer}>
-                <Text style={styles.optionText}>Waiting for your approval</Text>
-                <Text style={styles.optionSubtext}>Tap here to complete any unfinished actions</Text>
-              </View>
-              <Text style={styles.chevronRight}>›</Text>
+            
+            <TouchableOpacity style={styles.bottomNavItem}>
+              <Image
+                source={require('./more.png')}
+                style={styles.bottomNavIcon}
+                resizeMode="contain"
+              />
+              <Text style={styles.bottomNavText}>More</Text>
             </TouchableOpacity>
           </View>
-        </View>
-
-        {/* Bottom navigation */}
-        <View style={styles.bottomNavigation}>
-          <TouchableOpacity style={styles.bottomNavItem}>
-            <Image
-              source={require('./atm.png')}
-              style={styles.bottomNavIcon}
-              resizeMode="contain"
-            />
-            <Text style={styles.bottomNavText}>ATM/Branch</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity style={styles.bottomNavItem}>
-            <Image
-              source={require('./security.png')}
-              style={styles.bottomNavIcon}
-              resizeMode="contain"
-            />
-            <Text style={styles.bottomNavText}>Security</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity style={styles.bottomNavItem}>
-            <Image
-              source={require('./more.png')}
-              style={styles.bottomNavIcon}
-              resizeMode="contain"
-            />
-            <Text style={styles.bottomNavText}>More</Text>
-          </TouchableOpacity>
-        </View>
+        </SafeAreaView>
       </ImageBackground>
     </View>
   );
@@ -148,93 +147,94 @@ const LoginScreen = ({ onLogin }) => {
 
 const DashboardScreen = ({ onLogout }) => {
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#4a90a4" />
       
-      <View style={styles.dashboardContainer}>
+      <SafeAreaView style={styles.dashboardContainer}>
         {/* Header section */}
         <View style={styles.dashboardHeader}>
-          <View style={styles.dashboardHeaderContent}>
-            <View style={styles.headerTopRow}>
-              <Text style={styles.dashboardLogo}>BOI</Text>
-              <TouchableOpacity onPress={onLogout} style={styles.profileButton}>
-                <Text style={styles.profileIcon}>👤</Text>
-              </TouchableOpacity>
-            </View>
+          <ImageBackground
+            source={require('./background.jpg')}
+            style={styles.headerBackground}
+            resizeMode="cover"
+          >
+            <View style={styles.headerOverlay} />
             
-            <View style={styles.welcomeSection}>
-              <Text style={styles.welcomeTitle}>Good evening John</Text>
-              <Text style={styles.welcomeSubtitle}>Welcome to Bank of Ireland</Text>
+            <View style={styles.headerContent}>
+              <View style={styles.headerTopRow}>
+                <Image
+                  source={require('./boi_logo.png')}
+                  style={styles.dashboardLogo}
+                  resizeMode="contain"
+                />
+                <TouchableOpacity onPress={onLogout} style={styles.profileButton}>
+                  <Text style={styles.profileIcon}>👤</Text>
+                </TouchableOpacity>
+              </View>
+              
+              <View style={styles.welcomeSection}>
+                <Text style={styles.welcomeTitle}>Good evening John</Text>
+                <Text style={styles.welcomeSubtitle}>Welcome to Bank of Ireland</Text>
+              </View>
             </View>
-          </View>
-          
-          {/* Background image overlay */}
-          <View style={styles.headerBackgroundOverlay}>
-            <Image
-              source={{ uri: 'https://via.placeholder.com/400x100/2d5a6b/ffffff?text=Scenic+View' }}
-              style={styles.headerBackgroundImage}
-              resizeMode="cover"
-            />
-          </View>
+          </ImageBackground>
         </View>
 
         {/* Main content */}
-        <ScrollView style={styles.mainContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.mainDashboardContent}>
           {/* Accounts section */}
-          <View style={styles.accountsContainer}>
-            <View style={styles.accountCard}>
-              <TouchableOpacity style={styles.accountRow}>
-                <View style={styles.accountInfo}>
-                  <Text style={styles.accountTitle}>CURRENT ACCOUNT</Text>
-                  <Text style={styles.accountNumber}>-2091</Text>
-                </View>
-                <View style={styles.accountBalance}>
-                  <Text style={styles.balanceAmount}>€ 2,322.40</Text>
-                  <Text style={styles.chevron}>›</Text>
-                </View>
-              </TouchableOpacity>
+          <View style={styles.accountCard}>
+            <TouchableOpacity style={styles.accountRow}>
+              <View style={styles.accountInfo}>
+                <Text style={styles.accountTitle}>CURRENT ACCOUNT</Text>
+                <Text style={styles.accountNumber}>-2091</Text>
+              </View>
+              <View style={styles.accountBalance}>
+                <Text style={styles.balanceAmount}>€ 2,322.40</Text>
+                <Text style={styles.chevronRight}>›</Text>
+              </View>
+            </TouchableOpacity>
 
-              <View style={styles.accountDivider} />
+            <View style={styles.accountDivider} />
 
-              <TouchableOpacity style={styles.accountRow}>
-                <View style={styles.accountInfo}>
-                  <Text style={styles.accountTitle}>CREDIT CARD</Text>
-                  <Text style={styles.accountNumber}>-1820</Text>
-                </View>
-                <View style={styles.accountBalance}>
-                  <Text style={styles.balanceAmount}>€2,000.00</Text>
-                  <Text style={styles.chevron}>›</Text>
-                </View>
-              </TouchableOpacity>
+            <TouchableOpacity style={styles.accountRow}>
+              <View style={styles.accountInfo}>
+                <Text style={styles.accountTitle}>CREDIT CARD</Text>
+                <Text style={styles.accountNumber}>-1820</Text>
+              </View>
+              <View style={styles.accountBalance}>
+                <Text style={styles.balanceAmount}>€2,000.00</Text>
+                <Text style={styles.chevronRight}>›</Text>
+              </View>
+            </TouchableOpacity>
 
-              <View style={styles.accountDivider} />
+            <View style={styles.accountDivider} />
 
-              <TouchableOpacity style={styles.accountRow}>
-                <View style={styles.accountInfo}>
-                  <Text style={styles.accountTitle}>SAVINGS ACCOUNT</Text>
-                  <Text style={styles.accountNumber}>-0978</Text>
-                </View>
-                <View style={styles.accountBalance}>
-                  <Text style={styles.balanceAmount}>€7,500.00</Text>
-                  <Text style={styles.chevron}>›</Text>
-                </View>
-              </TouchableOpacity>
-            </View>
-
-            {/* Quick actions */}
-            <View style={styles.quickActionsContainer}>
-              <TouchableOpacity style={styles.quickActionButton}>
-                <Text style={styles.quickActionIcon}>€</Text>
-                <Text style={styles.quickActionText}>Transfer</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity style={styles.quickActionButton}>
-                <Text style={styles.quickActionIcon}>💳</Text>
-                <Text style={styles.quickActionText}>Bill Pay</Text>
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity style={styles.accountRow}>
+              <View style={styles.accountInfo}>
+                <Text style={styles.accountTitle}>SAVINGS ACCOUNT</Text>
+                <Text style={styles.accountNumber}>-0978</Text>
+              </View>
+              <View style={styles.accountBalance}>
+                <Text style={styles.balanceAmount}>€7,500.00</Text>
+                <Text style={styles.chevronRight}>›</Text>
+              </View>
+            </TouchableOpacity>
           </View>
-        </ScrollView>
+
+          {/* Quick actions */}
+          <View style={styles.quickActionsContainer}>
+            <TouchableOpacity style={styles.quickActionButton}>
+              <Text style={styles.quickActionIcon}>€</Text>
+              <Text style={styles.quickActionText}>Transfer</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.quickActionButton}>
+              <Text style={styles.quickActionIcon}>💳</Text>
+              <Text style={styles.quickActionText}>Bill Pay</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
 
         {/* Bottom navigation */}
         <View style={styles.dashboardBottomNav}>
@@ -263,12 +263,12 @@ const DashboardScreen = ({ onLogout }) => {
             <Text style={styles.dashboardNavText}>Apply</Text>
           </TouchableOpacity>
         </View>
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   );
 };
 
-export default function BankOfIrelandApp() {
+export default function PerfectBOIApp() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const handleLogin = () => {
@@ -300,15 +300,15 @@ const styles = StyleSheet.create({
   },
   gradientOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(74, 144, 164, 0.85)',
+    backgroundColor: 'rgba(74, 144, 164, 0.8)',
+  },
+  safeArea: {
+    flex: 1,
   },
   header: {
     alignItems: 'center',
-    paddingTop: 60,
-    paddingBottom: 30,
-  },
-  logoSection: {
-    alignItems: 'center',
+    paddingTop: 40,
+    paddingBottom: 20,
   },
   bankTitle: {
     fontSize: 20,
@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     fontFamily: 'BOI-Bold',
   },
-  logo: {
+  logoImage: {
     width: 60,
     height: 20,
     tintColor: 'white',
@@ -326,6 +326,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     paddingHorizontal: 24,
+    paddingBottom: 120,
   },
   loginCard: {
     backgroundColor: 'white',
@@ -494,7 +495,14 @@ const styles = StyleSheet.create({
     position: 'relative',
     overflow: 'hidden',
   },
-  dashboardHeaderContent: {
+  headerBackground: {
+    flex: 1,
+  },
+  headerOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(74, 144, 164, 0.8)',
+  },
+  headerContent: {
     flex: 1,
     paddingHorizontal: 20,
     paddingTop: 20,
@@ -507,9 +515,9 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   dashboardLogo: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: 'white',
+    width: 80,
+    height: 20,
+    tintColor: 'white',
   },
   profileButton: {
     width: 32,
@@ -532,30 +540,17 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: 'white',
     marginBottom: 4,
+    fontFamily: 'BOI-Bold',
   },
   welcomeSubtitle: {
     fontSize: 14,
     color: 'rgba(255, 255, 255, 0.8)',
+    fontFamily: 'BOI-Regular',
   },
-  headerBackgroundOverlay: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 60,
-    opacity: 0.3,
-    zIndex: 1,
-  },
-  headerBackgroundImage: {
-    width: '100%',
-    height: '100%',
-  },
-  mainContent: {
+  mainDashboardContent: {
     flex: 1,
     paddingHorizontal: 20,
     marginTop: -16,
-  },
-  accountsContainer: {
     paddingBottom: 100,
   },
   accountCard: {
@@ -586,10 +581,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#333',
     marginBottom: 4,
+    fontFamily: 'BOI-Bold',
   },
   accountNumber: {
     fontSize: 12,
     color: '#999',
+    fontFamily: 'BOI-Regular',
   },
   accountBalance: {
     flexDirection: 'row',
@@ -600,6 +597,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#4a90a4',
     marginRight: 8,
+    fontFamily: 'BOI-Bold',
   },
   accountDivider: {
     height: 1,
@@ -627,6 +625,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     color: '#333',
+    fontFamily: 'BOI-Bold',
   },
   dashboardBottomNav: {
     flexDirection: 'row',
@@ -652,6 +651,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#999',
     fontWeight: '500',
+    fontFamily: 'BOI-Regular',
   },
   activeNavItem: {},
   activeNavIcon: {
