@@ -1,59 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/lib/auth";
-import { BottomNavigation } from "@/components/ui/bottom-navigation";
-import { 
-  ArrowRightLeft, 
-  FileText, 
-  FileImage, 
-  CreditCard, 
-  PiggyBank, 
-  TrendingUp,
-  Bell,
-  Settings,
-  Eye,
-  ArrowUp,
-  ShoppingCart,
-  Fuel,
-  ArrowDown,
-  Utensils,
-  User,
-  ChevronRight,
-  Home,
-  Receipt,
-  Building,
-  Plus
-} from "lucide-react";
-import type { Account, Transaction } from "@shared/schema";
+import { User, ChevronRight } from "lucide-react";
+import type { Account } from "@shared/schema";
 
 export default function Dashboard() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   const { data: accounts = [] } = useQuery<Account[]>({
     queryKey: ["/api/accounts", user?.id],
     enabled: !!user,
   });
-
-  const primaryAccount = accounts.find(acc => acc.accountType === "current");
-  
-  const { data: recentTransactions = [] } = useQuery<Transaction[]>({
-    queryKey: ["/api/transactions", primaryAccount?.id],
-    enabled: !!primaryAccount,
-  });
-
-  const totalBalance = accounts.reduce((sum, account) => sum + parseFloat(account.balance), 0);
-
-  const getTransactionIcon = (category: string) => {
-    switch (category) {
-      case "shopping": return ShoppingCart;
-      case "fuel": return Fuel;
-      case "salary": return ArrowDown;
-      case "dining": return Utensils;
-      default: return ArrowRightLeft;
-    }
-  };
 
   if (!user) {
     return null;
@@ -61,11 +19,11 @@ export default function Dashboard() {
 
   return (
     <div className="h-screen bg-gray-50 overflow-hidden flex flex-col">
-      {/* Header with teal gradient matching real app */}
+      {/* Header with teal gradient */}
       <div className="text-white relative flex-shrink-0" style={{ 
         background: 'linear-gradient(135deg, var(--boi-teal) 0%, var(--boi-dark-teal) 100%)'
       }}>
-        {/* Background scenic image at bottom */}
+        {/* Background scenic image */}
         <div className="absolute bottom-0 left-0 right-0 h-8 opacity-20">
           <img src="/background.jpg" alt="" className="w-full h-full object-cover object-bottom" />
         </div>
@@ -82,7 +40,6 @@ export default function Dashboard() {
             </div>
           </div>
           
-          {/* Compact welcome */}
           <div className="px-3 pb-3">
             <h1 className="text-base font-medium">Good evening John</h1>
             <p className="text-white/80 text-xs">Welcome to Bank of Ireland</p>
@@ -90,7 +47,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Main content area - compact layout */}
+      {/* Main content area */}
       <div className="flex-1 px-4 -mt-2 overflow-hidden">
         <div className="bg-white rounded-lg shadow-sm mb-3">
           {/* Current Account */}
@@ -147,7 +104,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Bottom Navigation - Fixed position like iOS apps */}
+      {/* Bottom Navigation */}
       <div className="flex-shrink-0 bg-white border-t border-gray-200">
         <div className="flex items-center justify-around py-2">
           <Link href="/">
