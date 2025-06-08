@@ -42,8 +42,8 @@ export default function Login() {
 
       {/* Main content - centered card */}
       <div className="flex-1 flex items-center justify-center px-4">
-        <Card className="w-full max-w-sm bg-white rounded-lg shadow-lg">
-          <CardContent className="p-6">
+        <Card className="w-full max-w-sm bg-white rounded-lg shadow-lg max-h-[70vh]">
+          <CardContent className="p-6 overflow-y-auto max-h-full">
             {/* Biometric Login Section */}
             <div className="text-center mb-6">
               <div className="w-20 h-20 mx-auto mb-4 flex items-center justify-center">
