@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/lib/auth";
 import { User } from "lucide-react";
@@ -37,131 +36,119 @@ export default function Login() {
   };
 
   return (
-    <div className="h-screen w-full overflow-hidden relative" style={{ 
+    <div className="h-screen w-full overflow-hidden bg-white relative" style={{ 
       background: 'linear-gradient(180deg, var(--boi-teal) 0%, var(--boi-dark-teal) 100%)'
     }}>
-      {/* Status bar area */}
-      <div className="h-12"></div>
-      
-      {/* Header */}
-      <div className="text-center py-6">
+      {/* Top section with logo */}
+      <div className="pt-16 pb-8 text-center">
         <img 
           src="/boi_logo.svg" 
           alt="Bank of Ireland" 
-          className="h-8 w-auto mx-auto filter brightness-0 invert" 
+          className="h-6 w-auto mx-auto filter brightness-0 invert" 
         />
       </div>
 
-      {/* Main login card */}
-      <div className="flex justify-center px-6">
-        <div className="w-full max-w-sm bg-white rounded-2xl shadow-xl overflow-hidden">
-          <div className="px-8 py-10 text-center">
-            {/* Fingerprint icon */}
-            <div className="mb-8">
-              <div className="w-20 h-20 mx-auto mb-4 flex items-center justify-center">
-                <img 
-                  src="/Icons_Fingerprint.svg" 
-                  alt="Fingerprint" 
-                  className="w-16 h-16 opacity-70" 
-                />
-              </div>
-              <h2 className="text-xl font-normal text-gray-700">Biometric login</h2>
+      {/* Main content area */}
+      <div className="px-8 pb-6">
+        {/* Login card */}
+        <div className="bg-white rounded-lg shadow-sm mb-6">
+          <div className="p-8 text-center">
+            {/* Fingerprint */}
+            <div className="mb-6">
+              <img 
+                src="/Icons_Fingerprint.svg" 
+                alt="Fingerprint" 
+                className="w-12 h-12 mx-auto mb-4 opacity-80" 
+              />
+              <h2 className="text-lg text-gray-800 font-normal">Biometric login</h2>
             </div>
 
-            {/* Log in button */}
+            {/* Main login button */}
             <Button 
               onClick={handleDemoLogin}
-              className="w-full py-4 mb-6 text-white font-medium text-lg rounded-lg shadow-sm"
+              className="w-full py-3 mb-4 text-white font-medium rounded-md"
               style={{ backgroundColor: 'var(--boi-teal)' }}
               disabled={isLoading}
             >
               {isLoading ? "Logging in..." : "Log in"}
             </Button>
 
-            {/* Forgot PIN link */}
-            <div className="mb-8">
+            {/* Forgot PIN */}
+            <div className="mb-6">
               <Button 
                 variant="link" 
-                className="text-base p-0 h-auto font-normal"
+                className="text-sm p-0 h-auto"
                 style={{ color: 'var(--boi-teal)' }}
               >
                 Forgot your PIN? →
               </Button>
             </div>
 
-            {/* Divider */}
-            <div className="border-t border-gray-200 pt-6">
+            {/* Login with another ID */}
+            <div className="border-t pt-4">
               <Button 
                 variant="ghost" 
-                className="w-full py-4 text-left justify-start font-normal text-base hover:bg-gray-50"
+                className="w-full py-3 text-left justify-start hover:bg-gray-50"
                 style={{ color: 'var(--boi-teal)' }}
               >
-                <User className="w-5 h-5 mr-3" />
+                <User className="w-4 h-4 mr-3" />
                 Log in with another ID
               </Button>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Bottom options */}
-      <div className="absolute bottom-20 left-0 right-0 px-6">
-        <div className="space-y-4">
-          <div className="flex items-center p-4 bg-white/95 rounded-2xl backdrop-blur-sm shadow-lg">
-            <div className="w-10 h-10 mr-4 rounded-xl bg-gray-100 flex items-center justify-center">
-              <span className="text-lg">🔑</span>
+        {/* Bottom options */}
+        <div className="space-y-3">
+          <div className="flex items-center p-4 bg-white/95 rounded-lg">
+            <div className="w-8 h-8 mr-3 rounded bg-gray-100 flex items-center justify-center">
+              <span className="text-sm">🔐</span>
             </div>
-            <span className="text-gray-800 font-medium flex-1 text-lg">Use your PIN instead</span>
-            <span className="text-gray-400 text-xl">›</span>
+            <span className="text-gray-800 flex-1">Use your PIN instead</span>
+            <span className="text-gray-400">›</span>
           </div>
           
-          <div className="flex items-center p-4 bg-white/95 rounded-2xl backdrop-blur-sm shadow-lg">
-            <div className="w-10 h-10 mr-4 rounded-xl bg-gray-100 flex items-center justify-center">
-              <span className="text-lg">⏳</span>
+          <div className="flex items-center p-4 bg-white/95 rounded-lg">
+            <div className="w-8 h-8 mr-3 rounded bg-gray-100 flex items-center justify-center">
+              <span className="text-sm">⏳</span>
             </div>
             <div className="flex-1">
-              <div className="text-gray-800 font-medium text-lg">Waiting for your approval</div>
-              <div className="text-sm text-gray-500 mt-1">Tap here to complete any unfinished actions</div>
+              <div className="text-gray-800 font-medium">Waiting for your approval</div>
+              <div className="text-xs text-gray-500">Tap here to complete any unfinished actions</div>
             </div>
-            <span className="text-gray-400 text-xl">›</span>
+            <span className="text-gray-400">›</span>
           </div>
         </div>
       </div>
 
       {/* Bottom navigation */}
-      <div className="absolute bottom-0 left-0 right-0 bg-black/40 backdrop-blur-sm">
-        <div className="flex items-center justify-around py-4 px-6">
+      <div className="absolute bottom-0 left-0 right-0 bg-black/30">
+        <div className="flex justify-around py-3">
           <div className="text-center">
-            <div className="w-8 h-8 mx-auto mb-2 flex items-center justify-center">
-              <span className="text-white text-xl">📍</span>
-            </div>
-            <span className="text-white text-xs font-medium">ATM/Branch</span>
+            <div className="text-white text-lg mb-1">📍</div>
+            <span className="text-white text-xs">ATM/Branch</span>
           </div>
           <div className="text-center">
-            <div className="w-8 h-8 mx-auto mb-2 flex items-center justify-center">
-              <span className="text-white text-xl">🛡️</span>
-            </div>
-            <span className="text-white text-xs font-medium">Security</span>
+            <div className="text-white text-lg mb-1">🛡️</div>
+            <span className="text-white text-xs">Security</span>
           </div>
           <div className="text-center">
-            <div className="w-8 h-8 mx-auto mb-2 flex items-center justify-center">
-              <span className="text-white text-xl">⋯</span>
-            </div>
-            <span className="text-white text-xs font-medium">More</span>
+            <div className="text-white text-lg mb-1">⋯</div>
+            <span className="text-white text-xs">More</span>
           </div>
         </div>
       </div>
 
-      {/* Background image overlay */}
-      <div className="absolute bottom-0 left-0 right-0 h-40 opacity-20 pointer-events-none">
+      {/* Background image */}
+      <div className="absolute bottom-0 left-0 right-0 h-32 opacity-30 pointer-events-none">
         <img 
           src="/background.jpg" 
           alt="" 
-          className="w-full h-full object-cover object-top" 
+          className="w-full h-full object-cover object-center" 
         />
       </div>
 
-      {/* Hidden form inputs for functionality */}
+      {/* Hidden inputs */}
       <div className="hidden">
         <Input value={customerNumber} onChange={(e) => setCustomerNumber(e.target.value)} />
         <Input value={pin} onChange={(e) => setPin(e.target.value)} />
