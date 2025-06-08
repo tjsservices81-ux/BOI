@@ -31,18 +31,16 @@ export default function Login() {
   };
 
   return (
-    <div className="h-screen overflow-hidden flex flex-col relative" style={{ 
-      background: 'linear-gradient(135deg, var(--boi-teal) 0%, var(--boi-dark-teal) 100%)'
-    }}>
-      {/* Header with gradient - matching screenshot */}
-      <div className="text-white p-4 pt-12">
+    <div className="min-h-screen bg-gray-100 relative">
+      {/* Header with gradient */}
+      <div className="boi-header text-white p-4">
         <div className="flex items-center justify-center">
           <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-8 w-auto filter brightness-0 invert" />
         </div>
       </div>
 
       {/* Main content matching real app */}
-      <div className="flex-1 flex items-center justify-center px-4">
+      <div className="px-4 py-8">
         <Card className="mx-auto max-w-sm">
           <CardContent className="p-6">
             {/* Biometric Login Section */}
