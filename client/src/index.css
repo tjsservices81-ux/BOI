@@ -82,10 +82,11 @@
   --radius: 0.5rem;
   
   /* Bank of Ireland Colors - Exact match from screenshots */
-  --boi-teal: #00a19c;
-  --boi-dark-teal: #008b87;
+  --boi-teal: #4a8a94;
+  --boi-dark-teal: #3a6b73;
   --boi-light-teal: #e8f6f5;
-  --boi-blue: #4285f4;
+  --boi-blue: #2952ff;
+  --boi-background-blue: #2952ff;
   --boi-gray: #2d2d2d;
   --boi-light-gray: #999999;
   --boi-text-gray: #333333;

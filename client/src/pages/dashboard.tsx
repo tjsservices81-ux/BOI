@@ -60,7 +60,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen pb-20" style={{ backgroundColor: 'var(--boi-background-blue)' }}>
       {/* Header with teal gradient matching real app */}
       <div className="boi-header text-white relative">
         <div className="flex items-center justify-between p-4">
@@ -93,8 +93,12 @@ export default function Dashboard() {
       </div>
 
       {/* Accounts List - Matching real app layout */}
-      <div className="px-4 -mt-4 mb-6">
-        <div className="bg-white rounded-lg shadow-sm">
+      <div className="px-4 -mt-4 mb-6 relative">
+        {/* Background landscape image */}
+        <div className="absolute inset-0 rounded-lg overflow-hidden">
+          <img src="/background.jpg" alt="Background" className="w-full h-full object-cover opacity-30" />
+        </div>
+        <div className="bg-white rounded-lg shadow-sm relative z-10">
           <div className="space-y-0">
             {/* Current Account */}
             <div className="flex items-center justify-between p-4 border-b border-gray-100">

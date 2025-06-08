@@ -31,7 +31,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 relative">
+    <div className="min-h-screen relative" style={{ backgroundColor: 'var(--boi-background-blue)' }}>
       {/* Header with gradient */}
       <div className="boi-header text-white p-4">
         <div className="flex items-center justify-center">
