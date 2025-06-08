@@ -29,129 +29,143 @@ export default function Login() {
     }
   };
 
+  const handleDemoLogin = () => {
+    setCustomerNumber("12345678");
+    setPin("1234");
+    const event = { preventDefault: () => {} } as React.FormEvent;
+    handleSubmit(event);
+  };
+
   return (
-    <div className="h-screen overflow-hidden flex flex-col relative" style={{ 
-      background: 'linear-gradient(135deg, var(--boi-teal) 0%, var(--boi-dark-teal) 100%)'
+    <div className="h-screen w-full overflow-hidden relative" style={{ 
+      background: 'linear-gradient(180deg, var(--boi-teal) 0%, var(--boi-dark-teal) 100%)'
     }}>
-      {/* Header with Bank of Ireland logo */}
-      <div className="text-white pt-12 pb-8">
-        <div className="flex items-center justify-center">
-          <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-8 w-auto filter brightness-0 invert" />
+      {/* Status bar area */}
+      <div className="h-12"></div>
+      
+      {/* Header */}
+      <div className="text-center py-6">
+        <img 
+          src="/boi_logo.svg" 
+          alt="Bank of Ireland" 
+          className="h-8 w-auto mx-auto filter brightness-0 invert" 
+        />
+      </div>
+
+      {/* Main login card */}
+      <div className="flex justify-center px-6">
+        <div className="w-full max-w-sm bg-white rounded-2xl shadow-xl overflow-hidden">
+          <div className="px-8 py-10 text-center">
+            {/* Fingerprint icon */}
+            <div className="mb-8">
+              <div className="w-20 h-20 mx-auto mb-4 flex items-center justify-center">
+                <img 
+                  src="/Icons_Fingerprint.svg" 
+                  alt="Fingerprint" 
+                  className="w-16 h-16 opacity-70" 
+                />
+              </div>
+              <h2 className="text-xl font-normal text-gray-700">Biometric login</h2>
+            </div>
+
+            {/* Log in button */}
+            <Button 
+              onClick={handleDemoLogin}
+              className="w-full py-4 mb-6 text-white font-medium text-lg rounded-lg shadow-sm"
+              style={{ backgroundColor: 'var(--boi-teal)' }}
+              disabled={isLoading}
+            >
+              {isLoading ? "Logging in..." : "Log in"}
+            </Button>
+
+            {/* Forgot PIN link */}
+            <div className="mb-8">
+              <Button 
+                variant="link" 
+                className="text-base p-0 h-auto font-normal"
+                style={{ color: 'var(--boi-teal)' }}
+              >
+                Forgot your PIN? →
+              </Button>
+            </div>
+
+            {/* Divider */}
+            <div className="border-t border-gray-200 pt-6">
+              <Button 
+                variant="ghost" 
+                className="w-full py-4 text-left justify-start font-normal text-base hover:bg-gray-50"
+                style={{ color: 'var(--boi-teal)' }}
+              >
+                <User className="w-5 h-5 mr-3" />
+                Log in with another ID
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Main content card exactly matching screenshot */}
-      <div className="flex-1 flex items-start justify-center px-6 pt-4">
-        <Card className="w-full max-w-sm bg-white rounded-xl shadow-lg">
-          <CardContent className="p-0">
-            {/* Biometric Login Section - exact layout */}
-            <div className="text-center pt-8 pb-6 px-6">
-              <div className="w-16 h-16 mx-auto mb-6 flex items-center justify-center">
-                <img src="/Icons_Fingerprint.svg" alt="Fingerprint" className="w-12 h-12 opacity-60" />
-              </div>
-              <h2 className="text-lg font-normal text-gray-700 mb-6">Biometric login</h2>
-              
-              <Button 
-                className="w-full text-white font-medium py-3 rounded-lg mb-4" 
-                style={{ backgroundColor: 'var(--boi-teal)' }}
-                onClick={() => {
-                  setCustomerNumber("12345678");
-                  setPin("1234");
-                  handleSubmit({ preventDefault: () => {} } as React.FormEvent);
-                }}
-              >
-                Log in
-              </Button>
-
-              <div className="text-center mb-6">
-                <Button variant="link" className="text-sm p-0 font-normal" style={{ color: 'var(--boi-teal)' }}>
-                  Forgot your PIN? →
-                </Button>
-              </div>
-
-              <div className="border-t border-gray-200 pt-4">
-                <Button 
-                  variant="ghost" 
-                  className="w-full py-3 hover:bg-gray-50 text-left justify-start font-normal"
-                  style={{ color: 'var(--boi-teal)' }}
-                >
-                  <User className="w-4 h-4 mr-3" />
-                  Log in with another ID
-                </Button>
-              </div>
+      {/* Bottom options */}
+      <div className="absolute bottom-20 left-0 right-0 px-6">
+        <div className="space-y-4">
+          <div className="flex items-center p-4 bg-white/95 rounded-2xl backdrop-blur-sm shadow-lg">
+            <div className="w-10 h-10 mr-4 rounded-xl bg-gray-100 flex items-center justify-center">
+              <span className="text-lg">🔑</span>
             </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Bottom section with options - matching screenshot */}
-      <div className="px-6 pb-8">
-        <div className="space-y-3">
-          <div className="flex items-center p-4 bg-white/90 rounded-xl backdrop-blur-sm">
-            <div className="w-8 h-8 mr-4 rounded-lg bg-gray-100 flex items-center justify-center">
-              <span className="text-sm">💳</span>
-            </div>
-            <span className="text-gray-800 font-medium flex-1">Use your PIN instead</span>
-            <span className="text-gray-400">›</span>
+            <span className="text-gray-800 font-medium flex-1 text-lg">Use your PIN instead</span>
+            <span className="text-gray-400 text-xl">›</span>
           </div>
           
-          <div className="flex items-center p-4 bg-white/90 rounded-xl backdrop-blur-sm">
-            <div className="w-8 h-8 mr-4 rounded-lg bg-gray-100 flex items-center justify-center">
-              <span className="text-sm">⏱</span>
+          <div className="flex items-center p-4 bg-white/95 rounded-2xl backdrop-blur-sm shadow-lg">
+            <div className="w-10 h-10 mr-4 rounded-xl bg-gray-100 flex items-center justify-center">
+              <span className="text-lg">⏳</span>
             </div>
             <div className="flex-1">
-              <div className="text-gray-800 font-medium">Waiting for your approval</div>
-              <div className="text-sm text-gray-500">Tap here to complete any unfinished actions</div>
+              <div className="text-gray-800 font-medium text-lg">Waiting for your approval</div>
+              <div className="text-sm text-gray-500 mt-1">Tap here to complete any unfinished actions</div>
             </div>
-            <span className="text-gray-400">›</span>
+            <span className="text-gray-400 text-xl">›</span>
           </div>
         </div>
       </div>
 
-      {/* Bottom navigation - matching screenshot */}
-      <div className="bg-gray-700/80 backdrop-blur-sm">
-        <div className="flex items-center justify-around py-3 px-4">
+      {/* Bottom navigation */}
+      <div className="absolute bottom-0 left-0 right-0 bg-black/40 backdrop-blur-sm">
+        <div className="flex items-center justify-around py-4 px-6">
           <div className="text-center">
-            <div className="w-6 h-6 mx-auto mb-1">
-              <span className="text-white text-lg">📍</span>
+            <div className="w-8 h-8 mx-auto mb-2 flex items-center justify-center">
+              <span className="text-white text-xl">📍</span>
             </div>
-            <span className="text-white text-xs">ATM/Branch</span>
+            <span className="text-white text-xs font-medium">ATM/Branch</span>
           </div>
           <div className="text-center">
-            <div className="w-6 h-6 mx-auto mb-1">
-              <span className="text-white text-lg">🛡</span>
+            <div className="w-8 h-8 mx-auto mb-2 flex items-center justify-center">
+              <span className="text-white text-xl">🛡️</span>
             </div>
-            <span className="text-white text-xs">Security</span>
+            <span className="text-white text-xs font-medium">Security</span>
           </div>
           <div className="text-center">
-            <div className="w-6 h-6 mx-auto mb-1">
-              <span className="text-white text-lg">⋯</span>
+            <div className="w-8 h-8 mx-auto mb-2 flex items-center justify-center">
+              <span className="text-white text-xl">⋯</span>
             </div>
-            <span className="text-white text-xs">More</span>
+            <span className="text-white text-xs font-medium">More</span>
           </div>
         </div>
       </div>
 
-      {/* Background scenic overlay */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 opacity-30 pointer-events-none">
-        <img src="/background.jpg" alt="" className="w-full h-full object-cover object-top" />
+      {/* Background image overlay */}
+      <div className="absolute bottom-0 left-0 right-0 h-40 opacity-20 pointer-events-none">
+        <img 
+          src="/background.jpg" 
+          alt="" 
+          className="w-full h-full object-cover object-top" 
+        />
       </div>
 
-      {/* Hidden demo form for testing */}
-      <form onSubmit={handleSubmit} className="hidden">
-        <Input
-          value={customerNumber}
-          onChange={(e) => setCustomerNumber(e.target.value)}
-        />
-        <Input
-          type="password"
-          value={pin}
-          onChange={(e) => setPin(e.target.value)}
-        />
-        <Button type="submit" disabled={isLoading}>
-          Login
-        </Button>
-      </form>
+      {/* Hidden form inputs for functionality */}
+      <div className="hidden">
+        <Input value={customerNumber} onChange={(e) => setCustomerNumber(e.target.value)} />
+        <Input value={pin} onChange={(e) => setPin(e.target.value)} />
+      </div>
     </div>
   );
 }
