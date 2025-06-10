@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from "@/lib/auth";
 
 import Login from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
+import Transactions from "@/pages/transactions";
 import Transfer from "@/pages/transfer";
 import BillPay from "@/pages/bill-pay";
 import TransactionHistory from "@/pages/transaction-history";
@@ -46,7 +47,7 @@ function AppRoutes() {
         </Route>
         <Route path="/transactions">
           <ProtectedRoute>
-            <TransactionHistory />
+            <Transactions />
           </ProtectedRoute>
         </Route>
         <Route path="/statements">

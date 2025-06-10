@@ -1,6 +1,9 @@
 import { ChevronRight, User } from "lucide-react";
+import { useLocation } from "wouter";
 
 export default function Dashboard() {
+  const [, setLocation] = useLocation();
+
   return (
     <div className="h-screen bg-gray-50 overflow-hidden flex flex-col">
       {/* Header with scenic background matching screenshot exactly */}
@@ -47,7 +50,7 @@ export default function Dashboard() {
             {/* Current Account */}
             <button 
               className="w-full flex items-center justify-between px-6 py-4 border-b border-gray-100 hover:bg-gray-50 transition-colors"
-              onClick={() => alert('Current Account Details: €2,322.40 available')}
+              onClick={() => setLocation('/transactions')}
             >
               <div className="text-left">
                 <p className="font-medium text-sm text-gray-800 boi-regular-font">CURRENT ACCOUNT</p>
