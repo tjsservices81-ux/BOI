@@ -146,13 +146,13 @@ export default function Login() {
         {/* Main Content - Scrollable */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden">
           <div className="px-5 pt-8 pb-32">
-            <div className="w-full max-w-sm mx-auto space-y-3">
+            <div className="w-full max-w-xs mx-auto space-y-3">
               {/* Main White Login Card */}
-              <div className="bg-white rounded-xl p-6 shadow-xl">
+              <div className="bg-white rounded-xl p-4 shadow-xl">
                 {/* Biometric Section */}
-                <div className="text-center mb-8">
+                <div className="text-center mb-6">
                   <div 
-                    className={`w-20 h-20 mx-auto mb-5 relative flex items-center justify-center rounded-full transition-all duration-300 cursor-pointer group ${
+                    className={`w-16 h-16 mx-auto mb-4 relative flex items-center justify-center rounded-full transition-all duration-300 cursor-pointer group ${
                       biometricVerified 
                         ? 'bg-gradient-to-br from-green-50 to-emerald-100'
                         : isScanning 
@@ -208,11 +208,11 @@ export default function Login() {
                     )}
                     
                     {/* Original Fingerprint icon with effects */}
-                    <div className="relative z-10 w-12 h-12 flex items-center justify-center">
+                    <div className="relative z-10 w-10 h-10 flex items-center justify-center">
                       <img 
                         src="/Icons_Fingerprint.svg" 
                         alt="Fingerprint" 
-                        className={`w-10 h-10 transition-all duration-300 ${
+                        className={`w-8 h-8 transition-all duration-300 ${
                           biometricVerified ? 'scale-110' : isScanning ? 'scale-105' : 'scale-100'
                         }`}
                         style={{
@@ -239,7 +239,7 @@ export default function Login() {
                       <div className="absolute inset-0 rounded-full bg-green-400 opacity-20 animate-pulse"></div>
                     )}
                   </div>
-                  <p className="text-gray-700 text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  <p className="text-gray-700 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     {biometricVerified ? 'Fingerprint verified' : isScanning ? 'Hold to scan fingerprint...' : 'Hold for biometric login'}
                   </p>
                 </div>
@@ -248,7 +248,7 @@ export default function Login() {
                 <button 
                   onClick={handleLoginButton}
                   disabled={isLoading}
-                  className={`w-full py-3.5 rounded-lg font-semibold text-base mb-4 transition-colors duration-200 ${
+                  className={`w-full py-2.5 rounded-lg font-semibold text-sm mb-3 transition-colors duration-200 ${
                     biometricVerified || pinVerified 
                       ? 'bg-[#4a6b75] text-white hover:bg-[#3a5a65]' 
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
@@ -259,15 +259,15 @@ export default function Login() {
                 </button>
 
                 {/* Forgot PIN */}
-                <div className="text-center mb-5">
-                  <button className="text-[#4a6b75] text-sm flex items-center justify-center space-x-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                <div className="text-center mb-3">
+                  <button className="text-[#4a6b75] text-xs flex items-center justify-center space-x-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     <span>Forgot your PIN?</span>
-                    <ExternalLink className="w-3 h-3" />
+                    <ExternalLink className="w-2.5 h-2.5" />
                   </button>
                 </div>
 
                 {/* Divider */}
-                <div className="border-t border-gray-200 my-4"></div>
+                <div className="border-t border-gray-200 my-3"></div>
 
                 {/* Alternative Login */}
                 <div className="text-center">
