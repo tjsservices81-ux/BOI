@@ -5,7 +5,7 @@ export default function Dashboard() {
   const [, setLocation] = useLocation();
 
   return (
-    <div className="h-full bg-gray-50 overflow-hidden flex flex-col ios-safe-top ios-safe-bottom">
+    <div className="min-h-screen bg-gray-50 flex flex-col ios-safe-top ios-safe-bottom">
       {/* Header with scenic background matching screenshot exactly */}
       <div className="text-white relative flex-shrink-0 h-44">
         {/* Full scenic background image */}
@@ -44,7 +44,7 @@ export default function Dashboard() {
       </div>
 
       {/* Main content area - white card with rounded top corners */}
-      <div className="flex-1 px-0 -mt-8 overflow-y-auto ios-scroll">
+      <div className="flex-1 px-0 -mt-8">
         <div className="bg-white rounded-t-3xl shadow-lg min-h-full">
           <div className="pt-6 pb-24">
             {/* Current Account */}
