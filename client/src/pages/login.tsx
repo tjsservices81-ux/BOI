@@ -149,7 +149,10 @@ export default function Login() {
               {/* PIN Option Card - separate gray card */}
               <button 
                 className="w-full bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-100 transition-colors duration-150"
-                onClick={() => setShowPinLogin(!showPinLogin)}
+                onClick={() => {
+                  console.log("PIN button clicked, current showPinLogin:", showPinLogin);
+                  setShowPinLogin(!showPinLogin);
+                }}
               >
                 <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
                   <span className="text-gray-600 text-xs font-bold">⋯</span>
@@ -159,8 +162,11 @@ export default function Login() {
               </button>
 
               {/* PIN Login Form - shows when showPinLogin is true */}
-              {showPinLogin && (
-                <div className="bg-white rounded-xl p-6 shadow-xl">
+              {showPinLogin ? (
+                <div className="bg-white rounded-xl p-6 shadow-xl border-2 border-blue-200">
+                  <h3 className="text-lg font-semibold mb-4 text-gray-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Log in with PIN
+                  </h3>
                   <form onSubmit={handlePinLogin} className="space-y-4">
                     <div>
                       <Label htmlFor="customerNumber" className="text-sm font-medium text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -212,7 +218,7 @@ export default function Login() {
                     </button>
                   </form>
                 </div>
-              )}
+              ) : null}
 
               {/* Approval Option Card - separate gray card */}
               <button className="w-full bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-100 transition-colors duration-150">
