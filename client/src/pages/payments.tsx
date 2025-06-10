@@ -68,7 +68,11 @@ export default function Payments() {
           {paymentOptions.map((option) => (
             <button
               key={option.id}
-              onClick={() => setSelectedPaymentType(option.id)}
+              onClick={() => {
+                if (option.id === 'iban') navigate('/iban-transfer');
+                else if (option.id === 'domestic') navigate('/uk-transfer');
+                else setSelectedPaymentType(option.id);
+              }}
               className="w-full bg-white rounded-2xl p-5 shadow-sm active:scale-98 transition-all duration-200 border-2 border-transparent hover:border-[#4a6b75]/20"
             >
               <div className="flex items-center justify-between">
