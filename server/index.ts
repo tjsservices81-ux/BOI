@@ -1,6 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { createServer } from "http";
 
 const app = express();
 app.use(express.json());
@@ -8,6 +8,24 @@ app.use(express.urlencoded({ extended: false }));
 
 // Serve static assets from root directory
 app.use(express.static('.'));
+
+// Simple login endpoint for authentication
+app.post("/api/auth/login", (req, res) => {
+  const { customerNumber, pin } = req.body;
+  
+  // Mock authentication - accept any valid inputs
+  if (customerNumber && pin && pin.length >= 4) {
+    res.json({ 
+      user: { 
+        id: 1, 
+        name: "Sarah Murphy", 
+        email: "sarah.murphy@email.com" 
+      } 
+    });
+  } else {
+    res.status(401).json({ message: "Invalid credentials" });
+  }
+});
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -40,7 +58,7 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  const server = await registerRoutes(app);
+  const server = createServer(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
