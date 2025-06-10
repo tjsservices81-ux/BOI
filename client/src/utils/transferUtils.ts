@@ -35,14 +35,35 @@ export const processTransfer = (
   transferType: 'UK' | 'IBAN',
   reference: string
 ): boolean => {
-  const accounts = getAccounts();
-  const selectedAccount = accounts.find(acc => acc.id === fromAccountId);
+  // Get stored accounts from localStorage or use defaults
+  const storedAccounts = JSON.parse(localStorage.getItem('bankAccounts') || '[]');
+  let accounts = storedAccounts.length > 0 ? storedAccounts : [
+    { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "2322.40", accountType: "current" },
+    { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "2000.00", accountType: "credit" },
+    { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "7500.00", accountType: "savings" },
+    { id: 4, displayName: "Personal Loan", accountNumber: "****8923", balance: "2500.00", accountType: "loan" },
+    { id: 5, displayName: "Deposit - 365 Monthly Saver", accountNumber: "****7908", balance: "100.00", accountType: "deposit" }
+  ];
+  
+  const selectedAccount = accounts.find((acc: any) => acc.id.toString() === fromAccountId);
   
   if (!selectedAccount) return false;
   
-  const currentBalance = parseFloat(selectedAccount.balance.replace('€', '').replace(',', ''));
+  const currentBalance = parseFloat(selectedAccount.balance);
   
   if (amount > currentBalance) return false;
+  
+  // Update balance in the account
+  const newBalance = (currentBalance - amount).toFixed(2);
+  selectedAccount.balance = newBalance;
+  
+  // Update the accounts array
+  const updatedAccounts = accounts.map((acc: any) => 
+    acc.id.toString() === fromAccountId ? selectedAccount : acc
+  );
+  
+  // Store updated accounts
+  localStorage.setItem('bankAccounts', JSON.stringify(updatedAccounts));
   
   // Store transaction
   const transactions = JSON.parse(localStorage.getItem('bankTransactions') || '[]');
@@ -61,8 +82,7 @@ export const processTransfer = (
   transactions.push(newTransaction);
   localStorage.setItem('bankTransactions', JSON.stringify(transactions));
   
-  // Update balance
-  const newBalance = (currentBalance - amount).toFixed(2);
+  // Dispatch balance update event
   window.dispatchEvent(new CustomEvent('balanceUpdate', {
     detail: { accountId: parseInt(fromAccountId), newBalance }
   }));
