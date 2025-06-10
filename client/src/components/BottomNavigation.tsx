@@ -13,36 +13,20 @@ export default function BottomNavigation() {
       isActive: location === '/'
     },
     {
-      id: 'payments',
-      label: 'Payments',
+      id: 'iban',
+      label: 'IBAN',
       icon: '/icon-footer-payments.svg',
       highlightIcon: '/icon-footer-payments-highlight.svg',
-      path: '/payments',
-      isActive: location === '/payments'
+      path: '/iban-transfer',
+      isActive: location === '/iban-transfer'
     },
     {
-      id: 'cards',
-      label: 'Cards',
+      id: 'uk',
+      label: 'UK',
       icon: '/icon-footer-services.svg',
       highlightIcon: '/icon-footer-services-highlight.svg',
-      path: '/cards',
-      isActive: location === '/cards'
-    },
-    {
-      id: 'apply',
-      label: 'Apply',
-      icon: '/icon-footer-apply.svg',
-      highlightIcon: '/icon-footer-apply-highlight.svg',
-      path: '/apply',
-      isActive: location === '/apply'
-    },
-    {
-      id: 'more',
-      label: 'More',
-      icon: '/icon-footer-more.svg',
-      highlightIcon: '/icon-footer-more-highlight.svg',
-      path: '/more',
-      isActive: location === '/more'
+      path: '/uk-transfer',
+      isActive: location === '/uk-transfer'
     }
   ];
 
