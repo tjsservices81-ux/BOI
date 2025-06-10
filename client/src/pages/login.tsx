@@ -95,50 +95,50 @@ export default function Login() {
     setLoginProgress(0);
 
     try {
-      // Stage 1: Authenticating
+      // Stage 1: Authenticating (2 seconds)
       setLoginStage('Authenticating...');
       const progressInterval = setInterval(() => {
         setLoginProgress(prev => {
-          if (prev < 30) return prev + 2;
+          if (prev < 25) return prev + 1.25;
+          return prev;
+        });
+      }, 100);
+
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Stage 2: Verifying credentials (1.5 seconds)
+      setLoginStage('Verifying credentials...');
+      setLoginProgress(25);
+      const verifyInterval = setInterval(() => {
+        setLoginProgress(prev => {
+          if (prev < 50) return prev + 1.67;
           return prev;
         });
       }, 100);
 
       await new Promise(resolve => setTimeout(resolve, 1500));
 
-      // Stage 2: Verifying credentials
-      setLoginStage('Verifying credentials...');
-      setLoginProgress(30);
-      const verifyInterval = setInterval(() => {
-        setLoginProgress(prev => {
-          if (prev < 60) return prev + 3;
-          return prev;
-        });
-      }, 100);
-
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Stage 3: Securing connection
+      // Stage 3: Securing connection (1.5 seconds)
       setLoginStage('Securing connection...');
-      setLoginProgress(60);
+      setLoginProgress(50);
       const secureInterval = setInterval(() => {
         setLoginProgress(prev => {
-          if (prev < 85) return prev + 2;
+          if (prev < 75) return prev + 1.67;
           return prev;
         });
       }, 100);
 
-      await new Promise(resolve => setTimeout(resolve, 800));
+      await new Promise(resolve => setTimeout(resolve, 1500));
 
-      // Stage 4: Finalizing
+      // Stage 4: Loading dashboard (1.5 seconds)
       setLoginStage('Loading dashboard...');
-      setLoginProgress(85);
+      setLoginProgress(75);
       const finalInterval = setInterval(() => {
         setLoginProgress(prev => {
-          if (prev < 100) return prev + 3;
+          if (prev < 95) return prev + 1.33;
           return prev;
         });
-      }, 80);
+      }, 100);
 
       clearInterval(progressInterval);
       clearInterval(verifyInterval);
@@ -146,9 +146,22 @@ export default function Login() {
 
       await login({ customerNumber: "12345678", pin: "1234" });
       
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Final completion (0.5 seconds)
+      setLoginStage('Welcome to Bank of Ireland');
+      setLoginProgress(95);
+      const completeInterval = setInterval(() => {
+        setLoginProgress(prev => {
+          if (prev < 100) return prev + 1;
+          return prev;
+        });
+      }, 100);
+      
       await new Promise(resolve => setTimeout(resolve, 500));
       setLoginProgress(100);
       clearInterval(finalInterval);
+      clearInterval(completeInterval);
 
       await new Promise(resolve => setTimeout(resolve, 300));
       navigate("/");
