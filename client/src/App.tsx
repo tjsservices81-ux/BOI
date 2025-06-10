@@ -9,8 +9,6 @@ import Login from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
 import IbanTransfer from "@/pages/iban-transfer";
 import UkTransfer from "@/pages/uk-transfer";
-import Transfer from "@/pages/transfer";
-import TransactionHistory from "@/pages/transaction-history";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
@@ -44,16 +42,7 @@ function AppRoutes() {
             <UkTransfer />
           </ProtectedRoute>
         </Route>
-        <Route path="/transfer">
-          <ProtectedRoute>
-            <Transfer />
-          </ProtectedRoute>
-        </Route>
-        <Route path="/transaction-history">
-          <ProtectedRoute>
-            <TransactionHistory />
-          </ProtectedRoute>
-        </Route>
+
       </Switch>
       {showNavigation && <BottomNavigation />}
     </div>
