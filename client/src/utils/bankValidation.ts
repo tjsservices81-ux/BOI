@@ -46,20 +46,22 @@ export const ukBankDatabase: Record<string, string> = {
 };
 
 export function validateUKSortCode(sortCode: string): string | null {
-  if (!sortCode || sortCode.length !== 6) {
+  if (!sortCode || sortCode.length < 4) {
     return null;
   }
 
-  // Format sort code with dashes
-  const formattedSortCode = `${sortCode.slice(0, 2)}-${sortCode.slice(2, 4)}`;
+  // Format sort code with dashes for lookup
+  const cleanCode = sortCode.replace(/\D/g, '');
+  const formattedSortCode = `${cleanCode.slice(0, 2)}-${cleanCode.slice(2, 4)}`;
   
   // Check exact match first
-  if (ukBankDatabase[formattedSortCode]) {
-    return ukBankDatabase[formattedSortCode];
+  const exactMatch = ukBankDatabase[formattedSortCode];
+  if (exactMatch) {
+    return exactMatch;
   }
 
   // Check for partial matches (first 4 digits)
-  const partialCode = sortCode.slice(0, 4);
+  const partialCode = cleanCode.slice(0, 4);
   for (const [code, bankName] of Object.entries(ukBankDatabase)) {
     if (code.replace('-', '').startsWith(partialCode)) {
       return bankName;
