@@ -6,7 +6,7 @@ export default function Cards() {
   const [, navigate] = useLocation();
   const [currentCard, setCurrentCard] = useState(0);
 
-  console.log("Cards component is rendering");
+
 
   const cards = [
     {
