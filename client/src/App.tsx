@@ -29,7 +29,7 @@ function AppRoutes() {
   const { user } = useAuth();
 
   return (
-    <div className="max-w-md mx-auto bg-white min-h-screen shadow-xl">
+    <div className="w-full h-full bg-white overflow-hidden">
       <Switch>
         <Route path="/login" component={Login} />
         <Route path="/">
