@@ -131,18 +131,18 @@ export default function Login() {
         </div>
 
         {/* Bottom Navigation */}
-        <div className="fixed bottom-0 left-0 right-0 bg-[#4a6b75]/95 backdrop-blur-sm rounded-t-2xl px-6 py-3 ios-safe-bottom">
-          <div className="flex justify-around">
+        <div className="fixed bottom-0 left-0 right-0 bg-[#4a6b75]/95 backdrop-blur-sm rounded-t-2xl px-6 py-4 ios-safe-bottom">
+          <div className="flex justify-center items-center space-x-16">
             <button className="flex flex-col items-center space-y-1 py-2">
-              <img src="/branch-locator.svg" alt="ATM/Branch" className="w-4 h-4 filter brightness-0 invert" />
+              <img src="/branch-locator.svg" alt="ATM/Branch" className="w-5 h-5 filter brightness-0 invert" />
               <span className="text-white text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>ATM/Branch</span>
             </button>
             <button className="flex flex-col items-center space-y-1 py-2">
-              <img src="/icon_HID.svg" alt="Security" className="w-4 h-4 filter brightness-0 invert" />
+              <img src="/icon_HID.svg" alt="Security" className="w-5 h-5 filter brightness-0 invert" />
               <span className="text-white text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Security</span>
             </button>
             <button className="flex flex-col items-center space-y-1 py-2">
-              <img src="/more-prelogin-icon.svg" alt="More" className="w-4 h-4 filter brightness-0 invert" />
+              <img src="/more-prelogin-icon.svg" alt="More" className="w-5 h-5 filter brightness-0 invert" />
               <span className="text-white text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>More</span>
             </button>
           </div>
