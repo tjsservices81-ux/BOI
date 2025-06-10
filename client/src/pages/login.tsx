@@ -310,7 +310,7 @@ export default function Login() {
                         value={customerNumber}
                         onChange={(e) => setCustomerNumber(e.target.value)}
                         placeholder="Enter your customer number"
-                        className="mt-1"
+                        className="mt-1 ios-input"
                         disabled={isLoading}
                       />
                     </div>
@@ -325,7 +325,7 @@ export default function Login() {
                         value={pin}
                         onChange={(e) => setPin(e.target.value)}
                         placeholder="Enter your PIN"
-                        className="mt-1"
+                        className="mt-1 ios-input"
                         maxLength={6}
                         disabled={isLoading}
                       />
