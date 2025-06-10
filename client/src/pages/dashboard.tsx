@@ -82,7 +82,7 @@ export default function Dashboard() {
               <button 
                 key={account.id}
                 className="w-full flex items-center justify-between px-6 py-4 border-b border-gray-100 hover:bg-gray-50 touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-98 haptic-feedback"
-                onClick={() => setLocation(`/transactions?account=${account.id}&balance=${account.balance}&number=${account.number.replace('-', '')}`)}
+                onClick={() => setLocation(`/transaction-history`)}
               >
                 <div className="text-left">
                   <p className="font-medium text-sm text-gray-800 boi-regular-font">{account.name.toUpperCase()}</p>

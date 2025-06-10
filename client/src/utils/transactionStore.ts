@@ -32,37 +32,87 @@ const initialAccounts: Account[] = [
   { id: 'deposit-7908', name: 'Deposit - 365 Monthly Saver', number: '-7908', balance: 100.00, displayBalance: '€100.00' }
 ];
 
-// Initial transaction data (sample transactions)
+// Initial transaction data (original sample transactions)
 const initialTransactions: Transaction[] = [
   {
     id: 'txn001',
     date: '2024-06-10',
-    description: 'Salary Transfer',
-    amount: 2800.00,
+    description: 'Monthly Salary',
+    amount: 3200.00,
     type: 'credit',
     balance: 2322.40,
-    category: 'Income',
+    category: 'salary',
     reference: 'SAL240610'
   },
   {
     id: 'txn002',
     date: '2024-06-09',
-    description: 'Grocery Shopping',
+    description: 'SuperValu Churchtown',
     amount: -89.50,
     type: 'debit',
     balance: 2232.90,
-    category: 'Shopping',
+    category: 'shopping',
     reference: 'POS240609'
   },
   {
     id: 'txn003',
     date: '2024-06-08',
-    description: 'Online Transfer',
-    amount: -250.00,
+    description: 'Circle K Dublin',
+    amount: -65.20,
     type: 'debit',
-    balance: 2482.90,
-    category: 'Transfer',
-    reference: 'WEB240608'
+    balance: 2567.40,
+    category: 'fuel',
+    reference: 'POS240608'
+  },
+  {
+    id: 'txn004',
+    date: '2024-06-07',
+    description: 'Electric Ireland',
+    amount: -125.00,
+    type: 'debit',
+    balance: 2632.60,
+    category: 'utilities',
+    reference: 'DD240607'
+  },
+  {
+    id: 'txn005',
+    date: '2024-06-06',
+    description: 'Restaurant Dublin',
+    amount: -45.80,
+    type: 'debit',
+    balance: 2757.60,
+    category: 'dining',
+    reference: 'POS240606'
+  },
+  {
+    id: 'txn006',
+    date: '2024-06-05',
+    description: 'Dunnes Stores',
+    amount: -156.40,
+    type: 'debit',
+    balance: 2803.40,
+    category: 'shopping',
+    reference: 'POS240605'
+  },
+  {
+    id: 'txn007',
+    date: '2024-06-04',
+    description: 'ATM Withdrawal',
+    amount: -200.00,
+    type: 'debit',
+    balance: 2959.80,
+    category: 'cash',
+    reference: 'ATM240604'
+  },
+  {
+    id: 'txn008',
+    date: '2024-06-03',
+    description: 'Online Transfer',
+    amount: -150.00,
+    type: 'debit',
+    balance: 3159.80,
+    category: 'transfer',
+    reference: 'WEB240603'
   }
 ];
 

@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { ChevronLeft, ArrowUpRight, ArrowDownLeft } from "lucide-react";
-import { getTransactions, getAccountById, getTransactionsForAccount } from "../utils/transactionStore";
+import { getTransactions, getAccountById, getTransactionsForAccount, Transaction, Account } from "../utils/transactionStore";
 
 export default function Transactions() {
   const [, setLocation] = useLocation();
-  const [transactions, setTransactions] = useState([]);
-  const [account, setAccount] = useState(null);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [account, setAccount] = useState<Account | null>(null);
   
   useEffect(() => {
     // Get URL parameters
@@ -15,7 +15,7 @@ export default function Transactions() {
     
     if (accountId) {
       const accountData = getAccountById(accountId);
-      setAccount(accountData);
+      setAccount(accountData || null);
       
       // Get transactions for this specific account
       const accountTransactions = getTransactionsForAccount(accountId);
@@ -26,7 +26,7 @@ export default function Transactions() {
     }
   }, []);
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-GB', {
       day: '2-digit',
@@ -35,7 +35,7 @@ export default function Transactions() {
     });
   };
 
-  const formatAmount = (amount) => {
+  const formatAmount = (amount: number) => {
     const absAmount = Math.abs(amount);
     return `€${absAmount.toLocaleString('en-IE', {
       minimumFractionDigits: 2,

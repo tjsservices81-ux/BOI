@@ -1,8 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useAuth } from "@/lib/auth";
 import { BottomNavigation } from "@/components/ui/bottom-navigation";
 import { 
   ArrowLeft, 
@@ -14,23 +12,38 @@ import {
   Zap,
   ArrowRightLeft
 } from "lucide-react";
-import type { Account, Transaction } from "@shared/schema";
+import { getAccounts, getTransactions } from "../utils/transactionStore";
+import { useState, useEffect } from "react";
 
 export default function TransactionHistory() {
-  const { user } = useAuth();
   const [, navigate] = useLocation();
+  const [accounts, setAccounts] = useState(getAccounts());
+  const [transactions, setTransactions] = useState(getTransactions());
 
-  const { data: accounts = [] } = useQuery<Account[]>({
-    queryKey: ["/api/accounts", user?.id],
-    enabled: !!user,
-  });
+  // Refresh data when component mounts
+  useEffect(() => {
+    const refreshData = () => {
+      setAccounts(getAccounts());
+      setTransactions(getTransactions());
+    };
+    
+    refreshData();
+    
+    // Listen for storage changes (when transfers are made)
+    const handleStorageChange = () => {
+      refreshData();
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('focus', refreshData);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('focus', refreshData);
+    };
+  }, []);
 
-  const primaryAccount = accounts.find(acc => acc.accountType === "current");
-
-  const { data: transactions = [] } = useQuery<Transaction[]>({
-    queryKey: ["/api/transactions", primaryAccount?.id],
-    enabled: !!primaryAccount,
-  });
+  const primaryAccount = accounts.find(acc => acc.id === "current-2091");
 
   const getTransactionIcon = (category: string) => {
     switch (category) {
