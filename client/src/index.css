@@ -247,6 +247,40 @@ button:active {
   overscroll-behavior: contain;
 }
 
+/* iOS smooth momentum scrolling for entire page */
+html {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* iOS viewport fixes */
+@supports (-webkit-touch-callout: none) {
+  /* Fix for iOS Safari bottom bar */
+  .mobile-viewport-fix {
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+  }
+  
+  /* Prevent iOS zoom on input focus */
+  input[type="color"],
+  input[type="date"],
+  input[type="datetime"],
+  input[type="datetime-local"],
+  input[type="email"],
+  input[type="month"],
+  input[type="number"],
+  input[type="password"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="text"],
+  input[type="time"],
+  input[type="url"],
+  input[type="week"],
+  select:focus,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
 /* Prevent zoom on input focus */
 input[type="text"],
 input[type="email"],

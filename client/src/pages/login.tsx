@@ -43,7 +43,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen relative ios-safe-top ios-safe-bottom ios-safe-left ios-safe-right flex flex-col">
+    <div className="mobile-viewport-fix relative ios-safe-top ios-safe-bottom ios-safe-left ios-safe-right flex flex-col">
       {/* Background with scenic image */}
       <div 
         className="absolute inset-0 bg-cover bg-center"
@@ -56,7 +56,7 @@ export default function Login() {
       <div className="absolute inset-0 bg-gradient-to-br from-[#4a6b75] to-[#2d5a6b] opacity-80" />
       
       {/* Content */}
-      <div className="relative z-10 h-full flex flex-col">
+      <div className="relative z-10 flex flex-col min-h-full">
         {/* Header */}
         <div className="flex-shrink-0 pt-4 pb-6">
           <div className="text-center">
@@ -65,8 +65,8 @@ export default function Login() {
           </div>
         </div>
 
-        {/* Main content - scrollable */}
-        <div className="flex-1 overflow-y-auto px-6 pb-24">
+        {/* Main content */}
+        <div className="flex-1 px-6 pb-24">
           <div className="space-y-6 max-w-sm mx-auto">
             {/* Main Login Card */}
             <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-lg">
