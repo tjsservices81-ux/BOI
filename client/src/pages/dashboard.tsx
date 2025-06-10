@@ -56,11 +56,11 @@ export default function Dashboard() {
           {/* Current Account */}
           <div className="flex items-center justify-between p-4 border-b border-gray-100">
             <div>
-              <p className="font-bold text-xs text-gray-700 uppercase tracking-wide">CURRENT ACCOUNT</p>
-              <p className="text-xs text-gray-500 mt-0.5">-2091</p>
+              <p className="font-bold text-xs text-gray-700 uppercase tracking-wide" style={{ fontFamily: 'OpenSans, sans-serif' }}>CURRENT ACCOUNT</p>
+              <p className="text-xs text-gray-500 mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>-2091</p>
             </div>
             <div className="flex items-center">
-              <p className="text-base font-bold text-[#4a6b75]">€ 2,322.40</p>
+              <p className="text-base font-bold text-[#4a6b75]" style={{ fontFamily: 'OpenSans, sans-serif' }}>€ 2,322.40</p>
               <ChevronRight className="h-4 w-4 ml-2 text-gray-400" />
             </div>
           </div>
@@ -68,11 +68,11 @@ export default function Dashboard() {
           {/* Credit Card */}
           <div className="flex items-center justify-between p-4 border-b border-gray-100">
             <div>
-              <p className="font-bold text-xs text-gray-700 uppercase tracking-wide">CREDIT CARD</p>
-              <p className="text-xs text-gray-500 mt-0.5">-1820</p>
+              <p className="font-bold text-xs text-gray-700 uppercase tracking-wide" style={{ fontFamily: 'OpenSans, sans-serif' }}>CREDIT CARD</p>
+              <p className="text-xs text-gray-500 mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>-1820</p>
             </div>
             <div className="flex items-center">
-              <p className="text-base font-bold text-[#4a6b75]">€2,000.00</p>
+              <p className="text-base font-bold text-[#4a6b75]" style={{ fontFamily: 'OpenSans, sans-serif' }}>€2,000.00</p>
               <ChevronRight className="h-4 w-4 ml-2 text-gray-400" />
             </div>
           </div>
@@ -80,11 +80,11 @@ export default function Dashboard() {
           {/* Savings Account */}
           <div className="flex items-center justify-between p-4 border-b border-gray-100">
             <div>
-              <p className="font-bold text-xs text-gray-700 uppercase tracking-wide">SAVINGS ACCOUNT</p>
-              <p className="text-xs text-gray-500 mt-0.5">-0978</p>
+              <p className="font-bold text-xs text-gray-700 uppercase tracking-wide" style={{ fontFamily: 'OpenSans, sans-serif' }}>SAVINGS ACCOUNT</p>
+              <p className="text-xs text-gray-500 mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>-0978</p>
             </div>
             <div className="flex items-center">
-              <p className="text-base font-bold text-[#4a6b75]">€7,500.00</p>
+              <p className="text-base font-bold text-[#4a6b75]" style={{ fontFamily: 'OpenSans, sans-serif' }}>€7,500.00</p>
               <ChevronRight className="h-4 w-4 ml-2 text-gray-400" />
             </div>
           </div>
@@ -92,11 +92,11 @@ export default function Dashboard() {
           {/* Personal Loan */}
           <div className="flex items-center justify-between p-4 border-b border-gray-100">
             <div>
-              <p className="font-bold text-xs text-gray-700 uppercase tracking-wide">PERSONAL LOAN</p>
-              <p className="text-xs text-gray-500 mt-0.5">-8923</p>
+              <p className="font-bold text-xs text-gray-700 uppercase tracking-wide" style={{ fontFamily: 'OpenSans, sans-serif' }}>PERSONAL LOAN</p>
+              <p className="text-xs text-gray-500 mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>-8923</p>
             </div>
             <div className="flex items-center">
-              <p className="text-base font-bold text-[#4a6b75]">€2,500.00</p>
+              <p className="text-base font-bold text-[#4a6b75]" style={{ fontFamily: 'OpenSans, sans-serif' }}>€2,500.00</p>
               <ChevronRight className="h-4 w-4 ml-2 text-gray-400" />
             </div>
           </div>
@@ -104,12 +104,12 @@ export default function Dashboard() {
           {/* Deposit */}
           <div className="flex items-center justify-between p-4">
             <div>
-              <p className="font-bold text-xs text-gray-700 uppercase tracking-wide">DEPOSIT - 7908</p>
-              <p className="text-xs text-[#4a6b75] mt-0.5">365 MONTHLY SAVER</p>
+              <p className="font-bold text-xs text-gray-700 uppercase tracking-wide" style={{ fontFamily: 'OpenSans, sans-serif' }}>DEPOSIT - 7908</p>
+              <p className="text-xs text-[#4a6b75] mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>365 MONTHLY SAVER</p>
             </div>
             <div className="flex items-center">
-              <p className="text-base font-bold text-gray-400">€100.00</p>
-              <p className="text-xs text-[#4a6b75] ml-2">Withdraw funds</p>
+              <p className="text-base font-bold text-gray-400" style={{ fontFamily: 'OpenSans, sans-serif' }}>€100.00</p>
+              <p className="text-xs text-[#4a6b75] ml-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>Withdraw funds</p>
             </div>
           </div>
         </div>
@@ -119,30 +119,30 @@ export default function Dashboard() {
       <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200">
         <div className="flex">
           <button className="flex-1 flex flex-col items-center py-3 text-[#4a6b75]">
-            <div className="w-4 h-4 mb-1">🏠</div>
-            <span className="text-xs font-medium">Accounts</span>
+            <img src="/icon-footer-accounts-highlight.svg" alt="Accounts" className="w-4 h-4 mb-1" />
+            <span className="text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Accounts</span>
           </button>
           
           <Link href="/transfer" className="flex-1">
             <button className="w-full flex flex-col items-center py-3 text-gray-400">
-              <div className="w-4 h-4 mb-1">↔️</div>
-              <span className="text-xs font-medium">Payments</span>
+              <img src="/icon-footer-payments.svg" alt="Payments" className="w-4 h-4 mb-1" />
+              <span className="text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Payments</span>
             </button>
           </Link>
           
           <button className="flex-1 flex flex-col items-center py-3 text-gray-400">
-            <div className="w-4 h-4 mb-1">💳</div>
-            <span className="text-xs font-medium">Cards</span>
+            <img src="/credit_card_services.svg" alt="Cards" className="w-4 h-4 mb-1" />
+            <span className="text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Cards</span>
           </button>
           
           <button className="flex-1 flex flex-col items-center py-3 text-gray-400">
-            <div className="w-4 h-4 mb-1">⚙️</div>
-            <span className="text-xs font-medium">Services</span>
+            <img src="/icon-footer-services.svg" alt="Services" className="w-4 h-4 mb-1" />
+            <span className="text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Services</span>
           </button>
           
           <button className="flex-1 flex flex-col items-center py-3 text-gray-400">
-            <div className="w-4 h-4 mb-1">➕</div>
-            <span className="text-xs font-medium">Apply</span>
+            <img src="/icon-footer-apply.svg" alt="Apply" className="w-4 h-4 mb-1" />
+            <span className="text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Apply</span>
           </button>
         </div>
       </div>

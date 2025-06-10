@@ -131,6 +131,24 @@
     @apply antialiased bg-background text-foreground;
     font-family: 'OpenSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
+  
+  .boi-brand-font {
+    font-family: 'BlueMagic', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  
+  .boi-regular-font {
+    font-family: 'OpenSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  
+  .boi-bold-font {
+    font-family: 'OpenSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-weight: bold;
+  }
+  
+  .boi-semibold-font {
+    font-family: 'OpenSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-weight: 600;
+  }
 }
 
 @layer utilities {
