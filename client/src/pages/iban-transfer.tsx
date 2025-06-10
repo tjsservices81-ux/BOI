@@ -4,6 +4,8 @@ import { ChevronLeft, Info, Check, CreditCard, Globe } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useAuth } from "@/lib/auth";
+import { queryClient } from "@/lib/queryClient";
 
 const ibanTransferSchema = z.object({
   recipientName: z.string().min(2, "Recipient name is required"),
@@ -22,6 +24,7 @@ export default function IbanTransfer() {
   const [showReference, setShowReference] = useState<boolean>(false);
   const [animationProgress, setAnimationProgress] = useState<number>(0);
   const [formData, setFormData] = useState<IbanTransferData | null>(null);
+  const { user } = useAuth();
 
   const form = useForm<IbanTransferData>({
     resolver: zodResolver(ibanTransferSchema),
@@ -85,6 +88,9 @@ export default function IbanTransfer() {
 
       if (!response.ok) {
         console.error('Transfer failed');
+      } else {
+        // Invalidate account cache to refresh balances
+        queryClient.invalidateQueries({ queryKey: ["/api/accounts", user?.id] });
       }
     } catch (error) {
       console.error('Transfer error:', error);

@@ -92,6 +92,9 @@ export default function UkTransfer() {
 
       if (!response.ok) {
         console.error('Transfer failed');
+      } else {
+        // Invalidate account cache to refresh balances
+        queryClient.invalidateQueries({ queryKey: ["/api/accounts", user?.id] });
       }
     } catch (error) {
       console.error('Transfer error:', error);
