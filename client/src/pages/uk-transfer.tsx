@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { ChevronLeft, Info, Check, CreditCard, Building2, Building } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -22,6 +22,8 @@ export default function UkTransfer() {
   const [step, setStep] = useState<'form' | 'confirm' | 'success'>('form');
   const [transferReference, setTransferReference] = useState<string>('');
   const [identifiedBank, setIdentifiedBank] = useState<string>('');
+  const [showReference, setShowReference] = useState<boolean>(false);
+  const [animationProgress, setAnimationProgress] = useState<number>(0);
 
   const form = useForm<UkTransferData>({
     resolver: zodResolver(ukTransferSchema),
@@ -49,6 +51,21 @@ export default function UkTransfer() {
   const executeTransfer = () => {
     setTimeout(() => {
       setStep('success');
+      setShowReference(false);
+      setAnimationProgress(0);
+      
+      // Start 5-second animation before showing reference
+      const interval = setInterval(() => {
+        setAnimationProgress(prev => {
+          const newProgress = prev + 2; // 2% every 100ms = 5 seconds
+          if (newProgress >= 100) {
+            clearInterval(interval);
+            setShowReference(true);
+            return 100;
+          }
+          return newProgress;
+        });
+      }, 100);
     }, 2000);
   };
 
@@ -75,26 +92,52 @@ export default function UkTransfer() {
               Your UK bank transfer has been processed successfully
             </p>
 
-            <div className="bg-gray-50 rounded-xl p-4 mb-6 text-left">
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Reference:</span>
-                  <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{transferReference}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Amount:</span>
-                  <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>€{form.getValues('amount')}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>To:</span>
-                  <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{form.getValues('recipientName')}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Status:</span>
-                  <span className="font-semibold text-green-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Complete</span>
+            {/* Processing animation and reference reveal */}
+            {!showReference ? (
+              <div className="bg-gray-50 rounded-xl p-6 mb-6">
+                <div className="text-center space-y-4">
+                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto animate-pulse">
+                    <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                  <p className="text-gray-600 font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Generating transfer reference...
+                  </p>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full transition-all duration-100 ease-out"
+                      style={{ width: `${animationProgress}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {Math.round(animationProgress)}% complete
+                  </p>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="bg-gray-50 rounded-xl p-4 mb-6 text-left animate-fade-in">
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Reference:</span>
+                    <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{transferReference}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Amount:</span>
+                    <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>€{form.getValues('amount')}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>To:</span>
+                    <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{form.getValues('recipientName')}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Status:</span>
+                    <span className="font-semibold text-green-600 flex items-center" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      <Check className="w-4 h-4 mr-1" />
+                      Complete
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <button
               onClick={() => navigate('/')}
