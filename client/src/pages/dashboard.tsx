@@ -1,5 +1,7 @@
 import { ChevronRight, User } from "lucide-react";
 import { useLocation } from "wouter";
+import { getAccounts, getTransactions } from "../utils/transactionStore";
+import { useState, useEffect } from "react";
 
 export default function Dashboard() {
   const [, setLocation] = useLocation();
