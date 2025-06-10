@@ -11,7 +11,6 @@ import { useToast } from "@/hooks/use-toast";
 export default function Login() {
   const [customerNumber, setCustomerNumber] = useState("");
   const [pin, setPin] = useState("");
-  const [showPinForm, setShowPinForm] = useState(false);
   const { login, isLoading } = useAuth();
   const [, navigate] = useLocation();
   const { toast } = useToast();
@@ -71,88 +70,53 @@ export default function Login() {
             {/* Main Login Card */}
             <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-lg">
               <CardContent className="p-6 space-y-6">
-                {!showPinForm ? (
-                  /* Touch ID/Face ID Login (Default) */
-                  <div className="text-center space-y-6">
-                    <div className="space-y-4">
-                      <div className="flex justify-center">
-                        <div className="w-16 h-16 bg-[#4a6b75] rounded-full flex items-center justify-center">
-                          <img src="/Icons_Fingerprint.svg" alt="Touch ID" className="w-8 h-8 filter brightness-0 invert" />
-                        </div>
-                      </div>
-                      <div>
-                        <h2 className="text-lg font-medium text-gray-800 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>Touch ID</h2>
-                        <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Place your finger on the Touch ID sensor</p>
-                      </div>
-                    </div>
-                    
-                    <Button
-                      onClick={handleBiometricLogin}
-                      disabled={isLoading}
-                      className="w-full bg-[#4a6b75] hover:bg-[#3a5862] text-white py-3 rounded-lg font-medium transition-colors"
-                      style={{ fontFamily: 'OpenSans, sans-serif' }}
-                    >
-                      {isLoading ? "Authenticating..." : "Use Touch ID"}
-                    </Button>
-                    
-                    <button
-                      onClick={() => setShowPinForm(true)}
-                      className="text-[#4a6b75] text-sm hover:underline"
-                      style={{ fontFamily: 'OpenSans, sans-serif' }}
-                    >
-                      Use PIN instead
-                    </button>
+                {/* Login Form */}
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="customerNumber" className="text-gray-700 text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Customer Number</Label>
+                    <Input
+                      id="customerNumber"
+                      type="text"
+                      value={customerNumber}
+                      onChange={(e) => setCustomerNumber(e.target.value)}
+                      className="border-gray-300 focus:border-[#4a6b75] focus:ring-[#4a6b75]"
+                      placeholder="Enter your customer number"
+                    />
                   </div>
-                ) : (
-                  /* PIN Login Form */
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <h2 className="text-lg font-medium text-gray-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>Enter PIN</h2>
-                      <button
-                        onClick={() => setShowPinForm(false)}
-                        className="text-[#4a6b75] text-sm hover:underline"
-                        style={{ fontFamily: 'OpenSans, sans-serif' }}
-                      >
-                        Back to Touch ID
-                      </button>
-                    </div>
-                    
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="customerNumber" className="text-gray-700 text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Customer Number</Label>
-                        <Input
-                          id="customerNumber"
-                          type="text"
-                          value={customerNumber}
-                          onChange={(e) => setCustomerNumber(e.target.value)}
-                          className="border-gray-300 focus:border-[#4a6b75] focus:ring-[#4a6b75]"
-                          placeholder="Enter your customer number"
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="pin" className="text-gray-700 text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>PIN</Label>
-                        <Input
-                          id="pin"
-                          type="password"
-                          value={pin}
-                          onChange={(e) => setPin(e.target.value)}
-                          className="border-gray-300 focus:border-[#4a6b75] focus:ring-[#4a6b75]"
-                          placeholder="Enter your PIN"
-                        />
-                      </div>
-                      
-                      <Button
-                        type="submit"
-                        disabled={isLoading}
-                        className="w-full bg-[#4a6b75] hover:bg-[#3a5862] text-white py-3 rounded-lg font-medium transition-colors"
-                        style={{ fontFamily: 'OpenSans, sans-serif' }}
-                      >
-                        {isLoading ? "Logging in..." : "Log In"}
-                      </Button>
-                    </form>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="pin" className="text-gray-700 text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>PIN</Label>
+                    <Input
+                      id="pin"
+                      type="password"
+                      value={pin}
+                      onChange={(e) => setPin(e.target.value)}
+                      className="border-gray-300 focus:border-[#4a6b75] focus:ring-[#4a6b75]"
+                      placeholder="Enter your PIN"
+                    />
                   </div>
-                )}
+                  
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full bg-[#4a6b75] hover:bg-[#3a5862] text-white py-3 rounded-lg font-medium transition-colors"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  >
+                    {isLoading ? "Logging in..." : "Log In"}
+                  </Button>
+                </form>
+
+                {/* Biometric Login */}
+                <div className="text-center">
+                  <button
+                    onClick={handleBiometricLogin}
+                    className="flex items-center justify-center space-x-2 text-[#4a6b75] text-sm mx-auto hover:underline"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  >
+                    <img src="/face-id-seeklogo.svg" alt="Touch ID" className="w-4 h-4" />
+                    <span>Use Face ID / Touch ID</span>
+                  </button>
+                </div>
 
                 {/* Alternative Login */}
                 <div className="text-center">
