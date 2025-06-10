@@ -34,7 +34,7 @@ export default function Dashboard() {
         <div className="relative z-10 h-full flex flex-col">
           <div className="flex items-center justify-between p-4 pt-12">
             <div className="flex items-center space-x-2">
-              <img src="/boi_logo.svg" alt="BOI Logo" className="w-6 h-6 filter brightness-0 invert" />
+              <img src="/BOI_logo.png" alt="Bank of Ireland" className="h-5 filter brightness-0 invert" />
             </div>
             <div className="flex items-center space-x-2">
               <Button size="icon" variant="ghost" className="text-white hover:bg-white/20 h-8 w-8">
