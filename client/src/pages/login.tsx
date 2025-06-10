@@ -112,11 +112,6 @@ export default function Login() {
     
     // Simulate PIN verification
     setPinVerified(true);
-    toast({
-      title: "PIN Verified",
-      description: "Press Log in to continue",
-      variant: "default",
-    });
   };
 
   return (
