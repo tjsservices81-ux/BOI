@@ -17,11 +17,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>({
-    id: 1,
-    name: "Sarah Murphy",
-    email: "sarah.murphy@example.com"
-  });
+  const [user, setUser] = useState<User | null>(null);
 
   const login = () => {
     setUser({
