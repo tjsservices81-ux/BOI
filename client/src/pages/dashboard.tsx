@@ -46,7 +46,7 @@ export default function Dashboard() {
       {/* Main content area - white card with rounded top corners */}
       <div className="flex-1 px-0 -mt-8 overflow-y-auto ios-scroll">
         <div className="bg-white rounded-t-3xl shadow-lg min-h-full">
-          <div className="pt-6 pb-24">
+          <div className="pt-6 pb-32">
             {/* Current Account */}
             <button 
               className="w-full flex items-center justify-between px-6 py-4 border-b border-gray-100 hover:bg-gray-50 transition-colors haptic-feedback"
@@ -127,48 +127,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Bottom Navigation - matching screenshot exactly */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 ios-safe-bottom">
-        <div className="flex justify-around items-center h-12">
-          <button className="flex flex-col items-center space-y-1 py-2 text-[#4a6b75] relative active:scale-95 transition-transform">
-            <img src="/icon-footer-accounts-highlight.svg" alt="Accounts" className="w-6 h-6" />
-            <span className="text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Accounts</span>
-            <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-[#4a6b75] rounded-full"></div>
-          </button>
-          
-          <button 
-            className="flex flex-col items-center space-y-1 py-2 text-gray-400 hover:text-[#4a6b75] transition-colors active:scale-95"
-            onClick={() => alert('Payments: Transfer money, pay bills, manage payees')}
-          >
-            <img src="/icon-footer-payments.svg" alt="Payments" className="w-6 h-6" />
-            <span className="text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Payments</span>
-          </button>
-          
-          <button 
-            className="flex flex-col items-center space-y-1 py-2 text-gray-400 hover:text-[#4a6b75] transition-colors active:scale-95"
-            onClick={() => setLocation('/cards')}
-          >
-            <img src="/credit_card_services.svg" alt="Cards" className="w-6 h-6" />
-            <span className="text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Cards</span>
-          </button>
-          
-          <button 
-            className="flex flex-col items-center space-y-1 py-2 text-gray-400 hover:text-[#4a6b75] transition-colors active:scale-95"
-            onClick={() => setLocation('/insights')}
-          >
-            <img src="/icon-footer-services.svg" alt="Services" className="w-6 h-6" />
-            <span className="text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Services</span>
-          </button>
-          
-          <button 
-            className="flex flex-col items-center space-y-1 py-2 text-gray-400 hover:text-[#4a6b75] transition-colors active:scale-95"
-            onClick={() => alert('Apply: Apply for loans, credit cards, and other products')}
-          >
-            <img src="/icon-footer-more.svg" alt="More" className="w-6 h-6" />
-            <span className="text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>More</span>
-          </button>
-        </div>
-      </div>
+
     </div>
   );
 }
