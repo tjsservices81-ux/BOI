@@ -50,7 +50,7 @@ export default function Dashboard() {
             {/* Current Account */}
             <button 
               className="w-full flex items-center justify-between px-6 py-4 border-b border-gray-100 hover:bg-gray-50 transition-colors haptic-feedback"
-              onClick={() => setLocation('/transactions')}
+              onClick={() => setLocation('/transactions?account=current&balance=2322.40&number=2091')}
             >
               <div className="text-left">
                 <p className="font-medium text-sm text-gray-800 boi-regular-font">CURRENT ACCOUNT</p>
@@ -64,8 +64,8 @@ export default function Dashboard() {
             
             {/* Credit Card */}
             <button 
-              className="w-full flex items-center justify-between px-6 py-4 border-b border-gray-100 hover:bg-gray-50 transition-colors"
-              onClick={() => alert('Credit Card: €2,000.00 available credit')}
+              className="w-full flex items-center justify-between px-6 py-4 border-b border-gray-100 hover:bg-gray-50 transition-colors haptic-feedback"
+              onClick={() => setLocation('/transactions?account=credit&balance=2000.00&number=1820')}
             >
               <div className="text-left">
                 <p className="font-medium text-sm text-gray-800 boi-regular-font">CREDIT CARD</p>
@@ -79,8 +79,8 @@ export default function Dashboard() {
             
             {/* Savings Account */}
             <button 
-              className="w-full flex items-center justify-between px-6 py-4 border-b border-gray-100 hover:bg-gray-50 transition-colors"
-              onClick={() => alert('Savings Account: €7,500.00 balance')}
+              className="w-full flex items-center justify-between px-6 py-4 border-b border-gray-100 hover:bg-gray-50 transition-colors haptic-feedback"
+              onClick={() => setLocation('/transactions?account=savings&balance=7500.00&number=0978')}
             >
               <div className="text-left">
                 <p className="font-medium text-sm text-gray-800 boi-regular-font">SAVINGS ACCOUNT</p>
@@ -94,8 +94,8 @@ export default function Dashboard() {
 
             {/* Personal Loan */}
             <button 
-              className="w-full flex items-center justify-between px-6 py-4 border-b border-gray-100 hover:bg-gray-50 transition-colors"
-              onClick={() => alert('Personal Loan: €2,500.00 outstanding balance')}
+              className="w-full flex items-center justify-between px-6 py-4 border-b border-gray-100 hover:bg-gray-50 transition-colors haptic-feedback"
+              onClick={() => setLocation('/transactions?account=loan&balance=2500.00&number=8923')}
             >
               <div className="text-left">
                 <p className="font-medium text-sm text-gray-800 boi-regular-font">PERSONAL LOAN</p>
@@ -109,8 +109,8 @@ export default function Dashboard() {
 
             {/* Deposit */}
             <button 
-              className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors"
-              onClick={() => alert('365 Monthly Saver: €100.00 - Withdraw funds available')}
+              className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors haptic-feedback"
+              onClick={() => setLocation('/transactions?account=deposit&balance=100.00&number=7908')}
             >
               <div className="text-left">
                 <p className="font-medium text-sm text-gray-800 boi-regular-font">DEPOSIT - 7908</p>
