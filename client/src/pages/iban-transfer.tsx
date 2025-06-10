@@ -19,6 +19,9 @@ export default function IbanTransfer() {
   const [, navigate] = useLocation();
   const [step, setStep] = useState<'form' | 'confirm' | 'success'>('form');
   const [transferReference, setTransferReference] = useState<string>('');
+  const [showReference, setShowReference] = useState<boolean>(false);
+  const [animationProgress, setAnimationProgress] = useState<number>(0);
+  const [formData, setFormData] = useState<IbanTransferData | null>(null);
 
   const form = useForm<IbanTransferData>({
     resolver: zodResolver(ibanTransferSchema),
@@ -42,12 +45,68 @@ export default function IbanTransfer() {
   const onSubmit = (data: IbanTransferData) => {
     const ref = `BOI${Date.now().toString().slice(-8)}${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
     setTransferReference(ref);
+    setFormData(data);
     setStep('confirm');
   };
 
-  const executeTransfer = () => {
+  const executeTransfer = async () => {
+    if (!formData) return;
+    
+    try {
+      const selectedAccount = accounts.find(acc => acc.id === formData.fromAccount);
+      if (!selectedAccount) return;
+      
+      // Map account IDs to backend account IDs
+      const accountIdMap: { [key: string]: number } = {
+        'current-2091': 1,
+        'credit-1820': 2,
+        'savings-0978': 3,
+        'loan-8923': 4,
+        'deposit-7908': 5
+      };
+      
+      const accountId = accountIdMap[selectedAccount.id];
+      
+      const transferData = {
+        fromAccountId: accountId,
+        toAccount: `${formData.recipientName}`,
+        iban: formData.iban,
+        amount: formData.amount,
+        reference: transferReference
+      };
+
+      const response = await fetch('/api/transfer', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(transferData),
+      });
+
+      if (!response.ok) {
+        console.error('Transfer failed');
+      }
+    } catch (error) {
+      console.error('Transfer error:', error);
+    }
+
     setTimeout(() => {
       setStep('success');
+      setShowReference(false);
+      setAnimationProgress(0);
+      
+      // Start 5-second animation before showing reference
+      const interval = setInterval(() => {
+        setAnimationProgress(prev => {
+          const newProgress = prev + 2; // 2% every 100ms = 5 seconds
+          if (newProgress >= 100) {
+            clearInterval(interval);
+            setShowReference(true);
+            return 100;
+          }
+          return newProgress;
+        });
+      }, 100);
     }, 2000);
   };
 

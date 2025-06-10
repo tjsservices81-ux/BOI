@@ -24,6 +24,7 @@ export default function UkTransfer() {
   const [identifiedBank, setIdentifiedBank] = useState<string>('');
   const [showReference, setShowReference] = useState<boolean>(false);
   const [animationProgress, setAnimationProgress] = useState<number>(0);
+  const [formData, setFormData] = useState<UkTransferData | null>(null);
 
   const form = useForm<UkTransferData>({
     resolver: zodResolver(ukTransferSchema),
@@ -48,10 +49,51 @@ export default function UkTransfer() {
   const onSubmit = (data: UkTransferData) => {
     const ref = `BOI${Date.now().toString().slice(-8)}${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
     setTransferReference(ref);
+    setFormData(data);
     setStep('confirm');
   };
 
-  const executeTransfer = () => {
+  const executeTransfer = async () => {
+    if (!formData) return;
+    
+    try {
+      const selectedAccount = accounts.find(acc => acc.id === formData.fromAccount);
+      if (!selectedAccount) return;
+      
+      // Map account IDs to backend account IDs
+      const accountIdMap: { [key: string]: number } = {
+        'current-2091': 1,
+        'credit-1820': 2,
+        'savings-0978': 3,
+        'loan-8923': 4,
+        'deposit-7908': 5
+      };
+      
+      const accountId = accountIdMap[selectedAccount.id];
+      
+      const transferData = {
+        fromAccountId: accountId,
+        toAccount: `${formData.recipientName} (${formData.sortCode}-${formData.accountNumber})`,
+        iban: `${formData.sortCode}-${formData.accountNumber}`,
+        amount: formData.amount,
+        reference: transferReference
+      };
+
+      const response = await fetch('/api/transfer', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(transferData),
+      });
+
+      if (!response.ok) {
+        console.error('Transfer failed');
+      }
+    } catch (error) {
+      console.error('Transfer error:', error);
+    }
+
     setTimeout(() => {
       setStep('success');
       setShowReference(false);
