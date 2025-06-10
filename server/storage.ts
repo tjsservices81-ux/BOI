@@ -80,6 +80,36 @@ export class MemStorage implements IStorage {
     };
     this.accounts.set(savingsAccount.id, savingsAccount);
 
+    const creditCardAccount: Account = {
+      id: this.currentAccountId++,
+      userId: user.id,
+      accountType: "credit",
+      accountNumber: "****1820",
+      balance: "2000.00",
+      displayName: "Credit Card"
+    };
+    this.accounts.set(creditCardAccount.id, creditCardAccount);
+
+    const loanAccount: Account = {
+      id: this.currentAccountId++,
+      userId: user.id,
+      accountType: "loan",
+      accountNumber: "****8923",
+      balance: "2500.00",
+      displayName: "Personal Loan"
+    };
+    this.accounts.set(loanAccount.id, loanAccount);
+
+    const depositAccount: Account = {
+      id: this.currentAccountId++,
+      userId: user.id,
+      accountType: "deposit",
+      accountNumber: "****7908",
+      balance: "100.00",
+      displayName: "Deposit - 365 Monthly Saver"
+    };
+    this.accounts.set(depositAccount.id, depositAccount);
+
     // Create sample transactions
     const sampleTransactions: Transaction[] = [
       {

@@ -5,6 +5,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { validateUKSortCode, formatSortCode, validateUKAccountNumber } from "../utils/bankValidation";
+import { useAuth } from "@/lib/auth";
+import { queryClient } from "@/lib/queryClient";
 
 const ukTransferSchema = z.object({
   recipientName: z.string().min(2, "Recipient name is required"),
@@ -25,6 +27,7 @@ export default function UkTransfer() {
   const [showReference, setShowReference] = useState<boolean>(false);
   const [animationProgress, setAnimationProgress] = useState<number>(0);
   const [formData, setFormData] = useState<UkTransferData | null>(null);
+  const { user } = useAuth();
 
   const form = useForm<UkTransferData>({
     resolver: zodResolver(ukTransferSchema),
