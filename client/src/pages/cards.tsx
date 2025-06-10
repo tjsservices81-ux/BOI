@@ -55,90 +55,86 @@ export default function Cards() {
       <div className="flex-1 overflow-y-auto bg-white ios-scroll -mt-2">
         <div className="bg-white rounded-t-2xl pt-6">
           <div className="px-4 pb-4">
-            <p className="text-center text-sm text-gray-600 mb-4 boi-regular-font">CREDIT CARD -1111</p>
+            <p className="text-center text-sm text-gray-600 mb-4 boi-regular-font">DEBIT CARD -2019</p>
             
             {/* Swipeable Card Display */}
             <div className="relative mb-6">
               {/* Embla Carousel for Cards */}
               <div className="overflow-hidden" ref={emblaRef}>
                 <div className="flex">
-                  {/* First Card - BOI Credit Card */}
+                  {/* BOI Debit Card -2019 */}
                   <div className="flex-[0_0_100%] min-w-0 relative">
-                    <div className="bg-gradient-to-br from-[#4a90a4] to-[#4a6b75] rounded-xl p-4 text-white shadow-lg relative overflow-hidden">
-                      {/* Top Row - BOI Logo */}
+                    <div className="bg-gradient-to-br from-[#2d5a6b] to-[#1a365d] rounded-xl p-4 text-white shadow-lg relative overflow-hidden">
+                      {/* Top Row - BOI Logo and Chip */}
                       <div className="flex justify-between items-start mb-2">
                         <div className="flex items-center space-x-2">
                           <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-4 filter brightness-0 invert" />
-                          <div className="w-6 h-4 bg-blue-600 rounded-sm flex items-center justify-center">
-                            <span className="text-white text-xs boi-bold-font">🔒</span>
-                          </div>
+                          <img src="/cert.svg" alt="Chip" className="w-5 h-4" />
                         </div>
-                        <span className="text-xs boi-regular-font">Credit Card</span>
+                        <span className="text-xs boi-regular-font">Debit Card</span>
                       </div>
                       
                       {/* Bank of Ireland Text */}
-                      <div className="mb-6">
-                        <p className="text-sm boi-regular-font opacity-90">Bank of Ireland</p>
+                      <div className="mb-4">
+                        <p className="text-sm boi-regular-font">Bank of Ireland</p>
                       </div>
                       
                       {/* Card Number */}
-                      <div className="mb-4">
-                        <p className="text-lg boi-regular-font tracking-wider">**** **** **** 1111</p>
+                      <div className="mb-6">
+                        <p className="text-lg boi-regular-font tracking-widest">**** **** **** 2019</p>
                       </div>
                       
                       {/* Bottom Row - Name and Date */}
                       <div className="flex justify-between items-end">
                         <div>
                           <p className="text-sm boi-regular-font">John Smith</p>
-                          <p className="text-xs boi-regular-font opacity-90">05/27 ***</p>
-                          <p className="text-xs boi-regular-font opacity-80 mt-1">Expires ***</p>
+                          <p className="text-xs boi-regular-font">06/25 ***</p>
+                          <p className="text-xs boi-regular-font mt-1">Expires ***</p>
                         </div>
-                        {/* Mastercard Logo */}
+                        {/* VISA Logo */}
                         <div className="flex items-center">
-                          <div className="w-8 h-6 rounded-sm mr-1 flex">
-                            <div className="w-4 h-6 bg-red-500 rounded-l-sm"></div>
-                            <div className="w-4 h-6 bg-yellow-400 rounded-r-sm -ml-1"></div>
+                          <div className="bg-white px-3 py-1 rounded text-blue-600 text-xs boi-bold-font">
+                            VISA
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
                   
-                  {/* Second Card - BOI Debit Card */}
+                  {/* BOI Credit Card -1111 */}
                   <div className="flex-[0_0_100%] min-w-0 relative">
-                    <div className="bg-gradient-to-br from-[#2d5a6b] to-[#1a365d] rounded-xl p-4 text-white shadow-lg relative overflow-hidden">
+                    <div className="bg-gradient-to-br from-[#4a90a4] to-[#4a6b75] rounded-xl p-4 text-white shadow-lg relative overflow-hidden">
                       {/* Top Row - BOI Logo */}
                       <div className="flex justify-between items-start mb-2">
                         <div className="flex items-center space-x-2">
                           <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-4 filter brightness-0 invert" />
-                          <div className="w-6 h-4 bg-blue-600 rounded-sm flex items-center justify-center">
-                            <span className="text-white text-xs boi-bold-font">🔒</span>
-                          </div>
+                          <img src="/cert.svg" alt="Chip" className="w-5 h-4" />
                         </div>
-                        <span className="text-xs boi-regular-font">Debit Card</span>
+                        <span className="text-xs boi-regular-font">Credit Card</span>
                       </div>
                       
                       {/* Bank of Ireland Text */}
-                      <div className="mb-6">
-                        <p className="text-sm boi-regular-font opacity-90">Bank of Ireland</p>
+                      <div className="mb-4">
+                        <p className="text-sm boi-regular-font">Bank of Ireland</p>
                       </div>
                       
                       {/* Card Number */}
-                      <div className="mb-4">
-                        <p className="text-lg boi-regular-font tracking-wider">**** **** **** 2019</p>
+                      <div className="mb-6">
+                        <p className="text-lg boi-regular-font tracking-widest">**** **** **** 1111</p>
                       </div>
                       
                       {/* Bottom Row - Name and Date */}
                       <div className="flex justify-between items-end">
                         <div>
                           <p className="text-sm boi-regular-font">John Smith</p>
-                          <p className="text-xs boi-regular-font opacity-90">06/25 ***</p>
-                          <p className="text-xs boi-regular-font opacity-80 mt-1">Expires ***</p>
+                          <p className="text-xs boi-regular-font">05/27 ***</p>
+                          <p className="text-xs boi-regular-font mt-1">Expires ***</p>
                         </div>
-                        {/* VISA Logo */}
+                        {/* Mastercard Logo */}
                         <div className="flex items-center">
-                          <div className="bg-white px-2 py-1 rounded text-blue-600 text-xs boi-bold-font">
-                            VISA
+                          <div className="w-8 h-6 rounded-sm mr-1 flex">
+                            <div className="w-4 h-6 bg-red-500 rounded-l-sm"></div>
+                            <div className="w-4 h-6 bg-yellow-400 rounded-r-sm -ml-1"></div>
                           </div>
                         </div>
                       </div>
@@ -173,9 +169,7 @@ export default function Cards() {
 
               {/* Info Banner */}
               <div className="flex items-start space-x-3 p-4 bg-blue-50 rounded-lg border border-blue-200 mb-4">
-                <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-white text-sm">i</span>
-                </div>
+                <img src="/faqs_icon.svg" alt="Info" className="w-6 h-6 mt-0.5" />
                 <div>
                   <p className="text-sm text-gray-700 boi-regular-font">
                     If your card is lost or stolen <span className="text-blue-600 underline">contact us</span> immediately.
