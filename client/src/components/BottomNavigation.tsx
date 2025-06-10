@@ -29,12 +29,12 @@ export default function BottomNavigation() {
       isActive: location === '/cards'
     },
     {
-      id: 'services',
-      label: 'Services',
+      id: 'apply',
+      label: 'Apply',
       icon: '/icon-footer-apply.svg',
       highlightIcon: '/icon-footer-apply-highlight.svg',
-      path: '/insights',
-      isActive: location === '/insights'
+      path: '/apply',
+      isActive: location === '/apply'
     },
     {
       id: 'more',
