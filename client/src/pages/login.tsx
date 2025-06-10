@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/lib/auth";
-import { User, ExternalLink } from "lucide-react";
+import { User, ExternalLink, HelpCircle, Phone, Settings, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Login() {
@@ -414,7 +414,7 @@ export default function Login() {
             <div className="space-y-4">
               <button className="w-full flex items-center space-x-4 p-4 rounded-lg hover:bg-gray-50 transition-colors text-left">
                 <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                  <span className="text-blue-600 text-sm">?</span>
+                  <HelpCircle className="w-5 h-5 text-blue-600" />
                 </div>
                 <div>
                   <p className="font-medium text-gray-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>Help & Support</p>
@@ -424,7 +424,7 @@ export default function Login() {
               
               <button className="w-full flex items-center space-x-4 p-4 rounded-lg hover:bg-gray-50 transition-colors text-left">
                 <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                  <span className="text-green-600 text-sm">📞</span>
+                  <Phone className="w-5 h-5 text-green-600" />
                 </div>
                 <div>
                   <p className="font-medium text-gray-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>Contact Us</p>
@@ -434,7 +434,7 @@ export default function Login() {
               
               <button className="w-full flex items-center space-x-4 p-4 rounded-lg hover:bg-gray-50 transition-colors text-left">
                 <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
-                  <span className="text-orange-600 text-sm">⚙️</span>
+                  <Settings className="w-5 h-5 text-orange-600" />
                 </div>
                 <div>
                   <p className="font-medium text-gray-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>Accessibility</p>
@@ -444,7 +444,7 @@ export default function Login() {
               
               <button className="w-full flex items-center space-x-4 p-4 rounded-lg hover:bg-gray-50 transition-colors text-left">
                 <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                  <span className="text-purple-600 text-sm">🔒</span>
+                  <Shield className="w-5 h-5 text-purple-600" />
                 </div>
                 <div>
                   <p className="font-medium text-gray-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>Security Info</p>
