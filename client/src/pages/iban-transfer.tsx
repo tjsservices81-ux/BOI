@@ -4,7 +4,6 @@ import { ChevronLeft, Info, Check, CreditCard, Globe } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { getAccounts, processTransfer, getAccountById } from "../utils/transactionStore";
 
 const ibanTransferSchema = z.object({
   recipientName: z.string().min(2, "Recipient name is required"),
@@ -32,12 +31,13 @@ export default function IbanTransfer() {
     }
   });
 
-  const accounts = getAccounts().map(account => ({
-    id: account.id,
-    name: account.name,
-    number: account.number,
-    balance: account.displayBalance
-  }));
+  const accounts = [
+    { id: 'current-2091', name: 'Current Account', number: '-2091', balance: '€2,322.40' },
+    { id: 'credit-1820', name: 'Credit Card', number: '-1820', balance: '€2,000.00' },
+    { id: 'savings-0978', name: 'Savings Account', number: '-0978', balance: '€7,500.00' },
+    { id: 'loan-8923', name: 'Personal Loan', number: '-8923', balance: '€2,500.00' },
+    { id: 'deposit-7908', name: 'Deposit - 365 Monthly Saver', number: '-7908', balance: '€100.00' }
+  ];
 
   const onSubmit = (data: IbanTransferData) => {
     const ref = `BOI${Date.now().toString().slice(-8)}${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
@@ -47,25 +47,7 @@ export default function IbanTransfer() {
 
   const executeTransfer = () => {
     setTimeout(() => {
-      // Process the transfer and update balances
-      const formData = form.getValues();
-      const transferAmount = parseFloat(formData.amount);
-      
-      const result = processTransfer(
-        formData.fromAccount,
-        transferAmount,
-        `International transfer to ${formData.recipientName}`,
-        transferReference,
-        formData.recipientName,
-        undefined, // No sort code for IBAN
-        formData.iban
-      );
-      
-      if (result.success) {
-        setStep('success');
-      } else {
-        alert('Transfer failed: Insufficient funds or invalid account');
-      }
+      setStep('success');
     }, 2000);
   };
 
@@ -114,7 +96,7 @@ export default function IbanTransfer() {
             </div>
 
             <button
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate('/')}
               className="w-full bg-[#4a6b75] text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform"
               style={{ fontFamily: 'OpenSans, sans-serif' }}
             >

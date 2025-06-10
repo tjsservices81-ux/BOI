@@ -5,7 +5,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { validateUKSortCode, formatSortCode, validateUKAccountNumber } from "../utils/bankValidation";
-import { getAccounts, processTransfer, getAccountById } from "../utils/transactionStore";
 
 const ukTransferSchema = z.object({
   recipientName: z.string().min(2, "Recipient name is required"),
@@ -38,12 +37,13 @@ export default function UkTransfer() {
     }
   });
 
-  const accounts = getAccounts().map(account => ({
-    id: account.id,
-    name: account.name,
-    number: account.number,
-    balance: account.displayBalance
-  }));
+  const accounts = [
+    { id: 'current-2091', name: 'Current Account', number: '-2091', balance: '€2,322.40' },
+    { id: 'credit-1820', name: 'Credit Card', number: '-1820', balance: '€2,000.00' },
+    { id: 'savings-0978', name: 'Savings Account', number: '-0978', balance: '€7,500.00' },
+    { id: 'loan-8923', name: 'Personal Loan', number: '-8923', balance: '€2,500.00' },
+    { id: 'deposit-7908', name: 'Deposit - 365 Monthly Saver', number: '-7908', balance: '€100.00' }
+  ];
 
   const onSubmit = (data: UkTransferData) => {
     const ref = `BOI${Date.now().toString().slice(-8)}${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
@@ -53,40 +53,22 @@ export default function UkTransfer() {
 
   const executeTransfer = () => {
     setTimeout(() => {
-      // Process the transfer and update balances
-      const formData = form.getValues();
-      const transferAmount = parseFloat(formData.amount);
+      setStep('success');
+      setShowReference(false);
+      setAnimationProgress(0);
       
-      const result = processTransfer(
-        formData.fromAccount,
-        transferAmount,
-        `Transfer to ${formData.recipientName}`,
-        transferReference,
-        formData.recipientName,
-        formData.sortCode,
-        formData.accountNumber
-      );
-      
-      if (result.success) {
-        setStep('success');
-        setShowReference(false);
-        setAnimationProgress(0);
-        
-        // Start 5-second animation before showing reference
-        const interval = setInterval(() => {
-          setAnimationProgress(prev => {
-            const newProgress = prev + 2; // 2% every 100ms = 5 seconds
-            if (newProgress >= 100) {
-              clearInterval(interval);
-              setShowReference(true);
-              return 100;
-            }
-            return newProgress;
-          });
-        }, 100);
-      } else {
-        alert('Transfer failed: Insufficient funds or invalid account');
-      }
+      // Start 5-second animation before showing reference
+      const interval = setInterval(() => {
+        setAnimationProgress(prev => {
+          const newProgress = prev + 2; // 2% every 100ms = 5 seconds
+          if (newProgress >= 100) {
+            clearInterval(interval);
+            setShowReference(true);
+            return 100;
+          }
+          return newProgress;
+        });
+      }, 100);
     }, 2000);
   };
 
@@ -161,7 +143,7 @@ export default function UkTransfer() {
             )}
 
             <button
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate('/')}
               className="w-full bg-[#4a6b75] text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform"
               style={{ fontFamily: 'OpenSans, sans-serif' }}
             >
