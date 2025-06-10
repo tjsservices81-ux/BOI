@@ -1,26 +1,44 @@
 import { ChevronRight, User } from "lucide-react";
 import { useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
-import { useAuth } from "@/lib/auth";
-import type { Account } from "@shared/schema";
+import { useState, useEffect } from "react";
+
+interface Account {
+  id: number;
+  displayName: string;
+  accountNumber: string;
+  balance: string;
+  accountType: string;
+}
 
 export default function Dashboard() {
   const [, setLocation] = useLocation();
-  const { user } = useAuth();
-
-  const { data: accounts = [] } = useQuery<Account[]>({
-    queryKey: ["/api/accounts", user?.id],
-    enabled: !!user,
-  });
-
-  // Fallback to hardcoded accounts if backend data isn't available
-  const displayAccounts = accounts.length > 0 ? accounts : [
+  
+  // Local state for account balances that can be updated by transfers
+  const [accounts, setAccounts] = useState<Account[]>([
     { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "2322.40", accountType: "current" },
     { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "2000.00", accountType: "credit" },
     { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "7500.00", accountType: "savings" },
     { id: 4, displayName: "Personal Loan", accountNumber: "****8923", balance: "2500.00", accountType: "loan" },
     { id: 5, displayName: "Deposit - 365 Monthly Saver", accountNumber: "****7908", balance: "100.00", accountType: "deposit" }
-  ];
+  ]);
+
+  // Listen for balance updates from transfers
+  useEffect(() => {
+    const handleBalanceUpdate = (event: CustomEvent) => {
+      const { accountId, newBalance } = event.detail;
+      setAccounts(prev => prev.map(acc => 
+        acc.id === accountId ? { ...acc, balance: newBalance } : acc
+      ));
+    };
+
+    window.addEventListener('balanceUpdate', handleBalanceUpdate as EventListener);
+    return () => window.removeEventListener('balanceUpdate', handleBalanceUpdate as EventListener);
+  }, []);
+
+  // Store accounts in localStorage for transfer forms to access
+  useEffect(() => {
+    localStorage.setItem('bankAccounts', JSON.stringify(accounts));
+  }, [accounts]);
 
   return (
     <div className="h-full bg-gray-50 overflow-hidden flex flex-col ios-safe-top ios-safe-bottom">
@@ -65,7 +83,7 @@ export default function Dashboard() {
       <div className="flex-1 px-0 -mt-8 overflow-y-auto ios-scroll">
         <div className="bg-white rounded-t-3xl shadow-lg min-h-full">
           <div className="pt-6 pb-32">
-            {displayAccounts.map((account) => (
+            {accounts.map((account) => (
               <button 
                 key={account.id}
                 className="w-full flex items-center justify-between px-6 py-4 border-b border-gray-100 hover:bg-gray-50 touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-98 haptic-feedback"

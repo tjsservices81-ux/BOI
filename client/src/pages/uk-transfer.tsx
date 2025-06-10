@@ -56,49 +56,42 @@ export default function UkTransfer() {
     setStep('confirm');
   };
 
-  const executeTransfer = async () => {
+  const executeTransfer = () => {
     if (!formData) return;
     
-    try {
-      const selectedAccount = accounts.find(acc => acc.id === formData.fromAccount);
-      if (!selectedAccount) return;
+    // Get accounts from localStorage
+    const storedAccounts = JSON.parse(localStorage.getItem('bankAccounts') || '[]');
+    const selectedAccount = storedAccounts.find((acc: any) => acc.id.toString() === formData.fromAccount);
+    
+    if (selectedAccount) {
+      const transferAmount = parseFloat(formData.amount);
+      const currentBalance = parseFloat(selectedAccount.balance);
       
-      // Map account IDs to backend account IDs
-      const accountIdMap: { [key: string]: number } = {
-        'current-2091': 1,
-        'credit-1820': 2,
-        'savings-0978': 3,
-        'loan-8923': 4,
-        'deposit-7908': 5
-      };
-      
-      const accountId = accountIdMap[selectedAccount.id];
-      
-      const transferData = {
-        fromAccountId: accountId,
-        toAccount: `${formData.recipientName} (${formData.sortCode}-${formData.accountNumber})`,
-        iban: `${formData.sortCode}-${formData.accountNumber}`,
-        amount: formData.amount,
-        reference: transferReference
-      };
-
-      const response = await fetch('/api/transfer', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(transferData),
-      });
-
-      if (!response.ok) {
-        console.error('Transfer failed');
-      } else {
-        // Invalidate both account and transaction caches to refresh balances and history
-        queryClient.invalidateQueries({ queryKey: ["/api/accounts", user?.id] });
-        queryClient.invalidateQueries({ queryKey: ["/api/transactions"] });
+      if (transferAmount <= currentBalance) {
+        // Update balance
+        const newBalance = (currentBalance - transferAmount).toFixed(2);
+        
+        // Dispatch balance update event
+        window.dispatchEvent(new CustomEvent('balanceUpdate', {
+          detail: { accountId: selectedAccount.id, newBalance }
+        }));
+        
+        // Store transaction in localStorage
+        const transactions = JSON.parse(localStorage.getItem('bankTransactions') || '[]');
+        const newTransaction = {
+          id: Date.now(),
+          accountId: selectedAccount.id,
+          amount: `-${transferAmount.toFixed(2)}`,
+          description: `Transfer to ${formData.recipientName}`,
+          category: 'transfer',
+          type: 'debit',
+          paymentMethod: 'Online Transfer',
+          reference: transferReference,
+          timestamp: new Date().toISOString()
+        };
+        transactions.push(newTransaction);
+        localStorage.setItem('bankTransactions', JSON.stringify(transactions));
       }
-    } catch (error) {
-      console.error('Transfer error:', error);
     }
 
     setTimeout(() => {

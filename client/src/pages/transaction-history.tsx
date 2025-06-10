@@ -1,8 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useAuth } from "@/lib/auth";
 import { BottomNavigation } from "@/components/ui/bottom-navigation";
 import { 
   ArrowLeft, 
@@ -14,27 +13,82 @@ import {
   Zap,
   ArrowRightLeft
 } from "lucide-react";
-import type { Account, Transaction } from "@shared/schema";
+
+interface Transaction {
+  id: number;
+  accountId: number;
+  amount: string;
+  description: string;
+  category: string;
+  type: string;
+  paymentMethod: string;
+  reference: string;
+  timestamp: string;
+}
 
 export default function TransactionHistory() {
-  const { user } = useAuth();
   const [, navigate] = useLocation();
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [currentBalance, setCurrentBalance] = useState<number>(0);
 
   // Get account ID from URL parameters
   const urlParams = new URLSearchParams(window.location.search);
-  const accountId = urlParams.get('accountId') || '1'; // Default to account 1
+  const accountId = urlParams.get('accountId') || '1';
+  
+  useEffect(() => {
+    // Load transactions from localStorage
+    const storedTransactions = JSON.parse(localStorage.getItem('bankTransactions') || '[]');
+    const accountTransactions = storedTransactions.filter((t: Transaction) => t.accountId.toString() === accountId);
+    
+    // Add sample transactions if none exist
+    if (accountTransactions.length === 0 && accountId === '1') {
+      const sampleTransactions = [
+        {
+          id: 1,
+          accountId: 1,
+          amount: "-47.82",
+          description: "Tesco Ireland",
+          category: "shopping",
+          type: "debit",
+          paymentMethod: "Debit Card",
+          reference: "1234567890",
+          timestamp: new Date("2024-12-30T14:34:00").toISOString()
+        },
+        {
+          id: 2,
+          accountId: 1,
+          amount: "-68.50",
+          description: "Applegreen",
+          category: "fuel",
+          type: "debit",
+          paymentMethod: "Debit Card",
+          reference: "9876543210",
+          timestamp: new Date("2024-12-29T08:15:00").toISOString()
+        },
+        {
+          id: 3,
+          accountId: 1,
+          amount: "+3200.00",
+          description: "Salary Deposit",
+          category: "salary",
+          type: "credit",
+          paymentMethod: "Direct Deposit",
+          reference: "SAL202412",
+          timestamp: new Date("2024-12-28T09:00:00").toISOString()
+        }
+      ];
+      setTransactions([...sampleTransactions, ...accountTransactions]);
+    } else {
+      setTransactions(accountTransactions);
+    }
 
-  const { data: accounts = [] } = useQuery<Account[]>({
-    queryKey: ["/api/accounts", user?.id],
-    enabled: !!user,
-  });
-
-  const primaryAccount = accounts.find(acc => acc.id.toString() === accountId) || accounts[0];
-
-  const { data: transactions = [] } = useQuery<Transaction[]>({
-    queryKey: ["/api/transactions", accountId],
-    enabled: !!accountId,
-  });
+    // Get current balance from localStorage accounts
+    const storedAccounts = JSON.parse(localStorage.getItem('bankAccounts') || '[]');
+    const account = storedAccounts.find((acc: any) => acc.id.toString() === accountId);
+    if (account) {
+      setCurrentBalance(parseFloat(account.balance));
+    }
+  }, [accountId]);
 
   const getTransactionIcon = (category: string) => {
     switch (category) {
@@ -48,7 +102,6 @@ export default function TransactionHistory() {
     }
   };
 
-  const currentBalance = primaryAccount ? parseFloat(primaryAccount.balance) : 0;
   const thisMonthChange = 234.12; // This would be calculated from transactions
 
   return (
