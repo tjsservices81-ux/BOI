@@ -39,8 +39,8 @@ const LoginScreen = ({ onLogin }) => {
 
           {/* Main content area */}
           <View style={styles.mainContent}>
-            {/* Login card */}
-            <View style={styles.loginCard}>
+            {/* Main login card */}
+            <View style={styles.mainLoginCard}>
               {/* Biometric login section */}
               <View style={styles.biometricSection}>
                 <View style={styles.fingerprintContainer}>
@@ -62,16 +62,18 @@ const LoginScreen = ({ onLogin }) => {
                 </TouchableOpacity>
               </View>
 
-              {/* Alternative login options */}
+              {/* Alternative login option */}
               <View style={styles.divider} />
               
               <TouchableOpacity style={styles.alternativeOption}>
                 <Text style={styles.userIcon}>👤</Text>
                 <Text style={styles.alternativeText}>Log in with another ID</Text>
               </TouchableOpacity>
+            </View>
 
-              {/* PIN and approval options */}
-              <TouchableOpacity style={styles.optionRow}>
+            {/* Separate smaller cards for PIN and approval options */}
+            <View style={styles.optionsContainer}>
+              <TouchableOpacity style={styles.smallOptionCard}>
                 <View style={styles.optionIconWrapper}>
                   <Text style={styles.dotsIcon}>⋯</Text>
                 </View>
@@ -79,7 +81,7 @@ const LoginScreen = ({ onLogin }) => {
                 <Text style={styles.chevronRight}>›</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.optionRow}>
+              <TouchableOpacity style={styles.smallOptionCard}>
                 <View style={styles.optionIconWrapper}>
                   <Text style={styles.clockIcon}>🕐</Text>
                 </View>
@@ -310,11 +312,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 100,
   },
-  loginCard: {
+  mainLoginCard: {
     backgroundColor: 'white',
     borderRadius: 12,
     padding: 24,
     marginHorizontal: 8,
+    marginBottom: 12,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -323,6 +326,25 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 8,
     elevation: 6,
+  },
+  optionsContainer: {
+    marginHorizontal: 8,
+  },
+  smallOptionCard: {
+    backgroundColor: 'white',
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   biometricSection: {
     alignItems: 'center',
@@ -396,26 +418,28 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     fontFamily: 'BOI-Regular',
   },
-  optionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f5f5f5',
-    borderRadius: 8,
-    padding: 14,
-    marginBottom: 8,
-  },
   optionIconWrapper: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#e0e0e0',
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#f0f0f0',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 14,
+    marginRight: 12,
   },
-  optionIcon: {
-    width: 12,
-    height: 12,
+  dotsIcon: {
+    fontSize: 16,
+    color: '#666',
+    fontWeight: 'bold',
+  },
+  clockIcon: {
+    fontSize: 14,
+    color: '#666',
+  },
+  userIcon: {
+    fontSize: 16,
+    color: '#2d6a75',
+    marginRight: 8,
   },
   optionTextContainer: {
     flex: 1,
