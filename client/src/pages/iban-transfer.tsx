@@ -183,7 +183,7 @@ export default function IbanTransfer() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div style={{ position: 'relative', minHeight: '100vh', paddingBottom: '2rem' }}>
       <div className="bg-[#4a6b75] px-4 py-3 flex items-center justify-between">
         <button onClick={() => navigate('/payments')} className="flex items-center text-white">
           <ChevronLeft className="w-5 h-5 mr-2" />
@@ -191,8 +191,8 @@ export default function IbanTransfer() {
         </button>
       </div>
 
-      <div className="p-4">
-        <div className="bg-white rounded-xl p-6 mb-20">
+      <div style={{ padding: '1rem', backgroundColor: '#f9fafb' }}>
+        <div style={{ backgroundColor: 'white', borderRadius: '0.75rem', padding: '1.5rem', marginBottom: '5rem' }}>
           <div className="flex items-center mb-6">
             <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center mr-4">
               <Globe className="w-6 h-6 text-white" />
