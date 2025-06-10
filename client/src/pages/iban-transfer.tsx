@@ -183,15 +183,15 @@ export default function IbanTransfer() {
   }
 
   return (
-    <div className="bg-gray-50">
-      <div className="bg-[#4a6b75] px-4 py-3 flex items-center justify-between shadow-sm">
+    <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
+      <div className="bg-[#4a6b75] px-4 py-3 flex items-center justify-between shadow-sm sticky top-0 z-10">
         <button onClick={() => navigate('/payments')} className="flex items-center text-white">
           <ChevronLeft className="w-5 h-5 mr-2" />
           <span className="font-semibold text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>International Transfer</span>
         </button>
       </div>
 
-      <div className="px-4 py-6 pb-32">
+      <div style={{ padding: '1.5rem 1rem', paddingBottom: '8rem' }}>
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <div className="flex items-center mb-6">
             <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center mr-4">

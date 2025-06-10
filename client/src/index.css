@@ -2,12 +2,46 @@
 @tailwind components;
 @tailwind utilities;
 
-/* iOS-specific styles */
-html, body {
+/* Reset and base styles */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
   -webkit-tap-highlight-color: transparent;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+}
+
+/* Ensure scrolling works on all devices */
+html, body, #root {
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Mobile scrolling fix */
+@media screen and (max-width: 768px) {
+  body {
+    position: relative;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    height: auto;
+  }
+  
+  * {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
 }
 
 /* iOS Safe Area handling */
