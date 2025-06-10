@@ -252,7 +252,7 @@ export default function UkTransfer() {
                 {...form.register('recipientName')}
                 type="text"
                 placeholder="Enter recipient's full name"
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#4a6b75] focus:border-transparent text-sm bg-white shadow-sm"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#4a6b75] focus:border-transparent text-sm bg-white shadow-sm touch-manipulation transform-gpu transition-all duration-150 ease-out"
                 style={{ fontFamily: 'OpenSans, sans-serif' }}
               />
               {form.formState.errors.recipientName && (
@@ -270,7 +270,7 @@ export default function UkTransfer() {
                   type="text"
                   placeholder="12-34-56"
                   maxLength={8}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#4a6b75] focus:border-transparent text-sm bg-white shadow-sm"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#4a6b75] focus:border-transparent text-sm bg-white shadow-sm touch-manipulation transform-gpu transition-all duration-150 ease-out"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                   onChange={(e) => {
                     const value = e.target.value.replace(/\D/g, '');
@@ -306,7 +306,7 @@ export default function UkTransfer() {
                   type="text"
                   placeholder="12345678"
                   maxLength={8}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#4a6b75] focus:border-transparent text-sm bg-white shadow-sm"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#4a6b75] focus:border-transparent text-sm bg-white shadow-sm touch-manipulation transform-gpu transition-all duration-150 ease-out"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                   onChange={(e) => {
                     const value = e.target.value.replace(/\D/g, '');

@@ -2,6 +2,66 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Performance optimizations for smooth interactions */
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+input, textarea {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
+/* Hardware acceleration for all interactive elements */
+button, a, [role="button"] {
+  transform: translateZ(0);
+  will-change: transform;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Smooth scrolling with momentum */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
+}
+
+/* Prevent layout shifts during interactions */
+.smooth-interaction {
+  backface-visibility: hidden;
+  perspective: 1000px;
+  transform: translate3d(0, 0, 0);
+}
+
+/* Optimized transitions for form elements */
+input, select, textarea {
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  will-change: border-color, box-shadow;
+}
+
+/* Smooth button press animations */
+button:active {
+  transform: translateZ(0) scale(0.98);
+}
+
+/* Prevent text selection during navigation */
+.navigation-item {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
 /* Reset and base styles */
 * {
   box-sizing: border-box;

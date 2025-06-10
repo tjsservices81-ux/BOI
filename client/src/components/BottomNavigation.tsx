@@ -54,12 +54,12 @@ export default function BottomNavigation() {
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 ios-safe-bottom z-50">
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 ios-safe-bottom z-50 smooth-interaction">
       <div className="flex justify-around items-center h-12">
         {navigationItems.map((item) => (
           <button
             key={item.id}
-            className={`flex flex-col items-center space-y-1 py-2 active:scale-95 transition-transform relative ${
+            className={`navigation-item flex flex-col items-center space-y-1 py-2 px-3 rounded-lg touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-95 relative ${
               item.isActive ? 'text-[#4a6b75]' : 'text-gray-400 hover:text-[#4a6b75]'
             }`}
             onClick={() => setLocation(item.path)}
