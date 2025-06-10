@@ -75,6 +75,16 @@ html, body {
   }
 }
 
+/* Hide scrollbar */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 /* Bank of Ireland Custom Fonts */
 @font-face {
   font-family: 'BlueMagic';

@@ -1,273 +1,209 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useState } from "react";
 import { useLocation } from "wouter";
-import useEmblaCarousel from 'embla-carousel-react';
-import { useState, useEffect } from 'react';
+import { ChevronLeft, User } from "lucide-react";
 
 export default function Cards() {
-  const [, setLocation] = useLocation();
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const [emblaRef, emblaApi] = useEmblaCarousel({ 
-    align: 'center',
-    containScroll: 'trimSnaps',
-    dragFree: false
-  });
+  const [, navigate] = useLocation();
+  const [currentCard, setCurrentCard] = useState(0);
 
-  useEffect(() => {
-    if (!emblaApi) return;
-
-    const onSelect = () => {
-      setSelectedIndex(emblaApi.selectedScrollSnap());
-    };
-
-    emblaApi.on('select', onSelect);
-    emblaApi.on('reInit', onSelect);
-    onSelect();
-
-    return () => {
-      if (emblaApi) {
-        emblaApi.off('select', onSelect);
-        emblaApi.off('reInit', onSelect);
-      }
-    };
-  }, [emblaApi]);
+  const cards = [
+    {
+      type: "DEBIT CARD",
+      bank: "Bank of Ireland",
+      number: "**** **** **** 1111",
+      name: "John Smith",
+      expiry: "05/21",
+      cvv: "***",
+      image: "/roi_debit_card_consumer-200px.png"
+    },
+    {
+      type: "CREDIT CARD", 
+      bank: "Bank of Ireland",
+      number: "**** **** **** 2222",
+      name: "John Smith", 
+      expiry: "08/24",
+      cvv: "***",
+      image: "/roi_credit_card_classic-clear-twin-personal@200.png"
+    }
+  ];
 
   return (
-    <div className="h-full bg-[#f5f5f5] overflow-hidden flex flex-col ios-safe-top ios-safe-bottom">
+    <div className="full-height relative ios-safe-top ios-safe-bottom ios-safe-left ios-safe-right bg-white">
       {/* Header */}
-      <div className="bg-[#4a6b75] text-white px-4 py-6 status-bar-safe">
-        <div className="flex items-center mb-2">
-          <button 
-            onClick={() => setLocation('/')}
-            className="mr-3 p-1 hover:bg-white/20 rounded-full transition-colors haptic-feedback"
-          >
-            <ChevronLeft className="h-5 w-5 text-white" />
-          </button>
-          <div className="flex-1">
-            <h1 className="text-lg font-medium text-white boi-regular-font">Manage Card</h1>
-          </div>
-          <button className="p-1 hover:bg-white/20 rounded-full transition-colors">
-            <img src="/contact_icon.svg" alt="Profile" className="w-5 h-5" />
-          </button>
-        </div>
+      <div className="bg-[#4a6b75] px-4 py-3 flex items-center justify-between">
+        <button 
+          onClick={() => navigate("/dashboard")}
+          className="flex items-center text-white active:scale-95 transition-transform"
+        >
+          <ChevronLeft className="w-6 h-6" />
+        </button>
+        <h1 className="text-white text-lg font-semibold" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
+          Manage Card
+        </h1>
+        <button className="text-white active:scale-95 transition-transform">
+          <User className="w-6 h-6" />
+        </button>
       </div>
 
-      {/* Card Details */}
-      <div className="flex-1 overflow-y-auto bg-white ios-scroll -mt-2">
-        <div className="bg-white rounded-t-2xl pt-6">
-          <div className="px-4 pb-4">
-            <p className="text-center text-sm text-gray-600 mb-4 boi-regular-font">DEBIT CARD -2019</p>
-            
-            {/* Swipeable Card Display */}
-            <div className="relative mb-6">
-              {/* Embla Carousel for Cards */}
-              <div className="overflow-hidden" ref={emblaRef}>
-                <div className="flex">
-                  {/* BOI Debit Card -2019 */}
-                  <div className="flex-[0_0_100%] min-w-0 relative">
-                    <div className="bg-gradient-to-br from-[#2d5a6b] to-[#1a365d] rounded-xl p-4 text-white shadow-lg relative overflow-hidden">
-                      {/* Top Row - BOI Logo and Chip */}
-                      <div className="flex justify-between items-start mb-2">
-                        <div className="flex items-center space-x-2">
-                          <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-4 filter brightness-0 invert" />
-                          <img src="/cert.svg" alt="Chip" className="w-5 h-4" />
-                        </div>
-                        <span className="text-xs boi-regular-font">Debit Card</span>
-                      </div>
-                      
-                      {/* Bank of Ireland Text */}
-                      <div className="mb-4">
-                        <p className="text-sm boi-regular-font">Bank of Ireland</p>
-                      </div>
-                      
-                      {/* Card Number */}
-                      <div className="mb-6">
-                        <p className="text-lg boi-regular-font tracking-widest">**** **** **** 2019</p>
-                      </div>
-                      
-                      {/* Bottom Row - Name and Date */}
-                      <div className="flex justify-between items-end">
-                        <div>
-                          <p className="text-sm boi-regular-font">John Smith</p>
-                          <p className="text-xs boi-regular-font">06/25 ***</p>
-                          <p className="text-xs boi-regular-font mt-1">Expires ***</p>
-                        </div>
-                        {/* VISA Logo */}
-                        <div className="flex items-center">
-                          <div className="bg-white px-3 py-1 rounded text-blue-600 text-xs boi-bold-font">
-                            VISA
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* BOI Credit Card -1111 */}
-                  <div className="flex-[0_0_100%] min-w-0 relative">
-                    <div className="bg-gradient-to-br from-[#4a90a4] to-[#4a6b75] rounded-xl p-4 text-white shadow-lg relative overflow-hidden">
-                      {/* Top Row - BOI Logo */}
-                      <div className="flex justify-between items-start mb-2">
-                        <div className="flex items-center space-x-2">
-                          <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-4 filter brightness-0 invert" />
-                          <img src="/cert.svg" alt="Chip" className="w-5 h-4" />
-                        </div>
-                        <span className="text-xs boi-regular-font">Credit Card</span>
-                      </div>
-                      
-                      {/* Bank of Ireland Text */}
-                      <div className="mb-4">
-                        <p className="text-sm boi-regular-font">Bank of Ireland</p>
-                      </div>
-                      
-                      {/* Card Number */}
-                      <div className="mb-6">
-                        <p className="text-lg boi-regular-font tracking-widest">**** **** **** 1111</p>
-                      </div>
-                      
-                      {/* Bottom Row - Name and Date */}
-                      <div className="flex justify-between items-end">
-                        <div>
-                          <p className="text-sm boi-regular-font">John Smith</p>
-                          <p className="text-xs boi-regular-font">05/27 ***</p>
-                          <p className="text-xs boi-regular-font mt-1">Expires ***</p>
-                        </div>
-                        {/* Mastercard Logo */}
-                        <div className="flex items-center">
-                          <div className="w-8 h-6 rounded-sm mr-1 flex">
-                            <div className="w-4 h-6 bg-red-500 rounded-l-sm"></div>
-                            <div className="w-4 h-6 bg-yellow-400 rounded-r-sm -ml-1"></div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Card Indicators */}
-              <div className="flex justify-center space-x-2 mt-4">
-                <div className={`w-2 h-2 rounded-full ${selectedIndex === 0 ? 'bg-[#4a6b75]' : 'bg-gray-300'}`}></div>
-                <div className={`w-2 h-2 rounded-full ${selectedIndex === 1 ? 'bg-[#4a6b75]' : 'bg-gray-300'}`}></div>
-              </div>
-            </div>
+      {/* Content */}
+      <div className="flex-1 bg-gray-50 px-4 py-6 ios-scroll overflow-y-auto">
+        {/* Card Type Label */}
+        <div className="text-center mb-6">
+          <p className="text-gray-600 text-sm font-medium" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
+            {cards[currentCard].type} - {cards[currentCard].expiry.split('/')[1]}
+          </p>
+        </div>
 
-            {/* Card Controls */}
-            <div className="space-y-4">
-              {/* Freeze Card */}
-              <div className="flex items-center justify-between p-4">
-                <div className="flex items-center space-x-3">
-                  <img src="/Icons_Fingerprint.svg" alt="Freeze" className="w-6 h-6" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-900 boi-regular-font">Freeze card</p>
-                    <p className="text-xs text-gray-500 boi-regular-font">Limit use of card for now</p>
-                  </div>
-                </div>
-                <button className="w-12 h-6 bg-gray-200 rounded-full relative transition-colors">
-                  <div className="w-5 h-5 bg-white rounded-full absolute top-0.5 left-0.5 transition-transform shadow-sm"></div>
-                  <span className="absolute right-1 top-0.5 text-xs text-gray-600 boi-bold-font">Off</span>
-                </button>
+        {/* Card Display */}
+        <div className="relative mb-8">
+          <div className="flex space-x-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide">
+            {cards.map((card, index) => (
+              <div
+                key={index}
+                className="flex-shrink-0 w-80 h-48 rounded-2xl shadow-lg snap-center relative overflow-hidden"
+              >
+                <img 
+                  src={card.image} 
+                  alt={`${card.type} - ${card.bank}`}
+                  className="w-full h-full object-cover"
+                />
               </div>
+            ))}
+          </div>
 
-              {/* Info Banner */}
-              <div className="flex items-start space-x-3 p-4 bg-blue-50 rounded-lg border border-blue-200 mb-4">
-                <img src="/faqs_icon.svg" alt="Info" className="w-6 h-6 mt-0.5" />
+          {/* Card Indicators */}
+          <div className="flex justify-center space-x-2 mt-4">
+            {cards.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentCard(index)}
+                className={`w-2 h-2 rounded-full transition-colors ${
+                  index === currentCard ? 'bg-gray-600' : 'bg-gray-300'
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Card Actions */}
+        <div className="space-y-3">
+          {/* Freeze Card */}
+          <div className="bg-white rounded-2xl p-4 ios-card">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                  <svg className="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C13.1 2 14 2.9 14 4V5.5C17.11 6.22 19.78 8.61 20.74 11.74C20.91 12.29 20.59 12.86 20.04 13.03C19.5 13.2 18.93 12.88 18.76 12.33C18.12 10.36 16.16 9 14 9H10C7.79 9 6 10.79 6 13S7.79 17 10 17H14C16.21 17 18 15.21 18 13C18 12.45 17.55 12 17 12S16 12.45 16 13C16 14.1 15.1 15 14 15H10C8.9 15 8 14.1 8 13S8.9 11 10 11H14C14.18 11 14.35 11.02 14.53 11.05V4C14.53 2.9 13.63 2 12.53 2H12Z"/>
+                  </svg>
+                </div>
                 <div>
-                  <p className="text-sm text-gray-700 boi-regular-font">
-                    If your card is lost or stolen <span className="text-blue-600 underline">contact us</span> immediately.
+                  <p className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Freeze card
+                  </p>
+                  <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Limit use of card for now
                   </p>
                 </div>
               </div>
-
-              {/* Report lost or stolen */}
-              <button 
-                className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors haptic-feedback"
-                onClick={() => alert('Report Lost or Stolen')}
-              >
-                <div className="flex items-center space-x-3">
-                  <img src="/credit_card_services.svg" alt="Report" className="w-5 h-5" />
-                  <span className="text-sm font-medium text-gray-900 boi-regular-font">Report lost or stolen</span>
+              <div className="flex items-center">
+                <span className="text-xs text-gray-500 mr-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Off
+                </span>
+                <div className="w-12 h-6 bg-gray-200 rounded-full relative">
+                  <div className="w-5 h-5 bg-white rounded-full absolute top-0.5 left-0.5 shadow-sm"></div>
                 </div>
-                <ChevronRight className="h-4 w-4 text-gray-400" />
-              </button>
-
-              {/* Replace damaged card */}
-              <button 
-                className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors haptic-feedback"
-                onClick={() => alert('Replace Damaged Card')}
-              >
-                <div className="flex items-center space-x-3">
-                  <img src="/device.svg" alt="Replace" className="w-5 h-5" />
-                  <span className="text-sm font-medium text-gray-900 boi-regular-font">Replace damaged card</span>
-                </div>
-                <ChevronRight className="h-4 w-4 text-gray-400" />
-              </button>
-
-              {/* View card PIN */}
-              <button 
-                className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors haptic-feedback"
-                onClick={() => alert('View Card PIN')}
-              >
-                <div className="flex items-center space-x-3">
-                  <img src="/bgpin.png" alt="PIN" className="w-5 h-5" />
-                  <span className="text-sm font-medium text-gray-900 boi-regular-font">View card PIN</span>
-                </div>
-                <ChevronRight className="h-4 w-4 text-gray-400" />
-              </button>
-
-              {/* Set up Apple Pay */}
-              <button 
-                className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors haptic-feedback"
-                onClick={() => alert('Set up Apple Pay')}
-              >
-                <div className="flex items-center space-x-3">
-                  <img src="/apple_Pay_Mark.svg" alt="Apple Pay" className="w-5 h-5" />
-                  <span className="text-sm font-medium text-gray-900 boi-regular-font">Set up Apple Pay</span>
-                </div>
-                <ChevronRight className="h-4 w-4 text-gray-400" />
-              </button>
+              </div>
             </div>
           </div>
+
+          {/* Report Lost or Stolen */}
+          <button className="w-full bg-white rounded-2xl p-4 ios-card flex items-center justify-between active:scale-98 transition-transform">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                <img src="/cert.svg" alt="Report" className="w-4 h-4" />
+              </div>
+              <span className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Report lost or stolen
+              </span>
+            </div>
+            <span className="text-gray-400">›</span>
+          </button>
+
+          {/* Replace Damaged Card */}
+          <button className="w-full bg-white rounded-2xl p-4 ios-card flex items-center justify-between active:scale-98 transition-transform">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                <img src="/reorder_card_icon.svg" alt="Replace" className="w-4 h-4" />
+              </div>
+              <span className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Replace damaged card
+              </span>
+            </div>
+            <span className="text-gray-400">›</span>
+          </button>
+
+          {/* View Card PIN */}
+          <button className="w-full bg-white rounded-2xl p-4 ios-card flex items-center justify-between active:scale-98 transition-transform">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                <svg className="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12,17A2,2 0 0,0 14,15C14,13.89 13.1,13 12,13A2,2 0 0,0 10,15A2,2 0 0,0 12,17M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V10C4,8.89 4.9,8 6,8H7V6A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,3A3,3 0 0,0 9,6V8H15V6A3,3 0 0,0 12,3Z"/>
+                </svg>
+              </div>
+              <span className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                View card PIN
+              </span>
+            </div>
+            <span className="text-gray-400">›</span>
+          </button>
+
+          {/* Set up Apple Pay */}
+          <button className="w-full bg-white rounded-2xl p-4 ios-card flex items-center justify-between active:scale-98 transition-transform">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                <img src="/apple_Pay_Mark.svg" alt="Apple Pay" className="w-4 h-4" />
+              </div>
+              <span className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Set up Apple Pay
+              </span>
+            </div>
+            <span className="text-gray-400">›</span>
+          </button>
         </div>
       </div>
 
       {/* Bottom Navigation */}
-      <div className="bg-white border-t border-gray-200 ios-safe-bottom">
-        <div className="flex justify-around items-center py-3">
-          <button 
-            className="flex flex-col items-center text-gray-400 hover:text-[#4a6b75] transition-colors haptic-feedback"
-            onClick={() => setLocation('/')}
-          >
-            <img src="/icon-footer-accounts.svg" alt="Accounts" className="w-5 h-5 mb-1" />
-            <span className="text-xs font-medium boi-regular-font">Accounts</span>
+      <div className="bg-white border-t border-gray-200 px-4 py-2 ios-safe-bottom">
+        <div className="flex justify-around items-center">
+          <button className="flex flex-col items-center space-y-1 py-2 active:scale-95 transition-transform">
+            <img src="/icon-footer-accounts.svg" alt="Accounts" className="w-6 h-6" />
+            <span className="text-xs text-gray-600" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
+              Accounts
+            </span>
           </button>
-          
-          <button 
-            className="flex flex-col items-center text-gray-400 hover:text-[#4a6b75] transition-colors"
-            onClick={() => alert('Payments: Transfer money, pay bills, manage payees')}
-          >
-            <img src="/icon-footer-payments.svg" alt="Payments" className="w-5 h-5 mb-1" />
-            <span className="text-xs font-medium boi-regular-font">Payments</span>
+          <button className="flex flex-col items-center space-y-1 py-2 active:scale-95 transition-transform">
+            <img src="/icon-footer-payments.svg" alt="Payments" className="w-6 h-6" />
+            <span className="text-xs text-gray-600" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
+              Payments
+            </span>
           </button>
-          
-          <button className="flex flex-col items-center text-[#4a6b75] relative">
-            <img src="/icon-footer-cards-highlight.svg" alt="Cards" className="w-5 h-5 mb-1" />
-            <span className="text-xs font-medium boi-regular-font">Cards</span>
-            <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-[#4a6b75]"></div>
+          <button className="flex flex-col items-center space-y-1 py-2 active:scale-95 transition-transform">
+            <img src="/icon-footer-cards.svg" alt="Cards" className="w-6 h-6 opacity-100" />
+            <span className="text-xs text-blue-600 font-medium" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
+              Cards
+            </span>
           </button>
-          
-          <button 
-            className="flex flex-col items-center text-gray-400 hover:text-[#4a6b75] transition-colors"
-            onClick={() => setLocation('/insights')}
-          >
-            <img src="/icon-footer-services.svg" alt="Services" className="w-5 h-5 mb-1" />
-            <span className="text-xs font-medium boi-regular-font">Services</span>
+          <button className="flex flex-col items-center space-y-1 py-2 active:scale-95 transition-transform">
+            <img src="/icon-footer-services.svg" alt="Services" className="w-6 h-6" />
+            <span className="text-xs text-gray-600" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
+              Services
+            </span>
           </button>
-          
-          <button 
-            className="flex flex-col items-center text-gray-400 hover:text-[#4a6b75] transition-colors"
-            onClick={() => alert('Apply: Apply for loans, credit cards, and other products')}
-          >
-            <img src="/icon-footer-apply.svg" alt="Apply" className="w-5 h-5 mb-1" />
-            <span className="text-xs font-medium boi-regular-font">Apply</span>
+          <button className="flex flex-col items-center space-y-1 py-2 active:scale-95 transition-transform">
+            <img src="/icon-footer-more.svg" alt="Apply" className="w-6 h-6" />
+            <span className="text-xs text-gray-600" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
+              Apply
+            </span>
           </button>
         </div>
       </div>
