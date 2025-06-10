@@ -4,6 +4,7 @@ import { ChevronLeft, Info, Check, CreditCard, Globe } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { getAccounts, processTransfer, generateReference } from "../utils/transferUtils";
 
 const ibanTransferSchema = z.object({
   recipientName: z.string().min(2, "Recipient name is required"),
@@ -34,16 +35,10 @@ export default function IbanTransfer() {
     }
   });
 
-  const accounts = [
-    { id: '1', name: 'Current Account', number: '-2091', balance: '€2,322.40' },
-    { id: '2', name: 'Credit Card', number: '-1820', balance: '€2,000.00' },
-    { id: '3', name: 'Savings Account', number: '-0978', balance: '€7,500.00' },
-    { id: '4', name: 'Personal Loan', number: '-8923', balance: '€2,500.00' },
-    { id: '5', name: 'Deposit - 365 Monthly Saver', number: '-7908', balance: '€100.00' }
-  ];
+  const accounts = getAccounts();
 
   const onSubmit = (data: IbanTransferData) => {
-    const ref = `BOI${Date.now().toString().slice(-8)}${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
+    const ref = generateReference();
     setTransferReference(ref);
     setFormData(data);
     setStep('confirm');
@@ -52,47 +47,17 @@ export default function IbanTransfer() {
   const executeTransfer = () => {
     if (!formData) return;
     
-    // Get accounts from localStorage
-    const storedAccounts = JSON.parse(localStorage.getItem('bankAccounts') || '[]');
-    const selectedAccount = storedAccounts.find((acc: any) => acc.id.toString() === formData.fromAccount);
+    const success = processTransfer(
+      formData.fromAccount,
+      parseFloat(formData.amount),
+      formData.recipientName,
+      'IBAN',
+      transferReference
+    );
     
-    if (selectedAccount) {
-      const transferAmount = parseFloat(formData.amount);
-      const currentBalance = parseFloat(selectedAccount.balance);
-      
-      if (transferAmount <= currentBalance) {
-        // Update balance
-        const newBalance = (currentBalance - transferAmount).toFixed(2);
-        
-        // Update stored accounts
-        const updatedAccounts = storedAccounts.map((acc: any) => 
-          acc.id.toString() === formData.fromAccount 
-            ? { ...acc, balance: newBalance }
-            : acc
-        );
-        localStorage.setItem('bankAccounts', JSON.stringify(updatedAccounts));
-        
-        // Dispatch balance update event
-        window.dispatchEvent(new CustomEvent('balanceUpdate', {
-          detail: { accountId: parseInt(formData.fromAccount), newBalance }
-        }));
-        
-        // Store transaction in localStorage
-        const transactions = JSON.parse(localStorage.getItem('bankTransactions') || '[]');
-        const newTransaction = {
-          id: Date.now(),
-          accountId: parseInt(formData.fromAccount),
-          amount: `-${transferAmount.toFixed(2)}`,
-          description: `IBAN Transfer to ${formData.recipientName}`,
-          category: 'transfer',
-          type: 'debit',
-          paymentMethod: 'IBAN Transfer',
-          reference: transferReference,
-          timestamp: new Date().toISOString()
-        };
-        transactions.push(newTransaction);
-        localStorage.setItem('bankTransactions', JSON.stringify(transactions));
-      }
+    if (!success) {
+      console.error('Transfer failed');
+      return;
     }
 
     setTimeout(() => {
