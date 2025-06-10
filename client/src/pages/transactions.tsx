@@ -13,8 +13,8 @@ interface Transaction {
 export default function Transactions() {
   const [location, setLocation] = useLocation();
   
-  // Parse URL parameters
-  const urlParams = new URLSearchParams(location.split('?')[1] || '');
+  // Parse URL parameters from window.location to get actual query params
+  const urlParams = new URLSearchParams(window.location.search);
   const accountType = urlParams.get('account') || 'current';
   const balance = parseFloat(urlParams.get('balance') || '2322.40');
   const accountNumber = urlParams.get('number') || '2091';
