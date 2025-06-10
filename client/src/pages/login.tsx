@@ -115,7 +115,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen relative ios-safe-top ios-safe-bottom ios-safe-left ios-safe-right">
+    <div className="full-height relative ios-safe-top ios-safe-bottom ios-safe-left ios-safe-right bg-[#4a6b75]">
       {/* Loading overlay */}
       {isNavigating && (
         <div className="fixed inset-0 bg-black bg-opacity-20 z-50 flex items-center justify-center">
@@ -144,11 +144,11 @@ export default function Login() {
         </div>
 
         {/* Main Content - Scrollable */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden ios-scroll">
           <div className="px-5 pt-8 pb-32">
             <div className="w-full max-w-xs mx-auto space-y-3">
               {/* Main White Login Card */}
-              <div className="bg-white rounded-xl p-4 shadow-xl">
+              <div className="bg-white ios-card p-4">
                 {/* Biometric Section */}
                 <div className="text-center mb-6">
                   <div 
@@ -248,19 +248,19 @@ export default function Login() {
                 <button 
                   onClick={handleLoginButton}
                   disabled={isLoading}
-                  className={`w-full py-2.5 rounded-lg font-semibold text-sm mb-3 transition-colors duration-200 ${
+                  className={`w-full py-2.5 ios-button font-semibold text-sm mb-3 transition-all duration-200 ${
                     biometricVerified || pinVerified 
-                      ? 'bg-[#4a6b75] text-white hover:bg-[#3a5a65]' 
+                      ? 'bg-[#4a6b75] text-white hover:bg-[#3a5a65] active:scale-95' 
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   } disabled:opacity-50`}
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}
                 >
                   {isLoading ? "Logging in..." : "Log in"}
                 </button>
 
                 {/* Forgot PIN */}
                 <div className="text-center mb-3">
-                  <button className="text-[#4a6b75] text-xs flex items-center justify-center space-x-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  <button className="text-[#4a6b75] text-xs flex items-center justify-center space-x-1 active:scale-95 transition-transform" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
                     <span>Forgot your PIN?</span>
                     <ExternalLink className="w-2.5 h-2.5" />
                   </button>
@@ -271,7 +271,7 @@ export default function Login() {
 
                 {/* Alternative Login */}
                 <div className="text-center">
-                  <button className="flex items-center justify-center space-x-2 text-[#4a6b75] text-xs mx-auto" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  <button className="flex items-center justify-center space-x-2 text-[#4a6b75] text-xs mx-auto active:scale-95 transition-transform" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
                     <User className="w-3 h-3" />
                     <span>Log in with another ID</span>
                   </button>
@@ -280,7 +280,7 @@ export default function Login() {
 
               {/* PIN Option Card - separate gray card */}
               <button 
-                className="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 flex items-center space-x-3 hover:bg-gray-100 transition-colors duration-150"
+                className="w-full bg-gray-50 border border-gray-200 ios-card p-3 flex items-center space-x-3 hover:bg-gray-100 active:scale-98 transition-all duration-150"
                 onClick={() => {
                   console.log("PIN button clicked, current showPinLogin:", showPinLogin);
                   setShowPinLogin(!showPinLogin);
@@ -289,14 +289,14 @@ export default function Login() {
                 <div className="w-5 h-5 bg-gray-300 rounded-full flex items-center justify-center">
                   <span className="text-gray-600 text-xs font-bold">⋯</span>
                 </div>
-                <span className="flex-1 text-left text-gray-700 text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Use your PIN instead</span>
+                <span className="flex-1 text-left text-gray-700 text-xs font-medium" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>Use your PIN instead</span>
                 <span className="text-gray-400 text-sm">›</span>
               </button>
 
               {/* PIN Login Form - shows when showPinLogin is true */}
               {showPinLogin ? (
-                <div className="bg-white rounded-xl p-4 shadow-xl border-2 border-blue-200">
-                  <h3 className="text-lg font-semibold mb-4 text-gray-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                <div className="bg-white ios-card p-4 border-2 border-blue-200">
+                  <h3 className="text-lg font-semibold mb-4 text-gray-800" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
                     Log in with PIN
                   </h3>
                   <form onSubmit={handlePinVerification} className="space-y-4">
