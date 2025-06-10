@@ -20,16 +20,20 @@ export default function TransactionHistory() {
   const { user } = useAuth();
   const [, navigate] = useLocation();
 
+  // Get account ID from URL parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const accountId = urlParams.get('accountId') || '1'; // Default to account 1
+
   const { data: accounts = [] } = useQuery<Account[]>({
     queryKey: ["/api/accounts", user?.id],
     enabled: !!user,
   });
 
-  const primaryAccount = accounts.find(acc => acc.accountType === "current");
+  const primaryAccount = accounts.find(acc => acc.id.toString() === accountId) || accounts[0];
 
   const { data: transactions = [] } = useQuery<Transaction[]>({
-    queryKey: ["/api/transactions", primaryAccount?.id],
-    enabled: !!primaryAccount,
+    queryKey: ["/api/transactions", accountId],
+    enabled: !!accountId,
   });
 
   const getTransactionIcon = (category: string) => {
@@ -39,6 +43,7 @@ export default function TransactionHistory() {
       case "salary": return ArrowDown;
       case "dining": return Utensils;
       case "utilities": return Zap;
+      case "transfer": return ArrowRightLeft;
       default: return ArrowRightLeft;
     }
   };
