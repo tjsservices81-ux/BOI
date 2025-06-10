@@ -43,29 +43,29 @@ export default function Login() {
   };
 
   return (
-    <div className="h-screen overflow-hidden relative ios-safe-top ios-safe-bottom ios-safe-left ios-safe-right">
+    <div className="min-h-screen relative ios-safe-top ios-safe-bottom ios-safe-left ios-safe-right">
       {/* Background with scenic image */}
       <div 
-        className="absolute inset-0 bg-cover bg-center"
+        className="fixed inset-0 bg-cover bg-center"
         style={{
           backgroundImage: `url('/background.jpg'), linear-gradient(135deg, #4a6b75 0%, #2d5a6b 100%)`
         }}
       />
       
       {/* Blue-green overlay matching screenshot */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#4a6b75] to-[#2d5a6b] opacity-80" />
+      <div className="fixed inset-0 bg-gradient-to-br from-[#4a6b75] to-[#2d5a6b] opacity-80" />
       
       {/* Content */}
-      <div className="relative z-10 h-full flex flex-col">
+      <div className="relative z-10 min-h-screen flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-center pt-12 pb-6">
+        <div className="flex items-center justify-center pt-12 pb-6 flex-shrink-0">
           <div className="flex items-center">
             <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-8 filter brightness-0 invert" />
           </div>
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 flex items-center justify-center px-5 pb-32">
+        <div className="flex-1 flex items-center justify-center px-5 pb-40">
           <div className="w-full max-w-sm space-y-3">
             {/* Main White Login Card */}
             <div className="bg-white rounded-xl p-6 shadow-xl">
@@ -131,7 +131,7 @@ export default function Login() {
         </div>
 
         {/* Bottom Navigation */}
-        <div className="absolute bottom-0 left-0 right-0 bg-[#4a6b75]/95 backdrop-blur-sm rounded-t-2xl px-6 py-3">
+        <div className="fixed bottom-0 left-0 right-0 bg-[#4a6b75]/95 backdrop-blur-sm rounded-t-2xl px-6 py-3 ios-safe-bottom">
           <div className="flex justify-around">
             <button className="flex flex-col items-center space-y-1 py-2">
               <img src="/branch-locator.svg" alt="ATM/Branch" className="w-4 h-4 filter brightness-0 invert" />
