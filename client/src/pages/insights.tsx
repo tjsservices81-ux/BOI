@@ -137,9 +137,7 @@ export default function Insights() {
               
               <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
                 <div className="flex items-center space-x-2">
-                  <svg className="w-4 h-4 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                  </svg>
+                  <img src="/faqs_icon.svg" alt="Warning" className="w-4 h-4" />
                   <p className="text-xs text-orange-800 boi-regular-font">Consider setting a weekend spending limit</p>
                 </div>
               </div>
@@ -176,9 +174,7 @@ export default function Insights() {
             className="flex flex-col items-center text-gray-400 hover:text-[#4a6b75] transition-colors haptic-feedback"
             onClick={() => setLocation('/')}
           >
-            <svg className="w-5 h-5 mb-1" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
-            </svg>
+            <img src="/icon-footer-accounts.svg" alt="Accounts" className="w-5 h-5 mb-1" />
             <span className="text-xs font-medium boi-regular-font">Accounts</span>
           </button>
           
@@ -186,9 +182,7 @@ export default function Insights() {
             className="flex flex-col items-center text-gray-400 hover:text-[#4a6b75] transition-colors"
             onClick={() => alert('Payments: Transfer money, pay bills, manage payees')}
           >
-            <svg className="w-5 h-5 mb-1" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-            </svg>
+            <img src="/icon-footer-payments.svg" alt="Payments" className="w-5 h-5 mb-1" />
             <span className="text-xs font-medium boi-regular-font">Payments</span>
           </button>
           
@@ -196,16 +190,12 @@ export default function Insights() {
             className="flex flex-col items-center text-gray-400 hover:text-[#4a6b75] transition-colors"
             onClick={() => setLocation('/cards')}
           >
-            <svg className="w-5 h-5 mb-1" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
-            </svg>
+            <img src="/icon-footer-cards.svg" alt="Cards" className="w-5 h-5 mb-1" />
             <span className="text-xs font-medium boi-regular-font">Cards</span>
           </button>
           
           <button className="flex flex-col items-center text-[#4a6b75] relative">
-            <svg className="w-5 h-5 mb-1" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-            </svg>
+            <img src="/icon-footer-services-highlight.svg" alt="Services" className="w-5 h-5 mb-1" />
             <span className="text-xs font-medium boi-regular-font">Services</span>
             <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-[#4a6b75]"></div>
           </button>
@@ -214,9 +204,7 @@ export default function Insights() {
             className="flex flex-col items-center text-gray-400 hover:text-[#4a6b75] transition-colors"
             onClick={() => alert('Apply: Apply for loans, credit cards, and other products')}
           >
-            <svg className="w-5 h-5 mb-1" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-            </svg>
+            <img src="/icon-footer-apply.svg" alt="Apply" className="w-5 h-5 mb-1" />
             <span className="text-xs font-medium boi-regular-font">Apply</span>
           </button>
         </div>
