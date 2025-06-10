@@ -32,9 +32,8 @@ export default function Cards() {
           <div className="px-4 pb-4">
             <p className="text-center text-sm text-gray-600 mb-4 boi-regular-font">CREDIT CARD -1111</p>
             
-            {/* Card Display */}
+            {/* Card Display - Exact BOI Layout */}
             <div className="relative mb-6">
-              {/* Card Layout exactly like BOI app */}
               <div className="flex space-x-3 mb-4">
                 {/* Card Selector */}
                 <div className="w-16 h-24 bg-[#1a365d] rounded-lg flex flex-col items-center justify-center text-white relative">
@@ -43,39 +42,44 @@ export default function Cards() {
                   <div className="absolute bottom-2 text-xs boi-bold-font">VISA</div>
                 </div>
                 
-                {/* Active Card with exact BOI styling */}
+                {/* Authentic BOI Credit Card */}
                 <div className="flex-1 relative">
-                  <div className="bg-gradient-to-br from-[#4a6b75] to-[#2d5a6b] rounded-xl p-4 text-white shadow-lg relative overflow-hidden">
-                    {/* BOI Logo and Card Type */}
-                    <div className="flex justify-between items-start mb-8">
-                      <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-4 filter brightness-0 invert" />
+                  <div className="bg-gradient-to-br from-[#4a90a4] to-[#4a6b75] rounded-xl p-4 text-white shadow-lg relative overflow-hidden">
+                    {/* Top Row - BOI Logo */}
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex items-center space-x-2">
+                        <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-4 filter brightness-0 invert" />
+                        <div className="w-6 h-4 bg-blue-600 rounded-sm flex items-center justify-center">
+                          <span className="text-white text-xs boi-bold-font">🔒</span>
+                        </div>
+                      </div>
                       <span className="text-xs boi-regular-font">Credit Card</span>
                     </div>
                     
-                    {/* Card Number */}
+                    {/* Bank of Ireland Text */}
                     <div className="mb-6">
+                      <p className="text-sm boi-regular-font opacity-90">Bank of Ireland</p>
+                    </div>
+                    
+                    {/* Card Number */}
+                    <div className="mb-4">
                       <p className="text-lg boi-regular-font tracking-wider">**** **** **** 1111</p>
                     </div>
                     
-                    {/* Cardholder and Date */}
+                    {/* Bottom Row - Name and Date */}
                     <div className="flex justify-between items-end">
                       <div>
-                        <p className="text-xs boi-regular-font mb-1">John Smith</p>
-                        <p className="text-xs boi-regular-font">05/27 ***</p>
+                        <p className="text-sm boi-regular-font">John Smith</p>
+                        <p className="text-xs boi-regular-font opacity-90">05/27 ***</p>
+                        <p className="text-xs boi-regular-font opacity-80 mt-1">Expires ***</p>
                       </div>
-                      {/* Mastercard logo */}
-                      <div className="flex items-center space-x-1">
-                        <div className="w-6 h-4 bg-red-500 rounded-sm opacity-90"></div>
-                        <div className="w-6 h-4 bg-yellow-400 rounded-sm opacity-90"></div>
+                      {/* Mastercard Logo */}
+                      <div className="flex items-center">
+                        <div className="w-8 h-6 rounded-sm mr-1 flex">
+                          <div className="w-4 h-6 bg-red-500 rounded-l-sm"></div>
+                          <div className="w-4 h-6 bg-yellow-400 rounded-r-sm -ml-1"></div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                  
-                  {/* Frozen State Overlay */}
-                  <div className="absolute inset-0 bg-gray-600 bg-opacity-70 rounded-xl flex items-center justify-center">
-                    <div className="bg-gray-700 px-4 py-2 rounded-full flex items-center space-x-2">
-                      <img src="/Icons_Fingerprint.svg" alt="Frozen" className="w-4 h-4 filter brightness-0 invert" />
-                      <span className="text-white text-sm boi-bold-font">Frozen</span>
                     </div>
                   </div>
                 </div>
@@ -99,9 +103,9 @@ export default function Cards() {
                     <p className="text-xs text-gray-500 boi-regular-font">Limit use of card for now</p>
                   </div>
                 </div>
-                <button className="w-12 h-6 bg-[#4a6b75] rounded-full relative transition-colors">
-                  <div className="w-5 h-5 bg-white rounded-full absolute top-0.5 right-0.5 transition-transform shadow-sm"></div>
-                  <span className="absolute left-1 top-0.5 text-xs text-white boi-bold-font">On</span>
+                <button className="w-12 h-6 bg-gray-200 rounded-full relative transition-colors">
+                  <div className="w-5 h-5 bg-white rounded-full absolute top-0.5 left-0.5 transition-transform shadow-sm"></div>
+                  <span className="absolute right-1 top-0.5 text-xs text-gray-600 boi-bold-font">Off</span>
                 </button>
               </div>
 
