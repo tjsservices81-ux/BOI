@@ -148,7 +148,7 @@ export default function Dashboard() {
             className="flex flex-col items-center space-y-1 py-2 text-gray-400 hover:text-[#4a6b75] transition-colors active:scale-95"
             onClick={() => setLocation('/cards')}
           >
-            <img src="/icon-footer-cards.svg" alt="Cards" className="w-6 h-6" />
+            <img src="/credit_card_services.svg" alt="Cards" className="w-6 h-6" />
             <span className="text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Cards</span>
           </button>
           
@@ -164,8 +164,8 @@ export default function Dashboard() {
             className="flex flex-col items-center space-y-1 py-2 text-gray-400 hover:text-[#4a6b75] transition-colors active:scale-95"
             onClick={() => alert('Apply: Apply for loans, credit cards, and other products')}
           >
-            <img src="/icon-footer-apply.svg" alt="Apply" className="w-6 h-6" />
-            <span className="text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Apply</span>
+            <img src="/icon-footer-more.svg" alt="More" className="w-6 h-6" />
+            <span className="text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>More</span>
           </button>
         </div>
       </div>

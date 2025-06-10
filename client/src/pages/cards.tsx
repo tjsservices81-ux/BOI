@@ -189,12 +189,12 @@ export default function Cards() {
           </button>
           <button className="flex flex-col items-center space-y-1 py-2 active:scale-95 transition-transform">
             <img src="/icon-footer-payments.svg" alt="Payments" className="w-6 h-6" />
-            <span className="text-xs text-gray-600" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
+            <span className="text-xs text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
               Payments
             </span>
           </button>
           <button className="flex flex-col items-center space-y-1 py-2 active:scale-95 transition-transform relative">
-            <img src="/icon-footer-cards-highlight.svg" alt="Cards" className="w-6 h-6" />
+            <img src="/credit_card_services.svg" alt="Cards" className="w-6 h-6" />
             <span className="text-xs text-[#4a6b75] font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>
               Cards
             </span>
@@ -210,9 +210,9 @@ export default function Cards() {
             </span>
           </button>
           <button className="flex flex-col items-center space-y-1 py-2 active:scale-95 transition-transform">
-            <img src="/icon-footer-more.svg" alt="Apply" className="w-6 h-6" />
-            <span className="text-xs text-gray-600" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
-              Apply
+            <img src="/icon-footer-more.svg" alt="More" className="w-6 h-6" />
+            <span className="text-xs text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              More
             </span>
           </button>
         </div>
