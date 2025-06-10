@@ -43,96 +43,105 @@ export default function Login() {
   };
 
   return (
-    <div className="h-screen overflow-hidden relative">
-      {/* Background with scenic image */}
+    <div className="h-screen w-full overflow-hidden relative bg-[#4a6b75]">
+      {/* iOS-style status bar simulation */}
+      <div className="h-11 bg-transparent relative z-50">
+        <div className="absolute top-2 left-4 text-white text-sm font-medium">6:27</div>
+        <div className="absolute top-2 right-4 flex items-center space-x-1">
+          <div className="w-6 h-3 border border-white/60 rounded-sm">
+            <div className="w-4 h-1 bg-white/80 rounded-xs mt-0.5 ml-0.5"></div>
+          </div>
+        </div>
+      </div>
+
+      {/* Scenic background image */}
       <div 
         className="absolute inset-0 bg-cover bg-center"
         style={{
-          backgroundImage: `url('/background.jpg'), linear-gradient(135deg, #4a6b75 0%, #2d5a6b 100%)`
+          backgroundImage: `url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600"><defs><linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:%234a6b75;stop-opacity:1" /><stop offset="50%" style="stop-color:%23517a85;stop-opacity:1" /><stop offset="100%" style="stop-color:%232d5a6b;stop-opacity:1" /></linearGradient></defs><rect width="800" height="600" fill="url(%23bg)"/><polygon points="0,400 800,300 800,600 0,600" fill="rgba(45,90,107,0.6)"/><polygon points="100,450 700,350 700,600 100,600" fill="rgba(81,122,133,0.4)"/></svg>')`
         }}
       />
       
-      {/* Blue-green overlay matching screenshot */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#4a6b75] to-[#2d5a6b] opacity-80" />
+      {/* Teal overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#4a6b75]/80 to-[#2d5a6b]/90" />
       
       {/* Content */}
-      <div className="relative z-10 h-full flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-center pt-12 pb-6">
-          <div className="flex items-center space-x-2">
-            <span className="text-white text-lg font-semibold">Bank of Ireland</span>
-            <div className="w-4 h-4 rounded-full border border-white/50 bg-white/20"></div>
+      <div className="relative z-10 h-full flex flex-col pt-6">
+        {/* Bank of Ireland Header */}
+        <div className="flex items-center justify-center pb-8">
+          <div className="flex items-center space-x-3">
+            <span className="text-white text-lg font-semibold tracking-wide" style={{ fontFamily: 'OpenSans, sans-serif' }}>Bank of Ireland</span>
+            <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-5 w-auto filter brightness-0 invert" />
           </div>
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 flex items-center justify-center px-5 pb-32">
-          <div className="w-full max-w-sm space-y-3">
+        <div className="flex-1 flex items-center justify-center px-5 pb-24">
+          <div className="w-full space-y-3">
             {/* Main White Login Card */}
-            <div className="bg-white rounded-xl p-6 shadow-xl">
+            <div className="bg-white rounded-xl p-6 shadow-2xl mx-1">
               {/* Biometric Section */}
               <div className="text-center mb-8">
                 <div className="w-16 h-16 mx-auto mb-5 relative">
-                  {/* Custom fingerprint icon matching screenshot */}
                   <svg viewBox="0 0 64 64" className="w-full h-full">
                     <defs>
                       <style>{`
-                        .fp-line { fill: none; stroke: #333; stroke-width: 2; stroke-linecap: round; }
+                        .fp-line { fill: none; stroke: #333; stroke-width: 2.5; stroke-linecap: round; }
                       `}</style>
                     </defs>
-                    {/* Fingerprint pattern */}
-                    <circle cx="32" cy="32" r="3" fill="#333" />
-                    <circle cx="32" cy="32" r="8" className="fp-line" />
-                    <circle cx="32" cy="32" r="13" className="fp-line" />
-                    <circle cx="32" cy="32" r="18" className="fp-line" />
-                    <path d="M20 32 Q32 20 44 32" className="fp-line" />
-                    <path d="M24 38 Q32 46 40 38" className="fp-line" />
-                    <path d="M18 28 Q32 16 46 28" className="fp-line" />
+                    <circle cx="32" cy="32" r="4" fill="#333" />
+                    <circle cx="32" cy="32" r="10" className="fp-line" />
+                    <circle cx="32" cy="32" r="16" className="fp-line" />
+                    <circle cx="32" cy="32" r="22" className="fp-line" />
+                    <path d="M18 32 Q32 18 46 32" className="fp-line" />
+                    <path d="M22 42 Q32 52 42 42" className="fp-line" />
+                    <path d="M16 26 Q32 12 48 26" className="fp-line" />
                   </svg>
                 </div>
-                <p className="text-gray-700 text-base">Biometric login</p>
+                <p className="text-gray-800 text-base font-normal" style={{ fontFamily: 'OpenSans, sans-serif' }}>Biometric login</p>
               </div>
 
               {/* Log in Button */}
               <button 
                 onClick={handleBiometricLogin}
                 disabled={isLoading}
-                className="w-full bg-[#4a6b75] text-white py-3.5 rounded-lg font-semibold text-base mb-4 hover:bg-[#3a5a65] disabled:opacity-50"
+                className="w-full bg-[#4a6b75] text-white py-3.5 rounded-lg font-semibold text-base mb-4 hover:bg-[#3a5a65] disabled:opacity-50 active:bg-[#2d5a6b] transition-colors"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
               >
                 {isLoading ? "Logging in..." : "Log in"}
               </button>
 
               {/* Forgot PIN */}
               <div className="text-center mb-5">
-                <button className="text-[#4a6b75] text-sm flex items-center justify-center space-x-1">
-                  <span>Forgot your PIN?</span>
-                  <span className="text-xs">↗</span>
+                <button className="text-[#4a6b75] text-sm flex items-center justify-center space-x-1 hover:text-[#3a5a65]">
+                  <span style={{ fontFamily: 'OpenSans, sans-serif' }}>Forgot your PIN?</span>
+                  <img src="/boi_back_arrow.svg" alt="Arrow" className="w-3 h-3 ml-1 transform rotate-45" />
                 </button>
               </div>
 
               {/* Divider */}
-              <div className="border-t border-gray-200 my-4"></div>
+              <div className="border-t border-gray-200 my-5"></div>
 
               {/* Alternative Login */}
               <div className="text-center">
-                <button className="flex items-center justify-center space-x-2 text-[#4a6b75] text-sm mx-auto">
-                  <User className="w-4 h-4" />
-                  <span>Log in with another ID</span>
+                <button className="flex items-center justify-center space-x-2 text-[#4a6b75] text-sm mx-auto hover:text-[#3a5a65]">
+                  <img src="/Icon_mobile.svg" alt="User" className="w-4 h-4" />
+                  <span style={{ fontFamily: 'OpenSans, sans-serif' }}>Log in with another ID</span>
                 </button>
               </div>
             </div>
 
-            {/* PIN Option Card - separate gray card */}
-            <button className="w-full bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-100">
+            {/* PIN Option Card */}
+            <button className="w-full bg-gray-50/95 border border-gray-200/80 rounded-xl p-4 flex items-center space-x-3 hover:bg-gray-100/95 active:bg-gray-200/95 transition-colors mx-1">
               <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
-                <span className="text-gray-600 text-xs font-bold">⋯</span>
+                <span className="text-gray-600 text-xs font-bold">⋯⋯⋯</span>
               </div>
               <span className="flex-1 text-left text-gray-700 text-sm font-medium">Use your PIN instead</span>
               <span className="text-gray-400 text-lg">›</span>
             </button>
 
-            {/* Approval Option Card - separate gray card */}
-            <button className="w-full bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-100">
+            {/* Approval Option Card */}
+            <button className="w-full bg-gray-50/95 border border-gray-200/80 rounded-xl p-4 flex items-center space-x-3 hover:bg-gray-100/95 active:bg-gray-200/95 transition-colors mx-1">
               <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
                 <span className="text-gray-600 text-xs">🔒</span>
               </div>
@@ -146,22 +155,25 @@ export default function Login() {
         </div>
 
         {/* Bottom Navigation */}
-        <div className="absolute bottom-0 left-0 right-0 bg-[#4a6b75]/95 backdrop-blur-sm rounded-t-2xl px-6 py-3">
+        <div className="absolute bottom-0 left-0 right-0 bg-[#4a6b75]/95 backdrop-blur-md rounded-t-3xl px-6 py-4 border-t border-white/10">
           <div className="flex justify-around">
-            <button className="flex flex-col items-center space-y-1 py-2">
-              <span className="text-white text-sm">📍</span>
+            <button className="flex flex-col items-center space-y-1.5 py-2 active:opacity-70 transition-opacity">
+              <span className="text-white text-base">📍</span>
               <span className="text-white text-xs font-medium">ATM/Branch</span>
             </button>
-            <button className="flex flex-col items-center space-y-1 py-2">
-              <span className="text-white text-sm">🛡️</span>
+            <button className="flex flex-col items-center space-y-1.5 py-2 active:opacity-70 transition-opacity">
+              <span className="text-white text-base">🛡️</span>
               <span className="text-white text-xs font-medium">Security</span>
             </button>
-            <button className="flex flex-col items-center space-y-1 py-2">
-              <span className="text-white text-sm">⋯</span>
+            <button className="flex flex-col items-center space-y-1.5 py-2 active:opacity-70 transition-opacity">
+              <span className="text-white text-base">⋯</span>
               <span className="text-white text-xs font-medium">More</span>
             </button>
           </div>
         </div>
+
+        {/* iOS home indicator */}
+        <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-white/30 rounded-full"></div>
       </div>
     </div>
   );

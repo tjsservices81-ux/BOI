@@ -18,35 +18,43 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="h-screen bg-gray-50 overflow-hidden flex flex-col">
+    <div className="h-screen w-full bg-gray-50 overflow-hidden flex flex-col">
+      {/* iOS-style status bar */}
+      <div className="h-11 bg-[#4a6b75] relative z-50">
+        <div className="absolute top-2 left-4 text-white text-sm font-medium">6:27</div>
+        <div className="absolute top-2 right-4 flex items-center space-x-1">
+          <div className="w-6 h-3 border border-white/60 rounded-sm">
+            <div className="w-4 h-1 bg-white/80 rounded-xs mt-0.5 ml-0.5"></div>
+          </div>
+        </div>
+      </div>
+
       {/* Header with scenic background matching screenshot */}
-      <div className="text-white relative flex-shrink-0 h-32">
-        {/* Full scenic background image */}
+      <div className="text-white relative flex-shrink-0 h-28">
+        {/* Scenic background image */}
         <div 
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: `url('/background.jpg')`
+            backgroundImage: `url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400"><defs><linearGradient id="scenic" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:%234a6b75;stop-opacity:1" /><stop offset="30%" style="stop-color:%23517a85;stop-opacity:1" /><stop offset="70%" style="stop-color:%235d8791;stop-opacity:1" /><stop offset="100%" style="stop-color:%232d5a6b;stop-opacity:1" /></linearGradient></defs><rect width="800" height="400" fill="url(%23scenic)"/><polygon points="0,200 800,150 800,400 0,400" fill="rgba(45,90,107,0.7)"/><polygon points="200,250 600,200 600,400 200,400" fill="rgba(93,135,145,0.5)"/></svg>')`
           }}
         />
-        {/* Teal overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#4a6b75] to-[#2d5a6b] opacity-75" />
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#4a6b75]/85 to-[#2d5a6b]/90" />
         
         <div className="relative z-10 h-full flex flex-col">
-          <div className="flex items-center justify-between p-4 pt-12">
+          <div className="flex items-center justify-between px-4 pt-3">
             <div className="flex items-center space-x-2">
-              <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
-                <div className="w-3 h-3 bg-white/40 rounded-full" />
+              <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center border border-white/30">
+                <div className="w-3 h-3 bg-white/50 rounded-full"></div>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <Button size="icon" variant="ghost" className="text-white hover:bg-white/20 h-8 w-8">
-                <User className="h-4 w-4" />
-              </Button>
-            </div>
+            <button className="text-white hover:bg-white/20 h-8 w-8 rounded-full flex items-center justify-center active:bg-white/30 transition-colors">
+              <User className="h-4 w-4" />
+            </button>
           </div>
           
           <div className="px-4 pb-4 mt-auto">
-            <h1 className="text-lg font-medium">Welcome</h1>
+            <h1 className="text-white text-lg font-medium">Welcome</h1>
             <p className="text-white/80 text-sm">Last login: 14.07 GMT 27/04/2021</p>
           </div>
         </div>
