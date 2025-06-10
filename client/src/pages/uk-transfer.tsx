@@ -39,7 +39,10 @@ export default function UkTransfer() {
 
   const accounts = [
     { id: 'current-2091', name: 'Current Account', number: '-2091', balance: '€2,322.40' },
-    { id: 'savings-0978', name: 'Savings Account', number: '-0978', balance: '€7,500.00' }
+    { id: 'credit-1820', name: 'Credit Card', number: '-1820', balance: '€2,000.00' },
+    { id: 'savings-0978', name: 'Savings Account', number: '-0978', balance: '€7,500.00' },
+    { id: 'loan-8923', name: 'Personal Loan', number: '-8923', balance: '€2,500.00' },
+    { id: 'deposit-7908', name: 'Deposit - 365 Monthly Saver', number: '-7908', balance: '€100.00' }
   ];
 
   const onSubmit = (data: UkTransferData) => {
