@@ -31,7 +31,7 @@ function AppRoutes() {
   const { user } = useAuth();
 
   return (
-    <div className="w-full mobile-viewport-fix bg-white flex flex-col">
+    <div className="w-full h-full bg-white overflow-hidden">
       <Switch>
         <Route path="/login" component={Login} />
         <Route path="/">
