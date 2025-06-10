@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { ChevronLeft, Info, Check } from "lucide-react";
+import { ChevronLeft, Info, Check, CreditCard, Globe } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -37,14 +37,12 @@ export default function IbanTransfer() {
   ];
 
   const onSubmit = (data: IbanTransferData) => {
-    // Generate professional reference number
     const ref = `BOI${Date.now().toString().slice(-8)}${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
     setTransferReference(ref);
     setStep('confirm');
   };
 
   const executeTransfer = () => {
-    // Simulate transfer processing
     setTimeout(() => {
       setStep('success');
     }, 2000);
@@ -185,114 +183,124 @@ export default function IbanTransfer() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-white ios-safe-top ios-safe-bottom">
-      <div className="bg-[#4a6b75] px-4 py-2.5 flex items-center justify-between">
+    <div className="h-screen flex flex-col bg-gray-50 ios-safe-top ios-safe-bottom">
+      <div className="bg-[#4a6b75] px-4 py-3 flex items-center justify-between shadow-sm">
         <button onClick={() => navigate('/payments')} className="flex items-center text-white">
           <ChevronLeft className="w-5 h-5 mr-2" />
-          <span className="font-medium text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>International Transfer</span>
+          <span className="font-semibold text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>International Transfer</span>
         </button>
       </div>
 
-      <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 px-3 py-4 pb-20 space-y-4">
-        {/* From Account */}
-        <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-            From Account
-          </label>
-          <select
-            {...form.register('fromAccount')}
-            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4a6b75] focus:border-transparent text-sm"
-            style={{ fontFamily: 'OpenSans, sans-serif' }}
-          >
-            <option value="">Select account</option>
-            {accounts.map(account => (
-              <option key={account.id} value={account.id}>
-                {account.name} {account.number} - {account.balance}
-              </option>
-            ))}
-          </select>
-          {form.formState.errors.fromAccount && (
-            <p className="text-red-500 text-xs mt-1">{form.formState.errors.fromAccount.message}</p>
-          )}
-        </div>
+      <div className="flex-1 px-4 py-6 pb-20">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="flex items-center mb-6">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center mr-4">
+              <Globe className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h2 className="font-bold text-gray-900 text-lg" style={{ fontFamily: 'OpenSans, sans-serif' }}>International Transfer</h2>
+              <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>SEPA and international payments</p>
+            </div>
+          </div>
 
-        {/* Recipient Name */}
-        <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-            Recipient Name
-          </label>
-          <input
-            {...form.register('recipientName')}
-            type="text"
-            placeholder="Enter recipient's full name"
-            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4a6b75] focus:border-transparent text-sm"
-            style={{ fontFamily: 'OpenSans, sans-serif' }}
-          />
-          {form.formState.errors.recipientName && (
-            <p className="text-red-500 text-xs mt-1">{form.formState.errors.recipientName.message}</p>
-          )}
-        </div>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <div className="bg-gray-50 rounded-lg p-4">
+              <label className="block text-sm font-semibold text-gray-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                <CreditCard className="w-4 h-4 inline mr-2" />
+                From Account
+              </label>
+              <select
+                {...form.register('fromAccount')}
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#4a6b75] focus:border-transparent text-sm bg-white shadow-sm"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              >
+                <option value="">Select account</option>
+                {accounts.map(account => (
+                  <option key={account.id} value={account.id}>
+                    {account.name} {account.number} - {account.balance}
+                  </option>
+                ))}
+              </select>
+              {form.formState.errors.fromAccount && (
+                <p className="text-red-500 text-xs mt-2 font-medium">{form.formState.errors.fromAccount.message}</p>
+              )}
+            </div>
 
-        {/* IBAN */}
-        <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-            IBAN
-          </label>
-          <input
-            {...form.register('iban')}
-            type="text"
-            placeholder="IE29 AIBK 9311 5212 3456 78"
-            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4a6b75] focus:border-transparent text-sm"
-            style={{ fontFamily: 'OpenSans, sans-serif' }}
-          />
-          {form.formState.errors.iban && (
-            <p className="text-red-500 text-xs mt-1">{form.formState.errors.iban.message}</p>
-          )}
-        </div>
+            <div className="bg-gray-50 rounded-lg p-4">
+              <label className="block text-sm font-semibold text-gray-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Recipient Name
+              </label>
+              <input
+                {...form.register('recipientName')}
+                type="text"
+                placeholder="Enter recipient's full name"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#4a6b75] focus:border-transparent text-sm bg-white shadow-sm"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              />
+              {form.formState.errors.recipientName && (
+                <p className="text-red-500 text-xs mt-2 font-medium">{form.formState.errors.recipientName.message}</p>
+              )}
+            </div>
 
-        {/* Amount */}
-        <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-            Amount (EUR)
-          </label>
-          <input
-            {...form.register('amount')}
-            type="number"
-            step="0.01"
-            placeholder="0.00"
-            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4a6b75] focus:border-transparent text-sm"
-            style={{ fontFamily: 'OpenSans, sans-serif' }}
-          />
-          {form.formState.errors.amount && (
-            <p className="text-red-500 text-xs mt-1">{form.formState.errors.amount.message}</p>
-          )}
-        </div>
+            <div className="bg-gray-50 rounded-lg p-4">
+              <label className="block text-sm font-semibold text-gray-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                IBAN
+              </label>
+              <input
+                {...form.register('iban')}
+                type="text"
+                placeholder="IE29 AIBK 9311 5212 3456 78"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#4a6b75] focus:border-transparent text-sm bg-white shadow-sm"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              />
+              {form.formState.errors.iban && (
+                <p className="text-red-500 text-xs mt-2 font-medium">{form.formState.errors.iban.message}</p>
+              )}
+            </div>
 
-        {/* Reference */}
-        <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-            Payment Reference
-          </label>
-          <input
-            {...form.register('reference')}
-            type="text"
-            placeholder="Payment description"
-            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#4a6b75] focus:border-transparent text-sm"
-            style={{ fontFamily: 'OpenSans, sans-serif' }}
-          />
-          {form.formState.errors.reference && (
-            <p className="text-red-500 text-xs mt-1">{form.formState.errors.reference.message}</p>
-          )}
-        </div>
+            <div className="bg-gray-50 rounded-lg p-4">
+              <label className="block text-sm font-semibold text-gray-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Amount (EUR)
+              </label>
+              <input
+                {...form.register('amount')}
+                type="number"
+                step="0.01"
+                placeholder="0.00"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#4a6b75] focus:border-transparent text-sm bg-white shadow-sm"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              />
+              {form.formState.errors.amount && (
+                <p className="text-red-500 text-xs mt-2 font-medium">{form.formState.errors.amount.message}</p>
+              )}
+            </div>
 
-        <button
-          type="submit"
-          className="w-full bg-[#4a6b75] text-white py-3 rounded-lg font-semibold active:scale-98 transition-transform text-sm"
-          style={{ fontFamily: 'OpenSans, sans-serif' }}
-        >
-          Continue
-        </button>
-      </form>
+            <div className="bg-gray-50 rounded-lg p-4">
+              <label className="block text-sm font-semibold text-gray-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Payment Reference
+              </label>
+              <input
+                {...form.register('reference')}
+                type="text"
+                placeholder="Payment description"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#4a6b75] focus:border-transparent text-sm bg-white shadow-sm"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              />
+              {form.formState.errors.reference && (
+                <p className="text-red-500 text-xs mt-2 font-medium">{form.formState.errors.reference.message}</p>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 rounded-lg font-bold active:scale-98 transition-transform text-sm shadow-md"
+              style={{ fontFamily: 'OpenSans, sans-serif' }}
+            >
+              Continue to Review
+            </button>
+          </form>
+        </div>
+      </div>
     </div>
   );
 }
