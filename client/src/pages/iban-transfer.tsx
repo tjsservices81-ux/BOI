@@ -50,14 +50,14 @@ export default function IbanTransfer() {
 
   if (step === 'success') {
     return (
-      <div className="h-screen flex flex-col bg-white ios-safe-top ios-safe-bottom">
+      <div className="bg-white">
         <div className="bg-[#4a6b75] px-4 py-3 flex items-center justify-between">
           <span className="font-medium text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
             Transfer Complete
           </span>
         </div>
 
-        <div className="flex-1 flex items-center justify-center px-4">
+        <div className="flex items-center justify-center px-4 py-20">
           <div className="text-center max-w-sm">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <Check className="w-8 h-8 text-green-600" />
@@ -110,7 +110,7 @@ export default function IbanTransfer() {
     const selectedAccount = accounts.find(acc => acc.id === formData.fromAccount);
 
     return (
-      <div className="h-screen flex flex-col bg-white ios-safe-top ios-safe-bottom">
+      <div className="bg-white">
         <div className="bg-[#4a6b75] px-4 py-3 flex items-center justify-between">
           <button onClick={() => setStep('form')} className="flex items-center text-white">
             <ChevronLeft className="w-6 h-6 mr-2" />
@@ -118,7 +118,7 @@ export default function IbanTransfer() {
           </button>
         </div>
 
-        <div className="flex-1 px-4 py-6 pb-32">
+        <div className="px-4 py-6 pb-32">
           <div className="bg-white rounded-2xl p-6 shadow-sm border mb-6">
             <h2 className="font-semibold text-gray-900 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
               Transfer Details
@@ -183,7 +183,7 @@ export default function IbanTransfer() {
   }
 
   return (
-    <div className="w-full bg-gray-50" style={{ minHeight: '100vh' }}>
+    <div className="bg-gray-50">
       <div className="bg-[#4a6b75] px-4 py-3 flex items-center justify-between shadow-sm">
         <button onClick={() => navigate('/payments')} className="flex items-center text-white">
           <ChevronLeft className="w-5 h-5 mr-2" />
@@ -191,7 +191,7 @@ export default function IbanTransfer() {
         </button>
       </div>
 
-      <div className="px-4 py-6" style={{ paddingBottom: '120px' }}>
+      <div className="px-4 py-6 pb-32">
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <div className="flex items-center mb-6">
             <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center mr-4">
