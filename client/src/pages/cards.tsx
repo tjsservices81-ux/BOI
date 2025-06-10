@@ -30,11 +30,7 @@ export default function Cards() {
   ];
 
   return (
-    <div className="full-height relative ios-safe-top ios-safe-bottom ios-safe-left ios-safe-right bg-white">
-      {/* Debug indicator */}
-      <div className="absolute top-16 right-4 bg-green-500 text-white p-2 rounded text-xs z-50">
-        Cards Page Loaded
-      </div>
+    <div className="h-screen flex flex-col bg-white ios-safe-top ios-safe-bottom">
       
       {/* Header */}
       <div className="bg-[#4a6b75] px-4 py-3 flex items-center justify-between">
@@ -180,11 +176,14 @@ export default function Cards() {
       </div>
 
       {/* Bottom Navigation */}
-      <div className="bg-white border-t border-gray-200 px-4 py-2 ios-safe-bottom">
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2 ios-safe-bottom">
         <div className="flex justify-around items-center">
-          <button className="flex flex-col items-center space-y-1 py-2 active:scale-95 transition-transform">
+          <button 
+            className="flex flex-col items-center space-y-1 py-2 active:scale-95 transition-transform"
+            onClick={() => navigate("/")}
+          >
             <img src="/icon-footer-accounts.svg" alt="Accounts" className="w-6 h-6" />
-            <span className="text-xs text-gray-600" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
+            <span className="text-xs text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
               Accounts
             </span>
           </button>
@@ -194,15 +193,19 @@ export default function Cards() {
               Payments
             </span>
           </button>
-          <button className="flex flex-col items-center space-y-1 py-2 active:scale-95 transition-transform">
-            <img src="/icon-footer-cards.svg" alt="Cards" className="w-6 h-6 opacity-100" />
-            <span className="text-xs text-blue-600 font-medium" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
+          <button className="flex flex-col items-center space-y-1 py-2 active:scale-95 transition-transform relative">
+            <img src="/icon-footer-cards-highlight.svg" alt="Cards" className="w-6 h-6" />
+            <span className="text-xs text-[#4a6b75] font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>
               Cards
             </span>
+            <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-[#4a6b75] rounded-full"></div>
           </button>
-          <button className="flex flex-col items-center space-y-1 py-2 active:scale-95 transition-transform">
+          <button 
+            className="flex flex-col items-center space-y-1 py-2 active:scale-95 transition-transform"
+            onClick={() => navigate("/insights")}
+          >
             <img src="/icon-footer-services.svg" alt="Services" className="w-6 h-6" />
-            <span className="text-xs text-gray-600" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
+            <span className="text-xs text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
               Services
             </span>
           </button>
