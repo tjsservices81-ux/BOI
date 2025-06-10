@@ -128,44 +128,44 @@ export default function Dashboard() {
       </div>
 
       {/* Bottom Navigation - matching screenshot exactly */}
-      <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200">
-        <div className="flex justify-around items-center py-3">
-          <button className="flex flex-col items-center text-[#4a6b75] relative">
-            <img src="/icon-footer-accounts-highlight.svg" alt="Accounts" className="w-5 h-5 mb-1" />
-            <span className="text-xs font-medium boi-regular-font">Accounts</span>
-            <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-[#4a6b75]"></div>
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 ios-safe-bottom">
+        <div className="flex justify-around items-center h-12">
+          <button className="flex flex-col items-center space-y-1 py-2 text-[#4a6b75] relative active:scale-95 transition-transform">
+            <img src="/icon-footer-accounts-highlight.svg" alt="Accounts" className="w-6 h-6" />
+            <span className="text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Accounts</span>
+            <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-[#4a6b75] rounded-full"></div>
           </button>
           
           <button 
-            className="flex flex-col items-center text-gray-400 hover:text-[#4a6b75] transition-colors"
+            className="flex flex-col items-center space-y-1 py-2 text-gray-400 hover:text-[#4a6b75] transition-colors active:scale-95"
             onClick={() => alert('Payments: Transfer money, pay bills, manage payees')}
           >
-            <img src="/icon-footer-payments.svg" alt="Payments" className="w-5 h-5 mb-1" />
-            <span className="text-xs font-medium boi-regular-font">Payments</span>
+            <img src="/icon-footer-payments.svg" alt="Payments" className="w-6 h-6" />
+            <span className="text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Payments</span>
           </button>
           
           <button 
-            className="flex flex-col items-center text-gray-400 hover:text-[#4a6b75] transition-colors haptic-feedback"
+            className="flex flex-col items-center space-y-1 py-2 text-gray-400 hover:text-[#4a6b75] transition-colors active:scale-95"
             onClick={() => setLocation('/cards')}
           >
-            <img src="/icon-footer-cards.svg" alt="Cards" className="w-5 h-5 mb-1" />
-            <span className="text-xs font-medium boi-regular-font">Cards</span>
+            <img src="/icon-footer-cards.svg" alt="Cards" className="w-6 h-6" />
+            <span className="text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Cards</span>
           </button>
           
           <button 
-            className="flex flex-col items-center text-gray-400 hover:text-[#4a6b75] transition-colors haptic-feedback"
+            className="flex flex-col items-center space-y-1 py-2 text-gray-400 hover:text-[#4a6b75] transition-colors active:scale-95"
             onClick={() => setLocation('/insights')}
           >
-            <img src="/icon-footer-services.svg" alt="Services" className="w-5 h-5 mb-1" />
-            <span className="text-xs font-medium boi-regular-font">Services</span>
+            <img src="/icon-footer-services.svg" alt="Services" className="w-6 h-6" />
+            <span className="text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Services</span>
           </button>
           
           <button 
-            className="flex flex-col items-center text-gray-400 hover:text-[#4a6b75] transition-colors"
+            className="flex flex-col items-center space-y-1 py-2 text-gray-400 hover:text-[#4a6b75] transition-colors active:scale-95"
             onClick={() => alert('Apply: Apply for loans, credit cards, and other products')}
           >
-            <img src="/icon-footer-apply.svg" alt="Apply" className="w-5 h-5 mb-1" />
-            <span className="text-xs font-medium boi-regular-font">Apply</span>
+            <img src="/icon-footer-apply.svg" alt="Apply" className="w-6 h-6" />
+            <span className="text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Apply</span>
           </button>
         </div>
       </div>
