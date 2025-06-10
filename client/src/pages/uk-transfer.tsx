@@ -5,8 +5,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { validateUKSortCode, formatSortCode, validateUKAccountNumber } from "../utils/bankValidation";
-import { useAuth } from "@/lib/auth";
-import { queryClient } from "@/lib/queryClient";
 
 const ukTransferSchema = z.object({
   recipientName: z.string().min(2, "Recipient name is required"),
@@ -27,7 +25,6 @@ export default function UkTransfer() {
   const [showReference, setShowReference] = useState<boolean>(false);
   const [animationProgress, setAnimationProgress] = useState<number>(0);
   const [formData, setFormData] = useState<UkTransferData | null>(null);
-  const { user } = useAuth();
 
   const form = useForm<UkTransferData>({
     resolver: zodResolver(ukTransferSchema),
@@ -42,11 +39,11 @@ export default function UkTransfer() {
   });
 
   const accounts = [
-    { id: 'current-2091', name: 'Current Account', number: '-2091', balance: '€2,322.40' },
-    { id: 'credit-1820', name: 'Credit Card', number: '-1820', balance: '€2,000.00' },
-    { id: 'savings-0978', name: 'Savings Account', number: '-0978', balance: '€7,500.00' },
-    { id: 'loan-8923', name: 'Personal Loan', number: '-8923', balance: '€2,500.00' },
-    { id: 'deposit-7908', name: 'Deposit - 365 Monthly Saver', number: '-7908', balance: '€100.00' }
+    { id: '1', name: 'Current Account', number: '-2091', balance: '€2,322.40' },
+    { id: '2', name: 'Credit Card', number: '-1820', balance: '€2,000.00' },
+    { id: '3', name: 'Savings Account', number: '-0978', balance: '€7,500.00' },
+    { id: '4', name: 'Personal Loan', number: '-8923', balance: '€2,500.00' },
+    { id: '5', name: 'Deposit - 365 Monthly Saver', number: '-7908', balance: '€100.00' }
   ];
 
   const onSubmit = (data: UkTransferData) => {
@@ -71,16 +68,24 @@ export default function UkTransfer() {
         // Update balance
         const newBalance = (currentBalance - transferAmount).toFixed(2);
         
+        // Update stored accounts
+        const updatedAccounts = storedAccounts.map((acc: any) => 
+          acc.id.toString() === formData.fromAccount 
+            ? { ...acc, balance: newBalance }
+            : acc
+        );
+        localStorage.setItem('bankAccounts', JSON.stringify(updatedAccounts));
+        
         // Dispatch balance update event
         window.dispatchEvent(new CustomEvent('balanceUpdate', {
-          detail: { accountId: selectedAccount.id, newBalance }
+          detail: { accountId: parseInt(formData.fromAccount), newBalance }
         }));
         
         // Store transaction in localStorage
         const transactions = JSON.parse(localStorage.getItem('bankTransactions') || '[]');
         const newTransaction = {
           id: Date.now(),
-          accountId: selectedAccount.id,
+          accountId: parseInt(formData.fromAccount),
           amount: `-${transferAmount.toFixed(2)}`,
           description: `Transfer to ${formData.recipientName}`,
           category: 'transfer',
