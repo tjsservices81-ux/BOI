@@ -40,7 +40,9 @@ const LoginScreen = ({ onLogin }) => {
             {/* Main login card */}
             <View style={styles.mainLoginCard}>
               <View style={styles.biometricSection}>
-                <Text style={styles.fingerprintIcon}>👆</Text>
+                <View style={styles.fingerprintIconContainer}>
+                  <Text style={styles.fingerprintIcon}>⊛</Text>
+                </View>
                 <Text style={styles.biometricTitle}>Biometric login</Text>
               </View>
 
@@ -62,22 +64,22 @@ const LoginScreen = ({ onLogin }) => {
               </TouchableOpacity>
             </View>
 
-            {/* Separate option cards */}
-            <TouchableOpacity style={styles.optionCard}>
-              <View style={styles.optionIconWrapper}>
-                <Text style={styles.dotsIcon}>⋯</Text>
+            {/* Gray option cards exactly like screenshot */}
+            <TouchableOpacity style={styles.grayOptionCard}>
+              <View style={styles.grayOptionIconWrapper}>
+                <Text style={styles.dotsIcon}>⋯⋯⋯</Text>
               </View>
-              <Text style={styles.optionText}>Use your PIN instead</Text>
+              <Text style={styles.grayOptionText}>Use your PIN instead</Text>
               <Text style={styles.chevron}>›</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.optionCard}>
-              <View style={styles.optionIconWrapper}>
-                <Text style={styles.clockIcon}>🕐</Text>
+            <TouchableOpacity style={styles.grayOptionCard}>
+              <View style={styles.grayOptionIconWrapper}>
+                <Text style={styles.lockIcon}>🔒</Text>
               </View>
               <View style={styles.optionTextContainer}>
-                <Text style={styles.optionText}>Waiting for your approval</Text>
-                <Text style={styles.optionSubtext}>Tap here to complete any unfinished actions</Text>
+                <Text style={styles.grayOptionText}>Waiting for your approval</Text>
+                <Text style={styles.grayOptionSubtext}>Tap here to complete any unfinished actions</Text>
               </View>
               <Text style={styles.chevron}>›</Text>
             </TouchableOpacity>
@@ -241,16 +243,18 @@ export default function CleanBOIApp() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#2d5a6b',
+    backgroundColor: '#4a90a4',
   },
   
   // Login Screen
   backgroundImage: {
     flex: 1,
+    width: '100%',
+    height: '100%',
   },
   gradientOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(45, 90, 107, 0.85)',
+    backgroundColor: 'rgba(74, 144, 164, 0.7)',
   },
   safeArea: {
     flex: 1,
@@ -303,22 +307,27 @@ const styles = StyleSheet.create({
   },
   biometricSection: {
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 32,
+  },
+  fingerprintIconContainer: {
+    marginBottom: 20,
   },
   fingerprintIcon: {
     fontSize: 48,
-    marginBottom: 16,
+    color: '#333',
+    textAlign: 'center',
   },
   biometricTitle: {
-    fontSize: 16,
+    fontSize: 17,
     color: '#333',
+    fontWeight: '400',
   },
   loginButton: {
-    backgroundColor: '#2d6a75',
-    borderRadius: 6,
-    paddingVertical: 12,
+    backgroundColor: '#4a90a4',
+    borderRadius: 8,
+    paddingVertical: 14,
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   loginButtonText: {
     color: 'white',
@@ -353,37 +362,44 @@ const styles = StyleSheet.create({
     color: '#2d6a75',
   },
   
-  // Separate option cards
-  optionCard: {
-    backgroundColor: 'white',
+  // Gray option cards (like in screenshot)
+  grayOptionCard: {
+    backgroundColor: '#f5f5f5',
     borderRadius: 8,
     padding: 16,
     marginBottom: 8,
     flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
   },
-  optionIconWrapper: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: '#f0f0f0',
+  grayOptionIconWrapper: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#e8e8e8',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
   },
   dotsIcon: {
-    fontSize: 16,
+    fontSize: 12,
     color: '#666',
     fontWeight: 'bold',
   },
-  clockIcon: {
-    fontSize: 14,
+  lockIcon: {
+    fontSize: 12,
     color: '#666',
+  },
+  grayOptionText: {
+    fontSize: 14,
+    color: '#333',
+    fontWeight: '500',
+  },
+  grayOptionSubtext: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 2,
   },
   optionTextContainer: {
     flex: 1,
