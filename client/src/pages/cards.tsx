@@ -59,7 +59,7 @@ export default function Cards() {
           <div className="px-4 pb-4">
             <p className="text-center text-sm text-gray-600 mb-4 boi-regular-font">CREDIT CARD -1111</p>
             
-            {/* Authentic BOI Card Display */}
+            {/* Swipeable BOI Card Display */}
             <div className="relative mb-6">
               <div className="flex space-x-3 mb-4">
                 {/* Card Selector - Exact BOI Style */}
@@ -69,42 +69,80 @@ export default function Cards() {
                   <div className="absolute bottom-2 text-xs boi-bold-font">VISA</div>
                 </div>
                 
-                {/* Single BOI Credit Card - Exact Layout */}
-                <div className="flex-1">
-                  <div className="bg-gradient-to-br from-[#4a90a4] to-[#4a6b75] rounded-xl p-4 text-white shadow-lg relative overflow-hidden">
-                    {/* Top Row */}
-                    <div className="flex justify-between items-start mb-2">
-                      <div className="flex items-center space-x-2">
-                        <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-4 filter brightness-0 invert" />
-                        <div className="w-6 h-4 bg-blue-600 rounded-sm flex items-center justify-center">
-                          <span className="text-white text-xs">🔒</span>
+                {/* Swipeable Cards Container */}
+                <div className="flex-1 overflow-hidden" ref={emblaRef}>
+                  <div className="flex">
+                    {/* First Card - Normal BOI Credit Card */}
+                    <div className="flex-[0_0_100%] min-w-0">
+                      <div className="bg-gradient-to-br from-[#4a90a4] to-[#4a6b75] rounded-xl p-4 text-white shadow-lg relative overflow-hidden">
+                        {/* Top Row */}
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="flex items-center space-x-2">
+                            <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-4 filter brightness-0 invert" />
+                            <div className="w-6 h-4 bg-blue-600 rounded-sm flex items-center justify-center">
+                              <span className="text-white text-xs">🔒</span>
+                            </div>
+                          </div>
+                          <span className="text-xs boi-regular-font">Credit Card</span>
+                        </div>
+                        
+                        {/* Bank Name */}
+                        <div className="mb-6">
+                          <p className="text-sm boi-regular-font opacity-90">Bank of Ireland</p>
+                        </div>
+                        
+                        {/* Card Number */}
+                        <div className="mb-4">
+                          <p className="text-lg boi-regular-font tracking-wider">**** **** **** 1111</p>
+                        </div>
+                        
+                        {/* Bottom Section */}
+                        <div className="flex justify-between items-end">
+                          <div>
+                            <p className="text-sm boi-regular-font">John Smith</p>
+                            <p className="text-xs boi-regular-font opacity-90">05/27 ***</p>
+                            <p className="text-xs boi-regular-font opacity-80 mt-1">Expires ***</p>
+                          </div>
+                          {/* Mastercard Logo */}
+                          <div className="flex items-center">
+                            <div className="w-8 h-5 flex">
+                              <div className="w-4 h-5 bg-red-500 rounded-l-sm"></div>
+                              <div className="w-4 h-5 bg-yellow-400 rounded-r-sm -ml-1"></div>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                      <span className="text-xs boi-regular-font">Credit Card</span>
                     </div>
                     
-                    {/* Bank Name */}
-                    <div className="mb-6">
-                      <p className="text-sm boi-regular-font opacity-90">Bank of Ireland</p>
-                    </div>
-                    
-                    {/* Card Number */}
-                    <div className="mb-4">
-                      <p className="text-lg boi-regular-font tracking-wider">**** **** **** 1111</p>
-                    </div>
-                    
-                    {/* Bottom Section */}
-                    <div className="flex justify-between items-end">
-                      <div>
-                        <p className="text-sm boi-regular-font">John Smith</p>
-                        <p className="text-xs boi-regular-font opacity-90">05/27 ***</p>
-                        <p className="text-xs boi-regular-font opacity-80 mt-1">Expires ***</p>
-                      </div>
-                      {/* Mastercard Logo */}
-                      <div className="flex items-center">
-                        <div className="w-8 h-5 flex">
-                          <div className="w-4 h-5 bg-red-500 rounded-l-sm"></div>
-                          <div className="w-4 h-5 bg-yellow-400 rounded-r-sm -ml-1"></div>
+                    {/* Second Card - Frozen BOI Card */}
+                    <div className="flex-[0_0_100%] min-w-0">
+                      <div className="bg-gray-400 rounded-xl p-4 text-white shadow-lg relative overflow-hidden">
+                        {/* Frozen Banner */}
+                        <div className="absolute top-2 left-1/2 transform -translate-x-1/2 bg-[#4a6b75] px-3 py-1 rounded-full">
+                          <div className="flex items-center space-x-1">
+                            <img src="/Icons_Fingerprint.svg" alt="Frozen" className="w-3 h-3 filter brightness-0 invert" />
+                            <span className="text-white text-xs boi-bold-font">Frozen</span>
+                          </div>
+                        </div>
+                        
+                        {/* Card Content - Grayed Out */}
+                        <div className="opacity-60 mt-8">
+                          {/* Card Number */}
+                          <div className="mb-4">
+                            <p className="text-lg boi-regular-font tracking-wider">**** **** **** 2019</p>
+                          </div>
+                          
+                          {/* Bottom Section */}
+                          <div className="flex justify-between items-end">
+                            <div>
+                              <p className="text-sm boi-regular-font">John Smith</p>
+                              <p className="text-xs boi-regular-font">06/25 ***</p>
+                            </div>
+                            {/* VISA Logo */}
+                            <div className="bg-white px-2 py-1 rounded text-gray-600 text-xs boi-bold-font">
+                              VISA
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -114,8 +152,8 @@ export default function Cards() {
               
               {/* Card Indicators */}
               <div className="flex justify-center space-x-2">
-                <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
-                <div className="w-2 h-2 bg-[#4a6b75] rounded-full"></div>
+                <div className={`w-2 h-2 rounded-full ${selectedIndex === 0 ? 'bg-[#4a6b75]' : 'bg-gray-300'}`}></div>
+                <div className={`w-2 h-2 rounded-full ${selectedIndex === 1 ? 'bg-[#4a6b75]' : 'bg-gray-300'}`}></div>
               </div>
             </div>
 
@@ -130,10 +168,17 @@ export default function Cards() {
                     <p className="text-xs text-gray-500 boi-regular-font">Limit use of card for now</p>
                   </div>
                 </div>
-                <button className="w-12 h-6 bg-gray-200 rounded-full relative transition-colors">
-                  <div className="w-5 h-5 bg-white rounded-full absolute top-0.5 left-0.5 transition-transform shadow-sm"></div>
-                  <span className="absolute right-1 top-0.5 text-xs text-gray-600 boi-bold-font">Off</span>
-                </button>
+                {selectedIndex === 1 ? (
+                  <button className="w-12 h-6 bg-[#4a6b75] rounded-full relative transition-colors">
+                    <div className="w-5 h-5 bg-white rounded-full absolute top-0.5 right-0.5 transition-transform shadow-sm"></div>
+                    <span className="absolute left-1 top-0.5 text-xs text-white boi-bold-font">On</span>
+                  </button>
+                ) : (
+                  <button className="w-12 h-6 bg-gray-200 rounded-full relative transition-colors">
+                    <div className="w-5 h-5 bg-white rounded-full absolute top-0.5 left-0.5 transition-transform shadow-sm"></div>
+                    <span className="absolute right-1 top-0.5 text-xs text-gray-600 boi-bold-font">Off</span>
+                  </button>
+                )}
               </div>
 
               {/* Info Banner */}
