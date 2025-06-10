@@ -6,6 +6,8 @@ export default function Cards() {
   const [, navigate] = useLocation();
   const [currentCard, setCurrentCard] = useState(0);
 
+  console.log("Cards component is rendering");
+
   const cards = [
     {
       type: "DEBIT CARD",
@@ -29,6 +31,11 @@ export default function Cards() {
 
   return (
     <div className="full-height relative ios-safe-top ios-safe-bottom ios-safe-left ios-safe-right bg-white">
+      {/* Debug indicator */}
+      <div className="absolute top-16 right-4 bg-green-500 text-white p-2 rounded text-xs z-50">
+        Cards Page Loaded
+      </div>
+      
       {/* Header */}
       <div className="bg-[#4a6b75] px-4 py-3 flex items-center justify-between">
         <button 

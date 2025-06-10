@@ -89,7 +89,7 @@ export default function Login() {
 
     try {
       await login({ customerNumber: "12345678", pin: "1234" });
-      navigate("/cards");
+      navigate("/");
     } catch (error) {
       toast({
         title: "Login Failed",
