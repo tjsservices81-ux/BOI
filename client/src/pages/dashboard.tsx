@@ -28,7 +28,7 @@ export default function Dashboard() {
             </div>
             <div className="flex items-center space-x-2">
               <button 
-                className="text-white hover:bg-white/20 h-8 w-8 rounded-full flex items-center justify-center transition-colors"
+                className="text-white hover:bg-white/20 h-8 w-8 rounded-full flex items-center justify-center touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-95"
                 onClick={() => alert('Profile Menu: Settings, Security, Logout')}
               >
                 <User className="h-4 w-4" />
@@ -49,7 +49,7 @@ export default function Dashboard() {
           <div className="pt-6 pb-32">
             {/* Current Account */}
             <button 
-              className="w-full flex items-center justify-between px-6 py-4 border-b border-gray-100 hover:bg-gray-50 transition-colors haptic-feedback"
+              className="w-full flex items-center justify-between px-6 py-4 border-b border-gray-100 hover:bg-gray-50 touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-98 haptic-feedback"
               onClick={() => setLocation('/transactions?account=current&balance=2322.40&number=2091')}
             >
               <div className="text-left">
@@ -64,7 +64,7 @@ export default function Dashboard() {
             
             {/* Credit Card */}
             <button 
-              className="w-full flex items-center justify-between px-6 py-4 border-b border-gray-100 hover:bg-gray-50 transition-colors haptic-feedback"
+              className="w-full flex items-center justify-between px-6 py-4 border-b border-gray-100 hover:bg-gray-50 touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-98 haptic-feedback"
               onClick={() => setLocation('/transactions?account=credit&balance=2000.00&number=1820')}
             >
               <div className="text-left">
@@ -79,7 +79,7 @@ export default function Dashboard() {
             
             {/* Savings Account */}
             <button 
-              className="w-full flex items-center justify-between px-6 py-4 border-b border-gray-100 hover:bg-gray-50 transition-colors haptic-feedback"
+              className="w-full flex items-center justify-between px-6 py-4 border-b border-gray-100 hover:bg-gray-50 touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-98 haptic-feedback"
               onClick={() => setLocation('/transactions?account=savings&balance=7500.00&number=0978')}
             >
               <div className="text-left">
@@ -94,7 +94,7 @@ export default function Dashboard() {
 
             {/* Personal Loan */}
             <button 
-              className="w-full flex items-center justify-between px-6 py-4 border-b border-gray-100 hover:bg-gray-50 transition-colors haptic-feedback"
+              className="w-full flex items-center justify-between px-6 py-4 border-b border-gray-100 hover:bg-gray-50 touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-98 haptic-feedback"
               onClick={() => setLocation('/transactions?account=loan&balance=2500.00&number=8923')}
             >
               <div className="text-left">
@@ -109,7 +109,7 @@ export default function Dashboard() {
 
             {/* Deposit */}
             <button 
-              className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors haptic-feedback"
+              className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-98 haptic-feedback"
               onClick={() => setLocation('/transactions?account=deposit&balance=100.00&number=7908')}
             >
               <div className="text-left">

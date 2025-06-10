@@ -54,6 +54,67 @@ button:active {
   transform: translateZ(0) scale(0.98);
 }
 
+/* Remove any visual delays and improve responsiveness */
+.active-scale-98:active {
+  transform: scale(0.98);
+}
+
+/* Prevent visual glitches during state changes */
+.will-change-transform {
+  will-change: transform;
+}
+
+/* Optimized hover states */
+button:hover {
+  transition-duration: 0.1s;
+}
+
+/* Eliminate tap delay on mobile */
+a, button, input, select, textarea {
+  touch-action: manipulation;
+}
+
+/* Prevent flash of unstyled content and improve performance */
+.page-container {
+  contain: layout style paint;
+}
+
+/* Optimize animations for 60fps */
+@media (prefers-reduced-motion: no-preference) {
+  * {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Reduce animations for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* GPU acceleration for critical elements */
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* Optimize focus states */
+button:focus, a:focus, input:focus, select:focus, textarea:focus {
+  outline: 2px solid #4a6b75;
+  outline-offset: 2px;
+  transition: outline-offset 0.1s ease;
+}
+
+/* Smooth state transitions */
+.state-transition {
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 /* Prevent text selection during navigation */
 .navigation-item {
   -webkit-user-select: none;

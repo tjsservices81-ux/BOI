@@ -354,7 +354,7 @@ export default function UkTransfer() {
 
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-[#4a6b75] to-[#5a7b85] text-white py-4 rounded-lg font-bold active:scale-98 transition-transform text-sm shadow-md"
+              className="w-full bg-gradient-to-r from-[#4a6b75] to-[#5a7b85] text-white py-4 rounded-lg font-bold touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-98 text-sm shadow-md"
               style={{ fontFamily: 'OpenSans, sans-serif' }}
             >
               Continue to Review
