@@ -51,7 +51,7 @@ export default function Login() {
     
     const timer = setInterval(() => {
       setHoldProgress(prev => {
-        const newProgress = prev + 5;
+        const newProgress = prev + 2;
         if (newProgress >= 100) {
           clearInterval(timer);
           setBiometricVerified(true);
@@ -66,7 +66,7 @@ export default function Login() {
         }
         return newProgress;
       });
-    }, 50);
+    }, 60);
     
     setHoldTimer(timer);
   };
