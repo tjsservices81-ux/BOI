@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { ChevronLeft, Info, Check, CreditCard, Building2 } from "lucide-react";
+import { ChevronLeft, Info, Check, CreditCard, Building2, Building } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { validateUKSortCode, formatSortCode, validateUKAccountNumber } from "../utils/bankValidation";
 
 const ukTransferSchema = z.object({
   recipientName: z.string().min(2, "Recipient name is required"),
@@ -20,6 +21,7 @@ export default function UkTransfer() {
   const [, navigate] = useLocation();
   const [step, setStep] = useState<'form' | 'confirm' | 'success'>('form');
   const [transferReference, setTransferReference] = useState<string>('');
+  const [identifiedBank, setIdentifiedBank] = useState<string>('');
 
   const form = useForm<UkTransferData>({
     resolver: zodResolver(ukTransferSchema),
@@ -267,14 +269,29 @@ export default function UkTransfer() {
                   {...form.register('sortCode')}
                   type="text"
                   placeholder="12-34-56"
-                  maxLength={6}
+                  maxLength={8}
                   className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#4a6b75] focus:border-transparent text-sm bg-white shadow-sm"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                   onChange={(e) => {
                     const value = e.target.value.replace(/\D/g, '');
+                    const formatted = formatSortCode(value);
+                    e.target.value = formatted;
                     form.setValue('sortCode', value);
+                    
+                    if (value.length >= 4) {
+                      const bank = validateUKSortCode(value);
+                      setIdentifiedBank(bank || '');
+                    } else {
+                      setIdentifiedBank('');
+                    }
                   }}
                 />
+                {identifiedBank && (
+                  <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded-md flex items-center">
+                    <Building className="w-4 h-4 text-green-600 mr-2" />
+                    <span className="text-xs text-green-700 font-medium">{identifiedBank}</span>
+                  </div>
+                )}
                 {form.formState.errors.sortCode && (
                   <p className="text-red-500 text-xs mt-2 font-medium">{form.formState.errors.sortCode.message}</p>
                 )}
