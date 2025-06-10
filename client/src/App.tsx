@@ -8,6 +8,8 @@ import { AuthProvider, useAuth } from "@/lib/auth";
 import Login from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
 import Transactions from "@/pages/transactions";
+import Cards from "@/pages/cards";
+import Insights from "@/pages/insights";
 import Transfer from "@/pages/transfer";
 import BillPay from "@/pages/bill-pay";
 import TransactionHistory from "@/pages/transaction-history";
@@ -48,6 +50,16 @@ function AppRoutes() {
         <Route path="/transactions">
           <ProtectedRoute>
             <Transactions />
+          </ProtectedRoute>
+        </Route>
+        <Route path="/cards">
+          <ProtectedRoute>
+            <Cards />
+          </ProtectedRoute>
+        </Route>
+        <Route path="/insights">
+          <ProtectedRoute>
+            <Insights />
           </ProtectedRoute>
         </Route>
         <Route path="/statements">
