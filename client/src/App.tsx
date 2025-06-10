@@ -9,6 +9,7 @@ import BottomNavigation from "@/components/BottomNavigation";
 import Login from "@/pages/login";
 import More from "@/pages/more";
 import Dashboard from "@/pages/dashboard";
+import Payments from "@/pages/payments";
 import Transactions from "@/pages/transactions";
 import Cards from "@/pages/cards";
 import Insights from "@/pages/insights";
@@ -41,6 +42,11 @@ function AppRoutes() {
         <Route path="/more" component={More} />
         <Route path="/">
           {user ? <Dashboard /> : <Redirect to="/login" />}
+        </Route>
+        <Route path="/payments">
+          <ProtectedRoute>
+            <Payments />
+          </ProtectedRoute>
         </Route>
         <Route path="/transfer">
           <ProtectedRoute>
