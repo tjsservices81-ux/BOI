@@ -18,6 +18,7 @@ export default function Login() {
   const [pinVerified, setPinVerified] = useState(false);
   const [holdTimer, setHoldTimer] = useState<NodeJS.Timeout | null>(null);
   const [holdProgress, setHoldProgress] = useState(0);
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
   const { login, isLoading } = useAuth();
   const [, navigate] = useLocation();
   const { toast } = useToast();
@@ -384,7 +385,7 @@ export default function Login() {
             </button>
             <button 
               className="flex flex-col items-center space-y-1 py-2 transition-opacity duration-150 hover:opacity-80"
-              onClick={() => handleNavigation("/more")}
+              onClick={() => setShowMoreMenu(true)}
               disabled={isNavigating || isLoading}
             >
               <img src="/more-prelogin-icon.svg" alt="More" className="w-5 h-5 filter brightness-0 invert" />
@@ -393,6 +394,75 @@ export default function Login() {
           </div>
         </div>
       </div>
+
+      {/* More Menu Modal */}
+      {showMoreMenu && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end justify-center">
+          <div className="bg-white rounded-t-3xl w-full max-w-md mx-4 mb-0 p-6 animate-slide-up">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-gray-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                More Options
+              </h3>
+              <button 
+                onClick={() => setShowMoreMenu(false)}
+                className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+              >
+                <span className="text-gray-600 text-lg">×</span>
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <button className="w-full flex items-center space-x-4 p-4 rounded-lg hover:bg-gray-50 transition-colors text-left">
+                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                  <span className="text-blue-600 text-sm">?</span>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>Help & Support</p>
+                  <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Get assistance with login</p>
+                </div>
+              </button>
+              
+              <button className="w-full flex items-center space-x-4 p-4 rounded-lg hover:bg-gray-50 transition-colors text-left">
+                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                  <span className="text-green-600 text-sm">📞</span>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>Contact Us</p>
+                  <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Phone support & branches</p>
+                </div>
+              </button>
+              
+              <button className="w-full flex items-center space-x-4 p-4 rounded-lg hover:bg-gray-50 transition-colors text-left">
+                <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                  <span className="text-orange-600 text-sm">⚙️</span>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>Accessibility</p>
+                  <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Login accessibility options</p>
+                </div>
+              </button>
+              
+              <button className="w-full flex items-center space-x-4 p-4 rounded-lg hover:bg-gray-50 transition-colors text-left">
+                <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                  <span className="text-purple-600 text-sm">🔒</span>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>Security Info</p>
+                  <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Learn about secure banking</p>
+                </div>
+              </button>
+            </div>
+            
+            <button 
+              onClick={() => setShowMoreMenu(false)}
+              className="w-full mt-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+              style={{ fontFamily: 'OpenSans, sans-serif' }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
