@@ -43,7 +43,7 @@ export default function Login() {
   };
 
   return (
-    <div className="h-screen overflow-hidden relative">
+    <div className="h-screen overflow-hidden relative ios-safe-top ios-safe-bottom ios-safe-left ios-safe-right">
       {/* Background with scenic image */}
       <div 
         className="absolute inset-0 bg-cover bg-center"
