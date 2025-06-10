@@ -58,54 +58,76 @@ export default function Login() {
       {/* Content */}
       <div className="relative z-10 h-full flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-center pt-12 pb-6">
-          <div className="flex items-center">
-            <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-8 filter brightness-0 invert" />
+        <div className="flex-shrink-0 pt-4 pb-6">
+          <div className="text-center">
+            <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-8 mx-auto mb-2 filter brightness-0 invert" />
+            <h1 className="text-white text-xl font-light" style={{ fontFamily: 'OpenSans, sans-serif' }}>Bank of Ireland</h1>
           </div>
         </div>
 
-        {/* Main Content */}
-        <div className="flex-1 flex items-center justify-center px-5 pb-32">
-          <div className="w-full max-w-sm space-y-3">
-            {/* Main White Login Card */}
-            <div className="bg-white rounded-xl p-6 shadow-xl">
-              {/* Biometric Section */}
-              <div className="text-center mb-8">
-                <div className="w-16 h-16 mx-auto mb-5 relative flex items-center justify-center">
-                  <img src="/Icons_Fingerprint.svg" alt="Fingerprint" className="w-12 h-12" />
+        {/* Main content - scrollable */}
+        <div className="flex-1 overflow-y-auto px-6 pb-24">
+          <div className="space-y-6 max-w-sm mx-auto">
+            {/* Main Login Card */}
+            <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-lg">
+              <CardContent className="p-6 space-y-6">
+                {/* Login Form */}
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="customerNumber" className="text-gray-700 text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Customer Number</Label>
+                    <Input
+                      id="customerNumber"
+                      type="text"
+                      value={customerNumber}
+                      onChange={(e) => setCustomerNumber(e.target.value)}
+                      className="border-gray-300 focus:border-[#4a6b75] focus:ring-[#4a6b75]"
+                      placeholder="Enter your customer number"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="pin" className="text-gray-700 text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>PIN</Label>
+                    <Input
+                      id="pin"
+                      type="password"
+                      value={pin}
+                      onChange={(e) => setPin(e.target.value)}
+                      className="border-gray-300 focus:border-[#4a6b75] focus:ring-[#4a6b75]"
+                      placeholder="Enter your PIN"
+                    />
+                  </div>
+                  
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full bg-[#4a6b75] hover:bg-[#3a5862] text-white py-3 rounded-lg font-medium transition-colors"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  >
+                    {isLoading ? "Logging in..." : "Log In"}
+                  </Button>
+                </form>
+
+                {/* Biometric Login */}
+                <div className="text-center">
+                  <button
+                    onClick={handleBiometricLogin}
+                    className="flex items-center justify-center space-x-2 text-[#4a6b75] text-sm mx-auto hover:underline"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  >
+                    <img src="/face-id-seeklogo.svg" alt="Face ID" className="w-4 h-4" />
+                    <span>Use Face ID / Touch ID</span>
+                  </button>
                 </div>
-                <p className="text-gray-700 text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>Biometric login</p>
-              </div>
 
-              {/* Log in Button */}
-              <button 
-                onClick={handleBiometricLogin}
-                disabled={isLoading}
-                className="w-full bg-[#4a6b75] text-white py-3.5 rounded-lg font-semibold text-base mb-4 hover:bg-[#3a5a65] disabled:opacity-50"
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
-              >
-                {isLoading ? "Logging in..." : "Log in"}
-              </button>
-
-              {/* Forgot PIN */}
-              <div className="text-center mb-5">
-                <button className="text-[#4a6b75] text-sm flex items-center justify-center space-x-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  <span>Forgot your PIN?</span>
-                  <span className="text-xs">↗</span>
-                </button>
-              </div>
-
-              {/* Divider */}
-              <div className="border-t border-gray-200 my-4"></div>
-
-              {/* Alternative Login */}
-              <div className="text-center">
-                <button className="flex items-center justify-center space-x-2 text-[#4a6b75] text-sm mx-auto" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  <User className="w-4 h-4" />
-                  <span>Log in with another ID</span>
-                </button>
-              </div>
-            </div>
+                {/* Alternative Login */}
+                <div className="text-center">
+                  <button className="flex items-center justify-center space-x-2 text-[#4a6b75] text-sm mx-auto" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    <User className="w-4 h-4" />
+                    <span>Log in with another ID</span>
+                  </button>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* PIN Option Card - separate gray card */}
             <button className="w-full bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-100">
@@ -130,21 +152,23 @@ export default function Login() {
           </div>
         </div>
 
-        {/* Bottom Navigation */}
+        {/* Bottom Navigation - Centered */}
         <div className="absolute bottom-0 left-0 right-0 bg-[#4a6b75]/95 backdrop-blur-sm rounded-t-2xl px-6 py-3">
-          <div className="flex justify-around">
-            <button className="flex flex-col items-center space-y-1 py-2">
-              <img src="/branch-locator.svg" alt="ATM/Branch" className="w-4 h-4 filter brightness-0 invert" />
-              <span className="text-white text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>ATM/Branch</span>
-            </button>
-            <button className="flex flex-col items-center space-y-1 py-2">
-              <img src="/icon_HID.svg" alt="Security" className="w-4 h-4 filter brightness-0 invert" />
-              <span className="text-white text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Security</span>
-            </button>
-            <button className="flex flex-col items-center space-y-1 py-2">
-              <img src="/more-prelogin-icon.svg" alt="More" className="w-4 h-4 filter brightness-0 invert" />
-              <span className="text-white text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>More</span>
-            </button>
+          <div className="flex justify-center">
+            <div className="flex justify-between w-full max-w-xs">
+              <button className="flex flex-col items-center space-y-1 py-2">
+                <img src="/branch-locator.svg" alt="ATM/Branch" className="w-4 h-4 filter brightness-0 invert" />
+                <span className="text-white text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>ATM/Branch</span>
+              </button>
+              <button className="flex flex-col items-center space-y-1 py-2">
+                <img src="/icon_HID.svg" alt="Security" className="w-4 h-4 filter brightness-0 invert" />
+                <span className="text-white text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Security</span>
+              </button>
+              <button className="flex flex-col items-center space-y-1 py-2">
+                <img src="/more-prelogin-icon.svg" alt="More" className="w-4 h-4 filter brightness-0 invert" />
+                <span className="text-white text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>More</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>

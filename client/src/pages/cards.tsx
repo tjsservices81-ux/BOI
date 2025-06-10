@@ -231,44 +231,46 @@ export default function Cards() {
 
       {/* Bottom Navigation */}
       <div className="bg-white border-t border-gray-200 ios-safe-bottom">
-        <div className="flex justify-around items-center py-3">
-          <button 
-            className="flex flex-col items-center text-gray-400 hover:text-[#4a6b75] transition-colors haptic-feedback"
-            onClick={() => setLocation('/')}
-          >
-            <img src="/icon-footer-accounts.svg" alt="Accounts" className="w-5 h-5 mb-1" />
-            <span className="text-xs font-medium boi-regular-font">Accounts</span>
-          </button>
-          
-          <button 
-            className="flex flex-col items-center text-gray-400 hover:text-[#4a6b75] transition-colors"
-            onClick={() => alert('Payments: Transfer money, pay bills, manage payees')}
-          >
-            <img src="/icon-footer-payments.svg" alt="Payments" className="w-5 h-5 mb-1" />
-            <span className="text-xs font-medium boi-regular-font">Payments</span>
-          </button>
-          
-          <button className="flex flex-col items-center text-[#4a6b75] relative">
-            <img src="/icon-footer-cards-highlight.svg" alt="Cards" className="w-5 h-5 mb-1" />
-            <span className="text-xs font-medium boi-regular-font">Cards</span>
-            <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-[#4a6b75]"></div>
-          </button>
-          
-          <button 
-            className="flex flex-col items-center text-gray-400 hover:text-[#4a6b75] transition-colors"
-            onClick={() => setLocation('/insights')}
-          >
-            <img src="/icon-footer-services.svg" alt="Services" className="w-5 h-5 mb-1" />
-            <span className="text-xs font-medium boi-regular-font">Services</span>
-          </button>
-          
-          <button 
-            className="flex flex-col items-center text-gray-400 hover:text-[#4a6b75] transition-colors"
-            onClick={() => alert('Apply: Apply for loans, credit cards, and other products')}
-          >
-            <img src="/icon-footer-apply.svg" alt="Apply" className="w-5 h-5 mb-1" />
-            <span className="text-xs font-medium boi-regular-font">Apply</span>
-          </button>
+        <div className="flex justify-center items-center py-3">
+          <div className="flex justify-between items-center w-full max-w-sm px-4">
+            <button 
+              className="flex flex-col items-center text-gray-400 hover:text-[#4a6b75] transition-colors haptic-feedback"
+              onClick={() => setLocation('/')}
+            >
+              <img src="/icon-footer-accounts.svg" alt="Accounts" className="w-5 h-5 mb-1" />
+              <span className="text-xs font-medium boi-regular-font">Accounts</span>
+            </button>
+            
+            <button 
+              className="flex flex-col items-center text-gray-400 hover:text-[#4a6b75] transition-colors"
+              onClick={() => alert('Payments: Transfer money, pay bills, manage payees')}
+            >
+              <img src="/icon-footer-payments.svg" alt="Payments" className="w-5 h-5 mb-1" />
+              <span className="text-xs font-medium boi-regular-font">Payments</span>
+            </button>
+            
+            <button className="flex flex-col items-center text-[#4a6b75] relative">
+              <img src="/icon-footer-cards-highlight.svg" alt="Cards" className="w-5 h-5 mb-1" />
+              <span className="text-xs font-medium boi-regular-font">Cards</span>
+              <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-[#4a6b75]"></div>
+            </button>
+            
+            <button 
+              className="flex flex-col items-center text-gray-400 hover:text-[#4a6b75] transition-colors"
+              onClick={() => setLocation('/insights')}
+            >
+              <img src="/icon-footer-services.svg" alt="Services" className="w-5 h-5 mb-1" />
+              <span className="text-xs font-medium boi-regular-font">Services</span>
+            </button>
+            
+            <button 
+              className="flex flex-col items-center text-gray-400 hover:text-[#4a6b75] transition-colors"
+              onClick={() => alert('Apply: Apply for loans, credit cards, and other products')}
+            >
+              <img src="/icon-footer-apply.svg" alt="Apply" className="w-5 h-5 mb-1" />
+              <span className="text-xs font-medium boi-regular-font">Apply</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
