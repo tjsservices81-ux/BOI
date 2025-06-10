@@ -57,11 +57,6 @@ export default function Login() {
           setBiometricVerified(true);
           setIsScanning(false);
           setHoldProgress(0);
-          toast({
-            title: "Biometric Verified",
-            description: "Press Log in to continue",
-            variant: "default",
-          });
           return 100;
         }
         return newProgress;
