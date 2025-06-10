@@ -138,56 +138,32 @@ export default function Transactions() {
             <h2 className="text-lg font-medium text-gray-800 mb-3 boi-regular-font">Recent Transactions</h2>
           </div>
           
-          <div className="divide-y divide-gray-100">
+          <div className="space-y-0">
             {transactions.map((transaction, index) => (
               <div 
                 key={transaction.id}
-                className="px-4 py-4 hover:bg-gray-50 transition-colors cursor-pointer haptic-feedback"
+                className="px-4 py-4 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer haptic-feedback"
                 onClick={() => alert(`Transaction details: ${transaction.description}\nAmount: €${Math.abs(transaction.amount).toFixed(2)}\nDate: ${transaction.date}\nBalance after: €${transaction.balance.toFixed(2)}`)}
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center space-x-3">
-                      {/* Transaction Icon */}
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                        transaction.type === 'credit' 
-                          ? 'bg-green-100' 
-                          : 'bg-gray-100'
-                      }`}>
-                        {transaction.type === 'credit' ? (
-                          <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clipRule="evenodd" />
-                          </svg>
-                        ) : (
-                          <svg className="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.707-10.293a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L9.414 11H13a1 1 0 100-2H9.414l1.293-1.293z" clipRule="evenodd" />
-                          </svg>
-                        )}
-                      </div>
-                      
-                      {/* Transaction Details */}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate boi-regular-font">
-                          {transaction.description}
-                        </p>
-                        <p className="text-xs text-gray-500 mt-0.5 boi-regular-font">
-                          {transaction.date}
-                        </p>
-                      </div>
-                    </div>
+                <div className="flex justify-between items-start">
+                  {/* Left side - Transaction info */}
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-900 boi-regular-font leading-tight">
+                      {transaction.description}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1 boi-regular-font">
+                      {transaction.date}
+                    </p>
                   </div>
                   
-                  {/* Amount and Balance */}
+                  {/* Right side - Amount */}
                   <div className="text-right ml-4">
                     <p className={`text-sm font-semibold boi-semibold-font ${
                       transaction.type === 'credit' 
                         ? 'text-green-600' 
                         : 'text-gray-900'
                     }`}>
-                      {transaction.type === 'credit' ? '+' : '-'}€{Math.abs(transaction.amount).toFixed(2)}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-0.5 boi-regular-font">
-                      €{transaction.balance.toFixed(2)}
+                      {transaction.type === 'credit' ? '+' : ''}€{transaction.amount.toFixed(2)}
                     </p>
                   </div>
                 </div>
