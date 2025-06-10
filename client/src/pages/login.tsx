@@ -64,69 +64,71 @@ export default function Login() {
           </div>
         </div>
 
-        {/* Main Content */}
-        <div className="flex-1 flex items-center justify-center px-5 pb-40">
-          <div className="w-full max-w-sm space-y-3">
-            {/* Main White Login Card */}
-            <div className="bg-white rounded-xl p-6 shadow-xl">
-              {/* Biometric Section */}
-              <div className="text-center mb-8">
-                <div className="w-16 h-16 mx-auto mb-5 relative flex items-center justify-center">
-                  <img src="/Icons_Fingerprint.svg" alt="Fingerprint" className="w-12 h-12" />
+        {/* Main Content - Scrollable */}
+        <div className="flex-1 overflow-y-auto pb-20">
+          <div className="min-h-full flex items-center justify-center px-5 py-8">
+            <div className="w-full max-w-sm space-y-3">
+              {/* Main White Login Card */}
+              <div className="bg-white rounded-xl p-6 shadow-xl">
+                {/* Biometric Section */}
+                <div className="text-center mb-8">
+                  <div className="w-16 h-16 mx-auto mb-5 relative flex items-center justify-center">
+                    <img src="/Icons_Fingerprint.svg" alt="Fingerprint" className="w-12 h-12" />
+                  </div>
+                  <p className="text-gray-700 text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>Biometric login</p>
                 </div>
-                <p className="text-gray-700 text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>Biometric login</p>
+
+                {/* Log in Button */}
+                <button 
+                  onClick={handleBiometricLogin}
+                  disabled={isLoading}
+                  className="w-full bg-[#4a6b75] text-white py-3.5 rounded-lg font-semibold text-base mb-4 hover:bg-[#3a5a65] disabled:opacity-50"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  {isLoading ? "Logging in..." : "Log in"}
+                </button>
+
+                {/* Forgot PIN */}
+                <div className="text-center mb-5">
+                  <button className="text-[#4a6b75] text-sm flex items-center justify-center space-x-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    <span>Forgot your PIN?</span>
+                    <span className="text-xs">↗</span>
+                  </button>
+                </div>
+
+                {/* Divider */}
+                <div className="border-t border-gray-200 my-4"></div>
+
+                {/* Alternative Login */}
+                <div className="text-center">
+                  <button className="flex items-center justify-center space-x-2 text-[#4a6b75] text-sm mx-auto" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    <User className="w-4 h-4" />
+                    <span>Log in with another ID</span>
+                  </button>
+                </div>
               </div>
 
-              {/* Log in Button */}
-              <button 
-                onClick={handleBiometricLogin}
-                disabled={isLoading}
-                className="w-full bg-[#4a6b75] text-white py-3.5 rounded-lg font-semibold text-base mb-4 hover:bg-[#3a5a65] disabled:opacity-50"
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
-              >
-                {isLoading ? "Logging in..." : "Log in"}
+              {/* PIN Option Card - separate gray card */}
+              <button className="w-full bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-100">
+                <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
+                  <span className="text-gray-600 text-xs font-bold">⋯</span>
+                </div>
+                <span className="flex-1 text-left text-gray-700 text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Use your PIN instead</span>
+                <span className="text-gray-400 text-lg">›</span>
               </button>
 
-              {/* Forgot PIN */}
-              <div className="text-center mb-5">
-                <button className="text-[#4a6b75] text-sm flex items-center justify-center space-x-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  <span>Forgot your PIN?</span>
-                  <span className="text-xs">↗</span>
-                </button>
-              </div>
-
-              {/* Divider */}
-              <div className="border-t border-gray-200 my-4"></div>
-
-              {/* Alternative Login */}
-              <div className="text-center">
-                <button className="flex items-center justify-center space-x-2 text-[#4a6b75] text-sm mx-auto" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  <User className="w-4 h-4" />
-                  <span>Log in with another ID</span>
-                </button>
-              </div>
+              {/* Approval Option Card - separate gray card */}
+              <button className="w-full bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-100">
+                <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
+                  <img src="/lock.svg" alt="Lock" className="w-3 h-3" />
+                </div>
+                <div className="flex-1 text-left">
+                  <div className="text-gray-700 text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Waiting for your approval</div>
+                  <div className="text-gray-500 text-xs mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>Tap here to complete any unfinished actions</div>
+                </div>
+                <span className="text-gray-400 text-lg">›</span>
+              </button>
             </div>
-
-            {/* PIN Option Card - separate gray card */}
-            <button className="w-full bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-100">
-              <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
-                <span className="text-gray-600 text-xs font-bold">⋯</span>
-              </div>
-              <span className="flex-1 text-left text-gray-700 text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Use your PIN instead</span>
-              <span className="text-gray-400 text-lg">›</span>
-            </button>
-
-            {/* Approval Option Card - separate gray card */}
-            <button className="w-full bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-100">
-              <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
-                <img src="/lock.svg" alt="Lock" className="w-3 h-3" />
-              </div>
-              <div className="flex-1 text-left">
-                <div className="text-gray-700 text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Waiting for your approval</div>
-                <div className="text-gray-500 text-xs mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>Tap here to complete any unfinished actions</div>
-              </div>
-              <span className="text-gray-400 text-lg">›</span>
-            </button>
           </div>
         </div>
 
