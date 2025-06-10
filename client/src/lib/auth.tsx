@@ -1,11 +1,15 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import type { User, LoginRequest } from "@shared/schema";
+// Simple authentication context for the banking app
+import { createContext, useContext, useState, ReactNode } from "react";
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
 
 interface AuthContextType {
   user: User | null;
-  login: (credentials: LoginRequest) => Promise<void>;
+  login: () => void;
   logout: () => void;
   isLoading: boolean;
 }
@@ -13,40 +17,31 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const queryClient = useQueryClient();
-
-  const loginMutation = useMutation({
-    mutationFn: async (credentials: LoginRequest) => {
-      const response = await apiRequest("POST", "/api/auth/login", credentials);
-      return response.json();
-    },
-    onSuccess: (data) => {
-      setUser(data.user);
-      localStorage.setItem("user", JSON.stringify(data.user));
-    },
+  const [user, setUser] = useState<User | null>({
+    id: 1,
+    name: "Sarah Murphy",
+    email: "sarah.murphy@example.com"
   });
+
+  const login = () => {
+    setUser({
+      id: 1,
+      name: "Sarah Murphy", 
+      email: "sarah.murphy@example.com"
+    });
+  };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("user");
-    queryClient.clear();
   };
-
-  useEffect(() => {
-    const savedUser = localStorage.getItem("user");
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-  }, []);
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        login: loginMutation.mutateAsync,
+        login,
         logout,
-        isLoading: loginMutation.isPending,
+        isLoading: false,
       }}
     >
       {children}
