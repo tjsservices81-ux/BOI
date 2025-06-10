@@ -14,6 +14,8 @@ export default function Login() {
   const [isNavigating, setIsNavigating] = useState(false);
   const [showPinLogin, setShowPinLogin] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
+  const [biometricVerified, setBiometricVerified] = useState(false);
+  const [pinVerified, setPinVerified] = useState(false);
   const { login, isLoading } = useAuth();
   const [, navigate] = useLocation();
   const { toast } = useToast();
@@ -43,23 +45,27 @@ export default function Login() {
     setIsScanning(true);
     
     // Simulate biometric scanning delay
-    setTimeout(async () => {
-      try {
-        await login({ customerNumber: "12345678", pin: "1234" });
-        navigate("/");
-      } catch (error) {
-        toast({
-          title: "Login Failed",
-          description: "Please try again",
-          variant: "destructive",
-        });
-      } finally {
-        setIsScanning(false);
-      }
+    setTimeout(() => {
+      setBiometricVerified(true);
+      setIsScanning(false);
+      toast({
+        title: "Biometric Verified",
+        description: "Press Log in to continue",
+        variant: "default",
+      });
     }, 2000);
   };
 
-  const handleBiometricLogin = async () => {
+  const handleLoginButton = async () => {
+    if (!biometricVerified && !pinVerified) {
+      toast({
+        title: "Authentication Required",
+        description: "Please verify with biometric or PIN first",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       await login({ customerNumber: "12345678", pin: "1234" });
       navigate("/");
@@ -72,7 +78,7 @@ export default function Login() {
     }
   };
 
-  const handlePinLogin = async (e: React.FormEvent) => {
+  const handlePinVerification = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!customerNumber || !pin) {
       toast({
@@ -82,16 +88,14 @@ export default function Login() {
       });
       return;
     }
-    try {
-      await login({ customerNumber, pin });
-      navigate("/");
-    } catch (error) {
-      toast({
-        title: "Login Failed",
-        description: "Invalid customer number or PIN. Please try again.",
-        variant: "destructive",
-      });
-    }
+    
+    // Simulate PIN verification
+    setPinVerified(true);
+    toast({
+      title: "PIN Verified",
+      description: "Press Log in to continue",
+      variant: "default",
+    });
   };
 
   return (
@@ -187,9 +191,13 @@ export default function Login() {
 
                 {/* Log in Button */}
                 <button 
-                  onClick={handleBiometricLogin}
+                  onClick={handleLoginButton}
                   disabled={isLoading}
-                  className="w-full bg-[#4a6b75] text-white py-3.5 rounded-lg font-semibold text-base mb-4 hover:bg-[#3a5a65] disabled:opacity-50"
+                  className={`w-full py-3.5 rounded-lg font-semibold text-base mb-4 transition-colors duration-200 ${
+                    biometricVerified || pinVerified 
+                      ? 'bg-[#4a6b75] text-white hover:bg-[#3a5a65]' 
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  } disabled:opacity-50`}
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                 >
                   {isLoading ? "Logging in..." : "Log in"}
@@ -236,7 +244,7 @@ export default function Login() {
                   <h3 className="text-lg font-semibold mb-4 text-gray-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     Log in with PIN
                   </h3>
-                  <form onSubmit={handlePinLogin} className="space-y-4">
+                  <form onSubmit={handlePinVerification} className="space-y-4">
                     <div>
                       <Label htmlFor="customerNumber" className="text-sm font-medium text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                         Customer Number
@@ -270,11 +278,13 @@ export default function Login() {
                     
                     <Button 
                       type="submit" 
-                      className="w-full bg-[#4a6b75] text-white hover:bg-[#3a5a65]"
-                      disabled={isLoading}
+                      className={`w-full text-white hover:bg-[#3a5a65] ${
+                        pinVerified ? 'bg-green-600' : 'bg-[#4a6b75]'
+                      }`}
+                      disabled={isLoading || pinVerified}
                       style={{ fontFamily: 'OpenSans, sans-serif' }}
                     >
-                      {isLoading ? "Logging in..." : "Log in with PIN"}
+                      {pinVerified ? "PIN Verified ✓" : "Verify PIN"}
                     </Button>
                     
                     <button
