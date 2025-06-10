@@ -70,7 +70,11 @@ function AppRoutes() {
             <BillPay />
           </ProtectedRoute>
         </Route>
-
+        <Route path="/transaction-history">
+          <ProtectedRoute>
+            <TransactionHistory />
+          </ProtectedRoute>
+        </Route>
         <Route path="/cards">
           <ProtectedRoute>
             <Cards />
