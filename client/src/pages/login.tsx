@@ -11,9 +11,17 @@ import { useToast } from "@/hooks/use-toast";
 export default function Login() {
   const [customerNumber, setCustomerNumber] = useState("");
   const [pin, setPin] = useState("");
+  const [isNavigating, setIsNavigating] = useState(false);
   const { login, isLoading } = useAuth();
   const [, navigate] = useLocation();
   const { toast } = useToast();
+
+  const handleNavigation = (path: string) => {
+    setIsNavigating(true);
+    setTimeout(() => {
+      navigate(path);
+    }, 50);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,6 +52,13 @@ export default function Login() {
 
   return (
     <div className="min-h-screen relative ios-safe-top ios-safe-bottom ios-safe-left ios-safe-right">
+      {/* Loading overlay */}
+      {isNavigating && (
+        <div className="fixed inset-0 bg-black bg-opacity-20 z-50 flex items-center justify-center">
+          <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      )}
+      
       {/* Background with scenic image */}
       <div 
         className="fixed inset-0 bg-cover bg-center"
@@ -147,7 +162,8 @@ export default function Login() {
             </button>
             <button 
               className="flex flex-col items-center space-y-1 py-2"
-              onClick={() => navigate("/more")}
+              onClick={() => handleNavigation("/more")}
+              disabled={isNavigating || isLoading}
             >
               <img src="/more-prelogin-icon.svg" alt="More" className="w-5 h-5 filter brightness-0 invert" />
               <span className="text-white text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>More</span>

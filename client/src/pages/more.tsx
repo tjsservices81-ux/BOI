@@ -1,11 +1,27 @@
 import { useLocation } from "wouter";
 import { ChevronLeft, User } from "lucide-react";
+import { useState } from "react";
 
 export default function More() {
   const [, setLocation] = useLocation();
+  const [isNavigating, setIsNavigating] = useState(false);
+
+  const handleNavigation = (path: string) => {
+    setIsNavigating(true);
+    setTimeout(() => {
+      setLocation(path);
+    }, 50);
+  };
 
   return (
     <div className="min-h-screen relative ios-safe-top ios-safe-bottom ios-safe-left ios-safe-right">
+      {/* Loading overlay */}
+      {isNavigating && (
+        <div className="fixed inset-0 bg-black bg-opacity-20 z-50 flex items-center justify-center">
+          <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      )}
+      
       {/* Background with scenic image */}
       <div 
         className="fixed inset-0 bg-cover bg-center"
@@ -22,8 +38,9 @@ export default function More() {
         {/* Header */}
         <div className="flex items-center justify-between pt-12 pb-6 px-5 flex-shrink-0">
           <button 
-            onClick={() => setLocation('/login')}
+            onClick={() => handleNavigation('/login')}
             className="flex items-center text-white"
+            disabled={isNavigating}
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
@@ -83,14 +100,16 @@ export default function More() {
           <div className="flex justify-center items-center space-x-16">
             <button 
               className="flex flex-col items-center space-y-1 py-2"
-              onClick={() => setLocation('/login')}
+              onClick={() => handleNavigation('/login')}
+              disabled={isNavigating}
             >
               <img src="/branch-locator.svg" alt="ATM/Branch" className="w-5 h-5 filter brightness-0 invert" />
               <span className="text-white text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>ATM/Branch</span>
             </button>
             <button 
               className="flex flex-col items-center space-y-1 py-2"
-              onClick={() => setLocation('/login')}
+              onClick={() => handleNavigation('/login')}
+              disabled={isNavigating}
             >
               <img src="/icon_HID.svg" alt="Security" className="w-5 h-5 filter brightness-0 invert" />
               <span className="text-white text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Security</span>
