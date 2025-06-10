@@ -34,9 +34,7 @@ export default function Dashboard() {
         <div className="relative z-10 h-full flex flex-col">
           <div className="flex items-center justify-between p-4 pt-12">
             <div className="flex items-center space-x-2">
-              <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
-                <div className="w-3 h-3 bg-white/40 rounded-full" />
-              </div>
+              <img src="/boi_logo.svg" alt="BOI Logo" className="w-6 h-6 filter brightness-0 invert" />
             </div>
             <div className="flex items-center space-x-2">
               <Button size="icon" variant="ghost" className="text-white hover:bg-white/20 h-8 w-8">
@@ -46,8 +44,8 @@ export default function Dashboard() {
           </div>
           
           <div className="px-4 pb-4 mt-auto">
-            <h1 className="text-lg font-medium">Welcome</h1>
-            <p className="text-white/80 text-sm">Last login: 14.07 GMT 27/04/2021</p>
+            <h1 className="text-lg font-medium" style={{ fontFamily: 'BlueMagic, sans-serif' }}>Welcome</h1>
+            <p className="text-white/80 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>Last login: 14.07 GMT 27/04/2021</p>
           </div>
         </div>
       </div>

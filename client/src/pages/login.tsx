@@ -60,8 +60,8 @@ export default function Login() {
         {/* Header */}
         <div className="flex items-center justify-center pt-12 pb-6">
           <div className="flex items-center space-x-2">
-            <span className="text-white text-lg font-semibold">Bank of Ireland</span>
-            <div className="w-4 h-4 rounded-full border border-white/50 bg-white/20"></div>
+            <span className="text-white text-lg font-semibold" style={{ fontFamily: 'BlueMagic, sans-serif' }}>Bank of Ireland</span>
+            <img src="/boi_logo.svg" alt="BOI Logo" className="w-5 h-5 filter brightness-0 invert" />
           </div>
         </div>
 
@@ -72,25 +72,10 @@ export default function Login() {
             <div className="bg-white rounded-xl p-6 shadow-xl">
               {/* Biometric Section */}
               <div className="text-center mb-8">
-                <div className="w-16 h-16 mx-auto mb-5 relative">
-                  {/* Custom fingerprint icon matching screenshot */}
-                  <svg viewBox="0 0 64 64" className="w-full h-full">
-                    <defs>
-                      <style>{`
-                        .fp-line { fill: none; stroke: #333; stroke-width: 2; stroke-linecap: round; }
-                      `}</style>
-                    </defs>
-                    {/* Fingerprint pattern */}
-                    <circle cx="32" cy="32" r="3" fill="#333" />
-                    <circle cx="32" cy="32" r="8" className="fp-line" />
-                    <circle cx="32" cy="32" r="13" className="fp-line" />
-                    <circle cx="32" cy="32" r="18" className="fp-line" />
-                    <path d="M20 32 Q32 20 44 32" className="fp-line" />
-                    <path d="M24 38 Q32 46 40 38" className="fp-line" />
-                    <path d="M18 28 Q32 16 46 28" className="fp-line" />
-                  </svg>
+                <div className="w-16 h-16 mx-auto mb-5 relative flex items-center justify-center">
+                  <img src="/Icons_Fingerprint.svg" alt="Fingerprint" className="w-12 h-12" />
                 </div>
-                <p className="text-gray-700 text-base">Biometric login</p>
+                <p className="text-gray-700 text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>Biometric login</p>
               </div>
 
               {/* Log in Button */}
@@ -98,13 +83,14 @@ export default function Login() {
                 onClick={handleBiometricLogin}
                 disabled={isLoading}
                 className="w-full bg-[#4a6b75] text-white py-3.5 rounded-lg font-semibold text-base mb-4 hover:bg-[#3a5a65] disabled:opacity-50"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
               >
                 {isLoading ? "Logging in..." : "Log in"}
               </button>
 
               {/* Forgot PIN */}
               <div className="text-center mb-5">
-                <button className="text-[#4a6b75] text-sm flex items-center justify-center space-x-1">
+                <button className="text-[#4a6b75] text-sm flex items-center justify-center space-x-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                   <span>Forgot your PIN?</span>
                   <span className="text-xs">↗</span>
                 </button>
@@ -115,7 +101,7 @@ export default function Login() {
 
               {/* Alternative Login */}
               <div className="text-center">
-                <button className="flex items-center justify-center space-x-2 text-[#4a6b75] text-sm mx-auto">
+                <button className="flex items-center justify-center space-x-2 text-[#4a6b75] text-sm mx-auto" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                   <User className="w-4 h-4" />
                   <span>Log in with another ID</span>
                 </button>
@@ -127,18 +113,18 @@ export default function Login() {
               <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
                 <span className="text-gray-600 text-xs font-bold">⋯</span>
               </div>
-              <span className="flex-1 text-left text-gray-700 text-sm font-medium">Use your PIN instead</span>
+              <span className="flex-1 text-left text-gray-700 text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Use your PIN instead</span>
               <span className="text-gray-400 text-lg">›</span>
             </button>
 
             {/* Approval Option Card - separate gray card */}
             <button className="w-full bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-100">
               <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
-                <span className="text-gray-600 text-xs">🔒</span>
+                <img src="/lock.svg" alt="Lock" className="w-3 h-3" />
               </div>
               <div className="flex-1 text-left">
-                <div className="text-gray-700 text-sm font-medium">Waiting for your approval</div>
-                <div className="text-gray-500 text-xs mt-0.5">Tap here to complete any unfinished actions</div>
+                <div className="text-gray-700 text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Waiting for your approval</div>
+                <div className="text-gray-500 text-xs mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>Tap here to complete any unfinished actions</div>
               </div>
               <span className="text-gray-400 text-lg">›</span>
             </button>
@@ -149,16 +135,16 @@ export default function Login() {
         <div className="absolute bottom-0 left-0 right-0 bg-[#4a6b75]/95 backdrop-blur-sm rounded-t-2xl px-6 py-3">
           <div className="flex justify-around">
             <button className="flex flex-col items-center space-y-1 py-2">
-              <span className="text-white text-sm">📍</span>
-              <span className="text-white text-xs font-medium">ATM/Branch</span>
+              <img src="/branch-locator.svg" alt="ATM/Branch" className="w-4 h-4 filter brightness-0 invert" />
+              <span className="text-white text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>ATM/Branch</span>
             </button>
             <button className="flex flex-col items-center space-y-1 py-2">
-              <span className="text-white text-sm">🛡️</span>
-              <span className="text-white text-xs font-medium">Security</span>
+              <img src="/icon_HID.svg" alt="Security" className="w-4 h-4 filter brightness-0 invert" />
+              <span className="text-white text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Security</span>
             </button>
             <button className="flex flex-col items-center space-y-1 py-2">
-              <span className="text-white text-sm">⋯</span>
-              <span className="text-white text-xs font-medium">More</span>
+              <img src="/more-prelogin-icon.svg" alt="More" className="w-4 h-4 filter brightness-0 invert" />
+              <span className="text-white text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>More</span>
             </button>
           </div>
         </div>
