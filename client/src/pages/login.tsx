@@ -56,7 +56,7 @@ export default function Login() {
       <div className="fixed inset-0 bg-gradient-to-br from-[#4a6b75] to-[#2d5a6b] opacity-80" />
       
       {/* Content */}
-      <div className="relative z-10 min-h-screen flex flex-col">
+      <div className="relative z-10 h-screen flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-center pt-12 pb-6 flex-shrink-0">
           <div className="flex items-center">
@@ -65,9 +65,9 @@ export default function Login() {
         </div>
 
         {/* Main Content - Scrollable */}
-        <div className="flex-1 overflow-y-auto pb-20">
-          <div className="min-h-full flex items-center justify-center px-5 py-8">
-            <div className="w-full max-w-sm space-y-3">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden">
+          <div className="px-5 pt-8 pb-32">
+            <div className="w-full max-w-sm mx-auto space-y-3">
               {/* Main White Login Card */}
               <div className="bg-white rounded-xl p-6 shadow-xl">
                 {/* Biometric Section */}
@@ -126,6 +126,31 @@ export default function Login() {
                   <div className="text-gray-700 text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Waiting for your approval</div>
                   <div className="text-gray-500 text-xs mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>Tap here to complete any unfinished actions</div>
                 </div>
+                <span className="text-gray-400 text-lg">›</span>
+              </button>
+
+              {/* Additional options to test scrolling */}
+              <button className="w-full bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-100">
+                <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
+                  <span className="text-gray-600 text-xs font-bold">?</span>
+                </div>
+                <span className="flex-1 text-left text-gray-700 text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Help & Support</span>
+                <span className="text-gray-400 text-lg">›</span>
+              </button>
+
+              <button className="w-full bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-100">
+                <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
+                  <span className="text-gray-600 text-xs font-bold">i</span>
+                </div>
+                <span className="flex-1 text-left text-gray-700 text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>App Information</span>
+                <span className="text-gray-400 text-lg">›</span>
+              </button>
+
+              <button className="w-full bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-100">
+                <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
+                  <span className="text-gray-600 text-xs font-bold">⚙</span>
+                </div>
+                <span className="flex-1 text-left text-gray-700 text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Settings</span>
                 <span className="text-gray-400 text-lg">›</span>
               </button>
             </div>
