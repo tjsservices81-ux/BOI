@@ -16,6 +16,8 @@ export default function Login() {
   const [isScanning, setIsScanning] = useState(false);
   const [biometricVerified, setBiometricVerified] = useState(false);
   const [pinVerified, setPinVerified] = useState(false);
+  const [holdTimer, setHoldTimer] = useState<NodeJS.Timeout | null>(null);
+  const [holdProgress, setHoldProgress] = useState(0);
   const { login, isLoading } = useAuth();
   const [, navigate] = useLocation();
   const { toast } = useToast();
@@ -41,19 +43,43 @@ export default function Login() {
     }
   };
 
-  const handleBiometricScan = async () => {
-    setIsScanning(true);
+  const handleBiometricHoldStart = () => {
+    if (biometricVerified) return;
     
-    // Simulate biometric scanning delay
-    setTimeout(() => {
-      setBiometricVerified(true);
-      setIsScanning(false);
-      toast({
-        title: "Biometric Verified",
-        description: "Press Log in to continue",
-        variant: "default",
+    setIsScanning(true);
+    setHoldProgress(0);
+    
+    const timer = setInterval(() => {
+      setHoldProgress(prev => {
+        const newProgress = prev + 5;
+        if (newProgress >= 100) {
+          clearInterval(timer);
+          setBiometricVerified(true);
+          setIsScanning(false);
+          setHoldProgress(0);
+          toast({
+            title: "Biometric Verified",
+            description: "Press Log in to continue",
+            variant: "default",
+          });
+          return 100;
+        }
+        return newProgress;
       });
-    }, 2000);
+    }, 50);
+    
+    setHoldTimer(timer);
+  };
+
+  const handleBiometricHoldEnd = () => {
+    if (holdTimer) {
+      clearInterval(holdTimer);
+      setHoldTimer(null);
+    }
+    if (!biometricVerified) {
+      setIsScanning(false);
+      setHoldProgress(0);
+    }
   };
 
   const handleLoginButton = async () => {
@@ -137,18 +163,52 @@ export default function Login() {
                 <div className="text-center mb-8">
                   <div 
                     className={`w-20 h-20 mx-auto mb-5 relative flex items-center justify-center rounded-full transition-all duration-300 cursor-pointer group ${
-                      isScanning 
-                        ? 'bg-gradient-to-br from-green-50 to-emerald-100' 
-                        : 'bg-gradient-to-br from-gray-50 to-gray-100 hover:from-blue-50 hover:to-blue-100'
+                      biometricVerified 
+                        ? 'bg-gradient-to-br from-green-50 to-emerald-100'
+                        : isScanning 
+                          ? 'bg-gradient-to-br from-blue-50 to-blue-100' 
+                          : 'bg-gradient-to-br from-gray-50 to-gray-100 hover:from-blue-50 hover:to-blue-100'
                     }`}
-                    onClick={handleBiometricScan}
+                    onMouseDown={handleBiometricHoldStart}
+                    onMouseUp={handleBiometricHoldEnd}
+                    onMouseLeave={handleBiometricHoldEnd}
+                    onTouchStart={handleBiometricHoldStart}
+                    onTouchEnd={handleBiometricHoldEnd}
                   >
+                    {/* Progress ring for holding */}
+                    {isScanning && (
+                      <div className="absolute inset-0 rounded-full">
+                        <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="45"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                            className="text-gray-200"
+                          />
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="45"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                            strokeLinecap="round"
+                            className="text-blue-500 transition-all duration-100"
+                            strokeDasharray={`${2 * Math.PI * 45}`}
+                            strokeDashoffset={`${2 * Math.PI * 45 * (1 - holdProgress / 100)}`}
+                          />
+                        </svg>
+                      </div>
+                    )}
+                    
                     {/* Animated scanning rings */}
                     {isScanning ? (
                       <>
-                        <div className="absolute inset-0 rounded-full border-2 border-green-400 animate-ping"></div>
-                        <div className="absolute inset-1 rounded-full border-2 border-green-500 animate-ping animation-delay-75"></div>
-                        <div className="absolute inset-2 rounded-full border-2 border-green-600 animate-ping animation-delay-150"></div>
+                        <div className="absolute inset-0 rounded-full border-2 border-blue-400 animate-ping"></div>
+                        <div className="absolute inset-2 rounded-full border-2 border-blue-300 animate-pulse"></div>
                       </>
                     ) : (
                       <>
@@ -163,10 +223,15 @@ export default function Login() {
                         src="/Icons_Fingerprint.svg" 
                         alt="Fingerprint" 
                         className={`w-10 h-10 transition-all duration-300 ${
-                          isScanning 
-                            ? 'filter brightness-110 hue-rotate-90' 
-                            : 'filter group-hover:brightness-110 group-hover:contrast-125'
+                          biometricVerified ? 'scale-110' : isScanning ? 'scale-105' : 'scale-100'
                         }`}
+                        style={{
+                          filter: biometricVerified 
+                            ? 'brightness(0) saturate(100%) invert(48%) sepia(79%) saturate(2476%) hue-rotate(86deg) brightness(118%) contrast(119%)'
+                            : isScanning
+                              ? 'brightness(0) saturate(100%) invert(47%) sepia(96%) saturate(1234%) hue-rotate(204deg) brightness(97%) contrast(97%)'
+                              : 'brightness(0) saturate(100%) invert(29%) sepia(16%) saturate(456%) hue-rotate(174deg) brightness(96%) contrast(88%)'
+                        }}
                       />
                       
                       {/* Scanning line effect */}
@@ -185,7 +250,7 @@ export default function Login() {
                     )}
                   </div>
                   <p className="text-gray-700 text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {isScanning ? 'Scanning fingerprint...' : 'Touch for biometric login'}
+                    {biometricVerified ? 'Fingerprint verified' : isScanning ? 'Hold to scan fingerprint...' : 'Hold for biometric login'}
                   </p>
                 </div>
 
