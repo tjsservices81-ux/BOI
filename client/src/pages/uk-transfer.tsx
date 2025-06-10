@@ -52,7 +52,7 @@ export default function UkTransfer() {
 
   if (step === 'success') {
     return (
-      <div className="bg-white">
+      <div>
         <div className="bg-[#4a6b75] px-4 py-3 flex items-center justify-between">
           <span className="font-medium text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
             Transfer Complete
@@ -112,7 +112,7 @@ export default function UkTransfer() {
     const selectedAccount = accounts.find(acc => acc.id === formData.fromAccount);
 
     return (
-      <div className="bg-white">
+      <div>
         <div className="bg-[#4a6b75] px-4 py-3 flex items-center justify-between">
           <button onClick={() => setStep('form')} className="flex items-center text-white">
             <ChevronLeft className="w-6 h-6 mr-2" />
@@ -120,7 +120,7 @@ export default function UkTransfer() {
           </button>
         </div>
 
-        <div className="px-4 py-6 pb-32">
+        <div className="px-4 py-6">
           <div className="bg-white rounded-2xl p-6 shadow-sm border mb-6">
             <h2 className="font-semibold text-gray-900 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
               Transfer Details
@@ -185,16 +185,16 @@ export default function UkTransfer() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f9fafb' }}>
-      <div className="bg-[#4a6b75] px-4 py-3 flex items-center justify-between shadow-sm sticky top-0 z-10">
+    <div className="min-h-screen bg-gray-50">
+      <div className="bg-[#4a6b75] px-4 py-3 flex items-center justify-between">
         <button onClick={() => navigate('/payments')} className="flex items-center text-white">
           <ChevronLeft className="w-5 h-5 mr-2" />
           <span className="font-semibold text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>UK Bank Transfer</span>
         </button>
       </div>
 
-      <div style={{ padding: '1.5rem 1rem', paddingBottom: '8rem' }}>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      <div className="p-4">
+        <div className="bg-white rounded-xl p-6 mb-20">
           <div className="flex items-center mb-6">
             <div className="w-12 h-12 bg-gradient-to-br from-[#4a6b75] to-[#5a7b85] rounded-xl flex items-center justify-center mr-4">
               <Building2 className="w-6 h-6 text-white" />
@@ -205,7 +205,7 @@ export default function UkTransfer() {
             </div>
           </div>
 
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="bg-gray-50 rounded-lg p-4">
               <label className="block text-sm font-semibold text-gray-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                 <CreditCard className="w-4 h-4 inline mr-2" />
