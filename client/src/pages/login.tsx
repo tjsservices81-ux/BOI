@@ -59,8 +59,8 @@ export default function Login() {
       <div className="relative z-10 h-full flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-center pt-12 pb-6">
-          <div className="flex items-center space-x-3">
-            <img src="/BOI_logo.png" alt="Bank of Ireland" className="h-6" />
+          <div className="flex items-center">
+            <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-8 filter brightness-0 invert" />
           </div>
         </div>
 
