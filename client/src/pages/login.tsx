@@ -12,6 +12,7 @@ export default function Login() {
   const [customerNumber, setCustomerNumber] = useState("");
   const [pin, setPin] = useState("");
   const [isNavigating, setIsNavigating] = useState(false);
+  const [showPinLogin, setShowPinLogin] = useState(false);
   const { login, isLoading } = useAuth();
   const [, navigate] = useLocation();
   const { toast } = useToast();
@@ -45,6 +46,28 @@ export default function Login() {
       toast({
         title: "Login Failed",
         description: "Please try again",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handlePinLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!customerNumber || !pin) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter both customer number and PIN",
+        variant: "destructive",
+      });
+      return;
+    }
+    try {
+      await login({ customerNumber, pin });
+      navigate("/");
+    } catch (error) {
+      toast({
+        title: "Login Failed",
+        description: "Invalid customer number or PIN. Please try again.",
         variant: "destructive",
       });
     }
@@ -124,13 +147,72 @@ export default function Login() {
               </div>
 
               {/* PIN Option Card - separate gray card */}
-              <button className="w-full bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-100 transition-colors duration-150">
+              <button 
+                className="w-full bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-100 transition-colors duration-150"
+                onClick={() => setShowPinLogin(!showPinLogin)}
+              >
                 <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
                   <span className="text-gray-600 text-xs font-bold">⋯</span>
                 </div>
                 <span className="flex-1 text-left text-gray-700 text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Use your PIN instead</span>
                 <span className="text-gray-400 text-lg">›</span>
               </button>
+
+              {/* PIN Login Form - shows when showPinLogin is true */}
+              {showPinLogin && (
+                <div className="bg-white rounded-xl p-6 shadow-xl">
+                  <form onSubmit={handlePinLogin} className="space-y-4">
+                    <div>
+                      <Label htmlFor="customerNumber" className="text-sm font-medium text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Customer Number
+                      </Label>
+                      <Input
+                        id="customerNumber"
+                        type="text"
+                        value={customerNumber}
+                        onChange={(e) => setCustomerNumber(e.target.value)}
+                        placeholder="Enter your customer number"
+                        className="mt-1"
+                        disabled={isLoading}
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="pin" className="text-sm font-medium text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        PIN
+                      </Label>
+                      <Input
+                        id="pin"
+                        type="password"
+                        value={pin}
+                        onChange={(e) => setPin(e.target.value)}
+                        placeholder="Enter your PIN"
+                        className="mt-1"
+                        maxLength={6}
+                        disabled={isLoading}
+                      />
+                    </div>
+                    
+                    <Button 
+                      type="submit" 
+                      className="w-full bg-[#4a6b75] text-white hover:bg-[#3a5a65]"
+                      disabled={isLoading}
+                      style={{ fontFamily: 'OpenSans, sans-serif' }}
+                    >
+                      {isLoading ? "Logging in..." : "Log in with PIN"}
+                    </Button>
+                    
+                    <button
+                      type="button"
+                      onClick={() => setShowPinLogin(false)}
+                      className="w-full text-gray-500 text-sm hover:text-gray-700 transition-colors duration-150"
+                      style={{ fontFamily: 'OpenSans, sans-serif' }}
+                    >
+                      Cancel
+                    </button>
+                  </form>
+                </div>
+              )}
 
               {/* Approval Option Card - separate gray card */}
               <button className="w-full bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-100 transition-colors duration-150">
