@@ -51,27 +51,27 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen relative ios-safe-top ios-safe-bottom ios-safe-left ios-safe-right">
+    <div className="min-h-screen relative ios-safe-top ios-safe-bottom ios-safe-left ios-safe-right animate-in fade-in duration-300">
       {/* Loading overlay */}
       {isNavigating && (
-        <div className="fixed inset-0 bg-black bg-opacity-20 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black bg-opacity-20 z-50 flex items-center justify-center animate-in fade-in duration-200">
           <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
         </div>
       )}
       
       {/* Background with scenic image */}
       <div 
-        className="fixed inset-0 bg-cover bg-center"
+        className="fixed inset-0 bg-cover bg-center transition-all duration-300"
         style={{
           backgroundImage: `url('/background.jpg'), linear-gradient(135deg, #4a6b75 0%, #2d5a6b 100%)`
         }}
       />
       
       {/* Blue-green overlay matching screenshot */}
-      <div className="fixed inset-0 bg-gradient-to-br from-[#4a6b75] to-[#2d5a6b] opacity-80" />
+      <div className="fixed inset-0 bg-gradient-to-br from-[#4a6b75] to-[#2d5a6b] opacity-80 transition-opacity duration-300" />
       
       {/* Content */}
-      <div className="relative z-10 h-screen flex flex-col">
+      <div className="relative z-10 h-screen flex flex-col animate-in slide-in-from-bottom-2 duration-500">
         {/* Header */}
         <div className="flex items-center justify-center pt-12 pb-6 flex-shrink-0">
           <div className="flex items-center">
@@ -82,9 +82,9 @@ export default function Login() {
         {/* Main Content - Scrollable */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden">
           <div className="px-5 pt-8 pb-32">
-            <div className="w-full max-w-sm mx-auto space-y-3">
+            <div className="w-full max-w-sm mx-auto space-y-3 animate-in slide-in-from-bottom-4 duration-700 delay-200">
               {/* Main White Login Card */}
-              <div className="bg-white rounded-xl p-6 shadow-xl">
+              <div className="bg-white rounded-xl p-6 shadow-xl transform transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl">
                 {/* Biometric Section */}
                 <div className="text-center mb-8">
                   <div className="w-16 h-16 mx-auto mb-5 relative flex items-center justify-center">
@@ -124,24 +124,24 @@ export default function Login() {
               </div>
 
               {/* PIN Option Card - separate gray card */}
-              <button className="w-full bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-100">
-                <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
+              <button className="w-full bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-100 transform transition-all duration-200 hover:scale-[1.01] hover:shadow-md">
+                <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center transition-colors duration-200">
                   <span className="text-gray-600 text-xs font-bold">⋯</span>
                 </div>
                 <span className="flex-1 text-left text-gray-700 text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Use your PIN instead</span>
-                <span className="text-gray-400 text-lg">›</span>
+                <span className="text-gray-400 text-lg transition-transform duration-200 group-hover:translate-x-1">›</span>
               </button>
 
               {/* Approval Option Card - separate gray card */}
-              <button className="w-full bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-100">
-                <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
+              <button className="w-full bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-100 transform transition-all duration-200 hover:scale-[1.01] hover:shadow-md">
+                <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center transition-colors duration-200">
                   <img src="/lock.svg" alt="Lock" className="w-3 h-3" />
                 </div>
                 <div className="flex-1 text-left">
                   <div className="text-gray-700 text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Waiting for your approval</div>
                   <div className="text-gray-500 text-xs mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>Tap here to complete any unfinished actions</div>
                 </div>
-                <span className="text-gray-400 text-lg">›</span>
+                <span className="text-gray-400 text-lg transition-transform duration-200 group-hover:translate-x-1">›</span>
               </button>
 
 
@@ -150,22 +150,22 @@ export default function Login() {
         </div>
 
         {/* Bottom Navigation */}
-        <div className="fixed bottom-0 left-0 right-0 bg-[#4a6b75]/95 backdrop-blur-sm rounded-t-2xl px-6 py-4 ios-safe-bottom">
-          <div className="flex justify-center items-center space-x-16">
-            <button className="flex flex-col items-center space-y-1 py-2">
-              <img src="/branch-locator.svg" alt="ATM/Branch" className="w-5 h-5 filter brightness-0 invert" />
+        <div className="fixed bottom-0 left-0 right-0 bg-[#4a6b75]/95 backdrop-blur-sm rounded-t-2xl px-4 py-4 ios-safe-bottom animate-in slide-in-from-bottom duration-500 delay-500">
+          <div className="flex justify-center items-center space-x-12 max-w-sm mx-auto">
+            <button className="flex flex-col items-center space-y-1 py-2 transform transition-all duration-200 hover:scale-110 active:scale-95">
+              <img src="/branch-locator.svg" alt="ATM/Branch" className="w-5 h-5 filter brightness-0 invert transition-transform duration-200" />
               <span className="text-white text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>ATM/Branch</span>
             </button>
-            <button className="flex flex-col items-center space-y-1 py-2">
-              <img src="/icon_HID.svg" alt="Security" className="w-5 h-5 filter brightness-0 invert" />
+            <button className="flex flex-col items-center space-y-1 py-2 transform transition-all duration-200 hover:scale-110 active:scale-95">
+              <img src="/icon_HID.svg" alt="Security" className="w-5 h-5 filter brightness-0 invert transition-transform duration-200" />
               <span className="text-white text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Security</span>
             </button>
             <button 
-              className="flex flex-col items-center space-y-1 py-2"
+              className="flex flex-col items-center space-y-1 py-2 transform transition-all duration-200 hover:scale-110 active:scale-95"
               onClick={() => handleNavigation("/more")}
               disabled={isNavigating || isLoading}
             >
-              <img src="/more-prelogin-icon.svg" alt="More" className="w-5 h-5 filter brightness-0 invert" />
+              <img src="/more-prelogin-icon.svg" alt="More" className="w-5 h-5 filter brightness-0 invert transition-transform duration-200" />
               <span className="text-white text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>More</span>
             </button>
           </div>
