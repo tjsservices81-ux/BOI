@@ -62,109 +62,84 @@ export default function TransactionHistory() {
   const thisMonthChange = 234.12; // This would be calculated from transactions
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="h-full bg-white flex flex-col ios-safe-top ios-safe-bottom">
       {/* Header */}
-      <div className="bg-white px-6 py-4 shadow-sm">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="mr-4"
-              onClick={() => navigate("/dashboard")}
-            >
-              <ArrowLeft className="text-[var(--boi-gray)]" />
-            </Button>
-            <h1 className="text-lg font-semibold text-[var(--boi-gray)]">Transaction History</h1>
+      <div className="bg-[#4a6b75] text-white px-4 py-4 flex-shrink-0">
+        <div className="flex items-center space-x-3 pt-12">
+          <button 
+            onClick={() => navigate('/dashboard')}
+            className="p-2 hover:bg-white/20 rounded-full touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-95"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <div>
+            <h1 className="text-lg font-medium boi-regular-font">Transaction History</h1>
+            <p className="text-white/75 text-sm boi-regular-font">{primaryAccount?.name || 'Current Account'} {primaryAccount?.number}</p>
           </div>
-          <Button variant="ghost" size="icon">
-            <Search className="text-[var(--boi-gray)]" />
-          </Button>
         </div>
       </div>
 
-      <div className="p-6 space-y-4">
-        {/* Balance Summary */}
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-[var(--boi-light-gray)]">Account Balance</p>
-                <p className="text-2xl font-bold text-[var(--boi-gray)]">€{currentBalance.toFixed(2)}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-sm text-[var(--boi-light-gray)]">This Month</p>
-                <p className="text-lg font-semibold text-green-600">+€{thisMonthChange.toFixed(2)}</p>
-              </div>
+      {/* Transaction List */}
+      <div className="flex-1 overflow-y-auto ios-scroll">
+        <div className="pb-32">
+          {transactions.length === 0 ? (
+            <div className="px-6 py-12 text-center">
+              <p className="text-gray-500 boi-regular-font">No transactions found</p>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Filter */}
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between border-b border-gray-100 pb-4">
-              <h3 className="font-medium text-[var(--boi-gray)]">Filter by Date</h3>
-              <Button variant="ghost" className="text-[var(--boi-green)] text-sm font-medium">
-                This Month
-              </Button>
-            </div>
-
-            {/* Transactions List */}
-            <div className="divide-y divide-gray-100 -mx-4">
+          ) : (
+            <div className="divide-y divide-gray-100">
               {transactions.map((transaction) => {
                 const IconComponent = getTransactionIcon(transaction.category);
                 const isCredit = transaction.type === "credit";
                 
                 return (
-                  <div key={transaction.id} className="p-4 hover:bg-gray-50 transition-colors">
+                  <div key={transaction.id} className="px-6 py-4 hover:bg-gray-50">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 ${
-                          isCredit ? "bg-green-100" : "bg-gray-100"
+                      <div className="flex items-center space-x-3">
+                        <div className={`p-2 rounded-full ${
+                          isCredit ? 'bg-green-100' : 'bg-gray-100'
                         }`}>
-                          <IconComponent className={`w-4 h-4 ${
-                            isCredit ? "text-green-600" : "text-[var(--boi-light-gray)]"
+                          <IconComponent className={`h-4 w-4 ${
+                            isCredit ? 'text-green-600' : 'text-gray-600'
                           }`} />
                         </div>
                         <div>
-                          <p className="font-medium text-[var(--boi-gray)]">{transaction.description}</p>
-                          <p className="text-sm text-[var(--boi-light-gray)]">
-                            {new Date(transaction.date).toLocaleDateString("en-IE", {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric"
-                            })}
+                          <p className="font-medium text-sm text-gray-900 boi-regular-font">
+                            {transaction.description}
                           </p>
-                          {transaction.reference && (
-                            <p className="text-xs text-[var(--boi-light-gray)]">
-                              Ref: {transaction.reference}
+                          <p className="text-xs text-gray-500 boi-regular-font">
+                            {new Date(transaction.date).toLocaleDateString('en-GB', {
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: 'numeric'
+                            })}
+                            {transaction.reference && ` • ${transaction.reference}`}
+                          </p>
+                          {transaction.recipientName && (
+                            <p className="text-xs text-gray-500 boi-regular-font">
+                              To: {transaction.recipientName}
                             </p>
                           )}
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className={`font-semibold ${isCredit ? "text-green-600" : "text-red-600"}`}>
-                          {isCredit ? "+" : "-"}€{Math.abs(transaction.amount).toFixed(2)}
+                        <p className={`font-semibold boi-semibold-font ${
+                          isCredit ? 'text-green-600' : 'text-red-600'
+                        }`}>
+                          {isCredit ? '+' : '-'}€{Math.abs(transaction.amount).toFixed(2)}
                         </p>
-                        <p className="text-xs text-[var(--boi-light-gray)]">{transaction.category}</p>
+                        <p className="text-xs text-gray-500 boi-regular-font">
+                          Balance: €{transaction.balance.toFixed(2)}
+                        </p>
                       </div>
                     </div>
                   </div>
                 );
               })}
             </div>
-          </CardContent>
-        </Card>
-
-        <div className="text-center">
-          <Button variant="ghost" className="text-[var(--boi-green)] hover:text-[var(--boi-dark-green)] font-medium">
-            Load More Transactions
-          </Button>
+          )}
         </div>
       </div>
-
-      <BottomNavigation />
     </div>
   );
 }
