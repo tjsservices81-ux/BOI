@@ -1,6 +1,6 @@
 # 🏦 Perfect Bank of Ireland React Native App
 
-Copy the code from `PerfectBOIApp.js` to create an identical Bank of Ireland mobile banking app.
+Copy the code from `CleanBOIApp.js` to create an identical Bank of Ireland mobile banking app with proper section separation.
 
 ## 🚀 Quick Setup Options
 
