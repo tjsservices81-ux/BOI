@@ -16,9 +16,9 @@ const { width, height } = Dimensions.get('window');
 const LoginScreen = ({ onLogin }) => {
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#4a90a4" />
+      <StatusBar barStyle="light-content" backgroundColor="#2d5a6b" />
       
-      {/* Full screen background with gradient overlay */}
+      {/* Full screen background with scenic image */}
       <ImageBackground
         source={require('./background.jpg')}
         style={styles.backgroundImage}
@@ -29,12 +29,12 @@ const LoginScreen = ({ onLogin }) => {
         <SafeAreaView style={styles.safeArea}>
           {/* Header with Bank of Ireland branding */}
           <View style={styles.header}>
-            <Text style={styles.bankTitle}>Bank of Ireland</Text>
-            <Image
-              source={require('./boi_logo.png')}
-              style={styles.logoImage}
-              resizeMode="contain"
-            />
+            <View style={styles.logoRow}>
+              <Text style={styles.bankTitle}>Bank of Ireland</Text>
+              <View style={styles.logoContainer}>
+                <Text style={styles.logoSymbol}>⚪</Text>
+              </View>
+            </View>
           </View>
 
           {/* Main content area */}
@@ -43,11 +43,9 @@ const LoginScreen = ({ onLogin }) => {
             <View style={styles.loginCard}>
               {/* Biometric login section */}
               <View style={styles.biometricSection}>
-                <Image
-                  source={require('./fingerprint.png')}
-                  style={styles.fingerprintIcon}
-                  resizeMode="contain"
-                />
+                <View style={styles.fingerprintContainer}>
+                  <Text style={styles.fingerprintIcon}>👆</Text>
+                </View>
                 <Text style={styles.biometricTitle}>Biometric login</Text>
               </View>
 
@@ -60,11 +58,7 @@ const LoginScreen = ({ onLogin }) => {
               <View style={styles.forgotPinContainer}>
                 <TouchableOpacity style={styles.forgotPinButton}>
                   <Text style={styles.forgotPinText}>Forgot your PIN?</Text>
-                  <Image
-                    source={require('./arrow.png')}
-                    style={styles.arrowIcon}
-                    resizeMode="contain"
-                  />
+                  <Text style={styles.arrowText}> ↗</Text>
                 </TouchableOpacity>
               </View>
 
@@ -72,22 +66,14 @@ const LoginScreen = ({ onLogin }) => {
               <View style={styles.divider} />
               
               <TouchableOpacity style={styles.alternativeOption}>
-                <Image
-                  source={require('./user.png')}
-                  style={styles.optionSmallIcon}
-                  resizeMode="contain"
-                />
+                <Text style={styles.userIcon}>👤</Text>
                 <Text style={styles.alternativeText}>Log in with another ID</Text>
               </TouchableOpacity>
 
               {/* PIN and approval options */}
               <TouchableOpacity style={styles.optionRow}>
                 <View style={styles.optionIconWrapper}>
-                  <Image
-                    source={require('./dots.png')}
-                    style={styles.optionIcon}
-                    resizeMode="contain"
-                  />
+                  <Text style={styles.dotsIcon}>⋯</Text>
                 </View>
                 <Text style={styles.optionText}>Use your PIN instead</Text>
                 <Text style={styles.chevronRight}>›</Text>
@@ -95,11 +81,7 @@ const LoginScreen = ({ onLogin }) => {
 
               <TouchableOpacity style={styles.optionRow}>
                 <View style={styles.optionIconWrapper}>
-                  <Image
-                    source={require('./lock.png')}
-                    style={styles.optionIcon}
-                    resizeMode="contain"
-                  />
+                  <Text style={styles.clockIcon}>🕐</Text>
                 </View>
                 <View style={styles.optionTextContainer}>
                   <Text style={styles.optionText}>Waiting for your approval</Text>
@@ -113,29 +95,17 @@ const LoginScreen = ({ onLogin }) => {
           {/* Bottom navigation */}
           <View style={styles.bottomNavigation}>
             <TouchableOpacity style={styles.bottomNavItem}>
-              <Image
-                source={require('./atm.png')}
-                style={styles.bottomNavIcon}
-                resizeMode="contain"
-              />
+              <Text style={styles.bottomNavIcon}>📍</Text>
               <Text style={styles.bottomNavText}>ATM/Branch</Text>
             </TouchableOpacity>
             
             <TouchableOpacity style={styles.bottomNavItem}>
-              <Image
-                source={require('./security.png')}
-                style={styles.bottomNavIcon}
-                resizeMode="contain"
-              />
+              <Text style={styles.bottomNavIcon}>🛡️</Text>
               <Text style={styles.bottomNavText}>Security</Text>
             </TouchableOpacity>
             
             <TouchableOpacity style={styles.bottomNavItem}>
-              <Image
-                source={require('./more.png')}
-                style={styles.bottomNavIcon}
-                resizeMode="contain"
-              />
+              <Text style={styles.bottomNavIcon}>⋯</Text>
               <Text style={styles.bottomNavText}>More</Text>
             </TouchableOpacity>
           </View>
@@ -300,95 +270,108 @@ const styles = StyleSheet.create({
   },
   gradientOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(74, 144, 164, 0.8)',
+    backgroundColor: 'rgba(45, 90, 107, 0.85)',
   },
   safeArea: {
     flex: 1,
   },
   header: {
+    paddingTop: 15,
+    paddingBottom: 25,
+    paddingHorizontal: 20,
+  },
+  logoRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: 40,
-    paddingBottom: 20,
+    justifyContent: 'center',
   },
   bankTitle: {
-    fontSize: 20,
-    fontWeight: '700',
+    fontSize: 18,
+    fontWeight: '600',
     color: 'white',
-    marginBottom: 12,
-    fontFamily: 'BOI-Bold',
+    marginRight: 8,
+    fontFamily: 'System',
   },
-  logoImage: {
-    width: 60,
+  logoContainer: {
+    width: 20,
     height: 20,
-    tintColor: 'white',
+    borderRadius: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logoSymbol: {
+    fontSize: 8,
+    color: 'white',
   },
   mainContent: {
     flex: 1,
     justifyContent: 'center',
-    paddingHorizontal: 24,
-    paddingBottom: 120,
+    paddingHorizontal: 20,
+    paddingBottom: 100,
   },
   loginCard: {
     backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 28,
-    marginHorizontal: 4,
+    borderRadius: 12,
+    padding: 24,
+    marginHorizontal: 8,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 8,
+      height: 4,
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
-    elevation: 10,
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 6,
   },
   biometricSection: {
     alignItems: 'center',
-    marginBottom: 28,
+    marginBottom: 24,
+  },
+  fingerprintContainer: {
+    marginBottom: 16,
   },
   fingerprintIcon: {
-    width: 64,
-    height: 64,
-    marginBottom: 20,
+    fontSize: 48,
+    color: '#333',
   },
   biometricTitle: {
-    fontSize: 18,
-    fontWeight: '500',
+    fontSize: 16,
+    fontWeight: '400',
     color: '#333',
-    fontFamily: 'BOI-Regular',
+    fontFamily: 'System',
   },
   loginButton: {
-    backgroundColor: '#4a90a4',
-    borderRadius: 8,
-    paddingVertical: 14,
+    backgroundColor: '#2d6a75',
+    borderRadius: 6,
+    paddingVertical: 12,
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   loginButtonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: '600',
-    fontFamily: 'BOI-Bold',
+    fontFamily: 'System',
   },
   forgotPinContainer: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 16,
   },
   forgotPinButton: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   forgotPinText: {
-    color: '#4a90a4',
+    color: '#2d6a75',
     fontSize: 14,
-    fontWeight: '500',
-    fontFamily: 'BOI-Regular',
+    fontWeight: '400',
+    fontFamily: 'System',
   },
-  arrowIcon: {
-    width: 12,
-    height: 12,
-    marginLeft: 6,
-    tintColor: '#4a90a4',
+  arrowText: {
+    color: '#2d6a75',
+    fontSize: 14,
+    fontWeight: '400',
   },
   divider: {
     height: 1,
