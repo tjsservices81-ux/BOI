@@ -19,6 +19,9 @@ export default function Login() {
   const [holdTimer, setHoldTimer] = useState<NodeJS.Timeout | null>(null);
   const [holdProgress, setHoldProgress] = useState(0);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const [isLoginAnimating, setIsLoginAnimating] = useState(false);
+  const [loginProgress, setLoginProgress] = useState(0);
+  const [loginStage, setLoginStage] = useState('');
   const { login, isLoading } = useAuth();
   const [, navigate] = useLocation();
   const { toast } = useToast();
@@ -88,10 +91,69 @@ export default function Login() {
       return;
     }
 
+    setIsLoginAnimating(true);
+    setLoginProgress(0);
+
     try {
+      // Stage 1: Authenticating
+      setLoginStage('Authenticating...');
+      const progressInterval = setInterval(() => {
+        setLoginProgress(prev => {
+          if (prev < 30) return prev + 2;
+          return prev;
+        });
+      }, 100);
+
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      // Stage 2: Verifying credentials
+      setLoginStage('Verifying credentials...');
+      setLoginProgress(30);
+      const verifyInterval = setInterval(() => {
+        setLoginProgress(prev => {
+          if (prev < 60) return prev + 3;
+          return prev;
+        });
+      }, 100);
+
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Stage 3: Securing connection
+      setLoginStage('Securing connection...');
+      setLoginProgress(60);
+      const secureInterval = setInterval(() => {
+        setLoginProgress(prev => {
+          if (prev < 85) return prev + 2;
+          return prev;
+        });
+      }, 100);
+
+      await new Promise(resolve => setTimeout(resolve, 800));
+
+      // Stage 4: Finalizing
+      setLoginStage('Loading dashboard...');
+      setLoginProgress(85);
+      const finalInterval = setInterval(() => {
+        setLoginProgress(prev => {
+          if (prev < 100) return prev + 3;
+          return prev;
+        });
+      }, 80);
+
+      clearInterval(progressInterval);
+      clearInterval(verifyInterval);
+      clearInterval(secureInterval);
+
       await login({ customerNumber: "12345678", pin: "1234" });
+      
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setLoginProgress(100);
+      clearInterval(finalInterval);
+
+      await new Promise(resolve => setTimeout(resolve, 300));
       navigate("/");
     } catch (error) {
+      setIsLoginAnimating(false);
       toast({
         title: "Login Failed",
         description: "Please try again",
@@ -118,9 +180,87 @@ export default function Login() {
   return (
     <div className="full-height relative ios-safe-top ios-safe-bottom ios-safe-left ios-safe-right bg-[#4a6b75]">
       {/* Loading overlay */}
-      {isNavigating && (
-        <div className="fixed inset-0 bg-black bg-opacity-20 z-50 flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+      {(isNavigating || isLoginAnimating) && (
+        <div className="fixed inset-0 bg-gradient-to-br from-[#4a6b75] to-[#2d5a6b] z-50 flex flex-col items-center justify-center">
+          {/* Background overlay pattern */}
+          <div 
+            className="absolute inset-0 opacity-10"
+            style={{
+              backgroundImage: `url('/background.jpg')`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center'
+            }}
+          />
+          
+          <div className="relative z-10">
+            {/* Bank of Ireland Logo with authentic styling */}
+            <div className="mb-8 flex flex-col items-center">
+              <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-10 filter brightness-0 invert mb-2" />
+              <div className="w-16 h-1 bg-white opacity-30 rounded-full"></div>
+            </div>
+          
+          {/* Login Animation */}
+          {isLoginAnimating ? (
+            <div className="text-center space-y-6">
+              {/* Animated Security Icon */}
+              <div className="relative">
+                <div className="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <img 
+                    src="/icon_HID.svg" 
+                    alt="Security" 
+                    className="w-10 h-10 filter brightness-0 invert animate-pulse" 
+                  />
+                </div>
+                
+                {/* Pulsing rings */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-24 h-24 border border-white border-opacity-30 rounded-full animate-ping"></div>
+                </div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-28 h-28 border border-white border-opacity-20 rounded-full animate-pulse"></div>
+                </div>
+                
+                {/* Rotating outer ring */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-32 h-32 border-2 border-white border-opacity-10 border-t-white border-t-opacity-40 rounded-full animate-spin"></div>
+                </div>
+              </div>
+              
+              {/* Progress Bar */}
+              <div className="w-64 mx-auto">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-white text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {loginStage}
+                  </span>
+                  <span className="text-white text-sm opacity-75" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {Math.round(loginProgress)}%
+                  </span>
+                </div>
+                <div className="w-full bg-white bg-opacity-20 rounded-full h-1">
+                  <div 
+                    className="bg-white h-1 rounded-full transition-all duration-200 ease-out"
+                    style={{ width: `${loginProgress}%` }}
+                  ></div>
+                </div>
+              </div>
+              
+              {/* Security Message with BOI styling */}
+              <div className="text-center space-y-2">
+                <div className="flex items-center justify-center space-x-2 mb-2">
+                  <img src="/cert.svg" alt="Certified" className="w-4 h-4 filter brightness-0 invert opacity-75" />
+                  <p className="text-white text-xs opacity-75" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Bank-grade security
+                  </p>
+                </div>
+                <p className="text-white text-xs opacity-60 max-w-xs mx-auto leading-relaxed" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Your connection is secured with 256-bit encryption
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          )}
+          </div>
         </div>
       )}
       
