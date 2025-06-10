@@ -34,33 +34,55 @@ export default function Cards() {
             
             {/* Card Display */}
             <div className="relative mb-6">
-              <div className="bg-gradient-to-br from-[#4a6b75] to-[#2d5a6b] rounded-xl p-4 text-white shadow-lg">
-                <div className="flex justify-between items-start mb-8">
-                  <div className="bg-white/20 rounded p-2">
-                    <span className="text-xs boi-bold-font">VISA</span>
-                  </div>
-                  <div className="text-right">
-                    <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-4 filter brightness-0 invert" />
-                    <p className="text-xs mt-1 opacity-80 boi-regular-font">Credit Card</p>
-                  </div>
+              {/* Card Layout exactly like BOI app */}
+              <div className="flex space-x-3 mb-4">
+                {/* Card Selector */}
+                <div className="w-16 h-24 bg-[#1a365d] rounded-lg flex flex-col items-center justify-center text-white relative">
+                  <span className="text-xs boi-bold-font">Debit Card</span>
+                  <span className="text-2xl boi-bold-font mt-1">9</span>
+                  <div className="absolute bottom-2 text-xs boi-bold-font">VISA</div>
                 </div>
-                <div className="space-y-2">
-                  <p className="text-sm boi-regular-font">**** **** **** 1111</p>
-                  <div className="flex justify-between items-end">
-                    <div>
-                      <p className="text-xs opacity-80 boi-regular-font">John Smith</p>
-                      <p className="text-xs boi-regular-font">05/27 ***</p>
+                
+                {/* Active Card with exact BOI styling */}
+                <div className="flex-1 relative">
+                  <div className="bg-gradient-to-br from-[#4a6b75] to-[#2d5a6b] rounded-xl p-4 text-white shadow-lg relative overflow-hidden">
+                    {/* BOI Logo and Card Type */}
+                    <div className="flex justify-between items-start mb-8">
+                      <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-4 filter brightness-0 invert" />
+                      <span className="text-xs boi-regular-font">Credit Card</span>
                     </div>
-                    <div className="flex space-x-1">
-                      <div className="w-6 h-4 bg-red-500 rounded-sm opacity-80"></div>
-                      <div className="w-6 h-4 bg-yellow-400 rounded-sm opacity-80"></div>
+                    
+                    {/* Card Number */}
+                    <div className="mb-6">
+                      <p className="text-lg boi-regular-font tracking-wider">**** **** **** 1111</p>
+                    </div>
+                    
+                    {/* Cardholder and Date */}
+                    <div className="flex justify-between items-end">
+                      <div>
+                        <p className="text-xs boi-regular-font mb-1">John Smith</p>
+                        <p className="text-xs boi-regular-font">05/27 ***</p>
+                      </div>
+                      {/* Mastercard logo */}
+                      <div className="flex items-center space-x-1">
+                        <div className="w-6 h-4 bg-red-500 rounded-sm opacity-90"></div>
+                        <div className="w-6 h-4 bg-yellow-400 rounded-sm opacity-90"></div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Frozen State Overlay */}
+                  <div className="absolute inset-0 bg-gray-600 bg-opacity-70 rounded-xl flex items-center justify-center">
+                    <div className="bg-gray-700 px-4 py-2 rounded-full flex items-center space-x-2">
+                      <img src="/Icons_Fingerprint.svg" alt="Frozen" className="w-4 h-4 filter brightness-0 invert" />
+                      <span className="text-white text-sm boi-bold-font">Frozen</span>
                     </div>
                   </div>
                 </div>
               </div>
               
               {/* Card Indicators */}
-              <div className="flex justify-center mt-3 space-x-2">
+              <div className="flex justify-center space-x-2">
                 <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
                 <div className="w-2 h-2 bg-[#4a6b75] rounded-full"></div>
               </div>
@@ -69,7 +91,7 @@ export default function Cards() {
             {/* Card Controls */}
             <div className="space-y-4">
               {/* Freeze Card */}
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center justify-between p-4">
                 <div className="flex items-center space-x-3">
                   <img src="/Icons_Fingerprint.svg" alt="Freeze" className="w-6 h-6" />
                   <div>
@@ -77,21 +99,32 @@ export default function Cards() {
                     <p className="text-xs text-gray-500 boi-regular-font">Limit use of card for now</p>
                   </div>
                 </div>
-                <button className="w-12 h-6 bg-gray-200 rounded-full relative transition-colors">
-                  <div className="w-5 h-5 bg-white rounded-full absolute top-0.5 left-0.5 transition-transform shadow-sm"></div>
+                <button className="w-12 h-6 bg-[#4a6b75] rounded-full relative transition-colors">
+                  <div className="w-5 h-5 bg-white rounded-full absolute top-0.5 right-0.5 transition-transform shadow-sm"></div>
+                  <span className="absolute left-1 top-0.5 text-xs text-white boi-bold-font">On</span>
                 </button>
+              </div>
+
+              {/* Info Banner */}
+              <div className="flex items-start space-x-3 p-4 bg-blue-50 rounded-lg border border-blue-200 mb-4">
+                <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-white text-sm">i</span>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-700 boi-regular-font">
+                    If your card is lost or stolen <span className="text-blue-600 underline">contact us</span> immediately.
+                  </p>
+                </div>
               </div>
 
               {/* Report lost or stolen */}
               <button 
                 className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors haptic-feedback"
-                onClick={() => alert('Report Lost or Stolen:\n• Immediately block your card\n• Request emergency replacement\n• Get temporary card access\n• 24/7 emergency support available')}
+                onClick={() => alert('Report Lost or Stolen')}
               >
                 <div className="flex items-center space-x-3">
-                  <img src="/credit_card_services.svg" alt="Report Card" className="w-6 h-6" />
-                  <div className="text-left">
-                    <p className="text-sm font-medium text-gray-900 boi-regular-font">Report lost or stolen</p>
-                  </div>
+                  <img src="/credit_card_services.svg" alt="Report" className="w-5 h-5" />
+                  <span className="text-sm font-medium text-gray-900 boi-regular-font">Report lost or stolen</span>
                 </div>
                 <ChevronRight className="h-4 w-4 text-gray-400" />
               </button>
@@ -99,13 +132,11 @@ export default function Cards() {
               {/* Replace damaged card */}
               <button 
                 className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors haptic-feedback"
-                onClick={() => alert('Replace Damaged Card:\n• Order replacement for damaged card\n• Keep existing card number\n• 3-5 business days delivery\n• No charge for replacement')}
+                onClick={() => alert('Replace Damaged Card')}
               >
                 <div className="flex items-center space-x-3">
-                  <img src="/device.svg" alt="Replace Card" className="w-6 h-6" />
-                  <div className="text-left">
-                    <p className="text-sm font-medium text-gray-900 boi-regular-font">Replace damaged card</p>
-                  </div>
+                  <img src="/device.svg" alt="Replace" className="w-5 h-5" />
+                  <span className="text-sm font-medium text-gray-900 boi-regular-font">Replace damaged card</span>
                 </div>
                 <ChevronRight className="h-4 w-4 text-gray-400" />
               </button>
@@ -113,13 +144,11 @@ export default function Cards() {
               {/* View card PIN */}
               <button 
                 className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors haptic-feedback"
-                onClick={() => alert('View Card PIN:\n• Secure PIN viewing\n• Requires biometric authentication\n• PIN will be displayed for 30 seconds\n• Use for ATM and chip & PIN transactions')}
+                onClick={() => alert('View Card PIN')}
               >
                 <div className="flex items-center space-x-3">
-                  <img src="/bgpin.png" alt="PIN" className="w-6 h-6" />
-                  <div className="text-left">
-                    <p className="text-sm font-medium text-gray-900 boi-regular-font">View card PIN</p>
-                  </div>
+                  <img src="/bgpin.png" alt="PIN" className="w-5 h-5" />
+                  <span className="text-sm font-medium text-gray-900 boi-regular-font">View card PIN</span>
                 </div>
                 <ChevronRight className="h-4 w-4 text-gray-400" />
               </button>
@@ -127,13 +156,11 @@ export default function Cards() {
               {/* Set up Apple Pay */}
               <button 
                 className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors haptic-feedback"
-                onClick={() => alert('Set up Apple Pay:\n• Add card to Apple Wallet\n• Secure contactless payments\n• Use with iPhone, Apple Watch, iPad, Mac\n• Enhanced security with Face ID/Touch ID')}
+                onClick={() => alert('Set up Apple Pay')}
               >
                 <div className="flex items-center space-x-3">
-                  <img src="/apple_Pay_Mark.svg" alt="Apple Pay" className="w-6 h-6" />
-                  <div className="text-left">
-                    <p className="text-sm font-medium text-gray-900 boi-regular-font">Set up Apple Pay</p>
-                  </div>
+                  <img src="/apple_Pay_Mark.svg" alt="Apple Pay" className="w-5 h-5" />
+                  <span className="text-sm font-medium text-gray-900 boi-regular-font">Set up Apple Pay</span>
                 </div>
                 <ChevronRight className="h-4 w-4 text-gray-400" />
               </button>
