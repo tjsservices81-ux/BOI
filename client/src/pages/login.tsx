@@ -129,30 +129,7 @@ export default function Login() {
                 <span className="text-gray-400 text-lg">›</span>
               </button>
 
-              {/* Additional options to test scrolling */}
-              <button className="w-full bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-100">
-                <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
-                  <span className="text-gray-600 text-xs font-bold">?</span>
-                </div>
-                <span className="flex-1 text-left text-gray-700 text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Help & Support</span>
-                <span className="text-gray-400 text-lg">›</span>
-              </button>
 
-              <button className="w-full bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-100">
-                <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
-                  <span className="text-gray-600 text-xs font-bold">i</span>
-                </div>
-                <span className="flex-1 text-left text-gray-700 text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>App Information</span>
-                <span className="text-gray-400 text-lg">›</span>
-              </button>
-
-              <button className="w-full bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-100">
-                <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
-                  <span className="text-gray-600 text-xs font-bold">⚙</span>
-                </div>
-                <span className="flex-1 text-left text-gray-700 text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Settings</span>
-                <span className="text-gray-400 text-lg">›</span>
-              </button>
             </div>
           </div>
         </div>
@@ -168,7 +145,10 @@ export default function Login() {
               <img src="/icon_HID.svg" alt="Security" className="w-5 h-5 filter brightness-0 invert" />
               <span className="text-white text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Security</span>
             </button>
-            <button className="flex flex-col items-center space-y-1 py-2">
+            <button 
+              className="flex flex-col items-center space-y-1 py-2"
+              onClick={() => navigate("/more")}
+            >
               <img src="/more-prelogin-icon.svg" alt="More" className="w-5 h-5 filter brightness-0 invert" />
               <span className="text-white text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>More</span>
             </button>

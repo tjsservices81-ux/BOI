@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/lib/auth";
 
 import Login from "@/pages/login";
+import More from "@/pages/more";
 import Dashboard from "@/pages/dashboard";
 import Transactions from "@/pages/transactions";
 import Cards from "@/pages/cards";
@@ -34,6 +35,7 @@ function AppRoutes() {
     <div className="w-full h-full bg-white overflow-hidden">
       <Switch>
         <Route path="/login" component={Login} />
+        <Route path="/more" component={More} />
         <Route path="/">
           {user ? <Dashboard /> : <Redirect to="/login" />}
         </Route>
