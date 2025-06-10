@@ -131,9 +131,7 @@ export default function Dashboard() {
       <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200">
         <div className="flex justify-around items-center py-3">
           <button className="flex flex-col items-center text-[#4a6b75] relative">
-            <svg className="w-5 h-5 mb-1" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
-            </svg>
+            <img src="/icon-footer-accounts-highlight.svg" alt="Accounts" className="w-5 h-5 mb-1" />
             <span className="text-xs font-medium boi-regular-font">Accounts</span>
             <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-[#4a6b75]"></div>
           </button>
@@ -142,9 +140,7 @@ export default function Dashboard() {
             className="flex flex-col items-center text-gray-400 hover:text-[#4a6b75] transition-colors"
             onClick={() => alert('Payments: Transfer money, pay bills, manage payees')}
           >
-            <svg className="w-5 h-5 mb-1" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-            </svg>
+            <img src="/icon-footer-payments.svg" alt="Payments" className="w-5 h-5 mb-1" />
             <span className="text-xs font-medium boi-regular-font">Payments</span>
           </button>
           
@@ -152,9 +148,7 @@ export default function Dashboard() {
             className="flex flex-col items-center text-gray-400 hover:text-[#4a6b75] transition-colors haptic-feedback"
             onClick={() => setLocation('/cards')}
           >
-            <svg className="w-5 h-5 mb-1" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
-            </svg>
+            <img src="/icon-footer-cards.svg" alt="Cards" className="w-5 h-5 mb-1" />
             <span className="text-xs font-medium boi-regular-font">Cards</span>
           </button>
           
@@ -162,9 +156,7 @@ export default function Dashboard() {
             className="flex flex-col items-center text-gray-400 hover:text-[#4a6b75] transition-colors haptic-feedback"
             onClick={() => setLocation('/insights')}
           >
-            <svg className="w-5 h-5 mb-1" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-            </svg>
+            <img src="/icon-footer-services.svg" alt="Services" className="w-5 h-5 mb-1" />
             <span className="text-xs font-medium boi-regular-font">Services</span>
           </button>
           
@@ -172,9 +164,7 @@ export default function Dashboard() {
             className="flex flex-col items-center text-gray-400 hover:text-[#4a6b75] transition-colors"
             onClick={() => alert('Apply: Apply for loans, credit cards, and other products')}
           >
-            <svg className="w-5 h-5 mb-1" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-            </svg>
+            <img src="/icon-footer-apply.svg" alt="Apply" className="w-5 h-5 mb-1" />
             <span className="text-xs font-medium boi-regular-font">Apply</span>
           </button>
         </div>
