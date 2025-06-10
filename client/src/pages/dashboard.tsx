@@ -44,12 +44,12 @@ export default function Dashboard() {
       </div>
 
       {/* Main content area - white card with rounded top corners */}
-      <div className="flex-1 px-0 -mt-8 overflow-y-auto">
+      <div className="flex-1 px-0 -mt-8 overflow-y-auto ios-scroll">
         <div className="bg-white rounded-t-3xl shadow-lg min-h-full">
           <div className="pt-6 pb-24">
             {/* Current Account */}
             <button 
-              className="w-full flex items-center justify-between px-6 py-4 border-b border-gray-100 hover:bg-gray-50 transition-colors"
+              className="w-full flex items-center justify-between px-6 py-4 border-b border-gray-100 hover:bg-gray-50 transition-colors haptic-feedback"
               onClick={() => setLocation('/transactions')}
             >
               <div className="text-left">
