@@ -56,7 +56,7 @@ export default function TransactionHistory() {
     }
   };
 
-  const currentBalance = primaryAccount ? parseFloat(primaryAccount.balance) : 0;
+  const currentBalance = primaryAccount ? primaryAccount.balance : 0;
   const thisMonthChange = 234.12; // This would be calculated from transactions
 
   return (
@@ -128,12 +128,10 @@ export default function TransactionHistory() {
                         <div>
                           <p className="font-medium text-[var(--boi-gray)]">{transaction.description}</p>
                           <p className="text-sm text-[var(--boi-light-gray)]">
-                            {new Date(transaction.timestamp).toLocaleDateString("en-IE", {
+                            {new Date(transaction.date).toLocaleDateString("en-IE", {
                               month: "short",
                               day: "numeric",
-                              year: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
+                              year: "numeric"
                             })}
                           </p>
                           {transaction.reference && (
@@ -145,9 +143,9 @@ export default function TransactionHistory() {
                       </div>
                       <div className="text-right">
                         <p className={`font-semibold ${isCredit ? "text-green-600" : "text-red-600"}`}>
-                          €{parseFloat(transaction.amount).toFixed(2)}
+                          €{Math.abs(transaction.amount).toFixed(2)}
                         </p>
-                        <p className="text-xs text-[var(--boi-light-gray)]">{transaction.paymentMethod}</p>
+                        <p className="text-xs text-[var(--boi-light-gray)]">{transaction.category}</p>
                       </div>
                     </div>
                   </div>
