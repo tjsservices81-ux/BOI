@@ -125,17 +125,21 @@ export default function UkTransfer() {
 
         <div className="flex items-center justify-center px-4 py-20">
           <div className="text-center max-w-sm">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Check className="w-8 h-8 text-green-600" />
-            </div>
-            
-            <h1 className="text-2xl font-semibold text-gray-900 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Transfer Successful
-            </h1>
-            
-            <p className="text-gray-600 mb-6" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Your UK bank transfer has been processed successfully
-            </p>
+            {showReference && (
+              <>
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Check className="w-8 h-8 text-green-600" />
+                </div>
+                
+                <h1 className="text-2xl font-semibold text-gray-900 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Transfer Successful
+                </h1>
+                
+                <p className="text-gray-600 mb-6" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Your UK bank transfer has been processed successfully
+                </p>
+              </>
+            )}
 
             {/* Processing animation and reference reveal */}
             {!showReference ? (

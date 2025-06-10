@@ -121,46 +121,75 @@ export default function IbanTransfer() {
 
         <div className="flex items-center justify-center px-4 py-20">
           <div className="text-center max-w-sm">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Check className="w-8 h-8 text-green-600" />
-            </div>
-            
-            <h1 className="text-2xl font-semibold text-gray-900 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Transfer Successful
-            </h1>
-            
-            <p className="text-gray-600 mb-6" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Your international transfer has been processed successfully
-            </p>
+            {showReference && (
+              <>
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Check className="w-8 h-8 text-green-600" />
+                </div>
+                
+                <h1 className="text-2xl font-semibold text-gray-900 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Transfer Successful
+                </h1>
+                
+                <p className="text-gray-600 mb-6" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Your international transfer has been processed successfully
+                </p>
+              </>
+            )}
 
-            <div className="bg-gray-50 rounded-xl p-4 mb-6 text-left">
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Reference:</span>
-                  <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{transferReference}</span>
+            <div>
+              {!showReference ? (
+                <div className="bg-gray-50 rounded-xl p-6 mb-6">
+                  <div className="flex items-center justify-center mb-4">
+                    <div className="w-8 h-8 border-4 border-[#4a6b75] border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                  <p className="text-gray-600 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Generating transfer reference...
+                  </p>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-[#4a6b75] h-2 rounded-full transition-all duration-100"
+                      style={{ width: `${animationProgress}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-sm text-gray-500 mt-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {animationProgress}% complete
+                  </p>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Amount:</span>
-                  <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>€{form.getValues('amount')}</span>
+              ) : (
+                <div className="bg-gray-50 rounded-xl p-4 mb-6 text-left">
+                  <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Reference:</span>
+                      <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{transferReference}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Amount:</span>
+                      <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>€{formData?.amount}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>To:</span>
+                      <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{formData?.recipientName}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Status:</span>
+                      <span className="font-semibold text-green-600 flex items-center" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <Check className="w-4 h-4 mr-1" />
+                        Complete
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>To:</span>
-                  <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{form.getValues('recipientName')}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Status:</span>
-                  <span className="font-semibold text-green-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Processing</span>
-                </div>
-              </div>
-            </div>
+              )}
 
-            <button
-              onClick={() => navigate('/')}
-              className="w-full bg-[#4a6b75] text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform"
-              style={{ fontFamily: 'OpenSans, sans-serif' }}
-            >
-              Done
-            </button>
+              <button
+                onClick={() => navigate('/')}
+                className="w-full bg-[#4a6b75] text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              >
+                Done
+              </button>
+            </div>
           </div>
         </div>
       </div>
