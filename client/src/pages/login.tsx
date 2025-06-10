@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/lib/auth";
-import { User } from "lucide-react";
+import { User, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Login() {
@@ -262,7 +262,7 @@ export default function Login() {
                 <div className="text-center mb-5">
                   <button className="text-[#4a6b75] text-sm flex items-center justify-center space-x-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     <span>Forgot your PIN?</span>
-                    <span className="text-xs">↗</span>
+                    <ExternalLink className="w-3 h-3" />
                   </button>
                 </div>
 
