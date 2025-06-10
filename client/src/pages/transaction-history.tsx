@@ -52,6 +52,8 @@ export default function TransactionHistory() {
       case "salary": return ArrowDown;
       case "dining": return Utensils;
       case "utilities": return Zap;
+      case "cash": return ArrowRightLeft;
+      case "transfer": return ArrowRightLeft;
       default: return ArrowRightLeft;
     }
   };
@@ -69,7 +71,7 @@ export default function TransactionHistory() {
               variant="ghost" 
               size="icon" 
               className="mr-4"
-              onClick={() => navigate("/")}
+              onClick={() => navigate("/dashboard")}
             >
               <ArrowLeft className="text-[var(--boi-gray)]" />
             </Button>
@@ -143,7 +145,7 @@ export default function TransactionHistory() {
                       </div>
                       <div className="text-right">
                         <p className={`font-semibold ${isCredit ? "text-green-600" : "text-red-600"}`}>
-                          €{Math.abs(transaction.amount).toFixed(2)}
+                          {isCredit ? "+" : "-"}€{Math.abs(transaction.amount).toFixed(2)}
                         </p>
                         <p className="text-xs text-[var(--boi-light-gray)]">{transaction.category}</p>
                       </div>

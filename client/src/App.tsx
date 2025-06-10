@@ -12,7 +12,7 @@ import Dashboard from "@/pages/dashboard";
 import Payments from "@/pages/payments";
 import IbanTransfer from "@/pages/iban-transfer";
 import UkTransfer from "@/pages/uk-transfer";
-import Transactions from "@/pages/transactions";
+
 import Cards from "@/pages/cards";
 import Insights from "@/pages/insights";
 import Transfer from "@/pages/transfer";
@@ -70,11 +70,7 @@ function AppRoutes() {
             <BillPay />
           </ProtectedRoute>
         </Route>
-        <Route path="/transactions">
-          <ProtectedRoute>
-            <Transactions />
-          </ProtectedRoute>
-        </Route>
+
         <Route path="/cards">
           <ProtectedRoute>
             <Cards />
