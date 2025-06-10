@@ -185,16 +185,30 @@ export default function UkTransfer() {
   }
 
   return (
-    <div style={{ position: 'relative', minHeight: '100vh', paddingBottom: '2rem' }}>
-      <div className="bg-[#4a6b75] px-4 py-3 flex items-center justify-between">
+    <div style={{ 
+      position: 'fixed', 
+      top: 0, 
+      left: 0, 
+      right: 0, 
+      bottom: 0, 
+      display: 'flex', 
+      flexDirection: 'column',
+      backgroundColor: '#f9fafb'
+    }}>
+      <div className="bg-[#4a6b75] px-4 py-3 flex items-center justify-between" style={{ flexShrink: 0 }}>
         <button onClick={() => navigate('/payments')} className="flex items-center text-white">
           <ChevronLeft className="w-5 h-5 mr-2" />
           <span className="font-semibold text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>UK Bank Transfer</span>
         </button>
       </div>
 
-      <div style={{ padding: '1rem', backgroundColor: '#f9fafb' }}>
-        <div style={{ backgroundColor: 'white', borderRadius: '0.75rem', padding: '1.5rem', marginBottom: '5rem' }}>
+      <div style={{ 
+        flex: 1, 
+        overflowY: 'auto', 
+        WebkitOverflowScrolling: 'touch',
+        padding: '1rem'
+      }}>
+        <div style={{ backgroundColor: 'white', borderRadius: '0.75rem', padding: '1.5rem', marginBottom: '2rem' }}>
           <div className="flex items-center mb-6">
             <div className="w-12 h-12 bg-gradient-to-br from-[#4a6b75] to-[#5a7b85] rounded-xl flex items-center justify-center mr-4">
               <Building2 className="w-6 h-6 text-white" />
