@@ -132,10 +132,10 @@ export default function Login() {
                 {/* Biometric Section */}
                 <div className="text-center mb-8">
                   <div 
-                    className={`w-20 h-20 mx-auto mb-5 relative flex items-center justify-center rounded-full border-2 transition-all duration-300 cursor-pointer group ${
+                    className={`w-20 h-20 mx-auto mb-5 relative flex items-center justify-center rounded-full transition-all duration-300 cursor-pointer group ${
                       isScanning 
-                        ? 'bg-gradient-to-br from-green-50 to-emerald-100 border-green-300' 
-                        : 'bg-gradient-to-br from-blue-50 to-indigo-100 border-blue-200 hover:border-blue-300'
+                        ? 'bg-gradient-to-br from-green-50 to-emerald-100' 
+                        : 'bg-gradient-to-br from-gray-50 to-gray-100 hover:from-blue-50 hover:to-blue-100'
                     }`}
                     onClick={handleBiometricScan}
                   >
@@ -148,25 +148,37 @@ export default function Login() {
                       </>
                     ) : (
                       <>
-                        <div className="absolute inset-0 rounded-full border-2 border-blue-300 animate-pulse opacity-30"></div>
-                        <div className="absolute inset-2 rounded-full border-2 border-blue-400 animate-pulse opacity-50 animation-delay-150"></div>
+                        <div className="absolute inset-0 rounded-full border-2 border-blue-200 opacity-40 group-hover:border-blue-300 group-hover:opacity-60 transition-all duration-300"></div>
+                        <div className="absolute inset-2 rounded-full border border-blue-300 opacity-30 group-hover:opacity-50 animate-pulse transition-all duration-300"></div>
                       </>
                     )}
                     
-                    {/* Fingerprint icon */}
-                    <div className="relative z-10 w-10 h-10 flex items-center justify-center">
-                      <svg 
-                        className={`w-8 h-8 transition-colors duration-200 ${
+                    {/* Original Fingerprint icon with effects */}
+                    <div className="relative z-10 w-12 h-12 flex items-center justify-center">
+                      <img 
+                        src="/Icons_Fingerprint.svg" 
+                        alt="Fingerprint" 
+                        className={`w-10 h-10 transition-all duration-300 ${
                           isScanning 
-                            ? 'text-green-600' 
-                            : 'text-blue-600 group-hover:text-blue-700'
+                            ? 'filter brightness-110 hue-rotate-90' 
+                            : 'filter group-hover:brightness-110 group-hover:contrast-125'
                         }`}
-                        fill="currentColor" 
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M17.81 4.47c-.08 0-.16-.02-.23-.06C15.66 3.42 14 3 12.01 3c-1.98 0-3.86.47-5.57 1.41-.24.13-.54.04-.68-.2-.13-.24-.04-.55.2-.68C7.82 2.52 9.86 2 12.01 2c2.13 0 3.99.47 6.03 1.52.25.13.34.43.21.67-.09.18-.26.28-.44.28zM3.5 9.72c-.1 0-.2-.03-.29-.09-.23-.16-.28-.47-.12-.7.99-1.4 2.25-2.5 3.75-3.27C9.98 4.04 14 4.03 17.15 5.65c1.5.77 2.76 1.86 3.75 3.25.16.22.11.54-.12.7-.23.16-.54.11-.7-.12-.9-1.26-2.04-2.25-3.39-2.94-2.87-1.47-6.54-1.47-9.4.01-1.36.7-2.5 1.7-3.4 2.96-.08.14-.23.21-.39.21zm6.25 12.07c-.13 0-.26-.05-.35-.15-.87-.87-1.34-1.43-2.01-2.64-.69-1.24-1.16-2.65-1.14-4.13-.02-1.48.45-2.89 1.14-4.13.67-1.21 1.14-1.77 2.01-2.64.18-.18.48-.18.66 0 .18.18.18.48 0 .66-.76.76-1.17 1.25-1.73 2.3-.59 1.11-1.01 2.37-.99 3.81-.02 1.44.4 2.7.99 3.81.56 1.05.97 1.54 1.73 2.3.18.18.18.48 0 .66-.09.1-.22.15-.35.15zm11.48-4.02c-.1-.11-.25-.18-.41-.18-.15.01-.29.08-.38.2-.08.11-.13.25-.13.4v.17c-.25 1.58-.83 2.77-1.61 3.7-.87 1.02-1.96 1.57-3.36 1.57-1.4 0-2.49-.55-3.36-1.57-.78-.93-1.36-2.12-1.61-3.7v-.17c0-.15-.05-.29-.13-.4-.09-.12-.23-.19-.38-.2-.16 0-.31.07-.41.18-.11.1-.18.25-.18.41v.2c.27 1.8.93 3.18 1.85 4.26 1.05 1.21 2.35 1.86 4.22 1.86 1.87 0 3.17-.65 4.22-1.86.92-1.08 1.58-2.46 1.85-4.26v-.2c0-.16-.07-.31-.18-.41z"/>
-                      </svg>
+                      />
+                      
+                      {/* Scanning line effect */}
+                      {isScanning && (
+                        <div className="absolute inset-0 overflow-hidden rounded-full">
+                          <div className="absolute top-0 left-0 right-0 h-0.5 bg-green-400 animate-pulse"></div>
+                          <div className="absolute top-2 left-0 right-0 h-0.5 bg-green-300 animate-pulse animation-delay-100"></div>
+                          <div className="absolute top-4 left-0 right-0 h-0.5 bg-green-200 animate-pulse animation-delay-200"></div>
+                        </div>
+                      )}
                     </div>
+                    
+                    {/* Glow effect when scanning */}
+                    {isScanning && (
+                      <div className="absolute inset-0 rounded-full bg-green-400 opacity-20 animate-pulse"></div>
+                    )}
                   </div>
                   <p className="text-gray-700 text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     {isScanning ? 'Scanning fingerprint...' : 'Touch for biometric login'}
