@@ -111,21 +111,38 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!customerNumber) {
+      toast({
+        title: "Customer Number Required",
+        description: "Please enter your customer number to continue.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     // Check if user exists
     if (!UserDataManager.userExists(customerNumber)) {
       toast({
-        title: "Login Failed",
-        description: "Customer number not found. Please check your credentials or create a new account.",
+        title: "Account Not Found",
+        description: "Customer number not found. Please create an account first by tapping 'Waiting for approval'.",
         variant: "destructive",
       });
       return;
     }
 
-    // Set current user and navigate to dashboard
+    // Set current user and proceed with login
     UserDataManager.setCurrentUser(customerNumber);
-    
     login(customerNumber);
-    navigate("/dashboard");
+    
+    // Show success message and navigate
+    toast({
+      title: "Login Successful",
+      description: "Welcome back to Bank of Ireland",
+    });
+    
+    setTimeout(() => {
+      navigate("/dashboard");
+    }, 1000);
   };
 
   const handleBiometricHoldStart = () => {
