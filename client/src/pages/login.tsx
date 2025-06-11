@@ -690,7 +690,7 @@ export default function Login() {
                 </div>
                 <div className="flex-1 text-left">
                   <div className="text-gray-700 text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Waiting for your approval</div>
-                  <div className="text-gray-500 text-xs mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>Account registration pending</div>
+                  <div className="text-gray-500 text-xs mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>Tap here to complete unfinished business</div>
                 </div>
                 <span className="text-gray-400 text-lg">›</span>
               </div>
