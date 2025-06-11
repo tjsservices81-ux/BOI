@@ -1,33 +1,58 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
-import { ChevronLeft, User } from "lucide-react";
+import { ChevronLeft, User, Snowflake, Shield, Lock, CreditCard } from "lucide-react";
 
 export default function Cards() {
   const [, navigate] = useLocation();
   const [currentCard, setCurrentCard] = useState(0);
-
-
+  const [freezeToggle, setFreezeToggle] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const cards = [
     {
       type: "DEBIT CARD",
+      typeShort: "21",
       bank: "Bank of Ireland",
-      number: "**** **** **** 1111",
-      name: "John Smith",
-      expiry: "05/21",
+      number: "5375 4140 1234 5678",
+      maskedNumber: "**** **** **** 5678",
+      name: "JOHN MURPHY",
+      expiry: "05/27",
       cvv: "***",
-      image: "/roi_debit_card_consumer-200px.png"
+      gradient: "from-[#1e3a8a] via-[#3b82f6] to-[#1e40af]",
+      logo: "VISA",
+      logoColor: "text-white"
     },
     {
       type: "CREDIT CARD", 
+      typeShort: "22",
       bank: "Bank of Ireland",
-      number: "**** **** **** 2222",
-      name: "John Smith", 
-      expiry: "08/24",
+      number: "4532 1500 1234 5678",
+      maskedNumber: "**** **** **** 5678",
+      name: "JOHN MURPHY", 
+      expiry: "08/26",
       cvv: "***",
-      image: "/roi_credit_card_classic-clear-twin-personal@200.png"
+      gradient: "from-[#0891b2] via-[#0284c7] to-[#0369a1]",
+      logo: "VISA",
+      logoColor: "text-white"
     }
   ];
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (scrollRef.current) {
+        const scrollLeft = scrollRef.current.scrollLeft;
+        const cardWidth = scrollRef.current.offsetWidth;
+        const newIndex = Math.round(scrollLeft / cardWidth);
+        setCurrentCard(newIndex);
+      }
+    };
+
+    const scrollElement = scrollRef.current;
+    if (scrollElement) {
+      scrollElement.addEventListener('scroll', handleScroll);
+      return () => scrollElement.removeEventListener('scroll', handleScroll);
+    }
+  }, []);
 
   return (
     <div className="h-screen flex flex-col bg-white ios-safe-top ios-safe-bottom">
@@ -40,7 +65,7 @@ export default function Cards() {
         >
           <ChevronLeft className="w-6 h-6" />
         </button>
-        <h1 className="text-white text-lg font-semibold" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
+        <h1 className="text-white text-lg font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
           Manage Card
         </h1>
         <button className="text-white active:scale-95 transition-transform">
@@ -52,34 +77,52 @@ export default function Cards() {
       <div className="flex-1 bg-gray-50 px-4 py-6 pb-32 ios-scroll overflow-y-auto">
         {/* Card Type Label */}
         <div className="text-center mb-6">
-          <p className="text-gray-600 text-sm font-medium" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
-            {cards[currentCard].type} - {cards[currentCard].expiry.split('/')[1]}
+          <p className="text-gray-600 text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+            {cards[currentCard].type} - {cards[currentCard].typeShort}
           </p>
         </div>
 
         {/* Card Display */}
         <div className="relative mb-8">
-          <div className="flex space-x-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide">
+          <div 
+            ref={scrollRef}
+            className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+            style={{ scrollBehavior: 'smooth' }}
+          >
             {cards.map((card, index) => (
               <div
                 key={index}
-                className="flex-shrink-0 w-80 h-48 rounded-2xl shadow-lg snap-center relative overflow-hidden"
+                className="flex-shrink-0 w-full px-2 snap-center"
               >
-                <img 
-                  src={card.image} 
-                  alt={`${card.type} - ${card.bank}`}
-                  className="w-full h-full object-cover"
-                />
+                <div className="relative">
+                  {/* Card Image */}
+                  <img 
+                    src={index === 0 ? "/current-debit-card-consumer.svg" : "/credit-card-teal.svg"}
+                    alt={`${card.type} - ${card.bank}`}
+                    className="w-full h-auto rounded-2xl shadow-lg"
+                  />
+                  
+                  {/* Freeze Overlay */}
+                  {freezeToggle && (
+                    <div className="absolute inset-0 bg-gray-500 bg-opacity-50 rounded-2xl flex items-center justify-center">
+                      <div className="bg-white px-3 py-2 rounded-lg flex items-center space-x-2">
+                        <Snowflake className="w-4 h-4 text-blue-600" />
+                        <span className="text-sm font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Frozen
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
           </div>
 
           {/* Card Indicators */}
-          <div className="flex justify-center space-x-2 mt-4">
+          <div className="flex justify-center space-x-2 mt-6">
             {cards.map((_, index) => (
-              <button
+              <div
                 key={index}
-                onClick={() => setCurrentCard(index)}
                 className={`w-2 h-2 rounded-full transition-colors ${
                   index === currentCard ? 'bg-gray-600' : 'bg-gray-300'
                 }`}
@@ -91,13 +134,11 @@ export default function Cards() {
         {/* Card Actions */}
         <div className="space-y-3">
           {/* Freeze Card */}
-          <div className="bg-white rounded-2xl p-4 ios-card">
+          <div className="bg-white rounded-2xl p-4 shadow-sm">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                  <svg className="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2C13.1 2 14 2.9 14 4V5.5C17.11 6.22 19.78 8.61 20.74 11.74C20.91 12.29 20.59 12.86 20.04 13.03C19.5 13.2 18.93 12.88 18.76 12.33C18.12 10.36 16.16 9 14 9H10C7.79 9 6 10.79 6 13S7.79 17 10 17H14C16.21 17 18 15.21 18 13C18 12.45 17.55 12 17 12S16 12.45 16 13C16 14.1 15.1 15 14 15H10C8.9 15 8 14.1 8 13S8.9 11 10 11H14C14.18 11 14.35 11.02 14.53 11.05V4C14.53 2.9 13.63 2 12.53 2H12Z"/>
-                  </svg>
+                <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
+                  <Snowflake className="w-5 h-5 text-blue-600" />
                 </div>
                 <div>
                   <p className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -109,12 +150,19 @@ export default function Cards() {
                 </div>
               </div>
               <div className="flex items-center">
-                <span className="text-xs text-gray-500 mr-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Off
+                <span className="text-xs text-gray-500 mr-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  {freezeToggle ? 'On' : 'Off'}
                 </span>
-                <div className="w-12 h-6 bg-gray-200 rounded-full relative">
-                  <div className="w-5 h-5 bg-white rounded-full absolute top-0.5 left-0.5 shadow-sm"></div>
-                </div>
+                <button 
+                  onClick={() => setFreezeToggle(!freezeToggle)}
+                  className={`w-12 h-6 rounded-full relative transition-colors duration-200 ${
+                    freezeToggle ? 'bg-blue-600' : 'bg-gray-200'
+                  }`}
+                >
+                  <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 shadow-sm transition-transform duration-200 ${
+                    freezeToggle ? 'translate-x-6' : 'translate-x-0.5'
+                  }`}></div>
+                </button>
               </div>
             </div>
           </div>
