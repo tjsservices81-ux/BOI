@@ -16,9 +16,9 @@ export default function Profile() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#2c5f70] to-[#4a6b75]">
+    <div className="h-screen bg-gradient-to-b from-[#2c5f70] to-[#4a6b75] flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="bg-[#2c5f70] px-4 py-6 pt-12">
+      <div className="bg-[#2c5f70] px-4 py-6 pt-12 flex-shrink-0">
         <div className="flex items-center justify-between">
           <button 
             onClick={() => navigate('/dashboard')}
@@ -34,8 +34,8 @@ export default function Profile() {
       </div>
 
       {/* Profile Content */}
-      <div className="bg-white rounded-t-3xl mt-6 flex-1 min-h-screen">
-        <div className="p-6">
+      <div className="bg-white rounded-t-3xl mt-6 flex-1 overflow-hidden">
+        <div className="h-full overflow-y-auto p-6 pb-24">
           {/* Profile Header */}
           <div className="flex items-center space-x-4 mb-8 pb-6 border-b border-gray-200">
             <div className="w-20 h-20 bg-[#4a6b75] rounded-full flex items-center justify-center">
