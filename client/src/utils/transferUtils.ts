@@ -16,6 +16,9 @@ export interface Transaction {
   paymentMethod: string;
   reference: string;
   timestamp: string;
+  exchangeRate?: number;
+  convertedAmount?: string;
+  convertedCurrency?: string;
 }
 
 export const getAccounts = (): Account[] => {
@@ -44,7 +47,8 @@ export const processTransfer = (
   amount: number,
   recipientName: string,
   transferType: 'UK' | 'IBAN',
-  reference: string
+  reference: string,
+  exchangeRate?: number
 ): boolean => {
   console.log('Processing transfer:', { fromAccountId, amount, recipientName, transferType, reference });
   
@@ -102,7 +106,12 @@ export const processTransfer = (
     type: 'debit',
     paymentMethod: `${transferType} Transfer`,
     reference,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    ...(transferType === 'UK' && exchangeRate && {
+      exchangeRate,
+      convertedAmount: (amount * exchangeRate).toFixed(2),
+      convertedCurrency: 'GBP'
+    })
   };
   
   transactions.push(newTransaction);

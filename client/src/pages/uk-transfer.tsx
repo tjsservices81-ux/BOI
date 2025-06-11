@@ -109,7 +109,8 @@ export default function UkTransfer() {
       parseFloat(formData.amount),
       formData.recipientName,
       'UK',
-      ref
+      ref,
+      exchangeRate
     );
     
     if (!success) {

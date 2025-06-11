@@ -390,6 +390,42 @@ export default function TransactionHistoryWorking() {
                     {selectedTransaction.category}
                   </span>
                 </div>
+
+                {/* Conversion Rate for UK Transfers */}
+                {selectedTransaction.paymentMethod === 'UK Transfer' && selectedTransaction.exchangeRate && (
+                  <>
+                    <div className="border-t border-gray-200 pt-4 mt-4">
+                      <h4 className="font-semibold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Currency Conversion
+                      </h4>
+                    </div>
+                    
+                    <div className="flex justify-between">
+                      <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Exchange Rate:</span>
+                      <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        €1 = £{selectedTransaction.exchangeRate.toFixed(4)}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between">
+                      <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>GBP Equivalent:</span>
+                      <div className="text-right">
+                        <span className="font-semibold text-green-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          £{selectedTransaction.convertedAmount}
+                        </span>
+                        <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Live rate at time of transfer
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
+                      <p className="text-sm text-blue-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <strong>International Transfer:</strong> Exchange rate applied at time of transfer. UK transfers typically take 1-2 business days to reach the recipient.
+                      </p>
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Action Buttons */}
