@@ -30,6 +30,7 @@ export default function TransactionHistory() {
   const [, navigate] = useLocation();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [currentBalance, setCurrentBalance] = useState<number>(0);
+  const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
 
   // Get account ID from URL parameters
   const urlParams = new URLSearchParams(window.location.search);
@@ -106,7 +107,7 @@ export default function TransactionHistory() {
     // Listen for new transactions
     const handleTransactionUpdate = () => {
       console.log('Transaction update event received, refreshing...');
-      updateTransactions();
+      setRefreshTrigger(prev => prev + 1);
     };
 
     window.addEventListener('transactionAdded', handleTransactionUpdate);
@@ -117,6 +118,78 @@ export default function TransactionHistory() {
       window.removeEventListener('storage', handleTransactionUpdate);
     };
   }, [accountId]);
+
+  // Separate effect for refreshing when trigger changes
+  useEffect(() => {
+    const loadTransactions = () => {
+      const storedTransactions = JSON.parse(localStorage.getItem('bankTransactions') || '[]');
+      const accountTransactions = storedTransactions.filter((t: Transaction) => t.accountId.toString() === accountId);
+      console.log('Refresh triggered - Loading transactions for account:', accountId, 'Found:', accountTransactions.length);
+      return accountTransactions;
+    };
+
+    if (refreshTrigger > 0) {
+      const accountTransactions = loadTransactions();
+      
+      const sampleTransactions = [
+        {
+          id: 1,
+          accountId: 1,
+          amount: "-47.82",
+          description: "Tesco Ireland",
+          category: "shopping",
+          type: "debit",
+          paymentMethod: "Debit Card",
+          reference: "1234567890",
+          timestamp: new Date("2024-12-30T14:34:00").toISOString()
+        },
+        {
+          id: 2,
+          accountId: 1,
+          amount: "-68.50",
+          description: "Applegreen",
+          category: "fuel",
+          type: "debit",
+          paymentMethod: "Debit Card",
+          reference: "9876543210",
+          timestamp: new Date("2024-12-29T08:15:00").toISOString()
+        },
+        {
+          id: 3,
+          accountId: 1,
+          amount: "+3200.00",
+          description: "Salary Deposit",
+          category: "salary",
+          type: "credit",
+          paymentMethod: "Direct Deposit",
+          reference: "SAL202412",
+          timestamp: new Date("2024-12-28T09:00:00").toISOString()
+        }
+      ];
+
+      if (accountId === '1') {
+        const combinedTransactions = [...sampleTransactions, ...accountTransactions];
+        setTransactions(combinedTransactions);
+      } else {
+        setTransactions(accountTransactions);
+      }
+
+      const storedAccounts = JSON.parse(localStorage.getItem('bankAccounts') || '[]');
+      const account = storedAccounts.find((acc: any) => acc.id.toString() === accountId);
+      if (account) {
+        setCurrentBalance(parseFloat(account.balance));
+      }
+    }
+  }, [refreshTrigger, accountId]);
+
+  // Add polling to check for new transactions every 2 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setRefreshTrigger(prev => prev + 1);
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const getTransactionIcon = (category: string) => {
     switch (category) {
