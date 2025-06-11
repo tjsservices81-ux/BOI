@@ -1,6 +1,8 @@
 import { ChevronRight, User } from "lucide-react";
 import { useLocation } from "wouter";
 import { useState, useEffect } from "react";
+import SpendingVisualization from "../components/SpendingVisualization";
+import SpendingInsights from "../components/SpendingInsights";
 
 interface Account {
   id: number;
@@ -53,7 +55,9 @@ export default function Dashboard() {
   }, [accounts]);
 
   return (
-    <div className="h-full bg-gray-50 overflow-hidden flex flex-col ios-safe-top ios-safe-bottom">
+    <div className="h-full bg-gray-50 overflow-hidden flex flex-col ios-safe-top ios-safe-bottom relative">
+      {/* Ambient spending visualization background */}
+      <SpendingVisualization />
       {/* Header with scenic background matching screenshot exactly */}
       <div className="text-white relative flex-shrink-0 h-44">
         {/* Full scenic background image */}
@@ -115,7 +119,8 @@ export default function Dashboard() {
         </div>
       </div>
 
-
+      {/* Spending insights overlay */}
+      <SpendingInsights />
     </div>
   );
 }

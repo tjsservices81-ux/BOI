@@ -152,50 +152,52 @@ export default function UkTransfer() {
                 </div>
               </div>
             ) : (
-              <div className="bg-gray-50 rounded-xl p-4 mb-6 text-left animate-fade-in">
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Reference:</span>
-                    <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{transferReference}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Amount:</span>
-                    <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>€{form.getValues('amount')}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>To:</span>
-                    <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{form.getValues('recipientName')}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Status:</span>
-                    <span className="font-semibold text-green-600 flex items-center" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      <Check className="w-4 h-4 mr-1" />
-                      Complete
-                    </span>
+              <>
+                <div className="bg-gray-50 rounded-xl p-4 mb-6 text-left animate-fade-in">
+                  <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Reference:</span>
+                      <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{transferReference}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Amount:</span>
+                      <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>€{form.getValues('amount')}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>To:</span>
+                      <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{form.getValues('recipientName')}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Status:</span>
+                      <span className="font-semibold text-green-600 flex items-center" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <Check className="w-4 h-4 mr-1" />
+                        Complete
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
 
-            <div className="flex space-x-4">
-              <button 
-                onClick={() => navigate('/')}
-                className="flex-1 bg-[#4a6b75] text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform"
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
-              >
-                Back to Dashboard
-              </button>
-              <button 
-                onClick={() => {
-                  setStep('form');
-                  form.reset();
-                }}
-                className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold active:scale-98 transition-transform"
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
-              >
-                New Transfer
-              </button>
-            </div>
+                <div className="flex space-x-4">
+                  <button 
+                    onClick={() => navigate('/')}
+                    className="flex-1 bg-[#4a6b75] text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  >
+                    Back to Dashboard
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setStep('form');
+                      form.reset();
+                    }}
+                    className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold active:scale-98 transition-transform"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  >
+                    New Transfer
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
