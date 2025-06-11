@@ -141,31 +141,63 @@ export default function IbanTransfer() {
 
             <div>
               {!showReference ? (
-                <div className="bg-white border border-gray-100 rounded-2xl p-8 mb-6 shadow-sm">
-                  <div className="text-center space-y-6">
-                    <div className="relative w-16 h-16 mx-auto">
-                      <div className="absolute inset-0 bg-[#4a6b75] opacity-10 rounded-full animate-ping"></div>
-                      <div className="relative w-16 h-16 bg-[#4a6b75] rounded-full flex items-center justify-center">
-                        <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+                <div style={{ 
+                  position: 'fixed', 
+                  top: 0, 
+                  left: 0, 
+                  right: 0, 
+                  bottom: 0, 
+                  background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+                  zIndex: 1000,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <div className="text-center space-y-8 px-8 max-w-md w-full">
+                    {/* Bank of Ireland Professional Logo Area */}
+                    <div className="mb-8">
+                      <div className="w-20 h-20 bg-[#4a6b75] rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
+                        <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
                       </div>
                     </div>
-                    <div>
-                      <p className="text-gray-900 font-semibold text-lg mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    
+                    {/* Professional Transfer Processing Header */}
+                    <div className="space-y-4">
+                      <h1 className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                         Processing Transfer
-                      </p>
-                      <p className="text-gray-500 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      </h1>
+                      <p className="text-lg text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                         {processingStage}
                       </p>
                     </div>
-                    <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
-                      <div 
-                        className="bg-gradient-to-r from-[#4a6b75] to-[#5a7b85] h-3 rounded-full transition-all duration-150 ease-out shadow-sm"
-                        style={{ width: `${animationProgress}%` }}
-                      ></div>
+                    
+                    {/* Professional Progress Indicator */}
+                    <div className="space-y-6">
+                      <div className="w-full bg-white rounded-full h-4 overflow-hidden shadow-inner border border-gray-200">
+                        <div 
+                          className="bg-gradient-to-r from-[#4a6b75] via-[#5a7b85] to-[#4a6b75] h-4 rounded-full transition-all duration-300 ease-out shadow-sm relative"
+                          style={{ width: `${animationProgress}%` }}
+                        >
+                          <div className="absolute inset-0 bg-white opacity-20 rounded-full animate-pulse"></div>
+                        </div>
+                      </div>
+                      <p className="text-xl font-semibold text-[#4a6b75]" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        {Math.round(animationProgress)}% Complete
+                      </p>
                     </div>
-                    <p className="text-sm font-medium text-[#4a6b75]" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      {Math.round(animationProgress)}% Complete
-                    </p>
+                    
+                    {/* Professional Security Notice */}
+                    <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-gray-200 shadow-lg">
+                      <div className="flex items-center justify-center space-x-3 mb-3">
+                        <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                        <span className="text-sm font-semibold text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Secure SWIFT Connection Active
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500 leading-relaxed" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Your international transfer is being processed through Bank of Ireland's secure SWIFT network with end-to-end encryption
+                      </p>
+                    </div>
                   </div>
                 </div>
               ) : (
