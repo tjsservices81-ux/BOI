@@ -33,7 +33,6 @@ export default function Login() {
   });
   const [logoTapCount, setLogoTapCount] = useState(0);
   const [showAdminLogin, setShowAdminLogin] = useState(false);
-  const [biometricEnabled, setBiometricEnabled] = useState(false);
   const { login, isLoading } = useAuth();
   const [, navigate] = useLocation();
   const { toast } = useToast();
@@ -44,10 +43,6 @@ export default function Login() {
     
     // Clear current user session on login page load
     UserDataManager.clearCurrentUser();
-    
-    // Check if biometric is enabled by admin
-    const biometricStatus = localStorage.getItem('biometricEnabled');
-    setBiometricEnabled(biometricStatus === 'true');
     
     // Clear form fields
     setCustomerNumber('');
@@ -155,16 +150,6 @@ export default function Login() {
 
   const handleBiometricHoldStart = () => {
     if (biometricVerified) return;
-    
-    // Check if biometric is enabled by admin
-    if (!biometricEnabled) {
-      toast({
-        title: "Biometric Disabled",
-        description: "Biometric login has been disabled by administrator.",
-        variant: "destructive",
-      });
-      return;
-    }
     
     // Check if any users exist first
     const allUsers = UserDataManager.getAllUsers();
