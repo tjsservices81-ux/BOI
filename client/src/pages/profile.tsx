@@ -35,7 +35,7 @@ export default function Profile() {
 
       {/* Profile Content */}
       <div className="bg-white rounded-t-3xl mt-6 flex-1 overflow-hidden">
-        <div className="h-full overflow-y-auto p-6 pb-24">
+        <div className="h-full overflow-y-auto p-6 pb-32">
           {/* Profile Header */}
           <div className="flex items-center space-x-4 mb-8 pb-6 border-b border-gray-200">
             <div className="w-20 h-20 bg-[#4a6b75] rounded-full flex items-center justify-center">
@@ -163,7 +163,7 @@ export default function Profile() {
           </div>
 
           {/* Logout Button */}
-          <div className="mt-8 pt-6 border-t border-gray-200">
+          <div className="mt-8 pt-6 border-t border-gray-200 mb-8">
             <button 
               onClick={() => navigate('/login')}
               className="w-full flex items-center justify-center space-x-3 p-4 bg-red-50 border border-red-200 rounded-xl active:scale-98 transition-transform"
