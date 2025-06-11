@@ -41,13 +41,14 @@ export default function TransactionHistory() {
       const storedTransactions = JSON.parse(localStorage.getItem('bankTransactions') || '[]');
       const accountTransactions = storedTransactions.filter((t: Transaction) => t.accountId.toString() === accountId);
       console.log('Loading transactions for account:', accountId, 'Found:', accountTransactions.length);
+      console.log('All stored transactions:', storedTransactions);
       return accountTransactions;
     };
 
-    const accountTransactions = loadTransactions();
-    
-    // Add sample transactions if none exist
-    if (accountTransactions.length === 0 && accountId === '1') {
+    const updateTransactions = () => {
+      const accountTransactions = loadTransactions();
+      
+      // Add sample transactions if we don't have any real transfers yet
       const sampleTransactions = [
         {
           id: 1,
@@ -83,17 +84,38 @@ export default function TransactionHistory() {
           timestamp: new Date("2024-12-28T09:00:00").toISOString()
         }
       ];
-      setTransactions([...sampleTransactions, ...accountTransactions]);
-    } else {
-      setTransactions(accountTransactions);
-    }
 
-    // Get current balance from localStorage accounts
-    const storedAccounts = JSON.parse(localStorage.getItem('bankAccounts') || '[]');
-    const account = storedAccounts.find((acc: any) => acc.id.toString() === accountId);
-    if (account) {
-      setCurrentBalance(parseFloat(account.balance));
-    }
+      // Show all transactions for this account (including both sample and real transfers)
+      if (accountId === '1') {
+        const combinedTransactions = [...sampleTransactions, ...accountTransactions];
+        setTransactions(combinedTransactions);
+      } else {
+        setTransactions(accountTransactions);
+      }
+
+      // Get current balance from localStorage accounts
+      const storedAccounts = JSON.parse(localStorage.getItem('bankAccounts') || '[]');
+      const account = storedAccounts.find((acc: any) => acc.id.toString() === accountId);
+      if (account) {
+        setCurrentBalance(parseFloat(account.balance));
+      }
+    };
+
+    updateTransactions();
+
+    // Listen for new transactions
+    const handleTransactionUpdate = () => {
+      console.log('Transaction update event received, refreshing...');
+      updateTransactions();
+    };
+
+    window.addEventListener('transactionAdded', handleTransactionUpdate);
+    window.addEventListener('storage', handleTransactionUpdate);
+
+    return () => {
+      window.removeEventListener('transactionAdded', handleTransactionUpdate);
+      window.removeEventListener('storage', handleTransactionUpdate);
+    };
   }, [accountId]);
 
   const getTransactionIcon = (category: string) => {
