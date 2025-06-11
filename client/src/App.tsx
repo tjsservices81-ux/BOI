@@ -19,6 +19,7 @@ import Transfer from "@/pages/transfer";
 import BillPay from "@/pages/bill-pay";
 import TransactionHistory from "@/pages/transaction-history";
 import TransactionHistorySimple from "@/pages/transaction-history-simple";
+import TransactionHistoryWorking from "@/pages/transaction-history-working";
 import DebugTransactions from "@/pages/debug-transactions";
 import Statements from "@/pages/statements";
 import Profile from "@/pages/profile";
@@ -94,7 +95,7 @@ function AppRoutes() {
         </Route>
         <Route path="/transactions/:accountId">
           <ProtectedRoute>
-            <DebugTransactions />
+            <TransactionHistoryWorking />
           </ProtectedRoute>
         </Route>
         <Route path="/debug-transactions">
