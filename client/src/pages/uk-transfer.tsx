@@ -124,22 +124,30 @@ export default function UkTransfer() {
 
             {/* Processing animation and reference reveal */}
             {!showReference ? (
-              <div className="bg-gray-50 rounded-xl p-6 mb-6">
-                <div className="text-center space-y-4">
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto animate-pulse">
-                    <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+              <div className="bg-white border border-gray-100 rounded-2xl p-8 mb-6 shadow-sm">
+                <div className="text-center space-y-6">
+                  <div className="relative w-16 h-16 mx-auto">
+                    <div className="absolute inset-0 bg-[#4a6b75] opacity-10 rounded-full animate-ping"></div>
+                    <div className="relative w-16 h-16 bg-[#4a6b75] rounded-full flex items-center justify-center">
+                      <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+                    </div>
                   </div>
-                  <p className="text-gray-600 font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Processing transfer...
-                  </p>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div>
+                    <p className="text-gray-900 font-semibold text-lg mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Processing Transfer
+                    </p>
+                    <p className="text-gray-500 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Securely processing your payment...
+                    </p>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
                     <div 
-                      className="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full transition-all duration-100 ease-out"
+                      className="bg-gradient-to-r from-[#4a6b75] to-[#5a7b85] h-3 rounded-full transition-all duration-150 ease-out shadow-sm"
                       style={{ width: `${animationProgress}%` }}
                     ></div>
                   </div>
-                  <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {Math.round(animationProgress)}% complete
+                  <p className="text-sm font-medium text-[#4a6b75]" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {Math.round(animationProgress)}% Complete
                   </p>
                 </div>
               </div>
@@ -169,13 +177,25 @@ export default function UkTransfer() {
               </div>
             )}
 
-            <button
-              onClick={() => navigate('/')}
-              className="w-full bg-[#4a6b75] text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform"
-              style={{ fontFamily: 'OpenSans, sans-serif' }}
-            >
-              Done
-            </button>
+            <div className="flex space-x-4">
+              <button 
+                onClick={() => navigate('/')}
+                className="flex-1 bg-[#4a6b75] text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              >
+                Back to Dashboard
+              </button>
+              <button 
+                onClick={() => {
+                  setStep('form');
+                  form.reset();
+                }}
+                className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold active:scale-98 transition-transform"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              >
+                New Transfer
+              </button>
+            </div>
           </div>
         </div>
       </div>
