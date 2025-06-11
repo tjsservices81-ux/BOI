@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/lib/auth";
 import { User, ExternalLink, HelpCircle, Phone, Settings, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { UserDataManager } from "@/utils/userDataManager";
 
 export default function Login() {
   const [customerNumber, setCustomerNumber] = useState("");
@@ -63,16 +64,22 @@ export default function Login() {
       ...newUserData,
       customerNumber,
       joinDate: new Date().toISOString(),
-      dateCreated: new Date().toISOString()
+      dateCreated: new Date().toISOString(),
+      address: "New Customer Address",
+      dateOfBirth: "01 January 1990"
     };
 
-    // Store user data with customer number as key
-    const existingUsers = JSON.parse(localStorage.getItem('bankUsers') || '{}');
-    existingUsers[customerNumber] = userData;
-    localStorage.setItem('bankUsers', JSON.stringify(existingUsers));
+    // Register user using UserDataManager
+    UserDataManager.registerUser(userData);
+    UserDataManager.setCurrentUser(customerNumber);
 
-    // Set current user
-    localStorage.setItem('currentUser', customerNumber);
+    // Initialize default accounts for new user
+    const defaultAccounts = [
+      { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "2322.40", accountType: "current" },
+      { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "2000.00", accountType: "credit" },
+      { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "7500.00", accountType: "savings" },
+    ];
+    UserDataManager.setUserAccounts(defaultAccounts);
 
     toast({
       title: "Account Created",
@@ -87,9 +94,23 @@ export default function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check if user exists
+    if (!UserDataManager.userExists(customerNumber)) {
+      toast({
+        title: "Login Failed",
+        description: "Customer number not found. Please check your credentials or create a new account.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Set current user and navigate to dashboard
+    UserDataManager.setCurrentUser(customerNumber);
+    
     try {
       await login({ customerNumber, pin });
-      navigate("/");
+      navigate("/dashboard");
     } catch (error) {
       toast({
         title: "Login Failed",

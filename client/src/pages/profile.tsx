@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin, Calendar, CreditCard, X, Database, Trash2, RefreshCw, DollarSign } from "lucide-react";
+import { UserDataManager } from "@/utils/userDataManager";
 
 export default function Profile() {
   const [, navigate] = useLocation();
@@ -20,12 +21,19 @@ export default function Profile() {
     joinDate: "Member since 2018"
   });
 
-  // Load profile data from localStorage on component mount
+  // Load profile data from UserDataManager on component mount
   useEffect(() => {
-    const storedProfile = localStorage.getItem('userProfile');
-    if (storedProfile) {
-      const parsed = JSON.parse(storedProfile);
-      setProfileData(parsed);
+    const userProfile = UserDataManager.getUserProfile();
+    if (userProfile) {
+      setProfileData({
+        name: userProfile.name,
+        email: userProfile.email,
+        phone: userProfile.phone,
+        address: userProfile.address || "Address not set",
+        dateOfBirth: userProfile.dateOfBirth || "Not provided",
+        customerNumber: userProfile.customerNumber,
+        joinDate: userProfile.joinDate ? `Member since ${new Date(userProfile.joinDate).getFullYear()}` : "Member since 2018"
+      });
     }
   }, []);
 
@@ -48,15 +56,8 @@ export default function Profile() {
   };
 
   const loadAccounts = () => {
-    const storedAccounts = JSON.parse(localStorage.getItem('bankAccounts') || '[]');
-    const defaultAccounts = [
-      { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "2322.40", accountType: "current" },
-      { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "2000.00", accountType: "credit" },
-      { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "7500.00", accountType: "savings" },
-    ];
-    
-    const accountsToUse = storedAccounts.length > 0 ? storedAccounts : defaultAccounts;
-    setAccounts(accountsToUse);
+    const userAccounts = UserDataManager.getUserAccounts();
+    setAccounts(userAccounts);
   };
 
   const updateAccountBalance = () => {
@@ -69,7 +70,7 @@ export default function Profile() {
     );
     
     setAccounts(updatedAccounts);
-    localStorage.setItem('bankAccounts', JSON.stringify(updatedAccounts));
+    UserDataManager.setUserAccounts(updatedAccounts);
     setEditingAccount(null);
     setNewBalance('');
     alert('Account balance updated successfully');
@@ -82,11 +83,18 @@ export default function Profile() {
 
   const updateProfile = (updatedData: any) => {
     setProfileData(updatedData);
-    localStorage.setItem('userProfile', JSON.stringify(updatedData));
+    
+    // Update user profile in UserDataManager
+    UserDataManager.updateUserProfile({
+      name: updatedData.name,
+      email: updatedData.email,
+      phone: updatedData.phone,
+      address: updatedData.address,
+      dateOfBirth: updatedData.dateOfBirth
+    });
     
     // Update card name if name changed
     if (updatedData.name !== profileData.name) {
-      localStorage.setItem('cardHolderName', updatedData.name);
       // Dispatch custom event to notify other components
       window.dispatchEvent(new CustomEvent('profileUpdated', { 
         detail: { name: updatedData.name } 
@@ -98,22 +106,22 @@ export default function Profile() {
   };
 
   const clearAllData = () => {
-    localStorage.removeItem('bankTransactions');
-    localStorage.removeItem('bankAccounts');
-    localStorage.removeItem('savedPayees');
-    alert('All data cleared successfully');
+    UserDataManager.clearCurrentUserData();
+    setAccounts([]);
+    alert('All user data cleared successfully');
   };
 
   const resetToDefaults = () => {
-    // Reset accounts to default
+    // Reset accounts to default for current user
     const defaultAccounts = [
       { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "2322.40", accountType: "current" },
       { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "2000.00", accountType: "credit" },
       { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "7500.00", accountType: "savings" },
     ];
-    localStorage.setItem('bankAccounts', JSON.stringify(defaultAccounts));
-    localStorage.setItem('bankTransactions', JSON.stringify([]));
-    localStorage.setItem('savedPayees', JSON.stringify([]));
+    UserDataManager.setUserAccounts(defaultAccounts);
+    UserDataManager.setUserTransactions([]);
+    UserDataManager.setUserPayees([]);
+    setAccounts(defaultAccounts);
     alert('Data reset to defaults successfully');
   };
 
