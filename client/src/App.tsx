@@ -94,7 +94,7 @@ function AppRoutes() {
         </Route>
         <Route path="/transactions/:accountId">
           <ProtectedRoute>
-            <TransactionHistorySimple />
+            <DebugTransactions />
           </ProtectedRoute>
         </Route>
         <Route path="/debug-transactions">
