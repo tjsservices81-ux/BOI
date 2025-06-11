@@ -95,12 +95,55 @@ export default function Cards() {
                 className="flex-shrink-0 w-full px-2 snap-center"
               >
                 <div className="relative">
-                  {/* Card Image */}
-                  <img 
-                    src={index === 0 ? "/current-debit-card-consumer.svg" : "/credit-card-teal.svg"}
-                    alt={`${card.type} - ${card.bank}`}
-                    className="w-full h-auto rounded-2xl shadow-lg"
-                  />
+                  {/* Card */}
+                  <div className={`w-full h-56 rounded-2xl shadow-xl bg-gradient-to-br ${card.gradient} relative overflow-hidden`}>
+                    {/* Bank Logo */}
+                    <div className="absolute top-6 left-6">
+                      <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-6 filter brightness-0 invert" />
+                    </div>
+
+                    {/* Card Type */}
+                    <div className="absolute top-6 right-6">
+                      <span className="text-white text-xs font-medium opacity-80" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        {card.type.split(' ')[0]}
+                      </span>
+                    </div>
+
+                    {/* Chip */}
+                    <div className="absolute top-16 left-6 w-10 h-8 bg-gradient-to-br from-yellow-200 to-yellow-400 rounded-md opacity-90"></div>
+
+                    {/* Card Number */}
+                    <div className="absolute top-28 left-6">
+                      <p className="text-white text-lg font-mono tracking-wider" style={{ fontFamily: 'Courier, monospace' }}>
+                        {card.maskedNumber}
+                      </p>
+                    </div>
+
+                    {/* Card Details */}
+                    <div className="absolute bottom-6 left-6 right-6 flex justify-between items-end">
+                      <div>
+                        <p className="text-white text-xs opacity-70 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          {card.name}
+                        </p>
+                        <p className="text-white text-xs opacity-70" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          {card.expiry}
+                        </p>
+                      </div>
+                      
+                      <div className="text-right">
+                        <span className={`text-2xl font-bold ${card.logoColor}`} style={{ fontFamily: 'serif' }}>
+                          {card.logo}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Contactless Symbol */}
+                    <div className="absolute top-16 right-6">
+                      <div className="w-6 h-6 border-2 border-white opacity-60 rounded-full flex items-center justify-center">
+                        <div className="w-3 h-3 border border-white rounded-full"></div>
+                      </div>
+                    </div>
+                  </div>
                   
                   {/* Freeze Overlay */}
                   {freezeToggle && (
