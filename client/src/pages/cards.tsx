@@ -6,6 +6,7 @@ export default function Cards() {
   const [, navigate] = useLocation();
   const [currentCard, setCurrentCard] = useState(0);
   const [freezeToggle, setFreezeToggle] = useState(false);
+  const [cardHolderName, setCardHolderName] = useState("JOHN MURPHY");
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const cards = [
@@ -15,7 +16,7 @@ export default function Cards() {
       bank: "Bank of Ireland",
       number: "5375 4140 1234 5678",
       maskedNumber: "**** **** **** 5678",
-      name: "JOHN MURPHY",
+      name: cardHolderName,
       expiry: "05/27",
       cvv: "***",
       gradient: "from-[#1e3a8a] via-[#3b82f6] to-[#1e40af]",
@@ -28,7 +29,7 @@ export default function Cards() {
       bank: "Bank of Ireland",
       number: "4532 1500 1234 5678",
       maskedNumber: "**** **** **** 5678",
-      name: "JOHN MURPHY", 
+      name: cardHolderName, 
       expiry: "08/26",
       cvv: "***",
       gradient: "from-[#0891b2] via-[#0284c7] to-[#0369a1]",
@@ -36,6 +37,37 @@ export default function Cards() {
       logoColor: "text-white"
     }
   ];
+
+  // Load cardholder name from localStorage and listen for updates
+  useEffect(() => {
+    // Load name from localStorage on mount
+    const loadCardholderName = () => {
+      const storedProfile = localStorage.getItem('userProfile');
+      const storedCardName = localStorage.getItem('cardHolderName');
+      
+      if (storedProfile) {
+        const profile = JSON.parse(storedProfile);
+        setCardHolderName(profile.name.toUpperCase());
+      } else if (storedCardName) {
+        setCardHolderName(storedCardName.toUpperCase());
+      }
+    };
+
+    loadCardholderName();
+
+    // Listen for profile updates
+    const handleProfileUpdate = (event: any) => {
+      if (event.detail?.name) {
+        setCardHolderName(event.detail.name.toUpperCase());
+      }
+    };
+
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+    
+    return () => {
+      window.removeEventListener('profileUpdated', handleProfileUpdate);
+    };
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {

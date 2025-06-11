@@ -9,8 +9,8 @@ export default function Profile() {
   const [accounts, setAccounts] = useState<any[]>([]);
   const [editingAccount, setEditingAccount] = useState<any>(null);
   const [newBalance, setNewBalance] = useState('');
-
-  const userDetails = {
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [profileData, setProfileData] = useState({
     name: "John Murphy",
     email: "john.murphy@email.ie",
     phone: "+353 85 123 4567",
@@ -18,7 +18,18 @@ export default function Profile() {
     dateOfBirth: "15 March 1985",
     customerNumber: "BOI-789123456",
     joinDate: "Member since 2018"
-  };
+  });
+
+  // Load profile data from localStorage on component mount
+  useEffect(() => {
+    const storedProfile = localStorage.getItem('userProfile');
+    if (storedProfile) {
+      const parsed = JSON.parse(storedProfile);
+      setProfileData(parsed);
+    }
+  }, []);
+
+  const userDetails = profileData;
 
   const handleProfilePictureTap = () => {
     const newTapCount = tapCount + 1;
@@ -67,6 +78,23 @@ export default function Profile() {
   const startEditingBalance = (account: any) => {
     setEditingAccount(account);
     setNewBalance(account.balance);
+  };
+
+  const updateProfile = (updatedData: any) => {
+    setProfileData(updatedData);
+    localStorage.setItem('userProfile', JSON.stringify(updatedData));
+    
+    // Update card name if name changed
+    if (updatedData.name !== profileData.name) {
+      localStorage.setItem('cardHolderName', updatedData.name);
+      // Dispatch custom event to notify other components
+      window.dispatchEvent(new CustomEvent('profileUpdated', { 
+        detail: { name: updatedData.name } 
+      }));
+    }
+    
+    setEditingProfile(false);
+    alert('Profile updated successfully');
   };
 
   const clearAllData = () => {
@@ -370,6 +398,24 @@ export default function Profile() {
               </div>
             )}
 
+            {/* Profile Editor */}
+            <button 
+              onClick={() => setEditingProfile(true)}
+              className="w-full flex items-center space-x-3 p-4 bg-green-50 border border-green-200 rounded-xl active:scale-98 transition-transform mb-4"
+            >
+              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                <User className="w-5 h-5 text-green-600" />
+              </div>
+              <div className="flex-1 text-left">
+                <p className="font-semibold text-green-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Edit Profile
+                </p>
+                <p className="text-sm text-green-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Update name, email, phone and address
+                </p>
+              </div>
+            </button>
+
             {/* Admin Actions */}
             <div className="space-y-4">
               {/* Database Export */}
@@ -453,6 +499,132 @@ export default function Profile() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Profile Edit Modal */}
+      {editingProfile && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 max-h-[80vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Edit Profile
+              </h2>
+              <button 
+                onClick={() => setEditingProfile(false)}
+                className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center active:scale-95 transition-transform"
+              >
+                <X className="w-4 h-4 text-gray-600" />
+              </button>
+            </div>
+
+            <form 
+              onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target as HTMLFormElement);
+                const updatedProfile = {
+                  name: formData.get('name') as string,
+                  email: formData.get('email') as string,
+                  phone: formData.get('phone') as string,
+                  address: formData.get('address') as string,
+                  dateOfBirth: formData.get('dateOfBirth') as string,
+                  customerNumber: profileData.customerNumber,
+                  joinDate: profileData.joinDate
+                };
+                updateProfile(updatedProfile);
+              }}
+              className="space-y-4"
+            >
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  defaultValue={profileData.name}
+                  className="w-full p-3 border border-gray-300 rounded-xl"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  defaultValue={profileData.email}
+                  className="w-full p-3 border border-gray-300 rounded-xl"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Phone Number
+                </label>
+                <input
+                  type="tel"
+                  name="phone"
+                  defaultValue={profileData.phone}
+                  className="w-full p-3 border border-gray-300 rounded-xl"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Address
+                </label>
+                <textarea
+                  name="address"
+                  defaultValue={profileData.address}
+                  rows={3}
+                  className="w-full p-3 border border-gray-300 rounded-xl resize-none"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Date of Birth
+                </label>
+                <input
+                  type="text"
+                  name="dateOfBirth"
+                  defaultValue={profileData.dateOfBirth}
+                  className="w-full p-3 border border-gray-300 rounded-xl"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  placeholder="DD Month YYYY"
+                  required
+                />
+              </div>
+
+              <div className="flex space-x-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setEditingProfile(false)}
+                  className="flex-1 p-3 bg-gray-100 text-gray-700 rounded-xl font-semibold active:scale-98 transition-transform"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 p-3 bg-[#2c5f70] text-white rounded-xl font-semibold active:scale-98 transition-transform"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
