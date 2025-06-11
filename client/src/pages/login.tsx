@@ -123,6 +123,17 @@ export default function Login() {
   const handleBiometricHoldStart = () => {
     if (biometricVerified) return;
     
+    // Check if any users exist first
+    const allUsers = UserDataManager.getAllUsers();
+    if (Object.keys(allUsers).length === 0) {
+      toast({
+        title: "No Account Found",
+        description: "Please create an account first by tapping 'Waiting for approval'.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsScanning(true);
     setHoldProgress(0);
     
@@ -134,6 +145,20 @@ export default function Login() {
           setBiometricVerified(true);
           setIsScanning(false);
           setHoldProgress(0);
+          
+          // Set the most recent user as current user for biometric login
+          const allUsers = UserDataManager.getAllUsers();
+          const userNumbers = Object.keys(allUsers);
+          if (userNumbers.length > 0) {
+            // Use the most recently created account
+            const mostRecentUser = userNumbers.reduce((latest, current) => {
+              const latestDate = new Date(allUsers[latest].dateCreated);
+              const currentDate = new Date(allUsers[current].dateCreated);
+              return currentDate > latestDate ? current : latest;
+            });
+            UserDataManager.setCurrentUser(mostRecentUser);
+          }
+          
           return 100;
         }
         return newProgress;
@@ -258,9 +283,25 @@ export default function Login() {
       });
       return;
     }
+
+    // Check if user exists
+    if (!UserDataManager.userExists(customerNumber)) {
+      toast({
+        title: "Login Failed",
+        description: "Customer number not found. Please create an account first.",
+        variant: "destructive",
+      });
+      return;
+    }
     
-    // Simulate PIN verification
+    // Set current user and verify PIN
+    UserDataManager.setCurrentUser(customerNumber);
     setPinVerified(true);
+    
+    // Navigate to dashboard after verification
+    setTimeout(() => {
+      navigate('/dashboard');
+    }, 1000);
   };
 
   return (
