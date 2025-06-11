@@ -92,6 +92,9 @@ export default function TransactionHistoryWorking() {
       const accountTransactions = updatedTransactions.filter((tx: any) => tx.accountId === accountId);
       console.log('Loaded transactions for account', accountId, ':', accountTransactions);
       
+      // Update the transactions state with enhanced data
+      setTransactions(accountTransactions);
+      
       // Get account info and balance
       const storedAccounts = JSON.parse(localStorage.getItem('bankAccounts') || '[]');
       const defaultAccounts = [
@@ -208,8 +211,9 @@ export default function TransactionHistoryWorking() {
           break;
       }
       
-      // Format stored transactions for this account
+      // Format stored transactions for this account (preserve all data including exchange rates)
       const formattedStored = accountTransactions.map((tx: any) => ({
+        ...tx, // Keep all original transaction data
         id: tx.id,
         amount: tx.amount,
         description: tx.description,
