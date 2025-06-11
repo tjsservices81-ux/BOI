@@ -545,7 +545,7 @@ export default function Login() {
 
         {/* Bottom Navigation */}
         <div className="fixed bottom-0 left-0 right-0 bg-[#4a6b75]/95 backdrop-blur-sm rounded-t-2xl px-4 py-4 ios-safe-bottom">
-          <div className="flex justify-center items-center space-x-12 max-w-sm mx-auto">
+          <div className="flex justify-evenly items-center w-full max-w-xs mx-auto">
             <button className="flex flex-col items-center space-y-1 py-2 transition-opacity duration-150 hover:opacity-80">
               <img src="/branch-locator.svg" alt="ATM/Branch" className="w-5 h-5 filter brightness-0 invert" />
               <span className="text-white text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>ATM/Branch</span>
