@@ -26,18 +26,42 @@ export default function TransactionHistoryWorking() {
     // Update localStorage
     localStorage.setItem('bankTransactions', JSON.stringify(updatedTransactions));
     
-    // Update local state
-    const accountTransactions = updatedTransactions.filter((tx: any) => tx.accountId === accountId);
-    setTransactions(accountTransactions);
-    
-    // Close modal and confirmation
+    // Close modal and confirmation first
     setSelectedTransaction(null);
     setShowDeleteConfirm(false);
     
-    // Dispatch event to update other components
-    window.dispatchEvent(new CustomEvent('transactionDeleted', {
-      detail: { transactionId: selectedTransaction.id }
-    }));
+    // Force a complete reload of data
+    setTimeout(() => {
+      // Add exchange rate data to existing UK transfers that don't have it
+      const enhancedTransactions = updatedTransactions.map((tx: any) => {
+        if (tx.paymentMethod === 'UK Transfer' && !tx.exchangeRate) {
+          const amount = parseFloat(tx.amount.replace('-', ''));
+          const sampleRate = 0.8456; // Sample EUR to GBP rate
+          return {
+            ...tx,
+            exchangeRate: sampleRate,
+            convertedAmount: (amount * sampleRate).toFixed(2),
+            convertedCurrency: 'GBP'
+          };
+        }
+        return tx;
+      });
+      
+      // Update localStorage with enhanced transactions if needed
+      if (JSON.stringify(enhancedTransactions) !== JSON.stringify(updatedTransactions)) {
+        localStorage.setItem('bankTransactions', JSON.stringify(enhancedTransactions));
+      }
+      
+      // Update local state with filtered account transactions
+      const accountTransactions = enhancedTransactions.filter((tx: any) => tx.accountId === accountId);
+      setTransactions(accountTransactions);
+      
+      // Dispatch events to update other components
+      window.dispatchEvent(new CustomEvent('transactionDeleted', {
+        detail: { transactionId: selectedTransaction?.id }
+      }));
+      window.dispatchEvent(new CustomEvent('transactionUpdate'));
+    }, 100);
   };
 
   useEffect(() => {
