@@ -119,65 +119,83 @@ export default function TransactionHistory() {
     };
   }, [accountId]);
 
-  // Separate effect for refreshing when trigger changes
+  // Direct transaction loading
   useEffect(() => {
-    console.log('=== TRANSACTION REFRESH ===');
-    console.log('Account ID:', accountId);
+    console.log('=== LOADING TRANSACTIONS ===');
     
-    // Get all stored transactions
-    const allStoredTransactions = JSON.parse(localStorage.getItem('bankTransactions') || '[]');
-    console.log('All stored transactions:', allStoredTransactions);
+    // Get raw localStorage data
+    const rawTransactions = localStorage.getItem('bankTransactions');
+    console.log('Raw localStorage data:', rawTransactions);
     
-    // Filter for current account
-    const accountStoredTransactions = allStoredTransactions.filter((t: any) => 
-      t.accountId.toString() === accountId.toString()
-    );
-    console.log('Filtered for account', accountId, ':', accountStoredTransactions);
+    let storedTransactions = [];
+    try {
+      storedTransactions = JSON.parse(rawTransactions || '[]');
+    } catch (e) {
+      console.error('Error parsing transactions:', e);
+      storedTransactions = [];
+    }
     
-    // Sample transactions for context
+    console.log('Parsed stored transactions:', storedTransactions);
+    console.log('Current account ID:', accountId, typeof accountId);
+    
+    // Show ALL transactions regardless of account for debugging
+    const recentTransfers = storedTransactions.map((t: any) => ({
+      ...t,
+      // Ensure proper formatting
+      amount: t.amount.toString(),
+      description: t.description || 'Transfer',
+      timestamp: t.timestamp || new Date().toISOString()
+    }));
+    
+    // Add sample transactions
     const sampleTransactions = [
       {
-        id: 101,
-        accountId: parseInt(accountId),
+        id: 999,
+        accountId: 1,
         amount: "-50.00",
         description: "ATM WITHDRAWAL DUBLIN",
         category: "withdrawal",
         type: "debit",
         paymentMethod: "ATM",
         reference: "ATM240427",
-        timestamp: new Date("2021-04-27T14:30:00").toISOString()
+        timestamp: "2021-04-27T14:30:00.000Z"
       },
       {
-        id: 102,
-        accountId: parseInt(accountId),
+        id: 998,
+        accountId: 1,
         amount: "-89.50",
         description: "DIRECT DEBIT ELECTRIC IRELAND",
         category: "utilities",
         type: "debit",
         paymentMethod: "Direct Debit",
         reference: "DD240426",
-        timestamp: new Date("2021-04-26T08:15:00").toISOString()
+        timestamp: "2021-04-26T08:15:00.000Z"
       },
       {
-        id: 103,
-        accountId: parseInt(accountId),
+        id: 997,
+        accountId: 1,
         amount: "-45.99",
         description: "ONLINE PURCHASE AMAZON.IE",
         category: "shopping",
         type: "debit",
         paymentMethod: "Online Purchase",
         reference: "AMZ240425",
-        timestamp: new Date("2021-04-25T16:45:00").toISOString()
+        timestamp: "2021-04-25T16:45:00.000Z"
       }
     ];
     
-    // Combine and sort by timestamp
-    const allTransactions = [...accountStoredTransactions, ...sampleTransactions];
+    // Filter by account only for sample transactions
+    const filteredSamples = sampleTransactions.filter(t => t.accountId.toString() === accountId);
+    
+    // Combine all transfers with filtered samples
+    const allTransactions = [...recentTransfers, ...filteredSamples];
+    
+    // Sort by timestamp
     const sortedTransactions = allTransactions.sort((a, b) => 
       new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     );
     
-    console.log('Final transaction list:', sortedTransactions);
+    console.log('FINAL DISPLAY LIST:', sortedTransactions);
     setTransactions(sortedTransactions);
 
     // Update balance
@@ -185,6 +203,7 @@ export default function TransactionHistory() {
     const account = storedAccounts.find((acc: any) => acc.id.toString() === accountId);
     if (account) {
       setCurrentBalance(parseFloat(account.balance));
+      console.log('Updated balance to:', account.balance);
     }
   }, [refreshTrigger, accountId]);
 
@@ -193,19 +212,13 @@ export default function TransactionHistory() {
     setRefreshTrigger(1);
   }, []);
 
-  // Listen for storage changes and refresh transactions
+  // Refresh every 2 seconds to catch new transactions
   useEffect(() => {
-    const handleStorageChange = () => {
+    const interval = setInterval(() => {
       setRefreshTrigger(prev => prev + 1);
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('transactionAdded', handleStorageChange);
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('transactionAdded', handleStorageChange);
-    };
+    }, 2000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const getTransactionIcon = (category: string) => {
