@@ -29,21 +29,34 @@ export default function Login() {
 
   // Preload assets immediately
   useEffect(() => {
-    const preloadAssets = () => {
-      const logoImg = new Image();
-      logoImg.onload = () => setAssetsLoaded(true);
-      logoImg.onerror = () => setAssetsLoaded(true); // Even if fails, show elements
-      logoImg.src = '/boi_logo.svg';
-      
-      // Also preload background image
-      const bgImg = new Image();
-      bgImg.src = '/background.jpg';
-      
-      // Set a fallback timeout to ensure elements appear
-      setTimeout(() => setAssetsLoaded(true), 100);
+    const preloadAssets = async () => {
+      try {
+        // Preload Bank of Ireland logo
+        const logoImg = new Image();
+        await new Promise((resolve, reject) => {
+          logoImg.onload = resolve;
+          logoImg.onerror = reject;
+          logoImg.src = '/boi_logo.svg';
+        });
+        
+        // Preload background image
+        const bgImg = new Image();
+        bgImg.src = '/background.jpg';
+        
+        setAssetsLoaded(true);
+      } catch (error) {
+        // If assets fail to load, still show interface after short delay
+        console.warn('Asset preloading failed:', error);
+        setTimeout(() => setAssetsLoaded(true), 50);
+      }
     };
     
     preloadAssets();
+    
+    // Fallback to ensure interface appears even if preloading takes too long
+    const fallbackTimer = setTimeout(() => setAssetsLoaded(true), 200);
+    
+    return () => clearTimeout(fallbackTimer);
   }, []);
 
   const handleNavigation = (path: string) => {
@@ -226,7 +239,7 @@ export default function Login() {
           />
           
           <div className="relative z-10">
-            {/* Bank of Ireland Logo with authentic styling - preloaded */}
+            {/* Bank of Ireland Logo with authentic styling - always visible */}
             <div className="mb-8 flex flex-col items-center">
               <img 
                 src="/boi_logo.svg" 
@@ -234,7 +247,7 @@ export default function Login() {
                 className="h-10 filter brightness-0 invert mb-2"
                 style={{ 
                   display: 'block',
-                  opacity: assetsLoaded ? 1 : 0,
+                  opacity: 1,
                   transition: 'opacity 0.1s ease-in'
                 }}
               />
