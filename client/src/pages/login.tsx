@@ -124,16 +124,8 @@ export default function Login() {
     // Set current user and navigate to dashboard
     UserDataManager.setCurrentUser(customerNumber);
     
-    try {
-      await login({ customerNumber, pin });
-      navigate("/dashboard");
-    } catch (error) {
-      toast({
-        title: "Login Failed",
-        description: "Invalid customer number or PIN. Please try again.",
-        variant: "destructive",
-      });
-    }
+    login(customerNumber);
+    navigate("/dashboard");
   };
 
   const handleBiometricHoldStart = () => {
@@ -173,8 +165,10 @@ export default function Login() {
           setHoldProgress(0);
           
           // Set current user based on entered customer number or most recent if none entered
+          let targetCustomerNumber = customerNumber;
+          
           if (customerNumber && UserDataManager.userExists(customerNumber)) {
-            UserDataManager.setCurrentUser(customerNumber);
+            targetCustomerNumber = customerNumber;
           } else if (!customerNumber) {
             // If no customer number entered, use most recent account
             const allUsers = UserDataManager.getAllUsers();
@@ -185,8 +179,12 @@ export default function Login() {
                 const currentDate = new Date(allUsers[current].dateCreated);
                 return currentDate > latestDate ? current : latest;
               });
-              UserDataManager.setCurrentUser(mostRecentUser);
+              targetCustomerNumber = mostRecentUser;
             }
+          }
+          
+          if (targetCustomerNumber) {
+            login(targetCustomerNumber);
           }
           
           return 100;
@@ -272,7 +270,7 @@ export default function Login() {
       clearInterval(verifyInterval);
       clearInterval(secureInterval);
 
-      await login({ customerNumber: "12345678", pin: "1234" });
+      login("12345678");
       
       await new Promise(resolve => setTimeout(resolve, 1000));
       
