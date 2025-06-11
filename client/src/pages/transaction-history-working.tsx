@@ -17,7 +17,28 @@ export default function TransactionHistoryWorking() {
     const loadData = () => {
       // Get stored transactions for this specific account
       const storedTransactions = JSON.parse(localStorage.getItem('bankTransactions') || '[]');
-      const accountTransactions = storedTransactions.filter((tx: any) => tx.accountId === accountId);
+      
+      // Add exchange rate data to existing UK transfers that don't have it
+      const updatedTransactions = storedTransactions.map((tx: any) => {
+        if (tx.paymentMethod === 'UK Transfer' && !tx.exchangeRate) {
+          const amount = parseFloat(tx.amount.replace('-', ''));
+          const sampleRate = 0.8456; // Sample EUR to GBP rate
+          return {
+            ...tx,
+            exchangeRate: sampleRate,
+            convertedAmount: (amount * sampleRate).toFixed(2),
+            convertedCurrency: 'GBP'
+          };
+        }
+        return tx;
+      });
+      
+      // Update localStorage with the enhanced transactions
+      if (JSON.stringify(updatedTransactions) !== JSON.stringify(storedTransactions)) {
+        localStorage.setItem('bankTransactions', JSON.stringify(updatedTransactions));
+      }
+      
+      const accountTransactions = updatedTransactions.filter((tx: any) => tx.accountId === accountId);
       console.log('Loaded transactions for account', accountId, ':', accountTransactions);
       
       // Get account info and balance
