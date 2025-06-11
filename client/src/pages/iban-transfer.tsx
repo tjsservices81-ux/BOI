@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { ChevronLeft, Info, Check, CreditCard, Globe } from "lucide-react";
 import { useForm } from "react-hook-form";
