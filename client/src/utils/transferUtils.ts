@@ -53,7 +53,7 @@ export const processTransfer = (
     const userAccounts = UserDataManager.getUserAccounts();
     console.log('Found accounts:', userAccounts);
     
-    const selectedAccount = userAccounts.find((acc: any) => acc.displayName === fromAccountId);
+    const selectedAccount = userAccounts.find((acc: any) => acc.id.toString() === fromAccountId);
     console.log('Selected account:', selectedAccount);
     
     if (!selectedAccount) {
@@ -76,7 +76,7 @@ export const processTransfer = (
     
     // Update the accounts array
     const updatedAccounts = userAccounts.map((acc: any) => 
-      acc.displayName === fromAccountId ? selectedAccount : acc
+      acc.id.toString() === fromAccountId ? selectedAccount : acc
     );
     
     // Save updated accounts to user-specific storage
