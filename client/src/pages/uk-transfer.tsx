@@ -60,9 +60,10 @@ export default function UkTransfer() {
         const rate = data.conversion_rates.GBP;
         setExchangeRate(rate);
         
-        // Calculate GBP amount if we have form data
-        if (formData?.amount) {
-          const converted = (parseFloat(formData.amount) * rate).toFixed(2);
+        // Update GBP amount with fresh rate
+        const currentAmount = formData?.amount || form.getValues('amount');
+        if (currentAmount) {
+          const converted = (parseFloat(currentAmount) * rate).toFixed(2);
           setGbpAmount(converted);
         }
       }
@@ -84,8 +85,12 @@ export default function UkTransfer() {
     return () => clearInterval(interval);
   }, []);
 
-  const onSubmit = (data: UkTransferData) => {
+  const onSubmit = async (data: UkTransferData) => {
     setFormData(data);
+    
+    // Fetch exchange rate when moving to confirmation
+    await fetchExchangeRate();
+    
     setStep('confirm');
   };
 
