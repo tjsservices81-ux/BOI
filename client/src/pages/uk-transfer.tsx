@@ -27,6 +27,8 @@ export default function UkTransfer() {
   const [animationProgress, setAnimationProgress] = useState<number>(0);
   const [processingStage, setProcessingStage] = useState<string>('Verifying transfer details...');
   const [formData, setFormData] = useState<UkTransferData | null>(null);
+  const [exchangeRate, setExchangeRate] = useState<number>(0.85); // EUR to GBP rate
+  const [gbpAmount, setGbpAmount] = useState<string>('0.00');
 
   const form = useForm<UkTransferData>({
     resolver: zodResolver(ukTransferSchema),
@@ -41,6 +43,34 @@ export default function UkTransfer() {
   });
 
   const [accounts, setAccounts] = useState<any[]>([]);
+
+  // Fetch real-time exchange rate using authenticated API
+  const fetchExchangeRate = async () => {
+    try {
+      const apiKey = import.meta.env.VITE_EXCHANGERATE_API_KEY;
+      if (!apiKey) {
+        console.log('No API key provided, using default rate');
+        return;
+      }
+      
+      const response = await fetch(`https://v6.exchangerate-api.com/v6/${apiKey}/latest/EUR`);
+      const data = await response.json();
+      
+      if (data.result === 'success') {
+        const rate = data.conversion_rates.GBP;
+        setExchangeRate(rate);
+        
+        // Calculate GBP amount if we have form data
+        if (formData?.amount) {
+          const converted = (parseFloat(formData.amount) * rate).toFixed(2);
+          setGbpAmount(converted);
+        }
+      }
+    } catch (error) {
+      console.log('Exchange rate fetch failed, using default rate');
+      // Keep default rate of 0.85
+    }
+  };
 
   useEffect(() => {
     const loadAccounts = () => {
@@ -59,12 +89,15 @@ export default function UkTransfer() {
     setStep('confirm');
   };
 
-  const executeTransfer = () => {
+  const executeTransfer = async () => {
     if (!formData) return;
     
     // Generate unique reference only when transfer starts
     const ref = generateReference();
     setTransferReference(ref);
+    
+    // Fetch current exchange rate and calculate GBP amount
+    await fetchExchangeRate();
     
     const success = processTransfer(
       formData.fromAccount,
@@ -216,6 +249,17 @@ export default function UkTransfer() {
                       <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Amount:</span>
                       <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>€{form.getValues('amount')}</span>
                     </div>
+                    <div className="flex justify-between border-t border-gray-200 pt-3">
+                      <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>GBP Equivalent:</span>
+                      <div className="text-right">
+                        <span className="font-semibold text-green-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          £{(parseFloat(form.getValues('amount')) * exchangeRate).toFixed(2)}
+                        </span>
+                        <p className="text-xs text-gray-500 mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Rate: €1 = £{exchangeRate.toFixed(4)} • Live rate
+                        </p>
+                      </div>
+                    </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>To:</span>
                       <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{form.getValues('recipientName')}</span>
@@ -307,7 +351,12 @@ export default function UkTransfer() {
               
               <div className="flex justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Amount:</span>
-                <span className="font-semibold text-[#4a6b75] text-xl" style={{ fontFamily: 'OpenSans, sans-serif' }}>€{formData.amount}</span>
+                <div className="text-right">
+                  <span className="font-semibold text-[#4a6b75] text-xl" style={{ fontFamily: 'OpenSans, sans-serif' }}>€{formData.amount}</span>
+                  <p className="text-sm text-green-700 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    ≈ £{(parseFloat(formData.amount) * exchangeRate).toFixed(2)} GBP
+                  </p>
+                </div>
               </div>
               
               <div className="flex justify-between py-2 border-b border-gray-100">
