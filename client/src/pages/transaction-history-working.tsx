@@ -90,16 +90,7 @@ export default function TransactionHistoryWorking() {
       
       // Get account info and balance using UserDataManager
       const storedAccounts = UserDataManager.getUserData('bankAccounts', []);
-      const defaultAccounts = [
-        { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "2322.40", accountType: "current" },
-        { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "2000.00", accountType: "credit" },
-        { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "7500.00", accountType: "savings" },
-        { id: 4, displayName: "Personal Loan", accountNumber: "****8923", balance: "2500.00", accountType: "loan" },
-        { id: 5, displayName: "Deposit - 365 Monthly Saver", accountNumber: "****7908", balance: "100.00", accountType: "deposit" }
-      ];
-      
-      const accounts = storedAccounts.length > 0 ? storedAccounts : defaultAccounts;
-      const currentAccount = accounts.find((acc: any) => acc.id === accountId);
+      const currentAccount = storedAccounts.find((acc: any) => acc.id === accountId);
       
       if (currentAccount) {
         setBalance(currentAccount.balance);
@@ -233,6 +224,7 @@ export default function TransactionHistoryWorking() {
     window.addEventListener('transactionUpdate', handleTransactionUpdate);
     window.addEventListener('transactionDeleted', handleTransactionUpdate);
     window.addEventListener('transactionAdded', handleTransactionUpdate);
+    window.addEventListener('balanceUpdate', handleTransactionUpdate);
     
     // Refresh only when needed
     const interval = setInterval(loadData, 5000);
@@ -242,6 +234,7 @@ export default function TransactionHistoryWorking() {
       window.removeEventListener('transactionUpdate', handleTransactionUpdate);
       window.removeEventListener('transactionDeleted', handleTransactionUpdate);
       window.removeEventListener('transactionAdded', handleTransactionUpdate);
+      window.removeEventListener('balanceUpdate', handleTransactionUpdate);
     };
   }, []);
 
