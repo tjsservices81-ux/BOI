@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation, useRoute } from "wouter";
-import { ChevronLeft, ArrowUpRight, CreditCard, Building2, Zap } from "lucide-react";
+import { ChevronLeft, ArrowUpRight, CreditCard, Building2, Zap, Check, Clock, MapPin, Globe } from "lucide-react";
 import MiniSpendingChart from "../components/MiniSpendingChart";
 
 export default function TransactionHistoryWorking() {
@@ -9,6 +9,7 @@ export default function TransactionHistoryWorking() {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [balance, setBalance] = useState<string>('0.00');
   const [accountInfo, setAccountInfo] = useState<any>(null);
+  const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
   
   const accountId = params?.accountId ? parseInt(params.accountId) : 1;
 
@@ -232,7 +233,11 @@ export default function TransactionHistoryWorking() {
             const isDebit = transaction.type === 'debit' || transaction.amount.startsWith('-');
             
             return (
-              <div key={`${transaction.id}-${index}`} className="bg-white rounded-lg flex items-center justify-between px-4 py-4 shadow-sm border border-gray-100">
+              <button 
+                key={`${transaction.id}-${index}`} 
+                onClick={() => setSelectedTransaction(transaction)}
+                className="w-full bg-white rounded-lg flex items-center justify-between px-4 py-4 shadow-sm border border-gray-100 active:scale-98 transition-transform active:bg-gray-50"
+              >
                 <div className="flex items-center flex-1">
                   <div className="text-left">
                     <p className="font-medium text-gray-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -248,7 +253,7 @@ export default function TransactionHistoryWorking() {
                     €{transaction.amount}
                   </p>
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>
@@ -269,6 +274,151 @@ export default function TransactionHistoryWorking() {
           </button>
         </div>
       </div>
+
+      {/* Transaction Detail Modal */}
+      {selectedTransaction && (
+        <div style={{ 
+          position: 'fixed', 
+          top: 0, 
+          left: 0, 
+          right: 0, 
+          bottom: 0, 
+          background: 'rgba(0, 0, 0, 0.5)',
+          zIndex: 1000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '1rem'
+        }}>
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto shadow-xl">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Transaction Details
+              </h2>
+              <button 
+                onClick={() => setSelectedTransaction(null)}
+                className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center active:scale-95 transition-transform"
+              >
+                <span className="text-gray-600 text-lg">×</span>
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              {/* Transaction Status */}
+              <div className="flex items-center justify-center py-4 bg-green-50 rounded-xl">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                    <Check className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-green-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Transfer Complete
+                    </p>
+                    <p className="text-sm text-green-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Successfully processed
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Amount */}
+              <div className="text-center py-4 border-b border-gray-200">
+                <p className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  €{selectedTransaction.amount.replace('-', '')}
+                </p>
+                <p className="text-sm text-gray-500 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  {selectedTransaction.type === 'debit' ? 'Sent' : 'Received'}
+                </p>
+              </div>
+
+              {/* Transaction Details */}
+              <div className="space-y-4">
+                <div className="flex justify-between">
+                  <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Description:</span>
+                  <span className="font-semibold text-gray-900 text-right" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {selectedTransaction.description}
+                  </span>
+                </div>
+
+                {selectedTransaction.reference && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Reference:</span>
+                    <span className="font-mono text-sm text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      {selectedTransaction.reference}
+                    </span>
+                  </div>
+                )}
+
+                {selectedTransaction.paymentMethod && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Transfer Type:</span>
+                    <div className="flex items-center space-x-2">
+                      {selectedTransaction.paymentMethod === 'UK Transfer' ? (
+                        <MapPin className="w-4 h-4 text-[#4a6b75]" />
+                      ) : (
+                        <Globe className="w-4 h-4 text-[#4a6b75]" />
+                      )}
+                      <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        {selectedTransaction.paymentMethod}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex justify-between">
+                  <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Date & Time:</span>
+                  <div className="text-right">
+                    <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      {new Date(selectedTransaction.timestamp).toLocaleDateString('en-IE', { 
+                        day: 'numeric', 
+                        month: 'long', 
+                        year: 'numeric' 
+                      })}
+                    </p>
+                    <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      {new Date(selectedTransaction.timestamp).toLocaleTimeString('en-IE', { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                      })}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex justify-between">
+                  <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Transaction ID:</span>
+                  <span className="font-mono text-xs text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {selectedTransaction.id}
+                  </span>
+                </div>
+
+                <div className="flex justify-between">
+                  <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Category:</span>
+                  <span className="font-semibold text-gray-900 capitalize" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {selectedTransaction.category}
+                  </span>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="pt-4 space-y-3">
+                <button 
+                  onClick={() => setSelectedTransaction(null)}
+                  className="w-full bg-[#4a6b75] text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  Close
+                </button>
+                <button 
+                  className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold active:scale-98 transition-transform"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  Export Details
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
