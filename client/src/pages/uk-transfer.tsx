@@ -39,7 +39,19 @@ export default function UkTransfer() {
     }
   });
 
-  const accounts = getAccounts();
+  const [accounts, setAccounts] = useState<any[]>([]);
+
+  useEffect(() => {
+    const loadAccounts = () => {
+      setAccounts(getAccounts());
+    };
+    
+    loadAccounts();
+    
+    // Refresh accounts every 2 seconds to sync with localStorage
+    const interval = setInterval(loadAccounts, 2000);
+    return () => clearInterval(interval);
+  }, []);
 
   const onSubmit = (data: UkTransferData) => {
     const ref = generateReference();

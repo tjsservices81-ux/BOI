@@ -19,13 +19,24 @@ export interface Transaction {
 }
 
 export const getAccounts = (): Account[] => {
-  return [
-    { id: '1', name: 'Current Account', number: '-2091', balance: '€2,322.40' },
-    { id: '2', name: 'Credit Card', number: '-1820', balance: '€2,000.00' },
-    { id: '3', name: 'Savings Account', number: '-0978', balance: '€7,500.00' },
-    { id: '4', name: 'Personal Loan', number: '-8923', balance: '€2,500.00' },
-    { id: '5', name: 'Deposit - 365 Monthly Saver', number: '-7908', balance: '€100.00' }
+  // Get current balances from localStorage
+  const storedAccounts = JSON.parse(localStorage.getItem('bankAccounts') || '[]');
+  const defaultAccounts = [
+    { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "2322.40", accountType: "current" },
+    { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "2000.00", accountType: "credit" },
+    { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "7500.00", accountType: "savings" },
+    { id: 4, displayName: "Personal Loan", accountNumber: "****8923", balance: "2500.00", accountType: "loan" },
+    { id: 5, displayName: "Deposit - 365 Monthly Saver", accountNumber: "****7908", balance: "100.00", accountType: "deposit" }
   ];
+  
+  const accounts = storedAccounts.length > 0 ? storedAccounts : defaultAccounts;
+  
+  return accounts.map((acc: any) => ({
+    id: acc.id.toString(),
+    name: acc.displayName,
+    number: acc.accountNumber.replace('****', '-'),
+    balance: `€${parseFloat(acc.balance).toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  }));
 };
 
 export const processTransfer = (
