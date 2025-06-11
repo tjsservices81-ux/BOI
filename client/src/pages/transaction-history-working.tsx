@@ -215,7 +215,9 @@ export default function TransactionHistoryWorking() {
         flex: 1, 
         overflowY: 'auto', 
         WebkitOverflowScrolling: 'touch',
-        padding: '1rem'
+        padding: '1rem',
+        minHeight: 0,
+        paddingBottom: '6rem'
       }}>
         {/* Mini spending chart for visual insights */}
         <MiniSpendingChart accountId={accountId} />
@@ -224,13 +226,13 @@ export default function TransactionHistoryWorking() {
           Recent Transactions
         </h2>
 
-        <div className="space-y-1">
+        <div className="space-y-2 mb-6">
           {transactions.map((transaction, index) => {
             const IconComponent = getIcon(transaction.description);
             const isDebit = transaction.type === 'debit' || transaction.amount.startsWith('-');
             
             return (
-              <div key={`${transaction.id}-${index}`} className="bg-white flex items-center justify-between px-4 py-3 border-b border-gray-100 last:border-b-0">
+              <div key={`${transaction.id}-${index}`} className="bg-white rounded-lg flex items-center justify-between px-4 py-4 shadow-sm border border-gray-100">
                 <div className="flex items-center flex-1">
                   <div className="text-left">
                     <p className="font-medium text-gray-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
