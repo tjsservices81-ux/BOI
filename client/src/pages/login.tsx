@@ -908,16 +908,14 @@ export default function Login() {
             </div>
 
             <div className="space-y-4">
-              <button
-                onClick={() => {
-                  setShowAdminLogin(false);
-                  navigate('/profile');
-                }}
-                className="w-full p-4 bg-[#2c5f70] text-white rounded-xl font-semibold active:scale-98 transition-transform"
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
-              >
-                Access Admin Panel
-              </button>
+              <div className="text-center mb-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  App Administration
+                </h3>
+                <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  System-wide controls and data management
+                </p>
+              </div>
               
               <button
                 onClick={() => {
@@ -925,14 +923,28 @@ export default function Login() {
                   UserDataManager.clearAllData();
                   setShowAdminLogin(false);
                   toast({
-                    title: "Admin Logout",
-                    description: "All user data has been cleared.",
+                    title: "System Reset Complete",
+                    description: "All user data has been cleared from the system.",
                   });
                 }}
                 className="w-full p-4 bg-red-600 text-white rounded-xl font-semibold active:scale-98 transition-transform"
                 style={{ fontFamily: 'OpenSans, sans-serif' }}
               >
-                Sign Out (Clear All Data)
+                🗑️ Clear All System Data
+              </button>
+
+              <button
+                onClick={() => {
+                  setShowAdminLogin(false);
+                  toast({
+                    title: "System Status",
+                    description: `${Object.keys(UserDataManager.getAllUsers()).length} user accounts in system`,
+                  });
+                }}
+                className="w-full p-4 bg-blue-600 text-white rounded-xl font-semibold active:scale-98 transition-transform"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              >
+                📊 System Status
               </button>
             </div>
           </div>
