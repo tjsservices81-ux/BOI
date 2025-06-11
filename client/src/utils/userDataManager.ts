@@ -113,9 +113,9 @@ export class UserDataManager {
   // User-specific account operations
   static getUserAccounts() {
     return this.getUserData('bankAccounts', [
-      { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "2322.40", accountType: "current" },
-      { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "2000.00", accountType: "credit" },
-      { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "7500.00", accountType: "savings" },
+      { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "0.00", accountType: "current" },
+      { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "0.00", accountType: "credit" },
+      { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "0.00", accountType: "savings" },
     ]);
   }
 
@@ -145,6 +145,28 @@ export class UserDataManager {
   static userExists(customerNumber: string): boolean {
     const allUsers = this.getAllUsers();
     return customerNumber in allUsers;
+  }
+
+  // Initialize fresh account data for new user only
+  static initializeFreshAccount(customerNumber: string) {
+    // Set current user first
+    this.setCurrentUser(customerNumber);
+    
+    // Only initialize fresh data if user has no existing account data
+    const existingAccounts = this.getUserData('bankAccounts', null);
+    if (existingAccounts === null) {
+      // Initialize with fresh account data (zero balances)
+      const freshAccounts = [
+        { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "0.00", accountType: "current" },
+        { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "0.00", accountType: "credit" },
+        { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "0.00", accountType: "savings" },
+      ];
+      
+      // Set fresh data only for new accounts
+      this.setUserData('bankAccounts', freshAccounts);
+      this.setUserData('bankTransactions', []);
+      this.setUserData('savedPayees', []);
+    }
   }
 
   // Admin function to clear all data

@@ -99,15 +99,9 @@ export default function Login() {
 
     // Register user using UserDataManager
     UserDataManager.registerUser(userData);
-    UserDataManager.setCurrentUser(customerNumber);
-
-    // Initialize default accounts for new user
-    const defaultAccounts = [
-      { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "2322.40", accountType: "current" },
-      { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "2000.00", accountType: "credit" },
-      { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "7500.00", accountType: "savings" },
-    ];
-    UserDataManager.setUserAccounts(defaultAccounts);
+    
+    // Initialize fresh account data (zero balances, no transactions)
+    UserDataManager.initializeFreshAccount(customerNumber);
 
     toast({
       title: "Account Created",
@@ -184,9 +178,9 @@ export default function Login() {
           setIsScanning(false);
           setHoldProgress(0);
           
-          // Set current user based on entered customer number or most recent if none entered
+          // Initialize fresh account data based on entered customer number or most recent if none entered
           if (customerNumber && UserDataManager.userExists(customerNumber)) {
-            UserDataManager.setCurrentUser(customerNumber);
+            UserDataManager.initializeFreshAccount(customerNumber);
           } else if (!customerNumber) {
             // If no customer number entered, use most recent account
             const allUsers = UserDataManager.getAllUsers();
@@ -197,7 +191,7 @@ export default function Login() {
                 const currentDate = new Date(allUsers[current].dateCreated);
                 return currentDate > latestDate ? current : latest;
               });
-              UserDataManager.setCurrentUser(mostRecentUser);
+              UserDataManager.initializeFreshAccount(mostRecentUser);
             }
           }
           
@@ -343,8 +337,8 @@ export default function Login() {
       return;
     }
     
-    // Set current user and verify PIN
-    UserDataManager.setCurrentUser(customerNumber);
+    // Initialize fresh account data and verify PIN
+    UserDataManager.initializeFreshAccount(customerNumber);
     login(); // Authenticate through auth context
     setPinVerified(true);
     
@@ -932,7 +926,7 @@ export default function Login() {
                     <div className="flex items-center justify-between">
                       <button
                         onClick={() => {
-                          UserDataManager.setCurrentUser(customerNumber);
+                          UserDataManager.initializeFreshAccount(customerNumber);
                           login(); // Authenticate the user in the auth context
                           setShowAdminLogin(false);
                           setCustomerNumber(customerNumber);
