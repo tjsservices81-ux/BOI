@@ -124,9 +124,17 @@ export default function TransactionHistory() {
     const loadTransactions = () => {
       const storedTransactions = JSON.parse(localStorage.getItem('bankTransactions') || '[]');
       console.log('All stored transactions from localStorage:', storedTransactions);
-      const accountTransactions = storedTransactions.filter((t: Transaction) => t.accountId.toString() === accountId);
+      console.log('Looking for accountId:', accountId, 'type:', typeof accountId);
+      
+      // Filter transactions for this account - handle both string and number IDs
+      const accountTransactions = storedTransactions.filter((t: any) => {
+        const matches = t.accountId.toString() === accountId.toString();
+        console.log('Transaction accountId:', t.accountId, 'Looking for:', accountId, 'Matches:', matches);
+        return matches;
+      });
+      
       console.log('Refresh triggered - Loading transactions for account:', accountId, 'Found:', accountTransactions.length);
-      console.log('Account transactions:', accountTransactions);
+      console.log('Filtered account transactions:', accountTransactions);
       return accountTransactions;
     };
 
@@ -168,24 +176,18 @@ export default function TransactionHistory() {
       }
     ];
 
-    // If we have real transfers, show them first with recent dates, otherwise show samples
-    let displayTransactions;
-    if (accountTransactions.length > 0) {
-      // Show real transfers at the top with current dates
-      const recentTransfers = accountTransactions.map((t: any) => ({
-        ...t,
-        timestamp: t.timestamp || new Date().toISOString()
-      }));
-      displayTransactions = [...recentTransfers, ...sampleTransactions];
-    } else {
-      displayTransactions = sampleTransactions;
-    }
+    // Always show stored transactions first, then sample transactions
+    const allStoredTransactions = JSON.parse(localStorage.getItem('bankTransactions') || '[]');
+    console.log('DEBUG: All transactions in localStorage:', allStoredTransactions);
+    
+    // Show ALL stored transactions regardless of account for debugging
+    const displayTransactions = [...allStoredTransactions, ...sampleTransactions];
     
     const sortedTransactions = displayTransactions.sort((a, b) => 
       new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     );
     
-    console.log('Final transaction list:', sortedTransactions);
+    console.log('Final transaction list with ALL stored transactions:', sortedTransactions);
     setTransactions(sortedTransactions);
 
     const storedAccounts = JSON.parse(localStorage.getItem('bankAccounts') || '[]');
