@@ -8,7 +8,12 @@ import { getAccounts, processTransfer, generateReference } from "../utils/transf
 
 const ibanTransferSchema = z.object({
   recipientName: z.string().min(2, "Recipient name is required"),
-  iban: z.string().min(15, "Valid IBAN required").regex(/^[A-Z]{2}[0-9]{2}[A-Z0-9]{4}[0-9]{7}([A-Z0-9]?){0,16}$/, "Invalid IBAN format"),
+  iban: z.string().min(15, "Valid IBAN required").refine((val) => {
+    // Remove spaces and convert to uppercase for validation
+    const cleanIban = val.replace(/\s/g, '').toUpperCase();
+    // Basic IBAN format: 2 letters (country) + 2 digits (check) + up to 30 alphanumeric characters
+    return /^[A-Z]{2}[0-9]{2}[A-Z0-9]{1,30}$/.test(cleanIban) && cleanIban.length >= 15 && cleanIban.length <= 34;
+  }, "Invalid IBAN format"),
   amount: z.string().min(1, "Amount is required"),
   reference: z.string().min(1, "Reference is required"),
   fromAccount: z.string().min(1, "Please select an account")
