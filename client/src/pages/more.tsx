@@ -38,7 +38,7 @@ export default function More() {
         {/* Header */}
         <div className="flex items-center justify-between pt-12 pb-6 px-5 flex-shrink-0">
           <button 
-            onClick={() => handleNavigation('/login')}
+            onClick={() => handleNavigation('/')}
             className="flex items-center text-white transition-opacity duration-150 hover:opacity-80"
             disabled={isNavigating}
           >
