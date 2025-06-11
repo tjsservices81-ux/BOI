@@ -38,6 +38,15 @@ export default function Login() {
   // Assets are always loaded - no delays
   useEffect(() => {
     setAssetsLoaded(true);
+    
+    // Clear current user session on login page load
+    UserDataManager.clearCurrentUser();
+    
+    // Clear form fields
+    setCustomerNumber('');
+    setPin('');
+    setBiometricVerified(false);
+    setPinVerified(false);
   }, []);
 
   const handleNavigation = (path: string) => {
@@ -133,6 +142,16 @@ export default function Login() {
       });
       return;
     }
+
+    // If customer number is entered, validate it exists
+    if (customerNumber && !UserDataManager.userExists(customerNumber)) {
+      toast({
+        title: "Account Not Found",
+        description: "Customer number not found. Please check your credentials.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     setIsScanning(true);
     setHoldProgress(0);
@@ -146,17 +165,21 @@ export default function Login() {
           setIsScanning(false);
           setHoldProgress(0);
           
-          // Set the most recent user as current user for biometric login
-          const allUsers = UserDataManager.getAllUsers();
-          const userNumbers = Object.keys(allUsers);
-          if (userNumbers.length > 0) {
-            // Use the most recently created account
-            const mostRecentUser = userNumbers.reduce((latest, current) => {
-              const latestDate = new Date(allUsers[latest].dateCreated);
-              const currentDate = new Date(allUsers[current].dateCreated);
-              return currentDate > latestDate ? current : latest;
-            });
-            UserDataManager.setCurrentUser(mostRecentUser);
+          // Set current user based on entered customer number or most recent if none entered
+          if (customerNumber && UserDataManager.userExists(customerNumber)) {
+            UserDataManager.setCurrentUser(customerNumber);
+          } else if (!customerNumber) {
+            // If no customer number entered, use most recent account
+            const allUsers = UserDataManager.getAllUsers();
+            const userNumbers = Object.keys(allUsers);
+            if (userNumbers.length > 0) {
+              const mostRecentUser = userNumbers.reduce((latest, current) => {
+                const latestDate = new Date(allUsers[latest].dateCreated);
+                const currentDate = new Date(allUsers[current].dateCreated);
+                return currentDate > latestDate ? current : latest;
+              });
+              UserDataManager.setCurrentUser(mostRecentUser);
+            }
           }
           
           return 100;

@@ -280,7 +280,10 @@ export default function Profile() {
           {/* Logout Button */}
           <div className="mt-8 pt-6 border-t border-gray-200 mb-8">
             <button 
-              onClick={() => navigate('/login')}
+              onClick={() => {
+                UserDataManager.clearCurrentUser();
+                navigate('/login');
+              }}
               className="w-full flex items-center justify-center space-x-3 p-4 bg-red-50 border border-red-200 rounded-xl active:scale-98 transition-transform"
             >
               <LogOut className="w-5 h-5 text-red-600" />
