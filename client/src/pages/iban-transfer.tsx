@@ -125,7 +125,7 @@ export default function IbanTransfer() {
                     <div className="w-8 h-8 border-4 border-[#4a6b75] border-t-transparent rounded-full animate-spin"></div>
                   </div>
                   <p className="text-gray-600 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Generating transfer reference...
+                    Processing transfer...
                   </p>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div 

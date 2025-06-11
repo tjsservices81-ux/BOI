@@ -130,7 +130,7 @@ export default function UkTransfer() {
                     <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                   </div>
                   <p className="text-gray-600 font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Generating transfer reference...
+                    Processing transfer...
                   </p>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div 
