@@ -39,14 +39,21 @@ export default function Login() {
   useEffect(() => {
     setAssetsLoaded(true);
     
-    // Clear current user session on login page load
-    UserDataManager.clearCurrentUser();
+    // Only clear session if user explicitly logged out
+    // Don't clear on page refresh to maintain session
+    const urlParams = new URLSearchParams(window.location.search);
+    const fromLogout = urlParams.get('logout') === 'true';
     
-    // Clear form fields
-    setCustomerNumber('');
-    setPin('');
-    setBiometricVerified(false);
-    setPinVerified(false);
+    if (fromLogout) {
+      UserDataManager.clearCurrentUser();
+      localStorage.removeItem('boi_auth_session');
+      
+      // Clear form fields
+      setCustomerNumber('');
+      setPin('');
+      setBiometricVerified(false);
+      setPinVerified(false);
+    }
   }, []);
 
   const handleNavigation = (path: string) => {
