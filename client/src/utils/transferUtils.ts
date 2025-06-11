@@ -125,5 +125,8 @@ export const processTransfer = (
 };
 
 export const generateReference = (): string => {
-  return `BOI${Date.now().toString().slice(-8)}${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
+  const timestamp = Date.now();
+  const randomPart = Math.random().toString(36).substr(2, 5).toUpperCase();
+  const uniqueId = Math.floor(Math.random() * 100000).toString().padStart(5, '0');
+  return `BOI${timestamp.toString().slice(-8)}${randomPart}${uniqueId}`;
 };

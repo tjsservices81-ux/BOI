@@ -54,8 +54,6 @@ export default function UkTransfer() {
   }, []);
 
   const onSubmit = (data: UkTransferData) => {
-    const ref = generateReference();
-    setTransferReference(ref);
     setFormData(data);
     setStep('confirm');
   };
@@ -63,12 +61,16 @@ export default function UkTransfer() {
   const executeTransfer = () => {
     if (!formData) return;
     
+    // Generate unique reference only when transfer starts
+    const ref = generateReference();
+    setTransferReference(ref);
+    
     const success = processTransfer(
       formData.fromAccount,
       parseFloat(formData.amount),
       formData.recipientName,
       'UK',
-      transferReference
+      ref
     );
     
     if (!success) {

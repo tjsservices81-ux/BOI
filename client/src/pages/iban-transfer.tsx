@@ -50,8 +50,6 @@ export default function IbanTransfer() {
   }, []);
 
   const onSubmit = (data: IbanTransferData) => {
-    const ref = generateReference();
-    setTransferReference(ref);
     setFormData(data);
     setStep('confirm');
   };
@@ -59,12 +57,16 @@ export default function IbanTransfer() {
   const executeTransfer = () => {
     if (!formData) return;
     
+    // Generate unique reference only when transfer starts
+    const ref = generateReference();
+    setTransferReference(ref);
+    
     const success = processTransfer(
       formData.fromAccount,
       parseFloat(formData.amount),
       formData.recipientName,
       'IBAN',
-      transferReference
+      ref
     );
     
     if (!success) {
