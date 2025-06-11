@@ -340,14 +340,7 @@ export default function TransactionHistoryWorking() {
                   </span>
                 </div>
 
-                {selectedTransaction.reference && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Reference:</span>
-                    <span className="font-mono text-sm text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      {selectedTransaction.reference}
-                    </span>
-                  </div>
-                )}
+
 
                 {selectedTransaction.paymentMethod && (
                   <div className="flex justify-between">
@@ -386,8 +379,8 @@ export default function TransactionHistoryWorking() {
 
                 <div className="flex justify-between">
                   <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Transaction ID:</span>
-                  <span className="font-mono text-xs text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {selectedTransaction.id}
+                  <span className="font-mono text-sm text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {selectedTransaction.reference || selectedTransaction.id}
                   </span>
                 </div>
 
