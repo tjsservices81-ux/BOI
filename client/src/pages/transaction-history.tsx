@@ -176,18 +176,23 @@ export default function TransactionHistory() {
       }
     ];
 
-    // Always show stored transactions first, then sample transactions
+    // Filter stored transactions for current account
     const allStoredTransactions = JSON.parse(localStorage.getItem('bankTransactions') || '[]');
-    console.log('DEBUG: All transactions in localStorage:', allStoredTransactions);
+    console.log('All stored transactions:', allStoredTransactions);
     
-    // Show ALL stored transactions regardless of account for debugging
-    const displayTransactions = [...allStoredTransactions, ...sampleTransactions];
+    const accountStoredTransactions = allStoredTransactions.filter((t: any) => 
+      t.accountId.toString() === accountId.toString()
+    );
+    console.log('Filtered transactions for account', accountId, ':', accountStoredTransactions);
+    
+    // Show stored transactions first, then sample transactions
+    const displayTransactions = [...accountStoredTransactions, ...sampleTransactions];
     
     const sortedTransactions = displayTransactions.sort((a, b) => 
       new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     );
     
-    console.log('Final transaction list with ALL stored transactions:', sortedTransactions);
+    console.log('Final sorted transaction list:', sortedTransactions);
     setTransactions(sortedTransactions);
 
     const storedAccounts = JSON.parse(localStorage.getItem('bankAccounts') || '[]');

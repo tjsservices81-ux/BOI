@@ -64,24 +64,23 @@ export default function UkTransfer() {
       return;
     }
 
-    setTimeout(() => {
-      setStep('success');
-      setShowReference(false);
-      setAnimationProgress(0);
-      
-      // Start 5-second animation before showing reference
-      const interval = setInterval(() => {
-        setAnimationProgress(prev => {
-          const newProgress = prev + 2; // 2% every 100ms = 5 seconds
-          if (newProgress >= 100) {
-            clearInterval(interval);
-            setShowReference(true);
-            return 100;
-          }
-          return newProgress;
-        });
-      }, 100);
-    }, 2000);
+    // Immediately go to success screen and start animation
+    setStep('success');
+    setShowReference(false);
+    setAnimationProgress(0);
+    
+    // Start 5-second animation before showing reference
+    const interval = setInterval(() => {
+      setAnimationProgress(prev => {
+        const newProgress = prev + 2; // 2% every 100ms = 5 seconds
+        if (newProgress >= 100) {
+          clearInterval(interval);
+          setShowReference(true);
+          return 100;
+        }
+        return newProgress;
+      });
+    }, 100);
   };
 
   if (step === 'success') {

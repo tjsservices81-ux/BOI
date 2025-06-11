@@ -62,6 +62,7 @@ export const processTransfer = (
   
   if (amount > currentBalance) {
     console.error('Insufficient funds');
+    console.error('Transfer failed');
     return false;
   }
   
