@@ -282,6 +282,7 @@ export default function Profile() {
             <button 
               onClick={() => {
                 UserDataManager.clearCurrentUser();
+                logout(); // Clear auth context
                 navigate('/login');
               }}
               className="w-full flex items-center justify-center space-x-3 p-4 bg-red-50 border border-red-200 rounded-xl active:scale-98 transition-transform"

@@ -1,8 +1,9 @@
-// Simple authentication context for the banking app
-import { createContext, useContext, useState, ReactNode } from "react";
+// Authentication context for the banking app
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { UserDataManager } from "@/utils/userDataManager";
 
 interface User {
-  id: number;
+  customerNumber: string;
   name: string;
   email: string;
 }
@@ -18,16 +19,36 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Check for existing session on mount
+  useEffect(() => {
+    const currentUserNumber = UserDataManager.getCurrentUser();
+    if (currentUserNumber && UserDataManager.userExists(currentUserNumber)) {
+      const userData = UserDataManager.getAllUsers()[currentUserNumber];
+      setUser({
+        customerNumber: currentUserNumber,
+        name: userData.name,
+        email: userData.email
+      });
+    }
+    setIsLoading(false);
+  }, []);
 
   const login = () => {
-    setUser({
-      id: 1,
-      name: "Sarah Murphy", 
-      email: "sarah.murphy@example.com"
-    });
+    const currentUserNumber = UserDataManager.getCurrentUser();
+    if (currentUserNumber && UserDataManager.userExists(currentUserNumber)) {
+      const userData = UserDataManager.getAllUsers()[currentUserNumber];
+      setUser({
+        customerNumber: currentUserNumber,
+        name: userData.name,
+        email: userData.email
+      });
+    }
   };
 
   const logout = () => {
+    UserDataManager.clearCurrentUser();
     setUser(null);
   };
 
@@ -37,7 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         login,
         logout,
-        isLoading: false,
+        isLoading,
       }}
     >
       {children}

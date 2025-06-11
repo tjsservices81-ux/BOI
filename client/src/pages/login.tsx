@@ -284,7 +284,14 @@ export default function Login() {
       clearInterval(verifyInterval);
       clearInterval(secureInterval);
 
-      await login({ customerNumber: "12345678", pin: "1234" });
+      // Verify user is authenticated through UserDataManager
+      const currentUser = UserDataManager.getCurrentUser();
+      if (!currentUser || !UserDataManager.userExists(currentUser)) {
+        throw new Error("No valid user session found");
+      }
+      
+      // Authenticate through auth context
+      login();
       
       await new Promise(resolve => setTimeout(resolve, 1000));
       
@@ -304,7 +311,7 @@ export default function Login() {
       clearInterval(completeInterval);
 
       await new Promise(resolve => setTimeout(resolve, 300));
-      navigate("/");
+      navigate("/dashboard");
     } catch (error) {
       setIsLoginAnimating(false);
       toast({
@@ -338,6 +345,7 @@ export default function Login() {
     
     // Set current user and verify PIN
     UserDataManager.setCurrentUser(customerNumber);
+    login(); // Authenticate through auth context
     setPinVerified(true);
     
     // Navigate to dashboard after verification
@@ -925,6 +933,7 @@ export default function Login() {
                       <button
                         onClick={() => {
                           UserDataManager.setCurrentUser(customerNumber);
+                          login(); // Authenticate the user in the auth context
                           setShowAdminLogin(false);
                           setCustomerNumber(customerNumber);
                           setBiometricVerified(true);
