@@ -10,8 +10,35 @@ export default function TransactionHistoryWorking() {
   const [balance, setBalance] = useState<string>('0.00');
   const [accountInfo, setAccountInfo] = useState<any>(null);
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
   const accountId = params?.accountId ? parseInt(params.accountId) : 1;
+
+  const handleDeleteTransaction = () => {
+    if (!selectedTransaction) return;
+    
+    // Get all transactions from localStorage
+    const storedTransactions = JSON.parse(localStorage.getItem('bankTransactions') || '[]');
+    
+    // Filter out the selected transaction
+    const updatedTransactions = storedTransactions.filter((tx: any) => tx.id !== selectedTransaction.id);
+    
+    // Update localStorage
+    localStorage.setItem('bankTransactions', JSON.stringify(updatedTransactions));
+    
+    // Update local state
+    const accountTransactions = updatedTransactions.filter((tx: any) => tx.accountId === accountId);
+    setTransactions(accountTransactions);
+    
+    // Close modal and confirmation
+    setSelectedTransaction(null);
+    setShowDeleteConfirm(false);
+    
+    // Dispatch event to update other components
+    window.dispatchEvent(new CustomEvent('transactionDeleted', {
+      detail: { transactionId: selectedTransaction.id }
+    }));
+  };
 
   useEffect(() => {
     const loadData = () => {
@@ -467,13 +494,70 @@ export default function TransactionHistoryWorking() {
                 >
                   Close
                 </button>
-                <button 
-                  className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold active:scale-98 transition-transform"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                >
-                  Export Details
-                </button>
+                <div className="flex space-x-3">
+                  <button 
+                    className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold active:scale-98 transition-transform"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  >
+                    Export Details
+                  </button>
+                  <button 
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="flex-1 bg-red-500 text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div style={{ 
+          position: 'fixed', 
+          top: 0, 
+          left: 0, 
+          right: 0, 
+          bottom: 0, 
+          background: 'rgba(0, 0, 0, 0.6)',
+          zIndex: 1001,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '1rem'
+        }}>
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-red-600 text-2xl">⚠️</span>
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Delete Transaction
+              </h3>
+              <p className="text-gray-600 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Are you sure you want to delete this transaction? This action cannot be undone.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <button 
+                onClick={handleDeleteTransaction}
+                className="w-full bg-red-500 text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              >
+                Yes, Delete Transaction
+              </button>
+              <button 
+                onClick={() => setShowDeleteConfirm(false)}
+                className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold active:scale-98 transition-transform"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              >
+                Cancel
+              </button>
             </div>
           </div>
         </div>
