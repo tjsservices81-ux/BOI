@@ -48,6 +48,11 @@ function AppRoutes() {
         <Route path="/">
           {user ? <Dashboard /> : <Redirect to="/login" />}
         </Route>
+        <Route path="/dashboard">
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        </Route>
         <Route path="/payments">
           <ProtectedRoute>
             <Payments />
