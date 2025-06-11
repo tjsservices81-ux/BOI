@@ -121,29 +121,24 @@ export default function TransactionHistory() {
 
   // Separate effect for refreshing when trigger changes
   useEffect(() => {
-    const loadTransactions = () => {
-      const storedTransactions = JSON.parse(localStorage.getItem('bankTransactions') || '[]');
-      console.log('All stored transactions from localStorage:', storedTransactions);
-      console.log('Looking for accountId:', accountId, 'type:', typeof accountId);
-      
-      // Filter transactions for this account - handle both string and number IDs
-      const accountTransactions = storedTransactions.filter((t: any) => {
-        const matches = t.accountId.toString() === accountId.toString();
-        console.log('Transaction accountId:', t.accountId, 'Looking for:', accountId, 'Matches:', matches);
-        return matches;
-      });
-      
-      console.log('Refresh triggered - Loading transactions for account:', accountId, 'Found:', accountTransactions.length);
-      console.log('Filtered account transactions:', accountTransactions);
-      return accountTransactions;
-    };
-
-    const accountTransactions = loadTransactions();
+    console.log('=== TRANSACTION REFRESH ===');
+    console.log('Account ID:', accountId);
     
+    // Get all stored transactions
+    const allStoredTransactions = JSON.parse(localStorage.getItem('bankTransactions') || '[]');
+    console.log('All stored transactions:', allStoredTransactions);
+    
+    // Filter for current account
+    const accountStoredTransactions = allStoredTransactions.filter((t: any) => 
+      t.accountId.toString() === accountId.toString()
+    );
+    console.log('Filtered for account', accountId, ':', accountStoredTransactions);
+    
+    // Sample transactions for context
     const sampleTransactions = [
       {
-        id: 1,
-        accountId: 1,
+        id: 101,
+        accountId: parseInt(accountId),
         amount: "-50.00",
         description: "ATM WITHDRAWAL DUBLIN",
         category: "withdrawal",
@@ -153,8 +148,8 @@ export default function TransactionHistory() {
         timestamp: new Date("2021-04-27T14:30:00").toISOString()
       },
       {
-        id: 2,
-        accountId: 1,
+        id: 102,
+        accountId: parseInt(accountId),
         amount: "-89.50",
         description: "DIRECT DEBIT ELECTRIC IRELAND",
         category: "utilities",
@@ -164,8 +159,8 @@ export default function TransactionHistory() {
         timestamp: new Date("2021-04-26T08:15:00").toISOString()
       },
       {
-        id: 3,
-        accountId: 1,
+        id: 103,
+        accountId: parseInt(accountId),
         amount: "-45.99",
         description: "ONLINE PURCHASE AMAZON.IE",
         category: "shopping",
@@ -175,26 +170,17 @@ export default function TransactionHistory() {
         timestamp: new Date("2021-04-25T16:45:00").toISOString()
       }
     ];
-
-    // Filter stored transactions for current account
-    const allStoredTransactions = JSON.parse(localStorage.getItem('bankTransactions') || '[]');
-    console.log('All stored transactions:', allStoredTransactions);
     
-    const accountStoredTransactions = allStoredTransactions.filter((t: any) => 
-      t.accountId.toString() === accountId.toString()
-    );
-    console.log('Filtered transactions for account', accountId, ':', accountStoredTransactions);
-    
-    // Show stored transactions first, then sample transactions
-    const displayTransactions = [...accountStoredTransactions, ...sampleTransactions];
-    
-    const sortedTransactions = displayTransactions.sort((a, b) => 
+    // Combine and sort by timestamp
+    const allTransactions = [...accountStoredTransactions, ...sampleTransactions];
+    const sortedTransactions = allTransactions.sort((a, b) => 
       new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     );
     
-    console.log('Final sorted transaction list:', sortedTransactions);
+    console.log('Final transaction list:', sortedTransactions);
     setTransactions(sortedTransactions);
 
+    // Update balance
     const storedAccounts = JSON.parse(localStorage.getItem('bankAccounts') || '[]');
     const account = storedAccounts.find((acc: any) => acc.id.toString() === accountId);
     if (account) {
@@ -202,18 +188,24 @@ export default function TransactionHistory() {
     }
   }, [refreshTrigger, accountId]);
 
-  // Add polling to check for new transactions every 1 second
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setRefreshTrigger(prev => prev + 1);
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, []);
-
   // Force immediate refresh when component mounts
   useEffect(() => {
     setRefreshTrigger(1);
+  }, []);
+
+  // Listen for storage changes and refresh transactions
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setRefreshTrigger(prev => prev + 1);
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('transactionAdded', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('transactionAdded', handleStorageChange);
+    };
   }, []);
 
   const getTransactionIcon = (category: string) => {
