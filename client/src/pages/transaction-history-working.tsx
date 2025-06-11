@@ -361,8 +361,6 @@ export default function TransactionHistoryWorking() {
                   </span>
                 </div>
 
-
-
                 {selectedTransaction.paymentMethod && (
                   <div className="flex justify-between">
                     <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Transfer Type:</span>
@@ -446,6 +444,17 @@ export default function TransactionHistoryWorking() {
                       </p>
                     </div>
                   </>
+                )}
+
+                {/* Show message for UK transfers without exchange rate data */}
+                {selectedTransaction.paymentMethod === 'UK Transfer' && !selectedTransaction.exchangeRate && (
+                  <div className="border-t border-gray-200 pt-4 mt-4">
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                      <p className="text-sm text-yellow-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <strong>Note:</strong> Exchange rate information not available for this historical transfer. New UK transfers will include live conversion rates.
+                      </p>
+                    </div>
+                  </div>
                 )}
               </div>
 
