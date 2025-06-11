@@ -10,10 +10,10 @@ export default function Payments() {
   const paymentOptions = [
     {
       id: 'iban',
-      title: 'International Transfer',
+      title: 'European Transfer',
       subtitle: 'IBAN transfer to any European bank',
       icon: <Globe className="w-6 h-6 text-[#4a6b75]" />,
-      description: 'Send money internationally using IBAN',
+      description: 'Send money to Europe using IBAN',
       popular: true
     },
     {
