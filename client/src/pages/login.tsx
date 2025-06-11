@@ -23,6 +23,13 @@ export default function Login() {
   const [loginProgress, setLoginProgress] = useState(0);
   const [loginStage, setLoginStage] = useState('');
   const [assetsLoaded, setAssetsLoaded] = useState(false);
+  const [showSignUp, setShowSignUp] = useState(false);
+  const [newUserData, setNewUserData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    customerNumber: ''
+  });
   const { login, isLoading } = useAuth();
   const [, navigate] = useLocation();
   const { toast } = useToast();
@@ -35,6 +42,47 @@ export default function Login() {
   const handleNavigation = (path: string) => {
     setIsNavigating(true);
     navigate(path);
+  };
+
+  const generateCustomerNumber = () => {
+    return 'BOI' + Math.random().toString().substring(2, 11);
+  };
+
+  const handleSignUp = () => {
+    if (!newUserData.name || !newUserData.email || !newUserData.phone) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const customerNumber = generateCustomerNumber();
+    const userData = {
+      ...newUserData,
+      customerNumber,
+      joinDate: new Date().toISOString(),
+      dateCreated: new Date().toISOString()
+    };
+
+    // Store user data with customer number as key
+    const existingUsers = JSON.parse(localStorage.getItem('bankUsers') || '{}');
+    existingUsers[customerNumber] = userData;
+    localStorage.setItem('bankUsers', JSON.stringify(existingUsers));
+
+    // Set current user
+    localStorage.setItem('currentUser', customerNumber);
+
+    toast({
+      title: "Account Created",
+      description: `Your customer number is ${customerNumber}. Please remember this for future logins.`,
+      duration: 5000,
+    });
+
+    setShowSignUp(false);
+    setNewUserData({ name: '', email: '', phone: '', customerNumber: '' });
+    setCustomerNumber(customerNumber);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -527,13 +575,16 @@ export default function Login() {
               ) : null}
 
               {/* Approval Option Card - separate gray card */}
-              <button className="w-full bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-100 transition-colors duration-150">
+              <button 
+                onClick={() => setShowSignUp(true)}
+                className="w-full bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-100 transition-colors duration-150"
+              >
                 <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
                   <img src="/lock.svg" alt="Lock" className="w-3 h-3" />
                 </div>
                 <div className="flex-1 text-left">
                   <div className="text-gray-700 text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Waiting for your approval</div>
-                  <div className="text-gray-500 text-xs mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>Tap here to complete any unfinished actions</div>
+                  <div className="text-gray-500 text-xs mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>Tap here to create a new account</div>
                 </div>
                 <span className="text-gray-400 text-lg">›</span>
               </button>
@@ -631,6 +682,102 @@ export default function Login() {
             >
               Close
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Sign Up Modal */}
+      {showSignUp && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 max-h-[80vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Create New Account
+              </h2>
+              <button 
+                onClick={() => setShowSignUp(false)}
+                className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center active:scale-95 transition-transform"
+              >
+                <span className="text-gray-600 text-lg">×</span>
+              </button>
+            </div>
+
+            <form 
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSignUp();
+              }}
+              className="space-y-4"
+            >
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Full Name *
+                </label>
+                <input
+                  type="text"
+                  value={newUserData.name}
+                  onChange={(e) => setNewUserData({...newUserData, name: e.target.value})}
+                  className="w-full p-3 border border-gray-300 rounded-xl"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  placeholder="Enter your full name"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Email Address *
+                </label>
+                <input
+                  type="email"
+                  value={newUserData.email}
+                  onChange={(e) => setNewUserData({...newUserData, email: e.target.value})}
+                  className="w-full p-3 border border-gray-300 rounded-xl"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  placeholder="Enter your email address"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Phone Number *
+                </label>
+                <input
+                  type="tel"
+                  value={newUserData.phone}
+                  onChange={(e) => setNewUserData({...newUserData, phone: e.target.value})}
+                  className="w-full p-3 border border-gray-300 rounded-xl"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  placeholder="+353 XX XXX XXXX"
+                  required
+                />
+              </div>
+
+              <div className="bg-blue-50 p-4 rounded-xl">
+                <p className="text-sm text-blue-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  <strong>Important:</strong> A unique customer number will be generated for you. Please save this number as you'll need it to log in to your account.
+                </p>
+              </div>
+
+              <div className="flex space-x-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowSignUp(false)}
+                  className="flex-1 p-3 bg-gray-100 text-gray-700 rounded-xl font-semibold active:scale-98 transition-transform"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 p-3 bg-[#2c5f70] text-white rounded-xl font-semibold active:scale-98 transition-transform"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  Create Account
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
