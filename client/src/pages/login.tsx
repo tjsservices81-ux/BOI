@@ -27,43 +27,14 @@ export default function Login() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
 
-  // Preload assets immediately
+  // Assets are always loaded - no delays
   useEffect(() => {
-    const preloadAssets = async () => {
-      try {
-        // Preload Bank of Ireland logo
-        const logoImg = new Image();
-        await new Promise((resolve, reject) => {
-          logoImg.onload = resolve;
-          logoImg.onerror = reject;
-          logoImg.src = '/boi_logo.svg';
-        });
-        
-        // Preload background image
-        const bgImg = new Image();
-        bgImg.src = '/background.jpg';
-        
-        setAssetsLoaded(true);
-      } catch (error) {
-        // If assets fail to load, still show interface after short delay
-        console.warn('Asset preloading failed:', error);
-        setTimeout(() => setAssetsLoaded(true), 50);
-      }
-    };
-    
-    preloadAssets();
-    
-    // Fallback to ensure interface appears even if preloading takes too long
-    const fallbackTimer = setTimeout(() => setAssetsLoaded(true), 200);
-    
-    return () => clearTimeout(fallbackTimer);
+    setAssetsLoaded(true);
   }, []);
 
   const handleNavigation = (path: string) => {
     setIsNavigating(true);
-    setTimeout(() => {
-      navigate(path);
-    }, 50);
+    navigate(path);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -245,10 +216,11 @@ export default function Login() {
                 src="/boi_logo.svg" 
                 alt="Bank of Ireland" 
                 className="h-10 filter brightness-0 invert mb-2"
+                loading="eager"
                 style={{ 
                   display: 'block',
                   opacity: 1,
-                  transition: 'opacity 0.1s ease-in'
+                  imageRendering: 'crisp-edges'
                 }}
               />
               <div className="w-16 h-1 bg-white opacity-30 rounded-full"></div>
@@ -263,7 +235,9 @@ export default function Login() {
                   <img 
                     src="/icon_HID.svg" 
                     alt="Security" 
-                    className="w-10 h-10 filter brightness-0 invert animate-pulse" 
+                    className="w-10 h-10 filter brightness-0 invert animate-pulse"
+                    loading="eager"
+                    style={{ imageRendering: 'crisp-edges' }}
                   />
                 </div>
                 
@@ -411,12 +385,14 @@ export default function Login() {
                         className={`w-8 h-8 transition-all duration-300 ${
                           biometricVerified ? 'scale-110' : isScanning ? 'scale-105' : 'scale-100'
                         }`}
+                        loading="eager"
                         style={{
                           filter: biometricVerified 
                             ? 'brightness(0) saturate(100%) invert(48%) sepia(79%) saturate(2476%) hue-rotate(86deg) brightness(118%) contrast(119%)'
                             : isScanning
                               ? 'brightness(0) saturate(100%) invert(47%) sepia(96%) saturate(1234%) hue-rotate(204deg) brightness(97%) contrast(97%)'
-                              : 'brightness(0) saturate(100%) invert(29%) sepia(16%) saturate(456%) hue-rotate(174deg) brightness(96%) contrast(88%)'
+                              : 'brightness(0) saturate(100%) invert(29%) sepia(16%) saturate(456%) hue-rotate(174deg) brightness(96%) contrast(88%)',
+                          imageRendering: 'crisp-edges'
                         }}
                       />
                       

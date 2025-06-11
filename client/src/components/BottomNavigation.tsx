@@ -67,7 +67,9 @@ export default function BottomNavigation() {
             <img 
               src={item.isActive ? item.highlightIcon : item.icon} 
               alt={item.label} 
-              className="w-6 h-6" 
+              className="w-6 h-6"
+              loading="eager"
+              style={{ imageRendering: 'crisp-edges' }}
             />
             <span 
               className={`text-xs font-medium ${item.isActive ? 'text-[#4a6b75]' : 'text-gray-600'}`}
