@@ -60,7 +60,7 @@ export default function Cards() {
       {/* Header */}
       <div className="bg-[#4a6b75] px-4 py-3 flex items-center justify-between">
         <button 
-          onClick={() => navigate("/dashboard")}
+          onClick={() => navigate("/")}
           className="flex items-center text-white active:scale-95 transition-transform"
         >
           <ChevronLeft className="w-6 h-6" />
