@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
 import { ChevronLeft, User, Snowflake, Shield, Lock, CreditCard } from "lucide-react";
+import { UserDataManager } from "../utils/userDataManager";
 
 export default function Cards() {
   const [, navigate] = useLocation();
@@ -40,14 +41,13 @@ export default function Cards() {
 
   // Load cardholder name from localStorage and listen for updates
   useEffect(() => {
-    // Load name from localStorage on mount
+    // Load name using UserDataManager on mount
     const loadCardholderName = () => {
-      const storedProfile = localStorage.getItem('userProfile');
-      const storedCardName = localStorage.getItem('cardHolderName');
+      const storedProfile = UserDataManager.getUserData('userProfile', null);
+      const storedCardName = UserDataManager.getUserData('cardHolderName', null);
       
       if (storedProfile) {
-        const profile = JSON.parse(storedProfile);
-        setCardHolderName(profile.name.toUpperCase());
+        setCardHolderName(storedProfile.name.toUpperCase());
       } else if (storedCardName) {
         setCardHolderName(storedCardName.toUpperCase());
       }

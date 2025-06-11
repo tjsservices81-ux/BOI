@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { ChevronLeft } from "lucide-react";
+import { UserDataManager } from "../utils/userDataManager";
 
 export default function DebugTransactions() {
   const [, navigate] = useLocation();
@@ -12,25 +13,15 @@ export default function DebugTransactions() {
     const loadDebugData = () => {
       console.log('=== DEBUG TRANSACTIONS ===');
       
-      // Get raw localStorage data
-      const raw = localStorage.getItem('bankTransactions');
-      setRawData(raw || 'null');
-      console.log('Raw localStorage:', raw);
+      // Get data using UserDataManager
+      const transactions = UserDataManager.getUserData('bankTransactions', []);
+      const raw = JSON.stringify(transactions);
+      setRawData(raw);
+      console.log('UserDataManager transactions:', transactions);
       
-      if (raw) {
-        try {
-          const parsed = JSON.parse(raw);
-          setParsedData(parsed);
-          setError('');
-          console.log('Parsed successfully:', parsed);
-        } catch (e) {
-          setError(`Parse error: ${e}`);
-          setParsedData([]);
-        }
-      } else {
-        setParsedData([]);
-        setError('No data in localStorage');
-      }
+      setParsedData(transactions);
+      setError('');
+      console.log('Loaded successfully:', transactions);
     };
     
     loadDebugData();

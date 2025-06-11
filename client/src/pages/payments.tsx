@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { ChevronLeft, ChevronRight, User, ArrowUpDown, Globe, MapPin, Clock } from "lucide-react";
+import { UserDataManager } from "../utils/userDataManager";
 
 export default function Payments() {
   const [, navigate] = useLocation();
@@ -34,10 +35,10 @@ export default function Payments() {
     }
   ];
 
-  // Load recent payments from localStorage
+  // Load recent payments using UserDataManager
   useEffect(() => {
     const loadRecentPayments = () => {
-      const storedTransactions = JSON.parse(localStorage.getItem('bankTransactions') || '[]');
+      const storedTransactions = UserDataManager.getUserData('bankTransactions', []);
       // Filter for transfer transactions and get the most recent 5
       const transferTransactions = storedTransactions
         .filter((tx: any) => tx.category === 'transfer')
