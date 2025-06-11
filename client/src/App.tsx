@@ -18,6 +18,7 @@ import Insights from "@/pages/insights";
 import Transfer from "@/pages/transfer";
 import BillPay from "@/pages/bill-pay";
 import TransactionHistory from "@/pages/transaction-history";
+import TransactionHistorySimple from "@/pages/transaction-history-simple";
 import Statements from "@/pages/statements";
 import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
@@ -88,6 +89,11 @@ function AppRoutes() {
         <Route path="/statements">
           <ProtectedRoute>
             <Statements />
+          </ProtectedRoute>
+        </Route>
+        <Route path="/transactions/:accountId">
+          <ProtectedRoute>
+            <TransactionHistorySimple />
           </ProtectedRoute>
         </Route>
         <Route path="/profile">
