@@ -25,6 +25,7 @@ export default function UkTransfer() {
   const [identifiedBank, setIdentifiedBank] = useState<string>('');
   const [showReference, setShowReference] = useState<boolean>(false);
   const [animationProgress, setAnimationProgress] = useState<number>(0);
+  const [processingStage, setProcessingStage] = useState<string>('Verifying transfer details...');
   const [formData, setFormData] = useState<UkTransferData | null>(null);
 
   const form = useForm<UkTransferData>({
@@ -83,10 +84,28 @@ export default function UkTransfer() {
     setShowReference(false);
     setAnimationProgress(0);
     
-    // Start 5-second animation before showing reference
+    // Professional banking stages during 5-second animation
+    const stages = [
+      'Verifying transfer details...',
+      'Authenticating transaction...',
+      'Connecting to UK banking network...',
+      'Securing transfer protocol...',
+      'Finalizing payment...'
+    ];
+    
+    let stageIndex = 0;
+    
     const interval = setInterval(() => {
       setAnimationProgress(prev => {
         const newProgress = prev + 2; // 2% every 100ms = 5 seconds
+        
+        // Update stage message every 20% (1 second)
+        const newStageIndex = Math.floor(newProgress / 20);
+        if (newStageIndex !== stageIndex && newStageIndex < stages.length) {
+          stageIndex = newStageIndex;
+          setProcessingStage(stages[newStageIndex]);
+        }
+        
         if (newProgress >= 100) {
           clearInterval(interval);
           setShowReference(true);
@@ -139,7 +158,7 @@ export default function UkTransfer() {
                       Processing Transfer
                     </p>
                     <p className="text-gray-500 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Securely processing your payment...
+                      {processingStage}
                     </p>
                   </div>
                   <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
