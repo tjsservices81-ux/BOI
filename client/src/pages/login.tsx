@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,9 +22,29 @@ export default function Login() {
   const [isLoginAnimating, setIsLoginAnimating] = useState(false);
   const [loginProgress, setLoginProgress] = useState(0);
   const [loginStage, setLoginStage] = useState('');
+  const [assetsLoaded, setAssetsLoaded] = useState(false);
   const { login, isLoading } = useAuth();
   const [, navigate] = useLocation();
   const { toast } = useToast();
+
+  // Preload assets immediately
+  useEffect(() => {
+    const preloadAssets = () => {
+      const logoImg = new Image();
+      logoImg.onload = () => setAssetsLoaded(true);
+      logoImg.onerror = () => setAssetsLoaded(true); // Even if fails, show elements
+      logoImg.src = '/boi_logo.svg';
+      
+      // Also preload background image
+      const bgImg = new Image();
+      bgImg.src = '/background.jpg';
+      
+      // Set a fallback timeout to ensure elements appear
+      setTimeout(() => setAssetsLoaded(true), 100);
+    };
+    
+    preloadAssets();
+  }, []);
 
   const handleNavigation = (path: string) => {
     setIsNavigating(true);
@@ -206,9 +226,18 @@ export default function Login() {
           />
           
           <div className="relative z-10">
-            {/* Bank of Ireland Logo with authentic styling */}
+            {/* Bank of Ireland Logo with authentic styling - preloaded */}
             <div className="mb-8 flex flex-col items-center">
-              <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-10 filter brightness-0 invert mb-2" />
+              <img 
+                src="/boi_logo.svg" 
+                alt="Bank of Ireland" 
+                className="h-10 filter brightness-0 invert mb-2"
+                style={{ 
+                  display: 'block',
+                  opacity: assetsLoaded ? 1 : 0,
+                  transition: 'opacity 0.1s ease-in'
+                }}
+              />
               <div className="w-16 h-1 bg-white opacity-30 rounded-full"></div>
             </div>
           
