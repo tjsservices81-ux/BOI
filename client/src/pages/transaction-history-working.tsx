@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation, useRoute } from "wouter";
 import { ChevronLeft, ArrowUpRight, CreditCard, Building2, Zap } from "lucide-react";
+import MiniSpendingChart from "../components/MiniSpendingChart";
 
 export default function TransactionHistoryWorking() {
   const [, navigate] = useLocation();
@@ -216,6 +217,9 @@ export default function TransactionHistoryWorking() {
         WebkitOverflowScrolling: 'touch',
         padding: '1rem'
       }}>
+        {/* Mini spending chart for visual insights */}
+        <MiniSpendingChart accountId={accountId} />
+        
         <h2 className="text-lg font-semibold text-gray-900 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
           Recent Transactions
         </h2>
