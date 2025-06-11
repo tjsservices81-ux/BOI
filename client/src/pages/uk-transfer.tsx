@@ -106,8 +106,8 @@ export default function UkTransfer() {
           </span>
         </div>
 
-        <div className="px-4 py-8 min-h-screen">
-          <div className="text-center max-w-sm mx-auto">
+        <div className="px-4 py-8 overflow-y-auto" style={{ height: 'calc(100vh - 120px)' }}>
+          <div className="text-center max-w-sm mx-auto pb-20">
             {showReference && (
               <>
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
