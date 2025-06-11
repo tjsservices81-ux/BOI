@@ -146,4 +146,18 @@ export class UserDataManager {
     const allUsers = this.getAllUsers();
     return customerNumber in allUsers;
   }
+
+  // Admin function to clear all data
+  static clearAllData() {
+    // Clear all localStorage data
+    const keys = Object.keys(localStorage);
+    keys.forEach(key => {
+      if (key.startsWith('user_') || key === 'bankUsers' || key === 'currentUser') {
+        localStorage.removeItem(key);
+      }
+    });
+    
+    // Reset current user
+    this.currentUser = null;
+  }
 }
