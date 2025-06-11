@@ -81,7 +81,7 @@ export default function Dashboard() {
             <div className="flex items-center space-x-2">
               <button 
                 className="text-white hover:bg-white/20 h-8 w-8 rounded-full flex items-center justify-center touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-95"
-                onClick={() => alert('Profile Menu: Settings, Security, Logout')}
+                onClick={() => setLocation('/profile')}
               >
                 <User className="h-4 w-4" />
               </button>
