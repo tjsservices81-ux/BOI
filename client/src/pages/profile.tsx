@@ -2,9 +2,11 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin, Calendar, CreditCard, X, Database, Trash2, RefreshCw, DollarSign } from "lucide-react";
 import { UserDataManager } from "@/utils/userDataManager";
+import { useAuth } from "@/lib/auth";
 
 export default function Profile() {
   const [, navigate] = useLocation();
+  const { logout } = useAuth();
   const [tapCount, setTapCount] = useState(0);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [accounts, setAccounts] = useState<any[]>([]);
@@ -281,8 +283,7 @@ export default function Profile() {
           <div className="mt-8 pt-6 border-t border-gray-200 mb-8">
             <button 
               onClick={() => {
-                UserDataManager.clearCurrentUser();
-                logout(); // Clear auth context
+                logout(); // This will clear both UserDataManager and auth context
                 navigate('/login');
               }}
               className="w-full flex items-center justify-center space-x-3 p-4 bg-red-50 border border-red-200 rounded-xl active:scale-98 transition-transform"
