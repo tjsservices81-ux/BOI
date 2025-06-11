@@ -1,11 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLocation } from "wouter";
 import { ChevronLeft, Info, Check, CreditCard, Globe } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { getAccounts, processTransfer, generateReference } from "../utils/transferUtils";
-import { UserDataManager } from "@/utils/userDataManager";
 
 const ibanTransferSchema = z.object({
   recipientName: z.string().min(2, "Recipient name is required"),
@@ -41,13 +40,7 @@ export default function IbanTransfer() {
 
   useEffect(() => {
     const loadAccounts = () => {
-      try {
-        const userAccounts = UserDataManager.getUserAccounts();
-        setAccounts(userAccounts);
-      } catch (error) {
-        console.error('Error loading user accounts:', error);
-        setAccounts([]);
-      }
+      setAccounts(getAccounts());
     };
     
     loadAccounts();
@@ -81,22 +74,6 @@ export default function IbanTransfer() {
       console.error('Transfer failed');
       return;
     }
-    
-    // Save transfer to user's history
-    const transferRecord = {
-      id: Date.now(),
-      date: new Date().toISOString(),
-      type: 'IBAN Transfer',
-      recipient: formData.recipientName,
-      amount: parseFloat(formData.amount),
-      currency: 'EUR',
-      reference: ref,
-      fromAccount: formData.fromAccount,
-      toAccount: formData.iban,
-      status: 'completed'
-    };
-    
-    UserDataManager.addUserTransfer(transferRecord);
 
     // Immediately go to success screen and start animation
     setStep('success');

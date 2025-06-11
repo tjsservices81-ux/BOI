@@ -3,7 +3,6 @@ import { useLocation } from "wouter";
 import { useState, useEffect } from "react";
 import SpendingVisualization from "../components/SpendingVisualization";
 import SpendingInsights from "../components/SpendingInsights";
-import { UserDataManager } from "@/utils/userDataManager";
 
 interface Account {
   id: number;
@@ -19,23 +18,22 @@ export default function Dashboard() {
   // Local state for account balances that can be updated by transfers
   const [accounts, setAccounts] = useState<Account[]>([]);
 
-  // Load user-specific accounts from UserDataManager
+  // Load accounts from localStorage on mount
   useEffect(() => {
-    const loadUserAccounts = () => {
-      try {
-        const userAccounts = UserDataManager.getUserAccounts();
-        setAccounts(userAccounts);
-      } catch (error) {
-        console.error('Error loading user accounts:', error);
-        setAccounts([]);
-      }
-    };
-
-    loadUserAccounts();
-
-    // Refresh accounts when data changes
-    const interval = setInterval(loadUserAccounts, 2000);
-    return () => clearInterval(interval);
+    const storedAccounts = JSON.parse(localStorage.getItem('bankAccounts') || '[]');
+    if (storedAccounts.length > 0) {
+      setAccounts(storedAccounts);
+    } else {
+      const defaultAccounts = [
+        { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "2322.40", accountType: "current" },
+        { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "2000.00", accountType: "credit" },
+        { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "7500.00", accountType: "savings" },
+        { id: 4, displayName: "Personal Loan", accountNumber: "****8923", balance: "2500.00", accountType: "loan" },
+        { id: 5, displayName: "Deposit - 365 Monthly Saver", accountNumber: "****7908", balance: "100.00", accountType: "deposit" }
+      ];
+      setAccounts(defaultAccounts);
+      localStorage.setItem('bankAccounts', JSON.stringify(defaultAccounts));
+    }
   }, []);
 
   // Listen for balance updates from transfers

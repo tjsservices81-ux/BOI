@@ -6,7 +6,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { validateUKSortCode, formatSortCode, validateUKAccountNumber } from "../utils/bankValidation";
 import { getAccounts, processTransfer, generateReference } from "../utils/transferUtils";
-import { UserDataManager } from "@/utils/userDataManager";
 
 const ukTransferSchema = z.object({
   recipientName: z.string().min(2, "Recipient name is required"),
@@ -76,13 +75,7 @@ export default function UkTransfer() {
 
   useEffect(() => {
     const loadAccounts = () => {
-      try {
-        const userAccounts = UserDataManager.getUserAccounts();
-        setAccounts(userAccounts);
-      } catch (error) {
-        console.error('Error loading user accounts:', error);
-        setAccounts([]);
-      }
+      setAccounts(getAccounts());
     };
     
     loadAccounts();
@@ -124,25 +117,6 @@ export default function UkTransfer() {
       console.error('Transfer failed');
       return;
     }
-    
-    // Save transfer to user's history
-    const transferRecord = {
-      id: Date.now(),
-      date: new Date().toISOString(),
-      type: 'UK Transfer',
-      recipient: formData.recipientName,
-      amount: parseFloat(formData.amount),
-      currency: 'EUR',
-      convertedAmount: (parseFloat(formData.amount) * exchangeRate).toFixed(2),
-      convertedCurrency: 'GBP',
-      reference: ref,
-      fromAccount: formData.fromAccount,
-      toAccount: `${formData.sortCode} ${formData.accountNumber}`,
-      status: 'completed',
-      exchangeRate: exchangeRate
-    };
-    
-    UserDataManager.addUserTransfer(transferRecord);
 
     // Immediately go to success screen and start animation
     setStep('success');

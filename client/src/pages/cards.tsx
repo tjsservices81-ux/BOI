@@ -1,52 +1,65 @@
 import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
 import { ChevronLeft, User, Snowflake, Shield, Lock, CreditCard } from "lucide-react";
-import { UserDataManager } from "@/utils/userDataManager";
 
 export default function Cards() {
   const [, navigate] = useLocation();
   const [currentCard, setCurrentCard] = useState(0);
   const [freezeToggle, setFreezeToggle] = useState(false);
-  const [cards, setCards] = useState<any[]>([]);
+  const [cardHolderName, setCardHolderName] = useState("JOHN MURPHY");
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Load user-specific cards
+  const cards = [
+    {
+      type: "DEBIT CARD",
+      typeShort: "21",
+      bank: "Bank of Ireland",
+      number: "5375 4140 1234 5678",
+      maskedNumber: "**** **** **** 5678",
+      name: cardHolderName,
+      expiry: "05/27",
+      cvv: "***",
+      gradient: "from-[#1e3a8a] via-[#3b82f6] to-[#1e40af]",
+      logo: "VISA",
+      logoColor: "text-white"
+    },
+    {
+      type: "CREDIT CARD", 
+      typeShort: "22",
+      bank: "Bank of Ireland",
+      number: "4532 1500 1234 5678",
+      maskedNumber: "**** **** **** 5678",
+      name: cardHolderName, 
+      expiry: "08/26",
+      cvv: "***",
+      gradient: "from-[#0891b2] via-[#0284c7] to-[#0369a1]",
+      logo: "VISA",
+      logoColor: "text-white"
+    }
+  ];
+
+  // Load cardholder name from localStorage and listen for updates
   useEffect(() => {
-    const loadUserCards = () => {
-      try {
-        const userCards = UserDataManager.getUserCards();
-        const transformedCards = userCards.map((card: any) => ({
-          type: card.type === 'debit' ? 'DEBIT CARD' : 'CREDIT CARD',
-          typeShort: card.type === 'debit' ? '21' : '22',
-          bank: "Bank of Ireland",
-          number: card.number.replace(/\*/g, 'X').replace(/X/g, Math.floor(Math.random() * 10).toString()),
-          maskedNumber: card.number,
-          name: card.cardholderName.toUpperCase(),
-          expiry: `${card.expiryMonth}/${card.expiryYear.slice(-2)}`,
-          cvv: card.cvv,
-          gradient: card.type === 'debit' 
-            ? "from-[#1e3a8a] via-[#3b82f6] to-[#1e40af]"
-            : "from-[#0891b2] via-[#0284c7] to-[#0369a1]",
-          logo: "VISA",
-          logoColor: "text-white",
-          isActive: card.isActive,
-          dailyLimit: card.dailyLimit,
-          monthlySpent: card.monthlySpent,
-          creditLimit: card.creditLimit,
-          availableCredit: card.availableCredit
-        }));
-        setCards(transformedCards);
-      } catch (error) {
-        console.error('Error loading user cards:', error);
-        setCards([]);
+    // Load name from localStorage on mount
+    const loadCardholderName = () => {
+      const storedProfile = localStorage.getItem('userProfile');
+      const storedCardName = localStorage.getItem('cardHolderName');
+      
+      if (storedProfile) {
+        const profile = JSON.parse(storedProfile);
+        setCardHolderName(profile.name.toUpperCase());
+      } else if (storedCardName) {
+        setCardHolderName(storedCardName.toUpperCase());
       }
     };
 
-    loadUserCards();
+    loadCardholderName();
 
     // Listen for profile updates
     const handleProfileUpdate = (event: any) => {
-      loadUserCards();
+      if (event.detail?.name) {
+        setCardHolderName(event.detail.name.toUpperCase());
+      }
     };
 
     window.addEventListener('profileUpdated', handleProfileUpdate);

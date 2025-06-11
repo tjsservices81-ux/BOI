@@ -44,13 +44,7 @@ export default function Login() {
     // Clear current user session on login page load
     UserDataManager.clearCurrentUser();
     
-    // Check for forced biometric reset from profile logout
-    const shouldResetBiometric = localStorage.getItem('forceBiometricReset');
-    if (shouldResetBiometric) {
-      localStorage.removeItem('forceBiometricReset');
-    }
-    
-    // Clear form fields and authentication state
+    // Clear form fields
     setCustomerNumber('');
     setPin('');
     setBiometricVerified(false);
@@ -143,7 +137,7 @@ export default function Login() {
     UserDataManager.setCurrentUser(customerNumber);
     
     try {
-      await login();
+      await login({ customerNumber, pin });
       navigate("/dashboard");
     } catch (error) {
       toast({
@@ -290,7 +284,7 @@ export default function Login() {
       clearInterval(verifyInterval);
       clearInterval(secureInterval);
 
-      await login();
+      await login({ customerNumber: "12345678", pin: "1234" });
       
       await new Promise(resolve => setTimeout(resolve, 1000));
       
@@ -932,13 +926,8 @@ export default function Login() {
                       UserDataManager.setCurrentUser(customerNumber);
                       setShowAdminLogin(false);
                       setCustomerNumber(customerNumber);
-                      // Don't auto-verify biometrics - require authentication
-                      setBiometricVerified(false);
-                      setPinVerified(false);
-                      toast({
-                        title: "Account Selected",
-                        description: `Please authenticate to access ${userData.name}'s account.`,
-                      });
+                      setBiometricVerified(true);
+                      navigate('/dashboard');
                     }}
                     className="w-full p-3 bg-gray-50 hover:bg-gray-100 rounded-xl text-left active:scale-98 transition-all"
                   >
@@ -962,26 +951,11 @@ export default function Login() {
               <div className="border-t pt-4 mt-4">
                 <button
                   onClick={() => {
-                    // Clear all user data and authentication states
                     UserDataManager.clearCurrentUser();
                     setShowAdminLogin(false);
                     setCustomerNumber('');
                     setBiometricVerified(false);
                     setPinVerified(false);
-                    setPin('');
-                    setIsScanning(false);
-                    setHoldProgress(0);
-                    if (holdTimer) {
-                      clearInterval(holdTimer);
-                      setHoldTimer(null);
-                    }
-                    
-                    // Force a complete reset of authentication state
-                    setTimeout(() => {
-                      setBiometricVerified(false);
-                      setPinVerified(false);
-                    }, 100);
-                    
                     toast({
                       title: "Signed Out",
                       description: "You have been signed out of all accounts.",
