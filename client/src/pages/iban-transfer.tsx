@@ -44,8 +44,8 @@ export default function IbanTransfer() {
     
     loadAccounts();
     
-    // Refresh accounts every 2 seconds to sync with localStorage
-    const interval = setInterval(loadAccounts, 2000);
+    // Refresh accounts only when needed
+    const interval = setInterval(loadAccounts, 5000);
     return () => clearInterval(interval);
   }, []);
 
