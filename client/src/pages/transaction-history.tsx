@@ -123,62 +123,62 @@ export default function TransactionHistory() {
   useEffect(() => {
     const loadTransactions = () => {
       const storedTransactions = JSON.parse(localStorage.getItem('bankTransactions') || '[]');
+      console.log('All stored transactions from localStorage:', storedTransactions);
       const accountTransactions = storedTransactions.filter((t: Transaction) => t.accountId.toString() === accountId);
       console.log('Refresh triggered - Loading transactions for account:', accountId, 'Found:', accountTransactions.length);
+      console.log('Account transactions:', accountTransactions);
       return accountTransactions;
     };
 
-    if (refreshTrigger > 0) {
-      const accountTransactions = loadTransactions();
-      
-      const sampleTransactions = [
-        {
-          id: 1,
-          accountId: 1,
-          amount: "-47.82",
-          description: "Tesco Ireland",
-          category: "shopping",
-          type: "debit",
-          paymentMethod: "Debit Card",
-          reference: "1234567890",
-          timestamp: new Date("2024-12-30T14:34:00").toISOString()
-        },
-        {
-          id: 2,
-          accountId: 1,
-          amount: "-68.50",
-          description: "Applegreen",
-          category: "fuel",
-          type: "debit",
-          paymentMethod: "Debit Card",
-          reference: "9876543210",
-          timestamp: new Date("2024-12-29T08:15:00").toISOString()
-        },
-        {
-          id: 3,
-          accountId: 1,
-          amount: "+3200.00",
-          description: "Salary Deposit",
-          category: "salary",
-          type: "credit",
-          paymentMethod: "Direct Deposit",
-          reference: "SAL202412",
-          timestamp: new Date("2024-12-28T09:00:00").toISOString()
-        }
-      ];
-
-      if (accountId === '1') {
-        const combinedTransactions = [...sampleTransactions, ...accountTransactions];
-        setTransactions(combinedTransactions);
-      } else {
-        setTransactions(accountTransactions);
+    const accountTransactions = loadTransactions();
+    
+    const sampleTransactions = [
+      {
+        id: 1,
+        accountId: 1,
+        amount: "-47.82",
+        description: "Tesco Ireland",
+        category: "shopping",
+        type: "debit",
+        paymentMethod: "Debit Card",
+        reference: "1234567890",
+        timestamp: new Date("2024-12-30T14:34:00").toISOString()
+      },
+      {
+        id: 2,
+        accountId: 1,
+        amount: "-68.50",
+        description: "Applegreen",
+        category: "fuel",
+        type: "debit",
+        paymentMethod: "Debit Card",
+        reference: "9876543210",
+        timestamp: new Date("2024-12-29T08:15:00").toISOString()
+      },
+      {
+        id: 3,
+        accountId: 1,
+        amount: "+3200.00",
+        description: "Salary Deposit",
+        category: "salary",
+        type: "credit",
+        paymentMethod: "Direct Deposit",
+        reference: "SAL202412",
+        timestamp: new Date("2024-12-28T09:00:00").toISOString()
       }
+    ];
 
-      const storedAccounts = JSON.parse(localStorage.getItem('bankAccounts') || '[]');
-      const account = storedAccounts.find((acc: any) => acc.id.toString() === accountId);
-      if (account) {
-        setCurrentBalance(parseFloat(account.balance));
-      }
+    // Always show transfers at the top, then sample transactions
+    const allTransactions = [...accountTransactions, ...sampleTransactions]
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    
+    console.log('Final transaction list:', allTransactions);
+    setTransactions(allTransactions);
+
+    const storedAccounts = JSON.parse(localStorage.getItem('bankAccounts') || '[]');
+    const account = storedAccounts.find((acc: any) => acc.id.toString() === accountId);
+    if (account) {
+      setCurrentBalance(parseFloat(account.balance));
     }
   }, [refreshTrigger, accountId]);
 
