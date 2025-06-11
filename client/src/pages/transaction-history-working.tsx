@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation, useRoute } from "wouter";
 import { ChevronLeft, ArrowUpRight, CreditCard, Building2, Zap, Check, Clock, MapPin, Globe } from "lucide-react";
 import MiniSpendingChart from "../components/MiniSpendingChart";
+import { UserDataManager } from "../utils/userDataManager.ts";
 
 export default function TransactionHistoryWorking() {
   const [, navigate] = useLocation();
@@ -17,57 +18,49 @@ export default function TransactionHistoryWorking() {
   const handleDeleteTransaction = () => {
     if (!selectedTransaction) return;
     
-    // Get all transactions from localStorage
-    const storedTransactions = JSON.parse(localStorage.getItem('bankTransactions') || '[]');
+    // Get all transactions using UserDataManager
+    const storedTransactions = UserDataManager.getUserData('bankTransactions', []);
     
     // Filter out the selected transaction
     const updatedTransactions = storedTransactions.filter((tx: any) => tx.id !== selectedTransaction.id);
     
-    // Update localStorage
-    localStorage.setItem('bankTransactions', JSON.stringify(updatedTransactions));
+    // Add exchange rate data to existing UK transfers that don't have it
+    const enhancedTransactions = updatedTransactions.map((tx: any) => {
+      if (tx.paymentMethod === 'UK Transfer' && !tx.exchangeRate) {
+        const amount = parseFloat(tx.amount.replace('-', ''));
+        const sampleRate = 0.8456; // Sample EUR to GBP rate
+        return {
+          ...tx,
+          exchangeRate: sampleRate,
+          convertedAmount: (amount * sampleRate).toFixed(2),
+          convertedCurrency: 'GBP'
+        };
+      }
+      return tx;
+    });
     
-    // Close modal and confirmation first
+    // Update data using UserDataManager
+    UserDataManager.setUserData('bankTransactions', enhancedTransactions);
+    
+    // Update local state immediately with filtered account transactions
+    const accountTransactions = enhancedTransactions.filter((tx: any) => tx.accountId === accountId);
+    setTransactions(accountTransactions);
+    
+    // Close modals
     setSelectedTransaction(null);
     setShowDeleteConfirm(false);
     
-    // Force a complete reload of data
-    setTimeout(() => {
-      // Add exchange rate data to existing UK transfers that don't have it
-      const enhancedTransactions = updatedTransactions.map((tx: any) => {
-        if (tx.paymentMethod === 'UK Transfer' && !tx.exchangeRate) {
-          const amount = parseFloat(tx.amount.replace('-', ''));
-          const sampleRate = 0.8456; // Sample EUR to GBP rate
-          return {
-            ...tx,
-            exchangeRate: sampleRate,
-            convertedAmount: (amount * sampleRate).toFixed(2),
-            convertedCurrency: 'GBP'
-          };
-        }
-        return tx;
-      });
-      
-      // Update localStorage with enhanced transactions if needed
-      if (JSON.stringify(enhancedTransactions) !== JSON.stringify(updatedTransactions)) {
-        localStorage.setItem('bankTransactions', JSON.stringify(enhancedTransactions));
-      }
-      
-      // Update local state with filtered account transactions
-      const accountTransactions = enhancedTransactions.filter((tx: any) => tx.accountId === accountId);
-      setTransactions(accountTransactions);
-      
-      // Dispatch events to update other components
-      window.dispatchEvent(new CustomEvent('transactionDeleted', {
-        detail: { transactionId: selectedTransaction?.id }
-      }));
-      window.dispatchEvent(new CustomEvent('transactionUpdate'));
-    }, 100);
+    // Dispatch events to update other components
+    window.dispatchEvent(new CustomEvent('transactionDeleted', {
+      detail: { transactionId: selectedTransaction?.id }
+    }));
+    window.dispatchEvent(new CustomEvent('transactionUpdate'));
   };
 
   useEffect(() => {
     const loadData = () => {
-      // Get stored transactions for this specific account
-      const storedTransactions = JSON.parse(localStorage.getItem('bankTransactions') || '[]');
+      // Get stored transactions for this specific account using UserDataManager
+      const storedTransactions = UserDataManager.getUserData('bankTransactions', []);
       
       // Add exchange rate data to existing UK transfers that don't have it
       const updatedTransactions = storedTransactions.map((tx: any) => {
@@ -84,9 +77,9 @@ export default function TransactionHistoryWorking() {
         return tx;
       });
       
-      // Update localStorage with the enhanced transactions
+      // Update data with enhanced transactions using UserDataManager
       if (JSON.stringify(updatedTransactions) !== JSON.stringify(storedTransactions)) {
-        localStorage.setItem('bankTransactions', JSON.stringify(updatedTransactions));
+        UserDataManager.setUserData('bankTransactions', updatedTransactions);
       }
       
       const accountTransactions = updatedTransactions.filter((tx: any) => tx.accountId === accountId);
@@ -95,8 +88,8 @@ export default function TransactionHistoryWorking() {
       // Update the transactions state with enhanced data
       setTransactions(accountTransactions);
       
-      // Get account info and balance
-      const storedAccounts = JSON.parse(localStorage.getItem('bankAccounts') || '[]');
+      // Get account info and balance using UserDataManager
+      const storedAccounts = UserDataManager.getUserData('bankAccounts', []);
       const defaultAccounts = [
         { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "2322.40", accountType: "current" },
         { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "2000.00", accountType: "credit" },
