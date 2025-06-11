@@ -271,14 +271,14 @@ export default function UkTransfer() {
             </div>
           </div>
 
-          <div className="bg-green-50 rounded-xl p-4 mb-6 flex items-start space-x-3">
-            <Info className="w-5 h-5 text-green-600 mt-0.5" />
+          <div className="bg-blue-50 rounded-xl p-4 mb-6 flex items-start space-x-3">
+            <Info className="w-5 h-5 text-blue-600 mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-green-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              <p className="text-sm font-medium text-blue-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                 UK Bank Transfer
               </p>
-              <p className="text-xs text-green-700 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                This transfer will be processed instantly via Faster Payments.
+              <p className="text-xs text-blue-700 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                This transfer will be processed within 1-2 business days due to international banking regulations.
               </p>
             </div>
           </div>
