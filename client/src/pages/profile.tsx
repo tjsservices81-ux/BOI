@@ -1,11 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin, Calendar, CreditCard, X, Database, Trash2, RefreshCw } from "lucide-react";
+import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin, Calendar, CreditCard, X, Database, Trash2, RefreshCw, DollarSign } from "lucide-react";
 
 export default function Profile() {
   const [, navigate] = useLocation();
   const [tapCount, setTapCount] = useState(0);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [accounts, setAccounts] = useState<any[]>([]);
+  const [editingAccount, setEditingAccount] = useState<any>(null);
+  const [newBalance, setNewBalance] = useState('');
 
   const userDetails = {
     name: "John Murphy",
@@ -24,12 +27,46 @@ export default function Profile() {
     if (newTapCount === 5) {
       setShowAdminPanel(true);
       setTapCount(0);
+      loadAccounts();
     }
     
     // Reset tap count after 2 seconds of no taps
     setTimeout(() => {
       setTapCount(0);
     }, 2000);
+  };
+
+  const loadAccounts = () => {
+    const storedAccounts = JSON.parse(localStorage.getItem('bankAccounts') || '[]');
+    const defaultAccounts = [
+      { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "2322.40", accountType: "current" },
+      { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "2000.00", accountType: "credit" },
+      { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "7500.00", accountType: "savings" },
+    ];
+    
+    const accountsToUse = storedAccounts.length > 0 ? storedAccounts : defaultAccounts;
+    setAccounts(accountsToUse);
+  };
+
+  const updateAccountBalance = () => {
+    if (!editingAccount || !newBalance) return;
+    
+    const updatedAccounts = accounts.map(account => 
+      account.id === editingAccount.id 
+        ? { ...account, balance: parseFloat(newBalance).toFixed(2) }
+        : account
+    );
+    
+    setAccounts(updatedAccounts);
+    localStorage.setItem('bankAccounts', JSON.stringify(updatedAccounts));
+    setEditingAccount(null);
+    setNewBalance('');
+    alert('Account balance updated successfully');
+  };
+
+  const startEditingBalance = (account: any) => {
+    setEditingAccount(account);
+    setNewBalance(account.balance);
   };
 
   const clearAllData = () => {
@@ -251,6 +288,87 @@ export default function Profile() {
                 <X className="w-4 h-4 text-gray-600" />
               </button>
             </div>
+
+            {/* Account Balance Management */}
+            <div className="mb-6">
+              <h3 className="font-semibold text-gray-900 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Account Balances
+              </h3>
+              <div className="space-y-3">
+                {accounts.map((account) => (
+                  <div key={account.id} className="p-4 bg-gray-50 rounded-xl">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          {account.displayName}
+                        </p>
+                        <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          {account.accountNumber}
+                        </p>
+                        <p className="text-lg font-bold text-[#2c5f70]" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          €{account.balance}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => startEditingBalance(account)}
+                        className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center active:scale-95 transition-transform"
+                      >
+                        <Edit3 className="w-4 h-4 text-blue-600" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Balance Edit Modal */}
+            {editingAccount && (
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                <div className="bg-white rounded-2xl w-full max-w-sm p-6">
+                  <h3 className="text-xl font-bold text-gray-900 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Edit Balance
+                  </h3>
+                  <p className="text-gray-600 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {editingAccount.displayName} ({editingAccount.accountNumber})
+                  </p>
+                  
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      New Balance (€)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={newBalance}
+                      onChange={(e) => setNewBalance(e.target.value)}
+                      className="w-full p-3 border border-gray-300 rounded-xl text-lg font-semibold text-center"
+                      style={{ fontFamily: 'OpenSans, sans-serif' }}
+                      placeholder="0.00"
+                    />
+                  </div>
+                  
+                  <div className="flex space-x-3">
+                    <button
+                      onClick={() => {
+                        setEditingAccount(null);
+                        setNewBalance('');
+                      }}
+                      className="flex-1 p-3 bg-gray-100 text-gray-700 rounded-xl font-semibold active:scale-98 transition-transform"
+                      style={{ fontFamily: 'OpenSans, sans-serif' }}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={updateAccountBalance}
+                      className="flex-1 p-3 bg-[#2c5f70] text-white rounded-xl font-semibold active:scale-98 transition-transform"
+                      style={{ fontFamily: 'OpenSans, sans-serif' }}
+                    >
+                      Update
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Admin Actions */}
             <div className="space-y-4">
