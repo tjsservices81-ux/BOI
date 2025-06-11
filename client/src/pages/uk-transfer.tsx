@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { validateUKSortCode, formatSortCode, validateUKAccountNumber } from "../utils/bankValidation";
 import { getAccounts, processTransfer, generateReference } from "../utils/transferUtils";
+import { UserDataManager } from "@/utils/userDataManager";
 
 const ukTransferSchema = z.object({
   recipientName: z.string().min(2, "Recipient name is required"),
@@ -75,7 +76,13 @@ export default function UkTransfer() {
 
   useEffect(() => {
     const loadAccounts = () => {
-      setAccounts(getAccounts());
+      try {
+        const userAccounts = UserDataManager.getUserAccounts();
+        setAccounts(userAccounts);
+      } catch (error) {
+        console.error('Error loading user accounts:', error);
+        setAccounts([]);
+      }
     };
     
     loadAccounts();

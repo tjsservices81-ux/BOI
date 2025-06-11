@@ -141,6 +141,78 @@ export class UserDataManager {
     this.setUserData('savedPayees', payees);
   }
 
+  // User-specific transfer history
+  static getUserTransferHistory() {
+    return this.getUserData('transferHistory', []);
+  }
+
+  static setUserTransferHistory(transfers: any[]) {
+    this.setUserData('transferHistory', transfers);
+  }
+
+  static addUserTransfer(transfer: any) {
+    const transfers = this.getUserTransferHistory();
+    transfers.unshift(transfer);
+    this.setUserTransferHistory(transfers);
+  }
+
+  // User-specific cards
+  static getUserCards() {
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) return [];
+    
+    const userProfile = this.getUserProfile();
+    const name = userProfile?.name || 'Cardholder';
+    
+    return this.getUserData('userCards', [
+      {
+        id: 1,
+        type: 'debit',
+        name: 'Bank of Ireland Debit Card',
+        number: '**** **** **** 2091',
+        expiryMonth: '12',
+        expiryYear: '27',
+        cvv: '***',
+        cardholderName: name,
+        isActive: true,
+        dailyLimit: '€1,500',
+        monthlySpent: '€234.50'
+      },
+      {
+        id: 2,
+        type: 'credit',
+        name: 'Bank of Ireland Credit Card',
+        number: '**** **** **** 1820',
+        expiryMonth: '08',
+        expiryYear: '28',
+        cvv: '***',
+        cardholderName: name,
+        isActive: true,
+        creditLimit: '€5,000',
+        availableCredit: '€4,765.50'
+      }
+    ]);
+  }
+
+  static setUserCards(cards: any[]) {
+    this.setUserData('userCards', cards);
+  }
+
+  // User-specific settings and preferences
+  static getUserSettings() {
+    return this.getUserData('userSettings', {
+      notifications: true,
+      biometricEnabled: true,
+      darkMode: false,
+      language: 'en',
+      currency: 'EUR'
+    });
+  }
+
+  static setUserSettings(settings: any) {
+    this.setUserData('userSettings', settings);
+  }
+
   // Check if user exists
   static userExists(customerNumber: string): boolean {
     const allUsers = this.getAllUsers();
