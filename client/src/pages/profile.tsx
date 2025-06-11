@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin, Calendar, CreditCard } from "lucide-react";
+import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin, Calendar, CreditCard, X, Database, Trash2, RefreshCw } from "lucide-react";
 
 export default function Profile() {
   const [, navigate] = useLocation();
+  const [tapCount, setTapCount] = useState(0);
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
 
   const userDetails = {
     name: "John Murphy",
@@ -13,6 +15,59 @@ export default function Profile() {
     dateOfBirth: "15 March 1985",
     customerNumber: "BOI-789123456",
     joinDate: "Member since 2018"
+  };
+
+  const handleProfilePictureTap = () => {
+    const newTapCount = tapCount + 1;
+    setTapCount(newTapCount);
+    
+    if (newTapCount === 5) {
+      setShowAdminPanel(true);
+      setTapCount(0);
+    }
+    
+    // Reset tap count after 2 seconds of no taps
+    setTimeout(() => {
+      setTapCount(0);
+    }, 2000);
+  };
+
+  const clearAllData = () => {
+    localStorage.removeItem('bankTransactions');
+    localStorage.removeItem('bankAccounts');
+    localStorage.removeItem('savedPayees');
+    alert('All data cleared successfully');
+  };
+
+  const resetToDefaults = () => {
+    // Reset accounts to default
+    const defaultAccounts = [
+      { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "2322.40", accountType: "current" },
+      { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "2000.00", accountType: "credit" },
+      { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "7500.00", accountType: "savings" },
+    ];
+    localStorage.setItem('bankAccounts', JSON.stringify(defaultAccounts));
+    localStorage.setItem('bankTransactions', JSON.stringify([]));
+    localStorage.setItem('savedPayees', JSON.stringify([]));
+    alert('Data reset to defaults successfully');
+  };
+
+  const exportData = () => {
+    const data = {
+      accounts: JSON.parse(localStorage.getItem('bankAccounts') || '[]'),
+      transactions: JSON.parse(localStorage.getItem('bankTransactions') || '[]'),
+      payees: JSON.parse(localStorage.getItem('savedPayees') || '[]')
+    };
+    
+    const dataStr = JSON.stringify(data, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    
+    const exportFileDefaultName = 'bank-data-export.json';
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
   };
 
   return (
@@ -38,9 +93,12 @@ export default function Profile() {
         <div className="h-full overflow-y-auto p-6 pb-32">
           {/* Profile Header */}
           <div className="flex items-center space-x-4 mb-8 pb-6 border-b border-gray-200">
-            <div className="w-20 h-20 bg-[#4a6b75] rounded-full flex items-center justify-center">
+            <button 
+              onClick={handleProfilePictureTap}
+              className="w-20 h-20 bg-[#4a6b75] rounded-full flex items-center justify-center active:scale-95 transition-transform"
+            >
               <User className="w-10 h-10 text-white" />
-            </div>
+            </button>
             <div className="flex-1">
               <h2 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                 {userDetails.name}
@@ -176,6 +234,110 @@ export default function Profile() {
           </div>
         </div>
       </div>
+
+      {/* Admin Panel Modal */}
+      {showAdminPanel && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 max-h-[80vh] overflow-y-auto">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Admin Panel
+              </h2>
+              <button 
+                onClick={() => setShowAdminPanel(false)}
+                className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center active:scale-95 transition-transform"
+              >
+                <X className="w-4 h-4 text-gray-600" />
+              </button>
+            </div>
+
+            {/* Admin Actions */}
+            <div className="space-y-4">
+              {/* Database Export */}
+              <button 
+                onClick={exportData}
+                className="w-full flex items-center space-x-3 p-4 bg-blue-50 border border-blue-200 rounded-xl active:scale-98 transition-transform"
+              >
+                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Database className="w-5 h-5 text-blue-600" />
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="font-semibold text-blue-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Export Data
+                  </p>
+                  <p className="text-sm text-blue-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Download all app data as JSON
+                  </p>
+                </div>
+              </button>
+
+              {/* Reset to Defaults */}
+              <button 
+                onClick={resetToDefaults}
+                className="w-full flex items-center space-x-3 p-4 bg-orange-50 border border-orange-200 rounded-xl active:scale-98 transition-transform"
+              >
+                <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                  <RefreshCw className="w-5 h-5 text-orange-600" />
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="font-semibold text-orange-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Reset to Defaults
+                  </p>
+                  <p className="text-sm text-orange-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Restore default accounts and clear transactions
+                  </p>
+                </div>
+              </button>
+
+              {/* Clear All Data */}
+              <button 
+                onClick={clearAllData}
+                className="w-full flex items-center space-x-3 p-4 bg-red-50 border border-red-200 rounded-xl active:scale-98 transition-transform"
+              >
+                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                  <Trash2 className="w-5 h-5 text-red-600" />
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="font-semibold text-red-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Clear All Data
+                  </p>
+                  <p className="text-sm text-red-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Permanently delete all stored data
+                  </p>
+                </div>
+              </button>
+
+              {/* Data Summary */}
+              <div className="mt-6 p-4 bg-gray-50 rounded-xl">
+                <h3 className="font-semibold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Data Summary
+                </h3>
+                <div className="space-y-2 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Accounts:</span>
+                    <span className="text-gray-900">
+                      {JSON.parse(localStorage.getItem('bankAccounts') || '[]').length}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Transactions:</span>
+                    <span className="text-gray-900">
+                      {JSON.parse(localStorage.getItem('bankTransactions') || '[]').length}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Saved Payees:</span>
+                    <span className="text-gray-900">
+                      {JSON.parse(localStorage.getItem('savedPayees') || '[]').length}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
