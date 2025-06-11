@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { ChevronLeft, Info, Check, CreditCard, Globe } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { getAccounts, processTransfer, generateReference } from "../utils/transferUtils";
+import { UserDataManager } from "@/utils/userDataManager";
 
 const ibanTransferSchema = z.object({
   recipientName: z.string().min(2, "Recipient name is required"),
@@ -40,7 +41,13 @@ export default function IbanTransfer() {
 
   useEffect(() => {
     const loadAccounts = () => {
-      setAccounts(getAccounts());
+      try {
+        const userAccounts = UserDataManager.getUserAccounts();
+        setAccounts(userAccounts);
+      } catch (error) {
+        console.error('Error loading user accounts:', error);
+        setAccounts([]);
+      }
     };
     
     loadAccounts();
@@ -62,18 +69,47 @@ export default function IbanTransfer() {
     const ref = generateReference();
     setTransferReference(ref);
     
-    const success = processTransfer(
-      formData.fromAccount,
-      parseFloat(formData.amount),
-      formData.recipientName,
-      'IBAN',
-      ref
-    );
+    // Process transfer using user-specific accounts
+    const userAccounts = UserDataManager.getUserAccounts();
+    const fromAccount = userAccounts.find((acc: any) => acc.displayName === formData.fromAccount);
     
-    if (!success) {
-      console.error('Transfer failed');
+    if (!fromAccount) {
+      console.error('Source account not found');
       return;
     }
+    
+    // Check sufficient balance
+    const currentBalance = parseFloat(fromAccount.balance.replace(/,/g, ''));
+    const transferAmount = parseFloat(formData.amount);
+    
+    if (currentBalance < transferAmount) {
+      console.error('Insufficient funds');
+      return;
+    }
+    
+    // Update account balance
+    const updatedAccounts = userAccounts.map((acc: any) => 
+      acc.displayName === formData.fromAccount
+        ? { ...acc, balance: (currentBalance - transferAmount).toFixed(2) }
+        : acc
+    );
+    UserDataManager.setUserAccounts(updatedAccounts);
+    
+    // Save transfer to user's history
+    const transferRecord = {
+      id: Date.now(),
+      date: new Date().toISOString(),
+      type: 'IBAN Transfer',
+      recipient: formData.recipientName,
+      amount: transferAmount,
+      currency: 'EUR',
+      reference: ref,
+      fromAccount: formData.fromAccount,
+      toAccount: formData.iban,
+      status: 'completed'
+    };
+    
+    UserDataManager.addUserTransfer(transferRecord);
 
     // Immediately go to success screen and start animation
     setStep('success');

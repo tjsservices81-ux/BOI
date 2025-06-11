@@ -111,19 +111,50 @@ export default function UkTransfer() {
     // Fetch current exchange rate and calculate GBP amount
     await fetchExchangeRate();
     
-    const success = processTransfer(
-      formData.fromAccount,
-      parseFloat(formData.amount),
-      formData.recipientName,
-      'UK',
-      ref,
-      exchangeRate
-    );
+    // Process transfer using user-specific accounts
+    const userAccounts = UserDataManager.getUserAccounts();
+    const fromAccount = userAccounts.find(acc => acc.displayName === formData.fromAccount);
     
-    if (!success) {
-      console.error('Transfer failed');
+    if (!fromAccount) {
+      console.error('Source account not found');
       return;
     }
+    
+    // Check sufficient balance
+    const currentBalance = parseFloat(fromAccount.balance.replace(/,/g, ''));
+    const transferAmount = parseFloat(formData.amount);
+    
+    if (currentBalance < transferAmount) {
+      console.error('Insufficient funds');
+      return;
+    }
+    
+    // Update account balance
+    const updatedAccounts = userAccounts.map(acc => 
+      acc.displayName === formData.fromAccount
+        ? { ...acc, balance: (currentBalance - transferAmount).toFixed(2) }
+        : acc
+    );
+    UserDataManager.setUserAccounts(updatedAccounts);
+    
+    // Save transfer to user's history
+    const transferRecord = {
+      id: Date.now(),
+      date: new Date().toISOString(),
+      type: 'UK Transfer',
+      recipient: formData.recipientName,
+      amount: transferAmount,
+      currency: 'EUR',
+      convertedAmount: (transferAmount * exchangeRate).toFixed(2),
+      convertedCurrency: 'GBP',
+      reference: ref,
+      fromAccount: formData.fromAccount,
+      toAccount: `${formData.sortCode} ${formData.accountNumber}`,
+      status: 'completed',
+      exchangeRate: exchangeRate
+    };
+    
+    UserDataManager.addUserTransfer(transferRecord);
 
     // Immediately go to success screen and start animation
     setStep('success');
