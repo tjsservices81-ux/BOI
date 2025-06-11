@@ -119,8 +119,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Spending insights overlay */}
-      <SpendingInsights />
+
     </div>
   );
 }
