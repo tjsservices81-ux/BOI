@@ -35,6 +35,8 @@ export const processTransfer = (
   transferType: 'UK' | 'IBAN',
   reference: string
 ): boolean => {
+  console.log('Processing transfer:', { fromAccountId, amount, recipientName, transferType, reference });
+  
   // Get stored accounts from localStorage or use defaults
   const storedAccounts = JSON.parse(localStorage.getItem('bankAccounts') || '[]');
   let accounts = storedAccounts.length > 0 ? storedAccounts : [
@@ -45,17 +47,28 @@ export const processTransfer = (
     { id: 5, displayName: "Deposit - 365 Monthly Saver", accountNumber: "****7908", balance: "100.00", accountType: "deposit" }
   ];
   
-  const selectedAccount = accounts.find((acc: any) => acc.id.toString() === fromAccountId);
+  console.log('Found accounts:', accounts);
   
-  if (!selectedAccount) return false;
+  const selectedAccount = accounts.find((acc: any) => acc.id.toString() === fromAccountId);
+  console.log('Selected account:', selectedAccount);
+  
+  if (!selectedAccount) {
+    console.error('Account not found');
+    return false;
+  }
   
   const currentBalance = parseFloat(selectedAccount.balance);
+  console.log('Current balance:', currentBalance, 'Transfer amount:', amount);
   
-  if (amount > currentBalance) return false;
+  if (amount > currentBalance) {
+    console.error('Insufficient funds');
+    return false;
+  }
   
   // Update balance in the account
   const newBalance = (currentBalance - amount).toFixed(2);
   selectedAccount.balance = newBalance;
+  console.log('New balance:', newBalance);
   
   // Update the accounts array
   const updatedAccounts = accounts.map((acc: any) => 
@@ -64,6 +77,7 @@ export const processTransfer = (
   
   // Store updated accounts
   localStorage.setItem('bankAccounts', JSON.stringify(updatedAccounts));
+  console.log('Updated accounts stored');
   
   // Store transaction
   const transactions = JSON.parse(localStorage.getItem('bankTransactions') || '[]');
@@ -81,11 +95,19 @@ export const processTransfer = (
   
   transactions.push(newTransaction);
   localStorage.setItem('bankTransactions', JSON.stringify(transactions));
+  console.log('Transaction stored:', newTransaction);
   
   // Dispatch balance update event
   window.dispatchEvent(new CustomEvent('balanceUpdate', {
     detail: { accountId: parseInt(fromAccountId), newBalance }
   }));
+  
+  // Dispatch transaction added event
+  window.dispatchEvent(new CustomEvent('transactionAdded', {
+    detail: { accountId: parseInt(fromAccountId), transaction: newTransaction }
+  }));
+  
+  console.log('Balance update and transaction events dispatched');
   
   return true;
 };

@@ -36,9 +36,15 @@ export default function TransactionHistory() {
   const accountId = urlParams.get('accountId') || '1';
   
   useEffect(() => {
-    // Load transactions from localStorage
-    const storedTransactions = JSON.parse(localStorage.getItem('bankTransactions') || '[]');
-    const accountTransactions = storedTransactions.filter((t: Transaction) => t.accountId.toString() === accountId);
+    const loadTransactions = () => {
+      // Load transactions from localStorage
+      const storedTransactions = JSON.parse(localStorage.getItem('bankTransactions') || '[]');
+      const accountTransactions = storedTransactions.filter((t: Transaction) => t.accountId.toString() === accountId);
+      console.log('Loading transactions for account:', accountId, 'Found:', accountTransactions.length);
+      return accountTransactions;
+    };
+
+    const accountTransactions = loadTransactions();
     
     // Add sample transactions if none exist
     if (accountTransactions.length === 0 && accountId === '1') {
