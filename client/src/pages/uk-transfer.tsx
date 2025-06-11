@@ -115,11 +115,11 @@ export default function UkTransfer() {
                 </div>
                 
                 <h1 className="text-2xl font-semibold text-gray-900 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Transfer Successful
+                  Transfer Submitted
                 </h1>
                 
                 <p className="text-gray-600 mb-6" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Your UK bank transfer has been processed successfully
+                  Your UK transfer has been submitted and will be processed within 24 hours
                 </p>
               </>
             )}
@@ -171,10 +171,21 @@ export default function UkTransfer() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Status:</span>
-                      <span className="font-semibold text-green-600 flex items-center" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        <Check className="w-4 h-4 mr-1" />
-                        Complete
+                      <span className="font-semibold text-amber-600 flex items-center" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <div className="w-4 h-4 mr-1 rounded-full bg-amber-600"></div>
+                        Processing
                       </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Expected:</span>
+                      <span className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Within 24 hours
+                      </span>
+                    </div>
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mt-3">
+                      <p className="text-sm text-amber-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <strong>International Transfer:</strong> UK transfers from Bank of Ireland typically take 1-2 business days to process due to international banking regulations.
+                      </p>
                     </div>
                   </div>
                 </div>
