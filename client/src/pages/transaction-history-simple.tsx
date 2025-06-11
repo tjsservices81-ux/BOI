@@ -44,6 +44,18 @@ export default function TransactionHistorySimple() {
         type: t.type
       }));
       
+      // Force add test transaction to verify display works
+      const testTransaction = {
+        id: 'test123',
+        amount: '-20.00',
+        description: 'TEST: UK Transfer to James',
+        reference: 'BOI06460236W26R',
+        timestamp: new Date().toISOString(),
+        type: 'debit' as const
+      };
+      
+      simpleTransactions.unshift(testTransaction);
+      
       // Add sample data
       const samples = [
         {
@@ -64,10 +76,19 @@ export default function TransactionHistorySimple() {
         }
       ];
       
-      const allTransactions = [...simpleTransactions, ...samples];
-      console.log('Final transaction list:', allTransactions);
+      console.log('Simple transactions:', simpleTransactions);
+      console.log('Sample transactions:', samples);
       
-      setTransactions(allTransactions);
+      const allTransactions = [...simpleTransactions, ...samples];
+      console.log('Combined transactions:', allTransactions);
+      
+      // Sort by timestamp
+      const sortedTransactions = allTransactions.sort((a, b) => 
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
+      console.log('Final sorted transaction list:', sortedTransactions);
+      
+      setTransactions(sortedTransactions);
       
       // Get balance
       const accounts = localStorage.getItem('bankAccounts');
