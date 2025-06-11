@@ -456,19 +456,19 @@ export default function Profile() {
                   <div className="flex justify-between">
                     <span className="text-gray-600">Accounts:</span>
                     <span className="text-gray-900">
-                      {JSON.parse(localStorage.getItem('bankAccounts') || '[]').length}
+                      {UserDataManager.getUserAccounts().length}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Transactions:</span>
                     <span className="text-gray-900">
-                      {JSON.parse(localStorage.getItem('bankTransactions') || '[]').length}
+                      {UserDataManager.getUserTransactions().length}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Saved Payees:</span>
                     <span className="text-gray-900">
-                      {JSON.parse(localStorage.getItem('savedPayees') || '[]').length}
+                      {UserDataManager.getUserPayees().length}
                     </span>
                   </div>
                 </div>
