@@ -169,6 +169,22 @@ export class UserDataManager {
     }
   }
 
+  // Remove specific user and their data
+  static removeUser(customerNumber: string) {
+    // Remove from users list
+    const allUsers = this.getAllUsers();
+    delete allUsers[customerNumber];
+    localStorage.setItem('bankUsers', JSON.stringify(allUsers));
+    
+    // Clear user-specific data
+    const keys = Object.keys(localStorage);
+    keys.forEach(key => {
+      if (key.startsWith(`user_${customerNumber}_`)) {
+        localStorage.removeItem(key);
+      }
+    });
+  }
+
   // Admin function to clear all data
   static clearAllData() {
     // Clear all localStorage data

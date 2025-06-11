@@ -32,8 +32,8 @@ export default function DebugTransactions() {
   }, []);
 
   const clearTransactions = () => {
-    localStorage.removeItem('bankTransactions');
-    setRawData('null');
+    UserDataManager.setUserData('bankTransactions', []);
+    setRawData('[]');
     setParsedData([]);
     setError('Cleared');
   };
@@ -51,9 +51,9 @@ export default function DebugTransactions() {
       timestamp: new Date().toISOString()
     };
     
-    const existing = JSON.parse(localStorage.getItem('bankTransactions') || '[]');
+    const existing = UserDataManager.getUserData('bankTransactions', []);
     existing.push(testTx);
-    localStorage.setItem('bankTransactions', JSON.stringify(existing));
+    UserDataManager.setUserData('bankTransactions', existing);
   };
 
   return (

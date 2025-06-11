@@ -946,18 +946,8 @@ export default function Login() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          // Remove this specific user
-                          const allUsers = UserDataManager.getAllUsers();
-                          delete allUsers[customerNumber];
-                          localStorage.setItem('bankUsers', JSON.stringify(allUsers));
-                          
-                          // Clear user-specific data
-                          const keys = Object.keys(localStorage);
-                          keys.forEach(key => {
-                            if (key.startsWith(`user_${customerNumber}_`)) {
-                              localStorage.removeItem(key);
-                            }
-                          });
+                          // Remove this specific user using UserDataManager
+                          UserDataManager.removeUser(customerNumber);
                           
                           // If this was the current user, clear the session
                           if (UserDataManager.getCurrentUser() === customerNumber) {
