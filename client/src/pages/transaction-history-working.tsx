@@ -1,14 +1,14 @@
-import { useState, useEffect } from "react";
-import { useLocation, useRoute } from "wouter";
-import { ChevronLeft, ArrowUpRight, CreditCard, Building2, Zap, Check, Clock, MapPin, Globe } from "lucide-react";
-import MiniSpendingChart from "../components/MiniSpendingChart";
-import { UserDataManager } from "@/utils/userDataManager";
+import { useState, useEffect } from 'react';
+import { useRoute } from 'wouter';
+import { ArrowLeft, Trash2, X, AlertTriangle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { UserDataManager } from '@/utils/userDataManager';
 
 export default function TransactionHistoryWorking() {
-  const [, navigate] = useLocation();
-  const [match, params] = useRoute("/transactions/:accountId");
+  const [, params] = useRoute('/transactions/:accountId');
   const [transactions, setTransactions] = useState<any[]>([]);
-  const [balance, setBalance] = useState<string>('0.00');
+  const [balance, setBalance] = useState('0.00');
   const [accountInfo, setAccountInfo] = useState<any>(null);
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -54,9 +54,9 @@ export default function TransactionHistoryWorking() {
           UserDataManager.setUserTransactions(enhancedTransactions);
         }
       
-      // Update local state with filtered account transactions
-      const accountTransactions = enhancedTransactions.filter((tx: any) => tx.accountId === accountId);
-      setTransactions(accountTransactions);
+        // Update local state with filtered account transactions
+        const accountTransactions = enhancedTransactions.filter((tx: any) => tx.accountId === accountId);
+        setTransactions(accountTransactions);
       
         // Dispatch events to update other components
         window.dispatchEvent(new CustomEvent('transactionDeleted', {
@@ -115,483 +115,238 @@ export default function TransactionHistoryWorking() {
         console.error('Error loading transaction data:', error);
         setTransactions([]);
       }
-      
-      // Create sample transactions specific to each account type
-      const now = new Date();
-      const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-      const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
-      
-      let sampleTransactions: any[] = [];
-      
-      // Generate different sample transactions based on account type
-      switch (accountId) {
-        case 1: // Current Account
-          sampleTransactions = [
-            {
-              id: 'sample1',
-              amount: '-50.00',
-              description: 'ATM WITHDRAWAL DUBLIN',
-              timestamp: yesterday.toISOString(),
-              type: 'debit'
-            },
-            {
-              id: 'sample2', 
-              amount: '-89.50',
-              description: 'DIRECT DEBIT ELECTRIC IRELAND',
-              timestamp: twoDaysAgo.toISOString(),
-              type: 'debit'
-            },
-            {
-              id: 'sample3',
-              amount: '-45.99',
-              description: 'ONLINE PURCHASE AMAZON.IE',
-              timestamp: twoDaysAgo.toISOString(),
-              type: 'debit'
-            }
-          ];
-          break;
-          
-        case 2: // Credit Card
-          sampleTransactions = [
-            {
-              id: 'sample1',
-              amount: '-125.00',
-              description: 'RESTAURANT DUBLIN CITY',
-              timestamp: yesterday.toISOString(),
-              type: 'debit'
-            },
-            {
-              id: 'sample2',
-              amount: '-299.99',
-              description: 'ONLINE SHOPPING ZALANDO',
-              timestamp: twoDaysAgo.toISOString(),
-              type: 'debit'
-            }
-          ];
-          break;
-          
-        case 3: // Savings Account
-          sampleTransactions = [
-            {
-              id: 'sample1',
-              amount: '+50.00',
-              description: 'INTEREST PAYMENT',
-              timestamp: yesterday.toISOString(),
-              type: 'credit'
-            },
-            {
-              id: 'sample2',
-              amount: '+500.00',
-              description: 'TRANSFER FROM CURRENT ACCOUNT',
-              timestamp: twoDaysAgo.toISOString(),
-              type: 'credit'
-            }
-          ];
-          break;
-          
-        case 4: // Personal Loan
-          sampleTransactions = [
-            {
-              id: 'sample1',
-              amount: '-245.50',
-              description: 'LOAN PAYMENT',
-              timestamp: yesterday.toISOString(),
-              type: 'debit'
-            }
-          ];
-          break;
-          
-        case 5: // Deposit Account
-          sampleTransactions = [
-            {
-              id: 'sample1',
-              amount: '+25.00',
-              description: 'MONTHLY DEPOSIT',
-              timestamp: yesterday.toISOString(),
-              type: 'credit'
-            }
-          ];
-          break;
-      }
-      
-      // Format stored transactions for this account (preserve all data including exchange rates)
-      const formattedStored = accountTransactions.map((tx: any) => ({
-        ...tx, // Keep all original transaction data
-        id: tx.id,
-        amount: tx.amount,
-        description: tx.description,
-        timestamp: tx.timestamp,
-        type: tx.type
-      }));
-      
-      // Combine and sort by timestamp
-      const allTransactions = [...formattedStored, ...sampleTransactions];
-      const sortedTransactions = allTransactions.sort((a, b) => 
-        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      );
-      
-      setTransactions(sortedTransactions);
     };
     
     loadData();
     
-    // Refresh only when needed
-    const interval = setInterval(loadData, 5000);
-    return () => clearInterval(interval);
-  }, []);
+    // Listen for transaction updates
+    const handleTransactionUpdate = () => {
+      loadData();
+    };
+    
+    window.addEventListener('transactionUpdate', handleTransactionUpdate);
+    window.addEventListener('transactionDeleted', handleTransactionUpdate);
+    
+    return () => {
+      window.removeEventListener('transactionUpdate', handleTransactionUpdate);
+      window.removeEventListener('transactionDeleted', handleTransactionUpdate);
+    };
+  }, [accountId]);
 
-  const getIcon = (description: string) => {
-    if (description.includes('Transfer')) return ArrowUpRight;
-    if (description.includes('ATM')) return CreditCard;
-    if (description.includes('ELECTRIC')) return Zap;
-    return Building2;
+  const formatCurrency = (amount: string) => {
+    const numAmount = parseFloat(amount.replace(/[+\-€]/g, ''));
+    return `€${numAmount.toFixed(2)}`;
   };
 
-  const formatDate = (timestamp: string) => {
-    const date = new Date(timestamp);
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = date.toLocaleDateString('en-GB', { month: 'short' });
-    const year = date.getFullYear();
-    return `${day} ${month} ${year}`;
+  const getTransactionIcon = (type: string, category?: string) => {
+    if (category === 'transfer') return '↗️';
+    return type === 'credit' ? '↗️' : '↙️';
+  };
+
+  const getAccountDisplayName = () => {
+    if (!accountInfo) return 'Account';
+    return accountInfo.displayName || `Account ${accountInfo.accountNumber}`;
   };
 
   return (
-    <div style={{ 
-      position: 'fixed', 
-      top: 0, 
-      left: 0, 
-      right: 0, 
-      bottom: 0, 
-      display: 'flex', 
-      flexDirection: 'column',
-      backgroundColor: '#f9fafb'
-    }}>
-      <div className="bg-[#4a6b75] px-4 py-3 flex items-center justify-between" style={{ flexShrink: 0 }}>
-        <button onClick={() => navigate('/')} className="flex items-center text-white">
-          <ChevronLeft className="w-5 h-5 mr-2" />
-          <span className="font-semibold text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-            {accountInfo?.displayName || 'Account'}
-          </span>
-        </button>
-      </div>
-
-      <div className="bg-[#4a6b75] text-white p-6">
-        <div className="flex justify-between items-center">
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 px-4 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => window.history.back()}
+            className="p-2"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
           <div>
-            <p className="text-sm opacity-90" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Account ending {accountInfo?.accountNumber?.replace('****', '-') || '-0000'}
-            </p>
-            <p className="text-xs opacity-75" style={{ fontFamily: 'OpenSans, sans-serif' }}>Available Balance</p>
-          </div>
-          <div className="text-right">
-            <p className="text-3xl font-bold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              €{parseFloat(balance).toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            <h1 className="text-lg font-semibold text-gray-900">
+              {getAccountDisplayName()}
+            </h1>
+            <p className="text-sm text-gray-600">
+              Balance: €{balance}
             </p>
           </div>
         </div>
       </div>
 
-      <div style={{ 
-        flex: 1, 
-        overflowY: 'auto', 
-        WebkitOverflowScrolling: 'touch',
-        padding: '1rem',
-        minHeight: 0,
-        paddingBottom: '6rem'
-      }}>
-        {/* Mini spending chart for visual insights */}
-        <MiniSpendingChart accountId={accountId} />
-        
-        <h2 className="text-lg font-semibold text-gray-900 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-          Recent Transactions
-        </h2>
-
-        <div className="space-y-2 mb-6">
-          {transactions.map((transaction, index) => {
-            const IconComponent = getIcon(transaction.description);
-            const isDebit = transaction.type === 'debit' || transaction.amount.startsWith('-');
-            
-            return (
-              <button 
-                key={`${transaction.id}-${index}`} 
+      {/* Transactions List */}
+      <div className="p-4">
+        {transactions.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-gray-500">No transactions found</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {transactions.map((transaction) => (
+              <div
+                key={transaction.id}
+                className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 cursor-pointer hover:shadow-md transition-shadow"
                 onClick={() => setSelectedTransaction(transaction)}
-                className="w-full bg-white rounded-lg flex items-center justify-between px-4 py-4 shadow-sm border border-gray-100 active:scale-98 transition-transform active:bg-gray-50"
               >
-                <div className="flex items-center flex-1">
-                  <div className="text-left">
-                    <p className="font-medium text-gray-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      {transaction.description}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="text-2xl">
+                      {getTransactionIcon(transaction.type, transaction.category)}
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">
+                        {transaction.description}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {new Date(transaction.timestamp).toLocaleDateString('en-IE', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric'
+                        })}
+                      </p>
+                      {transaction.reference && (
+                        <p className="text-xs text-gray-400 mt-1">
+                          Ref: {transaction.reference}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className={`font-semibold ${
+                      transaction.type === 'credit' 
+                        ? 'text-green-600' 
+                        : 'text-red-600'
+                    }`}>
+                      {formatCurrency(transaction.amount)}
                     </p>
-                    <p className="text-xs text-gray-500 mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      {formatDate(transaction.timestamp)}
-                    </p>
+                    {transaction.exchangeRate && transaction.convertedAmount && (
+                      <p className="text-xs text-gray-500">
+                        ≈ £{transaction.convertedAmount} GBP
+                      </p>
+                    )}
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className={`font-semibold text-sm ${isDebit ? 'text-gray-900' : 'text-green-600'}`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    €{transaction.amount}
-                  </p>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="flex space-x-4 mt-8">
-          <button 
-            onClick={() => navigate('/uk-transfer')}
-            className="flex-1 bg-[#4a6b75] text-white py-3 rounded-lg font-semibold text-sm"
-            style={{ fontFamily: 'OpenSans, sans-serif' }}
-          >
-            Transfer
-          </button>
-          <button 
-            className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-lg font-semibold text-sm"
-            style={{ fontFamily: 'OpenSans, sans-serif' }}
-          >
-            Pay Bills
-          </button>
-        </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Transaction Detail Modal */}
       {selectedTransaction && (
-        <div style={{ 
-          position: 'fixed', 
-          top: 0, 
-          left: 0, 
-          right: 0, 
-          bottom: 0, 
-          background: 'rgba(0, 0, 0, 0.5)',
-          zIndex: 1000,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '1rem'
-        }}>
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto shadow-xl">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Transaction Details
-              </h2>
-              <button 
+        <Dialog open={!!selectedTransaction} onOpenChange={() => setSelectedTransaction(null)}>
+          <DialogContent className="max-w-md mx-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">Transaction Details</h2>
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => setSelectedTransaction(null)}
-                className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center active:scale-95 transition-transform"
               >
-                <span className="text-gray-600 text-lg">×</span>
-              </button>
+                <X className="h-4 w-4" />
+              </Button>
             </div>
-
-            <div className="space-y-6">
-              {/* Transaction Status */}
-              <div className="flex items-center justify-center py-4 bg-green-50 rounded-xl">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                    <Check className="w-6 h-6 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-green-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Transfer Complete
-                    </p>
-                    <p className="text-sm text-green-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Successfully processed
-                    </p>
-                  </div>
-                </div>
+            
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm text-gray-500">Description</p>
+                <p className="font-medium">{selectedTransaction.description}</p>
               </div>
-
-              {/* Amount */}
-              <div className="text-center py-4 border-b border-gray-200">
-                <p className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  €{selectedTransaction.amount.replace('-', '')}
+              
+              <div>
+                <p className="text-sm text-gray-500">Amount</p>
+                <p className={`font-semibold text-lg ${
+                  selectedTransaction.type === 'credit' 
+                    ? 'text-green-600' 
+                    : 'text-red-600'
+                }`}>
+                  {formatCurrency(selectedTransaction.amount)}
                 </p>
-                <p className="text-sm text-gray-500 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  {selectedTransaction.type === 'debit' ? 'Sent' : 'Received'}
+                {selectedTransaction.exchangeRate && selectedTransaction.convertedAmount && (
+                  <p className="text-sm text-gray-500">
+                    ≈ £{selectedTransaction.convertedAmount} GBP (Rate: {selectedTransaction.exchangeRate})
+                  </p>
+                )}
+              </div>
+              
+              <div>
+                <p className="text-sm text-gray-500">Date</p>
+                <p className="font-medium">
+                  {new Date(selectedTransaction.timestamp).toLocaleDateString('en-IE', {
+                    day: '2-digit',
+                    month: 'long',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
                 </p>
               </div>
-
-              {/* Transaction Details */}
-              <div className="space-y-4">
-                <div className="flex justify-between">
-                  <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Description:</span>
-                  <span className="font-semibold text-gray-900 text-right" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {selectedTransaction.description}
-                  </span>
+              
+              {selectedTransaction.reference && (
+                <div>
+                  <p className="text-sm text-gray-500">Reference</p>
+                  <p className="font-mono text-sm">{selectedTransaction.reference}</p>
                 </div>
-
-                {selectedTransaction.paymentMethod && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Transfer Type:</span>
-                    <div className="flex items-center space-x-2">
-                      {selectedTransaction.paymentMethod === 'UK Transfer' ? (
-                        <MapPin className="w-4 h-4 text-[#4a6b75]" />
-                      ) : (
-                        <Globe className="w-4 h-4 text-[#4a6b75]" />
-                      )}
-                      <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        {selectedTransaction.paymentMethod}
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex justify-between">
-                  <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Date & Time:</span>
-                  <div className="text-right">
-                    <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      {new Date(selectedTransaction.timestamp).toLocaleDateString('en-IE', { 
-                        day: 'numeric', 
-                        month: 'long', 
-                        year: 'numeric' 
-                      })}
-                    </p>
-                    <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      {new Date(selectedTransaction.timestamp).toLocaleTimeString('en-IE', { 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
-                      })}
-                    </p>
-                  </div>
+              )}
+              
+              {selectedTransaction.paymentMethod && (
+                <div>
+                  <p className="text-sm text-gray-500">Payment Method</p>
+                  <p className="font-medium">{selectedTransaction.paymentMethod}</p>
                 </div>
-
-                <div className="flex justify-between">
-                  <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Transaction ID:</span>
-                  <span className="font-mono text-sm text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {selectedTransaction.reference || selectedTransaction.id}
-                  </span>
-                </div>
-
-                <div className="flex justify-between">
-                  <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Category:</span>
-                  <span className="font-semibold text-gray-900 capitalize" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {selectedTransaction.category}
-                  </span>
-                </div>
-
-                {/* Conversion Rate for UK Transfers */}
-                {selectedTransaction.paymentMethod === 'UK Transfer' && selectedTransaction.exchangeRate && (
-                  <>
-                    <div className="border-t border-gray-200 pt-4 mt-4">
-                      <h4 className="font-semibold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        Currency Conversion
-                      </h4>
-                    </div>
-                    
-                    <div className="flex justify-between">
-                      <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Exchange Rate:</span>
-                      <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        €1 = £{selectedTransaction.exchangeRate.toFixed(4)}
-                      </span>
-                    </div>
-
-                    <div className="flex justify-between">
-                      <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>GBP Equivalent:</span>
-                      <div className="text-right">
-                        <span className="font-semibold text-green-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          £{selectedTransaction.convertedAmount}
-                        </span>
-                        <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          Live rate at time of transfer
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
-                      <p className="text-sm text-blue-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        <strong>UK Transfer:</strong> Exchange rate applied at time of transfer. UK transfers typically take 1-2 business days to reach the recipient.
-                      </p>
-                    </div>
-                  </>
-                )}
-
-                {/* Show message for UK transfers without exchange rate data */}
-                {selectedTransaction.paymentMethod === 'UK Transfer' && !selectedTransaction.exchangeRate && (
-                  <div className="border-t border-gray-200 pt-4 mt-4">
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                      <p className="text-sm text-yellow-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        <strong>Note:</strong> Exchange rate information not available for this historical transfer. New UK transfers will include live conversion rates.
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Action Buttons */}
-              <div className="pt-4 space-y-3">
-                <button 
-                  onClick={() => setSelectedTransaction(null)}
-                  className="w-full bg-[#4a6b75] text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                >
-                  Close
-                </button>
-                <div className="flex space-x-3">
-                  <button 
-                    className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold active:scale-98 transition-transform"
-                    style={{ fontFamily: 'OpenSans, sans-serif' }}
-                  >
-                    Export Details
-                  </button>
-                  <button 
-                    onClick={() => setShowDeleteConfirm(true)}
-                    className="flex-1 bg-red-500 text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform"
-                    style={{ fontFamily: 'OpenSans, sans-serif' }}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
+              )}
             </div>
-          </div>
-        </div>
+            
+            <div className="flex gap-2 mt-6">
+              <Button
+                variant="outline"
+                onClick={() => setSelectedTransaction(null)}
+                className="flex-1"
+              >
+                Close
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => setShowDeleteConfirm(true)}
+                className="flex-1"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
-        <div style={{ 
-          position: 'fixed', 
-          top: 0, 
-          left: 0, 
-          right: 0, 
-          bottom: 0, 
-          background: 'rgba(0, 0, 0, 0.6)',
-          zIndex: 1001,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '1rem'
-        }}>
-          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl">
-            <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-red-600 text-2xl">⚠️</span>
-              </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Delete Transaction
-              </h3>
-              <p className="text-gray-600 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Are you sure you want to delete this transaction? This action cannot be undone.
-              </p>
+        <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+          <DialogContent className="max-w-md mx-auto">
+            <div className="flex items-center gap-3 mb-4">
+              <AlertTriangle className="h-6 w-6 text-red-500" />
+              <h2 className="text-lg font-semibold">Delete Transaction</h2>
             </div>
-
-            <div className="space-y-3">
-              <button 
-                onClick={handleDeleteTransaction}
-                className="w-full bg-red-500 text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform"
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
-              >
-                Yes, Delete Transaction
-              </button>
-              <button 
+            
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete this transaction? This action cannot be undone.
+            </p>
+            
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
                 onClick={() => setShowDeleteConfirm(false)}
-                className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold active:scale-98 transition-transform"
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
+                className="flex-1"
               >
                 Cancel
-              </button>
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleDeleteTransaction}
+                className="flex-1"
+              >
+                Delete
+              </Button>
             </div>
-          </div>
-        </div>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
