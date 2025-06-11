@@ -117,23 +117,7 @@ export default function Profile() {
     alert('Data reset to defaults successfully');
   };
 
-  const exportData = () => {
-    const data = {
-      accounts: JSON.parse(localStorage.getItem('bankAccounts') || '[]'),
-      transactions: JSON.parse(localStorage.getItem('bankTransactions') || '[]'),
-      payees: JSON.parse(localStorage.getItem('savedPayees') || '[]')
-    };
-    
-    const dataStr = JSON.stringify(data, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    
-    const exportFileDefaultName = 'bank-data-export.json';
-    
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
-  };
+
 
   return (
     <div className="h-screen bg-gradient-to-b from-[#2c5f70] to-[#4a6b75] flex flex-col overflow-hidden">
@@ -418,23 +402,6 @@ export default function Profile() {
 
             {/* Admin Actions */}
             <div className="space-y-4">
-              {/* Database Export */}
-              <button 
-                onClick={exportData}
-                className="w-full flex items-center space-x-3 p-4 bg-blue-50 border border-blue-200 rounded-xl active:scale-98 transition-transform"
-              >
-                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                  <Database className="w-5 h-5 text-blue-600" />
-                </div>
-                <div className="flex-1 text-left">
-                  <p className="font-semibold text-blue-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Export Data
-                  </p>
-                  <p className="text-sm text-blue-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Download all app data as JSON
-                  </p>
-                </div>
-              </button>
 
               {/* Reset to Defaults */}
               <button 
