@@ -20,27 +20,31 @@ export default function TransactionHistoryWorking() {
         setBalance(currentAccount.balance);
       }
       
-      // Combine stored transactions with sample data
+      // Combine stored transactions with sample data (recent dates)
+      const now = new Date();
+      const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
+      
       const sampleTransactions = [
         {
           id: 'sample1',
           amount: '-50.00',
           description: 'ATM WITHDRAWAL DUBLIN',
-          timestamp: '2021-04-27T14:30:00.000Z',
+          timestamp: yesterday.toISOString(),
           type: 'debit'
         },
         {
           id: 'sample2', 
           amount: '-89.50',
           description: 'DIRECT DEBIT ELECTRIC IRELAND',
-          timestamp: '2021-04-26T08:15:00.000Z',
+          timestamp: twoDaysAgo.toISOString(),
           type: 'debit'
         },
         {
           id: 'sample3',
           amount: '-45.99',
           description: 'ONLINE PURCHASE AMAZON.IE',
-          timestamp: '2021-04-25T16:45:00.000Z',
+          timestamp: twoDaysAgo.toISOString(),
           type: 'debit'
         }
       ];
