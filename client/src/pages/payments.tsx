@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { ChevronLeft, ChevronRight, User, ArrowUpDown, Globe, MapPin } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, ArrowUpDown, Globe, MapPin, Clock } from "lucide-react";
 
 export default function Payments() {
   const [, navigate] = useLocation();
   const [selectedPaymentType, setSelectedPaymentType] = useState<string | null>(null);
+  const [recentPayments, setRecentPayments] = useState<any[]>([]);
 
   const paymentOptions = [
     {
@@ -32,6 +33,43 @@ export default function Payments() {
       popular: false
     }
   ];
+
+  // Load recent payments from localStorage
+  useEffect(() => {
+    const loadRecentPayments = () => {
+      const storedTransactions = JSON.parse(localStorage.getItem('bankTransactions') || '[]');
+      // Filter for transfer transactions and get the most recent 5
+      const transferTransactions = storedTransactions
+        .filter((tx: any) => tx.category === 'transfer')
+        .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+        .slice(0, 5);
+      setRecentPayments(transferTransactions);
+    };
+
+    loadRecentPayments();
+    
+    // Listen for new transactions
+    const handleTransactionUpdate = () => {
+      loadRecentPayments();
+    };
+
+    window.addEventListener('transactionUpdate', handleTransactionUpdate);
+    return () => window.removeEventListener('transactionUpdate', handleTransactionUpdate);
+  }, []);
+
+  const formatDate = (timestamp: string) => {
+    const date = new Date(timestamp);
+    const today = new Date();
+    const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+    
+    if (date.toDateString() === today.toDateString()) {
+      return 'Today';
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return 'Yesterday';
+    } else {
+      return date.toLocaleDateString('en-IE', { day: 'numeric', month: 'short' });
+    }
+  };
 
   return (
     <div className="h-screen flex flex-col bg-white ios-safe-top ios-safe-bottom">
@@ -127,37 +165,68 @@ export default function Payments() {
           </div>
         </div>
 
-        {/* Recent Transactions */}
+        {/* Recent Payments */}
         <div className="bg-white rounded-2xl p-5 shadow-sm">
-          <h2 className="font-semibold text-gray-900 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-            Recent Payments
-          </h2>
-          <div className="space-y-3">
-            {[
-              { name: 'Sarah Johnson', account: 'IE29 AIBK 9311 5212 3456 78', amount: '€125.00', date: 'Today' },
-              { name: 'Electric Ireland', account: '12-34-56 87654321', amount: '€89.50', date: 'Yesterday' },
-              { name: 'James Wilson', account: 'GB82 WEST 1234 5698 7654 32', amount: '€250.00', date: '2 days ago' }
-            ].map((payment, index) => (
-              <button key={index} className="w-full flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0 active:bg-gray-50 transition-colors">
-                <div className="text-left">
-                  <p className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {payment.name}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {payment.account}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {payment.amount}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {payment.date}
-                  </p>
-                </div>
-              </button>
-            ))}
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              Recent Payments
+            </h2>
+            {recentPayments.length > 0 && (
+              <Clock className="w-4 h-4 text-gray-400" />
+            )}
           </div>
+          
+          {recentPayments.length > 0 ? (
+            <div className="space-y-3">
+              {recentPayments.map((payment, index) => {
+                const isDebit = payment.type === 'debit' || payment.amount.startsWith('-');
+                const displayAmount = isDebit ? payment.amount : `+${payment.amount}`;
+                const recipientName = payment.description.replace(/^(UK Transfer to |IBAN Transfer to |International Transfer to )/, '');
+                
+                return (
+                  <button key={payment.id || index} className="w-full flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0 active:bg-gray-50 transition-colors">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                        {payment.paymentMethod === 'UK Transfer' ? (
+                          <MapPin className="w-5 h-5 text-[#4a6b75]" />
+                        ) : (
+                          <Globe className="w-5 h-5 text-[#4a6b75]" />
+                        )}
+                      </div>
+                      <div className="text-left">
+                        <p className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          {recipientName}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          {payment.paymentMethod} • {payment.reference}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className={`font-semibold ${isDebit ? 'text-gray-900' : 'text-green-600'}`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        €{displayAmount.replace('-', '')}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        {formatDate(payment.timestamp)}
+                      </p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Clock className="w-8 h-8 text-gray-400" />
+              </div>
+              <p className="text-gray-500 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                No recent payments
+              </p>
+              <p className="text-xs text-gray-400" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Your recent transfers will appear here
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>
