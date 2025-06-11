@@ -947,24 +947,43 @@ export default function Login() {
                 )}
               </div>
               
-              {/* Sign Out Button */}
-              <div className="border-t pt-4 mt-4">
+              {/* Admin Actions */}
+              <div className="border-t pt-4 mt-4 space-y-3">
                 <button
                   onClick={() => {
+                    setShowAdminLogin(false);
+                    setShowSignUp(true);
+                  }}
+                  className="w-full p-3 bg-green-50 text-green-600 rounded-xl font-medium active:scale-98 transition-transform"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  Create New Account
+                </button>
+                
+                <button
+                  onClick={() => {
+                    // Clear current user session completely
                     UserDataManager.clearCurrentUser();
                     setShowAdminLogin(false);
                     setCustomerNumber('');
+                    setPin('');
                     setBiometricVerified(false);
                     setPinVerified(false);
+                    setIsScanning(false);
+                    setShowPinLogin(false);
+                    
+                    // Force refresh of the component state
+                    window.location.reload();
+                    
                     toast({
-                      title: "Signed Out",
-                      description: "You have been signed out of all accounts.",
+                      title: "Session Cleared",
+                      description: "All active sessions have been terminated.",
                     });
                   }}
                   className="w-full p-3 bg-red-50 text-red-600 rounded-xl font-medium active:scale-98 transition-transform"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                 >
-                  Sign Out of All Accounts
+                  Sign Out & Clear Session
                 </button>
               </div>
             </div>
