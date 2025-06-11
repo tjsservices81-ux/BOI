@@ -71,6 +71,12 @@ export default function TransactionHistoryWorking() {
     }
   };
 
+  const triggerRefresh = () => {
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('transactionUpdate'));
+    }, 100);
+  };
+
   useEffect(() => {
     const loadData = () => {
       try {
@@ -100,9 +106,6 @@ export default function TransactionHistoryWorking() {
         const accountTransactions = updatedTransactions.filter((tx: any) => tx.accountId === accountId);
         console.log('Loaded transactions for account', accountId, ':', accountTransactions);
         
-        // Update the transactions state with enhanced data
-        setTransactions(accountTransactions);
-        
         // Get user-specific account info and balance
         const userAccounts = UserDataManager.getUserAccounts();
         const currentAccount = userAccounts.find((acc: any) => acc.id === accountId);
@@ -115,6 +118,112 @@ export default function TransactionHistoryWorking() {
         console.error('Error loading transaction data:', error);
         setTransactions([]);
       }
+      
+      // Create sample transactions specific to each account type
+      const now = new Date();
+      const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      
+      let sampleTransactions: any[] = [];
+      switch (accountId) {
+        case 1: // Current Account
+          sampleTransactions = [
+            {
+              id: 'sample-1',
+              amount: '+1250.00',
+              description: 'Salary Payment',
+              category: 'income',
+              timestamp: now.toISOString(),
+              type: 'credit'
+            },
+            {
+              id: 'sample-2',
+              amount: '-45.20',
+              description: 'Grocery Shopping',
+              category: 'groceries',
+              timestamp: yesterday.toISOString(),
+              type: 'debit'
+            }
+          ];
+          break;
+        case 2: // Credit Card
+          sampleTransactions = [
+            {
+              id: 'sample-3',
+              amount: '-125.99',
+              description: 'Online Purchase',
+              category: 'shopping',
+              timestamp: now.toISOString(),
+              type: 'debit'
+            },
+            {
+              id: 'sample-4',
+              amount: '-89.50',
+              description: 'Restaurant',
+              category: 'dining',
+              timestamp: yesterday.toISOString(),
+              type: 'debit'
+            }
+          ];
+          break;
+        case 3: // Savings Account
+          sampleTransactions = [
+            {
+              id: 'sample-5',
+              amount: '+25.00',
+              description: 'Interest Payment',
+              category: 'interest',
+              timestamp: now.toISOString(),
+              type: 'credit'
+            }
+          ];
+          break;
+        case 4: // Personal Loan
+          sampleTransactions = [
+            {
+              id: 'sample-6',
+              amount: '-200.00',
+              description: 'Loan Payment',
+              category: 'loan',
+              timestamp: now.toISOString(),
+              type: 'debit'
+            }
+          ];
+          break;
+        case 5: // Deposit Account
+          sampleTransactions = [
+            {
+              id: 'sample-7',
+              amount: '+100.00',
+              description: 'Monthly Deposit',
+              category: 'deposit',
+              timestamp: yesterday.toISOString(),
+              type: 'credit'
+            }
+          ];
+          break;
+      }
+      
+      // Get user-specific transactions for this account
+      const userTransactions = UserDataManager.getUserTransactions();
+      const accountTransactions = userTransactions.filter((tx: any) => tx.accountId === accountId);
+      
+      // Format stored transactions for this account (preserve all data including exchange rates)
+      const formattedStored = accountTransactions.map((tx: any) => ({
+        ...tx, // Keep all original transaction data
+        id: tx.id,
+        amount: tx.amount,
+        description: tx.description,
+        timestamp: tx.timestamp,
+        type: tx.type
+      }));
+      
+      // Combine and sort by timestamp
+      const allTransactions = [...formattedStored, ...sampleTransactions];
+      const sortedTransactions = allTransactions.sort((a, b) => 
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
+      
+      setTransactions(sortedTransactions);
     };
     
     loadData();
@@ -127,7 +236,10 @@ export default function TransactionHistoryWorking() {
     window.addEventListener('transactionUpdate', handleTransactionUpdate);
     window.addEventListener('transactionDeleted', handleTransactionUpdate);
     
+    // Refresh only when needed
+    const interval = setInterval(loadData, 5000);
     return () => {
+      clearInterval(interval);
       window.removeEventListener('transactionUpdate', handleTransactionUpdate);
       window.removeEventListener('transactionDeleted', handleTransactionUpdate);
     };
@@ -303,14 +415,17 @@ export default function TransactionHistoryWorking() {
               >
                 Close
               </Button>
-              <Button
-                variant="destructive"
-                onClick={() => setShowDeleteConfirm(true)}
-                className="flex-1"
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete
-              </Button>
+              {/* Only show delete button for user-created transactions (not sample ones) */}
+              {!selectedTransaction.id.toString().startsWith('sample-') && (
+                <Button
+                  variant="destructive"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="flex-1"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </Button>
+              )}
             </div>
           </DialogContent>
         </Dialog>
