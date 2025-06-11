@@ -136,44 +136,57 @@ export default function TransactionHistory() {
       {
         id: 1,
         accountId: 1,
-        amount: "-47.82",
-        description: "Tesco Ireland",
-        category: "shopping",
+        amount: "-50.00",
+        description: "ATM WITHDRAWAL DUBLIN",
+        category: "withdrawal",
         type: "debit",
-        paymentMethod: "Debit Card",
-        reference: "1234567890",
-        timestamp: new Date("2024-12-30T14:34:00").toISOString()
+        paymentMethod: "ATM",
+        reference: "ATM240427",
+        timestamp: new Date("2021-04-27T14:30:00").toISOString()
       },
       {
         id: 2,
         accountId: 1,
-        amount: "-68.50",
-        description: "Applegreen",
-        category: "fuel",
+        amount: "-89.50",
+        description: "DIRECT DEBIT ELECTRIC IRELAND",
+        category: "utilities",
         type: "debit",
-        paymentMethod: "Debit Card",
-        reference: "9876543210",
-        timestamp: new Date("2024-12-29T08:15:00").toISOString()
+        paymentMethod: "Direct Debit",
+        reference: "DD240426",
+        timestamp: new Date("2021-04-26T08:15:00").toISOString()
       },
       {
         id: 3,
         accountId: 1,
-        amount: "+3200.00",
-        description: "Salary Deposit",
-        category: "salary",
-        type: "credit",
-        paymentMethod: "Direct Deposit",
-        reference: "SAL202412",
-        timestamp: new Date("2024-12-28T09:00:00").toISOString()
+        amount: "-45.99",
+        description: "ONLINE PURCHASE AMAZON.IE",
+        category: "shopping",
+        type: "debit",
+        paymentMethod: "Online Purchase",
+        reference: "AMZ240425",
+        timestamp: new Date("2021-04-25T16:45:00").toISOString()
       }
     ];
 
-    // Always show transfers at the top, then sample transactions
-    const allTransactions = [...accountTransactions, ...sampleTransactions]
-      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    // If we have real transfers, show them first with recent dates, otherwise show samples
+    let displayTransactions;
+    if (accountTransactions.length > 0) {
+      // Show real transfers at the top with current dates
+      const recentTransfers = accountTransactions.map((t: any) => ({
+        ...t,
+        timestamp: t.timestamp || new Date().toISOString()
+      }));
+      displayTransactions = [...recentTransfers, ...sampleTransactions];
+    } else {
+      displayTransactions = sampleTransactions;
+    }
     
-    console.log('Final transaction list:', allTransactions);
-    setTransactions(allTransactions);
+    const sortedTransactions = displayTransactions.sort((a, b) => 
+      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+    
+    console.log('Final transaction list:', sortedTransactions);
+    setTransactions(sortedTransactions);
 
     const storedAccounts = JSON.parse(localStorage.getItem('bankAccounts') || '[]');
     const account = storedAccounts.find((acc: any) => acc.id.toString() === accountId);
@@ -182,13 +195,18 @@ export default function TransactionHistory() {
     }
   }, [refreshTrigger, accountId]);
 
-  // Add polling to check for new transactions every 2 seconds
+  // Add polling to check for new transactions every 1 second
   useEffect(() => {
     const interval = setInterval(() => {
       setRefreshTrigger(prev => prev + 1);
-    }, 2000);
+    }, 1000);
 
     return () => clearInterval(interval);
+  }, []);
+
+  // Force immediate refresh when component mounts
+  useEffect(() => {
+    setRefreshTrigger(1);
   }, []);
 
   const getTransactionIcon = (category: string) => {
