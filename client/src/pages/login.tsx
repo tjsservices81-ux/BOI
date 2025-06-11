@@ -910,42 +910,63 @@ export default function Login() {
             <div className="space-y-4">
               <div className="text-center mb-4">
                 <h3 className="text-lg font-semibold text-gray-800 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  App Administration
+                  Quick Account Access
                 </h3>
                 <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  System-wide controls and data management
+                  Sign in to any registered account
                 </p>
               </div>
               
-              <button
-                onClick={() => {
-                  // Admin logout - clear all data
-                  UserDataManager.clearAllData();
-                  setShowAdminLogin(false);
-                  toast({
-                    title: "System Reset Complete",
-                    description: "All user data has been cleared from the system.",
-                  });
-                }}
-                className="w-full p-4 bg-red-600 text-white rounded-xl font-semibold active:scale-98 transition-transform"
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
-              >
-                🗑️ Clear All System Data
-              </button>
-
-              <button
-                onClick={() => {
-                  setShowAdminLogin(false);
-                  toast({
-                    title: "System Status",
-                    description: `${Object.keys(UserDataManager.getAllUsers()).length} user accounts in system`,
-                  });
-                }}
-                className="w-full p-4 bg-blue-600 text-white rounded-xl font-semibold active:scale-98 transition-transform"
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
-              >
-                📊 System Status
-              </button>
+              {/* Account List */}
+              <div className="max-h-60 overflow-y-auto space-y-2">
+                {Object.entries(UserDataManager.getAllUsers()).map(([customerNumber, userData]) => (
+                  <button
+                    key={customerNumber}
+                    onClick={() => {
+                      UserDataManager.setCurrentUser(customerNumber);
+                      setShowAdminLogin(false);
+                      setCustomerNumber(customerNumber);
+                      setBiometricVerified(true);
+                      navigate('/dashboard');
+                    }}
+                    className="w-full p-3 bg-gray-50 hover:bg-gray-100 rounded-xl text-left active:scale-98 transition-all"
+                  >
+                    <div className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      {userData.name}
+                    </div>
+                    <div className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      {customerNumber}
+                    </div>
+                  </button>
+                ))}
+                
+                {Object.keys(UserDataManager.getAllUsers()).length === 0 && (
+                  <div className="text-center py-8 text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    No accounts registered yet
+                  </div>
+                )}
+              </div>
+              
+              {/* Sign Out Button */}
+              <div className="border-t pt-4 mt-4">
+                <button
+                  onClick={() => {
+                    UserDataManager.clearCurrentUser();
+                    setShowAdminLogin(false);
+                    setCustomerNumber('');
+                    setBiometricVerified(false);
+                    setPinVerified(false);
+                    toast({
+                      title: "Signed Out",
+                      description: "You have been signed out of all accounts.",
+                    });
+                  }}
+                  className="w-full p-3 bg-red-50 text-red-600 rounded-xl font-medium active:scale-98 transition-transform"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  Sign Out of All Accounts
+                </button>
+              </div>
             </div>
           </div>
         </div>
