@@ -224,10 +224,25 @@ export default function TransactionHistoryWorking() {
     };
     
     loadData();
+
+    // Listen for transaction events
+    const handleTransactionUpdate = () => {
+      loadData();
+    };
+
+    window.addEventListener('transactionUpdate', handleTransactionUpdate);
+    window.addEventListener('transactionDeleted', handleTransactionUpdate);
+    window.addEventListener('transactionAdded', handleTransactionUpdate);
     
     // Refresh only when needed
     const interval = setInterval(loadData, 5000);
-    return () => clearInterval(interval);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('transactionUpdate', handleTransactionUpdate);
+      window.removeEventListener('transactionDeleted', handleTransactionUpdate);
+      window.removeEventListener('transactionAdded', handleTransactionUpdate);
+    };
   }, []);
 
   const getIcon = (description: string) => {

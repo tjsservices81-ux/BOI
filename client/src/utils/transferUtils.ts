@@ -1,4 +1,6 @@
 // Simple localStorage-based transfer utilities
+import { UserDataManager } from './userDataManager';
+
 export interface Account {
   id: string;
   name: string;
@@ -52,15 +54,8 @@ export const processTransfer = (
 ): boolean => {
   console.log('Processing transfer:', { fromAccountId, amount, recipientName, transferType, reference });
   
-  // Get stored accounts from localStorage or use defaults
-  const storedAccounts = JSON.parse(localStorage.getItem('bankAccounts') || '[]');
-  let accounts = storedAccounts.length > 0 ? storedAccounts : [
-    { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "2322.40", accountType: "current" },
-    { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "2000.00", accountType: "credit" },
-    { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "7500.00", accountType: "savings" },
-    { id: 4, displayName: "Personal Loan", accountNumber: "****8923", balance: "2500.00", accountType: "loan" },
-    { id: 5, displayName: "Deposit - 365 Monthly Saver", accountNumber: "****7908", balance: "100.00", accountType: "deposit" }
-  ];
+  // Get stored accounts using UserDataManager
+  const accounts = UserDataManager.getUserData('bankAccounts', []);
   
   console.log('Found accounts:', accounts);
   
@@ -91,12 +86,12 @@ export const processTransfer = (
     acc.id.toString() === fromAccountId ? selectedAccount : acc
   );
   
-  // Store updated accounts
-  localStorage.setItem('bankAccounts', JSON.stringify(updatedAccounts));
+  // Store updated accounts using UserDataManager
+  UserDataManager.setUserData('bankAccounts', updatedAccounts);
   console.log('Updated accounts stored');
   
-  // Store transaction
-  const transactions = JSON.parse(localStorage.getItem('bankTransactions') || '[]');
+  // Store transaction using UserDataManager
+  const transactions = UserDataManager.getUserData('bankTransactions', []);
   const newTransaction: Transaction = {
     id: Date.now(),
     accountId: parseInt(fromAccountId),
@@ -115,7 +110,7 @@ export const processTransfer = (
   };
   
   transactions.push(newTransaction);
-  localStorage.setItem('bankTransactions', JSON.stringify(transactions));
+  UserDataManager.setUserData('bankTransactions', transactions);
   console.log('Transaction stored:', newTransaction);
   
   // Dispatch balance update event
