@@ -39,21 +39,14 @@ export default function Login() {
   useEffect(() => {
     setAssetsLoaded(true);
     
-    // Only clear session if user explicitly logged out
-    // Don't clear on page refresh to maintain session
-    const urlParams = new URLSearchParams(window.location.search);
-    const fromLogout = urlParams.get('logout') === 'true';
+    // Clear current user session on login page load
+    UserDataManager.clearCurrentUser();
     
-    if (fromLogout) {
-      UserDataManager.clearCurrentUser();
-      localStorage.removeItem('boi_auth_session');
-      
-      // Clear form fields
-      setCustomerNumber('');
-      setPin('');
-      setBiometricVerified(false);
-      setPinVerified(false);
-    }
+    // Clear form fields
+    setCustomerNumber('');
+    setPin('');
+    setBiometricVerified(false);
+    setPinVerified(false);
   }, []);
 
   const handleNavigation = (path: string) => {
@@ -111,38 +104,29 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!customerNumber) {
-      toast({
-        title: "Customer Number Required",
-        description: "Please enter your customer number to continue.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
     // Check if user exists
     if (!UserDataManager.userExists(customerNumber)) {
       toast({
-        title: "Account Not Found",
-        description: "Customer number not found. Please create an account first by tapping 'Waiting for approval'.",
+        title: "Login Failed",
+        description: "Customer number not found. Please check your credentials or create a new account.",
         variant: "destructive",
       });
       return;
     }
 
-    // Set current user and proceed with login
+    // Set current user and navigate to dashboard
     UserDataManager.setCurrentUser(customerNumber);
-    login(customerNumber);
     
-    // Show success message and navigate
-    toast({
-      title: "Login Successful",
-      description: "Welcome back to Bank of Ireland",
-    });
-    
-    setTimeout(() => {
+    try {
+      await login({ customerNumber, pin });
       navigate("/dashboard");
-    }, 1000);
+    } catch (error) {
+      toast({
+        title: "Login Failed",
+        description: "Invalid customer number or PIN. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleBiometricHoldStart = () => {
@@ -182,10 +166,8 @@ export default function Login() {
           setHoldProgress(0);
           
           // Set current user based on entered customer number or most recent if none entered
-          let targetCustomerNumber = customerNumber;
-          
           if (customerNumber && UserDataManager.userExists(customerNumber)) {
-            targetCustomerNumber = customerNumber;
+            UserDataManager.setCurrentUser(customerNumber);
           } else if (!customerNumber) {
             // If no customer number entered, use most recent account
             const allUsers = UserDataManager.getAllUsers();
@@ -196,12 +178,8 @@ export default function Login() {
                 const currentDate = new Date(allUsers[current].dateCreated);
                 return currentDate > latestDate ? current : latest;
               });
-              targetCustomerNumber = mostRecentUser;
+              UserDataManager.setCurrentUser(mostRecentUser);
             }
-          }
-          
-          if (targetCustomerNumber) {
-            login(targetCustomerNumber);
           }
           
           return 100;
@@ -287,7 +265,7 @@ export default function Login() {
       clearInterval(verifyInterval);
       clearInterval(secureInterval);
 
-      login("12345678");
+      await login({ customerNumber: "12345678", pin: "1234" });
       
       await new Promise(resolve => setTimeout(resolve, 1000));
       
