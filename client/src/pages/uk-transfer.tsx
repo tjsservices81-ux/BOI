@@ -106,19 +106,19 @@ export default function UkTransfer() {
           </span>
         </div>
 
-        <div className="px-4 py-8 overflow-y-auto" style={{ height: 'calc(100vh - 120px)' }}>
-          <div className="text-center max-w-sm mx-auto pb-20">
+        <div className="px-4 py-4">
+          <div className="text-center max-w-sm mx-auto">
             {showReference && (
               <>
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Check className="w-8 h-8 text-green-600" />
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Check className="w-6 h-6 text-green-600" />
                 </div>
                 
-                <h1 className="text-2xl font-semibold text-gray-900 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                <h1 className="text-xl font-semibold text-gray-900 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                   Transfer Successful
                 </h1>
                 
-                <p className="text-gray-600 mb-6" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                <p className="text-gray-600 mb-4 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                   Your UK bank transfer has been processed successfully
                 </p>
               </>
@@ -126,7 +126,7 @@ export default function UkTransfer() {
 
             {/* Processing animation and reference reveal */}
             {!showReference ? (
-              <div className="bg-white border border-gray-100 rounded-2xl p-8 mb-6 shadow-sm">
+              <div className="bg-white border border-gray-100 rounded-2xl p-6 mb-4 shadow-sm">
                 <div className="text-center space-y-6">
                   <div className="relative w-16 h-16 mx-auto">
                     <div className="absolute inset-0 bg-[#4a6b75] opacity-10 rounded-full animate-ping"></div>
@@ -155,7 +155,7 @@ export default function UkTransfer() {
               </div>
             ) : (
               <>
-                <div className="bg-gray-50 rounded-xl p-4 mb-6 text-left animate-fade-in">
+                <div className="bg-gray-50 rounded-xl p-3 mb-4 text-left animate-fade-in">
                   <div className="space-y-3">
                     <div className="flex justify-between">
                       <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Reference:</span>
@@ -191,10 +191,10 @@ export default function UkTransfer() {
                 </div>
 
                 {/* Show buttons only after reference is revealed */}
-                <div className="flex space-x-4 mt-6">
+                <div className="flex space-x-3 mt-4">
                   <button 
                     onClick={() => navigate('/')}
-                    className="flex-1 bg-[#4a6b75] text-white py-4 rounded-xl font-semibold active:scale-98 transition-transform shadow-sm"
+                    className="flex-1 bg-[#4a6b75] text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform text-sm"
                     style={{ fontFamily: 'OpenSans, sans-serif' }}
                   >
                     Back to Dashboard
@@ -204,7 +204,7 @@ export default function UkTransfer() {
                       setStep('form');
                       form.reset();
                     }}
-                    className="flex-1 bg-gray-100 text-gray-700 py-4 rounded-xl font-semibold active:scale-98 transition-transform shadow-sm"
+                    className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold active:scale-98 transition-transform text-sm"
                     style={{ fontFamily: 'OpenSans, sans-serif' }}
                   >
                     New Transfer
