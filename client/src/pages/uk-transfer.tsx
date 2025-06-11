@@ -106,8 +106,8 @@ export default function UkTransfer() {
           </span>
         </div>
 
-        <div className="flex items-center justify-center px-4 py-20">
-          <div className="text-center max-w-sm">
+        <div className="px-4 py-8 min-h-screen">
+          <div className="text-center max-w-sm mx-auto">
             {showReference && (
               <>
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -191,10 +191,10 @@ export default function UkTransfer() {
                 </div>
 
                 {/* Show buttons only after reference is revealed */}
-                <div className="flex space-x-4">
+                <div className="flex space-x-4 mt-6">
                   <button 
                     onClick={() => navigate('/')}
-                    className="flex-1 bg-[#4a6b75] text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform"
+                    className="flex-1 bg-[#4a6b75] text-white py-4 rounded-xl font-semibold active:scale-98 transition-transform shadow-sm"
                     style={{ fontFamily: 'OpenSans, sans-serif' }}
                   >
                     Back to Dashboard
@@ -204,7 +204,7 @@ export default function UkTransfer() {
                       setStep('form');
                       form.reset();
                     }}
-                    className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold active:scale-98 transition-transform"
+                    className="flex-1 bg-gray-100 text-gray-700 py-4 rounded-xl font-semibold active:scale-98 transition-transform shadow-sm"
                     style={{ fontFamily: 'OpenSans, sans-serif' }}
                   >
                     New Transfer
