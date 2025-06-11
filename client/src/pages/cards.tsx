@@ -92,7 +92,7 @@ export default function Cards() {
             {cards.map((card, index) => (
               <div
                 key={index}
-                className="flex-shrink-0 w-full px-2 snap-center"
+                className="flex-shrink-0 w-full flex justify-center px-4 snap-center"
               >
                 <div className="relative">
                   {/* Card */}
