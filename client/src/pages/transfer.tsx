@@ -27,7 +27,7 @@ export default function Transfer() {
   const [reference, setReference] = useState("");
 
   const { data: accounts = [] } = useQuery<Account[]>({
-    queryKey: ["/api/accounts", user?.id],
+    queryKey: ["/api/accounts"],
     enabled: !!user,
   });
 
@@ -77,14 +77,14 @@ export default function Transfer() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 pb-20 page-container animate-in slide-in-from-right duration-300">
       {/* Header */}
       <div className="bg-white px-6 py-4 shadow-sm">
         <div className="flex items-center">
           <Button 
             variant="ghost" 
             size="icon" 
-            className="mr-4"
+            className="mr-4 haptic-feedback"
             onClick={() => navigate("/")}
           >
             <ArrowLeft className="text-[var(--boi-gray)]" />
@@ -93,9 +93,9 @@ export default function Transfer() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="p-6 space-y-4">
+      <form onSubmit={handleSubmit} className="p-6 space-y-4 animate-in fade-in-50 duration-500 delay-150">
         {/* From Account */}
-        <Card>
+        <Card className="animate-in slide-in-from-bottom duration-400 delay-200 ios-card">
           <CardContent className="p-4">
             <h3 className="font-medium text-[var(--boi-gray)] mb-4">From Account</h3>
             <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
@@ -132,7 +132,7 @@ export default function Transfer() {
         </Card>
 
         {/* To */}
-        <Card>
+        <Card className="animate-in slide-in-from-bottom duration-400 delay-300 ios-card">
           <CardContent className="p-4 space-y-3">
             <h3 className="font-medium text-[var(--boi-gray)] mb-4">To</h3>
             <div>
@@ -163,7 +163,7 @@ export default function Transfer() {
         </Card>
 
         {/* Amount */}
-        <Card>
+        <Card className="animate-in slide-in-from-bottom duration-400 delay-500 ios-card">
           <CardContent className="p-4 space-y-3">
             <h3 className="font-medium text-[var(--boi-gray)] mb-4">Amount</h3>
             <div className="relative">
@@ -194,7 +194,7 @@ export default function Transfer() {
 
         <Button
           type="submit"
-          className="w-full bg-[var(--boi-green)] hover:bg-[var(--boi-dark-green)] text-white font-medium py-3 px-4 transition-colors duration-200 mb-4"
+          className="w-full bg-[var(--boi-green)] hover:bg-[var(--boi-dark-green)] text-white font-medium py-3 px-4 transition-colors duration-200 mb-4 animate-in slide-in-from-bottom duration-400 delay-700 haptic-feedback"
           disabled={transferMutation.isPending}
         >
           {transferMutation.isPending ? (
