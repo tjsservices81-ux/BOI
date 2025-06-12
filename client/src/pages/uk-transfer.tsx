@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { validateUKSortCode, formatSortCode, validateUKAccountNumber } from "../utils/bankValidation";
 import { getAccounts, processTransfer, generateReference } from "../utils/transferUtils";
+import { UserDataManager } from "../utils/userDataManager";
 
 const ukTransferSchema = z.object({
   recipientName: z.string().min(2, "Recipient name is required"),
@@ -44,8 +45,69 @@ export default function UkTransfer() {
   });
 
   useEffect(() => {
-    const loadedAccounts = getAccounts();
-    setAccounts(loadedAccounts);
+    // Load accounts from localStorage
+    const bankAccounts = localStorage.getItem('bankAccounts');
+    if (bankAccounts) {
+      try {
+        const parsedAccounts = JSON.parse(bankAccounts);
+        console.log('Loaded accounts:', parsedAccounts);
+        setAccounts(parsedAccounts);
+      } catch (error) {
+        console.error('Error parsing bank accounts:', error);
+        // Set default accounts if parsing fails
+        const defaultAccounts = [
+          {
+            id: 1,
+            displayName: "Current Account",
+            accountNumber: "****2091",
+            balance: "1287.03",
+            accountType: "current"
+          },
+          {
+            id: 2,
+            displayName: "Credit Card",
+            accountNumber: "****1820", 
+            balance: "3892.24",
+            accountType: "credit"
+          },
+          {
+            id: 3,
+            displayName: "Savings Account",
+            accountNumber: "****0978",
+            balance: "20200.00", 
+            accountType: "savings"
+          }
+        ];
+        setAccounts(defaultAccounts);
+      }
+    } else {
+      // Set default accounts if none exist
+      const defaultAccounts = [
+        {
+          id: 1,
+          displayName: "Current Account",
+          accountNumber: "****2091",
+          balance: "1287.03",
+          accountType: "current"
+        },
+        {
+          id: 2,
+          displayName: "Credit Card",
+          accountNumber: "****1820", 
+          balance: "3892.24",
+          accountType: "credit"
+        },
+        {
+          id: 3,
+          displayName: "Savings Account",
+          accountNumber: "****0978",
+          balance: "20200.00", 
+          accountType: "savings"
+        }
+      ];
+      setAccounts(defaultAccounts);
+      localStorage.setItem('bankAccounts', JSON.stringify(defaultAccounts));
+    }
     fetchExchangeRate();
   }, []);
 
