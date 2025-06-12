@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import BottomNavigation from "@/components/BottomNavigation";
+import { clearCorruptedStorage } from "@/utils/clearStorage";
 
 import Splash from "@/pages/splash";
 import Login from "@/pages/login";
