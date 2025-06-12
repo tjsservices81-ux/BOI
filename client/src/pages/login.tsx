@@ -54,7 +54,10 @@ export default function Login() {
   }, []);
 
   const handleNavigation = (path: string) => {
-    navigate(path);
+    setIsNavigating(true);
+    setTimeout(() => {
+      navigate(path);
+    }, 150);
   };
 
   const handleLogoTap = () => {

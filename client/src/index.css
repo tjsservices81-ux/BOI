@@ -87,19 +87,17 @@ img, svg {
   text-rendering: optimizeSpeed;
 }
 
-/* Eliminate all transition delays */
-*, *::before, *::after {
-  animation-duration: 0s !important;
-  animation-delay: 0s !important;
+/* Selective transitions - instant form inputs, smooth buttons */
+input, select, textarea {
   transition-duration: 0s !important;
   transition-delay: 0s !important;
 }
 
-/* Hardware acceleration for all interactive elements - no delays */
+/* Hardware acceleration for all interactive elements - smooth transitions */
 button, a, [role="button"] {
   transform: translateZ(0);
   will-change: transform;
-  transition: none;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Instant scrolling - no delays */
@@ -125,20 +123,19 @@ input, select, textarea {
   will-change: border-color, box-shadow;
 }
 
-/* iOS-style page transitions - instant */
+/* iOS-style page transitions - smooth sliding */
 .page-container {
+  animation: slideInFromRight 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   transform: translateZ(0);
   will-change: transform;
 }
 
 .page-fade-in {
-  opacity: 1;
-  transform: scale(1);
+  animation: fadeIn 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .page-slide-up {
-  transform: translateY(0);
-  opacity: 1;
+  animation: slideUpFromBottom 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 /* Smooth page entrance animations */
