@@ -33,8 +33,6 @@ export default function Transfer() {
 
   const transferMutation = useMutation({
     mutationFn: async (transferData: TransferRequest) => {
-      // Add minimum delay to show processing animation
-      await new Promise(resolve => setTimeout(resolve, 800));
       const response = await apiRequest("POST", "/api/transfer", transferData);
       return response.json();
     },
@@ -73,7 +71,7 @@ export default function Transfer() {
       fromAccountId: parseInt(selectedAccountId),
       toAccount: recipient,
       iban,
-      amount: amount,
+      amount,
       reference: reference || undefined,
     });
   };
@@ -196,24 +194,20 @@ export default function Transfer() {
 
         <Button
           type="submit"
-          className="w-full bg-[var(--boi-green)] hover:bg-[var(--boi-dark-green)] text-white font-medium py-3 px-4 transition-colors duration-200 mb-4 animate-in slide-in-from-bottom duration-400 delay-700 haptic-feedback disabled:bg-gray-400 disabled:cursor-not-allowed"
+          className="w-full bg-[var(--boi-green)] hover:bg-[var(--boi-dark-green)] text-white font-medium py-3 px-4 transition-colors duration-200 mb-4 animate-in slide-in-from-bottom duration-400 delay-700 haptic-feedback"
           disabled={transferMutation.isPending}
-          onClick={() => console.log("Button clicked, isPending:", transferMutation.isPending)}
         >
-          {(() => {
-            console.log("Rendering button, isPending:", transferMutation.isPending);
-            return transferMutation.isPending ? (
-              <div className="flex items-center justify-center">
-                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-3"></div>
-                <span className="animate-pulse">Processing Transfer...</span>
-              </div>
-            ) : (
-              <span className="flex items-center justify-center">
-                <Send className="mr-2 h-4 w-4" />
-                Send Transfer
-              </span>
-            );
-          })()}
+          {transferMutation.isPending ? (
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+              Processing...
+            </div>
+          ) : (
+            <span className="flex items-center justify-center">
+              <Send className="mr-2" />
+              Send Transfer
+            </span>
+          )}
         </Button>
 
         <Alert className="animate-in slide-in-from-bottom duration-400 delay-1000">

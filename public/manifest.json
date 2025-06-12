@@ -23,6 +23,35 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    },
+    {
+      "src": "/boi_logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "View Accounts",
+      "short_name": "Accounts",
+      "description": "View your account balances",
+      "url": "/",
+      "icons": [{ "src": "/icon-footer-accounts.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "Make Payment",
+      "short_name": "Payments",
+      "description": "Send money or pay bills",
+      "url": "/payments",
+      "icons": [{ "src": "/icon-footer-payments.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "Apply for Products",
+      "short_name": "Apply",
+      "description": "Apply for banking products",
+      "url": "/apply",
+      "icons": [{ "src": "/icon-footer-apply.svg", "sizes": "96x96" }]
     }
   ],
   "prefer_related_applications": false
