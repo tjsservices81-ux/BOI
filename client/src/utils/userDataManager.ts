@@ -41,6 +41,8 @@ export class UserDataManager {
     return localStorage.getItem('lastActiveUser');
   }
 
+
+
   // Clear current user session
   static clearCurrentUser() {
     this.currentUser = null;

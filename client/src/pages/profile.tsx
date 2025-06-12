@@ -511,23 +511,89 @@ export default function Profile() {
               </div>
             )}
 
-            {/* Profile Editor */}
-            <button 
-              onClick={() => setEditingProfile(true)}
-              className="w-full flex items-center space-x-3 p-4 bg-green-50 border border-green-200 rounded-xl active:scale-98 transition-transform mb-4"
-            >
-              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                <User className="w-5 h-5 text-green-600" />
+
+
+            {/* Profile Editing */}
+            <div className="space-y-4 mb-6">
+              <h3 className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Edit Profile Information
+              </h3>
+              
+              {/* Name */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Name
+                </label>
+                <input
+                  type="text"
+                  value={profileData.name}
+                  onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-xl"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                />
               </div>
-              <div className="flex-1 text-left">
-                <p className="font-semibold text-green-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Edit Profile
-                </p>
-                <p className="text-sm text-green-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Update name, email, phone and address
-                </p>
+
+              {/* Email */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={profileData.email}
+                  onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-xl"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                />
               </div>
-            </button>
+
+              {/* Phone */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Phone
+                </label>
+                <input
+                  type="tel"
+                  value={profileData.phone}
+                  onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-xl"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                />
+              </div>
+
+              {/* Join Date */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Member Since
+                </label>
+                <input
+                  type="text"
+                  value={profileData.joinDate}
+                  onChange={(e) => setProfileData({ ...profileData, joinDate: e.target.value })}
+                  placeholder="Member since 2018"
+                  className="w-full p-3 border border-gray-300 rounded-xl"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                />
+              </div>
+
+              {/* Save Profile Button */}
+              <button
+                onClick={() => {
+                  // Update user profile data using the existing method
+                  UserDataManager.updateUserProfile({
+                    name: profileData.name,
+                    email: profileData.email,
+                    phone: profileData.phone,
+                    joinDate: profileData.joinDate
+                  });
+                  alert('Profile updated successfully');
+                }}
+                className="w-full py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              >
+                Save Profile Changes
+              </button>
+            </div>
 
             {/* Admin Actions */}
             <div className="space-y-4">
