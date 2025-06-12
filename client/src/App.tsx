@@ -46,7 +46,7 @@ function AppRoutes() {
   const showNavigation = user && !excludedRoutes.includes(location);
 
   return (
-    <div className="w-full h-full bg-white overflow-hidden relative">
+    <div className="w-full h-full overflow-hidden relative">
       <Switch>
         <Route path="/splash" component={Splash} />
         <Route path="/login" component={Login} />
