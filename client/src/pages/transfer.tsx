@@ -33,11 +33,7 @@ export default function Transfer() {
 
   const transferMutation = useMutation({
     mutationFn: async (transferData: TransferRequest) => {
-      // Add minimum delay to show loading animation
-      const [response] = await Promise.all([
-        apiRequest("POST", "/api/transfer", transferData),
-        new Promise(resolve => setTimeout(resolve, 1500)) // 1.5 second minimum
-      ]);
+      const response = await apiRequest("POST", "/api/transfer", transferData);
       return response.json();
     },
     onSuccess: () => {
@@ -97,17 +93,7 @@ export default function Transfer() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="p-6 space-y-4 animate-in fade-in-50 duration-500 delay-150 relative">
-        {/* Processing Overlay */}
-        {transferMutation.isPending && (
-          <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg">
-            <div className="bg-white p-6 rounded-xl shadow-lg flex flex-col items-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-2 border-[var(--boi-green)] border-t-transparent mb-3"></div>
-              <p className="text-[var(--boi-gray)] font-medium">Processing your transfer...</p>
-              <p className="text-sm text-gray-500 mt-1">Please wait</p>
-            </div>
-          </div>
-        )}
+      <form onSubmit={handleSubmit} className="p-6 space-y-4 animate-in fade-in-50 duration-500 delay-150">
         {/* From Account */}
         <Card className="animate-in slide-in-from-bottom duration-400 delay-200 ios-card">
           <CardContent className="p-4">
@@ -208,11 +194,7 @@ export default function Transfer() {
 
         <Button
           type="submit"
-          className={`w-full font-medium py-3 px-4 transition-all duration-200 mb-4 animate-in slide-in-from-bottom duration-400 delay-700 haptic-feedback ${
-            transferMutation.isPending 
-              ? 'bg-gray-400 cursor-not-allowed' 
-              : 'bg-[var(--boi-green)] hover:bg-[var(--boi-dark-green)] text-white'
-          }`}
+          className="w-full bg-[var(--boi-green)] hover:bg-[var(--boi-dark-green)] text-white font-medium py-3 px-4 transition-colors duration-200 mb-4 animate-in slide-in-from-bottom duration-400 delay-700 haptic-feedback disabled:bg-gray-400 disabled:cursor-not-allowed"
           disabled={transferMutation.isPending}
         >
           {transferMutation.isPending ? (
