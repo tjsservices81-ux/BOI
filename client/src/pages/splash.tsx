@@ -21,13 +21,17 @@ export default function Splash() {
   useEffect(() => {
     const sessionState = sessionManager.getState();
     
-    // If user exists and session is valid, skip splash and go directly to dashboard
+    // Always show full splash screen when required, regardless of user state
+    // Only skip splash if explicitly marked to skip and session is valid
     if (user && sessionState.sessionValid && !sessionState.shouldShowSplash) {
-      navigate('/dashboard');
+      // Still show a brief splash for visual consistency
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 1000);
       return;
     }
 
-    // Step progression timing: each step lasts 1.6 seconds
+    // Full splash screen duration: each step lasts 1.6 seconds (8 seconds total)
     const stepTimers: NodeJS.Timeout[] = [];
     
     // Progress through each loading step
@@ -46,7 +50,7 @@ export default function Splash() {
       setTimeout(() => {
         // Check if we have a valid user session to restore
         const currentUser = UserDataManager.getCurrentUser();
-        if (currentUser && UserDataManager.userExists(currentUser) && !sessionState.shouldShowSplash) {
+        if (currentUser && UserDataManager.userExists(currentUser) && sessionState.sessionValid) {
           // Auto-login and go to dashboard
           login();
           navigate('/dashboard');
