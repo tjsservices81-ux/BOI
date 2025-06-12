@@ -39,11 +39,34 @@ export default function Cards() {
     }
   ];
 
-  // Load cardholder name independently from profile
+  // Load cardholder name from profile and listen for updates
   useEffect(() => {
-    // Load card holder name from separate storage, not linked to profile
-    const storedCardName = UserDataManager.getUserData('cardHolderName', 'JOHN MURPHY');
-    setCardHolderName(storedCardName.toUpperCase());
+    // Load name from profile data
+    const loadCardholderName = () => {
+      const userProfile = UserDataManager.getUserProfile();
+      if (userProfile && userProfile.name) {
+        setCardHolderName(userProfile.name.toUpperCase());
+      } else {
+        setCardHolderName('JOHN MURPHY');
+      }
+    };
+
+    loadCardholderName();
+
+    // Listen for profile updates
+    const handleStorageChange = () => {
+      loadCardholderName();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Check for updates periodically in case of same-tab updates
+    const interval = setInterval(loadCardholderName, 1000);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
   }, []);
 
   useEffect(() => {
