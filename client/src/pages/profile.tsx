@@ -3,10 +3,14 @@ import { useLocation } from "wouter";
 import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin, Calendar, CreditCard, X, Database, Trash2, RefreshCw, DollarSign, Plus } from "lucide-react";
 import { UserDataManager } from "@/utils/userDataManager";
 import { useAuth } from "@/lib/auth";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Profile() {
   const [, navigate] = useLocation();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
+  const { toast } = useToast();
   const [tapCount, setTapCount] = useState(0);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [accounts, setAccounts] = useState<any[]>([]);
@@ -30,6 +34,39 @@ export default function Profile() {
     dateOfBirth: "15 March 1985",
     customerNumber: "BOI-789123456",
     joinDate: "Member since 2018"
+  });
+
+  // Mutation for updating user profile
+  const updateUserMutation = useMutation({
+    mutationFn: async (updates: any) => {
+      if (!user?.id) throw new Error("User not authenticated");
+      const response = await fetch(`/api/user/${user.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updates),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update user');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Profile updated",
+        description: "Your profile has been saved successfully.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update profile. Please try again.",
+        variant: "destructive",
+      });
+    },
   });
 
   // Load profile data from UserDataManager on component mount
