@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { ChevronLeft, ChevronRight, User, ArrowUpDown, Globe, MapPin, Clock } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, ArrowUpDown, Globe, MapPin, Clock, Users, X, Trash2 } from "lucide-react";
 import { UserDataManager } from "../utils/userDataManager";
 
 export default function Payments() {
   const [, navigate] = useLocation();
   const [selectedPaymentType, setSelectedPaymentType] = useState<string | null>(null);
   const [recentPayments, setRecentPayments] = useState<any[]>([]);
+  const [showRecentPayees, setShowRecentPayees] = useState(false);
+  const [recentPayees, setRecentPayees] = useState<any[]>([]);
+  const [deleteConfirm, setDeleteConfirm] = useState<{name: string, accountInfo: string} | null>(null);
 
   const paymentOptions = [
     {
@@ -35,7 +38,7 @@ export default function Payments() {
     }
   ];
 
-  // Load recent payments using UserDataManager
+  // Load recent payments and payees using UserDataManager
   useEffect(() => {
     const loadRecentPayments = () => {
       const storedTransactions = UserDataManager.getUserData('bankTransactions', []);
@@ -47,11 +50,17 @@ export default function Payments() {
       setRecentPayments(transferTransactions);
     };
 
+    const loadRecentPayees = () => {
+      setRecentPayees(UserDataManager.getRecentPayees());
+    };
+
     loadRecentPayments();
+    loadRecentPayees();
     
     // Listen for new transactions
     const handleTransactionUpdate = () => {
       loadRecentPayments();
+      loadRecentPayees();
     };
 
     window.addEventListener('transactionUpdate', handleTransactionUpdate);
@@ -69,6 +78,28 @@ export default function Payments() {
       return 'Yesterday';
     } else {
       return date.toLocaleDateString('en-IE', { day: 'numeric', month: 'short' });
+    }
+  };
+
+  // Recent payees helper functions
+  const handlePayeeSelect = (payee: any) => {
+    if (payee.transferType === 'UK Transfer') {
+      navigate('/uk-transfer');
+    } else if (payee.transferType === 'IBAN Transfer') {
+      navigate('/iban-transfer');
+    }
+    setShowRecentPayees(false);
+  };
+
+  const handleDeletePayee = (payee: any) => {
+    setDeleteConfirm({ name: payee.name, accountInfo: payee.accountInfo });
+  };
+
+  const confirmDeletePayee = () => {
+    if (deleteConfirm) {
+      UserDataManager.removeRecentPayee(deleteConfirm.name, deleteConfirm.accountInfo);
+      setRecentPayees(UserDataManager.getRecentPayees());
+      setDeleteConfirm(null);
     }
   };
 
@@ -148,9 +179,12 @@ export default function Payments() {
             Quick Actions
           </h2>
           <div className="grid grid-cols-2 gap-4">
-            <button className="bg-blue-50 rounded-xl p-4 text-center active:scale-95 transition-transform">
+            <button 
+              onClick={() => setShowRecentPayees(true)}
+              className="bg-blue-50 rounded-xl p-4 text-center active:scale-95 transition-transform"
+            >
               <div className="w-8 h-8 bg-[#126987] rounded-full flex items-center justify-center mx-auto mb-2">
-                <img src="/icon-footer-payments.svg" alt="Recent" className="w-4 h-4 filter brightness-0 invert" />
+                <Users className="w-4 h-4 text-white" />
               </div>
               <span className="text-sm font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                 Recent Payees
@@ -231,6 +265,95 @@ export default function Payments() {
           )}
         </div>
       </div>
+
+      {/* Recent Payees Modal */}
+      {showRecentPayees && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md max-h-[80vh] overflow-hidden">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="font-bold text-gray-900 text-lg" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Recent Payees
+              </h3>
+              <button
+                onClick={() => setShowRecentPayees(false)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+            
+            <div className="max-h-96 overflow-y-auto">
+              {recentPayees.length > 0 ? (
+                <div className="p-4 space-y-3">
+                  {recentPayees.map((payee, index) => (
+                    <div key={index} className="bg-gray-50 rounded-lg p-4 flex items-center justify-between">
+                      <button
+                        onClick={() => handlePayeeSelect(payee)}
+                        className="flex-1 text-left"
+                      >
+                        <div className="font-medium text-gray-900 text-sm mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          {payee.name}
+                        </div>
+                        <div className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          {payee.accountInfo} • {payee.transferType}
+                        </div>
+                      </button>
+                      <button
+                        onClick={() => handleDeletePayee(payee)}
+                        className="ml-3 p-2 text-gray-400 hover:text-red-500 transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-8 text-center">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Users className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <p className="text-gray-500 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    No recent payees
+                  </p>
+                  <p className="text-xs text-gray-400" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Complete a transfer to see payees here
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full">
+            <h3 className="font-bold text-gray-900 text-lg mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              Remove Payee
+            </h3>
+            <p className="text-gray-600 mb-6" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              Are you sure you want to remove "{deleteConfirm.name}" from your recent payees?
+            </p>
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setDeleteConfirm(null)}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeletePayee}
+                className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg font-medium"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
