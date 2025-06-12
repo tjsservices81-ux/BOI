@@ -49,6 +49,115 @@ input, select, textarea {
   will-change: border-color, box-shadow;
 }
 
+/* iOS-style page transitions */
+.page-container {
+  animation: slideInFromRight 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+.page-fade-in {
+  animation: fadeIn 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.page-slide-up {
+  animation: slideUpFromBottom 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Smooth page entrance animations */
+@keyframes slideInFromRight {
+  0% {
+    transform: translateX(100%);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideUpFromBottom {
+  0% {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Staggered element animations for smooth loading */
+.stagger-item {
+  animation: fadeInStagger 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.stagger-item:nth-child(1) { animation-delay: 0.05s; }
+.stagger-item:nth-child(2) { animation-delay: 0.1s; }
+.stagger-item:nth-child(3) { animation-delay: 0.15s; }
+.stagger-item:nth-child(4) { animation-delay: 0.2s; }
+.stagger-item:nth-child(5) { animation-delay: 0.25s; }
+.stagger-item:nth-child(6) { animation-delay: 0.3s; }
+
+@keyframes fadeInStagger {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Prevent content flash during load */
+.loading-hidden {
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.loading-visible {
+  opacity: 1;
+}
+
+/* Button press animations */
+.haptic-feedback {
+  transition: transform 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.haptic-feedback:active {
+  transform: scale(0.96);
+}
+
+/* Card hover/press effects */
+.card-interactive {
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform: translateZ(0);
+}
+
+.card-interactive:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.card-interactive:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
 /* Smooth button press animations */
 button:active {
   transform: translateZ(0) scale(0.98);

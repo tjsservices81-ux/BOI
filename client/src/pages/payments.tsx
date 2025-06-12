@@ -73,7 +73,7 @@ export default function Payments() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-white ios-safe-top ios-safe-bottom">
+    <div className="h-screen flex flex-col bg-white ios-safe-top ios-safe-bottom page-container">
       {/* Header */}
       <div className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0">
         <button 
@@ -104,7 +104,7 @@ export default function Payments() {
 
         {/* Payment Options */}
         <div className="space-y-4 mb-8">
-          {paymentOptions.map((option) => (
+          {paymentOptions.map((option, index) => (
             <button
               key={option.id}
               onClick={() => {
@@ -112,7 +112,8 @@ export default function Payments() {
                 else if (option.id === 'domestic') navigate('/uk-transfer');
                 else setSelectedPaymentType(option.id);
               }}
-              className="w-full bg-white rounded-2xl p-5 shadow-sm active:scale-98 transition-all duration-200 border-2 border-transparent hover:border-[#126987]/20"
+              className="w-full bg-white rounded-2xl p-5 shadow-sm active:scale-98 transition-all duration-200 border-2 border-transparent hover:border-[#126987]/20 stagger-item card-interactive"
+              style={{ animationDelay: `${index * 0.1}s` }}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">

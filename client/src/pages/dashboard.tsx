@@ -56,7 +56,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="h-full bg-gray-50 overflow-hidden flex flex-col ios-safe-top ios-safe-bottom relative">
+    <div className="h-full bg-gray-50 overflow-hidden flex flex-col ios-safe-top ios-safe-bottom relative page-fade-in">
       {/* Ambient spending visualization background */}
       <SpendingVisualization />
       
@@ -97,11 +97,12 @@ export default function Dashboard() {
       <div className="flex-1 px-0 -mt-8 overflow-y-auto ios-scroll">
         <div className="bg-white rounded-t-3xl shadow-lg min-h-full">
           <div className="pt-6 pb-32">
-            {accounts.map((account) => (
+            {accounts.map((account, index) => (
               <button 
                 key={account.id}
-                className="w-full flex items-center justify-between border-b border-gray-100 hover:bg-gray-50 touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-98 haptic-feedback relative"
+                className="w-full flex items-center justify-between border-b border-gray-100 hover:bg-gray-50 touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-98 haptic-feedback relative stagger-item card-interactive"
                 onClick={() => setLocation(`/transactions/${account.id}`)}
+                style={{ animationDelay: `${index * 0.1}s` }}
               >
                 {/* Colored side bar */}
                 <div className={`absolute left-0 top-0 bottom-0 w-1 ${getAccountColor(account.accountType)}`}></div>

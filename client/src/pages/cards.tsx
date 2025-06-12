@@ -87,7 +87,7 @@ export default function Cards() {
   }, []);
 
   return (
-    <div className="h-screen flex flex-col bg-white ios-safe-top ios-safe-bottom">
+    <div className="h-screen flex flex-col bg-white ios-safe-top ios-safe-bottom page-container">
       
       {/* Header */}
       <div className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0">
