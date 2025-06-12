@@ -1,16 +1,15 @@
 // Authentication context for the banking app
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { UserDataManager } from "@/utils/userDataManager";
 
 interface User {
-  customerNumber: string;
+  id: number;
   name: string;
   email: string;
 }
 
 interface AuthContextType {
   user: User | null;
-  login: () => void;
+  login: (user: User) => void;
   logout: () => void;
   isLoading: boolean;
 }
@@ -23,35 +22,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Check for existing session on mount
   useEffect(() => {
-    const currentUserNumber = UserDataManager.getCurrentUser();
-    if (currentUserNumber && UserDataManager.userExists(currentUserNumber)) {
-      const userData = UserDataManager.getAllUsers()[currentUserNumber];
-      setUser({
-        customerNumber: currentUserNumber,
-        name: userData.name,
-        email: userData.email
-      });
-    }
-    setIsLoading(false);
+    fetch('/api/auth/user', {
+      method: 'GET',
+      credentials: 'include',
+    })
+    .then(response => {
+      if (response.ok) {
+        return response.json();
+      }
+      throw new Error('Not authenticated');
+    })
+    .then(userData => {
+      setUser(userData);
+    })
+    .catch(() => {
+      setUser(null);
+    })
+    .finally(() => {
+      setIsLoading(false);
+    });
   }, []);
 
-  const login = () => {
-    const currentUserNumber = UserDataManager.getCurrentUser();
-    if (currentUserNumber && UserDataManager.userExists(currentUserNumber)) {
-      // Record login time
-      UserDataManager.recordLoginTime(currentUserNumber);
-      
-      const userData = UserDataManager.getAllUsers()[currentUserNumber];
-      setUser({
-        customerNumber: currentUserNumber,
-        name: userData.name,
-        email: userData.email
-      });
-    }
+  const login = (userData: User) => {
+    setUser(userData);
   };
 
-  const logout = () => {
-    UserDataManager.clearCurrentUser();
+  const logout = async () => {
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
     setUser(null);
   };
 
