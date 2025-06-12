@@ -131,7 +131,7 @@ export default function Login() {
     UserDataManager.setCurrentUser(customerNumber);
     
     try {
-      await login({ customerNumber, pin });
+      login();
       navigate("/dashboard");
     } catch (error) {
       toast({

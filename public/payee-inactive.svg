@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="18px" viewBox="0 0 16 18" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 52.4 (67378) - http://www.bohemiancoding.com/sketch -->
+    <title>payee-inactive</title>
+    <desc>Created with Sketch.</desc>
+    <g id="payee-inactive" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="user-inactive" fill="#CCCCCC" fill-rule="nonzero">
+            <path d="M8,9 C10.525,9 12.5714286,6.98554687 12.5714286,4.5 C12.5714286,2.01445313 10.525,0 8,0 C5.475,0 3.42857143,2.01445312 3.42857143,4.5 C3.42857143,6.98554687 5.475,9 8,9 Z M11.2,10.125 L10.6035714,10.125 C9.81071429,10.4835938 8.92857143,10.6875 8,10.6875 C7.07142857,10.6875 6.19285714,10.4835938 5.39642857,10.125 L4.8,10.125 C2.15,10.125 0,12.2414063 0,14.85 L0,16.3125 C0,17.2441406 0.767857143,18 1.71428571,18 L14.2857143,18 C15.2321429,18 16,17.2441406 16,16.3125 L16,14.85 C16,12.2414063 13.85,10.125 11.2,10.125 Z" id="Shape"></path>
+        </g>
+    </g>
+</svg>
