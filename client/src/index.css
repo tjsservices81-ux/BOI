@@ -69,31 +69,22 @@ input, textarea {
 }
 
 /* Critical layout stability - instant rendering */
-.icon-smooth, .text-smooth {
+img, svg {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
   backface-visibility: hidden;
   transform: translateZ(0);
-  will-change: transform;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  /* Prevent any loading delays */
+  font-display: block;
 }
 
-/* Prevent content layout shift */
-.content-ready {
-  opacity: 1;
-  transform: translateY(0);
-  transition: none;
-}
-
-/* Force immediate font rendering and prevent FOIT/FOUT */
+/* Force immediate font rendering */
 * {
   font-display: block !important;
   text-rendering: optimizeSpeed;
-  font-synthesis: none;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  /* Eliminate all loading delays */
-  opacity: 1 !important;
-  visibility: visible !important;
 }
 
 /* Selective transitions - instant form inputs, smooth buttons */
@@ -107,9 +98,6 @@ button, a, [role="button"] {
   transform: translateZ(0);
   will-change: transform;
   transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-  /* Force immediate rendering */
-  backface-visibility: hidden;
-  perspective: 1000px;
 }
 
 /* Instant scrolling - no delays */
@@ -219,56 +207,24 @@ input, select, textarea {
   opacity: 1;
 }
 
-/* Critical asset preloading with enhanced caching */
+/* Preload critical assets to prevent flickering */
 body::before {
   content: "";
   position: absolute;
   top: -9999px;
-  left: -9999px;
   background-image: 
     url('/boi_logo.svg'),
     url('/background.jpg'),
     url('/icon_HID.svg'),
-    url('/Icons_Fingerprint.svg'),
-    url('/branch-locator.svg'),
-    url('/more-prelogin-icon.svg');
+    url('/Icons_Fingerprint.svg');
   background-size: 0;
-  opacity: 0;
-  pointer-events: none;
-  /* Force preload to cache immediately */
-  transform: translateZ(0);
-  will-change: transform;
 }
 
-/* Preload all critical icons for instant display */
-.preload-icons::after {
-  content: "";
-  position: absolute;
-  top: -9999px;
-  left: -9999px;
-  background-image:
-    url('/icon_HID.svg'),
-    url('/Icons_Fingerprint.svg'),
-    url('/branch-locator.svg'),
-    url('/more-prelogin-icon.svg');
-  background-size: 0;
-  opacity: 0;
-}
-
-/* Optimize image loading for instant display */
-img, svg {
+/* Optimize image loading */
+img {
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
   will-change: auto;
-  backface-visibility: hidden;
-  transform: translateZ(0);
-  /* Prevent layout shift during load */
-  width: auto;
-  height: auto;
-  display: block;
-  /* Force immediate rendering */
-  opacity: 1;
-  visibility: visible;
 }
 
 /* Full height viewport for splash and login screens */

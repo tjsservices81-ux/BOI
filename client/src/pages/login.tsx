@@ -9,7 +9,6 @@ import { User, ExternalLink, HelpCircle, Phone, Settings, Shield, MapPin, MoreHo
 import { useToast } from "@/hooks/use-toast";
 import { UserDataManager } from "@/utils/userDataManager";
 
-
 export default function Login() {
   const [customerNumber, setCustomerNumber] = useState("");
   const [pin, setPin] = useState("");
