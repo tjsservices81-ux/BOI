@@ -33,7 +33,11 @@ export default function Transfer() {
 
   const transferMutation = useMutation({
     mutationFn: async (transferData: TransferRequest) => {
-      const response = await apiRequest("POST", "/api/transfer", transferData);
+      // Add minimum delay to show loading animation
+      const [response] = await Promise.all([
+        apiRequest("POST", "/api/transfer", transferData),
+        new Promise(resolve => setTimeout(resolve, 1500)) // 1.5 second minimum
+      ]);
       return response.json();
     },
     onSuccess: () => {
@@ -93,7 +97,17 @@ export default function Transfer() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="p-6 space-y-4 animate-in fade-in-50 duration-500 delay-150">
+      <form onSubmit={handleSubmit} className="p-6 space-y-4 animate-in fade-in-50 duration-500 delay-150 relative">
+        {/* Processing Overlay */}
+        {transferMutation.isPending && (
+          <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg">
+            <div className="bg-white p-6 rounded-xl shadow-lg flex flex-col items-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-2 border-[var(--boi-green)] border-t-transparent mb-3"></div>
+              <p className="text-[var(--boi-gray)] font-medium">Processing your transfer...</p>
+              <p className="text-sm text-gray-500 mt-1">Please wait</p>
+            </div>
+          </div>
+        )}
         {/* From Account */}
         <Card className="animate-in slide-in-from-bottom duration-400 delay-200 ios-card">
           <CardContent className="p-4">
@@ -194,17 +208,21 @@ export default function Transfer() {
 
         <Button
           type="submit"
-          className="w-full bg-[var(--boi-green)] hover:bg-[var(--boi-dark-green)] text-white font-medium py-3 px-4 transition-colors duration-200 mb-4 animate-in slide-in-from-bottom duration-400 delay-700 haptic-feedback"
+          className={`w-full font-medium py-3 px-4 transition-all duration-200 mb-4 animate-in slide-in-from-bottom duration-400 delay-700 haptic-feedback ${
+            transferMutation.isPending 
+              ? 'bg-gray-400 cursor-not-allowed' 
+              : 'bg-[var(--boi-green)] hover:bg-[var(--boi-dark-green)] text-white'
+          }`}
           disabled={transferMutation.isPending}
         >
           {transferMutation.isPending ? (
             <div className="flex items-center justify-center">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-              Processing...
+              <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-3"></div>
+              <span className="animate-pulse">Processing Transfer...</span>
             </div>
           ) : (
             <span className="flex items-center justify-center">
-              <Send className="mr-2" />
+              <Send className="mr-2 h-4 w-4" />
               Send Transfer
             </span>
           )}
