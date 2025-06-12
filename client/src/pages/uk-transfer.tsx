@@ -54,9 +54,20 @@ export default function UkTransfer() {
       }
       
       const response = await fetch(`https://v6.exchangerate-api.com/v6/${apiKey}/latest/EUR`);
+      
+      // Check if response is ok and content-type is JSON
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Response is not JSON');
+      }
+      
       const data = await response.json();
       
-      if (data.result === 'success') {
+      if (data && data.result === 'success' && data.conversion_rates && data.conversion_rates.GBP) {
         const rate = data.conversion_rates.GBP;
         setExchangeRate(rate);
         
@@ -66,10 +77,13 @@ export default function UkTransfer() {
           const converted = (parseFloat(currentAmount) * rate).toFixed(2);
           setGbpAmount(converted);
         }
+      } else {
+        throw new Error('Invalid API response structure');
       }
     } catch (error) {
       console.log('Exchange rate fetch failed, using default rate');
-      // Keep default rate of 0.85
+      // Always ensure we have a valid rate, even if API fails
+      setExchangeRate(0.85);
     }
   };
 
