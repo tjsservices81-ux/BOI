@@ -91,6 +91,9 @@ input, textarea {
   font-synthesis: none;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Eliminate all loading delays */
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 /* Selective transitions - instant form inputs, smooth buttons */
@@ -104,6 +107,9 @@ button, a, [role="button"] {
   transform: translateZ(0);
   will-change: transform;
   transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Force immediate rendering */
+  backface-visibility: hidden;
+  perspective: 1000px;
 }
 
 /* Instant scrolling - no delays */
@@ -229,6 +235,9 @@ body::before {
   background-size: 0;
   opacity: 0;
   pointer-events: none;
+  /* Force preload to cache immediately */
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 /* Preload all critical icons for instant display */
