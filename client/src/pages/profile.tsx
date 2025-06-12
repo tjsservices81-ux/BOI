@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin, Calendar, CreditCard, X, Database, Trash2, RefreshCw, DollarSign } from "lucide-react";
+import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin, Calendar, CreditCard, X, Database, Trash2, RefreshCw, DollarSign, Plus } from "lucide-react";
 import { UserDataManager } from "@/utils/userDataManager";
 import { useAuth } from "@/lib/auth";
 
@@ -13,6 +13,7 @@ export default function Profile() {
   const [editingAccount, setEditingAccount] = useState<any>(null);
   const [newBalance, setNewBalance] = useState('');
   const [editingProfile, setEditingProfile] = useState(false);
+  const [showAddTransaction, setShowAddTransaction] = useState(false);
   const [profileData, setProfileData] = useState({
     name: "John Murphy",
     email: "john.murphy@email.ie",
@@ -105,6 +106,65 @@ export default function Profile() {
     
     setEditingProfile(false);
     alert('Profile updated successfully');
+  };
+
+  const sampleTransactions = [
+    { description: "McDonald's", amount: -8.99, type: "debit" },
+    { description: "ATM WITHDRAWAL", amount: -50.00, type: "debit" },
+    { description: "Tesco", amount: -35.67, type: "debit" },
+    { description: "Starbucks", amount: -4.50, type: "debit" },
+    { description: "Dunnes Stores", amount: -87.23, type: "debit" },
+    { description: "SuperValu", amount: -42.18, type: "debit" },
+    { description: "Centra", amount: -12.95, type: "debit" },
+    { description: "Penneys", amount: -29.99, type: "debit" },
+    { description: "Lidl", amount: -25.40, type: "debit" },
+    { description: "Aldi", amount: -31.85, type: "debit" },
+    { description: "Circle K", amount: -65.00, type: "debit" },
+    { description: "Insomnia Coffee", amount: -6.20, type: "debit" },
+    { description: "SALARY PAYMENT", amount: 2500.00, type: "credit" },
+    { description: "INTEREST PAYMENT", amount: 12.50, type: "credit" },
+    { description: "REFUND - AMAZON", amount: 45.99, type: "credit" }
+  ];
+
+  const addSampleTransaction = (accountId: number) => {
+    const randomTransaction = sampleTransactions[Math.floor(Math.random() * sampleTransactions.length)];
+    const now = new Date();
+    
+    const transaction = {
+      id: Date.now(),
+      accountId: accountId,
+      amount: randomTransaction.amount > 0 ? `+${randomTransaction.amount.toFixed(2)}` : randomTransaction.amount.toFixed(2),
+      description: randomTransaction.description,
+      category: randomTransaction.type === 'credit' ? 'income' : 'expense',
+      type: randomTransaction.type,
+      timestamp: now.toISOString()
+    };
+
+    // Add transaction using UserDataManager
+    const existingTransactions = UserDataManager.getUserData('bankTransactions', []);
+    UserDataManager.setUserData('bankTransactions', [...existingTransactions, transaction]);
+
+    // Update account balance if it's a debit transaction
+    if (randomTransaction.type === 'debit') {
+      const storedAccounts = UserDataManager.getUserData('bankAccounts', []);
+      const updatedAccounts = storedAccounts.map((acc: any) => {
+        if (acc.id === accountId) {
+          const currentBalance = parseFloat(acc.balance);
+          const newBalance = Math.max(0, currentBalance + randomTransaction.amount);
+          return { ...acc, balance: newBalance.toFixed(2) };
+        }
+        return acc;
+      });
+      UserDataManager.setUserData('bankAccounts', updatedAccounts);
+      setAccounts(updatedAccounts);
+    }
+
+    // Dispatch events to notify other components
+    window.dispatchEvent(new CustomEvent('transactionUpdate'));
+    window.dispatchEvent(new CustomEvent('balanceUpdate'));
+    
+    setShowAddTransaction(false);
+    alert(`Added transaction: ${randomTransaction.description} €${Math.abs(randomTransaction.amount)}`);
   };
 
   const resetToDefaults = () => {
@@ -429,6 +489,24 @@ export default function Profile() {
             {/* Admin Actions */}
             <div className="space-y-4">
 
+              {/* Add Sample Transaction */}
+              <button 
+                onClick={() => setShowAddTransaction(true)}
+                className="w-full flex items-center space-x-3 p-4 bg-blue-50 border border-blue-200 rounded-xl active:scale-98 transition-transform"
+              >
+                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Plus className="w-5 h-5 text-blue-600" />
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="font-semibold text-blue-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Add Sample Transaction
+                  </p>
+                  <p className="text-sm text-blue-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Add test transactions to any account
+                  </p>
+                </div>
+              </button>
+
               {/* Reset to Defaults */}
               <button 
                 onClick={resetToDefaults}
@@ -600,6 +678,65 @@ export default function Profile() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Add Transaction Modal */}
+      {showAddTransaction && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Add Sample Transaction
+                </h2>
+                <button
+                  onClick={() => setShowAddTransaction(false)}
+                  className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+                >
+                  <X className="w-4 h-4 text-gray-600" />
+                </button>
+              </div>
+
+              <p className="text-gray-600 mb-6" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Select an account to add a random sample transaction:
+              </p>
+
+              <div className="space-y-3">
+                {accounts.map((account) => (
+                  <button
+                    key={account.id}
+                    onClick={() => addSampleTransaction(account.id)}
+                    className="w-full flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+                  >
+                    <div className="text-left">
+                      <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        {account.displayName}
+                      </p>
+                      <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        {account.accountNumber}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-lg font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        €{account.balance}
+                      </p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              <div className="mt-6">
+                <button
+                  onClick={() => setShowAddTransaction(false)}
+                  className="w-full py-3 bg-gray-200 text-gray-800 rounded-xl font-semibold hover:bg-gray-300 transition-colors"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
