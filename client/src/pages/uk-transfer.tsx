@@ -23,8 +23,8 @@ export default function UkTransfer() {
   const [step, setStep] = useState<'form' | 'confirm' | 'success'>('form');
   const [transferReference, setTransferReference] = useState<string>('');
   const [identifiedBank, setIdentifiedBank] = useState<string>('');
-  const [showReference, setShowReference] = useState<boolean>(true);
-  const [animationProgress, setAnimationProgress] = useState<number>(100);
+  const [showReference, setShowReference] = useState<boolean>(false);
+  const [animationProgress, setAnimationProgress] = useState<number>(0);
   const [processingStage, setProcessingStage] = useState<string>('Verifying transfer details...');
   const [formData, setFormData] = useState<UkTransferData | null>(null);
   const [exchangeRate, setExchangeRate] = useState<number>(0.85); // EUR to GBP rate
@@ -97,9 +97,11 @@ export default function UkTransfer() {
   const executeTransfer = async () => {
     if (!formData) return;
     
+    // Generate unique reference only when transfer starts
     const ref = generateReference();
     setTransferReference(ref);
     
+    // Fetch current exchange rate and calculate GBP amount
     await fetchExchangeRate();
     
     const success = processTransfer(
@@ -116,11 +118,12 @@ export default function UkTransfer() {
       return;
     }
 
+    // Immediately go to success screen and start animation
     setStep('success');
     setShowReference(false);
     setAnimationProgress(0);
-    setProcessingStage('Verifying transfer details...');
     
+    // Professional banking stages during 5-second animation
     const stages = [
       'Verifying transfer details...',
       'Authenticating transaction...',
@@ -133,8 +136,9 @@ export default function UkTransfer() {
     
     const interval = setInterval(() => {
       setAnimationProgress(prev => {
-        const newProgress = prev + 2;
+        const newProgress = prev + 2; // 2% every 100ms = 5 seconds
         
+        // Update stage message every 20% (1 second)
         const newStageIndex = Math.floor(newProgress / 20);
         if (newStageIndex !== stageIndex && newStageIndex < stages.length) {
           stageIndex = newStageIndex;
@@ -143,7 +147,7 @@ export default function UkTransfer() {
         
         if (newProgress >= 100) {
           clearInterval(interval);
-          setTimeout(() => setShowReference(true), 200);
+          setShowReference(true);
           return 100;
         }
         return newProgress;
@@ -178,21 +182,21 @@ export default function UkTransfer() {
               </>
             )}
 
-            {/* Processing animation overlay */}
-            {!showReference && animationProgress < 100 && (
+            {/* Full-screen professional processing animation */}
+            {!showReference ? (
               <div style={{ 
                 position: 'fixed', 
                 top: 0, 
                 left: 0, 
-                width: '100vw',
-                height: '100vh', 
-                background: '#f8fafc',
-                zIndex: 9999,
+                right: 0, 
+                bottom: 0, 
+                background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+                zIndex: 1000,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center'
               }}>
-                <div className="text-center space-y-8 px-8 max-w-md w-full animate-in slide-in-from-bottom duration-500">
+                <div className="text-center space-y-8 px-8 max-w-md w-full">
                   {/* Bank of Ireland Professional Logo Area */}
                   <div className="mb-8">
                     <div className="w-20 h-20 bg-[#126987] rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
@@ -239,9 +243,7 @@ export default function UkTransfer() {
                   </div>
                 </div>
               </div>
-            )}
-            
-            {showReference && (
+            ) : (
               <>
                 <div className="bg-gray-50 rounded-xl p-3 mb-4 text-left animate-fade-in">
                   <div className="space-y-3">

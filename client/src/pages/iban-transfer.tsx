@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { ChevronLeft, Check, CreditCard, Globe, Info } from "lucide-react";
+import { ChevronLeft, Info, Check, CreditCard, Globe } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -25,8 +25,8 @@ export default function IbanTransfer() {
   const [, navigate] = useLocation();
   const [step, setStep] = useState<'form' | 'confirm' | 'success'>('form');
   const [transferReference, setTransferReference] = useState<string>('');
-  const [showReference, setShowReference] = useState<boolean>(true);
-  const [animationProgress, setAnimationProgress] = useState<number>(100);
+  const [showReference, setShowReference] = useState<boolean>(false);
+  const [animationProgress, setAnimationProgress] = useState<number>(0);
   const [processingStage, setProcessingStage] = useState<string>('Verifying transfer details...');
   const [formData, setFormData] = useState<IbanTransferData | null>(null);
 
@@ -63,6 +63,7 @@ export default function IbanTransfer() {
   const executeTransfer = () => {
     if (!formData) return;
     
+    // Generate unique reference only when transfer starts
     const ref = generateReference();
     setTransferReference(ref);
     
@@ -79,11 +80,12 @@ export default function IbanTransfer() {
       return;
     }
 
+    // Immediately go to success screen and start animation
     setStep('success');
     setShowReference(false);
     setAnimationProgress(0);
-    setProcessingStage('Verifying transfer details...');
     
+    // Professional banking stages during 5-second animation
     const stages = [
       'Verifying transfer details...',
       'Authenticating transaction...',
@@ -96,8 +98,9 @@ export default function IbanTransfer() {
     
     const interval = setInterval(() => {
       setAnimationProgress(prev => {
-        const newProgress = prev + 2;
+        const newProgress = prev + 2; // 2% every 100ms = 5 seconds
         
+        // Update stage message every 20% (1 second)
         const newStageIndex = Math.floor(newProgress / 20);
         if (newStageIndex !== stageIndex && newStageIndex < stages.length) {
           stageIndex = newStageIndex;
@@ -141,8 +144,8 @@ export default function IbanTransfer() {
               </>
             )}
 
-            {/* Processing animation overlay */}
-            {!showReference && animationProgress < 100 && (
+            <div>
+              {!showReference ? (
                 <div style={{ 
                   position: 'fixed', 
                   top: 0, 
@@ -202,9 +205,7 @@ export default function IbanTransfer() {
                     </div>
                   </div>
                 </div>
-            )}
-
-            {showReference && (
+              ) : (
                 <div className="bg-gray-50 rounded-xl p-4 mb-6 text-left">
                   <div className="space-y-3">
                     <div className="flex justify-between">
@@ -249,12 +250,10 @@ export default function IbanTransfer() {
                   New Transfer
                 </button>
               </div>
-            )}
+            </div>
           </div>
         </div>
       </div>
-      <BottomNavigation />
-    </div>
     );
   }
 
