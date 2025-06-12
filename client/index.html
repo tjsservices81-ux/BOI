@@ -2,168 +2,26 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     
-    <!-- iOS Web App Configuration -->
+    <!-- PWA Configuration -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Bank of Ireland" />
-    <meta name="apple-touch-fullscreen" content="yes" />
     <meta name="theme-color" content="#126987" />
-    <meta name="msapplication-TileColor" content="#126987" />
-    <meta name="msapplication-navbutton-color" content="#126987" />
-    
-    <!-- Prevent iOS Safari UI -->
-    <meta name="format-detection" content="telephone=no" />
     <meta name="mobile-web-app-capable" content="yes" />
     
-    <!-- App Icons for iOS -->
+    <!-- App Icons -->
     <link rel="apple-touch-icon" href="/BOI_logo.png" />
-    <link rel="apple-touch-icon" sizes="152x152" href="/BOI_logo.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/BOI_logo.png" />
+    <link rel="icon" type="image/png" href="/BOI_logo.png" />
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.json" />
     
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="/BOI_logo.png" />
-    
-    <!-- App Title -->
     <title>Bank of Ireland</title>
-    
-    <!-- Prevent text size adjustment on iOS -->
-    <style>
-      html {
-        -webkit-text-size-adjust: 100%;
-        -webkit-touch-callout: none;
-        -webkit-user-select: none;
-        -khtml-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-      }
-      
-      body {
-        -webkit-overflow-scrolling: touch;
-        overscroll-behavior: none;
-        position: fixed;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-      }
-      
-      #root {
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-      }
-      
-      /* iOS safe area support */
-      @supports (padding: max(0px)) {
-        body {
-          padding-left: env(safe-area-inset-left);
-          padding-right: env(safe-area-inset-right);
-        }
-      }
-      
-      /* Prevent address bar on iOS */
-      @media screen and (max-device-width: 480px) {
-        html, body {
-          height: 100vh;
-          height: -webkit-fill-available;
-        }
-      }
-    </style>
   </head>
   <body>
     <div id="root"></div>
-    
-    <!-- iOS Fullscreen JavaScript -->
-    <script>
-      // Prevent iOS Safari UI from appearing
-      (function() {
-        'use strict';
-        
-        // Viewport height fix for iOS
-        function setViewportHeight() {
-          const vh = window.innerHeight * 0.01;
-          document.documentElement.style.setProperty('--vh', vh + 'px');
-        }
-        
-        // Initialize viewport
-        setViewportHeight();
-        
-        // Handle viewport changes
-        window.addEventListener('resize', setViewportHeight);
-        window.addEventListener('orientationchange', function() {
-          setTimeout(setViewportHeight, 100);
-        });
-        
-        // Prevent pull-to-refresh on iOS
-        document.addEventListener('touchstart', function(e) {
-          if (e.touches.length > 1) return;
-        }, { passive: false });
-        
-        document.addEventListener('touchmove', function(e) {
-          if (e.touches.length > 1) return;
-          
-          const target = e.target.closest('.ios-scroll');
-          if (!target) {
-            e.preventDefault();
-            return false;
-          }
-          
-          const scrollTop = target.scrollTop;
-          const scrollHeight = target.scrollHeight;
-          const height = target.clientHeight;
-          const deltaY = e.touches[0].clientY - (e.touches[0].clientY || 0);
-          
-          if (scrollTop === 0 && deltaY > 0) {
-            e.preventDefault();
-            return false;
-          }
-          
-          if (scrollTop + height >= scrollHeight && deltaY < 0) {
-            e.preventDefault();
-            return false;
-          }
-        }, { passive: false });
-        
-        // Force fullscreen on standalone mode
-        if (window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches) {
-          document.documentElement.style.height = '100vh';
-          document.body.style.height = '100vh';
-        }
-        
-        // Prevent zoom on iOS
-        document.addEventListener('gesturestart', function(e) {
-          e.preventDefault();
-        });
-        
-        document.addEventListener('gesturechange', function(e) {
-          e.preventDefault();
-        });
-        
-        document.addEventListener('gestureend', function(e) {
-          e.preventDefault();
-        });
-        
-        // Handle input focus to prevent zoom
-        const inputs = document.querySelectorAll('input, select, textarea');
-        inputs.forEach(function(input) {
-          input.addEventListener('focus', function() {
-            if (window.DeviceMotionEvent && window.DeviceMotionEvent.requestPermission) {
-              // iOS 13+ handling
-              const viewport = document.querySelector('meta[name=viewport]');
-              if (viewport) {
-                viewport.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
-              }
-            }
-          });
-        });
-      })();
-    </script>
-    
     <script type="module" src="/src/main.tsx"></script>
     <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
     <script type="text/javascript" src="https://replit.com/public/js/replit-dev-banner.js"></script>

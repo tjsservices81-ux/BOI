@@ -46,8 +46,8 @@ function AppRoutes() {
   const showNavigation = user && !excludedRoutes.includes(location);
 
   return (
-    <div className="fullscreen-page no-bounce">
-      <div className="ios-scroll">
+    <div className="pwa-page">
+      <div className="mobile-scroll flex-1">
         <Switch>
           <Route path="/splash" component={Splash} />
           <Route path="/login" component={Login} />
