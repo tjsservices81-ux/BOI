@@ -355,10 +355,10 @@ export default function Login() {
   };
 
   return (
-    <div className="full-height relative ios-safe-top ios-safe-bottom ios-safe-left ios-safe-right bg-[#4a6b75]">
+    <div className="full-height relative ios-safe-top ios-safe-bottom ios-safe-left ios-safe-right bg-[#126987]">
       {/* Loading overlay */}
       {(isNavigating || isLoginAnimating) && (
-        <div className="fixed inset-0 bg-gradient-to-br from-[#4a6b75] to-[#2d5a6b] z-50 flex flex-col items-center justify-center">
+        <div className="fixed inset-0 bg-gradient-to-br from-[#126987] to-[#2d5a6b] z-50 flex flex-col items-center justify-center">
           {/* Background overlay pattern */}
           <div 
             className="absolute inset-0 opacity-10"
@@ -457,12 +457,12 @@ export default function Login() {
       <div 
         className="fixed inset-0 bg-cover bg-center"
         style={{
-          backgroundImage: `url('/background.jpg'), linear-gradient(135deg, #4a6b75 0%, #2d5a6b 100%)`
+          backgroundImage: `url('/background.jpg'), linear-gradient(135deg, #126987 0%, #2d5a6b 100%)`
         }}
       />
       
       {/* Blue-green overlay matching screenshot */}
-      <div className="fixed inset-0 bg-gradient-to-br from-[#4a6b75] to-[#2d5a6b] opacity-80" />
+      <div className="fixed inset-0 bg-gradient-to-br from-[#126987] to-[#2d5a6b] opacity-80" />
       
       {/* Content */}
       <div className="relative z-10 h-screen flex flex-col">
@@ -587,7 +587,7 @@ export default function Login() {
                   disabled={isLoading}
                   className={`w-full py-2.5 ios-button font-semibold text-sm mb-3 transition-all duration-200 ${
                     biometricVerified || pinVerified 
-                      ? 'bg-[#4a6b75] text-white hover:bg-[#3a5a65] active:scale-95' 
+                      ? 'bg-[#126987] text-white hover:bg-[#3a5a65] active:scale-95' 
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   } disabled:opacity-50`}
                   style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}
@@ -597,7 +597,7 @@ export default function Login() {
 
                 {/* Forgot PIN */}
                 <div className="text-center mb-3">
-                  <button className="text-[#4a6b75] text-xs flex items-center justify-center space-x-1 active:scale-95 transition-transform" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
+                  <button className="text-[#126987] text-xs flex items-center justify-center space-x-1 active:scale-95 transition-transform" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
                     <span>Forgot your PIN?</span>
                     <ExternalLink className="w-2.5 h-2.5" />
                   </button>
@@ -608,7 +608,7 @@ export default function Login() {
 
                 {/* Alternative Login */}
                 <div className="text-center">
-                  <button className="flex items-center justify-center space-x-2 text-[#4a6b75] text-xs mx-auto active:scale-95 transition-transform" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
+                  <button className="flex items-center justify-center space-x-2 text-[#126987] text-xs mx-auto active:scale-95 transition-transform" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
                     <User className="w-3 h-3" />
                     <span>Log in with another ID</span>
                   </button>
@@ -671,7 +671,7 @@ export default function Login() {
                     <Button 
                       type="submit" 
                       className={`w-full text-white hover:bg-[#3a5a65] ${
-                        pinVerified ? 'bg-green-600' : 'bg-[#4a6b75]'
+                        pinVerified ? 'bg-green-600' : 'bg-[#126987]'
                       }`}
                       disabled={isLoading || pinVerified}
                       style={{ fontFamily: 'OpenSans, sans-serif' }}
@@ -709,7 +709,7 @@ export default function Login() {
         </div>
 
         {/* Bottom Navigation */}
-        <div className="fixed bottom-0 left-0 right-0 bg-[#4a6b75]/95 backdrop-blur-sm rounded-t-2xl px-4 py-4 ios-safe-bottom">
+        <div className="fixed bottom-0 left-0 right-0 bg-[#126987]/95 backdrop-blur-sm rounded-t-2xl px-4 py-4 ios-safe-bottom">
           <div className="flex justify-evenly items-center w-full max-w-xs mx-auto">
             <button className="flex flex-col items-center space-y-1 py-2 transition-opacity duration-150 hover:opacity-80">
               <img src="/branch-locator.svg" alt="ATM/Branch" className="w-5 h-5 filter brightness-0 invert" />

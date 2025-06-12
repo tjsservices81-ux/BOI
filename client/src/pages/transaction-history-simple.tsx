@@ -126,14 +126,14 @@ export default function TransactionHistorySimple() {
       flexDirection: 'column',
       backgroundColor: '#f9fafb'
     }}>
-      <div className="bg-[#4a6b75] px-4 py-3 flex items-center justify-between" style={{ flexShrink: 0 }}>
+      <div className="bg-[#126987] px-4 py-3 flex items-center justify-between" style={{ flexShrink: 0 }}>
         <button onClick={() => navigate('/dashboard')} className="flex items-center text-white">
           <ChevronLeft className="w-5 h-5 mr-2" />
           <span className="font-semibold text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>Current Account</span>
         </button>
       </div>
 
-      <div className="bg-[#4a6b75] text-white p-6">
+      <div className="bg-[#126987] text-white p-6">
         <div className="flex justify-between items-center">
           <div>
             <p className="text-sm opacity-90" style={{ fontFamily: 'OpenSans, sans-serif' }}>Account ending -2091</p>
@@ -190,7 +190,7 @@ export default function TransactionHistorySimple() {
         <div className="flex space-x-4 mt-8">
           <button 
             onClick={() => navigate('/uk-transfer')}
-            className="flex-1 bg-[#4a6b75] text-white py-3 rounded-lg font-semibold text-sm"
+            className="flex-1 bg-[#126987] text-white py-3 rounded-lg font-semibold text-sm"
             style={{ fontFamily: 'OpenSans, sans-serif' }}
           >
             Transfer

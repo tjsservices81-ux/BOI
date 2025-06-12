@@ -243,7 +243,7 @@ export default function Profile() {
 
 
   return (
-    <div className="h-screen bg-gradient-to-b from-[#2c5f70] to-[#4a6b75] flex flex-col overflow-hidden">
+    <div className="h-screen bg-gradient-to-b from-[#2c5f70] to-[#126987] flex flex-col overflow-hidden">
       {/* Header */}
       <div className="bg-[#2c5f70] px-4 py-6 pt-12 flex-shrink-0">
         <div className="flex items-center justify-between">
@@ -267,7 +267,7 @@ export default function Profile() {
           <div className="flex items-center space-x-4 mb-8 pb-6 border-b border-gray-200">
             <button 
               onClick={handleProfilePictureTap}
-              className="w-20 h-20 bg-[#4a6b75] rounded-full flex items-center justify-center active:scale-95 transition-transform"
+              className="w-20 h-20 bg-[#126987] rounded-full flex items-center justify-center active:scale-95 transition-transform"
             >
               <User className="w-10 h-10 text-white" />
             </button>

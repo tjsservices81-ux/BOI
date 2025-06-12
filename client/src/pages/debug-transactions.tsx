@@ -67,7 +67,7 @@ export default function DebugTransactions() {
       flexDirection: 'column',
       backgroundColor: '#f9fafb'
     }}>
-      <div className="bg-[#4a6b75] px-4 py-3 flex items-center justify-between" style={{ flexShrink: 0 }}>
+      <div className="bg-[#126987] px-4 py-3 flex items-center justify-between" style={{ flexShrink: 0 }}>
         <button onClick={() => navigate('/dashboard')} className="flex items-center text-white">
           <ChevronLeft className="w-5 h-5 mr-2" />
           <span className="font-semibold text-sm">Debug Transactions</span>

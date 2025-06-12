@@ -26,12 +26,12 @@ export default function More() {
       <div 
         className="fixed inset-0 bg-cover bg-center"
         style={{
-          backgroundImage: `url('/background.jpg'), linear-gradient(135deg, #4a6b75 0%, #2d5a6b 100%)`
+          backgroundImage: `url('/background.jpg'), linear-gradient(135deg, #126987 0%, #2d5a6b 100%)`
         }}
       />
       
       {/* Blue-green overlay matching screenshot */}
-      <div className="fixed inset-0 bg-gradient-to-br from-[#4a6b75] to-[#2d5a6b] opacity-80" />
+      <div className="fixed inset-0 bg-gradient-to-br from-[#126987] to-[#2d5a6b] opacity-80" />
       
       {/* Content */}
       <div className="relative z-10 h-screen flex flex-col">
@@ -96,7 +96,7 @@ export default function More() {
         </div>
 
         {/* Bottom Navigation */}
-        <div className="fixed bottom-0 left-0 right-0 bg-[#4a6b75]/95 backdrop-blur-sm rounded-t-2xl px-4 py-4 ios-safe-bottom">
+        <div className="fixed bottom-0 left-0 right-0 bg-[#126987]/95 backdrop-blur-sm rounded-t-2xl px-4 py-4 ios-safe-bottom">
           <div className="flex justify-center items-center space-x-12 max-w-sm mx-auto">
             <button 
               className="flex flex-col items-center space-y-1 py-2 transition-opacity duration-150 hover:opacity-80"

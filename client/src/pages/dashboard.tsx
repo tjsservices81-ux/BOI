@@ -69,7 +69,7 @@ export default function Dashboard() {
           }}
         />
         {/* Teal overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#4a6b75] to-[#2d5a6b] opacity-85" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#126987] to-[#2d5a6b] opacity-85" />
         
         <div className="relative z-10 h-full flex flex-col">
           <div className="flex items-center justify-between px-4 pt-16 pb-4">
@@ -115,7 +115,7 @@ export default function Dashboard() {
                     <p className="text-xs text-gray-500 mt-0.5 boi-regular-font">{account.accountNumber}</p>
                   </div>
                   <div className="flex items-center">
-                    <p className="text-lg font-semibold text-[#4a6b75] boi-semibold-font">€{parseFloat(account.balance).toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                    <p className="text-lg font-semibold text-[#126987] boi-semibold-font">€{parseFloat(account.balance).toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                     <ChevronRight className="h-4 w-4 ml-3 text-gray-400" />
                   </div>
                 </div>

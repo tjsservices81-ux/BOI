@@ -105,7 +105,7 @@ a, button, input, select, textarea {
 
 /* Optimize focus states */
 button:focus, a:focus, input:focus, select:focus, textarea:focus {
-  outline: 2px solid #4a6b75;
+  outline: 2px solid #126987;
   outline-offset: 2px;
   transition: outline-offset 0.1s ease;
 }

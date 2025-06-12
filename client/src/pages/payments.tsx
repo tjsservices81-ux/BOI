@@ -13,7 +13,7 @@ export default function Payments() {
       id: 'iban',
       title: 'European Transfer',
       subtitle: 'IBAN transfer to any European bank',
-      icon: <Globe className="w-6 h-6 text-[#4a6b75]" />,
+      icon: <Globe className="w-6 h-6 text-[#126987]" />,
       description: 'Send money to Europe using IBAN',
       popular: true
     },
@@ -21,7 +21,7 @@ export default function Payments() {
       id: 'domestic',
       title: 'UK Bank Transfer',
       subtitle: 'Account number and sort code',
-      icon: <MapPin className="w-6 h-6 text-[#4a6b75]" />,
+      icon: <MapPin className="w-6 h-6 text-[#126987]" />,
       description: 'Transfer to UK bank accounts',
       popular: false
     },
@@ -29,7 +29,7 @@ export default function Payments() {
       id: 'internal',
       title: 'Between BOI Accounts',
       subtitle: 'Move money between your accounts',
-      icon: <ArrowUpDown className="w-6 h-6 text-[#4a6b75]" />,
+      icon: <ArrowUpDown className="w-6 h-6 text-[#126987]" />,
       description: 'Instant transfer between your BOI accounts',
       popular: false
     }
@@ -75,7 +75,7 @@ export default function Payments() {
   return (
     <div className="h-screen flex flex-col bg-white ios-safe-top ios-safe-bottom">
       {/* Header */}
-      <div className="bg-[#4a6b75] px-4 py-3 flex items-center justify-between">
+      <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
         <button 
           onClick={() => navigate("/")}
           className="flex items-center text-white active:scale-95 transition-transform"
@@ -112,7 +112,7 @@ export default function Payments() {
                 else if (option.id === 'domestic') navigate('/uk-transfer');
                 else setSelectedPaymentType(option.id);
               }}
-              className="w-full bg-white rounded-2xl p-5 shadow-sm active:scale-98 transition-all duration-200 border-2 border-transparent hover:border-[#4a6b75]/20"
+              className="w-full bg-white rounded-2xl p-5 shadow-sm active:scale-98 transition-all duration-200 border-2 border-transparent hover:border-[#126987]/20"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
@@ -125,7 +125,7 @@ export default function Payments() {
                         {option.title}
                       </h3>
                       {option.popular && (
-                        <span className="bg-[#4a6b75] text-white text-xs px-2 py-0.5 rounded-full">
+                        <span className="bg-[#126987] text-white text-xs px-2 py-0.5 rounded-full">
                           Popular
                         </span>
                       )}
@@ -148,7 +148,7 @@ export default function Payments() {
           </h2>
           <div className="grid grid-cols-2 gap-4">
             <button className="bg-blue-50 rounded-xl p-4 text-center active:scale-95 transition-transform">
-              <div className="w-8 h-8 bg-[#4a6b75] rounded-full flex items-center justify-center mx-auto mb-2">
+              <div className="w-8 h-8 bg-[#126987] rounded-full flex items-center justify-center mx-auto mb-2">
                 <img src="/icon-footer-payments.svg" alt="Recent" className="w-4 h-4 filter brightness-0 invert" />
               </div>
               <span className="text-sm font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -156,7 +156,7 @@ export default function Payments() {
               </span>
             </button>
             <button className="bg-blue-50 rounded-xl p-4 text-center active:scale-95 transition-transform">
-              <div className="w-8 h-8 bg-[#4a6b75] rounded-full flex items-center justify-center mx-auto mb-2">
+              <div className="w-8 h-8 bg-[#126987] rounded-full flex items-center justify-center mx-auto mb-2">
                 <img src="/Add-payee.svg" alt="Add" className="w-4 h-4" />
               </div>
               <span className="text-sm font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -189,9 +189,9 @@ export default function Payments() {
                     <div className="flex items-center space-x-3">
                       <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                         {payment.paymentMethod === 'UK Transfer' ? (
-                          <MapPin className="w-5 h-5 text-[#4a6b75]" />
+                          <MapPin className="w-5 h-5 text-[#126987]" />
                         ) : (
-                          <Globe className="w-5 h-5 text-[#4a6b75]" />
+                          <Globe className="w-5 h-5 text-[#126987]" />
                         )}
                       </div>
                       <div className="text-left">

@@ -69,7 +69,7 @@ export default function SpendingVisualization() {
         y: Math.random() * dimensions.height,
         size: Math.random() * 3 + 1,
         opacity: Math.random() * 0.05 + 0.02,
-        color: '#4a6b75',
+        color: '#126987',
         velocity: {
           x: (Math.random() - 0.5) * 0.1,
           y: (Math.random() - 0.5) * 0.1
@@ -99,14 +99,14 @@ export default function SpendingVisualization() {
 
   const getCategoryColor = (category: string): string => {
     const colors = {
-      transfer: '#4a6b75',
+      transfer: '#126987',
       cash: '#6b7280',
       bills: '#ef4444',
       dining: '#f59e0b',
       shopping: '#8b5cf6',
       income: '#10b981',
       general: '#64748b',
-      ambient: '#4a6b75'
+      ambient: '#126987'
     };
     return colors[category as keyof typeof colors] || colors.general;
   };

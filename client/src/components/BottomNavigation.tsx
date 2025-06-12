@@ -60,7 +60,7 @@ export default function BottomNavigation() {
           <button
             key={item.id}
             className={`navigation-item flex flex-col items-center space-y-1 py-2 px-3 rounded-lg touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-95 relative ${
-              item.isActive ? 'text-[#4a6b75]' : 'text-gray-400 hover:text-[#4a6b75]'
+              item.isActive ? 'text-[#126987]' : 'text-gray-400 hover:text-[#126987]'
             }`}
             onClick={() => setLocation(item.path)}
           >
@@ -72,13 +72,13 @@ export default function BottomNavigation() {
               style={{ imageRendering: 'crisp-edges' }}
             />
             <span 
-              className={`text-xs font-medium ${item.isActive ? 'text-[#4a6b75]' : 'text-gray-600'}`}
+              className={`text-xs font-medium ${item.isActive ? 'text-[#126987]' : 'text-gray-600'}`}
               style={{ fontFamily: 'OpenSans, sans-serif' }}
             >
               {item.label}
             </span>
             {item.isActive && (
-              <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-[#4a6b75] rounded-full"></div>
+              <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-[#126987] rounded-full"></div>
             )}
           </button>
         ))}
