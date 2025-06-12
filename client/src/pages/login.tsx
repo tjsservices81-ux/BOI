@@ -41,8 +41,7 @@ export default function Login() {
   useEffect(() => {
     setAssetsLoaded(true);
     
-    // Clear current user session on login page load
-    UserDataManager.clearCurrentUser();
+    // Sessions are now managed by the auth context
     
     // Clear form fields
     setCustomerNumber('');
@@ -284,14 +283,12 @@ export default function Login() {
       clearInterval(verifyInterval);
       clearInterval(secureInterval);
 
-      // Verify user is authenticated through UserDataManager
-      const currentUser = UserDataManager.getCurrentUser();
-      if (!currentUser || !UserDataManager.userExists(currentUser)) {
-        throw new Error("No valid user session found");
-      }
+      // Authenticate with the server using entered credentials
+      const loginSuccess = await login(customerNumber, pin);
       
-      // Authenticate through auth context
-      login();
+      if (!loginSuccess) {
+        throw new Error("Invalid credentials");
+      }
       
       await new Promise(resolve => setTimeout(resolve, 1000));
       

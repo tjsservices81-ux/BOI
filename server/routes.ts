@@ -15,11 +15,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
-      res.json({ user: { id: user.id, name: user.name, email: user.email } });
+      // Create session for persistence
+      const sessionToken = await storage.createSession(user.id);
+
+      res.json({ 
+        user: { id: user.id, name: user.name, email: user.email },
+        sessionToken 
+      });
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: error.errors[0].message });
       }
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Session validation
+  app.post("/api/auth/validate", async (req, res) => {
+    try {
+      const { sessionToken } = req.body;
+      
+      if (!sessionToken) {
+        return res.status(401).json({ message: "No session token provided" });
+      }
+
+      const user = await storage.validateSession(sessionToken);
+      
+      if (!user) {
+        return res.status(401).json({ message: "Invalid or expired session" });
+      }
+
+      res.json({ user: { id: user.id, name: user.name, email: user.email } });
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Logout
+  app.post("/api/auth/logout", async (req, res) => {
+    try {
+      const { sessionToken } = req.body;
+      
+      if (sessionToken) {
+        await storage.clearSession(sessionToken);
+      }
+
+      res.json({ message: "Logged out successfully" });
+    } catch (error) {
       res.status(500).json({ message: "Internal server error" });
     }
   });

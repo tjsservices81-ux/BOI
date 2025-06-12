@@ -39,6 +39,7 @@ export interface IStorage {
 }
 
 export class MemStorage implements IStorage {
+  private sessions: Map<string, { userId: number; expiresAt: Date; lastActivity: Date }> = new Map();
   private users: Map<number, User> = new Map();
   private accounts: Map<number, Account> = new Map();
   private transactions: Map<number, Transaction> = new Map();
@@ -340,6 +341,66 @@ export class MemStorage implements IStorage {
   async getStatementsByAccountId(accountId: number): Promise<Statement[]> {
     return Array.from(this.statements.values()).filter(statement => statement.accountId === accountId);
   }
+
+  // Session management methods
+  private generateSessionToken(): string {
+    return crypto.randomUUID();
+  }
+
+  async createSession(userId: number): Promise<string> {
+    const sessionToken = this.generateSessionToken();
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+    
+    this.sessions.set(sessionToken, {
+      userId,
+      expiresAt,
+      lastActivity: new Date()
+    });
+
+    return sessionToken;
+  }
+
+  async validateSession(sessionToken: string): Promise<User | undefined> {
+    const session = this.sessions.get(sessionToken);
+    
+    if (!session || session.expiresAt < new Date()) {
+      if (session) {
+        this.sessions.delete(sessionToken);
+      }
+      return undefined;
+    }
+
+    // Update last activity
+    session.lastActivity = new Date();
+    this.sessions.set(sessionToken, session);
+
+    return this.users.get(session.userId);
+  }
+
+  async updateSessionActivity(sessionToken: string): Promise<void> {
+    const session = this.sessions.get(sessionToken);
+    if (session) {
+      session.lastActivity = new Date();
+      this.sessions.set(sessionToken, session);
+    }
+  }
+
+  async clearSession(sessionToken: string): Promise<void> {
+    this.sessions.delete(sessionToken);
+  }
+
+  async clearExpiredSessions(): Promise<void> {
+    const now = new Date();
+    const expiredTokens: string[] = [];
+    
+    this.sessions.forEach((session, token) => {
+      if (session.expiresAt < now) {
+        expiredTokens.push(token);
+      }
+    });
+    
+    expiredTokens.forEach(token => this.sessions.delete(token));
+  }
 }
 
 export class DatabaseStorage implements IStorage {
@@ -458,4 +519,4 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-export const storage = new DatabaseStorage();
+export const storage = new MemStorage();
