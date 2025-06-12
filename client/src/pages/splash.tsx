@@ -69,12 +69,12 @@ export default function Splash() {
       
       {/* Main content centered */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        {/* Bank of Ireland Logo */}
+        {/* Bank of Ireland Icon */}
         <div className="mb-16">
           <img 
-            src="/boi_logo.svg" 
+            src="/icon_HID.svg" 
             alt="Bank of Ireland" 
-            className="h-20 filter brightness-0 invert splash-logo-visible"
+            className="h-24 w-24 filter brightness-0 invert splash-logo-visible"
             style={{ 
               imageRendering: 'crisp-edges',
               userSelect: 'none',
