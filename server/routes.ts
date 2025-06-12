@@ -121,43 +121,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get user profile
-  app.get("/api/user/:userId", async (req, res) => {
-    try {
-      const userId = parseInt(req.params.userId);
-      
-      // For now, we'll use a simple approach to get user data
-      // In a full implementation, we'd have a getUserById method
-      const user = await storage.getUserByCredentials("12345678", "1234");
-      
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      res.json({ user });
-    } catch (error) {
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
-
-  // Update user profile
-  app.patch("/api/user/:userId", async (req, res) => {
-    try {
-      const userId = parseInt(req.params.userId);
-      const updates = req.body;
-      
-      const updatedUser = await storage.updateUser(userId, updates);
-      
-      if (!updatedUser) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      res.json({ user: updatedUser });
-    } catch (error) {
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
-
   const httpServer = createServer(app);
   return httpServer;
 }

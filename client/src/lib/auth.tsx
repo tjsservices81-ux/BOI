@@ -3,7 +3,6 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 import { UserDataManager } from "@/utils/userDataManager";
 
 interface User {
-  id: number;
   customerNumber: string;
   name: string;
   email: string;
@@ -28,7 +27,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (currentUserNumber && UserDataManager.userExists(currentUserNumber)) {
       const userData = UserDataManager.getAllUsers()[currentUserNumber];
       setUser({
-        id: 1, // Default user ID for now - will be updated when switching to full database auth
         customerNumber: currentUserNumber,
         name: userData.name,
         email: userData.email
@@ -45,7 +43,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       const userData = UserDataManager.getAllUsers()[currentUserNumber];
       setUser({
-        id: 1, // Default user ID for now - will be updated when switching to full database auth
         customerNumber: currentUserNumber,
         name: userData.name,
         email: userData.email
