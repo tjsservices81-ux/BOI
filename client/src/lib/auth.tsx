@@ -1,5 +1,7 @@
 // Authentication context for the banking app
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { sessionManager } from "./sessionManager";
+import { UserDataManager } from "@/utils/userDataManager";
 
 interface User {
   id: number;
@@ -9,9 +11,11 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  login: (user: User) => void;
+  login: (userData?: User) => void;
   logout: () => void;
   isLoading: boolean;
+  shouldShowSplash: boolean;
+  shouldRequireAuth: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -19,32 +23,71 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [shouldShowSplash, setShouldShowSplash] = useState(true);
+  const [shouldRequireAuth, setShouldRequireAuth] = useState(true);
 
-  // Check for existing session on mount
+  // Initialize session management and check existing auth state
   useEffect(() => {
-    fetch('/api/auth/user', {
-      method: 'GET',
-      credentials: 'include',
-    })
-    .then(response => {
-      if (response.ok) {
-        return response.json();
+    const sessionState = sessionManager.getState();
+    
+    // Subscribe to session state changes
+    const unsubscribe = sessionManager.subscribe((state) => {
+      setShouldShowSplash(state.shouldShowSplash);
+      setShouldRequireAuth(!state.sessionValid);
+      
+      // If session is invalid, clear user
+      if (!state.sessionValid) {
+        setUser(null);
       }
-      throw new Error('Not authenticated');
-    })
-    .then(userData => {
-      setUser(userData);
-    })
-    .catch(() => {
-      setUser(null);
-    })
-    .finally(() => {
-      setIsLoading(false);
     });
+
+    // Check for existing valid session
+    const checkExistingSession = () => {
+      const currentUser = UserDataManager.getCurrentUser();
+      
+      if (currentUser && UserDataManager.userExists(currentUser) && sessionState.sessionValid) {
+        // Restore user session from stored data
+        const userProfile = UserDataManager.getUserProfile();
+        if (userProfile) {
+          setUser({
+            id: parseInt(currentUser.replace(/\D/g, '')) || 1,
+            name: userProfile.name,
+            email: userProfile.email
+          });
+        }
+      }
+      
+      setShouldShowSplash(sessionState.shouldShowSplash);
+      setShouldRequireAuth(!sessionState.sessionValid);
+      setIsLoading(false);
+    };
+
+    checkExistingSession();
+
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
-  const login = (userData: User) => {
-    setUser(userData);
+  const login = (userData?: User) => {
+    const currentUser = UserDataManager.getCurrentUser();
+    
+    if (userData) {
+      setUser(userData);
+    } else if (currentUser) {
+      // Auto-login with stored user data
+      const userProfile = UserDataManager.getUserProfile();
+      if (userProfile) {
+        setUser({
+          id: parseInt(currentUser.replace(/\D/g, '')) || 1,
+          name: userProfile.name,
+          email: userProfile.email
+        });
+      }
+    }
+    
+    // Update session manager
+    sessionManager.login();
   };
 
   const logout = async () => {
@@ -56,7 +99,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Logout error:', error);
     }
+    
     setUser(null);
+    sessionManager.logout();
   };
 
   return (
@@ -66,6 +111,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         logout,
         isLoading,
+        shouldShowSplash,
+        shouldRequireAuth,
       }}
     >
       {children}

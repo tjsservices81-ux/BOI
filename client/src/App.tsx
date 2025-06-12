@@ -38,8 +38,35 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function AppRoutes() {
-  const { user } = useAuth();
+  const { user, isLoading, shouldShowSplash, shouldRequireAuth } = useAuth();
   const [location] = useLocation();
+  
+  // Show loading state while initializing
+  if (isLoading) {
+    return (
+      <div className="w-full h-full bg-white overflow-hidden relative">
+        <Splash />
+      </div>
+    );
+  }
+  
+  // Show splash screen when required (cold start or app was closed)
+  if (shouldShowSplash) {
+    return (
+      <div className="w-full h-full bg-white overflow-hidden relative">
+        <Splash />
+      </div>
+    );
+  }
+  
+  // If user exists but session requires auth (app was backgrounded too long)
+  if (user && shouldRequireAuth) {
+    return (
+      <div className="w-full h-full bg-white overflow-hidden relative">
+        <Login />
+      </div>
+    );
+  }
   
   // Always show navigation for authenticated users except on specific exclusion screens
   const excludedRoutes = ['/login', '/splash'];
@@ -52,7 +79,7 @@ function AppRoutes() {
         <Route path="/login" component={Login} />
         <Route path="/more" component={More} />
         <Route path="/">
-          {user ? <Dashboard /> : <Splash />}
+          {user ? <Dashboard /> : <Login />}
         </Route>
         <Route path="/dashboard">
           <ProtectedRoute>

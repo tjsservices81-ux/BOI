@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
+import { useAuth } from "@/lib/auth";
+import { sessionManager } from "@/lib/sessionManager";
+import { UserDataManager } from "@/utils/userDataManager";
 
 export default function Splash() {
   const [, navigate] = useLocation();
   const [currentStep, setCurrentStep] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
+  const { user, login } = useAuth();
 
   const loadingSteps = [
     "Verifying device…",
@@ -15,6 +19,14 @@ export default function Splash() {
   ];
 
   useEffect(() => {
+    const sessionState = sessionManager.getState();
+    
+    // If user exists and session is valid, skip splash and go directly to dashboard
+    if (user && sessionState.sessionValid && !sessionState.shouldShowSplash) {
+      navigate('/dashboard');
+      return;
+    }
+
     // Step progression timing: each step lasts 1.6 seconds
     const stepTimers: NodeJS.Timeout[] = [];
     
@@ -26,11 +38,22 @@ export default function Splash() {
       stepTimers.push(timer);
     });
 
-    // Navigate to login after all steps complete (8 seconds total)
+    // Navigate to appropriate screen after all steps complete (8 seconds total)
     const finalTimer = setTimeout(() => {
       setIsVisible(false);
+      sessionManager.markSplashComplete();
+      
       setTimeout(() => {
-        navigate('/login');
+        // Check if we have a valid user session to restore
+        const currentUser = UserDataManager.getCurrentUser();
+        if (currentUser && UserDataManager.userExists(currentUser) && !sessionState.shouldShowSplash) {
+          // Auto-login and go to dashboard
+          login();
+          navigate('/dashboard');
+        } else {
+          // Go to login screen
+          navigate('/login');
+        }
       }, 300); // Brief fade out before navigation
     }, loadingSteps.length * 1600);
 
@@ -40,7 +63,7 @@ export default function Splash() {
     return () => {
       stepTimers.forEach(timer => clearTimeout(timer));
     };
-  }, [navigate]);
+  }, [navigate, user, login]);
 
   // Prevent any user interaction during splash
   const handleInteraction = (e: React.MouseEvent | React.TouchEvent) => {
