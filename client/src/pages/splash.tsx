@@ -3,62 +3,163 @@ import { useLocation } from "wouter";
 
 export default function Splash() {
   const [, navigate] = useLocation();
+  const [currentStep, setCurrentStep] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
 
+  const loadingSteps = [
+    "Verifying device…",
+    "Checking for updates…", 
+    "Loading security settings…",
+    "Establishing secure connection…",
+    "Preparing login screen…"
+  ];
+
   useEffect(() => {
-    const timer = setTimeout(() => {
+    // Step progression timing: each step lasts 1.6 seconds
+    const stepTimers: NodeJS.Timeout[] = [];
+    
+    // Progress through each loading step
+    loadingSteps.forEach((_, index) => {
+      const timer = setTimeout(() => {
+        setCurrentStep(index);
+      }, index * 1600); // 1.6 seconds per step
+      stepTimers.push(timer);
+    });
+
+    // Navigate to login after all steps complete (8 seconds total)
+    const finalTimer = setTimeout(() => {
       setIsVisible(false);
       setTimeout(() => {
         navigate('/login');
-      }, 300);
-    }, 5500);
+      }, 300); // Brief fade out before navigation
+    }, loadingSteps.length * 1600);
 
-    return () => clearTimeout(timer);
+    stepTimers.push(finalTimer);
+
+    // Cleanup all timers
+    return () => {
+      stepTimers.forEach(timer => clearTimeout(timer));
+    };
   }, [navigate]);
+
+  // Prevent any user interaction during splash
+  const handleInteraction = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
 
   return (
     <div 
-      className={`h-screen w-screen fixed inset-0 z-50 overflow-hidden transition-opacity duration-300 ${
+      className={`full-height relative overflow-hidden transition-all duration-500 ${
         isVisible ? 'opacity-100' : 'opacity-0'
       }`}
       style={{
-        background: '#0037ff',
-        userSelect: 'none'
+        background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #ffffff 100%)',
+        userSelect: 'none',
+        pointerEvents: 'none'
       }}
+      onClick={handleInteraction}
+      onTouchStart={handleInteraction}
     >
-      {/* Centered content */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <img 
-          src="/boi_logo.svg" 
-          alt="Bank of Ireland" 
-          className="h-16 w-auto filter brightness-0 invert mb-14"
-          draggable={false}
-        />
+      {/* Professional subtle gradient overlay */}
+      <div 
+        className="absolute inset-0"
+        style={{
+          background: 'radial-gradient(ellipse at center, rgba(18, 105, 135, 0.03) 0%, rgba(18, 105, 135, 0.08) 100%)',
+        }}
+      />
+      
+      {/* Prevent any interactions */}
+      <div 
+        className="absolute inset-0 z-50"
+        style={{ pointerEvents: 'none' }}
+      />
+      
+      {/* Main content centered */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center px-8">
+        {/* Professional logo container with subtle shadow */}
+        <div className="mb-20 relative">
+          <div className="absolute inset-0 bg-[#126987] opacity-5 blur-xl rounded-full scale-150"></div>
+          <div className="relative bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+            <img 
+              src="/boi_logo.svg" 
+              alt="Bank of Ireland" 
+              className="h-16 w-auto"
+              style={{ 
+                imageRendering: 'crisp-edges',
+                userSelect: 'none',
+                pointerEvents: 'none',
+                filter: 'brightness(0) saturate(100%) invert(25%) sepia(85%) saturate(1011%) hue-rotate(168deg) brightness(93%) contrast(88%)'
+              }}
+              draggable={false}
+            />
+          </div>
+        </div>
         
-        <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent opacity-80" />
-      </div>
-
-      {/* White curved bottom shape */}
-      <div className="absolute bottom-0 left-0 right-0">
-        <svg 
-          width="100%" 
-          height="350" 
-          viewBox="0 0 414 350" 
-          preserveAspectRatio="none"
-        >
-          <path 
-            d="M0,80 
-               C80,30 120,50 160,60
-               C180,65 200,70 207,90
-               C214,70 234,65 254,60
-               C294,50 334,30 414,80
-               L414,200
-               C414,250 350,300 207,320
-               C64,300 0,250 0,200
-               Z" 
-            fill="white"
+        {/* Loading Messages with professional styling */}
+        <div className="text-center h-20 flex items-center justify-center mb-4">
+          {loadingSteps.map((message, index) => (
+            <div
+              key={index}
+              className={`absolute transition-all duration-700 ease-out ${
+                index === currentStep 
+                  ? 'opacity-100 transform translate-y-0 scale-100' 
+                  : index < currentStep
+                    ? 'opacity-0 transform -translate-y-3 scale-95'
+                    : 'opacity-0 transform translate-y-3 scale-95'
+              }`}
+            >
+              <p 
+                className="text-[#126987] text-lg font-semibold tracking-wide"
+                style={{ 
+                  fontFamily: 'OpenSans, sans-serif',
+                  textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
+                }}
+              >
+                {message}
+              </p>
+            </div>
+          ))}
+        </div>
+        
+        {/* Professional progress bar */}
+        <div className="w-64 bg-gray-200 rounded-full h-1.5 mb-6 overflow-hidden shadow-inner">
+          <div 
+            className="bg-gradient-to-r from-[#126987] to-[#0f5a6b] h-1.5 rounded-full transition-all duration-700 ease-out shadow-sm"
+            style={{ 
+              width: `${((currentStep + 1) / loadingSteps.length) * 100}%`,
+              boxShadow: '0 0 8px rgba(18, 105, 135, 0.4)'
+            }}
           />
-        </svg>
+        </div>
+        
+        {/* Minimalist step indicators */}
+        <div className="flex space-x-3">
+          {loadingSteps.map((_, index) => (
+            <div
+              key={index}
+              className={`w-1.5 h-1.5 rounded-full transition-all duration-500 ${
+                index <= currentStep 
+                  ? 'bg-[#126987] scale-125 shadow-sm' 
+                  : 'bg-gray-300 scale-100'
+              }`}
+              style={{
+                boxShadow: index <= currentStep ? '0 0 4px rgba(18, 105, 135, 0.6)' : 'none'
+              }}
+            />
+          ))}
+        </div>
+        
+        {/* Professional footer */}
+        <div className="absolute bottom-12 text-center">
+          <p 
+            className="text-gray-500 text-sm font-medium tracking-wide"
+            style={{ fontFamily: 'OpenSans, sans-serif' }}
+          >
+            Bank of Ireland Digital Banking
+          </p>
+          <div className="mt-2 w-12 h-0.5 bg-gradient-to-r from-transparent via-[#126987] to-transparent mx-auto opacity-30"></div>
+        </div>
       </div>
     </div>
   );
