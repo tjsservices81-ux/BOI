@@ -27,7 +27,7 @@ export default function Transfer() {
   const [reference, setReference] = useState("");
 
   const { data: accounts = [] } = useQuery<Account[]>({
-    queryKey: ["/api/accounts", user?.id],
+    queryKey: ["/api/accounts"],
     enabled: !!user,
   });
 
