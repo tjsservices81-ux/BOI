@@ -51,13 +51,14 @@ function AppRoutes() {
     }
   }, []);
 
-  // If splash hasn't been shown yet, or we're on the splash route, show splash
+  // If splash hasn't been shown yet, or we're on the splash route, show splash immediately
   if (!splashShown || location === '/splash') {
-    return (
-      <div className="w-full h-full overflow-hidden relative">
-        <Splash />
-      </div>
-    );
+    return <Splash />;
+  }
+  
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return <Splash />;
   }
   
   // Always show navigation for authenticated users except on specific exclusion screens
