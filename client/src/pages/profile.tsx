@@ -114,10 +114,24 @@ export default function Profile() {
       { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "0.00", accountType: "credit" },
       { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "0.00", accountType: "savings" },
     ];
+    
+    // Clear all user data using UserDataManager
     UserDataManager.setUserAccounts(defaultAccounts);
-    UserDataManager.setUserTransactions([]);
-    UserDataManager.setUserPayees([]);
+    UserDataManager.setUserData('bankTransactions', []);
+    UserDataManager.setUserData('savedPayees', []);
+    
+    // Also clear any legacy localStorage entries that might exist
+    localStorage.removeItem('bankTransactions');
+    localStorage.removeItem('savedPayees');
+    
     setAccounts(defaultAccounts);
+    
+    // Dispatch events to notify other components
+    window.dispatchEvent(new CustomEvent('transactionUpdate'));
+    window.dispatchEvent(new CustomEvent('balanceUpdate', {
+      detail: { reset: true }
+    }));
+    
     alert('Data reset to defaults successfully - all balances set to 0.00, transactions cleared');
   };
 
