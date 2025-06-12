@@ -2,13 +2,17 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no, minimal-ui" />
     
-    <!-- iOS Web App Configuration -->
+    <!-- iOS Web App Configuration for true fullscreen -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Bank of Ireland" />
     <meta name="apple-touch-fullscreen" content="yes" />
+    
+    <!-- Force standalone mode -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-web-app-capable" content="yes" />
     
     <!-- Prevent iOS Safari UI -->
     <meta name="format-detection" content="telephone=no" />
@@ -32,7 +36,7 @@
     <link rel="apple-touch-startup-image" href="/BOI_logo.png" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3)" />
     
     <!-- PWA Manifest -->
-    <!-- <link rel="manifest" href="/manifest.json" /> -->
+    <!-- <link rel="manifest" href="/pwa-manifest.json" /> -->
     
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="/BOI_logo.png" />
@@ -40,8 +44,12 @@
     <!-- App Title -->
     <title>Bank of Ireland</title>
     
-    <!-- Fullscreen website styling -->
+    <!-- iOS Native App Fullscreen Styling -->
     <style>
+      :root {
+        --app-height: 100vh;
+      }
+      
       * {
         margin: 0;
         padding: 0;
@@ -50,7 +58,11 @@
       
       html {
         width: 100vw;
+        height: var(--app-height);
         height: 100vh;
+        height: -webkit-fill-available;
+        margin: 0;
+        padding: 0;
         overflow: hidden;
         -webkit-text-size-adjust: 100%;
         -webkit-touch-callout: none;
@@ -67,8 +79,8 @@
       }
       
       body {
-        width: 100vw;
-        height: 100vh;
+        width: 100%;
+        height: 100%;
         margin: 0;
         padding: 0;
         overflow: hidden;
@@ -83,9 +95,29 @@
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       }
       
+      /* iOS PWA fullscreen enforcement */
+      @media all and (display-mode: standalone) {
+        html, body {
+          height: 100vh;
+          height: -webkit-fill-available;
+        }
+      }
+      
+      /* Hide iOS Safari UI elements */
+      @supports (-webkit-appearance: none) {
+        html {
+          height: -webkit-fill-available;
+        }
+        
+        body {
+          height: -webkit-fill-available;
+        }
+      }
+      
       #root {
-        width: 100vw;
-        height: 100vh;
+        width: 100%;
+        height: 100%;
+        height: -webkit-fill-available;
         overflow: auto;
         position: absolute;
         top: 0;
@@ -149,32 +181,51 @@
     </style>
     
     <script>
-      // Force fullscreen display and hide browser UI
-      function hideAddressBar() {
-        setTimeout(() => {
-          window.scrollTo(0, 1);
-        }, 100);
+      // iOS PWA fullscreen implementation
+      function enforceFullscreen() {
+        // Force app-like behavior
+        document.documentElement.style.height = '100%';
+        document.body.style.height = '100%';
         
-        setTimeout(() => {
-          window.scrollTo(0, 0);
-        }, 200);
+        // Hide Safari UI on iOS
+        if (window.navigator.standalone === false) {
+          // Not in standalone mode, force scroll to hide UI
+          setTimeout(() => {
+            window.scrollTo(0, 1);
+            setTimeout(() => window.scrollTo(0, 0), 100);
+          }, 500);
+        }
+        
+        // Set CSS custom properties for true fullscreen
+        document.documentElement.style.setProperty('--app-height', window.innerHeight + 'px');
       }
       
-      // Hide address bar on load
-      window.addEventListener('load', hideAddressBar);
-      window.addEventListener('orientationchange', hideAddressBar);
-      window.addEventListener('resize', hideAddressBar);
-      
-      // Prevent zoom and scroll
-      document.addEventListener('touchstart', function(e) {
-        if (e.touches.length > 1) {
-          e.preventDefault();
-        }
+      // Apply fullscreen on various events
+      window.addEventListener('load', enforceFullscreen);
+      window.addEventListener('resize', () => {
+        document.documentElement.style.setProperty('--app-height', window.innerHeight + 'px');
+      });
+      window.addEventListener('orientationchange', () => {
+        setTimeout(enforceFullscreen, 200);
       });
       
+      // Prevent zoom gestures
+      document.addEventListener('gesturestart', function(e) {
+        e.preventDefault();
+      });
+      
+      document.addEventListener('gesturechange', function(e) {
+        e.preventDefault();
+      });
+      
+      document.addEventListener('gestureend', function(e) {
+        e.preventDefault();
+      });
+      
+      // Prevent double-tap zoom
       let lastTouchEnd = 0;
       document.addEventListener('touchend', function(e) {
-        const now = (new Date()).getTime();
+        const now = Date.now();
         if (now - lastTouchEnd <= 300) {
           e.preventDefault();
         }
@@ -182,17 +233,11 @@
       }, false);
       
       // Prevent context menu
-      document.addEventListener('contextmenu', function(e) {
-        e.preventDefault();
-      });
+      document.addEventListener('contextmenu', e => e.preventDefault());
       
-      // Force fullscreen on iOS
-      if (navigator.userAgent.match(/iPhone|iPad|iPod/i)) {
-        window.addEventListener('touchstart', function() {
-          if (window.scrollY === 0) {
-            document.body.scrollTop = 1;
-          }
-        });
+      // Detect PWA mode
+      if (window.navigator.standalone === true) {
+        document.body.classList.add('pwa-mode');
       }
     </script>
   </head>
