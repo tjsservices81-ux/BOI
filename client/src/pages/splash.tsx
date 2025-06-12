@@ -50,29 +50,43 @@ export default function Splash() {
 
   return (
     <div 
-      className={`transition-all duration-500 ${
+      className={`relative overflow-hidden transition-all duration-500 ${
         isVisible ? 'opacity-100' : 'opacity-0'
       }`}
       style={{
         position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        width: '100vw',
-        height: '100vh',
-        zIndex: 9999,
-        backgroundImage: `url('/IMG_0633_1749764752035.jpeg')`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
+        top: '-50px',
+        left: '-50px',
+        right: '-50px',
+        bottom: '-50px',
+        width: 'calc(100vw + 100px)',
+        height: 'calc(100vh + 100px)',
+        minHeight: 'calc(100vh + 100px)',
+        backgroundColor: '#2448FF', // Bank of Ireland blue background
         userSelect: 'none',
         pointerEvents: 'none',
-        overflow: 'hidden'
+        zIndex: 9999
       }}
       onClick={handleInteraction}
       onTouchStart={handleInteraction}
     >
+      {/* Full screen background with Bank of Ireland branding */}
+      <div 
+        className="absolute"
+        style={{
+          top: '-50px',
+          left: '-50px',
+          right: '-50px', 
+          bottom: '-50px',
+          width: 'calc(100vw + 100px)',
+          height: 'calc(100vh + 100px)',
+          backgroundImage: `url('/boi_app_icon.png')`,
+          backgroundSize: 'contain',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          backgroundColor: '#2448FF' // Bank of Ireland blue extends beyond edges
+        }}
+      />
       {/* Prevent any interactions */}
       <div 
         className="absolute inset-0 z-50"

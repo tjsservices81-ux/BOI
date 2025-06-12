@@ -354,6 +354,19 @@ img {
   bottom: 0;
 }
 
+/* True fullscreen for splash - covers status bars */
+.splash-fullscreen {
+  position: fixed !important;
+  top: -20px !important;
+  left: -20px !important;
+  right: -20px !important;
+  bottom: -20px !important;
+  width: calc(100vw + 40px) !important;
+  height: calc(100vh + 40px) !important;
+  overflow: hidden !important;
+  z-index: 9999 !important;
+}
+
 /* Splash screen specific animations */
 .splash-logo-enter {
   animation: logoFadeIn 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
@@ -589,14 +602,6 @@ body {
 .ios-safe-left { padding-left: env(safe-area-inset-left); }
 .ios-safe-right { padding-right: env(safe-area-inset-right); }
 
-/* Remove safe area padding for splash screen */
-.splash-no-safe-area .ios-safe-top,
-.splash-no-safe-area .ios-safe-bottom,
-.splash-no-safe-area .ios-safe-left,
-.splash-no-safe-area .ios-safe-right {
-  padding: 0 !important;
-}
-
 /* iOS-style scrolling */
 .ios-scroll {
   -webkit-overflow-scrolling: touch;
@@ -814,14 +819,6 @@ body {
     .ios-safe-right {
       padding-right: env(safe-area-inset-right);
     }
-    
-    /* Remove safe area for splash screen on iOS */
-    .splash-no-safe-area .ios-safe-top,
-    .splash-no-safe-area .ios-safe-bottom,
-    .splash-no-safe-area .ios-safe-left,
-    .splash-no-safe-area .ios-safe-right {
-      padding: 0 !important;
-    }
   }
   
   .boi-brand-font {
@@ -964,14 +961,6 @@ input {
   .ios-safe-right {
     padding-right: env(safe-area-inset-right);
   }
-  
-  /* Remove safe area for splash screen */
-  .splash-no-safe-area .ios-safe-top,
-  .splash-no-safe-area .ios-safe-bottom,
-  .splash-no-safe-area .ios-safe-left,
-  .splash-no-safe-area .ios-safe-right {
-    padding: 0 !important;
-  }
 }
 
 /* PWA viewport adjustments for iOS */
@@ -993,41 +982,4 @@ html, body {
 
 #root {
   background-color: #126987;
-}
-
-/* Remove all safe areas and bars for splash screen */
-.splash-no-safe-area {
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  height: 100dvh !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  z-index: 9999 !important;
-}
-
-/* Override all iOS safe areas specifically for splash */
-.splash-no-safe-area,
-.splash-no-safe-area *,
-.splash-no-safe-area .ios-safe-top,
-.splash-no-safe-area .ios-safe-bottom,
-.splash-no-safe-area .ios-safe-left,
-.splash-no-safe-area .ios-safe-right {
-  padding: 0 !important;
-  margin: 0 !important;
-  border: none !important;
-}
-
-/* Force full viewport for splash on all devices */
-@supports (-webkit-touch-callout: none) {
-  .splash-no-safe-area {
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-  }
 }
