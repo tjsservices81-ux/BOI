@@ -6,44 +6,37 @@ export default function Splash() {
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
-    // Navigate to login after 5-6 seconds
+    // Navigate to login after 5.5 seconds
     const timer = setTimeout(() => {
       setIsVisible(false);
       setTimeout(() => {
         navigate('/login');
-      }, 300); // Brief fade out before navigation
-    }, 5500); // 5.5 seconds total
+      }, 300);
+    }, 5500);
 
     return () => clearTimeout(timer);
   }, [navigate]);
 
-  // Prevent any user interaction during splash
-  const handleInteraction = (e: React.MouseEvent | React.TouchEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
   return (
     <div 
-      className={`h-screen w-screen fixed inset-0 overflow-hidden transition-all duration-500 ${
+      className={`h-screen w-screen fixed inset-0 z-50 overflow-hidden transition-opacity duration-300 ${
         isVisible ? 'opacity-100' : 'opacity-0'
       }`}
       style={{
-        background: '#4444ff', // Bright royal blue matching the screenshot exactly
+        background: '#0037ff', // Exact color from screenshot
         userSelect: 'none',
-        pointerEvents: 'none'
+        WebkitUserSelect: 'none',
+        touchAction: 'none'
       }}
-      onClick={handleInteraction}
-      onTouchStart={handleInteraction}
     >
-      {/* Main content centered */}
+      {/* Centered logo and spinner */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        {/* Bank of Ireland logo - smaller size */}
-        <div className="mb-6">
+        {/* Bank of Ireland logo - centered exactly like screenshot */}
+        <div className="flex flex-col items-center">
           <img 
             src="/boi_logo.svg" 
             alt="Bank of Ireland" 
-            className="h-12 w-auto filter brightness-0 invert"
+            className="h-16 w-auto filter brightness-0 invert"
             style={{ 
               imageRendering: 'crisp-edges',
               userSelect: 'none',
@@ -51,25 +44,43 @@ export default function Splash() {
             }}
             draggable={false}
           />
-        </div>
-        
-        {/* Loading spinner */}
-        <div className="mt-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-white border-t-transparent"></div>
+          
+          {/* Loading spinner positioned 50-60px below logo */}
+          <div 
+            className="mt-14"
+            style={{ marginTop: '56px' }}
+          >
+            <div 
+              className="animate-spin rounded-full border-2"
+              style={{
+                width: '24px',
+                height: '24px',
+                borderColor: 'rgba(255, 255, 255, 0.3)',
+                borderTopColor: 'rgba(255, 255, 255, 0.8)',
+                animationDuration: '1s'
+              }}
+            />
+          </div>
         </div>
       </div>
 
-      {/* Curved white bottom shape matching screenshot exactly */}
-      <div className="absolute bottom-0 left-0 right-0 h-80">
+      {/* Curved white bottom shape - exact match to screenshot */}
+      <div className="absolute bottom-0 left-0 right-0" style={{ height: '30vh' }}>
         <svg 
-          viewBox="0 0 375 320" 
+          viewBox="0 0 414 300" 
           className="w-full h-full"
           preserveAspectRatio="none"
           style={{ display: 'block' }}
         >
+          {/* Perfect curve matching the screenshot's arc pattern */}
           <path 
-            d="M 0 120 Q 100 20 187.5 40 Q 275 60 375 120 L 375 320 L 0 320 Z" 
+            d="M 0 100 
+               C 70 50, 130 70, 207 90
+               C 284 110, 344 50, 414 100
+               L 414 300 
+               L 0 300 Z" 
             fill="white"
+            style={{ fillRule: 'evenodd' }}
           />
         </svg>
       </div>
