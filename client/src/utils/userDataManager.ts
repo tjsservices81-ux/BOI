@@ -227,6 +227,7 @@ export class UserDataManager {
       this.setUserData('bankAccounts', freshAccounts);
       this.setUserData('bankTransactions', []);
       this.setUserData('savedPayees', []);
+      this.setUserData('recentPayees', []);
     }
   }
 
