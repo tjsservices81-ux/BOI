@@ -43,21 +43,13 @@ export default function IbanTransfer() {
   });
 
   const [accounts, setAccounts] = useState<any[]>([]);
-  const [recentPayees, setRecentPayees] = useState<any[]>([]);
-  const [showRecentPayees, setShowRecentPayees] = useState(false);
-  const [deleteConfirm, setDeleteConfirm] = useState<{name: string, accountInfo: string} | null>(null);
 
   useEffect(() => {
     const loadAccounts = () => {
       setAccounts(getAccounts());
     };
     
-    const loadRecentPayees = () => {
-      setRecentPayees(UserDataManager.getRecentPayees());
-    };
-    
     loadAccounts();
-    loadRecentPayees();
     
     // Check for selected payee from Recent Payees
     const selectedPayeeData = sessionStorage.getItem('selectedPayee');
@@ -147,7 +139,6 @@ export default function IbanTransfer() {
             timestamp: new Date().toISOString()
           };
           UserDataManager.addRecentPayee(payee);
-          setRecentPayees(UserDataManager.getRecentPayees());
           
           return 100;
         }
@@ -156,24 +147,7 @@ export default function IbanTransfer() {
     }, 100);
   };
 
-  // Recent payees helper functions
-  const handlePayeeSelect = (payee: any) => {
-    form.setValue('recipientName', payee.name);
-    form.setValue('iban', payee.accountInfo);
-    setShowRecentPayees(false);
-  };
 
-  const handleDeletePayee = (payee: any) => {
-    setDeleteConfirm({ name: payee.name, accountInfo: payee.accountInfo });
-  };
-
-  const confirmDeletePayee = () => {
-    if (deleteConfirm) {
-      UserDataManager.removeRecentPayee(deleteConfirm.name, deleteConfirm.accountInfo);
-      setRecentPayees(UserDataManager.getRecentPayees());
-      setDeleteConfirm(null);
-    }
-  };
 
   if (step === 'success') {
     return (
@@ -528,35 +502,6 @@ export default function IbanTransfer() {
         </div>
       </div>
 
-      {/* Delete Confirmation Modal */}
-      {deleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-sm w-full">
-            <h3 className="font-bold text-gray-900 text-lg mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Remove Payee
-            </h3>
-            <p className="text-gray-600 mb-6" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Are you sure you want to remove "{deleteConfirm.name}" from your recent payees?
-            </p>
-            <div className="flex space-x-3">
-              <button
-                onClick={() => setDeleteConfirm(null)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium"
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmDeletePayee}
-                className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg font-medium"
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
-              >
-                Remove
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
