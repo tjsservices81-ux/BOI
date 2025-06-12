@@ -1,17 +1,17 @@
 // Authentication context for the banking app
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { SessionManager } from "@/utils/sessionManager";
+import { UserDataManager } from "@/utils/userDataManager";
 
 interface User {
-  id: number;
+  customerNumber: string;
   name: string;
   email: string;
 }
 
 interface AuthContextType {
   user: User | null;
-  login: (customerNumber: string, pin: string) => Promise<boolean>;
-  logout: () => Promise<void>;
+  login: () => void;
+  logout: () => void;
   isLoading: boolean;
 }
 
