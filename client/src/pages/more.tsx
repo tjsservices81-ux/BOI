@@ -7,20 +7,12 @@ export default function More() {
   const [isNavigating, setIsNavigating] = useState(false);
 
   const handleNavigation = (path: string) => {
-    setIsNavigating(true);
-    setTimeout(() => {
-      setLocation(path);
-    }, 50);
+    setLocation(path);
   };
 
   return (
     <div className="min-h-screen relative ios-safe-top ios-safe-bottom ios-safe-left ios-safe-right">
-      {/* Loading overlay */}
-      {isNavigating && (
-        <div className="fixed inset-0 bg-black bg-opacity-20 z-50 flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-        </div>
-      )}
+
       
       {/* Background with scenic image */}
       <div 

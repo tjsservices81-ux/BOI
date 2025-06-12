@@ -37,7 +37,7 @@
   }
 }
 
-/* Performance optimizations for smooth interactions */
+/* Critical performance optimizations */
 * {
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
@@ -45,6 +45,8 @@
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+  /* Prevent layout shifts */
+  box-sizing: border-box;
 }
 
 input, textarea {
@@ -54,16 +56,44 @@ input, textarea {
   user-select: text;
 }
 
-/* Hardware acceleration for all interactive elements */
+/* Font loading optimization */
+@font-face {
+  font-family: 'OpenSans';
+  font-display: swap;
+  src: local('Open Sans'), local('OpenSans');
+}
+
+/* Prevent invisible text during font load */
+.font-loading {
+  font-family: 'OpenSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Critical layout stability */
+img, svg {
+  max-width: 100%;
+  height: auto;
+  /* Prevent layout shift during load */
+  display: block;
+}
+
+/* Smooth icon rendering */
+.icon-smooth {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+/* Hardware acceleration for all interactive elements - no delays */
 button, a, [role="button"] {
   transform: translateZ(0);
   will-change: transform;
-  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: none;
 }
 
-/* Smooth scrolling with momentum */
+/* Instant scrolling - no delays */
 html {
-  scroll-behavior: smooth;
+  scroll-behavior: auto;
 }
 
 body {
@@ -78,25 +108,26 @@ body {
   transform: translate3d(0, 0, 0);
 }
 
-/* Optimized transitions for form elements */
+/* Optimized transitions for form elements - instant response */
 input, select, textarea {
-  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  transition: none;
   will-change: border-color, box-shadow;
 }
 
-/* iOS-style page transitions */
+/* iOS-style page transitions - instant */
 .page-container {
-  animation: slideInFromRight 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   transform: translateZ(0);
   will-change: transform;
 }
 
 .page-fade-in {
-  animation: fadeIn 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  opacity: 1;
+  transform: scale(1);
 }
 
 .page-slide-up {
-  animation: slideUpFromBottom 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform: translateY(0);
+  opacity: 1;
 }
 
 /* Smooth page entrance animations */

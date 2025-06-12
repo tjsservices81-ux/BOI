@@ -54,7 +54,6 @@ export default function Login() {
   }, []);
 
   const handleNavigation = (path: string) => {
-    setIsNavigating(true);
     navigate(path);
   };
 
@@ -370,9 +369,7 @@ export default function Login() {
     setPinVerified(true);
     
     // Navigate to dashboard after verification
-    setTimeout(() => {
-      navigate('/dashboard');
-    }, 1000);
+    navigate('/dashboard');
   };
 
   return (
