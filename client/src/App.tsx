@@ -10,6 +10,7 @@ import Login from "@/pages/login";
 import More from "@/pages/more";
 import Dashboard from "@/pages/dashboard";
 import Payments from "@/pages/payments";
+import Apply from "@/pages/apply";
 import IbanTransfer from "@/pages/iban-transfer";
 import UkTransfer from "@/pages/uk-transfer";
 import Transactions from "@/pages/transactions";
@@ -56,6 +57,11 @@ function AppRoutes() {
         <Route path="/payments">
           <ProtectedRoute>
             <Payments />
+          </ProtectedRoute>
+        </Route>
+        <Route path="/apply">
+          <ProtectedRoute>
+            <Apply />
           </ProtectedRoute>
         </Route>
         <Route path="/iban-transfer">
