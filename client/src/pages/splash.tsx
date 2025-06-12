@@ -29,7 +29,7 @@ export default function Splash() {
         isVisible ? 'opacity-100' : 'opacity-0'
       }`}
       style={{
-        background: '#3333ff', // Bright royal blue matching the screenshot
+        background: '#4444ff', // Bright royal blue matching the screenshot exactly
         userSelect: 'none',
         pointerEvents: 'none'
       }}
@@ -38,12 +38,12 @@ export default function Splash() {
     >
       {/* Main content centered */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        {/* Bank of Ireland logo */}
-        <div className="mb-8">
+        {/* Bank of Ireland logo - smaller size */}
+        <div className="mb-6">
           <img 
             src="/boi_logo.svg" 
             alt="Bank of Ireland" 
-            className="h-20 w-auto filter brightness-0 invert"
+            className="h-12 w-auto filter brightness-0 invert"
             style={{ 
               imageRendering: 'crisp-edges',
               userSelect: 'none',
@@ -59,16 +59,16 @@ export default function Splash() {
         </div>
       </div>
 
-      {/* Curved white bottom shape matching screenshot */}
-      <div className="absolute bottom-0 left-0 right-0 h-64">
+      {/* Curved white bottom shape matching screenshot exactly */}
+      <div className="absolute bottom-0 left-0 right-0 h-80">
         <svg 
-          viewBox="0 0 375 250" 
+          viewBox="0 0 375 320" 
           className="w-full h-full"
           preserveAspectRatio="none"
           style={{ display: 'block' }}
         >
           <path 
-            d="M 0 80 Q 187.5 0 375 80 L 375 250 L 0 250 Z" 
+            d="M 0 120 Q 100 20 187.5 40 Q 275 60 375 120 L 375 320 L 0 320 Z" 
             fill="white"
           />
         </svg>
