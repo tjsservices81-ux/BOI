@@ -2,90 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
-/* PWA Fullscreen Base Styles */
-html {
-  height: 100%;
-  height: calc(var(--vh, 1vh) * 100);
-  overflow: hidden;
-  -webkit-text-size-adjust: 100%;
-  -ms-text-size-adjust: 100%;
-}
-
-body {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 100%;
-  height: calc(var(--vh, 1vh) * 100);
-  overflow: hidden;
-  font-family: system-ui, -apple-system, sans-serif;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: none;
-}
-
-#root {
-  width: 100%;
-  height: 100%;
-  height: calc(var(--vh, 1vh) * 100);
-  overflow: hidden;
-  position: relative;
-}
-
-/* Prevent browser UI on mobile */
-@media screen and (max-width: 768px) {
-  html, body {
-    height: 100vh;
-    height: -webkit-fill-available;
-  }
-  
-  #root {
-    height: 100vh;
-    height: -webkit-fill-available;
-  }
-  
-  /* Force hide browser chrome */
-  body {
-    transform: translate3d(0, 0, 0);
-    backface-visibility: hidden;
-  }
-}
-
-/* Standalone PWA mode */
-@media all and (display-mode: standalone) {
-  html, body, #root {
-    height: 100vh;
-    height: 100dvh;
-  }
-}
-
-/* Force fullscreen on iOS */
-@supports (-webkit-touch-callout: none) {
-  html {
-    height: -webkit-fill-available;
-  }
-  
-  body {
-    height: -webkit-fill-available;
-    min-height: -webkit-fill-available;
-  }
-  
-  #root {
-    height: -webkit-fill-available;
-    min-height: -webkit-fill-available;
-  }
-}
-
-/* PWA Mobile Optimizations */
+/* Performance optimizations for smooth interactions */
 * {
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 input, textarea {
@@ -93,33 +17,23 @@ input, textarea {
   -moz-user-select: text;
   -ms-user-select: text;
   user-select: text;
-  font-size: 16px;
 }
 
-/* Hardware acceleration for smooth interactions */
+/* Hardware acceleration for all interactive elements */
 button, a, [role="button"] {
   transform: translateZ(0);
   will-change: transform;
   transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Mobile-optimized scrolling */
-.mobile-scroll {
-  -webkit-overflow-scrolling: touch;
-  overflow-y: auto;
-  overflow-x: hidden;
-  height: 100%;
+/* Smooth scrolling with momentum */
+html {
+  scroll-behavior: smooth;
 }
 
-/* PWA page containers */
-.pwa-page {
-  width: 100%;
-  height: 100%;
-  height: calc(var(--vh, 1vh) * 100);
-  overflow: hidden;
-  background: white;
-  display: flex;
-  flex-direction: column;
+body {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
 }
 
 /* Prevent layout shifts during interactions */

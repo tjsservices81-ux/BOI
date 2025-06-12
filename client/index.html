@@ -2,88 +2,261 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, minimal-ui" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no, minimal-ui" />
     
-    <!-- PWA Configuration -->
+    <!-- iOS Web App Configuration for true fullscreen -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Bank of Ireland" />
-    <meta name="theme-color" content="#126987" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="format-detection" content="telephone=no" />
+    <meta name="apple-touch-fullscreen" content="yes" />
     
-    <!-- App Icons -->
+    <!-- Force standalone mode -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-web-app-capable" content="yes" />
+    
+    <!-- Prevent iOS Safari UI -->
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    
+    <!-- Additional PWA meta tags -->
+    <meta name="msapplication-TileColor" content="#126987" />
+    <meta name="msapplication-config" content="none" />
+    <meta name="application-name" content="Bank of Ireland" />
+    
+    <!-- App Icons for iOS -->
     <link rel="apple-touch-icon" href="/BOI_logo.png" />
-    <link rel="icon" type="image/png" href="/BOI_logo.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/BOI_logo.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/BOI_logo.png" />
+    
+    <!-- iOS Splash Screens -->
+    <link rel="apple-touch-startup-image" href="/BOI_logo.png" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)" />
+    <link rel="apple-touch-startup-image" href="/BOI_logo.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)" />
+    <link rel="apple-touch-startup-image" href="/BOI_logo.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3)" />
+    <link rel="apple-touch-startup-image" href="/BOI_logo.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)" />
+    <link rel="apple-touch-startup-image" href="/BOI_logo.png" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3)" />
     
     <!-- PWA Manifest -->
-    <link rel="manifest" href="/manifest.json" />
+    <!-- <link rel="manifest" href="/pwa-manifest.json" /> -->
     
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/BOI_logo.png" />
+    
+    <!-- App Title -->
     <title>Bank of Ireland</title>
-  </head>
-  <body>
-    <div id="root"></div>
     
-    <script>
-      // Force fullscreen PWA behavior
-      function forceFullscreen() {
-        // Hide address bar by scrolling
-        window.scrollTo(0, 1);
-        
-        // Set minimal UI
-        const viewport = document.querySelector('meta[name=viewport]');
-        if (viewport) {
-          viewport.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, minimal-ui';
-        }
-        
-        // Request fullscreen if supported
-        if (document.documentElement.requestFullscreen) {
-          document.addEventListener('click', () => {
-            if (!document.fullscreenElement) {
-              document.documentElement.requestFullscreen().catch(() => {});
-            }
-          }, { once: true });
-        }
-        
-        // iOS specific handling
-        if (window.navigator.standalone === false) {
-          // Show install prompt for iOS
-          const style = document.createElement('style');
-          style.textContent = `
-            body::before {
-              content: "Install this app: tap Share → Add to Home Screen";
-              position: fixed;
-              top: 0;
-              left: 0;
-              right: 0;
-              background: #126987;
-              color: white;
-              padding: 10px;
-              text-align: center;
-              z-index: 10000;
-              font-size: 14px;
-            }
-            #root {
-              margin-top: 50px;
-            }
-          `;
-          document.head.appendChild(style);
-          
-          setTimeout(() => {
-            document.head.removeChild(style);
-            document.getElementById('root').style.marginTop = '0';
-          }, 5000);
+    <!-- iOS Native App Fullscreen Styling -->
+    <style>
+      :root {
+        --app-height: 100vh;
+      }
+      
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      html {
+        width: 100vw;
+        height: var(--app-height);
+        height: 100vh;
+        height: -webkit-fill-available;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        -webkit-text-size-adjust: 100%;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+      }
+      
+      body {
+        width: 100vw;
+        height: var(--app-height);
+        height: 100vh;
+        height: -webkit-fill-available;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #126987;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: none;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      }
+      
+      /* iOS PWA fullscreen enforcement */
+      @media all and (display-mode: standalone) {
+        html, body {
+          height: 100vh;
+          height: -webkit-fill-available;
         }
       }
       
-      // Execute on load
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', forceFullscreen);
-      } else {
-        forceFullscreen();
+      /* Hide iOS Safari UI elements */
+      @supports (-webkit-appearance: none) {
+        html {
+          height: -webkit-fill-available;
+        }
+        
+        body {
+          height: -webkit-fill-available;
+        }
+      }
+      
+      #root {
+        width: 100vw;
+        height: var(--app-height);
+        height: 100vh;
+        height: -webkit-fill-available;
+        overflow: auto;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+      }
+      
+      /* PWA Mode - Complete Fullscreen */
+      body.pwa-mode {
+        height: 100vh !important;
+        height: -webkit-fill-available !important;
+      }
+      
+      body.pwa-mode #root {
+        height: 100vh !important;
+        height: -webkit-fill-available !important;
+      }
+      
+      /* Hide scrollbars but keep functionality */
+      #root::-webkit-scrollbar {
+        display: none;
+      }
+      
+      #root {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      
+      /* Fullscreen enforcement */
+      html, body, #root {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+      }
+      
+      /* iOS specific fullscreen */
+      @supports (-webkit-touch-callout: none) {
+        html, body {
+          height: -webkit-fill-available;
+          width: -webkit-fill-available;
+        }
+        
+        #root {
+          height: -webkit-fill-available;
+          width: -webkit-fill-available;
+        }
+      }
+      
+      /* Hide address bar and browser UI */
+      @media screen and (max-width: 768px) {
+        html {
+          height: calc(100vh + env(keyboard-inset-height, 0px));
+        }
+        
+        body {
+          height: calc(100vh + env(keyboard-inset-height, 0px));
+        }
+      }
+      
+      /* Prevent zoom */
+      input, textarea, select {
+        font-size: 16px !important;
+      }
+      
+      /* Remove tap highlights */
+      * {
+        -webkit-tap-highlight-color: transparent;
+        -webkit-focus-ring-color: transparent;
+        outline: none;
+      }
+    </style>
+    
+    <script>
+      // iOS PWA fullscreen implementation
+      function enforceFullscreen() {
+        // Force app-like behavior
+        document.documentElement.style.height = '100%';
+        document.body.style.height = '100%';
+        
+        // Hide Safari UI on iOS
+        if (window.navigator.standalone === false) {
+          // Not in standalone mode, force scroll to hide UI
+          setTimeout(() => {
+            window.scrollTo(0, 1);
+            setTimeout(() => window.scrollTo(0, 0), 100);
+          }, 500);
+        }
+        
+        // Set CSS custom properties for true fullscreen
+        document.documentElement.style.setProperty('--app-height', window.innerHeight + 'px');
+      }
+      
+      // Apply fullscreen on various events
+      window.addEventListener('load', enforceFullscreen);
+      window.addEventListener('resize', () => {
+        document.documentElement.style.setProperty('--app-height', window.innerHeight + 'px');
+      });
+      window.addEventListener('orientationchange', () => {
+        setTimeout(enforceFullscreen, 200);
+      });
+      
+      // Prevent zoom gestures
+      document.addEventListener('gesturestart', function(e) {
+        e.preventDefault();
+      });
+      
+      document.addEventListener('gesturechange', function(e) {
+        e.preventDefault();
+      });
+      
+      document.addEventListener('gestureend', function(e) {
+        e.preventDefault();
+      });
+      
+      // Prevent double-tap zoom
+      let lastTouchEnd = 0;
+      document.addEventListener('touchend', function(e) {
+        const now = Date.now();
+        if (now - lastTouchEnd <= 300) {
+          e.preventDefault();
+        }
+        lastTouchEnd = now;
+      }, false);
+      
+      // Prevent context menu
+      document.addEventListener('contextmenu', e => e.preventDefault());
+      
+      // Detect PWA mode
+      if (window.navigator.standalone === true) {
+        document.body.classList.add('pwa-mode');
       }
     </script>
-    
+  </head>
+  <body>
+    <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
     <script type="text/javascript" src="https://replit.com/public/js/replit-dev-banner.js"></script>

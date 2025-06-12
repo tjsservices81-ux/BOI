@@ -46,88 +46,86 @@ function AppRoutes() {
   const showNavigation = user && !excludedRoutes.includes(location);
 
   return (
-    <div className="pwa-page">
-      <div className="mobile-scroll flex-1">
-        <Switch>
-          <Route path="/splash" component={Splash} />
-          <Route path="/login" component={Login} />
-          <Route path="/more" component={More} />
-          <Route path="/">
-            {user ? <Dashboard /> : <Splash />}
-          </Route>
-          <Route path="/dashboard">
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          </Route>
-          <Route path="/payments">
-            <ProtectedRoute>
-              <Payments />
-            </ProtectedRoute>
-          </Route>
-          <Route path="/apply">
-            <ProtectedRoute>
-              <Apply />
-            </ProtectedRoute>
-          </Route>
-          <Route path="/iban-transfer">
-            <ProtectedRoute>
-              <IbanTransfer />
-            </ProtectedRoute>
-          </Route>
-          <Route path="/uk-transfer">
-            <ProtectedRoute>
-              <UkTransfer />
-            </ProtectedRoute>
-          </Route>
-          <Route path="/transfer">
-            <ProtectedRoute>
-              <Transfer />
-            </ProtectedRoute>
-          </Route>
-          <Route path="/bills">
-            <ProtectedRoute>
-              <BillPay />
-            </ProtectedRoute>
-          </Route>
-          <Route path="/transactions">
-            <ProtectedRoute>
-              <Transactions />
-            </ProtectedRoute>
-          </Route>
-          <Route path="/cards">
-            <ProtectedRoute>
-              <Cards />
-            </ProtectedRoute>
-          </Route>
-          <Route path="/insights">
-            <ProtectedRoute>
-              <Insights />
-            </ProtectedRoute>
-          </Route>
-          <Route path="/statements">
-            <ProtectedRoute>
-              <Statements />
-            </ProtectedRoute>
-          </Route>
-          <Route path="/transactions/:accountId">
-            <ProtectedRoute>
-              <TransactionHistoryWorking />
-            </ProtectedRoute>
-          </Route>
-          <Route path="/debug-transactions">
-            <ProtectedRoute>
-              <DebugTransactions />
-            </ProtectedRoute>
-          </Route>
-          <Route path="/profile">
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          </Route>
-          <Route component={NotFound} />
-        </Switch>
-      </div>
+    <div className="w-full h-full bg-white overflow-hidden relative">
+      <Switch>
+        <Route path="/splash" component={Splash} />
+        <Route path="/login" component={Login} />
+        <Route path="/more" component={More} />
+        <Route path="/">
+          {user ? <Dashboard /> : <Splash />}
+        </Route>
+        <Route path="/dashboard">
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        </Route>
+        <Route path="/payments">
+          <ProtectedRoute>
+            <Payments />
+          </ProtectedRoute>
+        </Route>
+        <Route path="/apply">
+          <ProtectedRoute>
+            <Apply />
+          </ProtectedRoute>
+        </Route>
+        <Route path="/iban-transfer">
+          <ProtectedRoute>
+            <IbanTransfer />
+          </ProtectedRoute>
+        </Route>
+        <Route path="/uk-transfer">
+          <ProtectedRoute>
+            <UkTransfer />
+          </ProtectedRoute>
+        </Route>
+        <Route path="/transfer">
+          <ProtectedRoute>
+            <Transfer />
+          </ProtectedRoute>
+        </Route>
+        <Route path="/bills">
+          <ProtectedRoute>
+            <BillPay />
+          </ProtectedRoute>
+        </Route>
+        <Route path="/transactions">
+          <ProtectedRoute>
+            <Transactions />
+          </ProtectedRoute>
+        </Route>
+        <Route path="/cards">
+          <ProtectedRoute>
+            <Cards />
+          </ProtectedRoute>
+        </Route>
+        <Route path="/insights">
+          <ProtectedRoute>
+            <Insights />
+          </ProtectedRoute>
+        </Route>
+        <Route path="/statements">
+          <ProtectedRoute>
+            <Statements />
+          </ProtectedRoute>
+        </Route>
+        <Route path="/transactions/:accountId">
+          <ProtectedRoute>
+            <TransactionHistoryWorking />
+          </ProtectedRoute>
+        </Route>
+        <Route path="/debug-transactions">
+          <ProtectedRoute>
+            <DebugTransactions />
+          </ProtectedRoute>
+        </Route>
+        <Route path="/profile">
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        </Route>
+        <Route component={NotFound} />
+      </Switch>
       {showNavigation && <BottomNavigation />}
     </div>
   );
