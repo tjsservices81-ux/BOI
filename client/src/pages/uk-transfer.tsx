@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { validateUKSortCode, formatSortCode, validateUKAccountNumber } from "../utils/bankValidation";
-import { getAccounts, processTransfer, generateReference } from "../utils/transferUtils";
+import { UserDataManager } from "../utils/userDataManager";
 
 const ukTransferSchema = z.object({
   recipientName: z.string().min(2, "Recipient name is required"),
@@ -27,8 +27,9 @@ export default function UkTransfer() {
   const [animationProgress, setAnimationProgress] = useState<number>(0);
   const [processingStage, setProcessingStage] = useState<string>('Verifying transfer details...');
   const [formData, setFormData] = useState<UkTransferData | null>(null);
-  const [exchangeRate, setExchangeRate] = useState<number>(0.85); // EUR to GBP rate
+  const [exchangeRate, setExchangeRate] = useState<number>(0.85);
   const [gbpAmount, setGbpAmount] = useState<string>('0.00');
+  const [accounts, setAccounts] = useState<any[]>([]);
 
   const form = useForm<UkTransferData>({
     resolver: zodResolver(ukTransferSchema),
@@ -42,9 +43,26 @@ export default function UkTransfer() {
     }
   });
 
-  const [accounts, setAccounts] = useState<any[]>([]);
+  // Load user-specific accounts data
+  useEffect(() => {
+    const currentUser = UserDataManager.getCurrentUser();
+    if (currentUser) {
+      const userAccountsKey = `accounts_${currentUser}`;
+      const storedAccounts = localStorage.getItem(userAccountsKey);
+      if (storedAccounts) {
+        try {
+          const parsedAccounts = JSON.parse(storedAccounts);
+          setAccounts(parsedAccounts);
+        } catch (error) {
+          console.error('Error parsing accounts:', error);
+          setAccounts([]);
+        }
+      }
+    }
+    fetchExchangeRate();
+  }, []);
 
-  // Fetch real-time exchange rate using authenticated API
+  // Fetch real-time exchange rate
   const fetchExchangeRate = async () => {
     try {
       const apiKey = import.meta.env.VITE_EXCHANGERATE_API_KEY;
@@ -61,21 +79,13 @@ export default function UkTransfer() {
       if (data.result === 'success' && data.conversion_rates?.GBP) {
         const rate = data.conversion_rates.GBP;
         setExchangeRate(rate);
-        console.log('Live exchange rate fetched:', rate);
       } else {
         setExchangeRate(0.85);
       }
     } catch (error) {
-      console.log('Exchange rate fetch failed, using default');
       setExchangeRate(0.85);
     }
   };
-
-  useEffect(() => {
-    const loadedAccounts = getAccounts();
-    setAccounts(loadedAccounts);
-    fetchExchangeRate();
-  }, []);
 
   // Calculate GBP equivalent when amount changes
   useEffect(() => {
@@ -88,23 +98,85 @@ export default function UkTransfer() {
     }
   }, [form.watch('amount'), exchangeRate]);
 
+  const generateReference = () => {
+    const prefix = 'BOI';
+    const timestamp = Date.now().toString().slice(-8);
+    const random = Math.random().toString(36).substring(2, 7).toUpperCase();
+    return `${prefix}${timestamp}${random}`;
+  };
+
+  const processTransfer = (fromAccountId: string, amount: number, recipientName: string, transferType: string, reference: string, rate?: number) => {
+    try {
+      const currentUser = UserDataManager.getCurrentUser();
+      if (!currentUser) return false;
+
+      // Get current accounts
+      const userAccountsKey = `accounts_${currentUser}`;
+      const storedAccounts = localStorage.getItem(userAccountsKey);
+      if (!storedAccounts) return false;
+
+      const accounts = JSON.parse(storedAccounts);
+      const fromAccount = accounts.find((acc: any) => acc.id.toString() === fromAccountId);
+      
+      if (!fromAccount) return false;
+
+      const currentBalance = parseFloat(fromAccount.balance);
+      if (currentBalance < amount) return false;
+
+      // Update balance
+      const newBalance = (currentBalance - amount).toFixed(2);
+      fromAccount.balance = newBalance;
+
+      // Save updated accounts
+      localStorage.setItem(userAccountsKey, JSON.stringify(accounts));
+
+      // Create transaction record
+      const transaction = {
+        id: Date.now(),
+        accountId: parseInt(fromAccountId),
+        amount: `-${amount.toFixed(2)}`,
+        description: `${transferType} Transfer to ${recipientName}`,
+        category: 'transfer',
+        type: 'debit',
+        paymentMethod: `${transferType} Transfer`,
+        reference: reference,
+        timestamp: new Date().toISOString(),
+        ...(rate && { exchangeRate: rate, convertedAmount: (amount * rate).toFixed(2), convertedCurrency: 'GBP' })
+      };
+
+      // Store transaction
+      const userTransactionsKey = `transactions_${currentUser}`;
+      const existingTransactions = localStorage.getItem(userTransactionsKey);
+      let transactions = existingTransactions ? JSON.parse(existingTransactions) : [];
+      transactions.push(transaction);
+      localStorage.setItem(userTransactionsKey, JSON.stringify(transactions));
+
+      // Dispatch events to update other components
+      window.dispatchEvent(new CustomEvent('balanceUpdated', { 
+        detail: { accountId: fromAccount.id, newBalance: newBalance } 
+      }));
+      window.dispatchEvent(new CustomEvent('transactionAdded', { 
+        detail: transaction 
+      }));
+
+      return true;
+    } catch (error) {
+      console.error('Transfer failed:', error);
+      return false;
+    }
+  };
+
   const onSubmit = async (data: UkTransferData) => {
     setFormData(data);
-    
-    // Fetch exchange rate when moving to confirmation
     await fetchExchangeRate();
-    
     setStep('confirm');
   };
 
   const executeTransfer = async () => {
     if (!formData) return;
     
-    // Generate unique reference only when transfer starts
     const ref = generateReference();
     setTransferReference(ref);
-    
-    // Fetch current exchange rate and calculate GBP amount
     await fetchExchangeRate();
     
     const success = processTransfer(
@@ -121,15 +193,12 @@ export default function UkTransfer() {
       return;
     }
 
-    // Immediately go to success screen and start animation
     setStep('success');
     setShowReference(false);
     setAnimationProgress(0);
     setProcessingStage('Verifying transfer details...');
     
-    // Start animation sequence
     setTimeout(() => {
-      // Professional banking stages during 5-second animation
       const stages = [
         'Verifying transfer details...',
         'Authenticating transaction...',
@@ -142,9 +211,8 @@ export default function UkTransfer() {
       let stageIndex = 0;
       
       const interval = setInterval(() => {
-        currentProgress += 2; // 2% every 100ms = 5 seconds total
+        currentProgress += 2;
         
-        // Update stage message every 20% (1 second)
         const newStageIndex = Math.floor(currentProgress / 20);
         if (newStageIndex !== stageIndex && newStageIndex < stages.length) {
           stageIndex = newStageIndex;
@@ -163,10 +231,37 @@ export default function UkTransfer() {
     }, 100);
   };
 
+  const identifyBank = (sortCode: string) => {
+    const banks: { [key: string]: string } = {
+      '04': 'Lloyds Bank',
+      '20': 'Barclays',
+      '30': 'Lloyds Bank',
+      '40': 'HSBC',
+      '60': 'National Westminster Bank',
+      '77': 'Lloyds Bank',
+      '83': 'HSBC',
+      '09': 'Abbey National'
+    };
+    
+    const prefix = sortCode.substring(0, 2);
+    return banks[prefix] || 'UK Bank';
+  };
+
+  const handleSortCodeChange = (value: string) => {
+    const formatted = formatSortCode(value);
+    form.setValue('sortCode', formatted.replace(/-/g, ''));
+    
+    if (formatted.length === 8) {
+      const bank = identifyBank(formatted.replace(/-/g, ''));
+      setIdentifiedBank(bank);
+    } else {
+      setIdentifiedBank('');
+    }
+  };
+
   if (step === 'success') {
     return (
       <div>
-        {/* Full-screen professional processing animation */}
         {!showReference ? (
           <div style={{ 
             position: 'fixed', 
@@ -181,14 +276,12 @@ export default function UkTransfer() {
             justifyContent: 'center'
           }}>
             <div className="text-center space-y-8 px-8 max-w-md w-full">
-              {/* Bank of Ireland Professional Logo Area */}
               <div className="mb-8">
                 <div className="w-20 h-20 bg-[#126987] rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
                   <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
                 </div>
               </div>
               
-              {/* Professional Transfer Processing Header */}
               <div className="space-y-4">
                 <h1 className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                   Processing Transfer
@@ -198,7 +291,6 @@ export default function UkTransfer() {
                 </p>
               </div>
               
-              {/* Professional Progress Indicator */}
               <div className="space-y-6">
                 <div className="w-full bg-white rounded-full h-4 overflow-hidden shadow-inner border border-gray-200">
                   <div 
@@ -213,7 +305,6 @@ export default function UkTransfer() {
                 </p>
               </div>
               
-              {/* Professional Security Notice */}
               <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-gray-200 shadow-lg">
                 <div className="flex items-center justify-center space-x-3 mb-3">
                   <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
@@ -249,7 +340,7 @@ export default function UkTransfer() {
                   Your UK bank transfer has been processed successfully
                 </p>
 
-                <div className="bg-gray-50 rounded-xl p-3 mb-4 text-left animate-fade-in">
+                <div className="bg-gray-50 rounded-xl p-3 mb-4 text-left">
                   <div className="space-y-3">
                     <div className="flex justify-between">
                       <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Amount:</span>
@@ -286,17 +377,6 @@ export default function UkTransfer() {
                         Complete
                       </span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Processing Time:</span>
-                      <span className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        24 hours
-                      </span>
-                    </div>
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
-                      <p className="text-sm text-blue-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        <strong>International Transfer:</strong> UK transfers from Bank of Ireland typically take 1-2 business days to reach the recipient due to cross-border banking regulations.
-                      </p>
-                    </div>
                   </div>
                 </div>
 
@@ -327,38 +407,10 @@ export default function UkTransfer() {
     );
   }
 
-  const identifyBank = (sortCode: string) => {
-    const banks: { [key: string]: string } = {
-      '04': 'Lloyds Bank',
-      '20': 'Barclays',
-      '30': 'Lloyds Bank',
-      '40': 'HSBC',
-      '60': 'National Westminster Bank',
-      '77': 'Lloyds Bank',
-      '83': 'HSBC',
-      '09': 'Abbey National'
-    };
-    
-    const prefix = sortCode.substring(0, 2);
-    return banks[prefix] || 'UK Bank';
-  };
-
-  const handleSortCodeChange = (value: string) => {
-    const formatted = formatSortCode(value);
-    form.setValue('sortCode', formatted.replace(/-/g, ''));
-    
-    if (formatted.length === 8) { // XX-XX-XX format
-      const bank = identifyBank(formatted.replace(/-/g, ''));
-      setIdentifiedBank(bank);
-    } else {
-      setIdentifiedBank('');
-    }
-  };
-
   if (step === 'confirm') {
     return (
-      <div className="ios-scroll" style={{ minHeight: '100vh', backgroundColor: '#f9fafb', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
-        <div className="bg-[#126987] px-4 py-3 flex items-center justify-between sticky top-0 z-10">
+      <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#f9fafb' }}>
+        <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
           <button 
             onClick={() => setStep('form')}
             className="flex items-center text-white"
@@ -372,7 +424,7 @@ export default function UkTransfer() {
           <div></div>
         </div>
 
-        <div className="px-4 py-6 pb-20">
+        <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '16px' }}>
           <div className="bg-white rounded-xl p-4 mb-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
               Transfer Details
@@ -413,7 +465,7 @@ export default function UkTransfer() {
 
           <button 
             onClick={executeTransfer}
-            className="w-full bg-[#126987] text-white py-4 rounded-xl font-semibold active:scale-98 transition-transform"
+            className="w-full bg-[#126987] text-white py-4 rounded-xl font-semibold active:scale-98 transition-transform mb-8"
             style={{ fontFamily: 'OpenSans, sans-serif' }}
           >
             Confirm Transfer
@@ -424,8 +476,8 @@ export default function UkTransfer() {
   }
 
   return (
-    <div className="ios-scroll" style={{ minHeight: '100vh', backgroundColor: '#f9fafb', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
-      <div className="bg-[#126987] px-4 py-3 flex items-center justify-between sticky top-0 z-10">
+    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#f9fafb' }}>
+      <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
         <button 
           onClick={() => navigate('/payments')}
           className="flex items-center text-white"
@@ -439,7 +491,7 @@ export default function UkTransfer() {
         <div></div>
       </div>
 
-      <form onSubmit={form.handleSubmit(onSubmit)} className="px-4 py-6 pb-20">
+      <form onSubmit={form.handleSubmit(onSubmit)} style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '16px' }}>
         <div className="bg-white rounded-xl p-4 mb-4">
           <div className="flex items-center mb-4">
             <Building className="h-5 w-5 text-[#126987] mr-2" />
@@ -458,7 +510,7 @@ export default function UkTransfer() {
                 type="text"
                 className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent"
                 placeholder="Enter recipient's full name"
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
+                style={{ fontFamily: 'OpenSans, sans-serif', fontSize: '16px' }}
               />
               {form.formState.errors.recipientName && (
                 <p className="text-red-500 text-sm mt-1">{form.formState.errors.recipientName.message}</p>
@@ -475,7 +527,7 @@ export default function UkTransfer() {
                 className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent"
                 placeholder="XX-XX-XX"
                 maxLength={8}
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
+                style={{ fontFamily: 'OpenSans, sans-serif', fontSize: '16px' }}
               />
               {identifiedBank && (
                 <p className="text-green-600 text-sm mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -497,7 +549,7 @@ export default function UkTransfer() {
                 className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent"
                 placeholder="8-digit account number"
                 maxLength={8}
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
+                style={{ fontFamily: 'OpenSans, sans-serif', fontSize: '16px' }}
               />
               {form.formState.errors.accountNumber && (
                 <p className="text-red-500 text-sm mt-1">{form.formState.errors.accountNumber.message}</p>
@@ -522,7 +574,7 @@ export default function UkTransfer() {
               <select
                 {...form.register('fromAccount')}
                 className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent"
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
+                style={{ fontFamily: 'OpenSans, sans-serif', fontSize: '16px' }}
               >
                 <option value="">Select account</option>
                 {accounts.map((account) => (
@@ -546,7 +598,7 @@ export default function UkTransfer() {
                 step="0.01"
                 className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent"
                 placeholder="0.00"
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
+                style={{ fontFamily: 'OpenSans, sans-serif', fontSize: '16px' }}
               />
               {gbpAmount !== '0.00' && (
                 <p className="text-green-600 text-sm mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -567,7 +619,7 @@ export default function UkTransfer() {
                 type="text"
                 className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent"
                 placeholder="Payment reference"
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
+                style={{ fontFamily: 'OpenSans, sans-serif', fontSize: '16px' }}
               />
               {form.formState.errors.reference && (
                 <p className="text-red-500 text-sm mt-1">{form.formState.errors.reference.message}</p>
@@ -578,7 +630,7 @@ export default function UkTransfer() {
 
         <button 
           type="submit"
-          className="w-full bg-[#126987] text-white py-4 rounded-xl font-semibold active:scale-98 transition-transform"
+          className="w-full bg-[#126987] text-white py-4 rounded-xl font-semibold active:scale-98 transition-transform mb-8"
           style={{ fontFamily: 'OpenSans, sans-serif' }}
         >
           Continue

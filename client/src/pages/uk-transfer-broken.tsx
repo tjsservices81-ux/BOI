@@ -48,42 +48,45 @@ export default function UkTransfer() {
   const fetchExchangeRate = async () => {
     try {
       const apiKey = import.meta.env.VITE_EXCHANGERATE_API_KEY;
+      
       if (!apiKey) {
         console.log('No API key provided, using default rate');
+        setExchangeRate(0.85);
         return;
       }
       
       const response = await fetch(`https://v6.exchangerate-api.com/v6/${apiKey}/latest/EUR`);
       const data = await response.json();
       
-      if (data.result === 'success') {
+      if (data.result === 'success' && data.conversion_rates?.GBP) {
         const rate = data.conversion_rates.GBP;
         setExchangeRate(rate);
-        
-        // Update GBP amount with fresh rate
-        const currentAmount = formData?.amount || form.getValues('amount');
-        if (currentAmount) {
-          const converted = (parseFloat(currentAmount) * rate).toFixed(2);
-          setGbpAmount(converted);
-        }
+        console.log('Live exchange rate fetched:', rate);
+      } else {
+        setExchangeRate(0.85);
       }
     } catch (error) {
-      console.log('Exchange rate fetch failed, using default rate');
-      // Keep default rate of 0.85
+      console.log('Exchange rate fetch failed, using default');
+      setExchangeRate(0.85);
     }
   };
 
   useEffect(() => {
-    const loadAccounts = () => {
-      setAccounts(getAccounts());
-    };
-    
-    loadAccounts();
-    
-    // Refresh accounts only when needed
-    const interval = setInterval(loadAccounts, 5000);
-    return () => clearInterval(interval);
+    const loadedAccounts = getAccounts();
+    setAccounts(loadedAccounts);
+    fetchExchangeRate();
   }, []);
+
+  // Calculate GBP equivalent when amount changes
+  useEffect(() => {
+    const amount = form.watch('amount');
+    if (amount && !isNaN(parseFloat(amount))) {
+      const gbp = (parseFloat(amount) * exchangeRate).toFixed(2);
+      setGbpAmount(gbp);
+    } else {
+      setGbpAmount('0.00');
+    }
+  }, [form.watch('amount'), exchangeRate]);
 
   const onSubmit = async (data: UkTransferData) => {
     setFormData(data);
@@ -160,8 +163,6 @@ export default function UkTransfer() {
     }, 100);
   };
 
-
-
   if (step === 'success') {
     return (
       <div>
@@ -180,69 +181,94 @@ export default function UkTransfer() {
             justifyContent: 'center'
           }}>
             <div className="text-center space-y-8 px-8 max-w-md w-full">
-                  {/* Bank of Ireland Professional Logo Area */}
-                  <div className="mb-8">
-                    <div className="w-20 h-20 bg-[#126987] rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
-                      <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
-                    </div>
-                  </div>
-                  
-                  {/* Professional Transfer Processing Header */}
-                  <div className="space-y-4">
-                    <h1 className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Processing Transfer
-                    </h1>
-                    <p className="text-lg text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      {processingStage}
-                    </p>
-                  </div>
-                  
-                  {/* Professional Progress Indicator */}
-                  <div className="space-y-6">
-                    <div className="w-full bg-white rounded-full h-4 overflow-hidden shadow-inner border border-gray-200">
-                      <div 
-                        className="bg-gradient-to-r from-[#126987] via-[#5a7b85] to-[#126987] h-4 rounded-full transition-all duration-300 ease-out shadow-sm relative"
-                        style={{ width: `${animationProgress}%` }}
-                      >
-                        <div className="absolute inset-0 bg-white opacity-20 rounded-full animate-pulse"></div>
-                      </div>
-                    </div>
-                    <p className="text-xl font-semibold text-[#126987]" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      {Math.round(animationProgress)}% Complete
-                    </p>
-                  </div>
-                  
-                  {/* Professional Security Notice */}
-                  <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-gray-200 shadow-lg">
-                    <div className="flex items-center justify-center space-x-3 mb-3">
-                      <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                      <span className="text-sm font-semibold text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        Secure Connection Active
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-500 leading-relaxed" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Your transfer is being processed through Bank of Ireland's secure payment network with 256-bit encryption
-                    </p>
-                  </div>
+              {/* Bank of Ireland Professional Logo Area */}
+              <div className="mb-8">
+                <div className="w-20 h-20 bg-[#126987] rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
+                  <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
                 </div>
               </div>
-            ) : (
-              <>
+              
+              {/* Professional Transfer Processing Header */}
+              <div className="space-y-4">
+                <h1 className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Processing Transfer
+                </h1>
+                <p className="text-lg text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  {processingStage}
+                </p>
+              </div>
+              
+              {/* Professional Progress Indicator */}
+              <div className="space-y-6">
+                <div className="w-full bg-white rounded-full h-4 overflow-hidden shadow-inner border border-gray-200">
+                  <div 
+                    className="bg-gradient-to-r from-[#126987] via-[#5a7b85] to-[#126987] h-4 rounded-full transition-all duration-300 ease-out shadow-sm relative"
+                    style={{ width: `${animationProgress}%` }}
+                  >
+                    <div className="absolute inset-0 bg-white opacity-20 rounded-full animate-pulse"></div>
+                  </div>
+                </div>
+                <p className="text-xl font-semibold text-[#126987]" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  {Math.round(animationProgress)}% Complete
+                </p>
+              </div>
+              
+              {/* Professional Security Notice */}
+              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-gray-200 shadow-lg">
+                <div className="flex items-center justify-center space-x-3 mb-3">
+                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-sm font-semibold text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Secure Connection Active
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500 leading-relaxed" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Your transfer is being processed through Bank of Ireland's secure payment network with 256-bit encryption
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div>
+            <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
+              <span className="font-medium text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Transfer Complete
+              </span>
+            </div>
+
+            <div className="px-4 py-4">
+              <div className="text-center max-w-sm mx-auto">
+                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Check className="w-6 h-6 text-green-600" />
+                </div>
+                
+                <h1 className="text-xl font-semibold text-gray-900 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Transfer Successful
+                </h1>
+                
+                <p className="text-gray-600 mb-4 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Your UK bank transfer has been processed successfully
+                </p>
+
                 <div className="bg-gray-50 rounded-xl p-3 mb-4 text-left animate-fade-in">
                   <div className="space-y-3">
                     <div className="flex justify-between">
-                      <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Reference:</span>
-                      <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{transferReference}</span>
+                      <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Amount:</span>
+                      <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>€{parseFloat(formData?.amount || '0').toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Amount:</span>
-                      <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>€{form.getValues('amount')}</span>
+                      <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Reference:</span>
+                      <div className="text-right">
+                        <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{transferReference}</span>
+                        <p className="text-xs text-gray-500 mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Keep this for your records
+                        </p>
+                      </div>
                     </div>
                     <div className="flex justify-between border-t border-gray-200 pt-3">
                       <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>GBP Equivalent:</span>
                       <div className="text-right">
                         <span className="font-semibold text-green-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          £{(parseFloat(form.getValues('amount')) * exchangeRate).toFixed(2)}
+                          £{(parseFloat(formData?.amount || '0') * exchangeRate).toFixed(2)}
                         </span>
                         <p className="text-xs text-gray-500 mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                           Rate: €1 = £{exchangeRate.toFixed(4)} • Live rate
@@ -251,7 +277,7 @@ export default function UkTransfer() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>To:</span>
-                      <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{form.getValues('recipientName')}</span>
+                      <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{formData?.recipientName}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Status:</span>
@@ -274,7 +300,6 @@ export default function UkTransfer() {
                   </div>
                 </div>
 
-                {/* Show buttons only after reference is revealed */}
                 <div className="flex space-x-3 mt-4">
                   <button 
                     onClick={() => navigate('/')}
@@ -294,85 +319,99 @@ export default function UkTransfer() {
                     New Transfer
                   </button>
                 </div>
-              </>
-            )}
+              </div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     );
   }
 
-  if (step === 'confirm') {
-    const formData = form.getValues();
-    const selectedAccount = accounts.find(acc => acc.id === formData.fromAccount);
+  const identifyBank = (sortCode: string) => {
+    const banks: { [key: string]: string } = {
+      '04': 'Lloyds Bank',
+      '20': 'Barclays',
+      '30': 'Lloyds Bank',
+      '40': 'HSBC',
+      '60': 'National Westminster Bank',
+      '77': 'Lloyds Bank',
+      '83': 'HSBC',
+      '09': 'Abbey National'
+    };
+    
+    const prefix = sortCode.substring(0, 2);
+    return banks[prefix] || 'UK Bank';
+  };
 
+  const handleSortCodeChange = (value: string) => {
+    const formatted = formatSortCode(value);
+    form.setValue('sortCode', formatted.replace(/-/g, ''));
+    
+    if (formatted.length === 8) { // XX-XX-XX format
+      const bank = identifyBank(formatted.replace(/-/g, ''));
+      setIdentifiedBank(bank);
+    } else {
+      setIdentifiedBank('');
+    }
+  };
+
+  if (step === 'confirm') {
     return (
-      <div>
-        <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
-          <button onClick={() => setStep('form')} className="flex items-center text-white">
-            <ChevronLeft className="w-6 h-6 mr-2" />
-            <span className="font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Confirm Transfer</span>
+      <div className="ios-scroll" style={{ minHeight: '100vh', backgroundColor: '#f9fafb', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
+        <div className="bg-[#126987] px-4 py-3 flex items-center justify-between sticky top-0 z-10">
+          <button 
+            onClick={() => setStep('form')}
+            className="flex items-center text-white"
+          >
+            <ChevronLeft className="h-5 w-5 mr-1" />
+            <span className="font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Back</span>
           </button>
+          <span className="font-medium text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+            Confirm Transfer
+          </span>
+          <div></div>
         </div>
 
-        <div className="px-4 py-6">
-          <div className="bg-white rounded-2xl p-6 shadow-sm border mb-6">
-            <h2 className="font-semibold text-gray-900 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+        <div className="px-4 py-6 pb-20">
+          <div className="bg-white rounded-xl p-4 mb-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
               Transfer Details
             </h2>
             
-            <div className="space-y-4">
-              <div className="flex justify-between py-2 border-b border-gray-100">
+            <div className="space-y-3">
+              <div className="flex justify-between">
                 <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>From:</span>
-                <div className="text-right">
-                  <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{selectedAccount?.name}</p>
-                  <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>{selectedAccount?.number}</p>
-                </div>
+                <span className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  {accounts.find(acc => acc.id.toString() === formData?.fromAccount)?.displayName}
+                </span>
               </div>
-              
-              <div className="flex justify-between py-2 border-b border-gray-100">
+              <div className="flex justify-between">
                 <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>To:</span>
-                <div className="text-right">
-                  <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{formData.recipientName}</p>
-                  <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>{formData.sortCode.replace(/(\d{2})(\d{2})(\d{2})/, '$1-$2-$3')} {formData.accountNumber}</p>
-                </div>
+                <span className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  {formData?.recipientName}
+                </span>
               </div>
-              
-              <div className="flex justify-between py-2 border-b border-gray-100">
+              <div className="flex justify-between">
                 <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Amount:</span>
+                <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  €{parseFloat(formData?.amount || '0').toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+              </div>
+              <div className="flex justify-between border-t border-gray-200 pt-3">
+                <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>GBP Equivalent:</span>
                 <div className="text-right">
-                  <span className="font-semibold text-[#126987] text-xl" style={{ fontFamily: 'OpenSans, sans-serif' }}>€{formData.amount}</span>
-                  <p className="text-sm text-green-700 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    ≈ £{(parseFloat(formData.amount) * exchangeRate).toFixed(2)} GBP
+                  <span className="font-semibold text-green-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    £{(parseFloat(formData?.amount || '0') * exchangeRate).toFixed(2)}
+                  </span>
+                  <p className="text-xs text-gray-500 mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Rate: €1 = £{exchangeRate.toFixed(4)} • Live rate
                   </p>
                 </div>
               </div>
-              
-              <div className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Reference:</span>
-                <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{formData.reference}</span>
-              </div>
-              
-              <div className="flex justify-between py-2">
-                <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Transfer Reference:</span>
-                <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{transferReference}</span>
-              </div>
             </div>
           </div>
 
-          <div className="bg-blue-50 rounded-xl p-4 mb-6 flex items-start space-x-3">
-            <Info className="w-5 h-5 text-blue-600 mt-0.5" />
-            <div>
-              <p className="text-sm font-medium text-blue-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                UK Bank Transfer
-              </p>
-              <p className="text-xs text-blue-700 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                This transfer will be processed within 1-2 business days due to international banking regulations.
-              </p>
-            </div>
-          </div>
-
-          <button
+          <button 
             onClick={executeTransfer}
             className="w-full bg-[#126987] text-white py-4 rounded-xl font-semibold active:scale-98 transition-transform"
             style={{ fontFamily: 'OpenSans, sans-serif' }}
@@ -385,181 +424,166 @@ export default function UkTransfer() {
   }
 
   return (
-    <div className="page-container" style={{ 
-      position: 'fixed', 
-      top: 0, 
-      left: 0, 
-      right: 0, 
-      bottom: 0, 
-      display: 'flex', 
-      flexDirection: 'column',
-      backgroundColor: '#f9fafb'
-    }}>
-      <div className="bg-[#126987] px-4 py-3 flex items-center justify-between" style={{ flexShrink: 0 }}>
-        <button onClick={() => navigate('/payments')} className="flex items-center text-white">
-          <ChevronLeft className="w-5 h-5 mr-2" />
-          <span className="font-semibold text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>UK Bank Transfer</span>
+    <div className="ios-scroll" style={{ minHeight: '100vh', backgroundColor: '#f9fafb', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
+      <div className="bg-[#126987] px-4 py-3 flex items-center justify-between sticky top-0 z-10">
+        <button 
+          onClick={() => navigate('/payments')}
+          className="flex items-center text-white"
+        >
+          <ChevronLeft className="h-5 w-5 mr-1" />
+          <span className="font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Back</span>
         </button>
+        <span className="font-medium text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+          UK Transfer
+        </span>
+        <div></div>
       </div>
 
-      <div style={{ 
-        flex: 1, 
-        overflowY: 'auto', 
-        WebkitOverflowScrolling: 'touch',
-        padding: '1rem'
-      }}>
-        <div style={{ backgroundColor: 'white', borderRadius: '0.75rem', padding: '1.5rem', marginBottom: '2rem' }}>
-          <div className="flex items-center mb-6">
-            <div className="w-12 h-12 bg-gradient-to-br from-[#126987] to-[#5a7b85] rounded-xl flex items-center justify-center mr-4">
-              <Building2 className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h2 className="font-bold text-gray-900 text-lg" style={{ fontFamily: 'OpenSans, sans-serif' }}>UK Bank Transfer</h2>
-              <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Instant transfer via Faster Payments</p>
-            </div>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="px-4 py-6 pb-20">
+        <div className="bg-white rounded-xl p-4 mb-4">
+          <div className="flex items-center mb-4">
+            <Building className="h-5 w-5 text-[#126987] mr-2" />
+            <h2 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              UK Bank Details
+            </h2>
           </div>
-
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="bg-gray-50 rounded-lg p-4">
-              <label className="block text-sm font-semibold text-gray-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                <CreditCard className="w-4 h-4 inline mr-2" />
-                From Account
-              </label>
-              <select
-                {...form.register('fromAccount')}
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
-              >
-                <option value="">Select account</option>
-                {accounts.map(account => (
-                  <option key={account.id} value={account.id}>
-                    {account.name} {account.number} - {account.balance}
-                  </option>
-                ))}
-              </select>
-              {form.formState.errors.fromAccount && (
-                <p className="text-red-500 text-xs mt-2 font-medium">{form.formState.errors.fromAccount.message}</p>
-              )}
-            </div>
-
-            <div className="bg-gray-50 rounded-lg p-4">
-              <label className="block text-sm font-semibold text-gray-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+          
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                 Recipient Name
               </label>
               <input
                 {...form.register('recipientName')}
                 type="text"
+                className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent"
                 placeholder="Enter recipient's full name"
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm touch-manipulation transform-gpu transition-all duration-150 ease-out"
                 style={{ fontFamily: 'OpenSans, sans-serif' }}
               />
               {form.formState.errors.recipientName && (
-                <p className="text-red-500 text-xs mt-2 font-medium">{form.formState.errors.recipientName.message}</p>
+                <p className="text-red-500 text-sm mt-1">{form.formState.errors.recipientName.message}</p>
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-gray-50 rounded-lg p-4">
-                <label className="block text-sm font-semibold text-gray-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Sort Code
-                </label>
-                <input
-                  {...form.register('sortCode')}
-                  type="text"
-                  placeholder="12-34-56"
-                  maxLength={8}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm touch-manipulation transform-gpu transition-all duration-150 ease-out"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, '');
-                    const formatted = formatSortCode(value);
-                    e.target.value = formatted;
-                    form.setValue('sortCode', value);
-                    
-                    if (value.length >= 4) {
-                      const bank = validateUKSortCode(value);
-                      setIdentifiedBank(bank || '');
-                    } else {
-                      setIdentifiedBank('');
-                    }
-                  }}
-                />
-                {identifiedBank && (
-                  <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded-md flex items-center">
-                    <Building className="w-4 h-4 text-green-600 mr-2" />
-                    <span className="text-xs text-green-700 font-medium">{identifiedBank}</span>
-                  </div>
-                )}
-                {form.formState.errors.sortCode && (
-                  <p className="text-red-500 text-xs mt-2 font-medium">{form.formState.errors.sortCode.message}</p>
-                )}
-              </div>
-
-              <div className="bg-gray-50 rounded-lg p-4">
-                <label className="block text-sm font-semibold text-gray-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Account Number
-                </label>
-                <input
-                  {...form.register('accountNumber')}
-                  type="text"
-                  placeholder="12345678"
-                  maxLength={8}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm touch-manipulation transform-gpu transition-all duration-150 ease-out"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, '');
-                    form.setValue('accountNumber', value);
-                  }}
-                />
-                {form.formState.errors.accountNumber && (
-                  <p className="text-red-500 text-xs mt-2 font-medium">{form.formState.errors.accountNumber.message}</p>
-                )}
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                UK Sort Code
+              </label>
+              <input
+                onChange={(e) => handleSortCodeChange(e.target.value)}
+                type="text"
+                className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent"
+                placeholder="XX-XX-XX"
+                maxLength={8}
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              />
+              {identifiedBank && (
+                <p className="text-green-600 text-sm mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  ✓ {identifiedBank}
+                </p>
+              )}
+              {form.formState.errors.sortCode && (
+                <p className="text-red-500 text-sm mt-1">{form.formState.errors.sortCode.message}</p>
+              )}
             </div>
 
-            <div className="bg-gray-50 rounded-lg p-4">
-              <label className="block text-sm font-semibold text-gray-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Account Number
+              </label>
+              <input
+                {...form.register('accountNumber')}
+                type="text"
+                className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent"
+                placeholder="8-digit account number"
+                maxLength={8}
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              />
+              {form.formState.errors.accountNumber && (
+                <p className="text-red-500 text-sm mt-1">{form.formState.errors.accountNumber.message}</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-4 mb-4">
+          <div className="flex items-center mb-4">
+            <CreditCard className="h-5 w-5 text-[#126987] mr-2" />
+            <h2 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              Transfer Amount
+            </h2>
+          </div>
+          
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                From Account
+              </label>
+              <select
+                {...form.register('fromAccount')}
+                className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              >
+                <option value="">Select account</option>
+                {accounts.map((account) => (
+                  <option key={account.id} value={account.id}>
+                    {account.displayName} - €{parseFloat(account.balance).toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </option>
+                ))}
+              </select>
+              {form.formState.errors.fromAccount && (
+                <p className="text-red-500 text-sm mt-1">{form.formState.errors.fromAccount.message}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                 Amount (EUR)
               </label>
               <input
                 {...form.register('amount')}
                 type="number"
                 step="0.01"
+                className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent"
                 placeholder="0.00"
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
                 style={{ fontFamily: 'OpenSans, sans-serif' }}
               />
+              {gbpAmount !== '0.00' && (
+                <p className="text-green-600 text-sm mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  ≈ £{gbpAmount} GBP (Rate: €1 = £{exchangeRate.toFixed(4)})
+                </p>
+              )}
               {form.formState.errors.amount && (
-                <p className="text-red-500 text-xs mt-2 font-medium">{form.formState.errors.amount.message}</p>
+                <p className="text-red-500 text-sm mt-1">{form.formState.errors.amount.message}</p>
               )}
             </div>
 
-            <div className="bg-gray-50 rounded-lg p-4">
-              <label className="block text-sm font-semibold text-gray-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Payment Reference
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Reference
               </label>
               <input
                 {...form.register('reference')}
                 type="text"
-                placeholder="Payment description"
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
+                className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent"
+                placeholder="Payment reference"
                 style={{ fontFamily: 'OpenSans, sans-serif' }}
               />
               {form.formState.errors.reference && (
-                <p className="text-red-500 text-xs mt-2 font-medium">{form.formState.errors.reference.message}</p>
+                <p className="text-red-500 text-sm mt-1">{form.formState.errors.reference.message}</p>
               )}
             </div>
-
-            <button
-              type="submit"
-              className="w-full bg-gradient-to-r from-[#126987] to-[#5a7b85] text-white py-4 rounded-lg font-bold touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-98 text-sm shadow-md"
-              style={{ fontFamily: 'OpenSans, sans-serif' }}
-            >
-              Continue to Review
-            </button>
-          </form>
+          </div>
         </div>
-      </div>
+
+        <button 
+          type="submit"
+          className="w-full bg-[#126987] text-white py-4 rounded-xl font-semibold active:scale-98 transition-transform"
+          style={{ fontFamily: 'OpenSans, sans-serif' }}
+        >
+          Continue
+        </button>
+      </form>
     </div>
   );
 }
