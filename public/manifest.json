@@ -1,7 +1,7 @@
 {
   "name": "Bank of Ireland",
   "short_name": "BOI Banking",
-  "description": "Bank of Ireland Digital Banking App",
+  "description": "Bank of Ireland Mobile Banking App",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
