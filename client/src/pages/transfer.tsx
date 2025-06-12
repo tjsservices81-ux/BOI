@@ -12,6 +12,7 @@ import { BottomNavigation } from "@/components/ui/bottom-navigation";
 import { ArrowLeft, PiggyBank, ChevronDown, Send, Info, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Account } from "@shared/schema";
+import { UserDataManager } from "@/utils/userDataManager";
 
 export default function Transfer() {
   const { user } = useAuth();
@@ -34,81 +35,6 @@ export default function Transfer() {
     enabled: !!user,
   });
 
-  const processTransfer = (
-    fromAccountId: string,
-    amount: number,
-    recipientName: string,
-    reference: string
-  ) => {
-    // Generate transfer reference
-    const ref = `BOI${Math.random().toString(36).substr(2, 9).toUpperCase()}${Date.now().toString().slice(-6)}`;
-    setTransferReference(ref);
-    
-    // Store transaction locally like UK/IBAN transfers
-    const transaction = {
-      id: Date.now(),
-      accountId: parseInt(fromAccountId),
-      amount: `-${amount.toFixed(2)}`,
-      description: `Transfer to ${recipientName}`,
-      category: 'transfer',
-      type: 'debit' as const,
-      paymentMethod: 'Bank Transfer',
-      reference: ref,
-      timestamp: new Date().toISOString()
-    };
-
-    // Update account balance
-    const accounts = JSON.parse(localStorage.getItem('bankAccounts') || '[]');
-    const accountIndex = accounts.findIndex((acc: any) => acc.id === parseInt(fromAccountId));
-    if (accountIndex !== -1) {
-      const currentBalance = parseFloat(accounts[accountIndex].balance);
-      const newBalance = (currentBalance - amount).toFixed(2);
-      accounts[accountIndex].balance = newBalance;
-      localStorage.setItem('bankAccounts', JSON.stringify(accounts));
-    }
-
-    // Store transaction
-    const transactions = JSON.parse(localStorage.getItem('userTransactions') || '[]');
-    transactions.push(transaction);
-    localStorage.setItem('userTransactions', JSON.stringify(transactions));
-
-    // Start animation immediately like UK/IBAN transfers
-    setStep('success');
-    setShowReference(false);
-    setAnimationProgress(0);
-    
-    // Professional banking stages during 5-second animation
-    const stages = [
-      'Verifying transfer details...',
-      'Authenticating transaction...',
-      'Processing payment...',
-      'Updating account balances...',
-      'Transfer completed successfully'
-    ];
-    
-    let stageIndex = 0;
-    
-    const interval = setInterval(() => {
-      setAnimationProgress(prev => {
-        const newProgress = prev + 2; // 2% every 100ms = 5 seconds
-        
-        // Update stage message every 20% (1 second)
-        const newStageIndex = Math.floor(newProgress / 20);
-        if (newStageIndex !== stageIndex && newStageIndex < stages.length) {
-          stageIndex = newStageIndex;
-          setProcessingStage(stages[newStageIndex]);
-        }
-        
-        if (newProgress >= 100) {
-          clearInterval(interval);
-          setShowReference(true);
-          return 100;
-        }
-        return newProgress;
-      });
-    }, 100);
-  };
-
   const selectedAccount = accounts.find(acc => acc.id.toString() === selectedAccountId);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -122,15 +48,44 @@ export default function Transfer() {
       return;
     }
 
-    // Start processing animation immediately
-    startTransferAnimation();
-  };
-
-  const startTransferAnimation = () => {
+    // Generate transfer reference
     const genRef = `BOI${Date.now().toString().slice(-8)}${Math.random().toString(36).substr(2, 5).toUpperCase()}${Math.floor(Math.random() * 100000).toString().padStart(5, '0')}`;
     setTransferReference(genRef);
     
-    // Start animation immediately
+    // Process transfer locally
+    processTransfer();
+  };
+
+  const processTransfer = () => {
+    // Store transaction in local storage
+    const transaction = {
+      id: Date.now(),
+      accountId: parseInt(selectedAccountId),
+      amount: `-${parseFloat(amount).toFixed(2)}`,
+      description: `Transfer to ${recipient}`,
+      category: 'transfer',
+      type: 'debit' as const,
+      paymentMethod: 'Bank Transfer',
+      reference: transferReference,
+      timestamp: new Date().toISOString()
+    };
+
+    // Update account balance using UserDataManager
+    const accounts = UserDataManager.getUserData('bankAccounts', []);
+    const accountIndex = accounts.findIndex((acc: any) => acc.id === parseInt(selectedAccountId));
+    if (accountIndex !== -1) {
+      const currentBalance = parseFloat(accounts[accountIndex].balance);
+      const newBalance = (currentBalance - parseFloat(amount)).toFixed(2);
+      accounts[accountIndex].balance = newBalance;
+      UserDataManager.setUserData('bankAccounts', accounts);
+    }
+
+    // Store transaction using UserDataManager
+    const transactions = UserDataManager.getUserData('bankTransactions', []);
+    transactions.push(transaction);
+    UserDataManager.setUserData('bankTransactions', transactions);
+
+    // Start processing animation
     setStep('processing');
     setAnimationProgress(0);
     
@@ -154,7 +109,7 @@ export default function Transfer() {
       const progress = (currentStep / totalSteps) * 100;
       setAnimationProgress(progress);
       
-      // Update stage every 1 second (20 steps at 50ms intervals)
+      // Update stage every 1 second
       const stageIndex = Math.floor((currentStep / totalSteps) * stages.length);
       if (stageIndex < stages.length && stageIndex !== currentStage) {
         currentStage = stageIndex;
@@ -172,6 +127,15 @@ export default function Transfer() {
         }, 500);
       }
     }, progressInterval);
+
+    // Dispatch events for real-time updates
+    window.dispatchEvent(new CustomEvent('balanceUpdate', {
+      detail: { accountId: parseInt(selectedAccountId), newBalance: (parseFloat(selectedAccount?.balance || '0') - parseFloat(amount)).toFixed(2) }
+    }));
+    
+    window.dispatchEvent(new CustomEvent('transactionAdded', {
+      detail: { accountId: parseInt(selectedAccountId), transaction }
+    }));
   };
 
   // Processing animation screen
@@ -230,7 +194,7 @@ export default function Transfer() {
     );
   }
 
-  // Success screen with processing animation
+  // Success screen
   if (step === 'success') {
     return (
       <div>
@@ -302,40 +266,45 @@ export default function Transfer() {
 
               {/* Success Message */}
               <div className="text-center mb-8">
-                <h1 className="text-2xl font-bold text-gray-900 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                   Transfer Successful
-                </h1>
+                </h2>
                 <p className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Your transfer has been completed successfully
+                  Your transfer has been processed successfully
                 </p>
               </div>
 
               {/* Transfer Details */}
               <div className="space-y-4 mb-8">
-                <div className="flex justify-between">
+                <div className="flex justify-between py-2 border-b border-gray-100">
                   <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>To:</span>
                   <span className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{recipient}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between py-2 border-b border-gray-100">
                   <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Amount:</span>
-                  <span className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>€{amount}</span>
+                  <span className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>€{parseFloat(amount).toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between py-2 border-b border-gray-100">
                   <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Reference:</span>
-                  <span className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{transferReference}</span>
+                  <span className="font-medium text-gray-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>{transferReference}</span>
                 </div>
+                {reference && (
+                  <div className="flex justify-between py-2 border-b border-gray-100">
+                    <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Your Reference:</span>
+                    <span className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{reference}</span>
+                  </div>
+                )}
               </div>
 
               {/* Action Buttons */}
-              <div className="flex space-x-4">
-                <button 
-                  onClick={() => navigate('/')}
-                  className="flex-1 bg-[#126987] text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+              <div className="space-y-3">
+                <Button
+                  onClick={() => navigate('/dashboard')}
+                  className="w-full bg-[#126987] hover:bg-[#0f5a73] text-white font-medium py-3 px-4 transition-colors duration-200"
                 >
                   Back to Dashboard
-                </button>
-                <button 
+                </Button>
+                <Button
                   onClick={() => {
                     setStep('form');
                     setSelectedAccountId('');
@@ -343,12 +312,13 @@ export default function Transfer() {
                     setIban('');
                     setAmount('');
                     setReference('');
+                    setShowReference(false);
                   }}
-                  className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold active:scale-98 transition-transform"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  variant="outline"
+                  className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-3 px-4 transition-colors duration-200"
                 >
-                  New Transfer
-                </button>
+                  Make Another Transfer
+                </Button>
               </div>
             </div>
           </div>
@@ -358,51 +328,44 @@ export default function Transfer() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white px-6 py-4 shadow-sm">
+      <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
         <div className="flex items-center">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="mr-4"
-            onClick={() => navigate("/")}
-          >
-            <ArrowLeft className="text-[var(--boi-gray)]" />
-          </Button>
-          <h1 className="text-lg font-semibold text-[var(--boi-gray)]">Transfer Money</h1>
+          <button onClick={() => navigate('/dashboard')} className="mr-3">
+            <ArrowLeft className="text-white" />
+          </button>
+          <span className="font-medium text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+            Transfer Money
+          </span>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="p-6 space-y-4">
+      {/* Form */}
+      <form onSubmit={handleSubmit} className="p-4 space-y-6">
         {/* From Account */}
         <Card>
           <CardContent className="p-4">
-            <h3 className="font-medium text-[var(--boi-gray)] mb-4">From Account</h3>
+            <Label htmlFor="from-account" className="text-sm font-medium text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              From Account
+            </Label>
             <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select account">
-                  {selectedAccount && (
-                    <div className="flex items-center">
-                      <PiggyBank className="text-[var(--boi-green)] mr-3" />
-                      <div>
-                        <p className="font-medium text-[var(--boi-gray)]">{selectedAccount.displayName}</p>
-                        <p className="text-sm text-[var(--boi-light-gray)]">
-                          Available: €{parseFloat(selectedAccount.balance).toFixed(2)}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </SelectValue>
+              <SelectTrigger className="mt-2">
+                <SelectValue placeholder="Select account" />
               </SelectTrigger>
               <SelectContent>
                 {accounts.map((account) => (
                   <SelectItem key={account.id} value={account.id.toString()}>
-                    <div className="flex items-center">
-                      <PiggyBank className="text-[var(--boi-green)] mr-3" />
-                      <div>
-                        <p className="font-medium">{account.displayName}</p>
-                        <p className="text-sm text-gray-500">€{parseFloat(account.balance).toFixed(2)}</p>
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center">
+                        <PiggyBank className="mr-2 h-4 w-4 text-gray-500" />
+                        <div>
+                          <div className="font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>{account.displayName}</div>
+                          <div className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>{account.accountNumber}</div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>€{parseFloat(account.balance).toFixed(2)}</div>
                       </div>
                     </div>
                   </SelectItem>
@@ -412,62 +375,63 @@ export default function Transfer() {
           </CardContent>
         </Card>
 
-        {/* To */}
+        {/* To Details */}
         <Card>
-          <CardContent className="p-4 space-y-3">
-            <h3 className="font-medium text-[var(--boi-gray)] mb-4">To</h3>
+          <CardContent className="p-4 space-y-4">
             <div>
-              <Label htmlFor="recipient">Recipient Name</Label>
+              <Label htmlFor="recipient" className="text-sm font-medium text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Recipient Name
+              </Label>
               <Input
                 id="recipient"
-                type="text"
-                placeholder="Recipient name or account"
                 value={recipient}
                 onChange={(e) => setRecipient(e.target.value)}
-                className="focus:ring-2 focus:ring-[var(--boi-green)] focus:border-transparent"
-                required
+                placeholder="Enter recipient name"
+                className="mt-2"
               />
             </div>
             <div>
-              <Label htmlFor="iban">IBAN</Label>
+              <Label htmlFor="iban" className="text-sm font-medium text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                IBAN
+              </Label>
               <Input
                 id="iban"
-                type="text"
-                placeholder="IE29 AIBK 9311 5212 3456 78"
                 value={iban}
                 onChange={(e) => setIban(e.target.value)}
-                className="focus:ring-2 focus:ring-[var(--boi-green)] focus:border-transparent"
-                required
+                placeholder="IE29 AIBK 9311 5212 3456 78"
+                className="mt-2"
               />
             </div>
           </CardContent>
         </Card>
 
-        {/* Amount */}
+        {/* Amount & Reference */}
         <Card>
-          <CardContent className="p-4 space-y-3">
-            <h3 className="font-medium text-[var(--boi-gray)] mb-4">Amount</h3>
-            <div className="relative">
-              <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[var(--boi-gray)] font-medium">€</span>
+          <CardContent className="p-4 space-y-4">
+            <div>
+              <Label htmlFor="amount" className="text-sm font-medium text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Amount (€)
+              </Label>
               <Input
+                id="amount"
                 type="number"
                 step="0.01"
-                placeholder="0.00"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="pl-8 text-lg font-medium focus:ring-2 focus:ring-[var(--boi-green)] focus:border-transparent"
-                required
+                placeholder="0.00"
+                className="mt-2"
               />
             </div>
             <div>
-              <Label htmlFor="reference">Reference (optional)</Label>
+              <Label htmlFor="reference" className="text-sm font-medium text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Reference (Optional)
+              </Label>
               <Input
                 id="reference"
-                type="text"
-                placeholder="Reference"
                 value={reference}
                 onChange={(e) => setReference(e.target.value)}
-                className="focus:ring-2 focus:ring-[var(--boi-green)] focus:border-transparent"
+                placeholder="Payment reference"
+                className="mt-2"
               />
             </div>
           </CardContent>
@@ -486,8 +450,7 @@ export default function Transfer() {
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
-            <p className="font-medium mb-1">Security Notice</p>
-            <p className="text-sm">Transfers are processed securely with 256-bit encryption. Large transfers may require additional verification.</p>
+            Transfers are processed immediately. Please ensure all details are correct before submitting.
           </AlertDescription>
         </Alert>
       </form>
