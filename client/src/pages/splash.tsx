@@ -54,112 +54,31 @@ export default function Splash() {
         isVisible ? 'opacity-100' : 'opacity-0'
       }`}
       style={{
-        background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #ffffff 100%)',
+        backgroundImage: `url('/IMG_0633_1749764599916.jpeg')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
         userSelect: 'none',
         pointerEvents: 'none'
       }}
       onClick={handleInteraction}
       onTouchStart={handleInteraction}
     >
-      {/* Professional subtle gradient overlay */}
-      <div 
-        className="absolute inset-0"
-        style={{
-          background: 'radial-gradient(ellipse at center, rgba(18, 105, 135, 0.03) 0%, rgba(18, 105, 135, 0.08) 100%)',
-        }}
-      />
-      
       {/* Prevent any interactions */}
       <div 
         className="absolute inset-0 z-50"
         style={{ pointerEvents: 'none' }}
       />
       
-      {/* Main content centered */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center px-8">
-        {/* Professional logo container with subtle shadow */}
-        <div className="mb-20 relative">
-          <div className="absolute inset-0 bg-[#126987] opacity-5 blur-xl rounded-full scale-150"></div>
-          <div className="relative bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
-            <img 
-              src="/boi_logo.svg" 
-              alt="Bank of Ireland" 
-              className="h-16 w-auto"
-              style={{ 
-                imageRendering: 'crisp-edges',
-                userSelect: 'none',
-                pointerEvents: 'none',
-                filter: 'brightness(0) saturate(100%) invert(25%) sepia(85%) saturate(1011%) hue-rotate(168deg) brightness(93%) contrast(88%)'
-              }}
-              draggable={false}
-            />
-          </div>
-        </div>
-        
-        {/* Loading Messages with professional styling */}
-        <div className="text-center h-20 flex items-center justify-center mb-4">
-          {loadingSteps.map((message, index) => (
-            <div
-              key={index}
-              className={`absolute transition-all duration-700 ease-out ${
-                index === currentStep 
-                  ? 'opacity-100 transform translate-y-0 scale-100' 
-                  : index < currentStep
-                    ? 'opacity-0 transform -translate-y-3 scale-95'
-                    : 'opacity-0 transform translate-y-3 scale-95'
-              }`}
-            >
-              <p 
-                className="text-[#126987] text-lg font-semibold tracking-wide"
-                style={{ 
-                  fontFamily: 'OpenSans, sans-serif',
-                  textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
-                }}
-              >
-                {message}
-              </p>
-            </div>
-          ))}
-        </div>
-        
-        {/* Professional progress bar */}
-        <div className="w-64 bg-gray-200 rounded-full h-1.5 mb-6 overflow-hidden shadow-inner">
-          <div 
-            className="bg-gradient-to-r from-[#126987] to-[#0f5a6b] h-1.5 rounded-full transition-all duration-700 ease-out shadow-sm"
-            style={{ 
-              width: `${((currentStep + 1) / loadingSteps.length) * 100}%`,
-              boxShadow: '0 0 8px rgba(18, 105, 135, 0.4)'
-            }}
-          />
-        </div>
-        
-        {/* Minimalist step indicators */}
-        <div className="flex space-x-3">
-          {loadingSteps.map((_, index) => (
-            <div
-              key={index}
-              className={`w-1.5 h-1.5 rounded-full transition-all duration-500 ${
-                index <= currentStep 
-                  ? 'bg-[#126987] scale-125 shadow-sm' 
-                  : 'bg-gray-300 scale-100'
-              }`}
-              style={{
-                boxShadow: index <= currentStep ? '0 0 4px rgba(18, 105, 135, 0.6)' : 'none'
-              }}
-            />
-          ))}
-        </div>
-        
-        {/* Professional footer */}
-        <div className="absolute bottom-12 text-center">
-          <p 
-            className="text-gray-500 text-sm font-medium tracking-wide"
-            style={{ fontFamily: 'OpenSans, sans-serif' }}
-          >
-            Bank of Ireland Digital Banking
-          </p>
-          <div className="mt-2 w-12 h-0.5 bg-gradient-to-r from-transparent via-[#126987] to-transparent mx-auto opacity-30"></div>
-        </div>
+      {/* Animated loading spinner positioned where it appears in the screenshot */}
+      <div className="absolute" style={{ bottom: '35%', left: '50%', transform: 'translateX(-50%)' }}>
+        <div 
+          className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"
+          style={{
+            animation: 'spin 1s linear infinite',
+            opacity: 0.9
+          }}
+        />
       </div>
     </div>
   );
