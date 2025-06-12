@@ -8,10 +8,16 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Bank of Ireland" />
+    <meta name="apple-touch-fullscreen" content="yes" />
     
     <!-- Prevent iOS Safari UI -->
     <meta name="format-detection" content="telephone=no" />
     <meta name="mobile-web-app-capable" content="yes" />
+    
+    <!-- Additional PWA meta tags -->
+    <meta name="msapplication-TileColor" content="#126987" />
+    <meta name="msapplication-config" content="none" />
+    <meta name="application-name" content="Bank of Ireland" />
     
     <!-- App Icons for iOS -->
     <link rel="apple-touch-icon" href="/BOI_logo.png" />
@@ -59,6 +65,28 @@
         body {
           padding-left: env(safe-area-inset-left);
           padding-right: env(safe-area-inset-right);
+        }
+      }
+      
+      /* PWA standalone mode detection and styling */
+      @media all and (display-mode: standalone) {
+        body {
+          background-color: #126987;
+        }
+        
+        /* Hide any browser-specific UI elements */
+        html, body {
+          overflow-x: hidden;
+          -webkit-overflow-scrolling: touch;
+        }
+      }
+      
+      /* Additional iOS PWA support */
+      @media (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) {
+        /* iPhone X/XS specific adjustments */
+        body {
+          padding-top: env(safe-area-inset-top);
+          padding-bottom: env(safe-area-inset-bottom);
         }
       }
     </style>
