@@ -70,10 +70,10 @@ export default function Transfer() {
     }
 
     transferMutation.mutate({
-      fromAccountId: selectedAccountId,
-      amount: parseFloat(amount),
-      recipientName: recipient,
-      transferType: "UK",
+      fromAccountId: parseInt(selectedAccountId),
+      toAccount: recipient,
+      iban,
+      amount: amount,
       reference: reference || undefined,
     });
   };
