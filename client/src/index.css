@@ -2,22 +2,59 @@
 @tailwind components;
 @tailwind utilities;
 
-/* PWA Base Styles */
-html, body {
+/* PWA Fullscreen Base Styles */
+html {
+  height: 100%;
+  height: calc(var(--vh, 1vh) * 100);
+  overflow: hidden;
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+}
+
+body {
   margin: 0;
   padding: 0;
   width: 100%;
   height: 100%;
+  height: calc(var(--vh, 1vh) * 100);
   overflow: hidden;
   font-family: system-ui, -apple-system, sans-serif;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
 }
 
 #root {
   width: 100%;
-  height: 100vh;
-  height: 100dvh;
+  height: 100%;
+  height: calc(var(--vh, 1vh) * 100);
   overflow: hidden;
   position: relative;
+}
+
+/* Prevent browser UI on mobile */
+@media screen and (max-width: 768px) {
+  html, body {
+    height: 100vh;
+    height: -webkit-fill-available;
+  }
+  
+  #root {
+    height: 100vh;
+    height: -webkit-fill-available;
+  }
+}
+
+/* Standalone PWA mode */
+@media all and (display-mode: standalone) {
+  html, body, #root {
+    height: 100vh;
+    height: 100dvh;
+  }
 }
 
 /* PWA Mobile Optimizations */
@@ -54,8 +91,8 @@ button, a, [role="button"] {
 /* PWA page containers */
 .pwa-page {
   width: 100%;
-  height: 100vh;
-  height: 100dvh;
+  height: 100%;
+  height: calc(var(--vh, 1vh) * 100);
   overflow: hidden;
   background: white;
   display: flex;
