@@ -364,32 +364,28 @@ img {
   }
 }
 
-/* iOS standalone mode detection and full screen */
+/* Splash screen specific full screen mode - hide status bar only for splash */
 @media (display-mode: standalone) {
-  .full-height {
+  .splash-fullscreen .full-height {
     height: 100vh;
     height: -webkit-fill-available;
-    height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
+    padding-top: 0;
+    padding-bottom: 0;
     margin: 0;
   }
   
-  html, body {
+  .splash-fullscreen html,
+  .splash-fullscreen body {
     background: transparent !important;
     overflow: hidden;
     margin: 0;
     padding: 0;
-    height: 100vh;
-    height: -webkit-fill-available;
   }
   
-  #root {
+  .splash-fullscreen #root {
     background: transparent !important;
     margin: 0;
     padding: 0;
-    height: 100vh;
-    height: -webkit-fill-available;
   }
 }
 

@@ -15,6 +15,9 @@ export default function Splash() {
   ];
 
   useEffect(() => {
+    // Add splash-specific full screen class for iOS PWA
+    document.body.classList.add('splash-fullscreen');
+    
     // Step progression timing: each step lasts 1.6 seconds
     const stepTimers: NodeJS.Timeout[] = [];
     
@@ -36,9 +39,10 @@ export default function Splash() {
 
     stepTimers.push(finalTimer);
 
-    // Cleanup all timers
+    // Cleanup all timers and remove splash class
     return () => {
       stepTimers.forEach(timer => clearTimeout(timer));
+      document.body.classList.remove('splash-fullscreen');
     };
   }, [navigate]);
 

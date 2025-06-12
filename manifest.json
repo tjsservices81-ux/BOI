@@ -3,10 +3,10 @@
   "short_name": "BOI Mobile",
   "description": "Bank of Ireland Mobile Banking App",
   "start_url": "/",
-  "display": "fullscreen",
+  "display": "standalone",
   "orientation": "portrait-primary",
-  "theme_color": "transparent",
-  "background_color": "transparent",
+  "theme_color": "#2448FF",
+  "background_color": "#2448FF",
   "scope": "/",
   "icons": [
     {
