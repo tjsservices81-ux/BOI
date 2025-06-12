@@ -335,7 +335,7 @@ export default function IbanTransfer() {
   }
 
   return (
-    <div style={{ 
+    <div className="page-container" style={{ 
       position: 'fixed', 
       top: 0, 
       left: 0, 

@@ -243,7 +243,7 @@ export default function Profile() {
 
 
   return (
-    <div className="h-screen bg-gradient-to-b from-[#2c5f70] to-[#126987] flex flex-col overflow-hidden">
+    <div className="h-screen bg-gradient-to-b from-[#2c5f70] to-[#126987] flex flex-col overflow-hidden page-slide-up">
       {/* Header */}
       <div className="bg-[#2c5f70] px-4 py-6 pt-12 flex-shrink-0">
         <div className="flex items-center justify-between">

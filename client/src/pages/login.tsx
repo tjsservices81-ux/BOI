@@ -355,7 +355,7 @@ export default function Login() {
   };
 
   return (
-    <div className="full-height relative ios-safe-top ios-safe-bottom ios-safe-left ios-safe-right">
+    <div className="full-height relative ios-safe-top ios-safe-bottom ios-safe-left ios-safe-right page-fade-in">
       {/* Loading overlay */}
       {(isNavigating || isLoginAnimating) && (
         <div className="fixed inset-0 bg-gradient-to-br from-[#126987] to-[#2d5a6b] z-50 flex flex-col items-center justify-center">
