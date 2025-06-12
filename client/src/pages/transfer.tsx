@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,16 +9,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/lib/auth";
 import { BottomNavigation } from "@/components/ui/bottom-navigation";
-import { apiRequest } from "@/lib/queryClient";
 import { ArrowLeft, PiggyBank, ChevronDown, Send, Info, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import type { Account, TransferRequest } from "@shared/schema";
+import type { Account } from "@shared/schema";
 
 export default function Transfer() {
   const { user } = useAuth();
   const [, navigate] = useLocation();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
 
   const [selectedAccountId, setSelectedAccountId] = useState<string>("");
   const [recipient, setRecipient] = useState("");
@@ -36,63 +34,80 @@ export default function Transfer() {
     enabled: !!user,
   });
 
-  const transferMutation = useMutation({
-    mutationFn: async (transferData: TransferRequest) => {
-      const response = await apiRequest("POST", "/api/transfer", transferData);
-      return response.json();
-    },
-    onSuccess: (data) => {
-      // Generate transfer reference
-      const ref = `BOI${Math.random().toString(36).substr(2, 9).toUpperCase()}${Date.now().toString().slice(-6)}`;
-      setTransferReference(ref);
-      
-      // Start animation sequence
-      setStep('processing');
-      setShowReference(false);
-      setAnimationProgress(0);
-      
-      // Professional banking stages during 5-second animation
-      const stages = [
-        'Verifying transfer details...',
-        'Authenticating transaction...',
-        'Processing payment...',
-        'Updating account balances...',
-        'Transfer completed successfully'
-      ];
-      
-      let stageIndex = 0;
-      
-      const interval = setInterval(() => {
-        setAnimationProgress(prev => {
-          const newProgress = prev + 2; // 2% every 100ms = 5 seconds
-          
-          // Update stage message every 20% (1 second)
-          const newStageIndex = Math.floor(newProgress / 20);
-          if (newStageIndex !== stageIndex && newStageIndex < stages.length) {
-            stageIndex = newStageIndex;
-            setProcessingStage(stages[newStageIndex]);
-          }
-          
-          if (newProgress >= 100) {
-            clearInterval(interval);
-            setShowReference(true);
-            setStep('success');
-            queryClient.invalidateQueries({ queryKey: ["/api/accounts"] });
-            queryClient.invalidateQueries({ queryKey: ["/api/transactions"] });
-            return 100;
-          }
-          return newProgress;
-        });
-      }, 100);
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Transfer Failed",
-        description: error.message || "An error occurred while processing your transfer.",
-        variant: "destructive",
+  const processTransfer = (
+    fromAccountId: string,
+    amount: number,
+    recipientName: string,
+    reference: string
+  ) => {
+    // Generate transfer reference
+    const ref = `BOI${Math.random().toString(36).substr(2, 9).toUpperCase()}${Date.now().toString().slice(-6)}`;
+    setTransferReference(ref);
+    
+    // Store transaction locally like UK/IBAN transfers
+    const transaction = {
+      id: Date.now(),
+      accountId: parseInt(fromAccountId),
+      amount: `-${amount.toFixed(2)}`,
+      description: `Transfer to ${recipientName}`,
+      category: 'transfer',
+      type: 'debit' as const,
+      paymentMethod: 'Bank Transfer',
+      reference: ref,
+      timestamp: new Date().toISOString()
+    };
+
+    // Update account balance
+    const accounts = JSON.parse(localStorage.getItem('bankAccounts') || '[]');
+    const accountIndex = accounts.findIndex((acc: any) => acc.id === parseInt(fromAccountId));
+    if (accountIndex !== -1) {
+      const currentBalance = parseFloat(accounts[accountIndex].balance);
+      const newBalance = (currentBalance - amount).toFixed(2);
+      accounts[accountIndex].balance = newBalance;
+      localStorage.setItem('bankAccounts', JSON.stringify(accounts));
+    }
+
+    // Store transaction
+    const transactions = JSON.parse(localStorage.getItem('userTransactions') || '[]');
+    transactions.push(transaction);
+    localStorage.setItem('userTransactions', JSON.stringify(transactions));
+
+    // Start animation immediately like UK/IBAN transfers
+    setStep('success');
+    setShowReference(false);
+    setAnimationProgress(0);
+    
+    // Professional banking stages during 5-second animation
+    const stages = [
+      'Verifying transfer details...',
+      'Authenticating transaction...',
+      'Processing payment...',
+      'Updating account balances...',
+      'Transfer completed successfully'
+    ];
+    
+    let stageIndex = 0;
+    
+    const interval = setInterval(() => {
+      setAnimationProgress(prev => {
+        const newProgress = prev + 2; // 2% every 100ms = 5 seconds
+        
+        // Update stage message every 20% (1 second)
+        const newStageIndex = Math.floor(newProgress / 20);
+        if (newStageIndex !== stageIndex && newStageIndex < stages.length) {
+          stageIndex = newStageIndex;
+          setProcessingStage(stages[newStageIndex]);
+        }
+        
+        if (newProgress >= 100) {
+          clearInterval(interval);
+          setShowReference(true);
+          return 100;
+        }
+        return newProgress;
       });
-    },
-  });
+    }, 100);
+  };
 
   const selectedAccount = accounts.find(acc => acc.id.toString() === selectedAccountId);
 
@@ -107,72 +122,16 @@ export default function Transfer() {
       return;
     }
 
-    transferMutation.mutate({
-      fromAccountId: parseInt(selectedAccountId),
-      toAccount: recipient,
-      iban,
-      amount,
-      reference: reference || undefined,
-    });
+    // Use local processing like UK/IBAN transfers for immediate animation
+    processTransfer(
+      selectedAccountId,
+      parseFloat(amount),
+      recipient,
+      reference || 'Standard Transfer'
+    );
   };
 
-  // Processing animation screen
-  if (step === 'processing') {
-    return (
-      <div style={{ 
-        position: 'fixed', 
-        top: 0, 
-        left: 0, 
-        right: 0, 
-        bottom: 0, 
-        background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
-        zIndex: 1000,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}>
-        <div className="text-center space-y-8 px-8 max-w-md w-full">
-          {/* Bank of Ireland Professional Logo Area */}
-          <div className="mb-8">
-            <div className="w-20 h-20 bg-[#126987] rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
-              <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
-            </div>
-          </div>
-          
-          {/* Professional Transfer Processing Header */}
-          <div className="space-y-4">
-            <h1 className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Processing Transfer
-            </h1>
-            <p className="text-lg text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              {processingStage}
-            </p>
-          </div>
-
-          {/* Professional Progress Bar */}
-          <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden shadow-inner">
-            <div 
-              className="h-full bg-gradient-to-r from-[#126987] to-[#1e7a96] rounded-full transition-all duration-300 ease-out shadow-sm"
-              style={{ width: `${animationProgress}%` }}
-            ></div>
-          </div>
-
-          {/* Progress Percentage */}
-          <div className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-            {Math.round(animationProgress)}% Complete
-          </div>
-
-          {/* Security Badge */}
-          <div className="flex items-center justify-center space-x-2 text-gray-500 text-sm">
-            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-            <span style={{ fontFamily: 'OpenSans, sans-serif' }}>Secured by 256-bit encryption</span>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Success screen
+  // Success screen with processing animation
   if (step === 'success') {
     return (
       <div>
@@ -182,7 +141,59 @@ export default function Transfer() {
           </span>
         </div>
 
-        {showReference && (
+        {/* Full-screen professional processing animation */}
+        {!showReference ? (
+          <div style={{ 
+            position: 'fixed', 
+            top: 0, 
+            left: 0, 
+            right: 0, 
+            bottom: 0, 
+            background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+            zIndex: 1000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <div className="text-center space-y-8 px-8 max-w-md w-full">
+              {/* Bank of Ireland Professional Logo Area */}
+              <div className="mb-8">
+                <div className="w-20 h-20 bg-[#126987] rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
+                  <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              </div>
+              
+              {/* Professional Transfer Processing Header */}
+              <div className="space-y-4">
+                <h1 className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Processing Transfer
+                </h1>
+                <p className="text-lg text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  {processingStage}
+                </p>
+              </div>
+
+              {/* Professional Progress Bar */}
+              <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden shadow-inner">
+                <div 
+                  className="h-full bg-gradient-to-r from-[#126987] to-[#1e7a96] rounded-full transition-all duration-300 ease-out shadow-sm"
+                  style={{ width: `${animationProgress}%` }}
+                ></div>
+              </div>
+
+              {/* Progress Percentage */}
+              <div className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                {Math.round(animationProgress)}% Complete
+              </div>
+
+              {/* Security Badge */}
+              <div className="flex items-center justify-center space-x-2 text-gray-500 text-sm">
+                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                <span style={{ fontFamily: 'OpenSans, sans-serif' }}>Secured by 256-bit encryption</span>
+              </div>
+            </div>
+          </div>
+        ) : (
           <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-xl">
               {/* Success Icon */}
@@ -366,19 +377,11 @@ export default function Transfer() {
         <Button
           type="submit"
           className="w-full bg-[var(--boi-green)] hover:bg-[var(--boi-dark-green)] text-white font-medium py-3 px-4 transition-colors duration-200 mb-4"
-          disabled={transferMutation.isPending}
         >
-          {transferMutation.isPending ? (
-            <div className="flex items-center justify-center">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-              Processing...
-            </div>
-          ) : (
-            <span className="flex items-center justify-center">
-              <Send className="mr-2" />
-              Send Transfer
-            </span>
-          )}
+          <span className="flex items-center justify-center">
+            <Send className="mr-2" />
+            Send Transfer
+          </span>
         </Button>
 
         <Alert>
