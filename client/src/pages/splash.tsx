@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
+import boiIcon from "@assets/IMG_0602_1749695996315.png";
 
 export default function Splash() {
   const [, navigate] = useLocation();
@@ -72,7 +73,7 @@ export default function Splash() {
         {/* Bank of Ireland Icon */}
         <div className="mb-16">
           <img 
-            src="@assets/IMG_0602_1749695996315.png" 
+            src={boiIcon} 
             alt="Bank of Ireland" 
             className="h-24 w-24 splash-logo-visible"
             style={{ 
