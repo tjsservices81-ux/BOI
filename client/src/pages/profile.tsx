@@ -108,17 +108,17 @@ export default function Profile() {
   };
 
   const resetToDefaults = () => {
-    // Reset accounts to default for current user
+    // Reset accounts to zero balances for current user
     const defaultAccounts = [
-      { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "2322.40", accountType: "current" },
-      { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "2000.00", accountType: "credit" },
-      { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "7500.00", accountType: "savings" },
+      { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "0.00", accountType: "current" },
+      { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "0.00", accountType: "credit" },
+      { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "0.00", accountType: "savings" },
     ];
     UserDataManager.setUserAccounts(defaultAccounts);
     UserDataManager.setUserTransactions([]);
     UserDataManager.setUserPayees([]);
     setAccounts(defaultAccounts);
-    alert('Data reset to defaults successfully');
+    alert('Data reset to defaults successfully - all balances set to 0.00, transactions cleared');
   };
 
 
@@ -428,7 +428,7 @@ export default function Profile() {
                     Reset to Defaults
                   </p>
                   <p className="text-sm text-orange-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Restore default accounts and clear transactions
+                    Set all account balances to 0.00 and clear transactions
                   </p>
                 </div>
               </button>
