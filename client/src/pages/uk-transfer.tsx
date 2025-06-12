@@ -24,7 +24,6 @@ export default function UkTransfer() {
   const [transferReference, setTransferReference] = useState<string>('');
   const [identifiedBank, setIdentifiedBank] = useState<string>('');
   const [showReference, setShowReference] = useState<boolean>(false);
-  const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [animationProgress, setAnimationProgress] = useState<number>(0);
   const [processingStage, setProcessingStage] = useState<string>('Verifying transfer details...');
   const [formData, setFormData] = useState<UkTransferData | null>(null);
@@ -98,22 +97,28 @@ export default function UkTransfer() {
   const executeTransfer = async () => {
     if (!formData) return;
     
-    // Generate unique reference
     const ref = generateReference();
     setTransferReference(ref);
     
-    // Fetch current exchange rate
     await fetchExchangeRate();
     
-    // Start processing immediately with visual feedback
+    const success = processTransfer(
+      formData.fromAccount,
+      parseFloat(formData.amount),
+      formData.recipientName,
+      'UK',
+      ref,
+      exchangeRate
+    );
+    
+    if (!success) {
+      console.error('Transfer failed');
+      return;
+    }
+
     setStep('success');
-    setIsProcessing(true);
     setShowReference(false);
     setAnimationProgress(0);
-    setProcessingStage('Initializing secure transfer...');
-    
-    // Wait a moment to ensure state updates, then start animation
-    await new Promise(resolve => setTimeout(resolve, 100));
     
     const stages = [
       'Verifying transfer details...',
@@ -137,32 +142,12 @@ export default function UkTransfer() {
         
         if (newProgress >= 100) {
           clearInterval(interval);
-          setIsProcessing(false);
           setShowReference(true);
           return 100;
         }
         return newProgress;
       });
     }, 100);
-    
-    // Process transfer in background
-    setTimeout(() => {
-      const success = processTransfer(
-        formData.fromAccount,
-        parseFloat(formData.amount),
-        formData.recipientName,
-        'UK',
-        ref,
-        exchangeRate
-      );
-      
-      if (!success) {
-        clearInterval(interval);
-        setIsProcessing(false);
-        console.error('Transfer failed');
-        return;
-      }
-    }, 500);
   };
 
   if (step === 'success') {
@@ -193,7 +178,7 @@ export default function UkTransfer() {
             )}
 
             {/* Full-screen professional processing animation */}
-            {(isProcessing || (!showReference && animationProgress < 100)) && (
+            {!showReference && animationProgress < 100 && (
               <div style={{ 
                 position: 'fixed', 
                 top: 0, 

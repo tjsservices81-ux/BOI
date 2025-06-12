@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { ChevronLeft, Info, Check, CreditCard, Globe } from "lucide-react";
+import { ChevronLeft, Check, CreditCard, Globe, Info } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -26,7 +26,6 @@ export default function IbanTransfer() {
   const [step, setStep] = useState<'form' | 'confirm' | 'success'>('form');
   const [transferReference, setTransferReference] = useState<string>('');
   const [showReference, setShowReference] = useState<boolean>(false);
-  const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [animationProgress, setAnimationProgress] = useState<number>(0);
   const [processingStage, setProcessingStage] = useState<string>('Verifying transfer details...');
   const [formData, setFormData] = useState<IbanTransferData | null>(null);
@@ -64,18 +63,26 @@ export default function IbanTransfer() {
   const executeTransfer = () => {
     if (!formData) return;
     
-    // Start processing state immediately
-    setIsProcessing(true);
-    setStep('success');
-    setShowReference(false);
-    setAnimationProgress(0);
-    setProcessingStage('Initializing secure transfer...');
-    
-    // Generate unique reference
     const ref = generateReference();
     setTransferReference(ref);
     
-    // Start animation immediately
+    const success = processTransfer(
+      formData.fromAccount,
+      parseFloat(formData.amount),
+      formData.recipientName,
+      'IBAN',
+      ref
+    );
+    
+    if (!success) {
+      console.error('Transfer failed');
+      return;
+    }
+
+    setStep('success');
+    setShowReference(false);
+    setAnimationProgress(0);
+    
     const stages = [
       'Verifying transfer details...',
       'Authenticating transaction...',
@@ -98,31 +105,12 @@ export default function IbanTransfer() {
         
         if (newProgress >= 100) {
           clearInterval(interval);
-          setIsProcessing(false);
           setShowReference(true);
           return 100;
         }
         return newProgress;
       });
     }, 100);
-    
-    // Process transfer after animation starts
-    setTimeout(() => {
-      const success = processTransfer(
-        formData.fromAccount,
-        parseFloat(formData.amount),
-        formData.recipientName,
-        'IBAN',
-        ref
-      );
-      
-      if (!success) {
-        clearInterval(interval);
-        setIsProcessing(false);
-        console.error('Transfer failed');
-        return;
-      }
-    }, 1000);
   };
 
   if (step === 'success') {
