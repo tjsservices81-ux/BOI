@@ -68,20 +68,31 @@ input, textarea {
   font-family: 'OpenSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
-/* Critical layout stability */
+/* Critical layout stability - instant rendering */
 img, svg {
   max-width: 100%;
   height: auto;
-  /* Prevent layout shift during load */
   display: block;
-}
-
-/* Smooth icon rendering */
-.icon-smooth {
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
   backface-visibility: hidden;
   transform: translateZ(0);
+  /* Prevent any loading delays */
+  font-display: block;
+}
+
+/* Force immediate font rendering */
+* {
+  font-display: block !important;
+  text-rendering: optimizeSpeed;
+}
+
+/* Eliminate all transition delays */
+*, *::before, *::after {
+  animation-duration: 0s !important;
+  animation-delay: 0s !important;
+  transition-duration: 0s !important;
+  transition-delay: 0s !important;
 }
 
 /* Hardware acceleration for all interactive elements - no delays */
