@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { validateUKSortCode, formatSortCode, validateUKAccountNumber } from "../utils/bankValidation";
-import { UserDataManager } from "../utils/userDataManager";
+import { getAccounts, processTransfer, generateReference } from "../utils/transferUtils";
 
 const ukTransferSchema = z.object({
   recipientName: z.string().min(2, "Recipient name is required"),
@@ -43,26 +43,12 @@ export default function UkTransfer() {
     }
   });
 
-  // Load user-specific accounts data
   useEffect(() => {
-    const currentUser = UserDataManager.getCurrentUser();
-    if (currentUser) {
-      const userAccountsKey = `accounts_${currentUser}`;
-      const storedAccounts = localStorage.getItem(userAccountsKey);
-      if (storedAccounts) {
-        try {
-          const parsedAccounts = JSON.parse(storedAccounts);
-          setAccounts(parsedAccounts);
-        } catch (error) {
-          console.error('Error parsing accounts:', error);
-          setAccounts([]);
-        }
-      }
-    }
+    const loadedAccounts = getAccounts();
+    setAccounts(loadedAccounts);
     fetchExchangeRate();
   }, []);
 
-  // Fetch real-time exchange rate
   const fetchExchangeRate = async () => {
     try {
       const apiKey = import.meta.env.VITE_EXCHANGERATE_API_KEY;
@@ -87,7 +73,6 @@ export default function UkTransfer() {
     }
   };
 
-  // Calculate GBP equivalent when amount changes
   useEffect(() => {
     const amount = form.watch('amount');
     if (amount && !isNaN(parseFloat(amount))) {
@@ -97,74 +82,6 @@ export default function UkTransfer() {
       setGbpAmount('0.00');
     }
   }, [form.watch('amount'), exchangeRate]);
-
-  const generateReference = () => {
-    const prefix = 'BOI';
-    const timestamp = Date.now().toString().slice(-8);
-    const random = Math.random().toString(36).substring(2, 7).toUpperCase();
-    return `${prefix}${timestamp}${random}`;
-  };
-
-  const processTransfer = (fromAccountId: string, amount: number, recipientName: string, transferType: string, reference: string, rate?: number) => {
-    try {
-      const currentUser = UserDataManager.getCurrentUser();
-      if (!currentUser) return false;
-
-      // Get current accounts
-      const userAccountsKey = `accounts_${currentUser}`;
-      const storedAccounts = localStorage.getItem(userAccountsKey);
-      if (!storedAccounts) return false;
-
-      const accounts = JSON.parse(storedAccounts);
-      const fromAccount = accounts.find((acc: any) => acc.id.toString() === fromAccountId);
-      
-      if (!fromAccount) return false;
-
-      const currentBalance = parseFloat(fromAccount.balance);
-      if (currentBalance < amount) return false;
-
-      // Update balance
-      const newBalance = (currentBalance - amount).toFixed(2);
-      fromAccount.balance = newBalance;
-
-      // Save updated accounts
-      localStorage.setItem(userAccountsKey, JSON.stringify(accounts));
-
-      // Create transaction record
-      const transaction = {
-        id: Date.now(),
-        accountId: parseInt(fromAccountId),
-        amount: `-${amount.toFixed(2)}`,
-        description: `${transferType} Transfer to ${recipientName}`,
-        category: 'transfer',
-        type: 'debit',
-        paymentMethod: `${transferType} Transfer`,
-        reference: reference,
-        timestamp: new Date().toISOString(),
-        ...(rate && { exchangeRate: rate, convertedAmount: (amount * rate).toFixed(2), convertedCurrency: 'GBP' })
-      };
-
-      // Store transaction
-      const userTransactionsKey = `transactions_${currentUser}`;
-      const existingTransactions = localStorage.getItem(userTransactionsKey);
-      let transactions = existingTransactions ? JSON.parse(existingTransactions) : [];
-      transactions.push(transaction);
-      localStorage.setItem(userTransactionsKey, JSON.stringify(transactions));
-
-      // Dispatch events to update other components
-      window.dispatchEvent(new CustomEvent('balanceUpdated', { 
-        detail: { accountId: fromAccount.id, newBalance: newBalance } 
-      }));
-      window.dispatchEvent(new CustomEvent('transactionAdded', { 
-        detail: transaction 
-      }));
-
-      return true;
-    } catch (error) {
-      console.error('Transfer failed:', error);
-      return false;
-    }
-  };
 
   const onSubmit = async (data: UkTransferData) => {
     setFormData(data);
