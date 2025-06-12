@@ -90,7 +90,7 @@ export default function Cards() {
     <div className="h-screen flex flex-col bg-white ios-safe-top ios-safe-bottom">
       
       {/* Header */}
-      <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
+      <div className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0">
         <button 
           onClick={() => navigate("/")}
           className="flex items-center text-white active:scale-95 transition-transform"

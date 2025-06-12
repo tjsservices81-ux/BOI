@@ -104,7 +104,7 @@ export default function Transactions() {
   return (
     <div className="h-full bg-[#f5f5f5] overflow-hidden flex flex-col ios-safe-top ios-safe-bottom">
       {/* Header - BOI Style */}
-      <div className="bg-[#126987] text-white px-4 py-6 status-bar-safe">
+      <div className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0">
         <div className="flex items-center mb-4">
           <button 
             onClick={() => setLocation('/')}
