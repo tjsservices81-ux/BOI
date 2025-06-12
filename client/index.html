@@ -23,6 +23,67 @@
   </head>
   <body>
     <div id="root"></div>
+    
+    <script>
+      // Force fullscreen PWA behavior
+      function forceFullscreen() {
+        // Hide address bar by scrolling
+        window.scrollTo(0, 1);
+        
+        // Set minimal UI
+        const viewport = document.querySelector('meta[name=viewport]');
+        if (viewport) {
+          viewport.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, minimal-ui';
+        }
+        
+        // Request fullscreen if supported
+        if (document.documentElement.requestFullscreen) {
+          document.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+              document.documentElement.requestFullscreen().catch(() => {});
+            }
+          }, { once: true });
+        }
+        
+        // iOS specific handling
+        if (window.navigator.standalone === false) {
+          // Show install prompt for iOS
+          const style = document.createElement('style');
+          style.textContent = `
+            body::before {
+              content: "Install this app: tap Share → Add to Home Screen";
+              position: fixed;
+              top: 0;
+              left: 0;
+              right: 0;
+              background: #126987;
+              color: white;
+              padding: 10px;
+              text-align: center;
+              z-index: 10000;
+              font-size: 14px;
+            }
+            #root {
+              margin-top: 50px;
+            }
+          `;
+          document.head.appendChild(style);
+          
+          setTimeout(() => {
+            document.head.removeChild(style);
+            document.getElementById('root').style.marginTop = '0';
+          }, 5000);
+        }
+      }
+      
+      // Execute on load
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', forceFullscreen);
+      } else {
+        forceFullscreen();
+      }
+    </script>
+    
     <script type="module" src="/src/main.tsx"></script>
     <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
     <script type="text/javascript" src="https://replit.com/public/js/replit-dev-banner.js"></script>

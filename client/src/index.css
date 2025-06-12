@@ -47,6 +47,12 @@ body {
     height: 100vh;
     height: -webkit-fill-available;
   }
+  
+  /* Force hide browser chrome */
+  body {
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+  }
 }
 
 /* Standalone PWA mode */
@@ -54,6 +60,23 @@ body {
   html, body, #root {
     height: 100vh;
     height: 100dvh;
+  }
+}
+
+/* Force fullscreen on iOS */
+@supports (-webkit-touch-callout: none) {
+  html {
+    height: -webkit-fill-available;
+  }
+  
+  body {
+    height: -webkit-fill-available;
+    min-height: -webkit-fill-available;
+  }
+  
+  #root {
+    height: -webkit-fill-available;
+    min-height: -webkit-fill-available;
   }
 }
 
