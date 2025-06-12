@@ -133,6 +133,26 @@ input, select, textarea {
   opacity: 1;
 }
 
+/* Preload critical assets to prevent flickering */
+body::before {
+  content: "";
+  position: absolute;
+  top: -9999px;
+  background-image: 
+    url('/boi_logo.svg'),
+    url('/background.jpg'),
+    url('/icon_HID.svg'),
+    url('/Icons_Fingerprint.svg');
+  background-size: 0;
+}
+
+/* Optimize image loading */
+img {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  will-change: auto;
+}
+
 /* Button press animations */
 .haptic-feedback {
   transition: transform 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
