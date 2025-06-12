@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { ChevronLeft, Info, Check, CreditCard, Globe, Trash2, Users, ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronLeft, Info, Check, CreditCard, Globe } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -466,56 +466,7 @@ export default function IbanTransfer() {
               )}
             </div>
 
-            {/* Recent Payees Section */}
-            {recentPayees.length > 0 && (
-              <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-                <button
-                  type="button"
-                  onClick={() => setShowRecentPayees(!showRecentPayees)}
-                  className="flex items-center justify-between w-full text-left"
-                >
-                  <div className="flex items-center">
-                    <Users className="w-4 h-4 text-[#126987] mr-2" />
-                    <span className="text-sm font-semibold text-[#126987]" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Recent Payees ({recentPayees.length})
-                    </span>
-                  </div>
-                  {showRecentPayees ? (
-                    <ChevronUp className="w-4 h-4 text-[#126987]" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4 text-[#126987]" />
-                  )}
-                </button>
-                
-                {showRecentPayees && (
-                  <div className="mt-3 space-y-2">
-                    {recentPayees.map((payee, index) => (
-                      <div key={index} className="bg-white rounded-lg p-3 border border-gray-200 flex items-center justify-between">
-                        <button
-                          type="button"
-                          onClick={() => handlePayeeSelect(payee)}
-                          className="flex-1 text-left"
-                        >
-                          <div className="font-medium text-gray-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                            {payee.name}
-                          </div>
-                          <div className="text-xs text-gray-500 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                            {payee.accountInfo} • {payee.transferType}
-                          </div>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeletePayee(payee)}
-                          className="ml-3 p-1 text-gray-400 hover:text-red-500 transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
+
 
             <div className="bg-gray-50 rounded-lg p-4">
               <label className="block text-sm font-semibold text-gray-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
