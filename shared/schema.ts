@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, decimal, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, decimal, timestamp, varchar, jsonb, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -58,14 +58,16 @@ export const statements = pgTable("statements", {
   available: boolean("available").notNull().default(true),
 });
 
-export const sessions = pgTable("sessions", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
-  sessionToken: text("session_token").notNull().unique(),
-  expiresAt: timestamp("expires_at").notNull(),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  lastActivity: timestamp("last_activity").notNull().defaultNow(),
-});
+// Session storage table for authentication persistence
+export const sessions = pgTable(
+  "sessions",
+  {
+    sid: varchar("sid").primaryKey(),
+    sess: jsonb("sess").notNull(),
+    expire: timestamp("expire").notNull(),
+  },
+  (table) => [index("IDX_session_expire").on(table.expire)],
+);
 
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -102,7 +104,6 @@ export type Transaction = typeof transactions.$inferSelect;
 export type Payee = typeof payees.$inferSelect;
 export type ScheduledPayment = typeof scheduledPayments.$inferSelect;
 export type Statement = typeof statements.$inferSelect;
-export type Session = typeof sessions.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertAccount = z.infer<typeof insertAccountSchema>;
 export type InsertTransaction = z.infer<typeof insertTransactionSchema>;

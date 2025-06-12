@@ -1,22 +1,15 @@
 import { 
-  users, accounts, transactions, payees, scheduledPayments, statements, sessions,
-  type User, type Account, type Transaction, type Payee, type ScheduledPayment, type Statement, type Session,
+  users, accounts, transactions, payees, scheduledPayments, statements,
+  type User, type Account, type Transaction, type Payee, type ScheduledPayment, type Statement,
   type InsertUser, type InsertAccount, type InsertTransaction, type InsertPayee
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc, gt } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
   getUserByCredentials(customerNumber: string, pin: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  
-  // Session operations
-  createSession(userId: number): Promise<string>;
-  validateSession(sessionToken: string): Promise<User | undefined>;
-  updateSessionActivity(sessionToken: string): Promise<void>;
-  clearSession(sessionToken: string): Promise<void>;
-  clearExpiredSessions(): Promise<void>;
   
   // Account operations
   getAccountsByUserId(userId: number): Promise<Account[]>;
@@ -38,8 +31,154 @@ export interface IStorage {
   getStatementsByAccountId(accountId: number): Promise<Statement[]>;
 }
 
+export class DatabaseStorage implements IStorage {
+  async getUserByCredentials(customerNumber: string, pin: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.customerNumber, customerNumber));
+    if (user && user.pin === pin) {
+      return user;
+    }
+    return undefined;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db.insert(users).values(insertUser).returning();
+    return user;
+  }
+
+  async getAccountsByUserId(userId: number): Promise<Account[]> {
+    return await db.select().from(accounts).where(eq(accounts.userId, userId));
+  }
+
+  async getAccountById(accountId: number): Promise<Account | undefined> {
+    const [account] = await db.select().from(accounts).where(eq(accounts.id, accountId));
+    return account;
+  }
+
+  async updateAccountBalance(accountId: number, newBalance: string): Promise<void> {
+    await db.update(accounts).set({ balance: newBalance }).where(eq(accounts.id, accountId));
+  }
+
+  async getTransactionsByAccountId(accountId: number): Promise<Transaction[]> {
+    return await db.select().from(transactions).where(eq(transactions.accountId, accountId));
+  }
+
+  async createTransaction(transaction: InsertTransaction): Promise<Transaction> {
+    const [newTransaction] = await db.insert(transactions).values(transaction).returning();
+    return newTransaction;
+  }
+
+  async getPayeesByUserId(userId: number): Promise<Payee[]> {
+    return await db.select().from(payees).where(eq(payees.userId, userId));
+  }
+
+  async createPayee(payee: InsertPayee): Promise<Payee> {
+    const [newPayee] = await db.insert(payees).values(payee).returning();
+    return newPayee;
+  }
+
+  async getScheduledPaymentsByUserId(userId: number): Promise<ScheduledPayment[]> {
+    return await db.select().from(scheduledPayments).where(eq(scheduledPayments.userId, userId));
+  }
+
+  async getStatementsByAccountId(accountId: number): Promise<Statement[]> {
+    return await db.select().from(statements).where(eq(statements.accountId, accountId));
+  }
+
+  // Initialize sample data for first-time setup
+  async initializeSampleData(): Promise<void> {
+    // Check if data already exists
+    const existingUsers = await db.select().from(users).limit(1);
+    if (existingUsers.length > 0) return;
+
+    // Create sample user
+    const [user] = await db.insert(users).values({
+      customerNumber: "12345678",
+      pin: "1234", 
+      name: "Sarah Murphy",
+      email: "sarah.murphy@email.com"
+    }).returning();
+
+    // Create sample accounts
+    const sampleAccounts = [
+      {
+        userId: user.id,
+        accountType: "current",
+        accountNumber: "****4829", 
+        balance: "8247.32",
+        displayName: "Current Account"
+      },
+      {
+        userId: user.id,
+        accountType: "savings",
+        accountNumber: "****7251",
+        balance: "4600.00", 
+        displayName: "Savings Account"
+      },
+      {
+        userId: user.id,
+        accountType: "credit",
+        accountNumber: "****1820",
+        balance: "2000.00",
+        displayName: "Credit Card"
+      },
+      {
+        userId: user.id,
+        accountType: "loan",
+        accountNumber: "****8923",
+        balance: "2500.00",
+        displayName: "Personal Loan"
+      },
+      {
+        userId: user.id,
+        accountType: "deposit",
+        accountNumber: "****7908",
+        balance: "100.00",
+        displayName: "Deposit - 365 Monthly Saver"
+      }
+    ];
+
+    const createdAccounts = await db.insert(accounts).values(sampleAccounts).returning();
+
+    // Create sample transactions for the current account
+    const currentAccount = createdAccounts[0];
+    const sampleTransactions = [
+      {
+        accountId: currentAccount.id,
+        amount: "-47.82",
+        description: "Tesco Ireland",
+        category: "shopping",
+        type: "debit",
+        paymentMethod: "Debit Card",
+        reference: "1234567890",
+        timestamp: new Date("2024-12-30T14:34:00Z")
+      },
+      {
+        accountId: currentAccount.id,
+        amount: "-25.00", 
+        description: "Spotify Premium",
+        category: "entertainment",
+        type: "debit",
+        paymentMethod: "Direct Debit",
+        reference: "DD123456",
+        timestamp: new Date("2024-12-29T10:15:00Z")
+      },
+      {
+        accountId: currentAccount.id,
+        amount: "+2500.00",
+        description: "Salary Payment",
+        category: "income",
+        type: "credit", 
+        paymentMethod: "Bank Transfer",
+        reference: "SAL202412",
+        timestamp: new Date("2024-12-28T09:00:00Z")
+      }
+    ];
+
+    await db.insert(transactions).values(sampleTransactions);
+  }
+}
+
 export class MemStorage implements IStorage {
-  private sessions: Map<string, { userId: number; expiresAt: Date; lastActivity: Date }> = new Map();
   private users: Map<number, User> = new Map();
   private accounts: Map<number, Account> = new Map();
   private transactions: Map<number, Transaction> = new Map();
@@ -341,182 +480,6 @@ export class MemStorage implements IStorage {
   async getStatementsByAccountId(accountId: number): Promise<Statement[]> {
     return Array.from(this.statements.values()).filter(statement => statement.accountId === accountId);
   }
-
-  // Session management methods
-  private generateSessionToken(): string {
-    return crypto.randomUUID();
-  }
-
-  async createSession(userId: number): Promise<string> {
-    const sessionToken = this.generateSessionToken();
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
-    
-    this.sessions.set(sessionToken, {
-      userId,
-      expiresAt,
-      lastActivity: new Date()
-    });
-
-    return sessionToken;
-  }
-
-  async validateSession(sessionToken: string): Promise<User | undefined> {
-    const session = this.sessions.get(sessionToken);
-    
-    if (!session || session.expiresAt < new Date()) {
-      if (session) {
-        this.sessions.delete(sessionToken);
-      }
-      return undefined;
-    }
-
-    // Update last activity
-    session.lastActivity = new Date();
-    this.sessions.set(sessionToken, session);
-
-    return this.users.get(session.userId);
-  }
-
-  async updateSessionActivity(sessionToken: string): Promise<void> {
-    const session = this.sessions.get(sessionToken);
-    if (session) {
-      session.lastActivity = new Date();
-      this.sessions.set(sessionToken, session);
-    }
-  }
-
-  async clearSession(sessionToken: string): Promise<void> {
-    this.sessions.delete(sessionToken);
-  }
-
-  async clearExpiredSessions(): Promise<void> {
-    const now = new Date();
-    const expiredTokens: string[] = [];
-    
-    this.sessions.forEach((session, token) => {
-      if (session.expiresAt < now) {
-        expiredTokens.push(token);
-      }
-    });
-    
-    expiredTokens.forEach(token => this.sessions.delete(token));
-  }
 }
 
-export class DatabaseStorage implements IStorage {
-  private generateSessionToken(): string {
-    return crypto.randomUUID();
-  }
-
-  async getUserByCredentials(customerNumber: string, pin: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(
-      and(eq(users.customerNumber, customerNumber), eq(users.pin, pin))
-    );
-    return user;
-  }
-
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await db.insert(users).values(insertUser).returning();
-    return user;
-  }
-
-  async createSession(userId: number): Promise<string> {
-    const sessionToken = this.generateSessionToken();
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
-
-    await db.insert(sessions).values({
-      userId,
-      sessionToken,
-      expiresAt,
-    });
-
-    return sessionToken;
-  }
-
-  async validateSession(sessionToken: string): Promise<User | undefined> {
-    const [session] = await db
-      .select({
-        user: users,
-        session: sessions,
-      })
-      .from(sessions)
-      .innerJoin(users, eq(sessions.userId, users.id))
-      .where(
-        and(
-          eq(sessions.sessionToken, sessionToken),
-          gt(sessions.expiresAt, new Date())
-        )
-      );
-
-    if (session) {
-      // Update last activity
-      await this.updateSessionActivity(sessionToken);
-      return session.user;
-    }
-
-    return undefined;
-  }
-
-  async updateSessionActivity(sessionToken: string): Promise<void> {
-    await db
-      .update(sessions)
-      .set({ lastActivity: new Date() })
-      .where(eq(sessions.sessionToken, sessionToken));
-  }
-
-  async clearSession(sessionToken: string): Promise<void> {
-    await db.delete(sessions).where(eq(sessions.sessionToken, sessionToken));
-  }
-
-  async clearExpiredSessions(): Promise<void> {
-    await db.delete(sessions).where(gt(new Date(), sessions.expiresAt));
-  }
-
-  async getAccountsByUserId(userId: number): Promise<Account[]> {
-    return await db.select().from(accounts).where(eq(accounts.userId, userId));
-  }
-
-  async getAccountById(accountId: number): Promise<Account | undefined> {
-    const [account] = await db.select().from(accounts).where(eq(accounts.id, accountId));
-    return account;
-  }
-
-  async updateAccountBalance(accountId: number, newBalance: string): Promise<void> {
-    await db
-      .update(accounts)
-      .set({ balance: newBalance })
-      .where(eq(accounts.id, accountId));
-  }
-
-  async getTransactionsByAccountId(accountId: number): Promise<Transaction[]> {
-    return await db
-      .select()
-      .from(transactions)
-      .where(eq(transactions.accountId, accountId))
-      .orderBy(desc(transactions.timestamp));
-  }
-
-  async createTransaction(insertTransaction: InsertTransaction): Promise<Transaction> {
-    const [transaction] = await db.insert(transactions).values(insertTransaction).returning();
-    return transaction;
-  }
-
-  async getPayeesByUserId(userId: number): Promise<Payee[]> {
-    return await db.select().from(payees).where(eq(payees.userId, userId));
-  }
-
-  async createPayee(insertPayee: InsertPayee): Promise<Payee> {
-    const [payee] = await db.insert(payees).values(insertPayee).returning();
-    return payee;
-  }
-
-  async getScheduledPaymentsByUserId(userId: number): Promise<ScheduledPayment[]> {
-    return await db.select().from(scheduledPayments).where(eq(scheduledPayments.userId, userId));
-  }
-
-  async getStatementsByAccountId(accountId: number): Promise<Statement[]> {
-    return await db.select().from(statements).where(eq(statements.accountId, accountId));
-  }
-}
-
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
