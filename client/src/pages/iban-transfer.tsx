@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { ChevronLeft, Info, Check, CreditCard, Globe } from "lucide-react";
+import { ChevronLeft, Info, Check, CreditCard, Globe, Trash2, Users, ChevronDown, ChevronUp } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { getAccounts, processTransfer, generateReference } from "../utils/transferUtils";
+import { UserDataManager } from "../utils/userDataManager";
 
 const ibanTransferSchema = z.object({
   recipientName: z.string().min(2, "Recipient name is required"),
@@ -42,13 +43,21 @@ export default function IbanTransfer() {
   });
 
   const [accounts, setAccounts] = useState<any[]>([]);
+  const [recentPayees, setRecentPayees] = useState<any[]>([]);
+  const [showRecentPayees, setShowRecentPayees] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<{name: string, accountInfo: string} | null>(null);
 
   useEffect(() => {
     const loadAccounts = () => {
       setAccounts(getAccounts());
     };
     
+    const loadRecentPayees = () => {
+      setRecentPayees(UserDataManager.getRecentPayees());
+    };
+    
     loadAccounts();
+    loadRecentPayees();
     
     // Refresh accounts only when needed
     const interval = setInterval(loadAccounts, 5000);
@@ -110,11 +119,41 @@ export default function IbanTransfer() {
         if (newProgress >= 100) {
           clearInterval(interval);
           setShowReference(true);
+          
+          // Add successful payee to recent payees
+          const payee = {
+            name: formData.recipientName,
+            accountInfo: formData.iban,
+            transferType: 'IBAN Transfer',
+            timestamp: new Date().toISOString()
+          };
+          UserDataManager.addRecentPayee(payee);
+          setRecentPayees(UserDataManager.getRecentPayees());
+          
           return 100;
         }
         return newProgress;
       });
     }, 100);
+  };
+
+  // Recent payees helper functions
+  const handlePayeeSelect = (payee: any) => {
+    form.setValue('recipientName', payee.name);
+    form.setValue('iban', payee.accountInfo);
+    setShowRecentPayees(false);
+  };
+
+  const handleDeletePayee = (payee: any) => {
+    setDeleteConfirm({ name: payee.name, accountInfo: payee.accountInfo });
+  };
+
+  const confirmDeletePayee = () => {
+    if (deleteConfirm) {
+      UserDataManager.removeRecentPayee(deleteConfirm.name, deleteConfirm.accountInfo);
+      setRecentPayees(UserDataManager.getRecentPayees());
+      setDeleteConfirm(null);
+    }
   };
 
   if (step === 'success') {

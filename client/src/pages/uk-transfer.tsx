@@ -516,6 +516,57 @@ export default function UkTransfer() {
               )}
             </div>
 
+            {/* Recent Payees Section */}
+            {recentPayees.length > 0 && (
+              <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                <button
+                  type="button"
+                  onClick={() => setShowRecentPayees(!showRecentPayees)}
+                  className="flex items-center justify-between w-full text-left"
+                >
+                  <div className="flex items-center">
+                    <Users className="w-4 h-4 text-[#126987] mr-2" />
+                    <span className="text-sm font-semibold text-[#126987]" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Recent Payees ({recentPayees.length})
+                    </span>
+                  </div>
+                  {showRecentPayees ? (
+                    <ChevronUp className="w-4 h-4 text-[#126987]" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-[#126987]" />
+                  )}
+                </button>
+                
+                {showRecentPayees && (
+                  <div className="mt-3 space-y-2">
+                    {recentPayees.map((payee, index) => (
+                      <div key={index} className="bg-white rounded-lg p-3 border border-gray-200 flex items-center justify-between">
+                        <button
+                          type="button"
+                          onClick={() => handlePayeeSelect(payee)}
+                          className="flex-1 text-left"
+                        >
+                          <div className="font-medium text-gray-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                            {payee.name}
+                          </div>
+                          <div className="text-xs text-gray-500 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                            {payee.accountInfo} • {payee.transferType}
+                          </div>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeletePayee(payee)}
+                          className="ml-3 p-1 text-gray-400 hover:text-red-500 transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-gray-50 rounded-lg p-4">
                 <label className="block text-sm font-semibold text-gray-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -618,6 +669,36 @@ export default function UkTransfer() {
           </form>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full">
+            <h3 className="font-bold text-gray-900 text-lg mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              Remove Payee
+            </h3>
+            <p className="text-gray-600 mb-6" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              Are you sure you want to remove "{deleteConfirm.name}" from your recent payees?
+            </p>
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setDeleteConfirm(null)}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeletePayee}
+                className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg font-medium"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
