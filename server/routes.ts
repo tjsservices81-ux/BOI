@@ -7,7 +7,39 @@ import session from "express-session";
 import connectPg from "connect-pg-simple";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Authentication
+  // Initialize database and sample data
+  await storage.initializeSampleData();
+
+  // Configure session middleware with database storage
+  const pgStore = connectPg(session);
+  const sessionStore = new pgStore({
+    conString: process.env.DATABASE_URL,
+    createTableIfMissing: true,
+    ttl: 7 * 24 * 60 * 60, // 7 days
+    tableName: "sessions",
+  });
+
+  app.use(session({
+    secret: process.env.SESSION_SECRET || 'banking-app-secret-key-for-dev',
+    store: sessionStore,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: false, // Set to true in production with HTTPS
+      httpOnly: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    },
+  }));
+
+  // Authentication middleware
+  const requireAuth = (req: any, res: any, next: any) => {
+    if (req.session && req.session.userId) {
+      return next();
+    }
+    return res.status(401).json({ message: "Authentication required" });
+  };
+
+  // Authentication endpoints
   app.post("/api/auth/login", async (req, res) => {
     try {
       const { customerNumber, pin } = loginSchema.parse(req.body);
@@ -16,6 +48,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
+
+      // Store user in session
+      (req as any).session.userId = user.id;
+      (req as any).session.user = { id: user.id, name: user.name, email: user.email };
 
       res.json({ user: { id: user.id, name: user.name, email: user.email } });
     } catch (error) {
@@ -26,8 +62,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Check authentication status
+  app.get("/api/auth/user", (req, res) => {
+    if ((req as any).session && (req as any).session.user) {
+      res.json((req as any).session.user);
+    } else {
+      res.status(401).json({ message: "Not authenticated" });
+    }
+  });
+
+  // Logout
+  app.post("/api/auth/logout", (req, res) => {
+    (req as any).session.destroy((err: any) => {
+      if (err) {
+        return res.status(500).json({ message: "Could not log out" });
+      }
+      res.json({ message: "Logged out successfully" });
+    });
+  });
+
   // Get user accounts
-  app.get("/api/accounts/:userId", async (req, res) => {
+  app.get("/api/accounts/:userId", requireAuth, async (req, res) => {
     try {
       const userId = parseInt(req.params.userId);
       const accounts = await storage.getAccountsByUserId(userId);
