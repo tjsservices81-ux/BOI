@@ -84,38 +84,45 @@ export default function IbanTransfer() {
     setStep('success');
     setShowReference(false);
     setAnimationProgress(0);
+    setProcessingStage('Verifying transfer details...');
     
-    // Professional banking stages during 5-second animation
-    const stages = [
-      'Verifying transfer details...',
-      'Authenticating transaction...',
-      'Connecting to SWIFT network...',
-      'Securing international transfer...',
-      'Finalizing payment...'
-    ];
-    
-    let stageIndex = 0;
-    
-    const interval = setInterval(() => {
-      setAnimationProgress(prev => {
-        const newProgress = prev + 2; // 2% every 100ms = 5 seconds
+    // Start animation sequence
+    setTimeout(() => {
+      // Professional banking stages during 5-second animation
+      const stages = [
+        'Verifying transfer details...',
+        'Authenticating transaction...',
+        'Connecting to SWIFT network...',
+        'Securing international transfer...',
+        'Finalizing payment...'
+      ];
+      
+      let currentProgress = 0;
+      let stageIndex = 0;
+      
+      const interval = setInterval(() => {
+        currentProgress += 2; // 2% every 100ms = 5 seconds total
         
         // Update stage message every 20% (1 second)
-        const newStageIndex = Math.floor(newProgress / 20);
+        const newStageIndex = Math.floor(currentProgress / 20);
         if (newStageIndex !== stageIndex && newStageIndex < stages.length) {
           stageIndex = newStageIndex;
           setProcessingStage(stages[newStageIndex]);
         }
         
-        if (newProgress >= 100) {
+        setAnimationProgress(currentProgress);
+        
+        if (currentProgress >= 100) {
           clearInterval(interval);
-          setShowReference(true);
-          return 100;
+          setTimeout(() => {
+            setShowReference(true);
+          }, 500);
         }
-        return newProgress;
-      });
+      }, 100);
     }, 100);
   };
+
+
 
   if (step === 'success') {
     return (
