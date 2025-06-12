@@ -54,7 +54,7 @@ export default function Splash() {
         isVisible ? 'opacity-100' : 'opacity-0'
       }`}
       style={{
-        backgroundImage: `url('/IMG_0633_1749764599916.jpeg')`,
+        backgroundImage: `url('/IMG_0633_1749764752035.jpeg')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
