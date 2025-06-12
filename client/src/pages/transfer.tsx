@@ -70,10 +70,10 @@ export default function Transfer() {
     }
 
     transferMutation.mutate({
-      fromAccountId: parseInt(selectedAccountId),
-      toAccount: recipient,
-      iban,
-      amount,
+      fromAccountId: selectedAccountId,
+      amount: parseFloat(amount),
+      recipientName: recipient,
+      transferType: "UK",
       reference: reference || undefined,
     });
   };
@@ -198,18 +198,22 @@ export default function Transfer() {
           type="submit"
           className="w-full bg-[var(--boi-green)] hover:bg-[var(--boi-dark-green)] text-white font-medium py-3 px-4 transition-colors duration-200 mb-4 animate-in slide-in-from-bottom duration-400 delay-700 haptic-feedback disabled:bg-gray-400 disabled:cursor-not-allowed"
           disabled={transferMutation.isPending}
+          onClick={() => console.log("Button clicked, isPending:", transferMutation.isPending)}
         >
-          {transferMutation.isPending ? (
-            <div className="flex items-center justify-center">
-              <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-3"></div>
-              <span className="animate-pulse">Processing Transfer...</span>
-            </div>
-          ) : (
-            <span className="flex items-center justify-center">
-              <Send className="mr-2 h-4 w-4" />
-              Send Transfer
-            </span>
-          )}
+          {(() => {
+            console.log("Rendering button, isPending:", transferMutation.isPending);
+            return transferMutation.isPending ? (
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-3"></div>
+                <span className="animate-pulse">Processing Transfer...</span>
+              </div>
+            ) : (
+              <span className="flex items-center justify-center">
+                <Send className="mr-2 h-4 w-4" />
+                Send Transfer
+              </span>
+            );
+          })()}
         </Button>
 
         <Alert className="animate-in slide-in-from-bottom duration-400 delay-1000">
