@@ -107,14 +107,6 @@ export default function Profile() {
     alert('Profile updated successfully');
   };
 
-  const clearAllData = () => {
-    UserDataManager.clearCurrentUserData();
-    // Reload accounts from storage to ensure they're still displayed
-    const currentAccounts = UserDataManager.getUserAccounts();
-    setAccounts(currentAccounts);
-    alert('User data cleared successfully (transactions and payees removed)');
-  };
-
   const resetToDefaults = () => {
     // Reset accounts to default for current user
     const defaultAccounts = [
@@ -437,24 +429,6 @@ export default function Profile() {
                   </p>
                   <p className="text-sm text-orange-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     Restore default accounts and clear transactions
-                  </p>
-                </div>
-              </button>
-
-              {/* Clear All Data */}
-              <button 
-                onClick={clearAllData}
-                className="w-full flex items-center space-x-3 p-4 bg-red-50 border border-red-200 rounded-xl active:scale-98 transition-transform"
-              >
-                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                  <Trash2 className="w-5 h-5 text-red-600" />
-                </div>
-                <div className="flex-1 text-left">
-                  <p className="font-semibold text-red-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Clear All Data
-                  </p>
-                  <p className="text-sm text-red-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Permanently delete all stored data
                   </p>
                 </div>
               </button>
