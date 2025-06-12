@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/lib/auth";
-import { User, ExternalLink, HelpCircle, Phone, Settings, Shield } from "lucide-react";
+import { User, ExternalLink, HelpCircle, Phone, Settings, Shield, MapPin, MoreHorizontal } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { UserDataManager } from "@/utils/userDataManager";
 
@@ -706,14 +706,14 @@ export default function Login() {
         </div>
 
         {/* Bottom Navigation */}
-        <div className="fixed bottom-0 left-0 right-0 bg-[#126987]/95 backdrop-blur-sm rounded-t-2xl px-4 py-4 ios-safe-bottom">
+        <div className="fixed bottom-0 left-0 right-0 bg-[#126987]/95 backdrop-blur-sm px-4 py-3 ios-safe-bottom">
           <div className="flex justify-evenly items-center w-full max-w-xs mx-auto">
             <button className="flex flex-col items-center space-y-1 py-2 transition-opacity duration-150 hover:opacity-80">
-              <img src="/branch-locator.svg" alt="ATM/Branch" className="w-5 h-5 filter brightness-0 invert" />
+              <MapPin className="w-5 h-5 text-white" />
               <span className="text-white text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>ATM/Branch</span>
             </button>
             <button className="flex flex-col items-center space-y-1 py-2 transition-opacity duration-150 hover:opacity-80">
-              <img src="/icon_HID.svg" alt="Security" className="w-5 h-5 filter brightness-0 invert" />
+              <Shield className="w-5 h-5 text-white" />
               <span className="text-white text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Security</span>
             </button>
             <button 
@@ -721,7 +721,7 @@ export default function Login() {
               onClick={() => setShowMoreMenu(true)}
               disabled={isNavigating || isLoading}
             >
-              <img src="/more-prelogin-icon.svg" alt="More" className="w-5 h-5 filter brightness-0 invert" />
+              <MoreHorizontal className="w-5 h-5 text-white" />
               <span className="text-white text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>More</span>
             </button>
           </div>
