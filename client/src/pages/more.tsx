@@ -14,7 +14,7 @@ export default function More() {
   };
 
   return (
-    <div className="min-h-screen relative ios-safe-top ios-safe-bottom ios-safe-left ios-safe-right">
+    <div className="h-screen relative ios-safe-top ios-safe-bottom ios-safe-left ios-safe-right overflow-hidden" style={{ maxHeight: '100vh' }}>
       {/* Loading overlay for smooth transitions */}
       {isNavigating && (
         <div className="fixed inset-0 bg-black bg-opacity-20 z-50 flex items-center justify-center">
@@ -51,7 +51,7 @@ export default function More() {
         </div>
 
         {/* Main Content - Scrollable */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden" style={{ maxHeight: 'calc(100vh - 160px)', overscrollBehavior: 'contain' }}>
           <div className="px-5 pt-8 pb-32">
             <div className="w-full max-w-sm mx-auto space-y-3">
               

@@ -49,6 +49,24 @@
   box-sizing: border-box;
 }
 
+/* Prevent overscroll and bounce effects globally */
+html, body {
+  overscroll-behavior: none;
+  overscroll-behavior-x: none;
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+#root {
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
+}
+
 input, textarea {
   -webkit-user-select: text;
   -moz-user-select: text;
