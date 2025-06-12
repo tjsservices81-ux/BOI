@@ -589,6 +589,14 @@ body {
 .ios-safe-left { padding-left: env(safe-area-inset-left); }
 .ios-safe-right { padding-right: env(safe-area-inset-right); }
 
+/* Remove safe area padding for splash screen */
+.splash-no-safe-area .ios-safe-top,
+.splash-no-safe-area .ios-safe-bottom,
+.splash-no-safe-area .ios-safe-left,
+.splash-no-safe-area .ios-safe-right {
+  padding: 0 !important;
+}
+
 /* iOS-style scrolling */
 .ios-scroll {
   -webkit-overflow-scrolling: touch;
@@ -806,6 +814,14 @@ body {
     .ios-safe-right {
       padding-right: env(safe-area-inset-right);
     }
+    
+    /* Remove safe area for splash screen on iOS */
+    .splash-no-safe-area .ios-safe-top,
+    .splash-no-safe-area .ios-safe-bottom,
+    .splash-no-safe-area .ios-safe-left,
+    .splash-no-safe-area .ios-safe-right {
+      padding: 0 !important;
+    }
   }
   
   .boi-brand-font {
@@ -947,6 +963,14 @@ input {
   
   .ios-safe-right {
     padding-right: env(safe-area-inset-right);
+  }
+  
+  /* Remove safe area for splash screen */
+  .splash-no-safe-area .ios-safe-top,
+  .splash-no-safe-area .ios-safe-bottom,
+  .splash-no-safe-area .ios-safe-left,
+  .splash-no-safe-area .ios-safe-right {
+    padding: 0 !important;
   }
 }
 

@@ -50,7 +50,7 @@ export default function Splash() {
 
   return (
     <div 
-      className={`full-height relative overflow-hidden transition-all duration-500 ${
+      className={`full-height relative overflow-hidden transition-all duration-500 splash-no-safe-area ${
         isVisible ? 'opacity-100' : 'opacity-0'
       }`}
       style={{
