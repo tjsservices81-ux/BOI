@@ -109,8 +109,10 @@ export default function Profile() {
 
   const clearAllData = () => {
     UserDataManager.clearCurrentUserData();
-    setAccounts([]);
-    alert('All user data cleared successfully');
+    // Reload accounts from storage to ensure they're still displayed
+    const currentAccounts = UserDataManager.getUserAccounts();
+    setAccounts(currentAccounts);
+    alert('User data cleared successfully (transactions and payees removed)');
   };
 
   const resetToDefaults = () => {

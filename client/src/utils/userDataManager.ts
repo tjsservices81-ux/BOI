@@ -61,22 +61,6 @@ export class UserDataManager {
     }
   }
 
-  // Clear all data for the current user
-  static clearCurrentUserData() {
-    const currentUser = this.getCurrentUser();
-    if (!currentUser) return;
-
-    const keysToRemove: string[] = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith(`user_${currentUser}_`)) {
-        keysToRemove.push(key);
-      }
-    }
-
-    keysToRemove.forEach(key => localStorage.removeItem(key));
-  }
-
   // Get all registered users
   static getAllUsers(): { [customerNumber: string]: UserData } {
     return JSON.parse(localStorage.getItem('bankUsers') || '{}');
@@ -167,6 +151,13 @@ export class UserDataManager {
       this.setUserData('bankTransactions', []);
       this.setUserData('savedPayees', []);
     }
+  }
+
+  // Clear current user's data (transactions, payees) but preserve accounts
+  static clearCurrentUserData() {
+    this.setUserData('bankTransactions', []);
+    this.setUserData('savedPayees', []);
+    // Keep accounts intact - don't clear them
   }
 
   // Remove specific user and their data
