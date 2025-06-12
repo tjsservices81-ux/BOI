@@ -69,20 +69,41 @@ export default function Profile() {
     },
   });
 
-  // Load profile data from UserDataManager on component mount
+  // Load profile data from database and UserDataManager on component mount
   useEffect(() => {
-    const userProfile = UserDataManager.getUserProfile();
-    if (userProfile) {
-      setProfileData({
-        name: userProfile.name,
-        email: userProfile.email,
-        phone: userProfile.phone,
-        address: userProfile.address || "Address not set",
-        dateOfBirth: userProfile.dateOfBirth || "Not provided",
-        customerNumber: userProfile.customerNumber,
-        joinDate: userProfile.joinDate ? `Member since ${new Date(userProfile.joinDate).getFullYear()}` : "Member since 2018"
-      });
-    }
+    const loadProfileData = async () => {
+      // Load local profile data first
+      const userProfile = UserDataManager.getUserProfile();
+      if (userProfile) {
+        setProfileData({
+          name: userProfile.name,
+          email: userProfile.email,
+          phone: userProfile.phone,
+          address: userProfile.address || "Address not set",
+          dateOfBirth: userProfile.dateOfBirth || "Not provided",
+          customerNumber: userProfile.customerNumber,
+          joinDate: userProfile.joinDate ? `Member since ${new Date(userProfile.joinDate).getFullYear()}` : "Member since 2018"
+        });
+      }
+
+      // Try to load member since date from database
+      try {
+        const response = await fetch('/api/user/1');
+        if (response.ok) {
+          const userData = await response.json();
+          if (userData.user && userData.user.memberSince) {
+            setProfileData(prev => ({
+              ...prev,
+              joinDate: userData.user.memberSince
+            }));
+          }
+        }
+      } catch (error) {
+        console.log('Could not load user data from database:', error);
+      }
+    };
+
+    loadProfileData();
   }, []);
 
   const userDetails = profileData;
@@ -763,7 +784,7 @@ export default function Profile() {
             </div>
 
             <form 
-              onSubmit={(e) => {
+              onSubmit={async (e) => {
                 e.preventDefault();
                 const formData = new FormData(e.target as HTMLFormElement);
                 const updatedProfile = {
@@ -773,9 +794,36 @@ export default function Profile() {
                   address: formData.get('address') as string,
                   dateOfBirth: formData.get('dateOfBirth') as string,
                   customerNumber: profileData.customerNumber,
-                  joinDate: profileData.joinDate
+                  joinDate: formData.get('joinDate') as string
                 };
+                
+                // Update profile data locally
+                setProfileData(updatedProfile);
                 updateProfile(updatedProfile);
+                
+                // Save member since date to database
+                const memberSinceValue = formData.get('joinDate') as string;
+                if (memberSinceValue) {
+                  try {
+                    const response = await fetch(`/api/user/1`, {
+                      method: 'PATCH',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({
+                        memberSince: memberSinceValue
+                      }),
+                    });
+                    
+                    if (response.ok) {
+                      console.log('Member since date saved to database');
+                    }
+                  } catch (error) {
+                    console.error('Failed to save member since date:', error);
+                  }
+                }
+                
+                setEditingProfile(false);
               }}
               className="space-y-4"
             >
@@ -847,6 +895,20 @@ export default function Profile() {
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                   placeholder="DD Month YYYY"
                   required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Member Since
+                </label>
+                <input
+                  type="text"
+                  name="joinDate"
+                  defaultValue={profileData.joinDate}
+                  placeholder="Member since 2018"
+                  className="w-full p-3 border border-gray-300 rounded-xl"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
                 />
               </div>
 
