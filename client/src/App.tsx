@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Switch, Route, Redirect, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -130,6 +131,11 @@ function AppRoutes() {
 }
 
 function App() {
+  // Clear any corrupted localStorage data on app start
+  useEffect(() => {
+    clearCorruptedStorage();
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
