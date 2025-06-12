@@ -364,7 +364,17 @@ img {
   }
 }
 
-/* Splash screen specific full screen mode - hide status bar only for splash */
+/* Splash screen specific styling */
+.splash-fullscreen {
+  /* Pure blue status bar for splash screen only */
+  --splash-theme-color: #0000ff;
+}
+
+/* Apply pure blue theme color to status bar on splash screen */
+.splash-fullscreen meta[name="theme-color"] {
+  content: "#0000ff";
+}
+
 @media (display-mode: standalone) {
   .splash-fullscreen .full-height {
     height: 100vh;
