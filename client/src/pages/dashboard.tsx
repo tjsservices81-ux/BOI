@@ -59,8 +59,24 @@ export default function Dashboard() {
     <div className="h-full bg-gray-50 overflow-hidden flex flex-col ios-safe-top ios-safe-bottom relative">
       {/* Ambient spending visualization background */}
       <SpendingVisualization />
+      
+      {/* Blue header bar */}
+      <div className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0">
+        <div className="flex items-center">
+          <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-6 filter brightness-0 invert" />
+        </div>
+        <div className="flex items-center">
+          <button 
+            className="text-white hover:bg-white/20 h-8 w-8 rounded-full flex items-center justify-center touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-95"
+            onClick={() => setLocation('/profile')}
+          >
+            <User className="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+      
       {/* Header with scenic background */}
-      <div className="text-white relative flex-shrink-0 h-44">
+      <div className="text-white relative flex-shrink-0 h-36">
         {/* Full scenic background image */}
         <div 
           className="absolute inset-0 bg-cover bg-center"
@@ -69,27 +85,11 @@ export default function Dashboard() {
           }}
         />
         
-        <div className="relative z-10 h-full flex flex-col">
-          <div className="flex items-center justify-between px-4 pt-16 pb-4">
-            <div className="flex items-center">
-              <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-6 filter brightness-0 invert" />
-            </div>
-            <div className="flex items-center">
-              <button 
-                className="text-white hover:bg-white/20 h-8 w-8 rounded-full flex items-center justify-center touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-95"
-                onClick={() => setLocation('/profile')}
-              >
-                <User className="h-5 w-5" />
-              </button>
-            </div>
-          </div>
-          
-          <div className="px-4 pb-8 mt-auto">
-            <h1 className="text-2xl font-light" style={{ fontFamily: 'OpenSans, sans-serif' }}>Welcome</h1>
-            <p className="text-white/90 text-sm font-light mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Last login: {UserDataManager.getLastLoginTime()}
-            </p>
-          </div>
+        <div className="relative z-10 h-full flex flex-col justify-center px-4">
+          <h1 className="text-2xl font-light mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>Welcome</h1>
+          <p className="text-white/90 text-sm font-light" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+            Last login: {UserDataManager.getLastLoginTime()}
+          </p>
         </div>
       </div>
 
