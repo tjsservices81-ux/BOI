@@ -178,22 +178,19 @@ export default function UkTransfer() {
               </>
             )}
 
-            {/* Full-screen professional processing animation */}
-            {!showReference && animationProgress < 100 && (
+            {/* Processing animation overlay */}
+            {!showReference && (
               <div style={{ 
                 position: 'fixed', 
                 top: 0, 
                 left: 0, 
-                right: 0, 
-                bottom: 0, 
-                background: 'linear-gradient(135deg, rgba(248, 250, 252, 0.98) 0%, rgba(241, 245, 249, 0.98) 100%)',
-                backdropFilter: 'blur(20px)',
-                WebkitBackdropFilter: 'blur(20px)',
-                zIndex: 10000,
+                width: '100vw',
+                height: '100vh', 
+                background: '#f8fafc',
+                zIndex: 9999,
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                animation: 'fadeIn 0.3s ease-out'
+                justifyContent: 'center'
               }}>
                 <div className="text-center space-y-8 px-8 max-w-md w-full animate-in slide-in-from-bottom duration-500">
                   {/* Bank of Ireland Professional Logo Area */}
