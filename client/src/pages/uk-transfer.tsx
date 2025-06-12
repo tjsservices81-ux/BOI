@@ -335,7 +335,7 @@ export default function UkTransfer() {
                 {/* Show buttons only after reference is revealed */}
                 <div className="flex space-x-3 mt-4">
                   <button 
-                    onClick={() => navigate('/')}
+                    onClick={() => navigate('/dashboard')}
                     className="flex-1 bg-[#126987] text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform text-sm"
                     style={{ fontFamily: 'OpenSans, sans-serif' }}
                   >

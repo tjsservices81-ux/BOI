@@ -40,7 +40,10 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function AppRoutes() {
   const { user } = useAuth();
   const [location] = useLocation();
-  const showNavigation = user && location !== '/login' && location !== '/splash' && location !== '/';
+  
+  // Always show navigation for authenticated users except on specific exclusion screens
+  const excludedRoutes = ['/login', '/splash'];
+  const showNavigation = user && !excludedRoutes.includes(location);
 
   return (
     <div className="w-full h-full bg-white overflow-hidden relative">

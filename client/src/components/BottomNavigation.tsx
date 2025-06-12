@@ -9,8 +9,8 @@ export default function BottomNavigation() {
       label: 'Accounts',
       icon: '/icon-footer-accounts.svg',
       highlightIcon: '/icon-footer-accounts-highlight.svg',
-      path: '/',
-      isActive: location === '/'
+      path: '/dashboard',
+      isActive: location === '/' || location === '/dashboard'
     },
     {
       id: 'payments',
