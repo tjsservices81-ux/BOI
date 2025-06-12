@@ -47,6 +47,12 @@
   user-select: none;
   /* Prevent layout shifts */
   box-sizing: border-box;
+  /* Disable zoom and pinch gestures */
+  -webkit-user-zoom: none;
+  -moz-user-zoom: none;
+  -ms-user-zoom: none;
+  user-zoom: none;
+  touch-action: manipulation;
 }
 
 /* Prevent overscroll and bounce effects globally */
@@ -59,12 +65,56 @@ html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
+  /* Comprehensive zoom prevention */
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  zoom: 1;
+  -webkit-user-zoom: fixed;
+  -moz-user-zoom: fixed;
 }
 
 #root {
   height: 100vh;
   max-height: 100vh;
   overflow: hidden;
+  /* Prevent zoom on root */
+  -webkit-user-zoom: fixed;
+  -moz-user-zoom: fixed;
+  touch-action: manipulation;
+}
+
+/* Prevent double-tap zoom on all interactive elements */
+button, input, select, textarea, a, div, span {
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  -webkit-user-zoom: fixed;
+  -moz-user-zoom: fixed;
+}
+
+/* Prevent zoom on form elements specifically */
+input[type="text"], 
+input[type="password"], 
+input[type="email"], 
+input[type="number"],
+input[type="tel"],
+textarea {
+  font-size: 16px; /* Prevents iOS zoom on focus */
+  touch-action: manipulation;
+  -webkit-user-zoom: fixed;
+  -moz-user-zoom: fixed;
+}
+
+/* Disable zoom on images and media */
+img, video, canvas {
+  touch-action: manipulation;
+  -webkit-user-zoom: fixed;
+  -moz-user-zoom: fixed;
+  pointer-events: none;
+  -webkit-user-drag: none;
+  -moz-user-drag: none;
+  user-drag: none;
 }
 
 input, textarea {
