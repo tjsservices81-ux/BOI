@@ -6,7 +6,6 @@ export default function Splash() {
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
-    // Navigate to login after 5.5 seconds
     const timer = setTimeout(() => {
       setIsVisible(false);
       setTimeout(() => {
@@ -23,64 +22,41 @@ export default function Splash() {
         isVisible ? 'opacity-100' : 'opacity-0'
       }`}
       style={{
-        background: '#0037ff', // Exact color from screenshot
-        userSelect: 'none',
-        WebkitUserSelect: 'none',
-        touchAction: 'none'
+        background: '#0037ff',
+        userSelect: 'none'
       }}
     >
-      {/* Centered logo and spinner */}
+      {/* Centered content */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        {/* Bank of Ireland logo - centered exactly like screenshot */}
-        <div className="flex flex-col items-center">
-          <img 
-            src="/boi_logo.svg" 
-            alt="Bank of Ireland" 
-            className="h-16 w-auto filter brightness-0 invert"
-            style={{ 
-              imageRendering: 'crisp-edges',
-              userSelect: 'none',
-              pointerEvents: 'none'
-            }}
-            draggable={false}
-          />
-          
-          {/* Loading spinner positioned 50-60px below logo */}
-          <div 
-            className="mt-14"
-            style={{ marginTop: '56px' }}
-          >
-            <div 
-              className="animate-spin rounded-full border-2"
-              style={{
-                width: '24px',
-                height: '24px',
-                borderColor: 'rgba(255, 255, 255, 0.3)',
-                borderTopColor: 'rgba(255, 255, 255, 0.8)',
-                animationDuration: '1s'
-              }}
-            />
-          </div>
-        </div>
+        <img 
+          src="/boi_logo.svg" 
+          alt="Bank of Ireland" 
+          className="h-16 w-auto filter brightness-0 invert mb-14"
+          draggable={false}
+        />
+        
+        <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent opacity-80" />
       </div>
 
-      {/* Curved white bottom shape - exact match to screenshot */}
-      <div className="absolute bottom-0 left-0 right-0" style={{ height: '30vh' }}>
+      {/* White curved bottom - teardrop shape with center point */}
+      <div className="absolute bottom-0 left-0 right-0">
         <svg 
-          viewBox="0 0 414 300" 
-          className="w-full h-full"
+          width="100%" 
+          height="350" 
+          viewBox="0 0 414 350" 
           preserveAspectRatio="none"
-          style={{ display: 'block' }}
         >
-          {/* Perfect curve matching the screenshot's arc pattern */}
           <path 
-            d="M 0 100 
-               C 70 50, 130 70, 207 90
-               C 284 110, 344 50, 414 100
-               L 414 300 
-               L 0 300 Z" 
+            d="M0,80 
+               C80,30 120,50 160,60
+               C180,65 200,70 207,90
+               C214,70 234,65 254,60
+               C294,50 334,30 414,80
+               L414,200
+               C414,250 350,300 207,320
+               C64,300 0,250 0,200
+               Z" 
             fill="white"
-            style={{ fillRule: 'evenodd' }}
           />
         </svg>
       </div>
