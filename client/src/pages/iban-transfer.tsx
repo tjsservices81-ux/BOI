@@ -59,10 +59,29 @@ export default function IbanTransfer() {
     loadAccounts();
     loadRecentPayees();
     
+    // Check for selected payee from Recent Payees
+    const selectedPayeeData = sessionStorage.getItem('selectedPayee');
+    if (selectedPayeeData) {
+      try {
+        const payee = JSON.parse(selectedPayeeData);
+        if (payee.transferType === 'IBAN Transfer' && payee.accountInfo) {
+          // Pre-fill form with payee data
+          form.setValue('recipientName', payee.name);
+          form.setValue('iban', payee.accountInfo);
+          
+          // Clear the session storage after using
+          sessionStorage.removeItem('selectedPayee');
+        }
+      } catch (error) {
+        console.error('Error parsing selected payee data:', error);
+        sessionStorage.removeItem('selectedPayee');
+      }
+    }
+    
     // Refresh accounts only when needed
     const interval = setInterval(loadAccounts, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [form]);
 
   const onSubmit = (data: IbanTransferData) => {
     setFormData(data);

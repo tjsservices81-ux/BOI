@@ -83,6 +83,9 @@ export default function Payments() {
 
   // Recent payees helper functions
   const handlePayeeSelect = (payee: any) => {
+    // Store selected payee data for pre-filling the form
+    sessionStorage.setItem('selectedPayee', JSON.stringify(payee));
+    
     if (payee.transferType === 'UK Transfer') {
       navigate('/uk-transfer');
     } else if (payee.transferType === 'IBAN Transfer') {
