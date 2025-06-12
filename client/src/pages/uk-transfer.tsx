@@ -115,8 +115,13 @@ export default function UkTransfer() {
     const ref = generateReference();
     setTransferReference(ref);
     
-    // Fetch current exchange rate and calculate GBP amount
-    await fetchExchangeRate();
+    // Try to fetch exchange rate but don't let it block the animation
+    try {
+      await fetchExchangeRate();
+    } catch (error) {
+      // Silently use default rate if API fails
+      setExchangeRate(0.85);
+    }
     
     const success = processTransfer(
       formData.fromAccount,
