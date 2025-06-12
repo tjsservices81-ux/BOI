@@ -33,6 +33,8 @@ export default function Transfer() {
 
   const transferMutation = useMutation({
     mutationFn: async (transferData: TransferRequest) => {
+      // Add minimum delay to show processing animation
+      await new Promise(resolve => setTimeout(resolve, 800));
       const response = await apiRequest("POST", "/api/transfer", transferData);
       return response.json();
     },
