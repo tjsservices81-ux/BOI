@@ -19,6 +19,8 @@ export class UserDataManager {
   static setCurrentUser(customerNumber: string) {
     this.currentUser = customerNumber;
     localStorage.setItem('currentUser', customerNumber);
+    // Also store as last active user for biometric authentication
+    this.setLastActiveUser(customerNumber);
   }
 
   // Get the current active user
@@ -27,6 +29,16 @@ export class UserDataManager {
       this.currentUser = localStorage.getItem('currentUser');
     }
     return this.currentUser;
+  }
+
+  // Store last active user for biometric authentication
+  static setLastActiveUser(customerNumber: string) {
+    localStorage.setItem('lastActiveUser', customerNumber);
+  }
+
+  // Get last active user for biometric authentication
+  static getLastActiveUser(): string | null {
+    return localStorage.getItem('lastActiveUser');
   }
 
   // Clear current user session

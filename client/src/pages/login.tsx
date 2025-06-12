@@ -178,20 +178,26 @@ export default function Login() {
           setIsScanning(false);
           setHoldProgress(0);
           
-          // Initialize fresh account data based on entered customer number or most recent if none entered
+          // Initialize fresh account data based on entered customer number or last active user if none entered
           if (customerNumber && UserDataManager.userExists(customerNumber)) {
             UserDataManager.initializeFreshAccount(customerNumber);
           } else if (!customerNumber) {
-            // If no customer number entered, use most recent account
-            const allUsers = UserDataManager.getAllUsers();
-            const userNumbers = Object.keys(allUsers);
-            if (userNumbers.length > 0) {
-              const mostRecentUser = userNumbers.reduce((latest, current) => {
-                const latestDate = new Date(allUsers[latest].dateCreated);
-                const currentDate = new Date(allUsers[current].dateCreated);
-                return currentDate > latestDate ? current : latest;
-              });
-              UserDataManager.initializeFreshAccount(mostRecentUser);
+            // If no customer number entered, use last active user first, then fall back to most recent
+            const lastActiveUser = UserDataManager.getLastActiveUser();
+            if (lastActiveUser && UserDataManager.userExists(lastActiveUser)) {
+              UserDataManager.initializeFreshAccount(lastActiveUser);
+            } else {
+              // Fall back to most recent account if no last active user
+              const allUsers = UserDataManager.getAllUsers();
+              const userNumbers = Object.keys(allUsers);
+              if (userNumbers.length > 0) {
+                const mostRecentUser = userNumbers.reduce((latest, current) => {
+                  const latestDate = new Date(allUsers[latest].dateCreated);
+                  const currentDate = new Date(allUsers[current].dateCreated);
+                  return currentDate > latestDate ? current : latest;
+                });
+                UserDataManager.initializeFreshAccount(mostRecentUser);
+              }
             }
           }
           
