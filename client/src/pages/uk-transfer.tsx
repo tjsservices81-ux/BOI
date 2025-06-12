@@ -104,6 +104,12 @@ export default function UkTransfer() {
     // Fetch current exchange rate and calculate GBP amount
     await fetchExchangeRate();
     
+    // Immediately go to success screen and start animation BEFORE processing
+    setStep('success');
+    setShowReference(false);
+    setAnimationProgress(0);
+    setProcessingStage('Verifying transfer details...');
+    
     const success = processTransfer(
       formData.fromAccount,
       parseFloat(formData.amount),
@@ -117,41 +123,39 @@ export default function UkTransfer() {
       console.error('Transfer failed');
       return;
     }
-
-    // Immediately go to success screen and start animation
-    setStep('success');
-    setShowReference(false);
-    setAnimationProgress(0);
     
-    // Professional banking stages during 5-second animation
-    const stages = [
-      'Verifying transfer details...',
-      'Authenticating transaction...',
-      'Connecting to UK banking network...',
-      'Securing transfer protocol...',
-      'Finalizing payment...'
-    ];
-    
-    let stageIndex = 0;
-    
-    const interval = setInterval(() => {
-      setAnimationProgress(prev => {
-        const newProgress = prev + 2; // 2% every 100ms = 5 seconds
-        
-        // Update stage message every 20% (1 second)
-        const newStageIndex = Math.floor(newProgress / 20);
-        if (newStageIndex !== stageIndex && newStageIndex < stages.length) {
-          stageIndex = newStageIndex;
-          setProcessingStage(stages[newStageIndex]);
-        }
-        
-        if (newProgress >= 100) {
-          clearInterval(interval);
-          setShowReference(true);
-          return 100;
-        }
-        return newProgress;
-      });
+    // Start animation immediately with a small delay
+    setTimeout(() => {
+      // Professional banking stages during 5-second animation
+      const stages = [
+        'Verifying transfer details...',
+        'Authenticating transaction...',
+        'Connecting to UK banking network...',
+        'Securing transfer protocol...',
+        'Finalizing payment...'
+      ];
+      
+      let stageIndex = 0;
+      
+      const interval = setInterval(() => {
+        setAnimationProgress(prev => {
+          const newProgress = prev + 2; // 2% every 100ms = 5 seconds
+          
+          // Update stage message every 20% (1 second)
+          const newStageIndex = Math.floor(newProgress / 20);
+          if (newStageIndex !== stageIndex && newStageIndex < stages.length) {
+            stageIndex = newStageIndex;
+            setProcessingStage(stages[newStageIndex]);
+          }
+          
+          if (newProgress >= 100) {
+            clearInterval(interval);
+            setShowReference(true);
+            return 100;
+          }
+          return newProgress;
+        });
+      }, 100);
     }, 100);
   };
 
@@ -183,21 +187,22 @@ export default function UkTransfer() {
             )}
 
             {/* Full-screen professional processing animation */}
-            {!showReference ? (
+            {!showReference && (
               <div style={{ 
                 position: 'fixed', 
                 top: 0, 
                 left: 0, 
                 right: 0, 
                 bottom: 0, 
-                background: 'rgba(255, 255, 255, 0.98)',
-                backdropFilter: 'blur(10px)',
-                zIndex: 1000,
+                background: 'rgba(248, 250, 252, 0.98)',
+                backdropFilter: 'blur(20px)',
+                zIndex: 9999,
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center'
+                justifyContent: 'center',
+                animation: 'fadeIn 0.3s ease-out'
               }}>
-                <div className="text-center space-y-8 px-8 max-w-md w-full">
+                <div className="text-center space-y-8 px-8 max-w-md w-full animate-in slide-in-from-bottom duration-500">
                   {/* Bank of Ireland Professional Logo Area */}
                   <div className="mb-8">
                     <div className="w-20 h-20 bg-[#126987] rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
@@ -244,7 +249,9 @@ export default function UkTransfer() {
                   </div>
                 </div>
               </div>
-            ) : (
+            )}
+            
+            {showReference && (
               <>
                 <div className="bg-gray-50 rounded-xl p-3 mb-4 text-left animate-fade-in">
                   <div className="space-y-3">
