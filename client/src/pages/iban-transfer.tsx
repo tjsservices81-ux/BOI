@@ -249,10 +249,12 @@ export default function IbanTransfer() {
                   New Transfer
                 </button>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
+      <BottomNavigation />
+    </div>
     );
   }
 
