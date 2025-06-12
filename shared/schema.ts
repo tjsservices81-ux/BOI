@@ -58,6 +58,15 @@ export const statements = pgTable("statements", {
   available: boolean("available").notNull().default(true),
 });
 
+export const sessions = pgTable("sessions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  sessionToken: text("session_token").notNull().unique(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  lastActivity: timestamp("last_activity").notNull().defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
 });
@@ -93,6 +102,7 @@ export type Transaction = typeof transactions.$inferSelect;
 export type Payee = typeof payees.$inferSelect;
 export type ScheduledPayment = typeof scheduledPayments.$inferSelect;
 export type Statement = typeof statements.$inferSelect;
+export type Session = typeof sessions.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertAccount = z.infer<typeof insertAccountSchema>;
 export type InsertTransaction = z.infer<typeof insertTransactionSchema>;

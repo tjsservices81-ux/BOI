@@ -1,13 +1,22 @@
 import { 
-  users, accounts, transactions, payees, scheduledPayments, statements,
-  type User, type Account, type Transaction, type Payee, type ScheduledPayment, type Statement,
+  users, accounts, transactions, payees, scheduledPayments, statements, sessions,
+  type User, type Account, type Transaction, type Payee, type ScheduledPayment, type Statement, type Session,
   type InsertUser, type InsertAccount, type InsertTransaction, type InsertPayee
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, and, desc, gt } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
   getUserByCredentials(customerNumber: string, pin: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  
+  // Session operations
+  createSession(userId: number): Promise<string>;
+  validateSession(sessionToken: string): Promise<User | undefined>;
+  updateSessionActivity(sessionToken: string): Promise<void>;
+  clearSession(sessionToken: string): Promise<void>;
+  clearExpiredSessions(): Promise<void>;
   
   // Account operations
   getAccountsByUserId(userId: number): Promise<Account[]>;
@@ -333,4 +342,120 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export class DatabaseStorage implements IStorage {
+  private generateSessionToken(): string {
+    return crypto.randomUUID();
+  }
+
+  async getUserByCredentials(customerNumber: string, pin: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(
+      and(eq(users.customerNumber, customerNumber), eq(users.pin, pin))
+    );
+    return user;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db.insert(users).values(insertUser).returning();
+    return user;
+  }
+
+  async createSession(userId: number): Promise<string> {
+    const sessionToken = this.generateSessionToken();
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+
+    await db.insert(sessions).values({
+      userId,
+      sessionToken,
+      expiresAt,
+    });
+
+    return sessionToken;
+  }
+
+  async validateSession(sessionToken: string): Promise<User | undefined> {
+    const [session] = await db
+      .select({
+        user: users,
+        session: sessions,
+      })
+      .from(sessions)
+      .innerJoin(users, eq(sessions.userId, users.id))
+      .where(
+        and(
+          eq(sessions.sessionToken, sessionToken),
+          gt(sessions.expiresAt, new Date())
+        )
+      );
+
+    if (session) {
+      // Update last activity
+      await this.updateSessionActivity(sessionToken);
+      return session.user;
+    }
+
+    return undefined;
+  }
+
+  async updateSessionActivity(sessionToken: string): Promise<void> {
+    await db
+      .update(sessions)
+      .set({ lastActivity: new Date() })
+      .where(eq(sessions.sessionToken, sessionToken));
+  }
+
+  async clearSession(sessionToken: string): Promise<void> {
+    await db.delete(sessions).where(eq(sessions.sessionToken, sessionToken));
+  }
+
+  async clearExpiredSessions(): Promise<void> {
+    await db.delete(sessions).where(gt(new Date(), sessions.expiresAt));
+  }
+
+  async getAccountsByUserId(userId: number): Promise<Account[]> {
+    return await db.select().from(accounts).where(eq(accounts.userId, userId));
+  }
+
+  async getAccountById(accountId: number): Promise<Account | undefined> {
+    const [account] = await db.select().from(accounts).where(eq(accounts.id, accountId));
+    return account;
+  }
+
+  async updateAccountBalance(accountId: number, newBalance: string): Promise<void> {
+    await db
+      .update(accounts)
+      .set({ balance: newBalance })
+      .where(eq(accounts.id, accountId));
+  }
+
+  async getTransactionsByAccountId(accountId: number): Promise<Transaction[]> {
+    return await db
+      .select()
+      .from(transactions)
+      .where(eq(transactions.accountId, accountId))
+      .orderBy(desc(transactions.timestamp));
+  }
+
+  async createTransaction(insertTransaction: InsertTransaction): Promise<Transaction> {
+    const [transaction] = await db.insert(transactions).values(insertTransaction).returning();
+    return transaction;
+  }
+
+  async getPayeesByUserId(userId: number): Promise<Payee[]> {
+    return await db.select().from(payees).where(eq(payees.userId, userId));
+  }
+
+  async createPayee(insertPayee: InsertPayee): Promise<Payee> {
+    const [payee] = await db.insert(payees).values(insertPayee).returning();
+    return payee;
+  }
+
+  async getScheduledPaymentsByUserId(userId: number): Promise<ScheduledPayment[]> {
+    return await db.select().from(scheduledPayments).where(eq(scheduledPayments.userId, userId));
+  }
+
+  async getStatementsByAccountId(accountId: number): Promise<Statement[]> {
+    return await db.select().from(statements).where(eq(statements.accountId, accountId));
+  }
+}
+
+export const storage = new DatabaseStorage();
