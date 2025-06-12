@@ -39,34 +39,11 @@ export default function Cards() {
     }
   ];
 
-  // Load cardholder name from localStorage and listen for updates
+  // Load cardholder name independently from profile
   useEffect(() => {
-    // Load name using UserDataManager on mount
-    const loadCardholderName = () => {
-      const storedProfile = UserDataManager.getUserData('userProfile', null);
-      const storedCardName = UserDataManager.getUserData('cardHolderName', null);
-      
-      if (storedProfile) {
-        setCardHolderName(storedProfile.name.toUpperCase());
-      } else if (storedCardName) {
-        setCardHolderName(storedCardName.toUpperCase());
-      }
-    };
-
-    loadCardholderName();
-
-    // Listen for profile updates
-    const handleProfileUpdate = (event: any) => {
-      if (event.detail?.name) {
-        setCardHolderName(event.detail.name.toUpperCase());
-      }
-    };
-
-    window.addEventListener('profileUpdated', handleProfileUpdate);
-    
-    return () => {
-      window.removeEventListener('profileUpdated', handleProfileUpdate);
-    };
+    // Load card holder name from separate storage, not linked to profile
+    const storedCardName = UserDataManager.getUserData('cardHolderName', 'JOHN MURPHY');
+    setCardHolderName(storedCardName.toUpperCase());
   }, []);
 
   useEffect(() => {
