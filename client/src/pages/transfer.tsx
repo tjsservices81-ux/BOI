@@ -122,14 +122,113 @@ export default function Transfer() {
       return;
     }
 
-    // Use local processing like UK/IBAN transfers for immediate animation
-    processTransfer(
-      selectedAccountId,
-      parseFloat(amount),
-      recipient,
-      reference || 'Standard Transfer'
-    );
+    // Start processing animation immediately
+    startTransferAnimation();
   };
+
+  const startTransferAnimation = () => {
+    const genRef = `BOI${Date.now().toString().slice(-8)}${Math.random().toString(36).substr(2, 5).toUpperCase()}${Math.floor(Math.random() * 100000).toString().padStart(5, '0')}`;
+    setTransferReference(genRef);
+    
+    // Start animation immediately
+    setStep('processing');
+    setAnimationProgress(0);
+    
+    // Professional banking stages during 5-second animation
+    const stages = [
+      'Verifying transfer details...',
+      'Authenticating transaction...',
+      'Processing payment...',
+      'Updating account balances...',
+      'Transfer completed successfully'
+    ];
+    
+    let currentStage = 0;
+    const totalDuration = 5000; // 5 seconds
+    const progressInterval = 50; // Update every 50ms
+    const totalSteps = totalDuration / progressInterval;
+    let currentStep = 0;
+    
+    const animationTimer = setInterval(() => {
+      currentStep++;
+      const progress = (currentStep / totalSteps) * 100;
+      setAnimationProgress(progress);
+      
+      // Update stage every 1 second (20 steps at 50ms intervals)
+      const stageIndex = Math.floor((currentStep / totalSteps) * stages.length);
+      if (stageIndex < stages.length && stageIndex !== currentStage) {
+        currentStage = stageIndex;
+        setProcessingStage(stages[stageIndex]);
+      }
+      
+      if (currentStep >= totalSteps) {
+        clearInterval(animationTimer);
+        setStep('success');
+        setShowReference(false);
+        
+        // Show success screen after 500ms
+        setTimeout(() => {
+          setShowReference(true);
+        }, 500);
+      }
+    }, progressInterval);
+  };
+
+  // Processing animation screen
+  if (step === 'processing') {
+    return (
+      <div style={{ 
+        position: 'fixed', 
+        top: 0, 
+        left: 0, 
+        right: 0, 
+        bottom: 0, 
+        background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+        zIndex: 1000,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div className="text-center space-y-8 px-8 max-w-md w-full">
+          {/* Bank of Ireland Professional Logo Area */}
+          <div className="mb-8">
+            <div className="w-20 h-20 bg-[#126987] rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
+              <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          </div>
+          
+          {/* Professional Transfer Processing Header */}
+          <div className="space-y-4">
+            <h1 className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              Processing Transfer
+            </h1>
+            <p className="text-lg text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              {processingStage}
+            </p>
+          </div>
+
+          {/* Professional Progress Bar */}
+          <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden shadow-inner">
+            <div 
+              className="h-full bg-gradient-to-r from-[#126987] to-[#1e7a96] rounded-full transition-all duration-300 ease-out shadow-sm"
+              style={{ width: `${animationProgress}%` }}
+            ></div>
+          </div>
+
+          {/* Progress Percentage */}
+          <div className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+            {Math.round(animationProgress)}% Complete
+          </div>
+
+          {/* Security Badge */}
+          <div className="flex items-center justify-center space-x-2 text-gray-500 text-sm">
+            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+            <span style={{ fontFamily: 'OpenSans, sans-serif' }}>Secured by 256-bit encryption</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Success screen with processing animation
   if (step === 'success') {
