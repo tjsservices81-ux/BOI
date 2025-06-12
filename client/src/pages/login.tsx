@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/auth";
 import { User, ExternalLink, HelpCircle, Phone, Settings, Shield, MapPin, MoreHorizontal } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { UserDataManager } from "@/utils/userDataManager";
+import SmoothLoader from "@/components/SmoothLoader";
 
 export default function Login() {
   const [customerNumber, setCustomerNumber] = useState("");
@@ -376,8 +377,9 @@ export default function Login() {
   };
 
   return (
-    <div className="full-height relative ios-safe-top ios-safe-bottom ios-safe-left ios-safe-right page-fade-in">
-      {/* Loading overlay */}
+    <SmoothLoader>
+      <div className="full-height relative ios-safe-top ios-safe-bottom ios-safe-left ios-safe-right page-fade-in">
+        {/* Loading overlay */}
       {(isNavigating || isLoginAnimating) && (
         <div className="fixed inset-0 bg-gradient-to-br from-[#126987] to-[#2d5a6b] z-50 flex flex-col items-center justify-center">
           {/* Background overlay pattern */}
@@ -1053,6 +1055,7 @@ export default function Login() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </SmoothLoader>
   );
 }
