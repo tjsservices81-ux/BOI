@@ -40,7 +40,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function AppRoutes() {
   const { user } = useAuth();
   const [location] = useLocation();
-  const showNavigation = user && location !== '/login' && location !== '/splash' && location !== '/';
+  const showNavigation = user && location !== '/login' && location !== '/splash';
 
   return (
     <div className="w-full h-full bg-white overflow-hidden relative">

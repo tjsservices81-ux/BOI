@@ -1,7 +1,14 @@
 import { useLocation } from "wouter";
+import { useEffect, useState } from "react";
 
 export default function BottomNavigation() {
   const [location, setLocation] = useLocation();
+  const [isVisible, setIsVisible] = useState(true);
+
+  // Ensure navigation persists correctly across page changes
+  useEffect(() => {
+    setIsVisible(true);
+  }, [location]);
 
   const navigationItems = [
     {
@@ -10,7 +17,7 @@ export default function BottomNavigation() {
       icon: '/icon-footer-accounts.svg',
       highlightIcon: '/icon-footer-accounts-highlight.svg',
       path: '/',
-      isActive: location === '/'
+      isActive: location === '/' || location === '/dashboard'
     },
     {
       id: 'payments',
@@ -46,15 +53,22 @@ export default function BottomNavigation() {
     }
   ];
 
-  // Hide navigation on transfer pages when keyboard is active
-  const shouldHideNavigation = location.includes('/transfer') || location.includes('/iban-transfer') || location.includes('/uk-transfer');
+  // Hide navigation on specific pages and transfer flows
+  const shouldHideNavigation = location.includes('/transfer') || 
+                               location.includes('/iban-transfer') || 
+                               location.includes('/uk-transfer') ||
+                               location.includes('/transactions/');
   
   if (shouldHideNavigation) {
     return null;
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 ios-safe-bottom z-50 smooth-interaction">
+    <div 
+      className={`fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 ios-safe-bottom z-50 smooth-interaction transition-transform duration-300 ${
+        isVisible ? 'translate-y-0' : 'translate-y-full'
+      }`}
+    >
       <div className="flex justify-around items-center h-12">
         {navigationItems.map((item) => (
           <button
@@ -62,7 +76,13 @@ export default function BottomNavigation() {
             className={`navigation-item flex flex-col items-center space-y-1 py-2 px-3 rounded-lg touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-95 relative ${
               item.isActive ? 'text-[#126987]' : 'text-gray-400 hover:text-[#126987]'
             }`}
-            onClick={() => setLocation(item.path)}
+            onClick={() => {
+              // Provide haptic feedback on navigation
+              if (navigator.vibrate) {
+                navigator.vibrate(10);
+              }
+              setLocation(item.path);
+            }}
           >
             <img 
               src={item.isActive ? item.highlightIcon : item.icon} 
@@ -78,7 +98,7 @@ export default function BottomNavigation() {
               {item.label}
             </span>
             {item.isActive && (
-              <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-[#126987] rounded-full"></div>
+              <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-[#126987] rounded-full transition-all duration-200"></div>
             )}
           </button>
         ))}
