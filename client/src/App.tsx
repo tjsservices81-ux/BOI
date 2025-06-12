@@ -43,11 +43,20 @@ function AppRoutes() {
   const [location] = useLocation();
   const [splashShown, setSplashShown] = useState(false);
   
-  // Always show splash first, regardless of auth state
+  // Set initial theme color to pure blue immediately on mount
   useEffect(() => {
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+    if (themeColorMeta) {
+      themeColorMeta.setAttribute('content', '#0000ff');
+    }
+    
     const hasShownSplash = sessionStorage.getItem('splashShown');
     if (hasShownSplash) {
       setSplashShown(true);
+      // If splash was already shown, set theme to #126987
+      if (themeColorMeta) {
+        themeColorMeta.setAttribute('content', '#126987');
+      }
     }
   }, []);
 
