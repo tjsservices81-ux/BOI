@@ -38,6 +38,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = () => {
     const currentUserNumber = UserDataManager.getCurrentUser();
     if (currentUserNumber && UserDataManager.userExists(currentUserNumber)) {
+      // Record login time
+      UserDataManager.recordLoginTime(currentUserNumber);
+      
       const userData = UserDataManager.getAllUsers()[currentUserNumber];
       setUser({
         customerNumber: currentUserNumber,

@@ -59,7 +59,7 @@ export default function Dashboard() {
     <div className="h-full bg-gray-50 overflow-hidden flex flex-col ios-safe-top ios-safe-bottom relative">
       {/* Ambient spending visualization background */}
       <SpendingVisualization />
-      {/* Header with scenic background matching screenshot exactly */}
+      {/* Header with scenic background */}
       <div className="text-white relative flex-shrink-0 h-44">
         {/* Full scenic background image */}
         <div 
@@ -68,30 +68,27 @@ export default function Dashboard() {
             backgroundImage: `url('/background.jpg')`
           }}
         />
-        {/* Teal overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#126987] to-[#2d5a6b] opacity-85" />
         
         <div className="relative z-10 h-full flex flex-col">
           <div className="flex items-center justify-between px-4 pt-16 pb-4">
-            <div className="flex items-center space-x-3">
-              <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-5 filter brightness-0 invert" />
-              <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
-                <div className="w-3 h-3 bg-white/40 rounded-full"></div>
-              </div>
+            <div className="flex items-center">
+              <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-6 filter brightness-0 invert" />
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center">
               <button 
                 className="text-white hover:bg-white/20 h-8 w-8 rounded-full flex items-center justify-center touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-95"
                 onClick={() => setLocation('/profile')}
               >
-                <User className="h-4 w-4" />
+                <User className="h-5 w-5" />
               </button>
             </div>
           </div>
           
           <div className="px-4 pb-8 mt-auto">
-            <h1 className="text-xl font-normal boi-regular-font">Welcome</h1>
-            <p className="text-white/75 text-sm boi-regular-font mt-0.5">Last login: 14.07 GMT 27/04/2021</p>
+            <h1 className="text-2xl font-light" style={{ fontFamily: 'OpenSans, sans-serif' }}>Welcome</h1>
+            <p className="text-white/90 text-sm font-light mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              Last login: {UserDataManager.getLastLoginTime()}
+            </p>
           </div>
         </div>
       </div>

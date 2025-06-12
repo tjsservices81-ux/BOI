@@ -41,6 +41,32 @@ export class UserDataManager {
     return localStorage.getItem('lastActiveUser');
   }
 
+  // Get formatted last login time
+  static getLastLoginTime(): string {
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) return 'Never';
+    
+    const lastLoginKey = `lastLogin_${currentUser}`;
+    const lastLoginTimestamp = localStorage.getItem(lastLoginKey);
+    
+    if (!lastLoginTimestamp) return 'Never';
+    
+    const date = new Date(parseInt(lastLoginTimestamp));
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    
+    return `${hours}.${minutes} GMT, ${day}/${month}/${year}`;
+  }
+
+  // Record login time
+  static recordLoginTime(customerNumber: string) {
+    const loginKey = `lastLogin_${customerNumber}`;
+    localStorage.setItem(loginKey, Date.now().toString());
+  }
+
 
 
   // Clear current user session
