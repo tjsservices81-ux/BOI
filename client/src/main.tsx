@@ -25,9 +25,10 @@ const initializeIOSFullscreen = () => {
   
   // Handle input focus to prevent zoom
   document.addEventListener('focusin', (e) => {
-    if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+    const target = e.target;
+    if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
       setTimeout(() => {
-        e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 300);
     }
   });
