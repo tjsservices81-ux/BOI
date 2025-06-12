@@ -165,6 +165,43 @@ export class UserDataManager {
     this.setUserData('savedPayees', payees);
   }
 
+  // Recent payees operations
+  static getRecentPayees() {
+    return this.getUserData('recentPayees', []);
+  }
+
+  static addRecentPayee(payee: { name: string; accountInfo: string; transferType: string; timestamp: string }) {
+    const recentPayees = this.getRecentPayees();
+    
+    // Check if payee already exists (by name and account info)
+    const existingIndex = recentPayees.findIndex((p: any) => 
+      p.name === payee.name && p.accountInfo === payee.accountInfo
+    );
+    
+    if (existingIndex !== -1) {
+      // Update existing payee timestamp and move to front
+      recentPayees.splice(existingIndex, 1);
+    }
+    
+    // Add to front of list
+    recentPayees.unshift(payee);
+    
+    // Keep only last 10 recent payees
+    const updatedPayees = recentPayees.slice(0, 10);
+    
+    this.setUserData('recentPayees', updatedPayees);
+    return updatedPayees;
+  }
+
+  static removeRecentPayee(name: string, accountInfo: string) {
+    const recentPayees = this.getRecentPayees();
+    const updatedPayees = recentPayees.filter((p: any) => 
+      !(p.name === name && p.accountInfo === accountInfo)
+    );
+    this.setUserData('recentPayees', updatedPayees);
+    return updatedPayees;
+  }
+
   // Check if user exists
   static userExists(customerNumber: string): boolean {
     const allUsers = this.getAllUsers();

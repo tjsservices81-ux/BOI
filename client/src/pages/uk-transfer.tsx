@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { ChevronLeft, Info, Check, CreditCard, Building2, Building } from "lucide-react";
+import { ChevronLeft, Info, Check, CreditCard, Building2, Building, Trash2, Users, ChevronDown, ChevronUp } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { validateUKSortCode, formatSortCode, validateUKAccountNumber } from "../utils/bankValidation";
 import { getAccounts, processTransfer, generateReference } from "../utils/transferUtils";
+import { UserDataManager } from "../utils/userDataManager";
 
 const ukTransferSchema = z.object({
   recipientName: z.string().min(2, "Recipient name is required"),
@@ -43,6 +44,9 @@ export default function UkTransfer() {
   });
 
   const [accounts, setAccounts] = useState<any[]>([]);
+  const [recentPayees, setRecentPayees] = useState<any[]>([]);
+  const [showRecentPayees, setShowRecentPayees] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<{name: string, accountInfo: string} | null>(null);
 
   // Fetch real-time exchange rate using authenticated API
   const fetchExchangeRate = async () => {
@@ -78,7 +82,12 @@ export default function UkTransfer() {
       setAccounts(getAccounts());
     };
     
+    const loadRecentPayees = () => {
+      setRecentPayees(UserDataManager.getRecentPayees());
+    };
+    
     loadAccounts();
+    loadRecentPayees();
     
     // Refresh accounts only when needed
     const interval = setInterval(loadAccounts, 5000);
@@ -148,11 +157,43 @@ export default function UkTransfer() {
         if (newProgress >= 100) {
           clearInterval(interval);
           setShowReference(true);
+          
+          // Add successful payee to recent payees
+          const payee = {
+            name: formData.recipientName,
+            accountInfo: `${formatSortCode(formData.sortCode)} ${formData.accountNumber}`,
+            transferType: 'UK Transfer',
+            timestamp: new Date().toISOString()
+          };
+          UserDataManager.addRecentPayee(payee);
+          setRecentPayees(UserDataManager.getRecentPayees());
+          
           return 100;
         }
         return newProgress;
       });
     }, 100);
+  };
+
+  // Recent payees helper functions
+  const handlePayeeSelect = (payee: any) => {
+    const [sortCode, accountNumber] = payee.accountInfo.split(' ');
+    form.setValue('recipientName', payee.name);
+    form.setValue('sortCode', sortCode.replace(/-/g, ''));
+    form.setValue('accountNumber', accountNumber);
+    setShowRecentPayees(false);
+  };
+
+  const handleDeletePayee = (payee: any) => {
+    setDeleteConfirm({ name: payee.name, accountInfo: payee.accountInfo });
+  };
+
+  const confirmDeletePayee = () => {
+    if (deleteConfirm) {
+      UserDataManager.removeRecentPayee(deleteConfirm.name, deleteConfirm.accountInfo);
+      setRecentPayees(UserDataManager.getRecentPayees());
+      setDeleteConfirm(null);
+    }
   };
 
   if (step === 'success') {
