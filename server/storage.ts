@@ -3,11 +3,14 @@ import {
   type User, type Account, type Transaction, type Payee, type ScheduledPayment, type Statement,
   type InsertUser, type InsertAccount, type InsertTransaction, type InsertPayee
 } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
   getUserByCredentials(customerNumber: string, pin: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUser(userId: number, updates: Partial<User>): Promise<User | undefined>;
   
   // Account operations
   getAccountsByUserId(userId: number): Promise<Account[]>;
@@ -55,7 +58,8 @@ export class MemStorage implements IStorage {
       customerNumber: "12345678",
       pin: "1234",
       name: "Sarah Murphy",
-      email: "sarah.murphy@email.com"
+      email: "sarah.murphy@email.com",
+      memberSince: null
     };
     this.users.set(user.id, user);
 
@@ -271,10 +275,21 @@ export class MemStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     const user: User = {
       id: this.currentUserId++,
-      ...insertUser
+      ...insertUser,
+      memberSince: insertUser.memberSince || null
     };
     this.users.set(user.id, user);
     return user;
+  }
+
+  async updateUser(userId: number, updates: Partial<User>): Promise<User | undefined> {
+    const user = this.users.get(userId);
+    if (user) {
+      const updatedUser = { ...user, ...updates };
+      this.users.set(userId, updatedUser);
+      return updatedUser;
+    }
+    return undefined;
   }
 
   async getAccountsByUserId(userId: number): Promise<Account[]> {
@@ -333,4 +348,79 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export class DatabaseStorage implements IStorage {
+  async getUserByCredentials(customerNumber: string, pin: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.customerNumber, customerNumber));
+    if (user && user.pin === pin) {
+      return user;
+    }
+    return undefined;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
+    return user;
+  }
+
+  async updateUser(userId: number, updates: Partial<User>): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set(updates)
+      .where(eq(users.id, userId))
+      .returning();
+    return user || undefined;
+  }
+
+  async getAccountsByUserId(userId: number): Promise<Account[]> {
+    return await db.select().from(accounts).where(eq(accounts.userId, userId));
+  }
+
+  async getAccountById(accountId: number): Promise<Account | undefined> {
+    const [account] = await db.select().from(accounts).where(eq(accounts.id, accountId));
+    return account || undefined;
+  }
+
+  async updateAccountBalance(accountId: number, newBalance: string): Promise<void> {
+    await db
+      .update(accounts)
+      .set({ balance: newBalance })
+      .where(eq(accounts.id, accountId));
+  }
+
+  async getTransactionsByAccountId(accountId: number): Promise<Transaction[]> {
+    return await db.select().from(transactions).where(eq(transactions.accountId, accountId));
+  }
+
+  async createTransaction(insertTransaction: InsertTransaction): Promise<Transaction> {
+    const [transaction] = await db
+      .insert(transactions)
+      .values(insertTransaction)
+      .returning();
+    return transaction;
+  }
+
+  async getPayeesByUserId(userId: number): Promise<Payee[]> {
+    return await db.select().from(payees).where(eq(payees.userId, userId));
+  }
+
+  async createPayee(insertPayee: InsertPayee): Promise<Payee> {
+    const [payee] = await db
+      .insert(payees)
+      .values(insertPayee)
+      .returning();
+    return payee;
+  }
+
+  async getScheduledPaymentsByUserId(userId: number): Promise<ScheduledPayment[]> {
+    return await db.select().from(scheduledPayments).where(eq(scheduledPayments.userId, userId));
+  }
+
+  async getStatementsByAccountId(accountId: number): Promise<Statement[]> {
+    return await db.select().from(statements).where(eq(statements.accountId, accountId));
+  }
+}
+
+export const storage = new DatabaseStorage();
