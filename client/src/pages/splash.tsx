@@ -72,7 +72,7 @@ export default function Splash() {
         {/* Bank of Ireland Icon */}
         <div className="mb-16">
           <img 
-            src="/icon_HID.svg" 
+            src="/boi_logo.svg" 
             alt="Bank of Ireland" 
             className="h-24 w-24 filter brightness-0 invert splash-logo-visible"
             style={{ 
