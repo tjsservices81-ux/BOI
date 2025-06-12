@@ -574,7 +574,7 @@ export default function Login() {
                     )}
                   </div>
                   <p className="text-gray-700 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {biometricVerified ? 'Fingerprint verified' : isScanning ? 'Hold to scan fingerprint...' : 'Hold for biometric login'}
+                    {biometricVerified ? 'Fingerprint verified' : isScanning ? 'Hold to scan fingerprint...' : 'Biometrics login'}
                   </p>
                 </div>
 
