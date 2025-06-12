@@ -56,12 +56,12 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="h-full bg-gray-50 overflow-hidden flex flex-col ios-safe-top ios-safe-bottom relative page-fade-in">
+    <div className="h-full bg-[#126987] overflow-hidden flex flex-col ios-safe-bottom relative page-fade-in">
       {/* Ambient spending visualization background */}
       <SpendingVisualization />
       
       {/* Blue header bar */}
-      <div className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0 ios-safe-top">
+      <div className="bg-[#126987] flex items-end justify-between px-4 pb-3 flex-shrink-0" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px) + 12px, 56px)' }}>
         <div className="flex items-center">
           <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-6 filter brightness-0 invert" />
         </div>

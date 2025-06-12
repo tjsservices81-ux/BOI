@@ -766,7 +766,6 @@ input {
 /* PWA viewport adjustments for iOS */
 @media (display-mode: standalone) {
   body {
-    padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
   }
   
@@ -774,4 +773,13 @@ input {
     height: 100vh;
     height: -webkit-fill-available;
   }
+}
+
+/* Ensure no white gaps at top on iOS */
+html, body {
+  background-color: #126987;
+}
+
+#root {
+  background-color: #126987;
 }
