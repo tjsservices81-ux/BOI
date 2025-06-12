@@ -1,14 +1,10 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
-import { useAuth } from "@/lib/auth";
-import { sessionManager } from "@/lib/sessionManager";
-import { UserDataManager } from "@/utils/userDataManager";
 
 export default function Splash() {
   const [, navigate] = useLocation();
   const [currentStep, setCurrentStep] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
-  const { user, login } = useAuth();
 
   const loadingSteps = [
     "Verifying device…",
@@ -19,19 +15,7 @@ export default function Splash() {
   ];
 
   useEffect(() => {
-    const sessionState = sessionManager.getState();
-    
-    // Always show full splash screen when required, regardless of user state
-    // Only skip splash if explicitly marked to skip and session is valid
-    if (user && sessionState.sessionValid && !sessionState.shouldShowSplash) {
-      // Still show a brief splash for visual consistency
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 1000);
-      return;
-    }
-
-    // Full splash screen duration: each step lasts 1.6 seconds (8 seconds total)
+    // Step progression timing: each step lasts 1.6 seconds
     const stepTimers: NodeJS.Timeout[] = [];
     
     // Progress through each loading step
@@ -42,22 +26,11 @@ export default function Splash() {
       stepTimers.push(timer);
     });
 
-    // Navigate to appropriate screen after all steps complete (8 seconds total)
+    // Navigate to login after all steps complete (8 seconds total)
     const finalTimer = setTimeout(() => {
       setIsVisible(false);
-      sessionManager.markSplashComplete();
-      
       setTimeout(() => {
-        // Check if we have a valid user session to restore
-        const currentUser = UserDataManager.getCurrentUser();
-        if (currentUser && UserDataManager.userExists(currentUser) && sessionState.sessionValid) {
-          // Auto-login and go to dashboard
-          login();
-          navigate('/dashboard');
-        } else {
-          // Go to login screen
-          navigate('/login');
-        }
+        navigate('/login');
       }, 300); // Brief fade out before navigation
     }, loadingSteps.length * 1600);
 
@@ -67,7 +40,7 @@ export default function Splash() {
     return () => {
       stepTimers.forEach(timer => clearTimeout(timer));
     };
-  }, [navigate, user, login]);
+  }, [navigate]);
 
   // Prevent any user interaction during splash
   const handleInteraction = (e: React.MouseEvent | React.TouchEvent) => {

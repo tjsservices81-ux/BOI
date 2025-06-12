@@ -131,7 +131,14 @@ export default function Login() {
     UserDataManager.setCurrentUser(customerNumber);
     
     try {
-      login();
+      const userProfile = UserDataManager.getUserProfile();
+      if (userProfile) {
+        login({
+          id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
+          name: userProfile.name,
+          email: userProfile.email
+        });
+      }
       navigate("/dashboard");
     } catch (error) {
       toast({
@@ -291,7 +298,14 @@ export default function Login() {
       }
       
       // Authenticate through auth context
-      login();
+      const userProfile = UserDataManager.getUserProfile();
+      if (userProfile) {
+        login({
+          id: parseInt(currentUser.replace(/\D/g, '')) || 1,
+          name: userProfile.name,
+          email: userProfile.email
+        });
+      }
       
       await new Promise(resolve => setTimeout(resolve, 1000));
       
@@ -345,7 +359,14 @@ export default function Login() {
     
     // Initialize fresh account data and verify PIN
     UserDataManager.initializeFreshAccount(customerNumber);
-    login(); // Authenticate through auth context
+    const userProfile = UserDataManager.getUserProfile();
+    if (userProfile) {
+      login({
+        id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
+        name: userProfile.name,
+        email: userProfile.email
+      });
+    }
     setPinVerified(true);
     
     // Navigate to dashboard after verification
@@ -930,7 +951,11 @@ export default function Login() {
                       <button
                         onClick={() => {
                           UserDataManager.initializeFreshAccount(customerNumber);
-                          login(); // Authenticate the user in the auth context
+                          login({
+                            id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
+                            name: userData.name,
+                            email: userData.email
+                          });
                           setShowAdminLogin(false);
                           setCustomerNumber(customerNumber);
                           setBiometricVerified(true);
