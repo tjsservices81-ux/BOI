@@ -282,9 +282,7 @@ export default function Profile() {
                 {userDetails.joinDate}
               </p>
             </div>
-            <button className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center active:scale-95 transition-transform">
-              <Edit3 className="w-5 h-5 text-gray-600" />
-            </button>
+
           </div>
 
           {/* Personal Information */}
