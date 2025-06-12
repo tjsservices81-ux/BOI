@@ -43,6 +43,18 @@ export default function Dashboard() {
     localStorage.setItem('bankAccounts', JSON.stringify(accounts));
   }, [accounts]);
 
+  // Get color for account type
+  const getAccountColor = (accountType: string) => {
+    switch (accountType) {
+      case 'current': return 'bg-blue-500';
+      case 'credit': return 'bg-red-500';
+      case 'savings': return 'bg-green-500';
+      case 'loan': return 'bg-orange-500';
+      case 'deposit': return 'bg-purple-500';
+      default: return 'bg-gray-500';
+    }
+  };
+
   return (
     <div className="h-full bg-gray-50 overflow-hidden flex flex-col ios-safe-top ios-safe-bottom relative">
       {/* Ambient spending visualization background */}
@@ -91,16 +103,21 @@ export default function Dashboard() {
             {accounts.map((account) => (
               <button 
                 key={account.id}
-                className="w-full flex items-center justify-between px-6 py-4 border-b border-gray-100 hover:bg-gray-50 touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-98 haptic-feedback"
+                className="w-full flex items-center justify-between border-b border-gray-100 hover:bg-gray-50 touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-98 haptic-feedback relative"
                 onClick={() => setLocation(`/transactions/${account.id}`)}
               >
-                <div className="text-left">
-                  <p className="font-medium text-sm text-gray-800 boi-regular-font">{account.displayName.toUpperCase()}</p>
-                  <p className="text-xs text-gray-500 mt-0.5 boi-regular-font">{account.accountNumber}</p>
-                </div>
-                <div className="flex items-center">
-                  <p className="text-lg font-semibold text-[#4a6b75] boi-semibold-font">€{parseFloat(account.balance).toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-                  <ChevronRight className="h-4 w-4 ml-3 text-gray-400" />
+                {/* Colored side bar */}
+                <div className={`absolute left-0 top-0 bottom-0 w-1 ${getAccountColor(account.accountType)}`}></div>
+                
+                <div className="flex items-center justify-between w-full px-6 py-4">
+                  <div className="text-left">
+                    <p className="font-medium text-sm text-gray-800 boi-regular-font">{account.displayName.toUpperCase()}</p>
+                    <p className="text-xs text-gray-500 mt-0.5 boi-regular-font">{account.accountNumber}</p>
+                  </div>
+                  <div className="flex items-center">
+                    <p className="text-lg font-semibold text-[#4a6b75] boi-semibold-font">€{parseFloat(account.balance).toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                    <ChevronRight className="h-4 w-4 ml-3 text-gray-400" />
+                  </div>
                 </div>
               </button>
             ))}
