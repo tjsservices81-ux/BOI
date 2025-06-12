@@ -153,6 +153,66 @@ img {
   will-change: auto;
 }
 
+/* Full height viewport for splash and login screens */
+.full-height {
+  height: 100vh;
+  height: 100dvh; /* Dynamic viewport height for mobile */
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100vw;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+/* Splash screen specific animations */
+.splash-logo-enter {
+  animation: logoFadeIn 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.splash-logo-visible {
+  animation: logoVisible 6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.splash-logo-exit {
+  animation: logoFadeOut 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes logoFadeIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.9) translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes logoVisible {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.02) translateY(0);
+  }
+}
+
+@keyframes logoFadeOut {
+  0% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.1) translateY(-10px);
+  }
+}
+
 /* Button press animations */
 .haptic-feedback {
   transition: transform 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);

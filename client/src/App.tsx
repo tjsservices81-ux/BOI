@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import BottomNavigation from "@/components/BottomNavigation";
 
+import Splash from "@/pages/splash";
 import Login from "@/pages/login";
 import More from "@/pages/more";
 import Dashboard from "@/pages/dashboard";
@@ -39,15 +40,16 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function AppRoutes() {
   const { user } = useAuth();
   const [location] = useLocation();
-  const showNavigation = user && location !== '/login';
+  const showNavigation = user && location !== '/login' && location !== '/splash' && location !== '/';
 
   return (
     <div className="w-full h-full bg-white overflow-hidden relative">
       <Switch>
+        <Route path="/splash" component={Splash} />
         <Route path="/login" component={Login} />
         <Route path="/more" component={More} />
         <Route path="/">
-          {user ? <Dashboard /> : <Redirect to="/login" />}
+          {user ? <Dashboard /> : <Splash />}
         </Route>
         <Route path="/dashboard">
           <ProtectedRoute>
