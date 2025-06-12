@@ -354,6 +354,45 @@ img {
   bottom: 0;
 }
 
+/* iOS PWA full screen handling */
+@supports (-webkit-touch-callout: none) {
+  .full-height {
+    height: 100vh;
+    height: -webkit-fill-available;
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+  }
+}
+
+/* iOS standalone mode detection and full screen */
+@media (display-mode: standalone) {
+  .full-height {
+    height: 100vh;
+    height: -webkit-fill-available;
+    height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    margin: 0;
+  }
+  
+  html, body {
+    background: transparent !important;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    height: -webkit-fill-available;
+  }
+  
+  #root {
+    background: transparent !important;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    height: -webkit-fill-available;
+  }
+}
+
 /* Splash screen specific animations */
 .splash-logo-enter {
   animation: logoFadeIn 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
