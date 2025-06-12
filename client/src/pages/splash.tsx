@@ -38,7 +38,7 @@ export default function Splash() {
         <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent opacity-80" />
       </div>
 
-      {/* Clean white curved bottom without status bar elements */}
+      {/* White curved bottom shape */}
       <div className="absolute bottom-0 left-0 right-0">
         <svg 
           width="100%" 
