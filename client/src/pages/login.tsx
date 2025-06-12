@@ -129,8 +129,9 @@ export default function Login() {
       return;
     }
 
-    // Set current user and navigate to dashboard
+    // Set current user and record login time
     UserDataManager.setCurrentUser(customerNumber);
+    UserDataManager.recordLoginTime(customerNumber);
     
     try {
       const userProfile = UserDataManager.getUserProfile();
@@ -299,7 +300,8 @@ export default function Login() {
         throw new Error("No valid user session found");
       }
       
-      // Authenticate through auth context
+      // Record login time and authenticate through auth context
+      UserDataManager.recordLoginTime(currentUser);
       const userProfile = UserDataManager.getUserProfile();
       if (userProfile) {
         login({
@@ -361,6 +363,7 @@ export default function Login() {
     
     // Initialize fresh account data and verify PIN
     UserDataManager.initializeFreshAccount(customerNumber);
+    UserDataManager.recordLoginTime(customerNumber);
     const userProfile = UserDataManager.getUserProfile();
     if (userProfile) {
       login({
@@ -951,6 +954,7 @@ export default function Login() {
                       <button
                         onClick={() => {
                           UserDataManager.initializeFreshAccount(customerNumber);
+                          UserDataManager.recordLoginTime(customerNumber);
                           login({
                             id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
                             name: userData.name,
