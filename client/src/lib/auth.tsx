@@ -1,5 +1,6 @@
 // Authentication context for the banking app
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { SessionManager } from "@/utils/sessionManager";
 
 interface User {
   id: number;
@@ -20,40 +21,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Session management - persists when app is minimized, clears when fully closed
-  const getSessionToken = () => {
-    return sessionStorage.getItem('sessionToken') || localStorage.getItem('sessionToken');
-  };
-
-  const setSessionToken = (token: string) => {
-    // Store in both sessionStorage (cleared on tab close) and localStorage (persistent)
-    sessionStorage.setItem('sessionToken', token);
-    localStorage.setItem('sessionToken', token);
-    localStorage.setItem('sessionCreated', Date.now().toString());
-  };
-
-  const clearSessionToken = () => {
-    sessionStorage.removeItem('sessionToken');
-    localStorage.removeItem('sessionToken');
-    localStorage.removeItem('sessionCreated');
-  };
-
-  const isSessionValid = () => {
-    const sessionCreated = localStorage.getItem('sessionCreated');
-    if (!sessionCreated) return false;
-    
-    const sessionAge = Date.now() - parseInt(sessionCreated);
-    const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
-    
-    return sessionAge < maxAge;
-  };
+  // Session management using SessionManager
+  const getSessionToken = () => SessionManager.getSession();
+  const setSessionToken = (token: string) => SessionManager.setSession(token);
+  const clearSessionToken = () => SessionManager.clearSession();
 
   // Check for existing session on mount
   useEffect(() => {
     const validateSession = async () => {
       const sessionToken = getSessionToken();
       
-      if (sessionToken && isSessionValid()) {
+      if (sessionToken) {
         try {
           const response = await fetch('/api/auth/validate', {
             method: 'POST',
@@ -79,29 +57,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     validateSession();
 
-    // Detect when app is fully closed vs minimized
-    const handleBeforeUnload = () => {
-      // Keep session in localStorage for persistence when minimizing
-      // sessionStorage will be cleared on full close
-    };
+    // Setup PWA lifecycle management
+    SessionManager.setupLifecycleListeners();
 
+    // Additional auth-specific lifecycle handling
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        // App came back to foreground - validate session
-        const sessionToken = getSessionToken();
-        if (!sessionToken || !sessionStorage.getItem('sessionToken')) {
-          // Session was cleared (app was fully closed)
+        const lifecycle = SessionManager.checkAppLifecycle();
+        if (lifecycle === 'closed') {
+          // App was fully closed - clear user state
           setUser(null);
-          clearSessionToken();
         }
       }
     };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
