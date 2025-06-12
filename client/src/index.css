@@ -2,6 +2,41 @@
 @tailwind components;
 @tailwind utilities;
 
+/* iOS PWA Support for proper app lifecycle detection */
+@media (display-mode: standalone) {
+  html {
+    /* Enable iOS app lifecycle events */
+    -webkit-app-region: no-drag;
+    -webkit-user-select: none;
+  }
+  
+  body {
+    /* Prevent bounce scrolling in PWA mode */
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+    /* Ensure proper viewport handling */
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+  
+  #root {
+    height: 100vh;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Enhanced iOS standalone mode detection */
+@supports (-webkit-touch-callout: none) {
+  .ios-app-mode {
+    /* iOS-specific optimizations */
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+}
+
 /* Performance optimizations for smooth interactions */
 * {
   -webkit-tap-highlight-color: transparent;
