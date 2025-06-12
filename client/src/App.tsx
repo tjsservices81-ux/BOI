@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { Switch, Route, Redirect, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -6,7 +5,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import BottomNavigation from "@/components/BottomNavigation";
-import { clearCorruptedStorage } from "@/utils/clearStorage";
 
 import Splash from "@/pages/splash";
 import Login from "@/pages/login";
@@ -42,7 +40,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function AppRoutes() {
   const { user } = useAuth();
   const [location] = useLocation();
-  const showNavigation = user && location !== '/login' && location !== '/splash';
+  const showNavigation = user && location !== '/login' && location !== '/splash' && location !== '/';
 
   return (
     <div className="w-full h-full bg-white overflow-hidden relative">
@@ -131,11 +129,6 @@ function AppRoutes() {
 }
 
 function App() {
-  // Clear any corrupted localStorage data on app start
-  useEffect(() => {
-    clearCorruptedStorage();
-  }, []);
-
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>

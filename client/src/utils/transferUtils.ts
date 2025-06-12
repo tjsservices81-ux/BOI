@@ -24,15 +24,8 @@ export interface Transaction {
 }
 
 export const getAccounts = (): Account[] => {
-  // Get current balances from localStorage with error handling
-  let storedAccounts = [];
-  try {
-    storedAccounts = JSON.parse(localStorage.getItem('bankAccounts') || '[]');
-  } catch (error) {
-    console.log('Failed to parse stored accounts, using defaults');
-    storedAccounts = [];
-  }
-  
+  // Get current balances from localStorage
+  const storedAccounts = JSON.parse(localStorage.getItem('bankAccounts') || '[]');
   const defaultAccounts = [
     { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "2322.40", accountType: "current" },
     { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "2000.00", accountType: "credit" },

@@ -27,14 +27,12 @@ export default function Transfer() {
   const [reference, setReference] = useState("");
 
   const { data: accounts = [] } = useQuery<Account[]>({
-    queryKey: ["/api/accounts"],
+    queryKey: ["/api/accounts", user?.id],
     enabled: !!user,
   });
 
   const transferMutation = useMutation({
     mutationFn: async (transferData: TransferRequest) => {
-      // Add minimum delay to show processing animation
-      await new Promise(resolve => setTimeout(resolve, 800));
       const response = await apiRequest("POST", "/api/transfer", transferData);
       return response.json();
     },
@@ -73,20 +71,20 @@ export default function Transfer() {
       fromAccountId: parseInt(selectedAccountId),
       toAccount: recipient,
       iban,
-      amount: amount,
+      amount,
       reference: reference || undefined,
     });
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20 page-container animate-in slide-in-from-right duration-300">
+    <div className="min-h-screen bg-gray-50 pb-20">
       {/* Header */}
       <div className="bg-white px-6 py-4 shadow-sm">
         <div className="flex items-center">
           <Button 
             variant="ghost" 
             size="icon" 
-            className="mr-4 haptic-feedback"
+            className="mr-4"
             onClick={() => navigate("/")}
           >
             <ArrowLeft className="text-[var(--boi-gray)]" />
@@ -95,9 +93,9 @@ export default function Transfer() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="p-6 space-y-4 animate-in fade-in-50 duration-500 delay-150">
+      <form onSubmit={handleSubmit} className="p-6 space-y-4">
         {/* From Account */}
-        <Card className="animate-in slide-in-from-bottom duration-400 delay-200 ios-card">
+        <Card>
           <CardContent className="p-4">
             <h3 className="font-medium text-[var(--boi-gray)] mb-4">From Account</h3>
             <Select value={selectedAccountId} onValueChange={setSelectedAccountId}>
@@ -134,7 +132,7 @@ export default function Transfer() {
         </Card>
 
         {/* To */}
-        <Card className="animate-in slide-in-from-bottom duration-400 delay-300 ios-card">
+        <Card>
           <CardContent className="p-4 space-y-3">
             <h3 className="font-medium text-[var(--boi-gray)] mb-4">To</h3>
             <div>
@@ -165,7 +163,7 @@ export default function Transfer() {
         </Card>
 
         {/* Amount */}
-        <Card className="animate-in slide-in-from-bottom duration-400 delay-500 ios-card">
+        <Card>
           <CardContent className="p-4 space-y-3">
             <h3 className="font-medium text-[var(--boi-gray)] mb-4">Amount</h3>
             <div className="relative">
@@ -196,27 +194,23 @@ export default function Transfer() {
 
         <Button
           type="submit"
-          className="w-full bg-[var(--boi-green)] hover:bg-[var(--boi-dark-green)] text-white font-medium py-3 px-4 transition-colors duration-200 mb-4 animate-in slide-in-from-bottom duration-400 delay-700 haptic-feedback disabled:bg-gray-400 disabled:cursor-not-allowed"
+          className="w-full bg-[var(--boi-green)] hover:bg-[var(--boi-dark-green)] text-white font-medium py-3 px-4 transition-colors duration-200 mb-4"
           disabled={transferMutation.isPending}
-          onClick={() => console.log("Button clicked, isPending:", transferMutation.isPending)}
         >
-          {(() => {
-            console.log("Rendering button, isPending:", transferMutation.isPending);
-            return transferMutation.isPending ? (
-              <div className="flex items-center justify-center">
-                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-3"></div>
-                <span className="animate-pulse">Processing Transfer...</span>
-              </div>
-            ) : (
-              <span className="flex items-center justify-center">
-                <Send className="mr-2 h-4 w-4" />
-                Send Transfer
-              </span>
-            );
-          })()}
+          {transferMutation.isPending ? (
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+              Processing...
+            </div>
+          ) : (
+            <span className="flex items-center justify-center">
+              <Send className="mr-2" />
+              Send Transfer
+            </span>
+          )}
         </Button>
 
-        <Alert className="animate-in slide-in-from-bottom duration-400 delay-1000">
+        <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
             <p className="font-medium mb-1">Security Notice</p>

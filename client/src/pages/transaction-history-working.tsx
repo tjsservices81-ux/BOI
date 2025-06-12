@@ -108,7 +108,7 @@ export default function TransactionHistoryWorking() {
       }));
       
       // Only use actual stored transactions - no sample data
-      const sortedTransactions = formattedStored.sort((a: any, b: any) => 
+      const sortedTransactions = formattedStored.sort((a, b) => 
         new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
       );
       

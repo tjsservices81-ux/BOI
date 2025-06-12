@@ -54,20 +54,9 @@ export default function UkTransfer() {
       }
       
       const response = await fetch(`https://v6.exchangerate-api.com/v6/${apiKey}/latest/EUR`);
-      
-      // Check if response is ok and content-type is JSON
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        throw new Error('Response is not JSON');
-      }
-      
       const data = await response.json();
       
-      if (data && data.result === 'success' && data.conversion_rates && data.conversion_rates.GBP) {
+      if (data.result === 'success') {
         const rate = data.conversion_rates.GBP;
         setExchangeRate(rate);
         
@@ -77,13 +66,10 @@ export default function UkTransfer() {
           const converted = (parseFloat(currentAmount) * rate).toFixed(2);
           setGbpAmount(converted);
         }
-      } else {
-        throw new Error('Invalid API response structure');
       }
     } catch (error) {
       console.log('Exchange rate fetch failed, using default rate');
-      // Always ensure we have a valid rate, even if API fails
-      setExchangeRate(0.85);
+      // Keep default rate of 0.85
     }
   };
 
@@ -108,70 +94,65 @@ export default function UkTransfer() {
     setStep('confirm');
   };
 
-  const executeTransfer = () => {
+  const executeTransfer = async () => {
     if (!formData) return;
     
     // Generate unique reference only when transfer starts
     const ref = generateReference();
     setTransferReference(ref);
     
-    // Use default exchange rate to prevent any async delays
-    setExchangeRate(0.85);
+    // Fetch current exchange rate and calculate GBP amount
+    await fetchExchangeRate();
     
-    // Process transfer with fallback error handling
-    let success = false;
-    try {
-      success = processTransfer(
-        formData.fromAccount,
-        parseFloat(formData.amount),
-        formData.recipientName,
-        'UK',
-        ref,
-        exchangeRate
-      );
-    } catch (error) {
-      console.log('Transfer processing error, continuing with animation');
-      success = true; // Continue with animation even if transfer logic fails
+    const success = processTransfer(
+      formData.fromAccount,
+      parseFloat(formData.amount),
+      formData.recipientName,
+      'UK',
+      ref,
+      exchangeRate
+    );
+    
+    if (!success) {
+      console.error('Transfer failed');
+      return;
     }
-    
-    // Always show animation regardless of transfer success
+
+    // Immediately go to success screen and start animation
     setStep('success');
     setShowReference(false);
     setAnimationProgress(0);
     
-    // Force a small delay to ensure state updates are processed
-    setTimeout(() => {
-      // Professional banking stages during 5-second animation
-      const stages = [
-        'Verifying transfer details...',
-        'Authenticating transaction...',
-        'Connecting to UK banking network...',
-        'Securing transfer protocol...',
-        'Finalizing payment...'
-      ];
-      
-      let stageIndex = 0;
-      
-      const interval = setInterval(() => {
-        setAnimationProgress(prev => {
-          const newProgress = prev + 2; // 2% every 100ms = 5 seconds
-          
-          // Update stage message every 20% (1 second)
-          const newStageIndex = Math.floor(newProgress / 20);
-          if (newStageIndex !== stageIndex && newStageIndex < stages.length) {
-            stageIndex = newStageIndex;
-            setProcessingStage(stages[newStageIndex]);
-          }
-          
-          if (newProgress >= 100) {
-            clearInterval(interval);
-            setShowReference(true);
-            return 100;
-          }
-          return newProgress;
-        });
-      }, 100);
-    }, 50);
+    // Professional banking stages during 5-second animation
+    const stages = [
+      'Verifying transfer details...',
+      'Authenticating transaction...',
+      'Connecting to UK banking network...',
+      'Securing transfer protocol...',
+      'Finalizing payment...'
+    ];
+    
+    let stageIndex = 0;
+    
+    const interval = setInterval(() => {
+      setAnimationProgress(prev => {
+        const newProgress = prev + 2; // 2% every 100ms = 5 seconds
+        
+        // Update stage message every 20% (1 second)
+        const newStageIndex = Math.floor(newProgress / 20);
+        if (newStageIndex !== stageIndex && newStageIndex < stages.length) {
+          stageIndex = newStageIndex;
+          setProcessingStage(stages[newStageIndex]);
+        }
+        
+        if (newProgress >= 100) {
+          clearInterval(interval);
+          setShowReference(true);
+          return 100;
+        }
+        return newProgress;
+      });
+    }, 100);
   };
 
   if (step === 'success') {

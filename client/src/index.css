@@ -2,29 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* iOS PWA Native Behavior */
-html, body {
-  height: 100%;
-  height: 100vh;
-  height: 100dvh;
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  -webkit-text-size-adjust: 100%;
-  touch-action: manipulation;
-  position: relative;
-}
-
-#root {
-  height: 100%;
-  height: 100vh;
-  height: 100dvh;
-  width: 100%;
-  overflow: hidden;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: none;
-}
-
 /* Performance optimizations for smooth interactions */
 * {
   -webkit-tap-highlight-color: transparent;
@@ -33,7 +10,6 @@ html, body {
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-  box-sizing: border-box;
 }
 
 input, textarea {
@@ -43,31 +19,6 @@ input, textarea {
   user-select: text;
 }
 
-/* iOS Safe Area Support */
-.ios-safe-top {
-  padding-top: max(env(safe-area-inset-top), 20px);
-}
-.ios-safe-bottom {
-  padding-bottom: max(env(safe-area-inset-bottom), 20px);
-}
-.ios-safe-left {
-  padding-left: env(safe-area-inset-left);
-}
-.ios-safe-right {
-  padding-right: env(safe-area-inset-right);
-}
-
-/* Prevent iOS zoom on input focus */
-input[type="text"], 
-input[type="password"], 
-input[type="email"], 
-input[type="tel"], 
-input[type="number"] {
-  font-size: 16px !important;
-  -webkit-appearance: none;
-  border-radius: 0;
-}
-
 /* Hardware acceleration for all interactive elements */
 button, a, [role="button"] {
   transform: translateZ(0);
@@ -75,26 +26,14 @@ button, a, [role="button"] {
   transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Prevent horizontal scrolling and layout shifts */
-* {
-  max-width: 100vw;
-  overflow-x: hidden;
-}
-
-.full-height {
-  height: 100vh;
-  height: 100dvh;
-}
-
 /* Smooth scrolling with momentum */
 html {
   scroll-behavior: smooth;
 }
 
-/* iOS specific scrolling optimizations */
-.ios-scroll {
+body {
   -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
+  overscroll-behavior: none;
 }
 
 /* Prevent layout shifts during interactions */
@@ -104,85 +43,10 @@ html {
   transform: translate3d(0, 0, 0);
 }
 
-/* Native iOS Touch Interactions */
-button:active, 
-[role="button"]:active,
-.tap-target:active {
-  transform: scale(0.97) translateZ(0);
-  transition: transform 0.1s ease-out;
-}
-
-/* iOS-style button hover states */
-@media (hover: hover) {
-  button:hover,
-  [role="button"]:hover {
-    transform: translateY(-1px) translateZ(0);
-  }
-}
-
-/* Native iOS scrolling behavior */
-.scroll-container {
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-  scroll-behavior: smooth;
-}
-
 /* Optimized transitions for form elements */
 input, select, textarea {
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
   will-change: border-color, box-shadow;
-  -webkit-appearance: none;
-  appearance: none;
-}
-
-/* iOS status bar compatibility */
-.status-bar-safe {
-  padding-top: max(env(safe-area-inset-top), 20px);
-}
-
-/* Native iOS card animations */
-.card-enter {
-  animation: slideInUp 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-@keyframes slideInUp {
-  from {
-    transform: translateY(100%) translateZ(0);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0) translateZ(0);
-    opacity: 1;
-  }
-}
-
-/* iOS-specific utility classes */
-.ios-card {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  border-radius: 12px;
-}
-
-.haptic-feedback:active {
-  transform: scale(0.98);
-}
-
-.boi-regular-font {
-  font-family: 'OpenSans', -apple-system, BlinkMacSystemFont, sans-serif;
-}
-
-/* Fix potential overflow issues on small screens */
-@media screen and (max-width: 375px) {
-  .container {
-    padding-left: 16px;
-    padding-right: 16px;
-  }
-}
-
-/* Prevent text size adjustment on iOS rotation */
-@media screen and (orientation: landscape) {
-  html {
-    -webkit-text-size-adjust: 100%;
-  }
 }
 
 /* iOS-style page transitions */
@@ -259,81 +123,6 @@ input, select, textarea {
   }
 }
 
-/* Tailwind-compatible animations */
-.animate-in {
-  animation-fill-mode: both;
-}
-
-.slide-in-from-right {
-  animation-name: slideInFromRight;
-}
-
-.slide-in-from-bottom {
-  animation-name: slideInFromBottom;
-}
-
-.fade-in-50 {
-  animation-name: fadeIn50;
-}
-
-@keyframes slideInFromBottom {
-  from {
-    transform: translateY(30px) translateZ(0);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0) translateZ(0);
-    opacity: 1;
-  }
-}
-
-@keyframes fadeIn50 {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-/* Duration classes */
-.duration-300 {
-  animation-duration: 300ms;
-}
-
-.duration-400 {
-  animation-duration: 400ms;
-}
-
-.duration-500 {
-  animation-duration: 500ms;
-}
-
-/* Delay classes */
-.delay-150 {
-  animation-delay: 150ms;
-}
-
-.delay-200 {
-  animation-delay: 200ms;
-}
-
-.delay-300 {
-  animation-delay: 300ms;
-}
-
-.delay-500 {
-  animation-delay: 500ms;
-}
-
-.delay-700 {
-  animation-delay: 700ms;
-}
-
-.delay-1000 {
-  animation-delay: 1000ms;
-}
-
 /* Prevent content flash during load */
 .loading-hidden {
   opacity: 0;
@@ -376,44 +165,6 @@ img {
   left: 0;
   right: 0;
   bottom: 0;
-}
-
-/* iOS safe area handling */
-.ios-safe-top {
-  padding-top: env(safe-area-inset-top);
-}
-
-.ios-safe-bottom {
-  padding-bottom: env(safe-area-inset-bottom);
-}
-
-.ios-safe-left {
-  padding-left: env(safe-area-inset-left);
-}
-
-.ios-safe-right {
-  padding-right: env(safe-area-inset-right);
-}
-
-/* Prevent horizontal scrolling on mobile */
-body, html {
-  overflow-x: hidden;
-  max-width: 100vw;
-}
-
-/* iOS scroll behavior optimization */
-.ios-scroll {
-  -webkit-overflow-scrolling: touch;
-  overflow-x: hidden;
-  overscroll-behavior: contain;
-}
-
-/* iOS card styling for native look */
-.ios-card {
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  background: rgba(255, 255, 255, 0.98);
-  backdrop-filter: blur(10px);
 }
 
 /* Splash screen specific animations */

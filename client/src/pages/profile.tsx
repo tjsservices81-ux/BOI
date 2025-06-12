@@ -20,8 +20,6 @@ export default function Profile() {
     accountType: 'current',
     balance: '0.00'
   });
-  const [isSigningOut, setIsSigningOut] = useState(false);
-  const [signOutProgress, setSignOutProgress] = useState(0);
   const [profileData, setProfileData] = useState({
     name: "John Murphy",
     email: "john.murphy@email.ie",
@@ -214,32 +212,6 @@ export default function Profile() {
     alert(`Added transaction: ${randomTransaction.description} €${Math.abs(randomTransaction.amount)}`);
   };
 
-  const handleSignOut = async () => {
-    setIsSigningOut(true);
-    setSignOutProgress(0);
-
-    // Animate progress bar with smooth steps
-    const steps = [
-      { progress: 20, delay: 200, message: "Saving session data..." },
-      { progress: 40, delay: 300, message: "Clearing cache..." },
-      { progress: 60, delay: 300, message: "Encrypting user data..." },
-      { progress: 80, delay: 400, message: "Finalizing logout..." },
-      { progress: 100, delay: 300, message: "Complete" }
-    ];
-
-    for (const step of steps) {
-      await new Promise(resolve => setTimeout(resolve, step.delay));
-      setSignOutProgress(step.progress);
-    }
-
-    // Add final delay for smooth completion
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    // Perform actual logout
-    logout();
-    navigate('/login');
-  };
-
   const resetToDefaults = () => {
     // Reset accounts to zero balances for current user
     const defaultAccounts = [
@@ -421,13 +393,15 @@ export default function Profile() {
           {/* Logout Button */}
           <div className="mt-8 pt-6 border-t border-gray-200 mb-8">
             <button 
-              onClick={handleSignOut}
-              disabled={isSigningOut}
-              className="w-full flex items-center justify-center space-x-3 p-4 bg-red-50 border border-red-200 rounded-xl active:scale-98 transition-transform disabled:opacity-50 disabled:scale-100"
+              onClick={() => {
+                logout(); // This will clear both UserDataManager and auth context
+                navigate('/login');
+              }}
+              className="w-full flex items-center justify-center space-x-3 p-4 bg-red-50 border border-red-200 rounded-xl active:scale-98 transition-transform"
             >
               <LogOut className="w-5 h-5 text-red-600" />
               <span className="font-semibold text-red-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                {isSigningOut ? 'Signing Out...' : 'Sign Out'}
+                Sign Out
               </span>
             </button>
           </div>
@@ -980,42 +954,6 @@ export default function Profile() {
                   Cancel
                 </button>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Professional Sign Out Animation Modal */}
-      {isSigningOut && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-8 mx-4 w-full max-w-sm text-center shadow-2xl transform animate-in zoom-in-95 duration-300">
-            {/* Bank of Ireland Icon */}
-            <div className="w-16 h-16 bg-[#126987] rounded-full flex items-center justify-center mx-auto mb-6">
-              <LogOut className="w-8 h-8 text-white" />
-            </div>
-            
-            {/* Status Text */}
-            <h3 className="text-xl font-bold text-gray-900 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Signing Out
-            </h3>
-            <p className="text-gray-600 mb-6" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Securing your session...
-            </p>
-            
-            {/* Progress Bar */}
-            <div className="w-full bg-gray-200 rounded-full h-2 mb-4 overflow-hidden">
-              <div 
-                className="h-full bg-[#126987] rounded-full transition-all duration-500 ease-out"
-                style={{ 
-                  width: `${signOutProgress}%`,
-                  transform: `translateX(${signOutProgress < 100 ? '0' : '0'})`,
-                }}
-              />
-            </div>
-            
-            {/* Progress Percentage */}
-            <div className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              {signOutProgress}%
             </div>
           </div>
         </div>

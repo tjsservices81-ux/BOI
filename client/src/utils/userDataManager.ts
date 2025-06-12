@@ -103,12 +103,7 @@ export class UserDataManager {
 
   // Get all registered users
   static getAllUsers(): { [customerNumber: string]: UserData } {
-    try {
-      return JSON.parse(localStorage.getItem('bankUsers') || '{}');
-    } catch (error) {
-      console.log('Failed to parse user data, returning empty object');
-      return {};
-    }
+    return JSON.parse(localStorage.getItem('bankUsers') || '{}');
   }
 
   // Register a new user
