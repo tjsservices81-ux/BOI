@@ -56,11 +56,32 @@ input, textarea {
   user-select: text;
 }
 
-/* Font loading optimization */
+/* Font loading optimization - immediate display */
 @font-face {
   font-family: 'OpenSans';
-  font-display: swap;
+  font-display: block;
   src: local('Open Sans'), local('OpenSans');
+}
+
+/* Critical rendering optimizations */
+html, body {
+  font-synthesis: none;
+  text-rendering: optimizeSpeed;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Force synchronous rendering */
+  contain: layout style;
+}
+
+/* Prevent FOUC (Flash of Unstyled Content) */
+html {
+  visibility: visible !important;
+}
+
+/* Optimize critical rendering path */
+#root {
+  contain: layout style paint;
+  will-change: auto;
 }
 
 /* Prevent invisible text during font load */
@@ -72,19 +93,25 @@ input, textarea {
 img, svg {
   max-width: 100%;
   height: auto;
-  display: block;
+  display: block !important;
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
   backface-visibility: hidden;
   transform: translateZ(0);
-  /* Prevent any loading delays */
-  font-display: block;
+  /* Force immediate visibility */
+  opacity: 1 !important;
+  visibility: visible !important;
+  /* Prevent layout shifts */
+  will-change: auto;
 }
 
 /* Force immediate font rendering */
 * {
   font-display: block !important;
   text-rendering: optimizeSpeed;
+  /* Prevent delayed rendering */
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 /* Selective transitions - instant form inputs, smooth buttons */
@@ -216,8 +243,32 @@ body::before {
     url('/boi_logo.svg'),
     url('/background.jpg'),
     url('/icon_HID.svg'),
-    url('/Icons_Fingerprint.svg');
+    url('/Icons_Fingerprint.svg'),
+    url('/more-prelogin-icon.svg'),
+    url('/branch-locator.svg');
   background-size: 0;
+}
+
+/* Force immediate visibility for all content */
+body * {
+  animation-delay: 0s !important;
+  animation-duration: 0s !important;
+  transition-delay: 0s !important;
+  visibility: visible !important;
+}
+
+/* Eliminate delayed rendering of text and icons */
+span, div, p, h1, h2, h3, h4, h5, h6, button, a, img, svg {
+  opacity: 1 !important;
+  visibility: visible !important;
+  animation-delay: 0s !important;
+  transition-delay: 0s !important;
+}
+
+/* Force immediate paint for interactive elements */
+button, a, [role="button"] {
+  contain: layout style paint;
+  will-change: auto;
 }
 
 /* Optimize image loading */
