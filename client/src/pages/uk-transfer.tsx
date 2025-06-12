@@ -357,8 +357,8 @@ export default function UkTransfer() {
 
   if (step === 'confirm') {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
+      <div className="ios-scroll" style={{ minHeight: '100vh', backgroundColor: '#f9fafb', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
+        <div className="bg-[#126987] px-4 py-3 flex items-center justify-between sticky top-0 z-10">
           <button 
             onClick={() => setStep('form')}
             className="flex items-center text-white"
@@ -372,7 +372,7 @@ export default function UkTransfer() {
           <div></div>
         </div>
 
-        <div className="px-4 py-6">
+        <div className="px-4 py-6 pb-20">
           <div className="bg-white rounded-xl p-4 mb-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
               Transfer Details
@@ -424,8 +424,8 @@ export default function UkTransfer() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
+    <div className="ios-scroll" style={{ minHeight: '100vh', backgroundColor: '#f9fafb', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
+      <div className="bg-[#126987] px-4 py-3 flex items-center justify-between sticky top-0 z-10">
         <button 
           onClick={() => navigate('/payments')}
           className="flex items-center text-white"
@@ -439,7 +439,7 @@ export default function UkTransfer() {
         <div></div>
       </div>
 
-      <form onSubmit={form.handleSubmit(onSubmit)} className="px-4 py-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="px-4 py-6 pb-20">
         <div className="bg-white rounded-xl p-4 mb-4">
           <div className="flex items-center mb-4">
             <Building className="h-5 w-5 text-[#126987] mr-2" />
