@@ -61,7 +61,7 @@ export default function Dashboard() {
       <SpendingVisualization />
       
       {/* Blue header bar */}
-      <div className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0">
+      <div className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0 ios-safe-top">
         <div className="flex items-center">
           <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-6 filter brightness-0 invert" />
         </div>

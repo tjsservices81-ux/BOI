@@ -743,3 +743,35 @@ input {
 .haptic-feedback:active {
   animation: haptic-feedback 0.1s ease;
 }
+
+/* iOS Safe Area Support */
+@supports (padding: max(0px)) {
+  .ios-safe-top {
+    padding-top: max(env(safe-area-inset-top), 44px);
+  }
+  
+  .ios-safe-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom), 20px);
+  }
+  
+  .ios-safe-left {
+    padding-left: env(safe-area-inset-left);
+  }
+  
+  .ios-safe-right {
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
+/* PWA viewport adjustments for iOS */
+@media (display-mode: standalone) {
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .page-container {
+    height: 100vh;
+    height: -webkit-fill-available;
+  }
+}
