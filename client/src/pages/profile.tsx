@@ -14,6 +14,12 @@ export default function Profile() {
   const [newBalance, setNewBalance] = useState('');
   const [editingProfile, setEditingProfile] = useState(false);
   const [showAddTransaction, setShowAddTransaction] = useState(false);
+  const [showAddAccount, setShowAddAccount] = useState(false);
+  const [newAccountData, setNewAccountData] = useState({
+    displayName: '',
+    accountType: 'current',
+    balance: '0.00'
+  });
   const [profileData, setProfileData] = useState({
     name: "John Murphy",
     email: "john.murphy@email.ie",
@@ -125,6 +131,45 @@ export default function Profile() {
     { description: "INTEREST PAYMENT", amount: 12.50, type: "credit" },
     { description: "REFUND - AMAZON", amount: 45.99, type: "credit" }
   ];
+
+  const generateAccountNumber = () => {
+    return Math.floor(1000 + Math.random() * 9000).toString();
+  };
+
+  const addNewAccount = () => {
+    if (!newAccountData.displayName.trim()) {
+      alert('Please enter an account name');
+      return;
+    }
+
+    const storedAccounts = UserDataManager.getUserData('bankAccounts', []);
+    const newId = Math.max(...storedAccounts.map((acc: any) => acc.id), 0) + 1;
+    
+    const newAccount = {
+      id: newId,
+      displayName: newAccountData.displayName,
+      accountNumber: `****${generateAccountNumber()}`,
+      balance: newAccountData.balance,
+      accountType: newAccountData.accountType
+    };
+
+    const updatedAccounts = [...storedAccounts, newAccount];
+    UserDataManager.setUserData('bankAccounts', updatedAccounts);
+    setAccounts(updatedAccounts);
+
+    // Reset form
+    setNewAccountData({
+      displayName: '',
+      accountType: 'current',
+      balance: '0.00'
+    });
+
+    setShowAddAccount(false);
+    alert(`Added new ${newAccountData.accountType} account: ${newAccountData.displayName}`);
+
+    // Dispatch events to notify other components
+    window.dispatchEvent(new CustomEvent('balanceUpdate'));
+  };
 
   const addSampleTransaction = (accountId: number) => {
     const randomTransaction = sampleTransactions[Math.floor(Math.random() * sampleTransactions.length)];
@@ -489,6 +534,24 @@ export default function Profile() {
             {/* Admin Actions */}
             <div className="space-y-4">
 
+              {/* Add New Account */}
+              <button 
+                onClick={() => setShowAddAccount(true)}
+                className="w-full flex items-center space-x-3 p-4 bg-green-50 border border-green-200 rounded-xl active:scale-98 transition-transform"
+              >
+                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                  <Plus className="w-5 h-5 text-green-600" />
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="font-semibold text-green-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Add New Account
+                  </p>
+                  <p className="text-sm text-green-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Create current, savings, credit or loan accounts
+                  </p>
+                </div>
+              </button>
+
               {/* Add Sample Transaction */}
               <button 
                 onClick={() => setShowAddTransaction(true)}
@@ -678,6 +741,97 @@ export default function Profile() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Add Account Modal */}
+      {showAddAccount && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Add New Account
+                </h2>
+                <button
+                  onClick={() => setShowAddAccount(false)}
+                  className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+                >
+                  <X className="w-4 h-4 text-gray-600" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {/* Account Name */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Account Name
+                  </label>
+                  <input
+                    type="text"
+                    value={newAccountData.displayName}
+                    onChange={(e) => setNewAccountData({ ...newAccountData, displayName: e.target.value })}
+                    placeholder="e.g., My Savings Account"
+                    className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  />
+                </div>
+
+                {/* Account Type */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Account Type
+                  </label>
+                  <select
+                    value={newAccountData.accountType}
+                    onChange={(e) => setNewAccountData({ ...newAccountData, accountType: e.target.value })}
+                    className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  >
+                    <option value="current">Current Account</option>
+                    <option value="savings">Savings Account</option>
+                    <option value="credit">Credit Card</option>
+                    <option value="loan">Personal Loan</option>
+                    <option value="deposit">Deposit Account</option>
+                  </select>
+                </div>
+
+                {/* Initial Balance */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Initial Balance (€)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={newAccountData.balance}
+                    onChange={(e) => setNewAccountData({ ...newAccountData, balance: e.target.value })}
+                    placeholder="0.00"
+                    className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => setShowAddAccount(false)}
+                  className="flex-1 py-3 bg-gray-200 text-gray-800 rounded-xl font-semibold hover:bg-gray-300 transition-colors"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={addNewAccount}
+                  className="flex-1 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-colors"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  Add Account
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
