@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Switch, Route, Redirect, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -38,8 +39,26 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function AppRoutes() {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const [location] = useLocation();
+  const [splashShown, setSplashShown] = useState(false);
+  
+  // Always show splash first, regardless of auth state
+  useEffect(() => {
+    const hasShownSplash = sessionStorage.getItem('splashShown');
+    if (hasShownSplash) {
+      setSplashShown(true);
+    }
+  }, []);
+
+  // If splash hasn't been shown yet, or we're on the splash route, show splash
+  if (!splashShown || location === '/splash') {
+    return (
+      <div className="w-full h-full overflow-hidden relative">
+        <Splash />
+      </div>
+    );
+  }
   
   // Always show navigation for authenticated users except on specific exclusion screens
   const excludedRoutes = ['/login', '/splash'];
@@ -52,7 +71,7 @@ function AppRoutes() {
         <Route path="/login" component={Login} />
         <Route path="/more" component={More} />
         <Route path="/">
-          {user ? <Dashboard /> : <Splash />}
+          {user ? <Dashboard /> : <Login />}
         </Route>
         <Route path="/dashboard">
           <ProtectedRoute>
