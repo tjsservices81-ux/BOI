@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
-import splashImage from "@assets/IMG_0633_1749764189094.png";
 
 export default function Splash() {
   const [, navigate] = useLocation();
@@ -23,16 +22,43 @@ export default function Splash() {
         isVisible ? 'opacity-100' : 'opacity-0'
       }`}
       style={{
-        backgroundImage: `url(${splashImage})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
+        background: '#0037ff',
         userSelect: 'none'
       }}
     >
-      {/* Loading spinner positioned at bottom center */}
-      <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2">
-        <div className="animate-spin rounded-full h-8 w-8 border-3 border-gray-600 border-t-transparent opacity-80" />
+      {/* Centered content */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <img 
+          src="/boi_logo.svg" 
+          alt="Bank of Ireland" 
+          className="h-16 w-auto filter brightness-0 invert mb-14"
+          draggable={false}
+        />
+        
+        <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent opacity-80" />
+      </div>
+
+      {/* Clean white curved bottom without status bar elements */}
+      <div className="absolute bottom-0 left-0 right-0">
+        <svg 
+          width="100%" 
+          height="350" 
+          viewBox="0 0 414 350" 
+          preserveAspectRatio="none"
+        >
+          <path 
+            d="M0,80 
+               C80,30 120,50 160,60
+               C180,65 200,70 207,90
+               C214,70 234,65 254,60
+               C294,50 334,30 414,80
+               L414,200
+               C414,250 350,300 207,320
+               C64,300 0,250 0,200
+               Z" 
+            fill="white"
+          />
+        </svg>
       </div>
     </div>
   );
