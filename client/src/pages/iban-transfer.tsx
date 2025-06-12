@@ -81,7 +81,8 @@ export default function IbanTransfer() {
 
     setStep('success');
     setShowReference(false);
-    setAnimationProgress(0);
+    setAnimationProgress(1);
+    setProcessingStage('Verifying transfer details...');
     
     const stages = [
       'Verifying transfer details...',
