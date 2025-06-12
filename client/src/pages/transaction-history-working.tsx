@@ -97,104 +97,6 @@ export default function TransactionHistoryWorking() {
         setAccountInfo(currentAccount);
       }
       
-      // Create sample transactions specific to each account type
-      const now = new Date();
-      const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-      const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
-      
-      let sampleTransactions: any[] = [];
-      
-      // Generate different sample transactions based on account type
-      switch (accountId) {
-        case 1: // Current Account
-          sampleTransactions = [
-            {
-              id: 'sample1',
-              amount: '-50.00',
-              description: 'ATM WITHDRAWAL DUBLIN',
-              timestamp: yesterday.toISOString(),
-              type: 'debit'
-            },
-            {
-              id: 'sample2', 
-              amount: '-89.50',
-              description: 'DIRECT DEBIT ELECTRIC IRELAND',
-              timestamp: twoDaysAgo.toISOString(),
-              type: 'debit'
-            },
-            {
-              id: 'sample3',
-              amount: '-45.99',
-              description: 'ONLINE PURCHASE AMAZON.IE',
-              timestamp: twoDaysAgo.toISOString(),
-              type: 'debit'
-            }
-          ];
-          break;
-          
-        case 2: // Credit Card
-          sampleTransactions = [
-            {
-              id: 'sample1',
-              amount: '-125.00',
-              description: 'RESTAURANT DUBLIN CITY',
-              timestamp: yesterday.toISOString(),
-              type: 'debit'
-            },
-            {
-              id: 'sample2',
-              amount: '-299.99',
-              description: 'ONLINE SHOPPING ZALANDO',
-              timestamp: twoDaysAgo.toISOString(),
-              type: 'debit'
-            }
-          ];
-          break;
-          
-        case 3: // Savings Account
-          sampleTransactions = [
-            {
-              id: 'sample1',
-              amount: '+50.00',
-              description: 'INTEREST PAYMENT',
-              timestamp: yesterday.toISOString(),
-              type: 'credit'
-            },
-            {
-              id: 'sample2',
-              amount: '+500.00',
-              description: 'TRANSFER FROM CURRENT ACCOUNT',
-              timestamp: twoDaysAgo.toISOString(),
-              type: 'credit'
-            }
-          ];
-          break;
-          
-        case 4: // Personal Loan
-          sampleTransactions = [
-            {
-              id: 'sample1',
-              amount: '-245.50',
-              description: 'LOAN PAYMENT',
-              timestamp: yesterday.toISOString(),
-              type: 'debit'
-            }
-          ];
-          break;
-          
-        case 5: // Deposit Account
-          sampleTransactions = [
-            {
-              id: 'sample1',
-              amount: '+25.00',
-              description: 'MONTHLY DEPOSIT',
-              timestamp: yesterday.toISOString(),
-              type: 'credit'
-            }
-          ];
-          break;
-      }
-      
       // Format stored transactions for this account (preserve all data including exchange rates)
       const formattedStored = accountTransactions.map((tx: any) => ({
         ...tx, // Keep all original transaction data
@@ -205,9 +107,8 @@ export default function TransactionHistoryWorking() {
         type: tx.type
       }));
       
-      // Combine and sort by timestamp
-      const allTransactions = [...formattedStored, ...sampleTransactions];
-      const sortedTransactions = allTransactions.sort((a, b) => 
+      // Only use actual stored transactions - no sample data
+      const sortedTransactions = formattedStored.sort((a, b) => 
         new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
       );
       
