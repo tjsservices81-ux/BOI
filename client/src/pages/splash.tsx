@@ -3,43 +3,18 @@ import { useLocation } from "wouter";
 
 export default function Splash() {
   const [, navigate] = useLocation();
-  const [currentStep, setCurrentStep] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
 
-  const loadingSteps = [
-    "Verifying device…",
-    "Checking for updates…", 
-    "Loading security settings…",
-    "Establishing secure connection…",
-    "Preparing login screen…"
-  ];
-
   useEffect(() => {
-    // Step progression timing: each step lasts 1.6 seconds
-    const stepTimers: NodeJS.Timeout[] = [];
-    
-    // Progress through each loading step
-    loadingSteps.forEach((_, index) => {
-      const timer = setTimeout(() => {
-        setCurrentStep(index);
-      }, index * 1600); // 1.6 seconds per step
-      stepTimers.push(timer);
-    });
-
-    // Navigate to login after all steps complete (8 seconds total)
-    const finalTimer = setTimeout(() => {
+    // Navigate to login after 5-6 seconds
+    const timer = setTimeout(() => {
       setIsVisible(false);
       setTimeout(() => {
         navigate('/login');
       }, 300); // Brief fade out before navigation
-    }, loadingSteps.length * 1600);
+    }, 5500); // 5.5 seconds total
 
-    stepTimers.push(finalTimer);
-
-    // Cleanup all timers
-    return () => {
-      stepTimers.forEach(timer => clearTimeout(timer));
-    };
+    return () => clearTimeout(timer);
   }, [navigate]);
 
   // Prevent any user interaction during splash
@@ -50,116 +25,53 @@ export default function Splash() {
 
   return (
     <div 
-      className={`full-height relative overflow-hidden transition-all duration-500 ${
+      className={`h-screen w-screen fixed inset-0 overflow-hidden transition-all duration-500 ${
         isVisible ? 'opacity-100' : 'opacity-0'
       }`}
       style={{
-        background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #ffffff 100%)',
+        background: '#3333ff', // Bright royal blue matching the screenshot
         userSelect: 'none',
         pointerEvents: 'none'
       }}
       onClick={handleInteraction}
       onTouchStart={handleInteraction}
     >
-      {/* Professional subtle gradient overlay */}
-      <div 
-        className="absolute inset-0"
-        style={{
-          background: 'radial-gradient(ellipse at center, rgba(18, 105, 135, 0.03) 0%, rgba(18, 105, 135, 0.08) 100%)',
-        }}
-      />
-      
-      {/* Prevent any interactions */}
-      <div 
-        className="absolute inset-0 z-50"
-        style={{ pointerEvents: 'none' }}
-      />
-      
       {/* Main content centered */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center px-8">
-        {/* Professional logo container with subtle shadow */}
-        <div className="mb-20 relative">
-          <div className="absolute inset-0 bg-[#126987] opacity-5 blur-xl rounded-full scale-150"></div>
-          <div className="relative bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
-            <img 
-              src="/boi_logo.svg" 
-              alt="Bank of Ireland" 
-              className="h-16 w-auto"
-              style={{ 
-                imageRendering: 'crisp-edges',
-                userSelect: 'none',
-                pointerEvents: 'none',
-                filter: 'brightness(0) saturate(100%) invert(25%) sepia(85%) saturate(1011%) hue-rotate(168deg) brightness(93%) contrast(88%)'
-              }}
-              draggable={false}
-            />
-          </div>
-        </div>
-        
-        {/* Loading Messages with professional styling */}
-        <div className="text-center h-20 flex items-center justify-center mb-4">
-          {loadingSteps.map((message, index) => (
-            <div
-              key={index}
-              className={`absolute transition-all duration-700 ease-out ${
-                index === currentStep 
-                  ? 'opacity-100 transform translate-y-0 scale-100' 
-                  : index < currentStep
-                    ? 'opacity-0 transform -translate-y-3 scale-95'
-                    : 'opacity-0 transform translate-y-3 scale-95'
-              }`}
-            >
-              <p 
-                className="text-[#126987] text-lg font-semibold tracking-wide"
-                style={{ 
-                  fontFamily: 'OpenSans, sans-serif',
-                  textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
-                }}
-              >
-                {message}
-              </p>
-            </div>
-          ))}
-        </div>
-        
-        {/* Professional progress bar */}
-        <div className="w-64 bg-gray-200 rounded-full h-1.5 mb-6 overflow-hidden shadow-inner">
-          <div 
-            className="bg-gradient-to-r from-[#126987] to-[#0f5a6b] h-1.5 rounded-full transition-all duration-700 ease-out shadow-sm"
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        {/* Bank of Ireland logo */}
+        <div className="mb-8">
+          <img 
+            src="/boi_logo.svg" 
+            alt="Bank of Ireland" 
+            className="h-20 w-auto filter brightness-0 invert"
             style={{ 
-              width: `${((currentStep + 1) / loadingSteps.length) * 100}%`,
-              boxShadow: '0 0 8px rgba(18, 105, 135, 0.4)'
+              imageRendering: 'crisp-edges',
+              userSelect: 'none',
+              pointerEvents: 'none'
             }}
+            draggable={false}
           />
         </div>
         
-        {/* Minimalist step indicators */}
-        <div className="flex space-x-3">
-          {loadingSteps.map((_, index) => (
-            <div
-              key={index}
-              className={`w-1.5 h-1.5 rounded-full transition-all duration-500 ${
-                index <= currentStep 
-                  ? 'bg-[#126987] scale-125 shadow-sm' 
-                  : 'bg-gray-300 scale-100'
-              }`}
-              style={{
-                boxShadow: index <= currentStep ? '0 0 4px rgba(18, 105, 135, 0.6)' : 'none'
-              }}
-            />
-          ))}
+        {/* Loading spinner */}
+        <div className="mt-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-white border-t-transparent"></div>
         </div>
-        
-        {/* Professional footer */}
-        <div className="absolute bottom-12 text-center">
-          <p 
-            className="text-gray-500 text-sm font-medium tracking-wide"
-            style={{ fontFamily: 'OpenSans, sans-serif' }}
-          >
-            Bank of Ireland Digital Banking
-          </p>
-          <div className="mt-2 w-12 h-0.5 bg-gradient-to-r from-transparent via-[#126987] to-transparent mx-auto opacity-30"></div>
-        </div>
+      </div>
+
+      {/* Curved white bottom shape matching screenshot */}
+      <div className="absolute bottom-0 left-0 right-0 h-64">
+        <svg 
+          viewBox="0 0 375 250" 
+          className="w-full h-full"
+          preserveAspectRatio="none"
+          style={{ display: 'block' }}
+        >
+          <path 
+            d="M 0 80 Q 187.5 0 375 80 L 375 250 L 0 250 Z" 
+            fill="white"
+          />
+        </svg>
       </div>
     </div>
   );
