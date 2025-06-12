@@ -210,7 +210,7 @@ export default function Transfer() {
           )}
         </Button>
 
-        <Alert>
+        <Alert className="animate-in slide-in-from-bottom duration-400 delay-1000">
           <Info className="h-4 w-4" />
           <AlertDescription>
             <p className="font-medium mb-1">Security Notice</p>
