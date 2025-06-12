@@ -355,7 +355,7 @@ export default function Login() {
   };
 
   return (
-    <div className="full-height relative ios-safe-top ios-safe-bottom ios-safe-left ios-safe-right bg-[#126987]">
+    <div className="full-height relative ios-safe-top ios-safe-bottom ios-safe-left ios-safe-right">
       {/* Loading overlay */}
       {(isNavigating || isLoginAnimating) && (
         <div className="fixed inset-0 bg-gradient-to-br from-[#126987] to-[#2d5a6b] z-50 flex flex-col items-center justify-center">
@@ -457,12 +457,9 @@ export default function Login() {
       <div 
         className="fixed inset-0 bg-cover bg-center"
         style={{
-          backgroundImage: `url('/background.jpg'), linear-gradient(135deg, #126987 0%, #2d5a6b 100%)`
+          backgroundImage: `url('/background.jpg')`
         }}
       />
-      
-      {/* Blue-green overlay matching screenshot */}
-      <div className="fixed inset-0 bg-gradient-to-br from-[#126987] to-[#2d5a6b] opacity-80" />
       
       {/* Content */}
       <div className="relative z-10 h-screen flex flex-col">
