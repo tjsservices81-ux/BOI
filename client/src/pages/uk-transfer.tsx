@@ -23,8 +23,8 @@ export default function UkTransfer() {
   const [step, setStep] = useState<'form' | 'confirm' | 'success'>('form');
   const [transferReference, setTransferReference] = useState<string>('');
   const [identifiedBank, setIdentifiedBank] = useState<string>('');
-  const [showReference, setShowReference] = useState<boolean>(false);
-  const [animationProgress, setAnimationProgress] = useState<number>(0);
+  const [showReference, setShowReference] = useState<boolean>(true);
+  const [animationProgress, setAnimationProgress] = useState<number>(100);
   const [processingStage, setProcessingStage] = useState<string>('Verifying transfer details...');
   const [formData, setFormData] = useState<UkTransferData | null>(null);
   const [exchangeRate, setExchangeRate] = useState<number>(0.85); // EUR to GBP rate
@@ -118,7 +118,7 @@ export default function UkTransfer() {
 
     setStep('success');
     setShowReference(false);
-    setAnimationProgress(1);
+    setAnimationProgress(0);
     setProcessingStage('Verifying transfer details...');
     
     const stages = [
@@ -143,7 +143,7 @@ export default function UkTransfer() {
         
         if (newProgress >= 100) {
           clearInterval(interval);
-          setShowReference(true);
+          setTimeout(() => setShowReference(true), 200);
           return 100;
         }
         return newProgress;
@@ -179,7 +179,7 @@ export default function UkTransfer() {
             )}
 
             {/* Processing animation overlay */}
-            {!showReference && (
+            {!showReference && animationProgress < 100 && (
               <div style={{ 
                 position: 'fixed', 
                 top: 0, 

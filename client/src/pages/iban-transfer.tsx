@@ -25,8 +25,8 @@ export default function IbanTransfer() {
   const [, navigate] = useLocation();
   const [step, setStep] = useState<'form' | 'confirm' | 'success'>('form');
   const [transferReference, setTransferReference] = useState<string>('');
-  const [showReference, setShowReference] = useState<boolean>(false);
-  const [animationProgress, setAnimationProgress] = useState<number>(0);
+  const [showReference, setShowReference] = useState<boolean>(true);
+  const [animationProgress, setAnimationProgress] = useState<number>(100);
   const [processingStage, setProcessingStage] = useState<string>('Verifying transfer details...');
   const [formData, setFormData] = useState<IbanTransferData | null>(null);
 
@@ -81,7 +81,7 @@ export default function IbanTransfer() {
 
     setStep('success');
     setShowReference(false);
-    setAnimationProgress(1);
+    setAnimationProgress(0);
     setProcessingStage('Verifying transfer details...');
     
     const stages = [
@@ -141,8 +141,8 @@ export default function IbanTransfer() {
               </>
             )}
 
-            <div>
-              {!showReference ? (
+            {/* Processing animation overlay */}
+            {!showReference && animationProgress < 100 && (
                 <div style={{ 
                   position: 'fixed', 
                   top: 0, 
@@ -202,7 +202,9 @@ export default function IbanTransfer() {
                     </div>
                   </div>
                 </div>
-              ) : (
+            )}
+
+            {showReference && (
                 <div className="bg-gray-50 rounded-xl p-4 mb-6 text-left">
                   <div className="space-y-3">
                     <div className="flex justify-between">
