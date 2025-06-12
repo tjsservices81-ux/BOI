@@ -70,7 +70,7 @@ export const processTransfer = (
   const currentBalance = parseFloat(selectedAccount.balance);
   console.log('Current balance:', currentBalance, 'Transfer amount:', amount);
   
-  if (amount > currentBalance) {
+  if (amount > currentBalance && selectedAccount.accountType !== 'credit') {
     console.error('Insufficient funds');
     console.error('Transfer failed');
     return false;

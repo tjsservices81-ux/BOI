@@ -24,6 +24,7 @@ export default function UkTransfer() {
   const [transferReference, setTransferReference] = useState<string>('');
   const [identifiedBank, setIdentifiedBank] = useState<string>('');
   const [showReference, setShowReference] = useState<boolean>(false);
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [animationProgress, setAnimationProgress] = useState<number>(0);
   const [processingStage, setProcessingStage] = useState<string>('Verifying transfer details...');
   const [formData, setFormData] = useState<UkTransferData | null>(null);
@@ -97,66 +98,69 @@ export default function UkTransfer() {
   const executeTransfer = async () => {
     if (!formData) return;
     
-    // Generate unique reference only when transfer starts
-    const ref = generateReference();
-    setTransferReference(ref);
-    
-    // Fetch current exchange rate and calculate GBP amount
-    await fetchExchangeRate();
-    
-    // Immediately go to success screen and start animation BEFORE processing
+    // Start processing state immediately
+    setIsProcessing(true);
     setStep('success');
     setShowReference(false);
     setAnimationProgress(0);
-    setProcessingStage('Verifying transfer details...');
+    setProcessingStage('Initializing secure transfer...');
     
-    const success = processTransfer(
-      formData.fromAccount,
-      parseFloat(formData.amount),
-      formData.recipientName,
-      'UK',
-      ref,
-      exchangeRate
-    );
+    // Generate unique reference
+    const ref = generateReference();
+    setTransferReference(ref);
     
-    if (!success) {
-      console.error('Transfer failed');
-      return;
-    }
+    // Fetch current exchange rate
+    await fetchExchangeRate();
     
-    // Start animation immediately with a small delay
-    setTimeout(() => {
-      // Professional banking stages during 5-second animation
-      const stages = [
-        'Verifying transfer details...',
-        'Authenticating transaction...',
-        'Connecting to UK banking network...',
-        'Securing transfer protocol...',
-        'Finalizing payment...'
-      ];
-      
-      let stageIndex = 0;
-      
-      const interval = setInterval(() => {
-        setAnimationProgress(prev => {
-          const newProgress = prev + 2; // 2% every 100ms = 5 seconds
-          
-          // Update stage message every 20% (1 second)
-          const newStageIndex = Math.floor(newProgress / 20);
-          if (newStageIndex !== stageIndex && newStageIndex < stages.length) {
-            stageIndex = newStageIndex;
-            setProcessingStage(stages[newStageIndex]);
-          }
-          
-          if (newProgress >= 100) {
-            clearInterval(interval);
-            setShowReference(true);
-            return 100;
-          }
-          return newProgress;
-        });
-      }, 100);
+    // Start animation immediately
+    const stages = [
+      'Verifying transfer details...',
+      'Authenticating transaction...',
+      'Connecting to UK banking network...',
+      'Securing transfer protocol...',
+      'Finalizing payment...'
+    ];
+    
+    let stageIndex = 0;
+    
+    const interval = setInterval(() => {
+      setAnimationProgress(prev => {
+        const newProgress = prev + 2;
+        
+        const newStageIndex = Math.floor(newProgress / 20);
+        if (newStageIndex !== stageIndex && newStageIndex < stages.length) {
+          stageIndex = newStageIndex;
+          setProcessingStage(stages[newStageIndex]);
+        }
+        
+        if (newProgress >= 100) {
+          clearInterval(interval);
+          setIsProcessing(false);
+          setShowReference(true);
+          return 100;
+        }
+        return newProgress;
+      });
     }, 100);
+    
+    // Process transfer after animation starts
+    setTimeout(() => {
+      const success = processTransfer(
+        formData.fromAccount,
+        parseFloat(formData.amount),
+        formData.recipientName,
+        'UK',
+        ref,
+        exchangeRate
+      );
+      
+      if (!success) {
+        clearInterval(interval);
+        setIsProcessing(false);
+        console.error('Transfer failed');
+        return;
+      }
+    }, 1000);
   };
 
   if (step === 'success') {
@@ -187,7 +191,7 @@ export default function UkTransfer() {
             )}
 
             {/* Full-screen professional processing animation */}
-            {!showReference && (
+            {isProcessing && !showReference && (
               <div style={{ 
                 position: 'fixed', 
                 top: 0, 
