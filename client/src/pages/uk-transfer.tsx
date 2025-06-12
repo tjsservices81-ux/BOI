@@ -98,13 +98,6 @@ export default function UkTransfer() {
   const executeTransfer = async () => {
     if (!formData) return;
     
-    // Start processing state immediately
-    setIsProcessing(true);
-    setStep('success');
-    setShowReference(false);
-    setAnimationProgress(0);
-    setProcessingStage('Initializing secure transfer...');
-    
     // Generate unique reference
     const ref = generateReference();
     setTransferReference(ref);
@@ -112,7 +105,16 @@ export default function UkTransfer() {
     // Fetch current exchange rate
     await fetchExchangeRate();
     
-    // Start animation immediately
+    // Start processing immediately with visual feedback
+    setStep('success');
+    setIsProcessing(true);
+    setShowReference(false);
+    setAnimationProgress(0);
+    setProcessingStage('Initializing secure transfer...');
+    
+    // Wait a moment to ensure state updates, then start animation
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
     const stages = [
       'Verifying transfer details...',
       'Authenticating transaction...',
@@ -143,7 +145,7 @@ export default function UkTransfer() {
       });
     }, 100);
     
-    // Process transfer after animation starts
+    // Process transfer in background
     setTimeout(() => {
       const success = processTransfer(
         formData.fromAccount,
@@ -160,7 +162,7 @@ export default function UkTransfer() {
         console.error('Transfer failed');
         return;
       }
-    }, 1000);
+    }, 500);
   };
 
   if (step === 'success') {
@@ -191,16 +193,17 @@ export default function UkTransfer() {
             )}
 
             {/* Full-screen professional processing animation */}
-            {isProcessing && !showReference && (
+            {(isProcessing || (!showReference && animationProgress < 100)) && (
               <div style={{ 
                 position: 'fixed', 
                 top: 0, 
                 left: 0, 
                 right: 0, 
                 bottom: 0, 
-                background: 'rgba(248, 250, 252, 0.98)',
+                background: 'linear-gradient(135deg, rgba(248, 250, 252, 0.98) 0%, rgba(241, 245, 249, 0.98) 100%)',
                 backdropFilter: 'blur(20px)',
-                zIndex: 9999,
+                WebkitBackdropFilter: 'blur(20px)',
+                zIndex: 10000,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
