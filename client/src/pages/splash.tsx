@@ -64,12 +64,12 @@ export default function Splash() {
     >
       {/* Prevent any interactions */}
       <div 
-        className="absolute inset-0 z-50"
+        className="absolute inset-0 z-20"
         style={{ pointerEvents: 'none' }}
       />
       
       {/* Main content centered */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
+      <div className="absolute inset-0 flex flex-col items-center justify-center z-30">
         {/* Bank of Ireland Icon */}
         <div className="mb-16">
           <img 
@@ -86,11 +86,11 @@ export default function Splash() {
         </div>
         
         {/* Loading Messages */}
-        <div className="text-center h-16 flex items-center justify-center">
+        <div className="text-center h-16 flex items-center justify-center relative z-10">
           {loadingSteps.map((message, index) => (
             <div
               key={index}
-              className={`absolute transition-all duration-500 ease-in-out ${
+              className={`absolute inset-0 flex items-center justify-center transition-all duration-500 ease-in-out ${
                 index === currentStep 
                   ? 'opacity-100 transform translate-y-0' 
                   : index < currentStep
@@ -99,8 +99,11 @@ export default function Splash() {
               }`}
             >
               <p 
-                className="text-white text-lg font-medium"
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
+                className="text-white text-lg font-medium whitespace-nowrap"
+                style={{ 
+                  fontFamily: 'OpenSans, sans-serif',
+                  textShadow: '0 1px 3px rgba(0,0,0,0.3)'
+                }}
               >
                 {message}
               </p>
