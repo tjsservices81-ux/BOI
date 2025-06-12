@@ -471,7 +471,7 @@ body {
 }
 
 /* iOS Safe Area handling */
-.ios-safe-top { padding-top: env(safe-area-inset-top); }
+.ios-safe-top { padding-top: 0; }
 .ios-safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
 .ios-safe-left { padding-left: env(safe-area-inset-left); }
 .ios-safe-right { padding-right: env(safe-area-inset-right); }
@@ -679,7 +679,7 @@ body {
   /* iOS specific styling */
   @supports (-webkit-touch-callout: none) {
     .ios-safe-top {
-      padding-top: env(safe-area-inset-top);
+      padding-top: 0;
     }
     
     .ios-safe-bottom {
@@ -821,7 +821,7 @@ input {
 /* iOS Safe Area Support */
 @supports (padding: max(0px)) {
   .ios-safe-top {
-    padding-top: max(env(safe-area-inset-top), 44px);
+    padding-top: 0;
   }
   
   .ios-safe-bottom {
