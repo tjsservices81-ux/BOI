@@ -994,3 +994,40 @@ html, body {
 #root {
   background-color: #126987;
 }
+
+/* Remove all safe areas and bars for splash screen */
+.splash-no-safe-area {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  z-index: 9999 !important;
+}
+
+/* Override all iOS safe areas specifically for splash */
+.splash-no-safe-area,
+.splash-no-safe-area *,
+.splash-no-safe-area .ios-safe-top,
+.splash-no-safe-area .ios-safe-bottom,
+.splash-no-safe-area .ios-safe-left,
+.splash-no-safe-area .ios-safe-right {
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+}
+
+/* Force full viewport for splash on all devices */
+@supports (-webkit-touch-callout: none) {
+  .splash-no-safe-area {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+}
