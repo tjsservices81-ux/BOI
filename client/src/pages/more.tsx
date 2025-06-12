@@ -1,37 +1,16 @@
 import { useLocation } from "wouter";
-import { ChevronLeft, User, LogOut } from "lucide-react";
+import { ChevronLeft, User } from "lucide-react";
 import { useState } from "react";
-import { useAuth } from "@/lib/auth";
-import { useToast } from "@/hooks/use-toast";
 
 export default function More() {
   const [, setLocation] = useLocation();
   const [isNavigating, setIsNavigating] = useState(false);
-  const { logout } = useAuth();
-  const { toast } = useToast();
 
   const handleNavigation = (path: string) => {
     setIsNavigating(true);
     setTimeout(() => {
       setLocation(path);
     }, 50);
-  };
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      toast({
-        title: "Logged Out",
-        description: "You have been successfully logged out",
-      });
-      setLocation('/login');
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to log out. Please try again.",
-        variant: "destructive",
-      });
-    }
   };
 
   return (
@@ -110,18 +89,6 @@ export default function More() {
                 </div>
                 <span className="flex-1 text-left text-gray-700 text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Settings</span>
                 <span className="text-gray-400 text-lg">›</span>
-              </button>
-
-              {/* Logout */}
-              <button 
-                onClick={handleLogout}
-                className="w-full bg-red-50 border border-red-200 rounded-lg p-4 flex items-center space-x-3 hover:bg-red-100 shadow-sm transition-colors duration-150"
-              >
-                <div className="w-6 h-6 bg-red-100 rounded-full flex items-center justify-center">
-                  <LogOut className="w-4 h-4 text-red-600" />
-                </div>
-                <span className="flex-1 text-left text-red-700 text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Log Out</span>
-                <span className="text-red-400 text-lg">›</span>
               </button>
               
             </div>
