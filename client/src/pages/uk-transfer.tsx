@@ -76,7 +76,9 @@ export default function UkTransfer() {
 
   useEffect(() => {
     const loadAccounts = () => {
-      setAccounts(getAccounts());
+      // Use UserDataManager to get consistent account data
+      const userAccounts = UserDataManager.getUserData('bankAccounts', []);
+      setAccounts(userAccounts);
     };
     
     loadAccounts();
@@ -482,7 +484,7 @@ export default function UkTransfer() {
                 <option value="">Select account</option>
                 {accounts.map(account => (
                   <option key={account.id} value={account.id}>
-                    {account.name} {account.number} - {account.balance}
+                    {account.displayName} {account.accountNumber} - €{account.balance}
                   </option>
                 ))}
               </select>
