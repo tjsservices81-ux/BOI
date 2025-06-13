@@ -79,6 +79,11 @@ export function getPendingAttempts(): AccessAttempt[] {
     .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 }
 
+// Remove an access attempt
+export function removeAttempt(attemptId: string): boolean {
+  return accessAttempts.delete(attemptId);
+}
+
 // Get all access attempts
 export function getAllAttempts(): AccessAttempt[] {
   return Array.from(accessAttempts.values())

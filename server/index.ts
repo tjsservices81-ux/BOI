@@ -3,7 +3,7 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { ipWhitelistMiddleware } from "./ipControl";
 import { panicModeMiddleware } from "./panicMode";
-import adminRoutes from "./adminRoutes";
+import adminRoutes from "./adminPanelFixed";
 
 const app = express();
 

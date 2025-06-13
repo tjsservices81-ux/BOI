@@ -183,6 +183,11 @@ export function listApprovedIPs(): string[] {
   return Array.from(APPROVED_IPS);
 }
 
+// Function to get all approved IPs (alias for admin panel)
+export function getAllApprovedIPs(): string[] {
+  return Array.from(APPROVED_IPS);
+}
+
 // Function to check if an IP is approved
 export function isIPApproved(ip: string): boolean {
   return APPROVED_IPS.has(ip);
