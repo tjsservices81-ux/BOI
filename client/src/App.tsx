@@ -102,14 +102,10 @@ function AppRoutes() {
             {/* Handle root route properly based on splash and auth state */}
             {!splashShown ? (
               <Splash />
-            ) : isLoading ? (
-              <div className="w-full h-full flex items-center justify-center bg-[#126987]">
-                <div className="text-white">Loading...</div>
-              </div>
-            ) : user ? (
-              <Dashboard />
-            ) : (
+            ) : !user ? (
               <Login />
+            ) : (
+              <Dashboard />
             )}
           </Route>
           <Route path="/dashboard">
