@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
-import { ChevronLeft, User, Snowflake, Shield, Lock, CreditCard } from "lucide-react";
+import { ChevronLeft, User, Snowflake, Shield, Lock, CreditCard, AlertTriangle, X } from "lucide-react";
 import { UserDataManager } from "../utils/userDataManager";
 
 export default function Cards() {
@@ -8,6 +8,8 @@ export default function Cards() {
   const [currentCard, setCurrentCard] = useState(0);
   const [freezeToggle, setFreezeToggle] = useState(false);
   const [cardHolderName, setCardHolderName] = useState("JOHN MURPHY");
+  const [showBlockModal, setShowBlockModal] = useState(false);
+  const [isCardBlocked, setIsCardBlocked] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const cards = [
@@ -39,7 +41,7 @@ export default function Cards() {
     }
   ];
 
-  // Load cardholder name from profile and listen for updates
+  // Load cardholder name and card status from profile and listen for updates
   useEffect(() => {
     // Load name from profile data
     const loadCardholderName = () => {
@@ -51,11 +53,19 @@ export default function Cards() {
       }
     };
 
+    // Load card blocked status
+    const loadCardStatus = () => {
+      const blocked = UserDataManager.getUserData('cardBlocked', false);
+      setIsCardBlocked(blocked);
+    };
+
     loadCardholderName();
+    loadCardStatus();
 
     // Listen for profile updates
     const handleStorageChange = () => {
       loadCardholderName();
+      loadCardStatus();
     };
 
     window.addEventListener('storage', handleStorageChange);
@@ -81,6 +91,17 @@ export default function Cards() {
       return () => scrollElement.removeEventListener('scroll', handleScroll);
     }
   }, []);
+
+  const handleReportLostStolen = () => {
+    setShowBlockModal(true);
+  };
+
+  const confirmBlockCard = () => {
+    // Block the card and save to storage
+    setIsCardBlocked(true);
+    UserDataManager.setUserData('cardBlocked', true);
+    setShowBlockModal(false);
+  };
 
   return (
     <div className="h-screen flex flex-col bg-white ios-safe-top ios-safe-bottom page-fade-in">
@@ -175,13 +196,30 @@ export default function Cards() {
                   </div>
                   
                   {/* Freeze Overlay */}
-                  {freezeToggle && (
+                  {freezeToggle && !isCardBlocked && (
                     <div className="absolute inset-0 bg-gray-500 bg-opacity-50 rounded-2xl flex items-center justify-center">
                       <div className="bg-white px-3 py-2 rounded-lg flex items-center space-x-2">
                         <Snowflake className="w-4 h-4 text-blue-600" />
                         <span className="text-sm font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                           Frozen
                         </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Blocked Card Overlay */}
+                  {isCardBlocked && (
+                    <div className="absolute inset-0 bg-red-600 bg-opacity-90 rounded-2xl flex items-center justify-center">
+                      <div className="bg-white px-4 py-3 rounded-lg flex items-center space-x-2">
+                        <Shield className="w-5 h-5 text-red-600" />
+                        <div className="text-center">
+                          <span className="text-sm font-bold text-red-600 block" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                            BLOCKED
+                          </span>
+                          <span className="text-xs text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                            Lost/Stolen
+                          </span>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -240,13 +278,23 @@ export default function Cards() {
           </div>
 
           {/* Report Lost or Stolen */}
-          <button className="w-full bg-white rounded-2xl p-4 ios-card flex items-center justify-between active:scale-98 transition-transform">
+          <button 
+            onClick={handleReportLostStolen}
+            disabled={isCardBlocked}
+            className={`w-full bg-white rounded-2xl p-4 ios-card flex items-center justify-between active:scale-98 transition-transform ${
+              isCardBlocked ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
+          >
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <img src="/cert.svg" alt="Report" className="w-4 h-4" />
+              <div className={`w-8 h-8 ${isCardBlocked ? 'bg-red-100' : 'bg-blue-100'} rounded-full flex items-center justify-center`}>
+                {isCardBlocked ? (
+                  <Shield className="w-4 h-4 text-red-600" />
+                ) : (
+                  <img src="/cert.svg" alt="Report" className="w-4 h-4" />
+                )}
               </div>
               <span className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Report lost or stolen
+                {isCardBlocked ? 'Card blocked - Contact admin' : 'Report lost or stolen'}
               </span>
             </div>
             <span className="text-gray-400">›</span>
@@ -295,6 +343,44 @@ export default function Cards() {
         </div>
       </div>
 
+      {/* Block Card Confirmation Modal */}
+      {showBlockModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-6 animate-fade-in">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertTriangle className="w-8 h-8 text-red-600" />
+              </div>
+              
+              <h3 className="text-lg font-bold text-gray-900 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Block This Card?
+              </h3>
+              
+              <p className="text-sm text-gray-600 mb-6 leading-relaxed" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                This will immediately block your card and prevent all transactions. You'll need to order a new card and only an administrator can reverse this action.
+              </p>
+              
+              <div className="space-y-3">
+                <button
+                  onClick={confirmBlockCard}
+                  className="w-full bg-red-600 text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  Yes, Block Card
+                </button>
+                
+                <button
+                  onClick={() => setShowBlockModal(false)}
+                  className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold active:scale-98 transition-transform"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
