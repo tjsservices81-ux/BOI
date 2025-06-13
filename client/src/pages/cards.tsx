@@ -87,20 +87,20 @@ export default function Cards() {
   }, []);
 
   return (
-    <div className="h-screen flex flex-col bg-white ios-safe-top ios-safe-bottom page-container">
+    <div className="h-screen flex flex-col bg-white ios-safe-top ios-safe-bottom">
       
       {/* Header */}
       <div className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0">
         <button 
           onClick={() => navigate("/")}
-          className="flex items-center text-white active:scale-95 transition-transform"
+          className="flex items-center text-white"
         >
           <ChevronLeft className="w-6 h-6" />
         </button>
         <h1 className="text-white text-lg font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
           Manage Card
         </h1>
-        <button className="text-white active:scale-95 transition-transform">
+        <button className="text-white">
           <User className="w-6 h-6" />
         </button>
       </div>
