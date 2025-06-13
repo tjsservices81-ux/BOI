@@ -175,13 +175,13 @@ export function SecurityWrapper({ children }: SecurityWrapperProps) {
       return;
     };
 
-    // Apply all security measures
+    // Apply all security measures with proper passive event handling
     document.addEventListener('keydown', handleKeyDown, true);
     document.addEventListener('contextmenu', handleContextMenu, true);
     document.addEventListener('selectstart', handleSelectStart, true);
     document.addEventListener('dragstart', handleDragStart, true);
-    document.addEventListener('touchstart', handleTouchStart, { passive: false });
-    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+    document.addEventListener('touchstart', handleTouchStart, { passive: true });
+    document.addEventListener('touchmove', handleTouchMove, { passive: true });
     document.addEventListener('beforeprint', handleBeforePrint, true);
     
     // Image-specific protection
