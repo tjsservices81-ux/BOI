@@ -157,6 +157,63 @@
           }
         }, 500);
       }, 1000);
+
+      // Register service worker for enhanced security
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/sw.js')
+            .then(function(registration) {
+              console.log('SW registered with scope: ', registration.scope);
+            })
+            .catch(function(err) {
+              console.log('SW registration failed: ', err);
+            });
+        });
+      }
+
+      // Additional mobile-specific URL hiding
+      window.addEventListener('load', function() {
+        // Force fullscreen on mobile devices
+        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+          // Hide address bar completely
+          setTimeout(function() {
+            window.scrollTo(0, 1);
+            
+            // Request fullscreen if available
+            if (document.documentElement.requestFullscreen) {
+              document.documentElement.requestFullscreen().catch(() => {});
+            } else if (document.documentElement.webkitRequestFullscreen) {
+              document.documentElement.webkitRequestFullscreen().catch(() => {});
+            }
+          }, 1000);
+        }
+      });
+
+      // Prevent URL visibility in sharing menus
+      if ('navigator' in window && 'share' in navigator) {
+        // Override Web Share API completely
+        Object.defineProperty(navigator, 'share', {
+          value: function() {
+            return Promise.reject(new Error('Sharing disabled for security'));
+          },
+          writable: false,
+          configurable: false
+        });
+      }
+
+      // Block clipboard operations
+      if ('navigator' in window && 'clipboard' in navigator) {
+        Object.defineProperty(navigator, 'clipboard', {
+          value: {
+            writeText: () => Promise.reject(new Error('Clipboard disabled')),
+            readText: () => Promise.reject(new Error('Clipboard disabled')),
+            write: () => Promise.reject(new Error('Clipboard disabled')),
+            read: () => Promise.reject(new Error('Clipboard disabled'))
+          },
+          writable: false,
+          configurable: false
+        });
+      }
     </script>
     <script type="module" src="/src/main.tsx"></script>
     <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->

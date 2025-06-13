@@ -8,6 +8,16 @@
   "theme_color": "#0000ff",
   "background_color": "#0000ff",
   "scope": "/",
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "edge_side_panel": {
+    "preferred_width": 0
+  },
+  "categories": ["finance", "business"],
+  "iarc_rating_id": "",
+  "protocol_handlers": [],
+  "share_target": null,
+  "shortcuts": [],
   "icons": [
     {
       "src": "/boi_app_icon.png",
