@@ -516,7 +516,6 @@ export default function UkTransfer() {
                 </label>
 
                 <input
-                  {...form.register('sortCode')}
                   type="text"
                   placeholder="12-34-56"
                   maxLength={8}
@@ -524,11 +523,19 @@ export default function UkTransfer() {
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                   onChange={(e) => {
                     const value = e.target.value;
-                    const formattedValue = formatSortCode(value);
                     const cleanValue = value.replace(/\D/g, '');
+                    const formattedValue = formatSortCode(cleanValue);
+                    
+                    // Update the display value with formatting
+                    e.target.value = formattedValue;
                     
                     // Set the clean value (no hyphens) for form validation
                     form.setValue('sortCode', cleanValue, { shouldValidate: true });
+                    
+                    // Clear any existing validation errors if the length is correct
+                    if (cleanValue.length === 6) {
+                      form.clearErrors('sortCode');
+                    }
                     
                     // Identify bank when sort code is complete (6 digits)
                     if (cleanValue.length >= 6) {
@@ -537,9 +544,32 @@ export default function UkTransfer() {
                     } else {
                       setIdentifiedBank('');
                     }
-                    
-                    // Update the display value with formatting
-                    e.target.value = formattedValue;
+                  }}
+                  onKeyDown={(e) => {
+                    // Allow backspace and delete to work properly
+                    if (e.key === 'Backspace' || e.key === 'Delete') {
+                      const input = e.target as HTMLInputElement;
+                      const value = input.value;
+                      const cleanValue = value.replace(/\D/g, '');
+                      
+                      // If backspacing, remove the last digit
+                      if (e.key === 'Backspace' && cleanValue.length > 0) {
+                        const newCleanValue = cleanValue.slice(0, -1);
+                        const newFormattedValue = formatSortCode(newCleanValue);
+                        
+                        setTimeout(() => {
+                          input.value = newFormattedValue;
+                          form.setValue('sortCode', newCleanValue, { shouldValidate: true });
+                          
+                          if (newCleanValue.length >= 6) {
+                            const bank = validateUKSortCode(newCleanValue);
+                            setIdentifiedBank(bank || '');
+                          } else {
+                            setIdentifiedBank('');
+                          }
+                        }, 0);
+                      }
+                    }
                   }}
                 />
                 {identifiedBank && (
