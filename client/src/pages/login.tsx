@@ -654,17 +654,9 @@ export default function Login() {
                       </div>
                     )}
                     
-                    {/* Animated scanning rings */}
-                    {isScanning ? (
-                      <>
-                        <div className="absolute inset-0 rounded-full border-2 border-blue-400 animate-ping"></div>
-                        <div className="absolute inset-2 rounded-full border-2 border-blue-300 animate-pulse"></div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="absolute inset-0 rounded-full border-2 border-blue-200 opacity-40 group-hover:border-blue-300 group-hover:opacity-60 transition-all duration-300"></div>
-                        <div className="absolute inset-2 rounded-full border border-blue-300 opacity-30 group-hover:opacity-50 animate-pulse transition-all duration-300"></div>
-                      </>
+                    {/* Simplified visual feedback */}
+                    {isScanning && (
+                      <div className="absolute inset-0 rounded-full border-2 border-blue-300 opacity-50"></div>
                     )}
                     
                     {/* Original Fingerprint icon with effects */}
@@ -672,9 +664,7 @@ export default function Login() {
                       <img 
                         src="/Icons_Fingerprint.svg" 
                         alt="Fingerprint" 
-                        className={`w-8 h-8 transition-all duration-300 ${
-                          biometricVerified ? 'scale-110' : isScanning ? 'scale-105' : 'scale-100'
-                        }`}
+                        className="w-8 h-8"
                         loading="eager"
                         style={{
                           filter: biometricVerified 
@@ -685,21 +675,7 @@ export default function Login() {
                           imageRendering: 'crisp-edges'
                         }}
                       />
-                      
-                      {/* Scanning line effect */}
-                      {isScanning && (
-                        <div className="absolute inset-0 overflow-hidden rounded-full">
-                          <div className="absolute top-0 left-0 right-0 h-0.5 bg-green-400 animate-pulse"></div>
-                          <div className="absolute top-2 left-0 right-0 h-0.5 bg-green-300 animate-pulse animation-delay-100"></div>
-                          <div className="absolute top-4 left-0 right-0 h-0.5 bg-green-200 animate-pulse animation-delay-200"></div>
-                        </div>
-                      )}
                     </div>
-                    
-                    {/* Glow effect when scanning */}
-                    {isScanning && (
-                      <div className="absolute inset-0 rounded-full bg-green-400 opacity-20 animate-pulse"></div>
-                    )}
                   </div>
                   <p className="text-gray-700 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     {biometricVerified ? 'Fingerprint verified' : isScanning ? 'Hold to scan fingerprint...' : 'Biometrics login'}
