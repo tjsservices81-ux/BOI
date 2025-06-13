@@ -398,10 +398,16 @@ export default function Profile() {
               onClick={async () => {
                 setIsSigningOut(true);
                 
-                // Navigate after full 8-second animation, then logout
-                setTimeout(() => {
-                  logout();
-                  window.location.href = '/login';
+                // Logout and navigate after animation
+                setTimeout(async () => {
+                  try {
+                    await logout();
+                    // Force page reload to login
+                    window.location.replace('/login');
+                  } catch (error) {
+                    // If logout fails, still redirect
+                    window.location.replace('/login');
+                  }
                 }, 8000);
               }}
               disabled={isSigningOut}
