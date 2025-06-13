@@ -20,9 +20,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check for existing session on mount only
+  // Check for cached user session on mount
   useEffect(() => {
     let mounted = true;
+    
+    // Check for cached user first
+    const cachedUser = localStorage.getItem('bankingUser');
+    if (cachedUser) {
+      try {
+        const userData = JSON.parse(cachedUser);
+        setUser(userData);
+        setIsLoading(false);
+        return;
+      } catch (error) {
+        localStorage.removeItem('bankingUser');
+      }
+    }
     
     const checkAuth = async () => {
       try {
@@ -34,12 +47,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (response.ok && mounted) {
           const userData = await response.json();
           setUser(userData);
+          localStorage.setItem('bankingUser', JSON.stringify(userData));
         } else if (mounted) {
           setUser(null);
+          localStorage.removeItem('bankingUser');
         }
       } catch (error) {
         if (mounted) {
           setUser(null);
+          localStorage.removeItem('bankingUser');
         }
       } finally {
         if (mounted) {
@@ -48,7 +64,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    checkAuth();
+    if (!cachedUser) {
+      checkAuth();
+    }
     
     return () => {
       mounted = false;
