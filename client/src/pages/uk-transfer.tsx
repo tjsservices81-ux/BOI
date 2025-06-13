@@ -7,7 +7,6 @@ import { z } from "zod";
 import { validateUKSortCode, formatSortCode, validateUKAccountNumber } from "../utils/bankValidation";
 import { getAccounts, processTransfer, generateReference } from "../utils/transferUtils";
 import { UserDataManager } from "../utils/userDataManager";
-import { identifyBankFromSortCode, getBankDisplayName, type BankInfo } from "../utils/ukBankDatabase";
 
 const ukTransferSchema = z.object({
   recipientName: z.string().min(2, "Recipient name is required"),
@@ -24,7 +23,7 @@ export default function UkTransfer() {
   const [, navigate] = useLocation();
   const [step, setStep] = useState<'form' | 'confirm' | 'success'>('form');
   const [transferReference, setTransferReference] = useState<string>('');
-  const [identifiedBank, setIdentifiedBank] = useState<BankInfo | null>(null);
+  const [identifiedBank, setIdentifiedBank] = useState<string>('');
   const [showReference, setShowReference] = useState<boolean>(false);
   const [animationProgress, setAnimationProgress] = useState<number>(0);
   const [processingStage, setProcessingStage] = useState<string>('Verifying transfer details...');
@@ -75,22 +74,6 @@ export default function UkTransfer() {
     }
   };
 
-  // Handle real-time sort code identification using EISCD
-  const handleSortCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/[^\d]/g, ''); // Remove non-digits
-    
-    // Update form value
-    form.setValue('sortCode', value);
-    
-    // Identify bank when exactly 6 digits entered (complete sort code)
-    if (value.length === 6) {
-      const bankInfo = identifyBankFromSortCode(value);
-      setIdentifiedBank(bankInfo);
-    } else {
-      setIdentifiedBank(null);
-    }
-  };
-
   useEffect(() => {
     const loadAccounts = () => {
       setAccounts(getAccounts());
@@ -111,10 +94,6 @@ export default function UkTransfer() {
           form.setValue('recipientName', payee.name);
           form.setValue('sortCode', sortCode.replace(/-/g, ''));
           form.setValue('accountNumber', accountNumber);
-          
-          // Identify bank for pre-filled sort code
-          const bankInfo = identifyBankFromSortCode(sortCode.replace(/-/g, ''));
-          setIdentifiedBank(bankInfo);
           
           // Clear the session storage after using
           sessionStorage.removeItem('selectedPayee');
@@ -455,7 +434,7 @@ export default function UkTransfer() {
   }
 
   return (
-    <div className="page-container" style={{ 
+    <div className="page-container page-fade-in" style={{ 
       position: 'fixed', 
       top: 0, 
       left: 0, 
@@ -535,25 +514,38 @@ export default function UkTransfer() {
                 <label className="block text-sm font-semibold text-gray-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                   Sort Code
                 </label>
+                <p className="text-xs text-gray-500 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Try: 20-00-00 (Barclays), 40-00-00 (HSBC), 04-00-00 (Monzo)
+                </p>
                 <input
                   {...form.register('sortCode')}
                   type="text"
-                  placeholder="123456"
-                  maxLength={6}
-                  onChange={handleSortCodeChange}
+                  placeholder="12-34-56"
+                  maxLength={8}
                   className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    const formattedValue = formatSortCode(value);
+                    form.setValue('sortCode', formattedValue.replace(/-/g, ''));
+                    
+                    // Identify bank when sort code is complete (6 digits)
+                    const cleanValue = value.replace(/\D/g, '');
+                    if (cleanValue.length >= 6) {
+                      const bank = validateUKSortCode(cleanValue);
+                      setIdentifiedBank(bank || '');
+                    } else {
+                      setIdentifiedBank('');
+                    }
+                    
+                    // Update the display value with formatting
+                    e.target.value = formattedValue;
+                  }}
                 />
                 {identifiedBank && (
                   <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded-md flex items-center">
                     <Building className="w-4 h-4 text-green-600 mr-2" />
-                    <span className="text-xs text-green-700 font-medium">{getBankDisplayName(identifiedBank)}</span>
-                  </div>
-                )}
-                {form.watch('sortCode')?.length === 6 && !identifiedBank && (
-                  <div className="mt-3 p-2 bg-red-50 border border-red-200 rounded-md flex items-center">
-                    <Building className="w-4 h-4 text-red-600 mr-2" />
-                    <span className="text-xs text-red-700 font-medium">Unknown sort code</span>
+                    <span className="text-xs text-green-700 font-medium">{identifiedBank}</span>
                   </div>
                 )}
                 {form.formState.errors.sortCode && (

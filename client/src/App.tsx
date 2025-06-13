@@ -49,33 +49,51 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function AppRoutes() {
   const { user } = useAuth();
   const [location] = useLocation();
-  const [splashShown, setSplashShown] = useState(() => {
-    // Initialize splash state immediately to prevent flash
-    return Boolean(sessionStorage.getItem('splashShown'));
-  });
+  const [splashShown, setSplashShown] = useState(false);
   
   // Set initial theme color to pure blue immediately on mount
   useEffect(() => {
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
     if (themeColorMeta) {
-      if (splashShown) {
+      themeColorMeta.setAttribute('content', '#0000ff');
+    }
+    
+    const hasShownSplash = sessionStorage.getItem('splashShown');
+    if (hasShownSplash) {
+      setSplashShown(true);
+      // If splash was already shown, set theme to #126987
+      if (themeColorMeta) {
         themeColorMeta.setAttribute('content', '#126987');
-      } else {
-        themeColorMeta.setAttribute('content', '#0000ff');
       }
     }
-  }, [splashShown]);
+  }, []);
 
   // Listen for splash completion
   useEffect(() => {
     const handleSplashComplete = () => {
       setSplashShown(true);
-      sessionStorage.setItem('splashShown', 'true');
+      const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+      if (themeColorMeta) {
+        themeColorMeta.setAttribute('content', '#126987');
+      }
     };
 
     window.addEventListener('splashComplete', handleSplashComplete);
     return () => window.removeEventListener('splashComplete', handleSplashComplete);
   }, []);
+
+  // Direct splash to login transition - no intermediate renders
+  if (!splashShown && location === '/') {
+    return <Splash />;
+  }
+  
+  if (splashShown && !user && location === '/') {
+    return (
+      <SecurityWrapper>
+        <Login />
+      </SecurityWrapper>
+    );
+  }
 
   const showNavigation = user && !['/login', '/splash'].includes(location);
 
@@ -83,16 +101,11 @@ function AppRoutes() {
     <SecurityWrapper>
       <div className="w-full h-full overflow-hidden relative">
         <Switch>
-          <Route path="/splash">
-            <Splash />
-          </Route>
-          <Route path="/login">
-            <Login />
-          </Route>
-          <Route path="/more">
-            <More />
-          </Route>
+          <Route path="/splash" component={Splash} />
+          <Route path="/login" component={Login} />
+          <Route path="/more" component={More} />
           <Route path="/">
+            {/* Handle root route properly based on splash and auth state */}
             {!splashShown ? (
               <Splash />
             ) : !user ? (
