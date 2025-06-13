@@ -87,9 +87,19 @@ function AppRoutes() {
     return <Splash />;
   }
   
-  // Always show navigation for authenticated users except on specific exclusion screens
-  const excludedRoutes = ['/login', '/splash'];
-  const showNavigation = user && !excludedRoutes.includes(location);
+  // Check if we should show the main app structure or just auth pages
+  const authRoutes = ['/login', '/splash'];
+  const isAuthRoute = authRoutes.includes(location);
+  const showNavigation = user && !isAuthRoute;
+
+  // If no user and not showing splash, only render login without app structure
+  if (!user && splashShown && location === '/') {
+    return (
+      <SecurityWrapper>
+        <Login />
+      </SecurityWrapper>
+    );
+  }
 
   return (
     <SecurityWrapper>

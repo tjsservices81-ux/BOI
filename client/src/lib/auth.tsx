@@ -18,7 +18,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false); // Start as false to prevent flash
 
   // Check for cached user session on mount
   useEffect(() => {
@@ -30,7 +30,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const userData = JSON.parse(cachedUser);
         setUser(userData);
-        setIsLoading(false);
         return;
       } catch (error) {
         localStorage.removeItem('bankingUser');
@@ -56,10 +55,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (mounted) {
           setUser(null);
           localStorage.removeItem('bankingUser');
-        }
-      } finally {
-        if (mounted) {
-          setIsLoading(false);
         }
       }
     };
