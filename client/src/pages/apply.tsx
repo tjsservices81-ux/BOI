@@ -73,7 +73,7 @@ export default function Apply() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-white ios-safe-top ios-safe-bottom page-container">
+    <div className="h-screen flex flex-col bg-white ios-safe-top ios-safe-bottom page-slide-down">
       {/* Header - BOI Style */}
       <div className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0">
         <button 
