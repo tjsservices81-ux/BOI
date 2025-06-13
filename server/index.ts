@@ -1,8 +1,14 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { panicModeMiddleware } from "./panicMode";
+import adminRoutes from "./adminPanelFixed";
 
 const app = express();
+
+// Apply panic mode check only - IP whitelist disabled
+app.use(panicModeMiddleware);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -78,6 +84,9 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Add admin routes for IP management
+  app.use('/admin', adminRoutes);
+  
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

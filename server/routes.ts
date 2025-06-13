@@ -11,14 +11,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize database and sample data
   await storage.initializeSampleData();
 
-  // Configure session middleware with database storage
-  const pgStore = connectPg(session);
-  const sessionStore = new pgStore({
-    conString: process.env.DATABASE_URL,
-    createTableIfMissing: true,
-    ttl: 7 * 24 * 60 * 60, // 7 days
-    tableName: "sessions",
-  });
+  // Configure session middleware with simple in-memory storage
+  const sessionStore = new session.MemoryStore();
 
   app.use(session({
     secret: process.env.SESSION_SECRET || 'banking-app-secret-key-for-dev',
@@ -27,17 +21,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     saveUninitialized: false,
     cookie: {
       secure: false, // Set to true in production with HTTPS
-      httpOnly: true,
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      httpOnly: true, // Secure cookie access
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours for better security
+      sameSite: 'lax' // Allow cookies to be sent with same-site requests
     },
+    rolling: true, // Refresh session on each request
   }));
 
   // Authentication middleware
   const requireAuth = (req: any, res: any, next: any) => {
+    console.log('Auth check - Session ID:', req.sessionID);
+    console.log('Auth check - User ID:', req.session?.userId);
+    console.log('Auth check - Full session:', req.session);
+    
     if (req.session && req.session.userId) {
+      // Refresh session on each authenticated request
+      req.session.touch();
       return next();
     }
-    return res.status(401).json({ message: "Authentication required" });
+    return res.status(401).json({ message: "Not authenticated" });
   };
 
   // Authentication endpoints
@@ -65,7 +67,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Check authentication status
   app.get("/api/auth/user", (req, res) => {
+    console.log('User check - Session ID:', req.sessionID);
+    console.log('User check - Session user:', (req as any).session?.user);
+    console.log('User check - Session userId:', (req as any).session?.userId);
+    console.log('User check - Full session:', (req as any).session);
+    
     if ((req as any).session && (req as any).session.user) {
+      // Refresh session on successful auth check
+      (req as any).session.touch();
       res.json((req as any).session.user);
     } else {
       res.status(401).json({ message: "Not authenticated" });

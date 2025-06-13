@@ -28,7 +28,16 @@ import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
+  
+  // Don't redirect while loading to prevent form interruptions
+  if (isLoading) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-[#126987]">
+        <div className="text-white">Loading...</div>
+      </div>
+    );
+  }
   
   if (!user) {
     return <Redirect to="/login" />;
@@ -38,7 +47,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function AppRoutes() {
-  const { user, isLoading } = useAuth();
+  const { user } = useAuth();
   const [location] = useLocation();
   const [splashShown, setSplashShown] = useState(false);
   
@@ -73,14 +82,20 @@ function AppRoutes() {
     return () => window.removeEventListener('splashComplete', handleSplashComplete);
   }, []);
 
-  // If splash hasn't been shown yet and we're at root, show splash
+  // Direct splash to login transition - no intermediate renders
   if (!splashShown && location === '/') {
     return <Splash />;
   }
   
-  // Always show navigation for authenticated users except on specific exclusion screens
-  const excludedRoutes = ['/login', '/splash'];
-  const showNavigation = user && !excludedRoutes.includes(location);
+  if (splashShown && !user && location === '/') {
+    return (
+      <SecurityWrapper>
+        <Login />
+      </SecurityWrapper>
+    );
+  }
+
+  const showNavigation = user && !['/login', '/splash'].includes(location);
 
   return (
     <SecurityWrapper>
@@ -93,14 +108,10 @@ function AppRoutes() {
             {/* Handle root route properly based on splash and auth state */}
             {!splashShown ? (
               <Splash />
-            ) : isLoading ? (
-              <div className="w-full h-full flex items-center justify-center bg-[#126987]">
-                <div className="text-white">Loading...</div>
-              </div>
-            ) : user ? (
-              <Dashboard />
-            ) : (
+            ) : !user ? (
               <Login />
+            ) : (
+              <Dashboard />
             )}
           </Route>
           <Route path="/dashboard">
