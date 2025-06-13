@@ -187,8 +187,6 @@ html, body {
   text-rendering: optimizeSpeed;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Force synchronous rendering */
-  contain: layout style;
 }
 
 /* Prevent FOUC (Flash of Unstyled Content) */
@@ -212,15 +210,9 @@ img, svg {
   max-width: 100%;
   height: auto;
   display: block !important;
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
-  backface-visibility: hidden;
-  transform: translateZ(0);
   /* Force immediate visibility */
   opacity: 1 !important;
   visibility: visible !important;
-  /* Prevent layout shifts */
-  will-change: auto;
   /* Instant loading - no delays */
   animation: none !important;
   transition: none !important;
@@ -233,11 +225,6 @@ img, svg {
   display: inline-block !important;
   transition: none !important;
   animation: none !important;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  /* Force immediate rendering */
-  contain: layout style paint;
-  will-change: auto;
 }
 
 /* Lucide React specific optimizations */
@@ -280,10 +267,8 @@ input, select, textarea {
   transition-delay: 0s !important;
 }
 
-/* Hardware acceleration for all interactive elements - smooth transitions */
+/* Smooth transitions for interactive elements */
 button, a, [role="button"] {
-  transform: translateZ(0);
-  will-change: transform;
   transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -299,22 +284,17 @@ body {
 
 /* Prevent layout shifts during interactions */
 .smooth-interaction {
-  backface-visibility: hidden;
-  perspective: 1000px;
-  transform: translate3d(0, 0, 0);
+  /* Removed hardware acceleration properties that cause jiggling */
 }
 
 /* Optimized transitions for form elements - instant response */
 input, select, textarea {
   transition: none;
-  will-change: border-color, box-shadow;
 }
 
 /* iOS-style page transitions - smooth sliding */
 .page-container {
   animation: slideInFromRight 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  transform: translateZ(0);
-  will-change: transform;
 }
 
 .page-fade-in {
