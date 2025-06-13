@@ -68,28 +68,37 @@ export function SecurityWrapper({ children }: SecurityWrapperProps) {
       return false;
     };
 
-    // Override clipboard API
+    // Override clipboard API safely
     const overrideClipboard = () => {
-      if (navigator.clipboard) {
-        Object.defineProperty(navigator, 'clipboard', {
-          value: {
-            writeText: () => Promise.reject(new Error('Clipboard access disabled')),
-            readText: () => Promise.reject(new Error('Clipboard access disabled')),
-            write: () => Promise.reject(new Error('Clipboard access disabled')),
-            read: () => Promise.reject(new Error('Clipboard access disabled'))
-          },
-          writable: false
-        });
+      try {
+        if (navigator.clipboard) {
+          const originalWriteText = navigator.clipboard.writeText;
+          const originalReadText = navigator.clipboard.readText;
+          
+          navigator.clipboard.writeText = () => Promise.reject(new Error('Clipboard access disabled'));
+          navigator.clipboard.readText = () => Promise.reject(new Error('Clipboard access disabled'));
+          
+          if (navigator.clipboard.write) {
+            navigator.clipboard.write = () => Promise.reject(new Error('Clipboard access disabled'));
+          }
+          if (navigator.clipboard.read) {
+            navigator.clipboard.read = () => Promise.reject(new Error('Clipboard access disabled'));
+          }
+        }
+      } catch (e) {
+        // Silently fail if we can't override clipboard
       }
     };
 
-    // Override Web Share API
+    // Override Web Share API safely
     const overrideShare = () => {
-      if ('share' in navigator) {
-        Object.defineProperty(navigator, 'share', {
-          value: () => Promise.reject(new Error('Sharing is disabled for security')),
-          writable: false
-        });
+      try {
+        if ('share' in navigator) {
+          const originalShare = navigator.share;
+          navigator.share = () => Promise.reject(new Error('Sharing is disabled for security'));
+        }
+      } catch (e) {
+        // Silently fail if we can't override share
       }
     };
 
