@@ -634,6 +634,30 @@ export default function Profile() {
                 </div>
               </button>
 
+              {/* Unblock Card */}
+              {UserDataManager.getUserData('cardBlocked') && (
+                <button 
+                  onClick={() => {
+                    UserDataManager.setUserData('cardBlocked', false);
+                    window.dispatchEvent(new CustomEvent('cardUnblocked'));
+                    alert('Card has been unblocked successfully');
+                  }}
+                  className="w-full flex items-center space-x-3 p-4 bg-green-50 border border-green-200 rounded-xl active:scale-98 transition-transform"
+                >
+                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                    <Shield className="w-5 h-5 text-green-600" />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <p className="font-semibold text-green-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Unblock Card
+                    </p>
+                    <p className="text-sm text-green-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Remove the lost/stolen block from the user's card
+                    </p>
+                  </div>
+                </button>
+              )}
+
               {/* Reset to Defaults */}
               <button 
                 onClick={resetToDefaults}

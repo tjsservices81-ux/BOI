@@ -62,16 +62,22 @@ export default function Cards() {
     loadCardholderName();
     loadCardStatus();
 
-    // Listen for profile updates
+    // Listen for profile updates and card unblock events
     const handleStorageChange = () => {
       loadCardholderName();
       loadCardStatus();
     };
 
+    const handleCardUnblocked = () => {
+      loadCardStatus();
+    };
+
     window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('cardUnblocked', handleCardUnblocked);
     
     return () => {
       window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('cardUnblocked', handleCardUnblocked);
     };
   }, []);
 
@@ -294,7 +300,7 @@ export default function Cards() {
                 )}
               </div>
               <span className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                {isCardBlocked ? 'Card blocked - Contact admin' : 'Report lost or stolen'}
+                {isCardBlocked ? 'Card blocked - Contact us' : 'Report lost or stolen'}
               </span>
             </div>
             <span className="text-gray-400">›</span>
