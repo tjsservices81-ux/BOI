@@ -1162,9 +1162,9 @@ export default function Login() {
             </div>
 
             <div className="space-y-4">
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                <p className="text-sm text-blue-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  <strong>Email Verification:</strong> A 6-digit verification code has been sent to your email address ({pendingAccountData?.email}). Please check your inbox and enter the code below to complete your account creation.
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                <p className="text-sm text-amber-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  <strong>Admin Verification Required:</strong> A 6-digit verification code has been sent to the administrator for review. Please contact the admin to obtain the verification code and enter it below to complete your account creation.
                 </p>
               </div>
 

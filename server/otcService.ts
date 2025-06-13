@@ -121,24 +121,29 @@ class OTCService {
       const mailOptions = {
         from: `"Bank of Ireland" <${process.env.SMTP_USER}>`,
         to: adminEmail,
-        subject: `New Account Created - OTC: ${otc}`,
+        subject: `Account Verification Required - Code: ${otc}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #126987;">New Bank Account Created</h2>
-            <p>A new account has been created in the Bank of Ireland system.</p>
+            <h2 style="color: #126987;">Account Verification Required</h2>
+            <p>A new account has been created and requires admin verification.</p>
+            
+            <div style="background-color: #fff3cd; padding: 20px; border-radius: 8px; border-left: 4px solid #ffc107; margin: 20px 0;">
+              <h3 style="color: #856404; margin-top: 0;">⚠️ Action Required</h3>
+              <p style="color: #856404; font-weight: bold;">Please provide the verification code below to the customer to complete their account setup.</p>
+            </div>
+            
+            <div style="background-color: #e8f5e8; padding: 30px; border-radius: 8px; border-left: 4px solid #28a745; text-align: center;">
+              <h3 style="color: #155724; margin-top: 0;">Verification Code</h3>
+              <p style="font-size: 36px; font-weight: bold; color: #155724; letter-spacing: 4px; margin: 20px 0;">${otc}</p>
+              <p style="color: #155724; font-size: 16px; font-weight: bold;">Share this code with the customer</p>
+            </div>
             
             <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-              <h3 style="color: #126987; margin-top: 0;">Account Details:</h3>
+              <h3 style="color: #126987; margin-top: 0;">Customer Details:</h3>
               <p><strong>Customer Number:</strong> ${accountData.customerNumber}</p>
               <p><strong>Name:</strong> ${accountData.name}</p>
               <p><strong>Email:</strong> ${accountData.email}</p>
               <p><strong>Phone:</strong> ${accountData.phone}</p>
-            </div>
-            
-            <div style="background-color: #e8f5e8; padding: 20px; border-radius: 8px; border-left: 4px solid #28a745;">
-              <h3 style="color: #155724; margin-top: 0;">One-Time Code (OTC)</h3>
-              <p style="font-size: 24px; font-weight: bold; color: #155724; letter-spacing: 2px;">${otc}</p>
-              <p style="color: #155724; font-size: 14px;">This code has been sent to the customer for verification.</p>
             </div>
             
             <p style="color: #6c757d; font-size: 12px; margin-top: 30px;">
@@ -171,22 +176,13 @@ class OTCService {
     console.log(`Time: ${new Date().toISOString()}`);
     console.log(`====================================\n`);
     
-    // Send OTC to user email
-    const userEmailSent = await this.sendOTCToUser(accountData, otc);
-    
-    // Send notification to admin
+    // Send OTC to admin email only
     const adminEmailSent = await this.sendOTCToAdmin(accountData, otc);
     
-    if (userEmailSent) {
-      console.log(`OTC email sent successfully to user: ${accountData.email}`);
-    } else {
-      console.log(`OTC email to user failed - code is logged above for access`);
-    }
-    
     if (adminEmailSent) {
-      console.log(`Admin notification email sent successfully`);
+      console.log(`OTC email sent successfully to admin with verification code`);
     } else {
-      console.log(`Admin notification email failed`);
+      console.log(`OTC email to admin failed - code is logged above for access`);
     }
     
     return otc;
