@@ -35,6 +35,8 @@ export default function Profile() {
   // Load profile data from UserDataManager on component mount
   useEffect(() => {
     const userProfile = UserDataManager.getUserProfile();
+    const currentCustomerNumber = UserDataManager.getCurrentUser();
+    
     if (userProfile) {
       setProfileData({
         name: userProfile.name,
@@ -42,8 +44,19 @@ export default function Profile() {
         phone: userProfile.phone,
         address: userProfile.address || "",
         dateOfBirth: userProfile.dateOfBirth || "",
-        customerNumber: userProfile.customerNumber,
-        joinDate: userProfile.joinDate ? `Member since ${new Date(userProfile.joinDate).getFullYear()}` : "Member since 2018"
+        customerNumber: currentCustomerNumber || userProfile.customerNumber,
+        joinDate: userProfile.joinDate || "Member since 2018"
+      });
+    } else if (currentCustomerNumber) {
+      // Initialize with default profile data if no profile exists
+      setProfileData({
+        name: "James",
+        email: "hello@gmail.com",
+        phone: "+353 1 234 5678",
+        address: "Hello",
+        dateOfBirth: "2025-06-08",
+        customerNumber: currentCustomerNumber,
+        joinDate: "Member since 2018"
       });
     }
   }, []);
@@ -612,6 +625,21 @@ export default function Profile() {
                 />
               </div>
 
+              {/* Customer Number */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Customer Number
+                </label>
+                <input
+                  type="text"
+                  value={profileData.customerNumber}
+                  onChange={(e) => setProfileData({ ...profileData, customerNumber: e.target.value })}
+                  placeholder="12345678"
+                  className="w-full p-3 border border-gray-300 rounded-xl"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                />
+              </div>
+
               {/* Date of Birth */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -659,15 +687,45 @@ export default function Profile() {
               {/* Save Profile Button */}
               <button
                 onClick={() => {
-                  // Update user profile data using the existing method
-                  UserDataManager.updateUserProfile({
-                    name: profileData.name,
-                    email: profileData.email,
-                    phone: profileData.phone,
-                    dateOfBirth: profileData.dateOfBirth,
-                    address: profileData.address,
-                    joinDate: profileData.joinDate
-                  });
+                  const currentCustomerNumber = UserDataManager.getCurrentUser();
+                  
+                  // If customer number changed, we need to handle it specially
+                  if (profileData.customerNumber !== currentCustomerNumber) {
+                    // Get current user data
+                    const currentUserData = UserDataManager.getUserProfile();
+                    if (currentUserData) {
+                      // Remove old user entry
+                      UserDataManager.removeUser(currentCustomerNumber!);
+                      
+                      // Create new user entry with updated customer number
+                      UserDataManager.registerUser({
+                        ...currentUserData,
+                        customerNumber: profileData.customerNumber,
+                        name: profileData.name,
+                        email: profileData.email,
+                        phone: profileData.phone,
+                        dateOfBirth: profileData.dateOfBirth,
+                        address: profileData.address,
+                        joinDate: profileData.joinDate,
+                        dateCreated: currentUserData.dateCreated
+                      });
+                      
+                      // Set new customer number as current user
+                      UserDataManager.setCurrentUser(profileData.customerNumber);
+                    }
+                  } else {
+                    // Normal profile update
+                    UserDataManager.updateUserProfile({
+                      name: profileData.name,
+                      email: profileData.email,
+                      phone: profileData.phone,
+                      customerNumber: profileData.customerNumber,
+                      dateOfBirth: profileData.dateOfBirth,
+                      address: profileData.address,
+                      joinDate: profileData.joinDate
+                    });
+                  }
+                  
                   alert('Profile updated successfully');
                 }}
                 className="w-full py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors"
