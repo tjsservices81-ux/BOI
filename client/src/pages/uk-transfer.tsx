@@ -427,14 +427,9 @@ export default function UkTransfer() {
                 </div>
               </div>
               
-              <div className="flex justify-between py-2 border-b border-gray-100">
+              <div className="flex justify-between py-2">
                 <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Reference:</span>
                 <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{formData?.reference}</span>
-              </div>
-              
-              <div className="flex justify-between py-2">
-                <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Transfer Reference:</span>
-                <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{transferReference}</span>
               </div>
             </div>
           </div>
