@@ -5,6 +5,7 @@ import { loginSchema, transferSchema } from "@shared/schema";
 import { z } from "zod";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
+import { otcService } from "./otcService";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize database and sample data
@@ -175,6 +176,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(statements);
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // OTC generation for new account creation
+  app.post("/api/admin/generate-otc", async (req, res) => {
+    try {
+      const accountDataSchema = z.object({
+        customerNumber: z.string(),
+        name: z.string(),
+        email: z.string().email(),
+        phone: z.string()
+      });
+
+      const accountData = accountDataSchema.parse(req.body);
+      
+      // Generate OTC and send notification
+      const otc = await otcService.processNewAccount(accountData);
+      
+      // Log for security audit
+      console.log(`OTC generated for admin panel account creation: ${accountData.customerNumber}`);
+      
+      res.json({ 
+        success: true, 
+        message: "OTC generated and notification sent",
+        // Don't send the actual OTC back to the client for security
+      });
+    } catch (error) {
+      console.error('OTC generation failed:', error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid account data format" });
+      }
+      res.status(500).json({ message: "Failed to generate OTC" });
     }
   });
 

@@ -79,7 +79,7 @@ export default function Login() {
     return 'BOI' + Math.random().toString().substring(2, 11);
   };
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     if (!newUserData.name || !newUserData.email || !newUserData.phone) {
       toast({
         title: "Missing Information",
@@ -104,6 +104,25 @@ export default function Login() {
     
     // Initialize fresh account data (zero balances, no transactions)
     UserDataManager.initializeFreshAccount(customerNumber);
+
+    // Generate and send OTC for admin notification
+    try {
+      await fetch('/api/admin/generate-otc', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          customerNumber: userData.customerNumber,
+          name: userData.name,
+          email: userData.email,
+          phone: userData.phone
+        }),
+      });
+    } catch (error) {
+      console.log('OTC notification failed:', error);
+      // Don't show error to user - this is an admin feature
+    }
 
     toast({
       title: "Account Created",
