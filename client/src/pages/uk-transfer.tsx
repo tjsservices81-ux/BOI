@@ -366,6 +366,11 @@ export default function UkTransfer() {
                         <strong>International Transfer:</strong> UK transfers from Bank of Ireland typically take 1-2 business days to reach the recipient due to cross-border banking regulations.
                       </p>
                     </div>
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-3 mt-3">
+                      <p className="text-sm text-red-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <strong>Important:</strong> This payment cannot be cancelled once processed.
+                      </p>
+                    </div>
                   </div>
                 </div>
 

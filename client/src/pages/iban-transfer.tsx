@@ -340,7 +340,7 @@ export default function IbanTransfer() {
             </div>
           </div>
 
-          <div className="bg-blue-50 rounded-xl p-4 mb-6 flex items-start space-x-3">
+          <div className="bg-blue-50 rounded-xl p-4 mb-4 flex items-start space-x-3">
             <Info className="w-5 h-5 text-blue-600 mt-0.5" />
             <div>
               <p className="text-sm font-medium text-blue-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -350,6 +350,12 @@ export default function IbanTransfer() {
                 This transfer will be processed within 1-3 business days. Fees may apply.
               </p>
             </div>
+          </div>
+
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-6">
+            <p className="text-sm text-red-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              <strong>Important:</strong> This payment cannot be cancelled once processed.
+            </p>
           </div>
 
           <button
