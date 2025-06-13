@@ -45,9 +45,12 @@
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-  /* Prevent layout shifts */
+  /* Prevent layout shifts and glitches */
   box-sizing: border-box;
   touch-action: manipulation;
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 /* Allow text selection in form inputs */
