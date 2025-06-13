@@ -196,8 +196,7 @@ html {
 
 /* Optimize critical rendering path */
 #root {
-  contain: layout style paint;
-  will-change: auto;
+  /* Removed contain property that was causing element jiggling */
 }
 
 /* Prevent invisible text during font load */
