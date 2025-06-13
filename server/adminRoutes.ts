@@ -647,7 +647,7 @@ router.get('/panel', (req, res) => {
                   '</div>' +
                   '<div>' +
                     '<span class="status">APPROVED</span>' +
-                    '<button class="btn btn-danger" onclick="revokeIP(\'' + ip + ')">Revoke</button>' +
+                    '<button class="btn btn-danger" onclick="revokeIP(\'' + ip + '\')">Revoke</button>' +
                   '</div>';
                 ipList.appendChild(li);
               });
