@@ -37,8 +37,8 @@
   }
 }
 
-/* Status bar background blending for full-screen overlays */
-.fullscreen-overlay {
+/* Full screen overlay with status bar handling */
+.sign-out-overlay {
   position: fixed !important;
   top: 0 !important;
   left: 0 !important;
@@ -46,16 +46,20 @@
   bottom: 0 !important;
   width: 100vw !important;
   height: 100vh !important;
-  height: 100dvh !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  border: none !important;
-  outline: none !important;
-  /* Extend beyond safe area to cover status bar */
-  padding-top: env(safe-area-inset-top, 0) !important;
-  margin-top: calc(-1 * env(safe-area-inset-top, 0)) !important;
-  /* Ensure z-index covers everything */
   z-index: 9999 !important;
+  background: linear-gradient(135deg, #1a3c47 0%, #2c5f70 50%, #0d2329 100%) !important;
+}
+
+/* Hide status bar on mobile devices during sign out */
+.sign-out-overlay::before {
+  content: '';
+  position: absolute;
+  top: -100px;
+  left: 0;
+  right: 0;
+  height: 100px;
+  background: inherit;
+  z-index: 10000;
 }
 
 /* Critical performance optimizations + Security */
