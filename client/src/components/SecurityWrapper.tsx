@@ -8,8 +8,23 @@ export function SecurityWrapper({ children }: SecurityWrapperProps) {
   useEffect(() => {
     // Enhanced security measures
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Prevent common shortcuts for copying, saving, viewing source
-      if (e.ctrlKey || e.metaKey) {
+      const target = e.target as HTMLElement;
+      const isFormField = target.tagName === 'INPUT' || 
+                         target.tagName === 'TEXTAREA' || 
+                         target.contentEditable === 'true' ||
+                         target.closest('input') ||
+                         target.closest('textarea');
+      
+      // Allow copy/paste/select all in form fields
+      if (isFormField && e.ctrlKey || e.metaKey) {
+        const allowedKeys = ['a', 'c', 'v', 'x', 'z', 'y']; // Allow basic editing operations
+        if (allowedKeys.includes(e.key.toLowerCase())) {
+          return true; // Allow the operation
+        }
+      }
+      
+      // Prevent common shortcuts for copying, saving, viewing source (outside form fields)
+      if (!isFormField && (e.ctrlKey || e.metaKey)) {
         const blockedKeys = ['a', 'c', 'v', 's', 'p', 'u', 'r', 'h'];
         if (blockedKeys.includes(e.key.toLowerCase())) {
           e.preventDefault();
@@ -35,8 +50,12 @@ export function SecurityWrapper({ children }: SecurityWrapperProps) {
 
     const handleSelectStart = (e: Event) => {
       const target = e.target as HTMLElement;
-      // Allow text selection only in input fields
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+      // Allow text selection in input fields, textareas, and contenteditable elements
+      if (target.tagName === 'INPUT' || 
+          target.tagName === 'TEXTAREA' || 
+          target.contentEditable === 'true' ||
+          target.closest('input') ||
+          target.closest('textarea')) {
         return true;
       }
       e.preventDefault();
@@ -68,26 +87,11 @@ export function SecurityWrapper({ children }: SecurityWrapperProps) {
       return false;
     };
 
-    // Override clipboard API safely
+    // Override clipboard API safely (disabled to allow form field operations)
     const overrideClipboard = () => {
-      try {
-        if (navigator.clipboard) {
-          const originalWriteText = navigator.clipboard.writeText;
-          const originalReadText = navigator.clipboard.readText;
-          
-          navigator.clipboard.writeText = () => Promise.reject(new Error('Clipboard access disabled'));
-          navigator.clipboard.readText = () => Promise.reject(new Error('Clipboard access disabled'));
-          
-          if (navigator.clipboard.write) {
-            navigator.clipboard.write = () => Promise.reject(new Error('Clipboard access disabled'));
-          }
-          if (navigator.clipboard.read) {
-            navigator.clipboard.read = () => Promise.reject(new Error('Clipboard access disabled'));
-          }
-        }
-      } catch (e) {
-        // Silently fail if we can't override clipboard
-      }
+      // Temporarily disabled to allow copy/paste in form fields
+      // Will implement selective clipboard blocking later
+      return;
     };
 
     // Override Web Share API safely
@@ -123,26 +127,11 @@ export function SecurityWrapper({ children }: SecurityWrapperProps) {
       }
     };
 
-    // Detect and prevent developer tools
+    // Detect and prevent developer tools (disabled to prevent form interference)
     const detectDevTools = () => {
-      let devtools = { open: false };
-      
-      const detect = () => {
-        const widthThreshold = window.outerWidth - window.innerWidth > 160;
-        const heightThreshold = window.outerHeight - window.innerHeight > 160;
-        
-        if (widthThreshold || heightThreshold) {
-          if (!devtools.open) {
-            devtools.open = true;
-            // Redirect to prevent inspection
-            window.location.reload();
-          }
-        } else {
-          devtools.open = false;
-        }
-      };
-      
-      setInterval(detect, 100);
+      // Temporarily disabled as it interferes with form input
+      // Will implement a less aggressive detection method
+      return;
     };
 
     // Apply all security measures
@@ -181,14 +170,26 @@ export function SecurityWrapper({ children }: SecurityWrapperProps) {
   }, []);
 
   return (
-    <div className="no-select" style={{ 
-      WebkitUserSelect: 'none',
-      MozUserSelect: 'none',
-      msUserSelect: 'none',
-      userSelect: 'none',
+    <div className="secure-wrapper" style={{ 
       WebkitTouchCallout: 'none',
       WebkitTapHighlightColor: 'transparent'
     }}>
+      <style>{`
+        .secure-wrapper {
+          -webkit-user-select: none;
+          -moz-user-select: none;
+          -ms-user-select: none;
+          user-select: none;
+        }
+        .secure-wrapper input,
+        .secure-wrapper textarea,
+        .secure-wrapper [contenteditable="true"] {
+          -webkit-user-select: text !important;
+          -moz-user-select: text !important;
+          -ms-user-select: text !important;
+          user-select: text !important;
+        }
+      `}</style>
       {children}
     </div>
   );
