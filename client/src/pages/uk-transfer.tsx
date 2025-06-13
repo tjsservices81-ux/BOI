@@ -111,15 +111,17 @@ export default function UkTransfer() {
 
   const onSubmit = async (data: UkTransferData) => {
     console.log('Form submitted with data:', data);
-    setFormData(data);
+    // Set a default reference since the field is removed
+    const dataWithReference = { ...data, reference: `Transfer to ${data.recipientName}` };
+    setFormData(dataWithReference);
     setTransferReference(generateReference());
-    setCustomReference(data.reference || '');
+    setCustomReference(dataWithReference.reference);
     
-    // Fetch exchange rate when moving to reference screen
+    // Fetch exchange rate when moving directly to confirmation
     await fetchExchangeRate();
     
     setSlideDirection('left');
-    setStep('reference');
+    setStep('confirm');
   };
 
   const onReferenceSubmit = () => {
@@ -128,11 +130,6 @@ export default function UkTransfer() {
     }
     setSlideDirection('left');
     setStep('confirm');
-  };
-
-  const goBackToReference = () => {
-    setSlideDirection('right');
-    setStep('reference');
   };
 
   const goBackToForm = () => {
@@ -497,7 +494,7 @@ export default function UkTransfer() {
         backgroundColor: '#f9fafb'
       }}>
         <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
-          <button onClick={goBackToReference} className="flex items-center text-white">
+          <button onClick={goBackToForm} className="flex items-center text-white">
             <ChevronLeft className="w-6 h-6 mr-2" />
             <span className="font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Confirm Transfer</span>
           </button>
@@ -764,24 +761,7 @@ export default function UkTransfer() {
               )}
             </div>
 
-            <div className="bg-gray-50 rounded-lg p-4">
-              <label className="block text-sm font-semibold text-gray-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Payment Reference
-              </label>
-              <input
-                type="text"
-                placeholder="Payment description"
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  form.setValue('reference', value);
-                }}
-              />
-              {form.formState.errors.reference && (
-                <p className="text-red-500 text-xs mt-2 font-medium">{form.formState.errors.reference.message}</p>
-              )}
-            </div>
+
 
             <button
               type="submit"
