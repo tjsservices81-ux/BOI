@@ -89,35 +89,42 @@ export default function UkTransfer() {
     if (selectedPayeeData) {
       try {
         const payee = JSON.parse(selectedPayeeData);
-        console.log('Selected payee data:', payee);
         
         if (payee.transferType === 'UK Transfer' && payee.accountInfo) {
-          console.log('AccountInfo:', payee.accountInfo);
-          
           // Parse sort code and account number from accountInfo
           // Format: "12-34-56 12345678"
-          const parts = payee.accountInfo.split(' ');
-          console.log('Split parts:', parts);
+          const parts = payee.accountInfo.trim().split(' ');
           
           if (parts.length >= 2) {
-            const sortCode = parts[0].replace(/-/g, ''); // Remove hyphens from sort code
-            const accountNumber = parts[1];
-            
-            console.log('Parsed sortCode:', sortCode);
-            console.log('Parsed accountNumber:', accountNumber);
+            const sortCodeFormatted = parts[0]; // "12-34-56"
+            const sortCodeClean = sortCodeFormatted.replace(/-/g, ''); // "123456"
+            const accountNumber = parts[1]; // "12345678"
             
             // Pre-fill form with payee data
             form.setValue('recipientName', payee.name);
-            form.setValue('sortCode', sortCode, { shouldValidate: true });
-            form.setValue('accountNumber', accountNumber, { shouldValidate: true });
+            form.setValue('sortCode', sortCodeClean);
+            form.setValue('accountNumber', accountNumber);
             
-            // Also update the input field display with formatted sort code
+            // Force update the form fields after a brief delay
             setTimeout(() => {
+              // Update sort code input field display
               const sortCodeInput = document.querySelector('input[placeholder="12-34-56"]') as HTMLInputElement;
               if (sortCodeInput) {
-                sortCodeInput.value = formatSortCode(sortCode);
+                sortCodeInput.value = sortCodeFormatted;
               }
-            }, 100);
+              
+              // Update account number input field
+              const accountInput = document.querySelector('input[placeholder="12345678"]') as HTMLInputElement;
+              if (accountInput) {
+                accountInput.value = accountNumber;
+              }
+              
+              // Update recipient name input field
+              const nameInput = document.querySelector('input[placeholder="Recipient full name"]') as HTMLInputElement;
+              if (nameInput) {
+                nameInput.value = payee.name;
+              }
+            }, 200);
           }
           
           // Clear the session storage after using
