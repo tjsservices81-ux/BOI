@@ -1148,13 +1148,40 @@ export default function Profile() {
       {/* Professional Sign Out Animation Overlay */}
       <AnimatePresence>
         {isSigningOut && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
-            className="sign-out-fullscreen flex items-center justify-center"
-          >
+          <>
+            {/* Status bar overlay to match the sign-out screen background */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="fixed top-0 left-0 right-0 h-12 z-[10000] bg-gradient-to-r from-[#1a3c47] via-[#2c5f70] to-[#1a3c47]"
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: '48px',
+                zIndex: 10000
+              }}
+            />
+            
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+              className="fixed inset-0 z-[9999] flex items-center justify-center bg-gradient-to-br from-[#1a3c47] via-[#2c5f70] to-[#0d2329]"
+              style={{ 
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                width: '100vw',
+                height: '100vh'
+              }}
+            >
             {/* Animated background elements */}
             <motion.div
               initial={{ scale: 0, opacity: 0 }}
@@ -1296,7 +1323,8 @@ export default function Profile() {
                 </p>
               </motion.div>
             </div>
-          </motion.div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </div>
