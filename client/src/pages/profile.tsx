@@ -39,6 +39,23 @@ export default function Profile() {
       
       if (currentCustomerNumber) {
         try {
+          // First try to get data from local storage (UserDataManager)
+          const localUserData = UserDataManager.getUserProfile();
+          
+          if (localUserData) {
+            setProfileData({
+              name: localUserData.name,
+              email: localUserData.email,
+              phone: localUserData.phone || "",
+              address: localUserData.address || "",
+              dateOfBirth: localUserData.dateOfBirth || "",
+              customerNumber: localUserData.customerNumber,
+              joinDate: localUserData.joinDate || "Member since 2018"
+            });
+            return;
+          }
+
+          // If no local data, try to fetch from API
           const response = await fetch(`/api/profile/${currentCustomerNumber}`);
           if (response.ok) {
             const userData = await response.json();
@@ -52,19 +69,24 @@ export default function Profile() {
               joinDate: userData.joinDate || "Member since 2018"
             });
           } else {
-            // Keep James as the consistent user
+            // Fallback: use default data with current customer number
             setProfileData({
-              name: "James",
-              email: "hello@gmail.com",
+              name: "Bank Customer",
+              email: "customer@email.com",
               phone: "+353 1 234 5678",
-              address: "Hello",
-              dateOfBirth: "2025-06-08",
+              address: "Customer Address",
+              dateOfBirth: "01 January 1990",
               customerNumber: currentCustomerNumber,
               joinDate: "Member since 2018"
             });
           }
         } catch (error) {
           console.error('Failed to load profile data:', error);
+          // Error fallback with current customer number
+          setProfileData(prev => ({
+            ...prev,
+            customerNumber: currentCustomerNumber
+          }));
         }
       }
     };
@@ -636,7 +658,7 @@ export default function Profile() {
                 />
               </div>
 
-              {/* Customer Number */}
+              {/* Customer Number - Read Only */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                   Customer Number
@@ -644,11 +666,14 @@ export default function Profile() {
                 <input
                   type="text"
                   value={profileData.customerNumber}
-                  onChange={(e) => setProfileData({ ...profileData, customerNumber: e.target.value })}
-                  placeholder="12345678"
-                  className="w-full p-3 border border-gray-300 rounded-xl"
+                  readOnly
+                  disabled
+                  className="w-full p-3 border border-gray-300 rounded-xl bg-gray-100 text-gray-600 cursor-not-allowed"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                 />
+                <p className="text-xs text-gray-500 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Customer number cannot be changed
+                </p>
               </div>
 
               {/* Date of Birth */}
@@ -730,16 +755,10 @@ export default function Profile() {
                         name: profileData.name,
                         email: profileData.email,
                         phone: profileData.phone,
-                        customerNumber: profileData.customerNumber,
                         dateOfBirth: profileData.dateOfBirth,
                         address: profileData.address,
                         joinDate: profileData.joinDate
                       });
-                      
-                      // If customer number changed, update current user
-                      if (profileData.customerNumber !== currentCustomerNumber) {
-                        UserDataManager.setCurrentUser(profileData.customerNumber);
-                      }
                       
                       alert('Profile updated successfully');
                     } else {
