@@ -123,7 +123,10 @@ export default function Cards() {
         <h1 className="text-white text-lg font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
           Manage Card
         </h1>
-        <button className="text-white">
+        <button 
+          className="text-white hover:bg-white/20 h-8 w-8 rounded-full flex items-center justify-center transition-all duration-150 ease-out active:scale-95"
+          onClick={() => navigate('/profile')}
+        >
           <User className="w-6 h-6" />
         </button>
       </div>

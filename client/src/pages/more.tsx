@@ -55,12 +55,17 @@ export default function More() {
           <div className="px-5 pt-8 pb-32">
             <div className="w-full max-w-sm mx-auto space-y-3">
               
-              {/* Login with another ID */}
-              <button className="w-full bg-white rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-50 shadow-sm transition-colors duration-150 stagger-item" style={{ animationDelay: '0.1s' }}>
+              {/* Profile */}
+              <button 
+                className="w-full bg-white rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-50 shadow-sm transition-colors duration-150 stagger-item" 
+                style={{ animationDelay: '0.1s' }}
+                onClick={() => handleNavigation('/profile')}
+                disabled={isNavigating}
+              >
                 <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
                   <User className="w-4 h-4 text-gray-600" />
                 </div>
-                <span className="flex-1 text-left text-gray-700 text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Log in with another ID</span>
+                <span className="flex-1 text-left text-gray-700 text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Profile</span>
                 <span className="text-gray-400 text-lg">›</span>
               </button>
 
