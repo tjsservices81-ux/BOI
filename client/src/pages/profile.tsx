@@ -398,13 +398,9 @@ export default function Profile() {
               onClick={async () => {
                 setIsSigningOut(true);
                 
-                // Clear user data and logout after 1 second but keep animation
-                setTimeout(async () => {
-                  await logout();
-                }, 1000);
-                
-                // Navigate after full 8-second animation
+                // Navigate after full 8-second animation, then logout
                 setTimeout(() => {
+                  logout();
                   window.location.href = '/login';
                 }, 8000);
               }}
