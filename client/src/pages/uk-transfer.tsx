@@ -154,7 +154,6 @@ export default function UkTransfer() {
       return;
     }
 
-    // Immediately go to success screen and start animation
     // Animate transition to success step
     setIsTransitioning(true);
     setSlideDirection('out');
@@ -209,7 +208,12 @@ export default function UkTransfer() {
     }, 100);
   };
 
-
+  const getAnimationClass = () => {
+    if (isTransitioning) {
+      return slideDirection === 'out' ? 'transfer-slide-out-left' : 'transfer-slide-in-right';
+    }
+    return slideDirection === 'in' ? 'transfer-slide-in-right' : '';
+  };
 
   if (step === 'success') {
     return (
@@ -380,9 +384,26 @@ export default function UkTransfer() {
     const selectedAccount = accounts.find(acc => acc.id === formData.fromAccount);
 
     return (
-      <div>
+      <div className={`transfer-screen ${getAnimationClass()}`} style={{ 
+        position: 'fixed', 
+        top: 0, 
+        left: 0, 
+        right: 0, 
+        bottom: 0, 
+        display: 'flex', 
+        flexDirection: 'column',
+        backgroundColor: '#f9fafb'
+      }}>
         <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
-          <button onClick={() => setStep('form')} className="flex items-center text-white">
+          <button onClick={() => {
+            setIsTransitioning(true);
+            setSlideDirection('out');
+            setTimeout(() => {
+              setStep('form');
+              setSlideDirection('in');
+              setIsTransitioning(false);
+            }, 300);
+          }} className="flex items-center text-white">
             <ChevronLeft className="w-6 h-6 mr-2" />
             <span className="font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Confirm Transfer</span>
           </button>
@@ -458,7 +479,7 @@ export default function UkTransfer() {
   }
 
   return (
-    <div className="page-container page-fade-in" style={{ 
+    <div className={`page-container page-fade-in transfer-screen-container ${getAnimationClass()}`} style={{ 
       position: 'fixed', 
       top: 0, 
       left: 0, 
