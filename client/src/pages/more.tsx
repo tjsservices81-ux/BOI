@@ -14,7 +14,7 @@ export default function More() {
   };
 
   return (
-    <div className="h-screen relative ios-safe-top ios-safe-bottom ios-safe-left ios-safe-right overflow-hidden" style={{ maxHeight: '100vh' }}>
+    <div className="h-screen relative ios-safe-top ios-safe-bottom ios-safe-left ios-safe-right overflow-hidden page-fade-in" style={{ maxHeight: '100vh' }}>
       {/* Loading overlay for smooth transitions */}
       {isNavigating && (
         <div className="fixed inset-0 bg-black bg-opacity-20 z-50 flex items-center justify-center">

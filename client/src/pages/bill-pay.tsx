@@ -47,7 +47,7 @@ export default function BillPay() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 pb-20 page-fade-in">
       {/* Header */}
       <div className="bg-white px-6 py-4 shadow-sm">
         <div className="flex items-center">
