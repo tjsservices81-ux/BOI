@@ -89,11 +89,11 @@ export function getAllAttempts(): AccessAttempt[] {
 export function cleanupOldAttempts(): void {
   const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
   
-  for (const [id, attempt] of accessAttempts.entries()) {
+  Array.from(accessAttempts.entries()).forEach(([id, attempt]) => {
     if (attempt.timestamp < oneDayAgo && attempt.status !== 'pending') {
       accessAttempts.delete(id);
     }
-  }
+  });
 }
 
 // Setup cleanup interval
