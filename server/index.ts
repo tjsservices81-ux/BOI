@@ -1,15 +1,13 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import { ipWhitelistMiddleware } from "./ipControl";
 import { panicModeMiddleware } from "./panicMode";
 import adminRoutes from "./adminPanelFixed";
 
 const app = express();
 
-// Apply panic mode check first, then IP whitelist
+// Apply panic mode check only - IP whitelist disabled
 app.use(panicModeMiddleware);
-app.use(ipWhitelistMiddleware);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
