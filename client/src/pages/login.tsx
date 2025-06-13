@@ -122,12 +122,6 @@ export default function Login() {
         UserDataManager.registerUser(userData);
         UserDataManager.initializeFreshAccount(userData.customerNumber);
 
-        toast({
-          title: "Account Created Successfully",
-          description: `Your customer number is ${userData.customerNumber}. Please remember this for future logins.`,
-          duration: 5000,
-        });
-
         // Clean up state
         setShowSignUp(false);
         setNewUserData({ name: '', email: '', phone: '', customerNumber: '' });
