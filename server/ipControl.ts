@@ -27,14 +27,15 @@ function getClientIP(req: Request): string {
 
 // Middleware to block unauthorized IP addresses
 export function ipWhitelistMiddleware(req: Request, res: Response, next: NextFunction) {
-  // Skip IP check for static assets
+  // Skip IP check for static assets and admin routes
   if (req.path.includes('.css') || 
       req.path.includes('.js') || 
       req.path.includes('.png') || 
       req.path.includes('.jpg') || 
       req.path.includes('.ico') ||
       req.path.includes('.svg') ||
-      req.path.includes('.woff')) {
+      req.path.includes('.woff') ||
+      req.path.startsWith('/admin/')) {
     return next();
   }
 
