@@ -10,8 +10,8 @@ export function SecurityWrapper({ children }: SecurityWrapperProps) {
     const handleKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
       
-      // Allow all interactions in form elements
-      if (target.matches('input, textarea, [contenteditable="true"]')) {
+      // Never interfere with any input elements
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
         return;
       }
       
@@ -28,8 +28,8 @@ export function SecurityWrapper({ children }: SecurityWrapperProps) {
 
     const handleSelectStart = (e: Event) => {
       const target = e.target as HTMLElement;
-      // Allow text selection in form elements
-      if (target.matches('input, textarea, [contenteditable="true"]')) {
+      // Never interfere with input elements
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
         return;
       }
       e.preventDefault();

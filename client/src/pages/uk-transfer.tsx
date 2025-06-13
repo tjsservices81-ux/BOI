@@ -556,12 +556,14 @@ export default function UkTransfer() {
                 Amount (EUR)
               </label>
               <input
-                {...form.register('amount')}
-                type="number"
-                step="0.01"
+                type="text"
                 placeholder="0.00"
                 className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
                 style={{ fontFamily: 'OpenSans, sans-serif' }}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  form.setValue('amount', value);
+                }}
               />
               {form.formState.errors.amount && (
                 <p className="text-red-500 text-xs mt-2 font-medium">{form.formState.errors.amount.message}</p>
@@ -573,11 +575,14 @@ export default function UkTransfer() {
                 Payment Reference
               </label>
               <input
-                {...form.register('reference')}
                 type="text"
                 placeholder="Payment description"
                 className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
                 style={{ fontFamily: 'OpenSans, sans-serif' }}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  form.setValue('reference', value);
+                }}
               />
               {form.formState.errors.reference && (
                 <p className="text-red-500 text-xs mt-2 font-medium">{form.formState.errors.reference.message}</p>
