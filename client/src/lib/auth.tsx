@@ -18,44 +18,32 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   
-  // Defer auth check until after splash screen
+  // Check auth after splash completes
   useEffect(() => {
-    const checkAuth = () => {
-      const hasShownSplash = sessionStorage.getItem('splashShown');
-      if (hasShownSplash) {
-        // Only restore user after splash has been shown
-        const cachedUser = localStorage.getItem('bankingUser');
-        if (cachedUser) {
-          try {
-            setUser(JSON.parse(cachedUser));
-          } catch (error) {
-            localStorage.removeItem('bankingUser');
-          }
+    const handleSplashComplete = () => {
+      const cachedUser = localStorage.getItem('bankingUser');
+      if (cachedUser) {
+        try {
+          setUser(JSON.parse(cachedUser));
+        } catch (error) {
+          localStorage.removeItem('bankingUser');
         }
-        setIsLoading(false);
-      } else {
-        // Wait for splash to complete
-        const handleSplashComplete = () => {
-          const cachedUser = localStorage.getItem('bankingUser');
-          if (cachedUser) {
-            try {
-              setUser(JSON.parse(cachedUser));
-            } catch (error) {
-              localStorage.removeItem('bankingUser');
-            }
-          }
-          setIsLoading(false);
-          window.removeEventListener('splashComplete', handleSplashComplete);
-        };
-        
-        window.addEventListener('splashComplete', handleSplashComplete);
-        setIsLoading(false); // Allow splash to show
       }
     };
 
-    checkAuth();
+    // Check if splash was already shown
+    const hasShownSplash = sessionStorage.getItem('splashShown');
+    if (hasShownSplash) {
+      handleSplashComplete();
+    } else {
+      window.addEventListener('splashComplete', handleSplashComplete);
+    }
+
+    return () => {
+      window.removeEventListener('splashComplete', handleSplashComplete);
+    };
   }, []);
 
   const login = (userData: User) => {
