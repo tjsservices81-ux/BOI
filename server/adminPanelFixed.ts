@@ -722,7 +722,7 @@ router.get('/dashboard', (req, res) => {
                   '</div>' +
                   '<div>' +
                     '<span class="status">APPROVED</span>' +
-                    '<button class="btn btn-danger" onclick="revokeIP(\'' + ip + '\')">Revoke</button>' +
+                    '<button class="btn btn-danger" onclick="revokeIP(&quot;' + ip + '&quot;)">Revoke</button>' +
                   '</div>';
                 ipList.appendChild(li);
               });
@@ -760,8 +760,8 @@ router.get('/dashboard', (req, res) => {
                     '<span class="ip-address">' + attempt.ip + '</span>' +
                     '<span class="timestamp">' + new Date(attempt.timestamp).toLocaleString() + '</span>' +
                     '<div class="pending-actions">' +
-                      '<button class="btn btn-success" onclick="approveAttempt(\'' + attempt.id + '\', \'' + attempt.ip + '\')">Approve</button>' +
-                      '<button class="btn btn-danger" onclick="denyAttempt(\'' + attempt.id + '\', \'' + attempt.ip + '\')">Deny</button>' +
+                      '<button class="btn btn-success" onclick="approveAttempt(&quot;' + attempt.id + '&quot;, &quot;' + attempt.ip + '&quot;)">Approve</button>' +
+                      '<button class="btn btn-danger" onclick="denyAttempt(&quot;' + attempt.id + '&quot;, &quot;' + attempt.ip + '&quot;)">Deny</button>' +
                     '</div>' +
                   '</div>';
                 });
