@@ -73,8 +73,8 @@ function AppRoutes() {
     return () => window.removeEventListener('splashComplete', handleSplashComplete);
   }, []);
 
-  // If splash hasn't been shown yet and we're at root, show splash
-  if (!splashShown && location === '/') {
+  // Simplified splash logic
+  if (!splashShown && (location === '/' || location === '/splash')) {
     return <Splash />;
   }
   
@@ -90,10 +90,7 @@ function AppRoutes() {
           <Route path="/login" component={Login} />
           <Route path="/more" component={More} />
           <Route path="/">
-            {/* Handle root route properly based on splash and auth state */}
-            {!splashShown ? (
-              <Splash />
-            ) : isLoading ? (
+            {isLoading ? (
               <div className="w-full h-full flex items-center justify-center bg-[#126987]">
                 <div className="text-white">Loading...</div>
               </div>
