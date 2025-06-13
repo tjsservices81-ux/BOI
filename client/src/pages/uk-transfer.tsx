@@ -545,12 +545,9 @@ export default function UkTransfer() {
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                 />
                 {identifiedBank && (
-                  <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-md">
-                    <div className="flex items-center mb-1">
-                      <Building className="w-4 h-4 text-green-600 mr-2" />
-                      <span className="text-sm text-green-700 font-semibold">{getBankDisplayName(identifiedBank)}</span>
-                    </div>
-                    <div className="text-xs text-green-600 ml-6">{identifiedBank.branchName}</div>
+                  <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded-md flex items-center">
+                    <Building className="w-4 h-4 text-green-600 mr-2" />
+                    <span className="text-xs text-green-700 font-medium">{getBankDisplayName(identifiedBank)}</span>
                   </div>
                 )}
                 {form.watch('sortCode')?.length === 6 && !identifiedBank && (
