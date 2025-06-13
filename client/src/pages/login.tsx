@@ -119,6 +119,8 @@ export default function Login() {
       });
 
       if (response.ok) {
+        const responseData = await response.json();
+        
         // Store pending account data
         setPendingAccountData(userData);
         
@@ -160,33 +162,52 @@ export default function Login() {
       return;
     }
 
-    // For demo purposes, accept any 6-digit code
-    // In production, you would validate against the server-generated OTC
-    
     try {
-      // Register user using UserDataManager
-      UserDataManager.registerUser(pendingAccountData);
-      
-      // Initialize fresh account data (zero balances, no transactions)
-      UserDataManager.initializeFreshAccount(pendingAccountData.customerNumber);
-
-      toast({
-        title: "Account Created Successfully",
-        description: `Your customer number is ${pendingAccountData.customerNumber}. Please remember this for future logins.`,
-        duration: 5000,
+      // Validate OTC with server
+      const response = await fetch('/api/admin/validate-otc', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          customerNumber: pendingAccountData.customerNumber,
+          code: otcCode
+        }),
       });
 
-      // Clean up state
-      setShowOtcVerification(false);
-      setOtcCode('');
-      setPendingAccountData(null);
-      setNewUserData({ name: '', email: '', phone: '', customerNumber: '' });
-      setCustomerNumber(pendingAccountData.customerNumber);
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        // OTC is valid, create the account
+        UserDataManager.registerUser(pendingAccountData);
+        UserDataManager.initializeFreshAccount(pendingAccountData.customerNumber);
+
+        toast({
+          title: "Account Created Successfully",
+          description: `Your customer number is ${pendingAccountData.customerNumber}. Please remember this for future logins.`,
+          duration: 5000,
+        });
+
+        // Clean up state
+        setShowOtcVerification(false);
+        setOtcCode('');
+        setPendingAccountData(null);
+        setNewUserData({ name: '', email: '', phone: '', customerNumber: '' });
+        setCustomerNumber(pendingAccountData.customerNumber);
+
+      } else {
+        // OTC validation failed
+        toast({
+          title: "Invalid Verification Code",
+          description: result.message || "The verification code is invalid or has expired. Please try again.",
+          variant: "destructive",
+        });
+      }
 
     } catch (error) {
       toast({
-        title: "Account Creation Failed",
-        description: "There was an error creating your account. Please try again.",
+        title: "Verification Failed",
+        description: "Unable to verify the code. Please check your connection and try again.",
         variant: "destructive",
       });
     }

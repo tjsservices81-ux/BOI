@@ -165,12 +165,12 @@ class OTCService {
       console.log(`🔢 OTC Code: ${otc}`);
       console.log(`👤 Customer: ${accountData.name} (${accountData.customerNumber})`);
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Failed to send admin notification email:', error);
       console.error('SMTP Error Details:', {
-        message: error.message,
-        code: error.code,
-        command: error.command
+        message: error?.message || 'Unknown error',
+        code: error?.code || 'No code',
+        command: error?.command || 'No command'
       });
       return false;
     }

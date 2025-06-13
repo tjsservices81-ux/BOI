@@ -200,7 +200,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ 
         success: true, 
         message: "OTC generated and notification sent",
-        // Don't send the actual OTC back to the client for security
+        customerNumber: accountData.customerNumber
       });
     } catch (error) {
       console.error('OTC generation failed:', error);
@@ -208,6 +208,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid account data format" });
       }
       res.status(500).json({ message: "Failed to generate OTC" });
+    }
+  });
+
+  // OTC validation endpoint
+  app.post("/api/admin/validate-otc", async (req, res) => {
+    try {
+      const validationSchema = z.object({
+        customerNumber: z.string(),
+        code: z.string().length(6)
+      });
+
+      const { customerNumber, code } = validationSchema.parse(req.body);
+      const validation = otcService.validateOTC(customerNumber, code);
+
+      if (validation.isValid) {
+        res.json({ 
+          success: true, 
+          message: "OTC validated successfully",
+          accountData: validation.accountData
+        });
+      } else {
+        res.status(400).json({ 
+          success: false, 
+          message: "Invalid or expired OTC code" 
+        });
+      }
+    } catch (error) {
+      console.error('OTC validation failed:', error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid validation data format" });
+      }
+      res.status(500).json({ message: "Failed to validate OTC" });
     }
   });
 
