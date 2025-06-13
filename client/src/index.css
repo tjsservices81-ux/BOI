@@ -37,6 +37,27 @@
   }
 }
 
+/* Status bar background blending for full-screen overlays */
+.fullscreen-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  outline: none !important;
+  /* Extend beyond safe area to cover status bar */
+  padding-top: env(safe-area-inset-top, 0) !important;
+  margin-top: calc(-1 * env(safe-area-inset-top, 0)) !important;
+  /* Ensure z-index covers everything */
+  z-index: 9999 !important;
+}
+
 /* Critical performance optimizations + Security */
 * {
   -webkit-tap-highlight-color: transparent;

@@ -1153,17 +1153,7 @@ export default function Profile() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5 }}
-            className="fixed z-[9999] flex items-center justify-center bg-gradient-to-br from-[#1a3c47] via-[#2c5f70] to-[#0d2329]"
-            style={{ 
-              position: 'fixed',
-              top: '-100px',
-              left: 0,
-              right: 0,
-              bottom: 0,
-              width: '100vw',
-              height: 'calc(100vh + 100px)',
-              paddingTop: '100px'
-            }}
+            className="fullscreen-overlay flex items-center justify-center bg-gradient-to-br from-[#1a3c47] via-[#2c5f70] to-[#0d2329]"
           >
             {/* Animated background elements */}
             <motion.div
