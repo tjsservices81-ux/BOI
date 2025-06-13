@@ -1,6 +1,7 @@
 import express from 'express';
 import { approveIP, revokeIP, listApprovedIPs, isIPApproved } from './ipControl';
 import { getPendingAttempts, getAllAttempts, approveAccessAttempt, denyAccessAttempt, accessMonitor } from './accessMonitor';
+import { activatePanicMode, deactivatePanicMode, isPanicModeActive, getPanicModeStatus } from './panicMode';
 
 const router = express.Router();
 
@@ -97,6 +98,23 @@ router.post('/deny-attempt', adminAuth, (req, res) => {
   } else {
     res.status(404).json({ error: 'Attempt not found' });
   }
+});
+
+// Panic mode controls
+router.get('/panic-status', adminAuth, (req, res) => {
+  const status = getPanicModeStatus();
+  res.json(status);
+});
+
+router.post('/panic-activate', adminAuth, (req, res) => {
+  const { reason } = req.body;
+  activatePanicMode(reason || 'Manual activation by admin');
+  res.json({ success: true, message: 'Panic mode activated - all access blocked' });
+});
+
+router.post('/panic-deactivate', adminAuth, (req, res) => {
+  deactivatePanicMode();
+  res.json({ success: true, message: 'Panic mode deactivated - normal operations resumed' });
 });
 
 // Admin login page
@@ -459,7 +477,18 @@ router.get('/panel', (req, res) => {
         <div id="message" class="message"></div>
         
         <div class="card">
-          <h2>🚨 Pending Access Requests</h2>
+          <h2>🚨 Emergency Controls</h2>
+          <div id="panicModeStatus">
+            <p>Loading panic mode status...</p>
+          </div>
+          <div style="margin-top: 15px;">
+            <button id="panicActivateBtn" class="btn btn-danger" onclick="activatePanicMode()" style="background: #e74c3c;">🚨 ACTIVATE PANIC MODE</button>
+            <button id="panicDeactivateBtn" class="btn" onclick="deactivatePanicMode()" style="background: #27ae60; display: none;">✅ Deactivate Panic Mode</button>
+          </div>
+        </div>
+        
+        <div class="card">
+          <h2>📊 Pending Access Requests</h2>
           <div id="pendingRequests">
             <p>Loading pending requests...</p>
           </div>
@@ -729,12 +758,113 @@ router.get('/panel', (req, res) => {
           }
         }
         
-        // Auto-refresh pending requests every 5 seconds
-        setInterval(loadPendingRequests, 5000);
+        async function loadPanicModeStatus() {
+          try {
+            const response = await fetch('/admin/panic-status', {
+              headers: {
+                'X-Admin-Key': ADMIN_KEY
+              }
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok) {
+              const statusDiv = document.getElementById('panicModeStatus');
+              const activateBtn = document.getElementById('panicActivateBtn');
+              const deactivateBtn = document.getElementById('panicDeactivateBtn');
+              
+              if (result.active) {
+                const activatedTime = new Date(result.activatedAt).toLocaleString();
+                statusDiv.innerHTML = 
+                  '<div style="color: #e74c3c; font-weight: bold; padding: 10px; background: #ffebee; border-radius: 5px;">' +
+                  '🚨 PANIC MODE ACTIVE<br>' +
+                  '<small>Activated: ' + activatedTime + '</small><br>' +
+                  '<small>Reason: ' + result.reason + '</small>' +
+                  '</div>';
+                activateBtn.style.display = 'none';
+                deactivateBtn.style.display = 'inline-block';
+              } else {
+                statusDiv.innerHTML = 
+                  '<div style="color: #27ae60; font-weight: bold; padding: 10px; background: #e8f5e8; border-radius: 5px;">' +
+                  '✅ NORMAL OPERATIONS<br>' +
+                  '<small>Banking app is accessible to approved users</small>' +
+                  '</div>';
+                activateBtn.style.display = 'inline-block';
+                deactivateBtn.style.display = 'none';
+              }
+            }
+          } catch (error) {
+            showMessage('Failed to load panic mode status: ' + error.message, 'error');
+          }
+        }
+        
+        async function activatePanicMode() {
+          if (!confirm('⚠️ WARNING: This will immediately block ALL access to your banking app except admin panel. Continue?')) {
+            return;
+          }
+          
+          const reason = prompt('Enter reason for panic mode activation (optional):') || 'Manual activation by admin';
+          
+          try {
+            const response = await fetch('/admin/panic-activate', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Admin-Key': ADMIN_KEY
+              },
+              body: JSON.stringify({ reason })
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok) {
+              showMessage('🚨 PANIC MODE ACTIVATED - All access blocked!', 'error');
+              loadPanicModeStatus();
+            } else {
+              showMessage(result.error || 'Failed to activate panic mode', 'error');
+            }
+          } catch (error) {
+            showMessage('Network error: ' + error.message, 'error');
+          }
+        }
+        
+        async function deactivatePanicMode() {
+          if (!confirm('Deactivate panic mode and resume normal operations?')) {
+            return;
+          }
+          
+          try {
+            const response = await fetch('/admin/panic-deactivate', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Admin-Key': ADMIN_KEY
+              }
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok) {
+              showMessage('✅ Normal operations resumed', 'success');
+              loadPanicModeStatus();
+            } else {
+              showMessage(result.error || 'Failed to deactivate panic mode', 'error');
+            }
+          } catch (error) {
+            showMessage('Network error: ' + error.message, 'error');
+          }
+        }
+        
+        // Auto-refresh every 5 seconds
+        setInterval(() => {
+          loadPendingRequests();
+          loadPanicModeStatus();
+        }, 5000);
         
         // Load data on page load
         loadApprovedIPs();
         loadPendingRequests();
+        loadPanicModeStatus();
       </script>
     </body>
     </html>
