@@ -17,45 +17,50 @@ export default function MiniSpendingChart({ accountId }: MiniSpendingChartProps)
 
   useEffect(() => {
     const calculateChartData = () => {
+      // Use UserDataManager for consistent data access
       const allTransactions = JSON.parse(localStorage.getItem('bankTransactions') || '[]');
+      
+      // Early return if no transactions
+      if (allTransactions.length === 0) {
+        setChartData([]);
+        setTrend('stable');
+        return;
+      }
+
       const accountTransactions = allTransactions.filter((tx: any) => 
         tx.accountId === accountId && tx.type === 'debit'
       );
 
-      // Group transactions by date (last 7 days)
+      // Optimize date calculations - calculate once
+      const today = new Date();
       const last7Days = Array.from({ length: 7 }, (_, i) => {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
+        const date = new Date(today);
+        date.setDate(today.getDate() - i);
         return date.toDateString();
       }).reverse();
 
-      const dailySpending: ChartData[] = last7Days.map(date => {
-        const dayTransactions = accountTransactions.filter((tx: any) => 
-          new Date(tx.timestamp).toDateString() === date
-        );
-        
-        const dayTotal = dayTransactions.reduce((sum: number, tx: any) => 
-          sum + Math.abs(parseFloat(tx.amount)), 0
-        );
+      const dailySpending: ChartData[] = last7Days.map(dateString => {
+        const dayTotal = accountTransactions
+          .filter((tx: any) => new Date(tx.timestamp).toDateString() === dateString)
+          .reduce((sum: number, tx: any) => sum + Math.abs(parseFloat(tx.amount) || 0), 0);
 
         return {
-          date: new Date(date).toLocaleDateString('en-IE', { weekday: 'short' }),
+          date: new Date(dateString).toLocaleDateString('en-IE', { weekday: 'short' }),
           amount: dayTotal
         };
       });
 
       setChartData(dailySpending);
 
-      // Calculate trend
-      const recentAvg = dailySpending.slice(-3).reduce((sum, day) => sum + day.amount, 0) / 3;
-      const olderAvg = dailySpending.slice(0, 3).reduce((sum, day) => sum + day.amount, 0) / 3;
-      
-      if (Math.abs(recentAvg - olderAvg) < 10) {
-        setTrend('stable');
-      } else if (recentAvg > olderAvg) {
-        setTrend('up');
+      // Optimized trend calculation
+      if (dailySpending.length >= 6) {
+        const recentSum = dailySpending.slice(-3).reduce((sum, day) => sum + day.amount, 0);
+        const olderSum = dailySpending.slice(0, 3).reduce((sum, day) => sum + day.amount, 0);
+        
+        const diff = recentSum - olderSum;
+        setTrend(Math.abs(diff) < 30 ? 'stable' : diff > 0 ? 'up' : 'down');
       } else {
-        setTrend('down');
+        setTrend('stable');
       }
     };
 

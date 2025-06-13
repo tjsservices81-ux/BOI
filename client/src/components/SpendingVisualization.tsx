@@ -184,7 +184,7 @@ export default function SpendingVisualization() {
       animationRef.current = requestAnimationFrame(animate);
     };
 
-    animate();
+    animationRef.current = requestAnimationFrame((time) => animate(time));
 
     return () => {
       if (animationRef.current) {
