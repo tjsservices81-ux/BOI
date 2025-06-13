@@ -136,7 +136,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="h-screen bg-[#126987] overflow-hidden flex flex-col ios-safe-bottom relative page-fade-in" style={{ maxHeight: '100vh' }}>
+    <div className={`h-screen bg-[#126987] overflow-hidden flex flex-col ios-safe-bottom relative page-fade-in ${isNavigating ? 'dashboard-exit' : ''}`} style={{ maxHeight: '100vh' }}>
       {/* Ambient spending visualization background */}
       <SpendingVisualization />
       
@@ -148,7 +148,7 @@ export default function Dashboard() {
         <div className="flex items-center">
           <button 
             className="text-white hover:bg-white/20 h-8 w-8 rounded-full flex items-center justify-center touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-95"
-            onClick={() => setLocation('/profile')}
+            onClick={() => navigateWithAnimation('/profile', 'slide-up')}
           >
             <User className="h-5 w-5" />
           </button>
