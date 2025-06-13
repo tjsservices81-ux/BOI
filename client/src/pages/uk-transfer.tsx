@@ -521,18 +521,6 @@ export default function UkTransfer() {
                   maxLength={8}
                   className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
-                  onBlur={(e) => {
-                    const value = e.target.value.replace(/\D/g, '');
-                    const formatted = formatSortCode(value);
-                    e.target.value = formatted;
-                    
-                    if (value.length >= 4) {
-                      const bank = validateUKSortCode(value);
-                      setIdentifiedBank(bank || '');
-                    } else {
-                      setIdentifiedBank('');
-                    }
-                  }}
                 />
                 {identifiedBank && (
                   <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded-md flex items-center">
@@ -556,7 +544,6 @@ export default function UkTransfer() {
                   maxLength={8}
                   className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
-
                 />
                 {form.formState.errors.accountNumber && (
                   <p className="text-red-500 text-xs mt-2 font-medium">{form.formState.errors.accountNumber.message}</p>
