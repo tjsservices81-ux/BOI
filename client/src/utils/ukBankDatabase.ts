@@ -2,8 +2,8 @@
 import eiscdData from '../data/eiscd.json';
 
 export interface BankInfo {
-  bankName: string;
-  branchName: string;
+  bank: string;
+  branch: string;
 }
 
 export interface LegacyBankInfo {
@@ -39,7 +39,7 @@ export function lookupEISCD(sortCode: string): BankInfo | null {
  */
 export function getBankDisplayName(bankInfo: BankInfo): string {
   // Extract short name from full bank name
-  const bankName = bankInfo.bankName;
+  const bankName = bankInfo.bank;
   
   if (bankName.includes('Barclays')) return 'Barclays';
   if (bankName.includes('HSBC')) return 'HSBC';
@@ -57,6 +57,12 @@ export function getBankDisplayName(bankInfo: BankInfo): string {
   if (bankName.includes('Ulster Bank')) return 'Ulster Bank';
   if (bankName.includes('Clydesdale')) return 'Clydesdale Bank';
   if (bankName.includes('Royal Bank of Scotland')) return 'RBS';
+  if (bankName.includes('Revolut')) return 'Revolut';
+  if (bankName.includes('Aviva')) return 'Aviva';
+  if (bankName.includes('Virgin Money')) return 'Virgin Money';
+  if (bankName.includes('Yorkshire Building Society')) return 'Yorkshire Building Society';
+  if (bankName.includes('Coventry Building Society')) return 'Coventry Building Society';
+  if (bankName.includes('Bank of Scotland')) return 'Bank of Scotland';
   
   // Default to first two words of bank name
   return bankName.split(' ').slice(0, 2).join(' ');
