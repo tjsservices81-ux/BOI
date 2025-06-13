@@ -17,23 +17,34 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => {
-    // Initialize user state from localStorage immediately to prevent auth flash
-    const cachedUser = localStorage.getItem('bankingUser');
-    if (cachedUser) {
-      try {
-        return JSON.parse(cachedUser);
-      } catch (error) {
-        localStorage.removeItem('bankingUser');
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Check for existing session on mount
+  useEffect(() => {
+    fetch('/api/auth/user', {
+      method: 'GET',
+      credentials: 'include',
+    })
+    .then(response => {
+      if (response.ok) {
+        return response.json();
       }
-    }
-    return null;
-  });
-  const [isLoading, setIsLoading] = useState(false);
+      throw new Error('Not authenticated');
+    })
+    .then(userData => {
+      setUser(userData);
+    })
+    .catch(() => {
+      setUser(null);
+    })
+    .finally(() => {
+      setIsLoading(false);
+    });
+  }, []);
 
   const login = (userData: User) => {
     setUser(userData);
-    localStorage.setItem('bankingUser', JSON.stringify(userData));
   };
 
   const logout = async () => {
@@ -46,7 +57,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error('Logout error:', error);
     }
     setUser(null);
-    localStorage.removeItem('bankingUser');
   };
 
   return (

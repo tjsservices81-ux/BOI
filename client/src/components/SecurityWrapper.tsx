@@ -6,72 +6,189 @@ interface SecurityWrapperProps {
 
 export function SecurityWrapper({ children }: SecurityWrapperProps) {
   useEffect(() => {
-    // Basic security without interfering with forms
+    // Enhanced security measures
     const handleKeyDown = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement;
-      
-      // Never interfere with any input elements
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
-        return;
+      // Prevent common shortcuts for copying, saving, viewing source
+      if (e.ctrlKey || e.metaKey) {
+        const blockedKeys = ['a', 'c', 'v', 's', 'p', 'u', 'r', 'h'];
+        if (blockedKeys.includes(e.key.toLowerCase())) {
+          e.preventDefault();
+          e.stopPropagation();
+          return false;
+        }
       }
       
-      // Block developer tools shortcuts only outside forms
+      // Block F12, Ctrl+Shift+I, Ctrl+Shift+C, Ctrl+Shift+J
       if (e.key === 'F12' || 
           (e.ctrlKey && e.shiftKey && ['I', 'C', 'J'].includes(e.key))) {
         e.preventDefault();
+        e.stopPropagation();
+        return false;
       }
     };
 
     const handleContextMenu = (e: Event) => {
       e.preventDefault();
+      e.stopPropagation();
+      return false;
     };
 
     const handleSelectStart = (e: Event) => {
       const target = e.target as HTMLElement;
-      // Never interfere with input elements
+      // Allow text selection only in input fields
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
-        return;
+        return true;
       }
       e.preventDefault();
+      return false;
     };
 
-    // Override share API safely
-    try {
-      if ('share' in navigator) {
-        Object.defineProperty(navigator, 'share', {
-          value: () => Promise.reject(new Error('Sharing disabled')),
-          writable: false
-        });
+    const handleDragStart = (e: Event) => {
+      e.preventDefault();
+      return false;
+    };
+
+    const handleTouchStart = (e: TouchEvent) => {
+      // Prevent long press on mobile that might trigger sharing
+      if (e.touches.length > 1) {
+        e.preventDefault();
       }
-    } catch (e) {
-      // Silently handle if we can't override
-    }
+    };
 
-    // Add event listeners
-    document.addEventListener('keydown', handleKeyDown);
-    document.addEventListener('contextmenu', handleContextMenu);
-    document.addEventListener('selectstart', handleSelectStart);
+    const handleTouchMove = (e: TouchEvent) => {
+      // Prevent pinch zoom
+      if (e.touches.length > 1) {
+        e.preventDefault();
+      }
+    };
 
+    // Disable print functionality
+    const handleBeforePrint = (e: Event) => {
+      e.preventDefault();
+      return false;
+    };
+
+    // Override clipboard API safely
+    const overrideClipboard = () => {
+      try {
+        if (navigator.clipboard) {
+          const originalWriteText = navigator.clipboard.writeText;
+          const originalReadText = navigator.clipboard.readText;
+          
+          navigator.clipboard.writeText = () => Promise.reject(new Error('Clipboard access disabled'));
+          navigator.clipboard.readText = () => Promise.reject(new Error('Clipboard access disabled'));
+          
+          if (navigator.clipboard.write) {
+            navigator.clipboard.write = () => Promise.reject(new Error('Clipboard access disabled'));
+          }
+          if (navigator.clipboard.read) {
+            navigator.clipboard.read = () => Promise.reject(new Error('Clipboard access disabled'));
+          }
+        }
+      } catch (e) {
+        // Silently fail if we can't override clipboard
+      }
+    };
+
+    // Override Web Share API safely
+    const overrideShare = () => {
+      try {
+        if ('share' in navigator) {
+          const originalShare = navigator.share;
+          navigator.share = () => Promise.reject(new Error('Sharing is disabled for security'));
+        }
+      } catch (e) {
+        // Silently fail if we can't override share
+      }
+    };
+
+    // Disable image context menus specifically
+    const handleImageContextMenu = (e: Event) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'IMG') {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+    };
+
+    // Hide URL bar on mobile devices
+    const hideUrlBar = () => {
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        window.scrollTo(0, 1);
+        // Force full screen on mobile
+        setTimeout(() => {
+          window.scrollTo(0, 1);
+        }, 500);
+      }
+    };
+
+    // Detect and prevent developer tools
+    const detectDevTools = () => {
+      let devtools = { open: false };
+      
+      const detect = () => {
+        const widthThreshold = window.outerWidth - window.innerWidth > 160;
+        const heightThreshold = window.outerHeight - window.innerHeight > 160;
+        
+        if (widthThreshold || heightThreshold) {
+          if (!devtools.open) {
+            devtools.open = true;
+            // Redirect to prevent inspection
+            window.location.reload();
+          }
+        } else {
+          devtools.open = false;
+        }
+      };
+      
+      setInterval(detect, 100);
+    };
+
+    // Apply all security measures
+    document.addEventListener('keydown', handleKeyDown, true);
+    document.addEventListener('contextmenu', handleContextMenu, true);
+    document.addEventListener('selectstart', handleSelectStart, true);
+    document.addEventListener('dragstart', handleDragStart, true);
+    document.addEventListener('touchstart', handleTouchStart, { passive: false });
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+    document.addEventListener('beforeprint', handleBeforePrint, true);
+    
+    // Image-specific protection
+    document.addEventListener('contextmenu', handleImageContextMenu, true);
+    
+    overrideClipboard();
+    overrideShare();
+    hideUrlBar();
+    detectDevTools();
+
+    // Prevent zoom gestures
+    document.addEventListener('gesturestart', (e) => e.preventDefault());
+    document.addEventListener('gesturechange', (e) => e.preventDefault());
+    document.addEventListener('gestureend', (e) => e.preventDefault());
+
+    // Cleanup
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.removeEventListener('contextmenu', handleContextMenu);
-      document.removeEventListener('selectstart', handleSelectStart);
+      document.removeEventListener('keydown', handleKeyDown, true);
+      document.removeEventListener('contextmenu', handleContextMenu, true);
+      document.removeEventListener('selectstart', handleSelectStart, true);
+      document.removeEventListener('dragstart', handleDragStart, true);
+      document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('beforeprint', handleBeforePrint, true);
+      document.removeEventListener('contextmenu', handleImageContextMenu, true);
     };
   }, []);
 
   return (
-    <div className="w-full h-full" style={{ 
-      userSelect: 'none',
+    <div className="no-select" style={{ 
       WebkitUserSelect: 'none',
+      MozUserSelect: 'none',
+      msUserSelect: 'none',
+      userSelect: 'none',
       WebkitTouchCallout: 'none',
       WebkitTapHighlightColor: 'transparent'
     }}>
-      <style>{`
-        input, textarea, [contenteditable="true"] {
-          user-select: text !important;
-          -webkit-user-select: text !important;
-        }
-      `}</style>
       {children}
     </div>
   );

@@ -103,7 +103,11 @@ export default function UkTransfer() {
         sessionStorage.removeItem('selectedPayee');
       }
     }
-  }, []); // Only run once on mount
+    
+    // Refresh accounts only when needed
+    const interval = setInterval(loadAccounts, 5000);
+    return () => clearInterval(interval);
+  }, [form]);
 
   const onSubmit = async (data: UkTransferData) => {
     setFormData(data);
@@ -499,7 +503,7 @@ export default function UkTransfer() {
                 {...form.register('recipientName')}
                 type="text"
                 placeholder="Enter recipient's full name"
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm touch-manipulation transform-gpu transition-all duration-150 ease-out"
                 style={{ fontFamily: 'OpenSans, sans-serif' }}
               />
               {form.formState.errors.recipientName && (
@@ -519,8 +523,21 @@ export default function UkTransfer() {
                   type="text"
                   placeholder="12-34-56"
                   maxLength={8}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm touch-manipulation transform-gpu transition-all duration-150 ease-out"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '');
+                    const formatted = formatSortCode(value);
+                    e.target.value = formatted;
+                    form.setValue('sortCode', value);
+                    
+                    if (value.length >= 4) {
+                      const bank = validateUKSortCode(value);
+                      setIdentifiedBank(bank || '');
+                    } else {
+                      setIdentifiedBank('');
+                    }
+                  }}
                 />
                 {identifiedBank && (
                   <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded-md flex items-center">
@@ -542,8 +559,12 @@ export default function UkTransfer() {
                   type="text"
                   placeholder="12345678"
                   maxLength={8}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm touch-manipulation transform-gpu transition-all duration-150 ease-out"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '');
+                    form.setValue('accountNumber', value);
+                  }}
                 />
                 {form.formState.errors.accountNumber && (
                   <p className="text-red-500 text-xs mt-2 font-medium">{form.formState.errors.accountNumber.message}</p>
@@ -556,14 +577,12 @@ export default function UkTransfer() {
                 Amount (EUR)
               </label>
               <input
-                type="text"
+                {...form.register('amount')}
+                type="number"
+                step="0.01"
                 placeholder="0.00"
                 className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
                 style={{ fontFamily: 'OpenSans, sans-serif' }}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  form.setValue('amount', value);
-                }}
               />
               {form.formState.errors.amount && (
                 <p className="text-red-500 text-xs mt-2 font-medium">{form.formState.errors.amount.message}</p>
@@ -575,14 +594,11 @@ export default function UkTransfer() {
                 Payment Reference
               </label>
               <input
+                {...form.register('reference')}
                 type="text"
                 placeholder="Payment description"
                 className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
                 style={{ fontFamily: 'OpenSans, sans-serif' }}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  form.setValue('reference', value);
-                }}
               />
               {form.formState.errors.reference && (
                 <p className="text-red-500 text-xs mt-2 font-medium">{form.formState.errors.reference.message}</p>
@@ -591,7 +607,7 @@ export default function UkTransfer() {
 
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-[#126987] to-[#5a7b85] text-white py-4 rounded-lg font-bold transition-all duration-150 ease-out active:scale-98 text-sm shadow-md"
+              className="w-full bg-gradient-to-r from-[#126987] to-[#5a7b85] text-white py-4 rounded-lg font-bold touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-98 text-sm shadow-md"
               style={{ fontFamily: 'OpenSans, sans-serif' }}
             >
               Continue to Review

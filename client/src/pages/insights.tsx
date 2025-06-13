@@ -197,7 +197,7 @@ export default function Insights() {
           <button className="flex flex-col items-center text-[#126987] relative">
             <img src="/icon-footer-services-highlight.svg" alt="Services" className="w-5 h-5 mb-1" />
             <span className="text-xs font-medium boi-regular-font">Services</span>
-            <div className="absolute -bottom-3 left-1/2 w-12 h-1 bg-[#126987]" style={{ marginLeft: '-24px' }}></div>
+            <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-[#126987]"></div>
           </button>
           
           <button 
