@@ -21,7 +21,7 @@ type UkTransferData = z.infer<typeof ukTransferSchema>;
 
 export default function UkTransfer() {
   const [, navigate] = useLocation();
-  const [step, setStep] = useState<'form' | 'reference' | 'confirm' | 'success'>('form');
+  const [step, setStep] = useState<'form' | 'confirm' | 'success'>('form');
   const [transferReference, setTransferReference] = useState<string>('');
   const [identifiedBank, setIdentifiedBank] = useState<string>('');
   const [showReference, setShowReference] = useState<boolean>(false);
@@ -30,7 +30,6 @@ export default function UkTransfer() {
   const [formData, setFormData] = useState<UkTransferData | null>(null);
   const [exchangeRate, setExchangeRate] = useState<number>(0.85); // EUR to GBP rate
   const [gbpAmount, setGbpAmount] = useState<string>('0.00');
-  const [customReference, setCustomReference] = useState<string>('');
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('left');
 
   const form = useForm<UkTransferData>({
@@ -113,26 +112,12 @@ export default function UkTransfer() {
     console.log('Form submitted with data:', data);
     setFormData(data);
     setTransferReference(generateReference());
-    setCustomReference(data.reference || '');
     
-    // Fetch exchange rate when moving to reference screen
+    // Fetch exchange rate when moving to confirmation
     await fetchExchangeRate();
     
     setSlideDirection('left');
-    setStep('reference');
-  };
-
-  const onReferenceSubmit = () => {
-    if (customReference.trim() && formData) {
-      setFormData(prev => prev ? { ...prev, reference: customReference } : null);
-    }
-    setSlideDirection('left');
     setStep('confirm');
-  };
-
-  const goBackToReference = () => {
-    setSlideDirection('right');
-    setStep('reference');
   };
 
   const goBackToForm = () => {
@@ -217,106 +202,7 @@ export default function UkTransfer() {
 
 
 
-  // Add Reference Screen
-  if (step === 'reference') {
-    return (
-      <div className={`page-container ${slideDirection === 'left' ? 'slide-in-left' : 'slide-in-right'}`} style={{ 
-        position: 'fixed', 
-        top: 0, 
-        left: 0, 
-        right: 0, 
-        bottom: 0, 
-        display: 'flex', 
-        flexDirection: 'column',
-        backgroundColor: '#f9fafb'
-      }}>
-        <div className="bg-[#126987] px-4 py-3 flex items-center justify-between" style={{ flexShrink: 0 }}>
-          <button onClick={goBackToForm} className="flex items-center text-white">
-            <ChevronLeft className="w-5 h-5 mr-2" />
-            <span className="font-semibold text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>Add Reference</span>
-          </button>
-        </div>
 
-        <div style={{ 
-          flex: 1, 
-          overflowY: 'auto', 
-          WebkitOverflowScrolling: 'touch',
-          padding: '1rem'
-        }}>
-          <div style={{ backgroundColor: 'white', borderRadius: '0.75rem', padding: '1.5rem', marginBottom: '2rem' }}>
-            <div className="flex items-center mb-6">
-              <div className="w-12 h-12 bg-gradient-to-br from-[#126987] to-[#5a7b85] rounded-xl flex items-center justify-center mr-4">
-                <Plus className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h2 className="font-bold text-gray-900 text-lg" style={{ fontFamily: 'OpenSans, sans-serif' }}>Payment Reference</h2>
-                <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Add a description for this transfer</p>
-              </div>
-            </div>
-
-            <div className="space-y-6">
-              <div className="bg-gray-50 rounded-lg p-4">
-                <label className="block text-sm font-semibold text-gray-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Reference Description
-                </label>
-                <input
-                  type="text"
-                  value={customReference}
-                  onChange={(e) => setCustomReference(e.target.value)}
-                  placeholder="Enter payment description"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                  maxLength={35}
-                />
-                <div className="flex justify-between mt-2">
-                  <span className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    This will appear on both statements
-                  </span>
-                  <span className="text-xs text-gray-400" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {customReference.length}/35
-                  </span>
-                </div>
-              </div>
-
-              <div className="bg-blue-50 rounded-xl p-4 flex items-start space-x-3">
-                <Info className="w-5 h-5 text-blue-600 mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium text-blue-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Reference Guidelines
-                  </p>
-                  <p className="text-xs text-blue-700 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Keep it simple and clear. Avoid special characters for best compatibility with UK banks.
-                  </p>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <button
-                  onClick={onReferenceSubmit}
-                  disabled={!customReference.trim()}
-                  className="w-full bg-gradient-to-r from-[#126987] to-[#5a7b85] text-white py-4 rounded-lg font-bold transition-all duration-150 ease-out active:scale-98 text-sm shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                >
-                  Continue to Review
-                </button>
-                
-                <button
-                  onClick={() => {
-                    setCustomReference(formData?.reference || '');
-                    onReferenceSubmit();
-                  }}
-                  className="w-full bg-gray-100 text-gray-700 py-3 rounded-lg font-semibold transition-all duration-150 ease-out active:scale-98 text-sm"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                >
-                  Skip - Use Default Reference
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   if (step === 'success') {
     return (
@@ -497,7 +383,7 @@ export default function UkTransfer() {
         backgroundColor: '#f9fafb'
       }}>
         <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
-          <button onClick={goBackToReference} className="flex items-center text-white">
+          <button onClick={goBackToForm} className="flex items-center text-white">
             <ChevronLeft className="w-6 h-6 mr-2" />
             <span className="font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Confirm Transfer</span>
           </button>
