@@ -3,12 +3,14 @@ import { useLocation } from "wouter";
 import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin, Calendar, CreditCard, X, Database, Trash2, RefreshCw, DollarSign, Plus } from "lucide-react";
 import { UserDataManager } from "@/utils/userDataManager";
 import { useAuth } from "@/lib/auth";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Profile() {
   const [, navigate] = useLocation();
   const { logout } = useAuth();
   const [tapCount, setTapCount] = useState(0);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
   const [accounts, setAccounts] = useState<any[]>([]);
   const [editingAccount, setEditingAccount] = useState<any>(null);
   const [newBalance, setNewBalance] = useState('');
@@ -243,7 +245,7 @@ export default function Profile() {
 
 
   return (
-    <div className="h-screen bg-gradient-to-b from-[#2c5f70] to-[#126987] flex flex-col overflow-hidden page-slide-up">
+    <div className="h-screen bg-gradient-to-b from-[#2c5f70] to-[#126987] flex flex-col overflow-hidden page-slide-up relative">
       {/* Header */}
       <div className="bg-[#2c5f70] px-4 py-6 pt-12 flex-shrink-0">
         <div className="flex items-center justify-between">
@@ -392,18 +394,68 @@ export default function Profile() {
 
           {/* Logout Button */}
           <div className="mt-8 pt-6 border-t border-gray-200 mb-8">
-            <button 
-              onClick={() => {
-                logout(); // This will clear both UserDataManager and auth context
+            <motion.button 
+              onClick={async () => {
+                setIsSigningOut(true);
+                
+                // Wait for animation to start
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                // Clear user data and logout
+                logout();
+                
+                // Wait for sign out animation to complete
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
                 navigate('/login');
               }}
-              className="w-full flex items-center justify-center space-x-3 p-4 bg-red-50 border border-red-200 rounded-xl active:scale-98 transition-transform"
+              disabled={isSigningOut}
+              className={`w-full flex items-center justify-center space-x-3 p-4 rounded-xl transition-all duration-300 ${
+                isSigningOut 
+                  ? 'bg-red-100 border border-red-300' 
+                  : 'bg-red-50 border border-red-200 active:scale-98'
+              }`}
+              whileHover={!isSigningOut ? { scale: 1.02 } : {}}
+              whileTap={!isSigningOut ? { scale: 0.98 } : {}}
+              animate={isSigningOut ? {
+                backgroundColor: ['#fef2f2', '#fee2e2', '#fef2f2'],
+                borderColor: ['#fecaca', '#fca5a5', '#fecaca'],
+              } : {}}
+              transition={{
+                duration: 0.8,
+                repeat: isSigningOut ? Infinity : 0,
+                ease: "easeInOut"
+              }}
             >
-              <LogOut className="w-5 h-5 text-red-600" />
-              <span className="font-semibold text-red-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Sign Out
-              </span>
-            </button>
+              <motion.div
+                animate={isSigningOut ? { rotate: 360 } : { rotate: 0 }}
+                transition={{
+                  duration: 1,
+                  repeat: isSigningOut ? Infinity : 0,
+                  ease: "linear"
+                }}
+              >
+                <LogOut className={`w-5 h-5 transition-colors duration-300 ${
+                  isSigningOut ? 'text-red-700' : 'text-red-600'
+                }`} />
+              </motion.div>
+              <motion.span 
+                className={`font-semibold transition-colors duration-300 ${
+                  isSigningOut ? 'text-red-700' : 'text-red-600'
+                }`}
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+                animate={isSigningOut ? {
+                  opacity: [1, 0.7, 1]
+                } : {}}
+                transition={{
+                  duration: 0.8,
+                  repeat: isSigningOut ? Infinity : 0,
+                  ease: "easeInOut"
+                }}
+              >
+                {isSigningOut ? 'Signing Out...' : 'Sign Out'}
+              </motion.span>
+            </motion.button>
           </div>
         </div>
       </div>
@@ -982,6 +1034,79 @@ export default function Profile() {
           </div>
         </div>
       )}
+
+      {/* Sign Out Animation Overlay */}
+      <AnimatePresence>
+        {isSigningOut && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-b from-[#2c5f70] to-[#126987]"
+          >
+            <div className="text-center">
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.2, duration: 0.5 }}
+                className="mb-6"
+              >
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                  className="w-16 h-16 mx-auto mb-4 bg-white/20 rounded-full flex items-center justify-center"
+                >
+                  <LogOut className="w-8 h-8 text-white" />
+                </motion.div>
+              </motion.div>
+              
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.4, duration: 0.5 }}
+                className="text-white text-center"
+              >
+                <h2 className="text-2xl font-bold mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Signing Out
+                </h2>
+                <motion.p 
+                  className="text-white/80"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  animate={{ opacity: [0.8, 1, 0.8] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  Securing your session...
+                </motion.p>
+              </motion.div>
+
+              {/* Animated dots */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6 }}
+                className="flex justify-center space-x-2 mt-6"
+              >
+                {[0, 1, 2].map((i) => (
+                  <motion.div
+                    key={i}
+                    className="w-2 h-2 bg-white/60 rounded-full"
+                    animate={{ 
+                      scale: [1, 1.2, 1],
+                      opacity: [0.6, 1, 0.6] 
+                    }}
+                    transition={{
+                      duration: 1,
+                      repeat: Infinity,
+                      delay: i * 0.2,
+                      ease: "easeInOut"
+                    }}
+                  />
+                ))}
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
