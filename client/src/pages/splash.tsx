@@ -40,6 +40,8 @@ export default function Splash() {
       setIsVisible(false);
       // Mark splash as shown in session storage
       sessionStorage.setItem('splashShown', 'true');
+      // Dispatch event to notify App.tsx that splash is complete
+      window.dispatchEvent(new CustomEvent('splashComplete'));
       setTimeout(() => {
         navigate('/login');
       }, 300); // Brief fade out before navigation
