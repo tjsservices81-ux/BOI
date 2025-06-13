@@ -398,15 +398,13 @@ export default function Profile() {
               onClick={async () => {
                 setIsSigningOut(true);
                 
-                // Logout and navigate after animation
+                // Logout and navigate after animation without refresh
                 setTimeout(async () => {
                   try {
                     await logout();
-                    // Force page reload to login
-                    window.location.replace('/login');
+                    navigate('/login');
                   } catch (error) {
-                    // If logout fails, still redirect
-                    window.location.replace('/login');
+                    navigate('/login');
                   }
                 }, 8000);
               }}
