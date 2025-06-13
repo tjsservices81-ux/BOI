@@ -17,19 +17,46 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => {
-    // Initialize user state from localStorage immediately to prevent auth flash
-    const cachedUser = localStorage.getItem('bankingUser');
-    if (cachedUser) {
-      try {
-        return JSON.parse(cachedUser);
-      } catch (error) {
-        localStorage.removeItem('bankingUser');
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Defer auth check until after splash screen
+  useEffect(() => {
+    const checkAuth = () => {
+      const hasShownSplash = sessionStorage.getItem('splashShown');
+      if (hasShownSplash) {
+        // Only restore user after splash has been shown
+        const cachedUser = localStorage.getItem('bankingUser');
+        if (cachedUser) {
+          try {
+            setUser(JSON.parse(cachedUser));
+          } catch (error) {
+            localStorage.removeItem('bankingUser');
+          }
+        }
+        setIsLoading(false);
+      } else {
+        // Wait for splash to complete
+        const handleSplashComplete = () => {
+          const cachedUser = localStorage.getItem('bankingUser');
+          if (cachedUser) {
+            try {
+              setUser(JSON.parse(cachedUser));
+            } catch (error) {
+              localStorage.removeItem('bankingUser');
+            }
+          }
+          setIsLoading(false);
+          window.removeEventListener('splashComplete', handleSplashComplete);
+        };
+        
+        window.addEventListener('splashComplete', handleSplashComplete);
+        setIsLoading(false); // Allow splash to show
       }
-    }
-    return null;
-  });
-  const [isLoading, setIsLoading] = useState(false);
+    };
+
+    checkAuth();
+  }, []);
 
   const login = (userData: User) => {
     setUser(userData);
