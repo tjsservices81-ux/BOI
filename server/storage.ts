@@ -109,8 +109,12 @@ export class DatabaseStorage implements IStorage {
     const [user] = await db.insert(users).values({
       customerNumber: "12345678",
       pin: "1234", 
-      name: "Sarah Murphy",
-      email: "sarah.murphy@email.com"
+      name: "James",
+      email: "hello@gmail.com",
+      phone: "+353 1 234 5678",
+      address: "Hello",
+      dateOfBirth: "2025-06-08",
+      joinDate: "Member since 2018"
     }).returning();
 
     // Create sample accounts
@@ -218,8 +222,13 @@ export class MemStorage implements IStorage {
       id: this.currentUserId++,
       customerNumber: "12345678",
       pin: "1234",
-      name: "Sarah Murphy",
-      email: "sarah.murphy@email.com"
+      name: "James",
+      email: "hello@gmail.com",
+      phone: "+353 1 234 5678",
+      address: "Hello",
+      dateOfBirth: "2025-06-08",
+      joinDate: "Member since 2018",
+      dateCreated: new Date()
     };
     this.users.set(user.id, user);
 
@@ -435,10 +444,29 @@ export class MemStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     const user: User = {
       id: this.currentUserId++,
-      ...insertUser
+      ...insertUser,
+      phone: insertUser.phone || null,
+      address: insertUser.address || null,
+      dateOfBirth: insertUser.dateOfBirth || null,
+      joinDate: insertUser.joinDate || "Member since 2018",
+      dateCreated: insertUser.dateCreated || new Date()
     };
     this.users.set(user.id, user);
     return user;
+  }
+
+  async getUserByCustomerNumber(customerNumber: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(user => user.customerNumber === customerNumber);
+  }
+
+  async updateUserProfile(customerNumber: string, updates: Partial<User>): Promise<User | undefined> {
+    const user = await this.getUserByCustomerNumber(customerNumber);
+    if (user) {
+      const updatedUser = { ...user, ...updates };
+      this.users.set(user.id, updatedUser);
+      return updatedUser;
+    }
+    return undefined;
   }
 
   async getAccountsByUserId(userId: number): Promise<Account[]> {

@@ -32,33 +32,47 @@ export default function Profile() {
     joinDate: "Member since 2018"
   });
 
-  // Load profile data from UserDataManager on component mount
+  // Load profile data from database on component mount
   useEffect(() => {
-    const userProfile = UserDataManager.getUserProfile();
-    const currentCustomerNumber = UserDataManager.getCurrentUser();
+    const loadProfileData = async () => {
+      const currentCustomerNumber = UserDataManager.getCurrentUser();
+      
+      if (currentCustomerNumber) {
+        try {
+          const response = await fetch(`/api/profile/${currentCustomerNumber}`);
+          if (response.ok) {
+            const userData = await response.json();
+            setProfileData({
+              name: userData.name,
+              email: userData.email,
+              phone: userData.phone || "",
+              address: userData.address || "",
+              dateOfBirth: userData.dateOfBirth || "",
+              customerNumber: userData.customerNumber,
+              joinDate: userData.joinDate || "Member since 2018"
+            });
+          } else {
+            // Fallback to localStorage if database doesn't have user data
+            const userProfile = UserDataManager.getUserProfile();
+            if (userProfile) {
+              setProfileData({
+                name: userProfile.name,
+                email: userProfile.email,
+                phone: userProfile.phone,
+                address: userProfile.address || "",
+                dateOfBirth: userProfile.dateOfBirth || "",
+                customerNumber: currentCustomerNumber,
+                joinDate: userProfile.joinDate || "Member since 2018"
+              });
+            }
+          }
+        } catch (error) {
+          console.error('Failed to load profile data:', error);
+        }
+      }
+    };
     
-    if (userProfile) {
-      setProfileData({
-        name: userProfile.name,
-        email: userProfile.email,
-        phone: userProfile.phone,
-        address: userProfile.address || "",
-        dateOfBirth: userProfile.dateOfBirth || "",
-        customerNumber: currentCustomerNumber || userProfile.customerNumber,
-        joinDate: userProfile.joinDate || "Member since 2018"
-      });
-    } else if (currentCustomerNumber) {
-      // Initialize with default profile data if no profile exists
-      setProfileData({
-        name: "James",
-        email: "hello@gmail.com",
-        phone: "+353 1 234 5678",
-        address: "Hello",
-        dateOfBirth: "2025-06-08",
-        customerNumber: currentCustomerNumber,
-        joinDate: "Member since 2018"
-      });
-    }
+    loadProfileData();
   }, []);
 
   const userDetails = profileData;
@@ -686,47 +700,58 @@ export default function Profile() {
 
               {/* Save Profile Button */}
               <button
-                onClick={() => {
+                onClick={async () => {
                   const currentCustomerNumber = UserDataManager.getCurrentUser();
                   
-                  // If customer number changed, we need to handle it specially
-                  if (profileData.customerNumber !== currentCustomerNumber) {
-                    // Get current user data
-                    const currentUserData = UserDataManager.getUserProfile();
-                    if (currentUserData) {
-                      // Remove old user entry
-                      UserDataManager.removeUser(currentCustomerNumber!);
-                      
-                      // Create new user entry with updated customer number
-                      UserDataManager.registerUser({
-                        ...currentUserData,
-                        customerNumber: profileData.customerNumber,
+                  if (!currentCustomerNumber) {
+                    alert('No user logged in');
+                    return;
+                  }
+                  
+                  try {
+                    // Update profile in database
+                    const response = await fetch(`/api/profile/${currentCustomerNumber}`, {
+                      method: 'PUT',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({
                         name: profileData.name,
                         email: profileData.email,
                         phone: profileData.phone,
+                        address: profileData.address,
+                        dateOfBirth: profileData.dateOfBirth,
+                        joinDate: profileData.joinDate
+                      })
+                    });
+                    
+                    if (response.ok) {
+                      const updatedUser = await response.json();
+                      
+                      // Also update localStorage for consistency
+                      UserDataManager.updateUserProfile({
+                        name: profileData.name,
+                        email: profileData.email,
+                        phone: profileData.phone,
+                        customerNumber: profileData.customerNumber,
                         dateOfBirth: profileData.dateOfBirth,
                         address: profileData.address,
-                        joinDate: profileData.joinDate,
-                        dateCreated: currentUserData.dateCreated
+                        joinDate: profileData.joinDate
                       });
                       
-                      // Set new customer number as current user
-                      UserDataManager.setCurrentUser(profileData.customerNumber);
+                      // If customer number changed, update current user
+                      if (profileData.customerNumber !== currentCustomerNumber) {
+                        UserDataManager.setCurrentUser(profileData.customerNumber);
+                      }
+                      
+                      alert('Profile updated successfully');
+                    } else {
+                      alert('Failed to update profile');
                     }
-                  } else {
-                    // Normal profile update
-                    UserDataManager.updateUserProfile({
-                      name: profileData.name,
-                      email: profileData.email,
-                      phone: profileData.phone,
-                      customerNumber: profileData.customerNumber,
-                      dateOfBirth: profileData.dateOfBirth,
-                      address: profileData.address,
-                      joinDate: profileData.joinDate
-                    });
+                  } catch (error) {
+                    console.error('Profile update error:', error);
+                    alert('Failed to update profile');
                   }
-                  
-                  alert('Profile updated successfully');
                 }}
                 className="w-full py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors"
                 style={{ fontFamily: 'OpenSans, sans-serif' }}

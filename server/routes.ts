@@ -188,6 +188,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get user profile
+  app.get("/api/profile/:customerNumber", async (req, res) => {
+    try {
+      const { customerNumber } = req.params;
+      const user = await storage.getUserByCustomerNumber(customerNumber);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Update user profile
+  app.put("/api/profile/:customerNumber", async (req, res) => {
+    try {
+      const { customerNumber } = req.params;
+      const profileUpdateSchema = z.object({
+        name: z.string().optional(),
+        email: z.string().email().optional(),
+        phone: z.string().optional(),
+        address: z.string().optional(),
+        dateOfBirth: z.string().optional(),
+        joinDate: z.string().optional()
+      });
+      
+      const updates = profileUpdateSchema.parse(req.body);
+      const updatedUser = await storage.updateUserProfile(customerNumber, updates);
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      res.json(updatedUser);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors[0].message });
+      }
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // OTC generation for new account creation
   app.post("/api/admin/generate-otc", async (req, res) => {
     try {
