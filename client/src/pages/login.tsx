@@ -143,7 +143,7 @@ export default function Login() {
     }
   };
 
-  const handleFirstOtcVerification = async () => {
+  const handleOtcVerification = async () => {
     if (!otcCode || otcCode.length !== 6) {
       toast({
         title: "Invalid Code",
@@ -475,8 +475,6 @@ export default function Login() {
     navigate('/dashboard');
   };
 
-
-
   return (
     <div className="full-height relative ios-safe-top ios-safe-bottom ios-safe-left ios-safe-right page-fade-in">
       {/* Loading overlay */}
@@ -746,7 +744,7 @@ export default function Login() {
               <button 
                 className="w-full bg-gray-50 border border-gray-200 ios-card p-3 flex items-center space-x-3 hover:bg-gray-100 active:scale-98 transition-all duration-150"
                 onClick={() => {
-                  // PIN button clicked
+                  console.log("PIN button clicked, current showPinLogin:", showPinLogin);
                   setShowPinLogin(!showPinLogin);
                 }}
               >
@@ -1235,7 +1233,7 @@ export default function Login() {
                   Cancel
                 </button>
                 <button
-                  onClick={handleFirstOtcVerification}
+                  onClick={handleOtcVerification}
                   disabled={otcCode.length !== 6}
                   className={`flex-1 p-3 rounded-xl font-semibold active:scale-98 transition-transform ${
                     otcCode.length === 6 

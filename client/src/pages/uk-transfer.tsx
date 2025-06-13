@@ -50,7 +50,7 @@ export default function UkTransfer() {
     try {
       const apiKey = import.meta.env.VITE_EXCHANGERATE_API_KEY;
       if (!apiKey) {
-        // No API key provided, using default rate
+        console.log('No API key provided, using default rate');
         return;
       }
       
@@ -69,7 +69,7 @@ export default function UkTransfer() {
         }
       }
     } catch (error) {
-      // Exchange rate fetch failed, using default rate
+      console.log('Exchange rate fetch failed, using default rate');
       // Keep default rate of 0.85
     }
   };
@@ -99,7 +99,7 @@ export default function UkTransfer() {
           sessionStorage.removeItem('selectedPayee');
         }
       } catch (error) {
-        // Error parsing selected payee data
+        console.error('Error parsing selected payee data:', error);
         sessionStorage.removeItem('selectedPayee');
       }
     }
@@ -138,7 +138,7 @@ export default function UkTransfer() {
     );
     
     if (!success) {
-      // Transfer failed
+      console.error('Transfer failed');
       return;
     }
 

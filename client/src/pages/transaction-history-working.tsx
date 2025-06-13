@@ -83,7 +83,7 @@ export default function TransactionHistoryWorking() {
       }
       
       const accountTransactions = updatedTransactions.filter((tx: any) => tx.accountId === accountId);
-      // Loaded transactions for account
+      console.log('Loaded transactions for account', accountId, ':', accountTransactions);
       
       // Update the transactions state with enhanced data
       setTransactions(accountTransactions);
@@ -108,7 +108,7 @@ export default function TransactionHistoryWorking() {
       }));
       
       // Only use actual stored transactions - no sample data
-      const sortedTransactions = formattedStored.sort((a: any, b: any) => 
+      const sortedTransactions = formattedStored.sort((a, b) => 
         new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
       );
       

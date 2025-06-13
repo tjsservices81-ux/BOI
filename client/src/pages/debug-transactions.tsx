@@ -11,17 +11,17 @@ export default function DebugTransactions() {
 
   useEffect(() => {
     const loadDebugData = () => {
-      // Loading debug transactions
+      console.log('=== DEBUG TRANSACTIONS ===');
       
       // Get data using UserDataManager
       const transactions = UserDataManager.getUserData('bankTransactions', []);
       const raw = JSON.stringify(transactions);
       setRawData(raw);
-      // UserDataManager transactions loaded
+      console.log('UserDataManager transactions:', transactions);
       
       setParsedData(transactions);
       setError('');
-      // Transactions loaded successfully
+      console.log('Loaded successfully:', transactions);
     };
     
     loadDebugData();

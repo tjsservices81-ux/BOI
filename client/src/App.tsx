@@ -26,8 +26,6 @@ import DebugTransactions from "@/pages/debug-transactions";
 import Statements from "@/pages/statements";
 import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
-import AdminLogin from "@/pages/admin-login";
-import AdminDashboard from "@/pages/admin-dashboard";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
@@ -75,8 +73,8 @@ function AppRoutes() {
     return () => window.removeEventListener('splashComplete', handleSplashComplete);
   }, []);
 
-  // Simplified splash logic
-  if (!splashShown && (location === '/' || location === '/splash')) {
+  // If splash hasn't been shown yet and we're at root, show splash
+  if (!splashShown && location === '/') {
     return <Splash />;
   }
   
@@ -92,7 +90,10 @@ function AppRoutes() {
           <Route path="/login" component={Login} />
           <Route path="/more" component={More} />
           <Route path="/">
-            {isLoading ? (
+            {/* Handle root route properly based on splash and auth state */}
+            {!splashShown ? (
+              <Splash />
+            ) : isLoading ? (
               <div className="w-full h-full flex items-center justify-center bg-[#126987]">
                 <div className="text-white">Loading...</div>
               </div>
@@ -172,8 +173,6 @@ function AppRoutes() {
               <Profile />
             </ProtectedRoute>
           </Route>
-          <Route path="/admin/login" component={AdminLogin} />
-          <Route path="/admin/dashboard" component={AdminDashboard} />
           <Route component={NotFound} />
         </Switch>
         {showNavigation && <BottomNavigation />}

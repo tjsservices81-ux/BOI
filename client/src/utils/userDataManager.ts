@@ -113,21 +113,6 @@ export class UserDataManager {
     localStorage.setItem('bankUsers', JSON.stringify(existingUsers));
   }
 
-  // Create a new user account (alias for registerUser)
-  static createUser(customerNumber: string, name: string, email: string, phone: string) {
-    const userData: UserData = {
-      customerNumber,
-      name,
-      email,
-      phone,
-      address: "New Customer Address",
-      dateOfBirth: "01 January 1990",
-      joinDate: new Date().toISOString(),
-      dateCreated: new Date().toISOString()
-    };
-    this.registerUser(userData);
-  }
-
   // Get user profile data
   static getUserProfile(): UserData | null {
     const currentUser = this.getCurrentUser();

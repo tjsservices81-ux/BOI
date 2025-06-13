@@ -58,7 +58,7 @@ class OTCService {
       // Validate user email format
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(accountData.email)) {
-        // Invalid user email format
+        console.error('Invalid user email format:', accountData.email);
         return false;
       }
       
@@ -99,7 +99,7 @@ class OTCService {
       console.log(`OTC email sent successfully to user: ${accountData.email}`);
       return true;
     } catch (error) {
-      // Failed to send OTC email to user
+      console.error('Failed to send OTC email to user:', error);
       return false;
     }
   }
@@ -117,7 +117,7 @@ class OTCService {
       // Validate email format
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(adminEmail)) {
-        // Invalid admin email format
+        console.error('Invalid admin email format:', adminEmail);
         return false;
       }
       
@@ -135,7 +135,12 @@ class OTCService {
       console.log(`Customer: ${accountData.name} (${accountData.customerNumber})`);
       return true;
     } catch (error: any) {
-      // Failed to send admin notification email
+      console.error('❌ Failed to send admin notification email:', error);
+      console.error('SMTP Error Details:', {
+        message: error?.message || 'Unknown error',
+        code: error?.code || 'No code',
+        command: error?.command || 'No command'
+      });
       return false;
     }
   }

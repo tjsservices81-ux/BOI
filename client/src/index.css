@@ -153,7 +153,39 @@ input, textarea {
   user-select: text;
 }
 
-/* System fonts only - removed custom font declarations to fix loading errors */
+/* Font loading optimization - immediate display */
+@font-face {
+  font-family: 'OpenSans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url('/OpenSans-Regular-webfont.woff2') format('woff2'),
+       url('/OpenSans-Regular-webfont.woff') format('woff'),
+       local('Open Sans Regular'),
+       local('OpenSans-Regular');
+}
+
+@font-face {
+  font-family: 'OpenSans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: block;
+  src: url('/OpenSans-Semibold-webfont.woff2') format('woff2'),
+       url('/OpenSans-Semibold-webfont.woff') format('woff'),
+       local('Open Sans Semibold'),
+       local('OpenSans-Semibold');
+}
+
+@font-face {
+  font-family: 'OpenSans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+  src: url('/OpenSans-Bold-webfont.woff2') format('woff2'),
+       url('/OpenSans-Bold-webfont.woff') format('woff'),
+       local('Open Sans Bold'),
+       local('OpenSans-Bold');
+}
 
 /* Critical rendering optimizations */
 html, body {
@@ -178,7 +210,7 @@ html {
 
 /* Prevent invisible text during font load */
 .font-loading {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'OpenSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
 /* Critical layout stability - instant rendering */
@@ -232,7 +264,7 @@ button svg, a svg, [role="button"] svg {
 
 /* Force immediate text rendering */
 h1, h2, h3, h4, h5, h6, p, span, div, button, input, label {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'OpenSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-display: block !important;
   text-rendering: optimizeSpeed;
   -webkit-font-smoothing: antialiased;
@@ -407,7 +439,7 @@ button svg, button .lucide {
 
 /* Form field instant rendering */
 input, textarea, select {
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif !important;
+  font-family: 'OpenSans', -apple-system, BlinkMacSystemFont, sans-serif !important;
   opacity: 1 !important;
   visibility: visible !important;
 }
@@ -849,7 +881,61 @@ body {
 }
 
 /* Bank of Ireland Custom Fonts */
-/* Removed all custom font declarations to fix loading errors */
+@font-face {
+  font-family: 'BlueMagic';
+  src: url('/BlueMagic3.eot');
+  src: url('/BlueMagic3.eot?#iefix') format('embedded-opentype'),
+       url('/BlueMagic3.woff2') format('woff2'),
+       url('/BlueMagic3.woff') format('woff'),
+       url('/BlueMagic3.ttf') format('truetype'),
+       url('/BlueMagic3.svg#BlueMagic3') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'OpenSans';
+  src: url('/OpenSans-Regular-webfont.eot');
+  src: url('/OpenSans-Regular-webfont.eot?#iefix') format('embedded-opentype'),
+       url('/OpenSans-Regular-webfont.woff') format('woff'),
+       url('/OpenSans-Regular-webfont.ttf') format('truetype'),
+       url('/OpenSans-Regular-webfont.svg#OpenSansRegular') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'OpenSans';
+  src: url('/OpenSans-Bold-webfont.eot');
+  src: url('/OpenSans-Bold-webfont.eot?#iefix') format('embedded-opentype'),
+       url('/OpenSans-Bold-webfont.woff') format('woff'),
+       url('/OpenSans-Bold-webfont.ttf') format('truetype'),
+       url('/OpenSans-Bold-webfont.svg#OpenSansBold') format('svg');
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'OpenSans';
+  src: url('/OpenSans-Light-webfont.eot');
+  src: url('/OpenSans-Light-webfont.eot?#iefix') format('embedded-opentype'),
+       url('/OpenSans-Light-webfont.woff') format('woff'),
+       url('/OpenSans-Light-webfont.ttf') format('truetype'),
+       url('/OpenSans-Light-webfont.svg#OpenSansLight') format('svg');
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'OpenSans';
+  src: url('/OpenSans-Semibold-webfont.eot');
+  src: url('/OpenSans-Semibold-webfont.eot?#iefix') format('embedded-opentype'),
+       url('/OpenSans-Semibold-webfont.woff') format('woff'),
+       url('/OpenSans-Semibold-webfont.ttf') format('truetype'),
+       url('/OpenSans-Semibold-webfont.svg#OpenSansSemibold') format('svg');
+  font-weight: 600;
+  font-style: normal;
+}
 
 :root {
   --background: transparent;
@@ -922,7 +1008,7 @@ body {
   body {
     @apply antialiased text-foreground;
     background: transparent !important;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: 'OpenSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -947,20 +1033,20 @@ body {
   }
   
   .boi-brand-font {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: 'BlueMagic', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
   
   .boi-regular-font {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: 'OpenSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
   
   .boi-bold-font {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: 'OpenSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     font-weight: bold;
   }
   
   .boi-semibold-font {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: 'OpenSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     font-weight: 600;
   }
 }
