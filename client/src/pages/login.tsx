@@ -143,7 +143,7 @@ export default function Login() {
     }
   };
 
-  const handleOtcVerification = async () => {
+  const handleFirstOtcVerification = async () => {
     if (!otcCode || otcCode.length !== 6) {
       toast({
         title: "Invalid Code",
@@ -474,6 +474,8 @@ export default function Login() {
     // Navigate to dashboard after verification
     navigate('/dashboard');
   };
+
+
 
   return (
     <div className="full-height relative ios-safe-top ios-safe-bottom ios-safe-left ios-safe-right page-fade-in">
