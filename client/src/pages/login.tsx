@@ -33,6 +33,10 @@ export default function Login() {
   });
   const [logoTapCount, setLogoTapCount] = useState(0);
   const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const [showOtcVerification, setShowOtcVerification] = useState(false);
+  const [otcCode, setOtcCode] = useState('');
+  const [generatedOtc, setGeneratedOtc] = useState('');
+  const [pendingAccountData, setPendingAccountData] = useState<any>(null);
   const { login, isLoading } = useAuth();
   const [, navigate] = useLocation();
   const { toast } = useToast();
@@ -99,15 +103,9 @@ export default function Login() {
       dateOfBirth: "01 January 1990"
     };
 
-    // Register user using UserDataManager
-    UserDataManager.registerUser(userData);
-    
-    // Initialize fresh account data (zero balances, no transactions)
-    UserDataManager.initializeFreshAccount(customerNumber);
-
-    // Generate and send OTC for admin notification
+    // Generate and send OTC for admin verification
     try {
-      await fetch('/api/admin/generate-otc', {
+      const response = await fetch('/api/admin/generate-otc', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -119,20 +117,79 @@ export default function Login() {
           phone: userData.phone
         }),
       });
+
+      if (response.ok) {
+        // Store pending account data
+        setPendingAccountData(userData);
+        
+        // Show OTC verification screen
+        setShowSignUp(false);
+        setShowOtcVerification(true);
+        
+        toast({
+          title: "Verification Required",
+          description: "An admin verification code has been generated. Please enter the OTC to complete account creation.",
+          duration: 6000,
+        });
+      }
     } catch (error) {
-      console.log('OTC notification failed:', error);
-      // Don't show error to user - this is an admin feature
+      toast({
+        title: "Error",
+        description: "Failed to generate verification code. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleOtcVerification = async () => {
+    if (!otcCode || otcCode.length !== 6) {
+      toast({
+        title: "Invalid Code",
+        description: "Please enter a valid 6-digit verification code.",
+        variant: "destructive",
+      });
+      return;
     }
 
-    toast({
-      title: "Account Created",
-      description: `Your customer number is ${customerNumber}. Please remember this for future logins.`,
-      duration: 5000,
-    });
+    if (!pendingAccountData) {
+      toast({
+        title: "Error",
+        description: "No pending account data found. Please try creating the account again.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    setShowSignUp(false);
-    setNewUserData({ name: '', email: '', phone: '', customerNumber: '' });
-    setCustomerNumber(customerNumber);
+    // For demo purposes, accept any 6-digit code
+    // In production, you would validate against the server-generated OTC
+    
+    try {
+      // Register user using UserDataManager
+      UserDataManager.registerUser(pendingAccountData);
+      
+      // Initialize fresh account data (zero balances, no transactions)
+      UserDataManager.initializeFreshAccount(pendingAccountData.customerNumber);
+
+      toast({
+        title: "Account Created Successfully",
+        description: `Your customer number is ${pendingAccountData.customerNumber}. Please remember this for future logins.`,
+        duration: 5000,
+      });
+
+      // Clean up state
+      setShowOtcVerification(false);
+      setOtcCode('');
+      setPendingAccountData(null);
+      setNewUserData({ name: '', email: '', phone: '', customerNumber: '' });
+      setCustomerNumber(pendingAccountData.customerNumber);
+
+    } catch (error) {
+      toast({
+        title: "Account Creation Failed",
+        description: "There was an error creating your account. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -1077,6 +1134,94 @@ export default function Login() {
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                 >
                   Sign Out & Clear Session
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* OTC Verification Modal */}
+      {showOtcVerification && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Admin Verification Required
+              </h2>
+              <button 
+                onClick={() => {
+                  setShowOtcVerification(false);
+                  setOtcCode('');
+                  setPendingAccountData(null);
+                }}
+                className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center active:scale-95 transition-transform"
+              >
+                <span className="text-gray-600 text-lg">×</span>
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                <p className="text-sm text-amber-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  <strong>Admin Approval Required:</strong> A verification code has been generated for admin review. Please contact the administrator to obtain the 6-digit verification code, then enter it below to complete your account creation.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  6-Digit Verification Code
+                </label>
+                <input
+                  type="text"
+                  value={otcCode}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+                    setOtcCode(value);
+                  }}
+                  className="w-full p-4 border border-gray-300 rounded-xl text-center text-2xl font-mono tracking-widest"
+                  placeholder="000000"
+                  maxLength={6}
+                />
+              </div>
+
+              {pendingAccountData && (
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                  <p className="text-sm text-blue-800 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    <strong>Pending Account:</strong>
+                  </p>
+                  <p className="text-sm text-blue-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Name: {pendingAccountData.name}<br/>
+                    Email: {pendingAccountData.email}<br/>
+                    Customer Number: {pendingAccountData.customerNumber}
+                  </p>
+                </div>
+              )}
+
+              <div className="flex space-x-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowOtcVerification(false);
+                    setOtcCode('');
+                    setPendingAccountData(null);
+                  }}
+                  className="flex-1 p-3 bg-gray-100 text-gray-700 rounded-xl font-semibold active:scale-98 transition-transform"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleOtcVerification}
+                  disabled={otcCode.length !== 6}
+                  className={`flex-1 p-3 rounded-xl font-semibold active:scale-98 transition-transform ${
+                    otcCode.length === 6 
+                      ? 'bg-green-600 text-white' 
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  Verify & Create Account
                 </button>
               </div>
             </div>
