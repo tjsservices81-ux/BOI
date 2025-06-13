@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { logAccessAttempt } from './accessMonitor';
 
 // Whitelist of approved IP addresses - only these can access your app
 const APPROVED_IPS = new Set<string>([
@@ -41,8 +42,12 @@ export function ipWhitelistMiddleware(req: Request, res: Response, next: NextFun
 
   const clientIP = getClientIP(req);
   const isAuthorized = APPROVED_IPS.has(clientIP);
+  const userAgent = req.get('User-Agent') || 'Unknown';
   
   console.log(`Access attempt from IP: ${clientIP} - ${isAuthorized ? 'APPROVED' : 'BLOCKED'}`);
+  
+  // Log the access attempt for monitoring
+  logAccessAttempt(clientIP, userAgent, isAuthorized);
   
   if (!isAuthorized) {
     // Log the blocked attempt

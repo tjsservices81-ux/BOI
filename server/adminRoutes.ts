@@ -1,5 +1,6 @@
 import express from 'express';
 import { approveIP, revokeIP, listApprovedIPs, isIPApproved } from './ipControl';
+import { getPendingAttempts, getAllAttempts, approveAccessAttempt, denyAccessAttempt, accessMonitor } from './accessMonitor';
 
 const router = express.Router();
 
@@ -50,6 +51,52 @@ router.get('/check-ip/:ip', adminAuth, (req, res) => {
   const { ip } = req.params;
   const approved = isIPApproved(ip);
   res.json({ ip, approved });
+});
+
+// Get pending access attempts
+router.get('/pending-attempts', adminAuth, (req, res) => {
+  const pending = getPendingAttempts();
+  res.json({ pendingAttempts: pending });
+});
+
+// Get all access attempts
+router.get('/all-attempts', adminAuth, (req, res) => {
+  const all = getAllAttempts();
+  res.json({ attempts: all });
+});
+
+// Approve access attempt
+router.post('/approve-attempt', adminAuth, (req, res) => {
+  const { attemptId } = req.body;
+  
+  if (!attemptId) {
+    return res.status(400).json({ error: 'Attempt ID required' });
+  }
+  
+  const attempt = approveAccessAttempt(attemptId);
+  if (attempt) {
+    // Also add to IP whitelist
+    approveIP(attempt.ip);
+    res.json({ success: true, message: `Access approved for ${attempt.ip}` });
+  } else {
+    res.status(404).json({ error: 'Attempt not found' });
+  }
+});
+
+// Deny access attempt
+router.post('/deny-attempt', adminAuth, (req, res) => {
+  const { attemptId } = req.body;
+  
+  if (!attemptId) {
+    return res.status(400).json({ error: 'Attempt ID required' });
+  }
+  
+  const attempt = denyAccessAttempt(attemptId);
+  if (attempt) {
+    res.json({ success: true, message: `Access denied for ${attempt.ip}` });
+  } else {
+    res.status(404).json({ error: 'Attempt not found' });
+  }
 });
 
 // Admin login page
@@ -411,6 +458,13 @@ router.get('/panel', (req, res) => {
         
         <div id="message" class="message"></div>
         
+        <div class="card">
+          <h2>🚨 Pending Access Requests</h2>
+          <div id="pendingRequests">
+            <p>Loading pending requests...</p>
+          </div>
+        </div>
+        
         <div class="grid">
           <div class="card">
             <h2>Add Approved IP</h2>
@@ -580,8 +634,107 @@ router.get('/panel', (req, res) => {
           }
         }
         
-        // Load approved IPs on page load
+        async function loadPendingRequests() {
+          try {
+            const response = await fetch('/admin/pending-attempts', {
+              headers: {
+                'X-Admin-Key': ADMIN_KEY
+              }
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok) {
+              const pendingDiv = document.getElementById('pendingRequests');
+              
+              if (result.pendingAttempts.length === 0) {
+                pendingDiv.innerHTML = '<p style="color: #666;">No pending access requests</p>';
+              } else {
+                let html = '';
+                result.pendingAttempts.forEach(attempt => {
+                  const time = new Date(attempt.timestamp).toLocaleString();
+                  html += 
+                    '<div class="ip-item" style="background: #fff3cd; border-left: 4px solid #ffc107;">' +
+                      '<div>' +
+                        '<strong>IP: ' + attempt.ip + '</strong><br>' +
+                        '<small>Time: ' + time + '</small><br>' +
+                        '<small>Requests: ' + attempt.requestCount + '</small>' +
+                      '</div>' +
+                      '<div>' +
+                        '<button class="btn" onclick="approveAttempt(\'' + attempt.id + '\', \'' + attempt.ip + '\')">✅ Approve</button>' +
+                        '<button class="btn btn-danger" onclick="denyAttempt(\'' + attempt.id + '\', \'' + attempt.ip + '\')">❌ Deny</button>' +
+                      '</div>' +
+                    '</div>';
+                });
+                pendingDiv.innerHTML = html;
+              }
+            } else {
+              showMessage(result.error || 'Failed to load pending requests', 'error');
+            }
+          } catch (error) {
+            showMessage('Network error: ' + error.message, 'error');
+          }
+        }
+        
+        async function approveAttempt(attemptId, ip) {
+          try {
+            const response = await fetch('/admin/approve-attempt', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Admin-Key': ADMIN_KEY
+              },
+              body: JSON.stringify({ attemptId })
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok) {
+              showMessage('Access approved for ' + ip, 'success');
+              loadPendingRequests();
+              loadApprovedIPs();
+            } else {
+              showMessage(result.error || 'Failed to approve access', 'error');
+            }
+          } catch (error) {
+            showMessage('Network error: ' + error.message, 'error');
+          }
+        }
+        
+        async function denyAttempt(attemptId, ip) {
+          if (!confirm('Are you sure you want to deny access for ' + ip + '?')) {
+            return;
+          }
+          
+          try {
+            const response = await fetch('/admin/deny-attempt', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Admin-Key': ADMIN_KEY
+              },
+              body: JSON.stringify({ attemptId })
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok) {
+              showMessage('Access denied for ' + ip, 'success');
+              loadPendingRequests();
+            } else {
+              showMessage(result.error || 'Failed to deny access', 'error');
+            }
+          } catch (error) {
+            showMessage('Network error: ' + error.message, 'error');
+          }
+        }
+        
+        // Auto-refresh pending requests every 5 seconds
+        setInterval(loadPendingRequests, 5000);
+        
+        // Load data on page load
         loadApprovedIPs();
+        loadPendingRequests();
       </script>
     </body>
     </html>
