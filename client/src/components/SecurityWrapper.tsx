@@ -13,32 +13,46 @@ export function SecurityWrapper({ children }: SecurityWrapperProps) {
                          target.tagName === 'TEXTAREA' || 
                          target.contentEditable === 'true' ||
                          target.closest('input') ||
-                         target.closest('textarea');
+                         target.closest('textarea') ||
+                         target.getAttribute('role') === 'textbox' ||
+                         target.closest('[role="textbox"]');
       
-      // Allow copy/paste/select all in form fields
-      if (isFormField && e.ctrlKey || e.metaKey) {
-        const allowedKeys = ['a', 'c', 'v', 'x', 'z', 'y']; // Allow basic editing operations
-        if (allowedKeys.includes(e.key.toLowerCase())) {
-          return true; // Allow the operation
+      // Allow ALL normal typing and editing operations in form fields
+      if (isFormField) {
+        // Allow normal typing, backspace, delete, arrow keys, tab, enter, etc.
+        const normalKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab', 'Enter', 'Escape'];
+        if (normalKeys.includes(e.key) || e.key.length === 1) {
+          return true; // Allow all normal typing
+        }
+        
+        // Allow copy/paste/select all and editing operations
+        if (e.ctrlKey || e.metaKey) {
+          const allowedKeys = ['a', 'c', 'v', 'x', 'z', 'y']; 
+          if (allowedKeys.includes(e.key.toLowerCase())) {
+            return true;
+          }
         }
       }
       
-      // Prevent common shortcuts for copying, saving, viewing source (outside form fields)
-      if (!isFormField && (e.ctrlKey || e.metaKey)) {
-        const blockedKeys = ['a', 'c', 'v', 's', 'p', 'u', 'r', 'h'];
-        if (blockedKeys.includes(e.key.toLowerCase())) {
+      // Only block developer shortcuts outside form fields
+      if (!isFormField) {
+        // Block F12, Ctrl+Shift+I, Ctrl+Shift+C, Ctrl+Shift+J
+        if (e.key === 'F12' || 
+            (e.ctrlKey && e.shiftKey && ['I', 'C', 'J'].includes(e.key))) {
           e.preventDefault();
           e.stopPropagation();
           return false;
         }
-      }
-      
-      // Block F12, Ctrl+Shift+I, Ctrl+Shift+C, Ctrl+Shift+J
-      if (e.key === 'F12' || 
-          (e.ctrlKey && e.shiftKey && ['I', 'C', 'J'].includes(e.key))) {
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
+        
+        // Prevent common shortcuts for copying, saving, viewing source
+        if (e.ctrlKey || e.metaKey) {
+          const blockedKeys = ['s', 'p', 'u', 'r', 'h'];
+          if (blockedKeys.includes(e.key.toLowerCase())) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+          }
+        }
       }
     };
 
@@ -55,9 +69,12 @@ export function SecurityWrapper({ children }: SecurityWrapperProps) {
           target.tagName === 'TEXTAREA' || 
           target.contentEditable === 'true' ||
           target.closest('input') ||
-          target.closest('textarea')) {
+          target.closest('textarea') ||
+          target.getAttribute('role') === 'textbox' ||
+          target.closest('[role="textbox"]')) {
         return true;
       }
+      // Only prevent selection outside form fields
       e.preventDefault();
       return false;
     };
@@ -68,14 +85,38 @@ export function SecurityWrapper({ children }: SecurityWrapperProps) {
     };
 
     const handleTouchStart = (e: TouchEvent) => {
-      // Prevent long press on mobile that might trigger sharing
+      const target = e.target as HTMLElement;
+      const isFormField = target.tagName === 'INPUT' || 
+                         target.tagName === 'TEXTAREA' || 
+                         target.contentEditable === 'true' ||
+                         target.closest('input') ||
+                         target.closest('textarea');
+      
+      // Allow normal touch interaction with form fields
+      if (isFormField) {
+        return true;
+      }
+      
+      // Prevent long press on mobile that might trigger sharing (only outside form fields)
       if (e.touches.length > 1) {
         e.preventDefault();
       }
     };
 
     const handleTouchMove = (e: TouchEvent) => {
-      // Prevent pinch zoom
+      const target = e.target as HTMLElement;
+      const isFormField = target.tagName === 'INPUT' || 
+                         target.tagName === 'TEXTAREA' || 
+                         target.contentEditable === 'true' ||
+                         target.closest('input') ||
+                         target.closest('textarea');
+      
+      // Allow normal touch scrolling in form fields
+      if (isFormField) {
+        return true;
+      }
+      
+      // Prevent pinch zoom (only outside form fields)
       if (e.touches.length > 1) {
         e.preventDefault();
       }

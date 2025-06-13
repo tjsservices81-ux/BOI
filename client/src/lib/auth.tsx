@@ -20,27 +20,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check for existing session on mount
+  // Check for existing session on mount only
   useEffect(() => {
-    fetch('/api/auth/user', {
-      method: 'GET',
-      credentials: 'include',
-    })
-    .then(response => {
-      if (response.ok) {
-        return response.json();
+    let mounted = true;
+    
+    const checkAuth = async () => {
+      try {
+        const response = await fetch('/api/auth/user', {
+          method: 'GET',
+          credentials: 'include',
+        });
+        
+        if (response.ok && mounted) {
+          const userData = await response.json();
+          setUser(userData);
+        } else if (mounted) {
+          setUser(null);
+        }
+      } catch (error) {
+        if (mounted) {
+          setUser(null);
+        }
+      } finally {
+        if (mounted) {
+          setIsLoading(false);
+        }
       }
-      throw new Error('Not authenticated');
-    })
-    .then(userData => {
-      setUser(userData);
-    })
-    .catch(() => {
-      setUser(null);
-    })
-    .finally(() => {
-      setIsLoading(false);
-    });
+    };
+
+    checkAuth();
+    
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const login = (userData: User) => {

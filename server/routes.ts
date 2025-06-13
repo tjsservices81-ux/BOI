@@ -27,10 +27,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     saveUninitialized: false,
     cookie: {
       secure: false, // Set to true in production with HTTPS
-      httpOnly: false, // Allow JavaScript access for SPA
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      httpOnly: true, // Secure cookie access
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours for better security
       sameSite: 'lax' // Allow cookies to be sent with same-site requests
     },
+    rolling: true, // Refresh session on each request
   }));
 
   // Authentication middleware

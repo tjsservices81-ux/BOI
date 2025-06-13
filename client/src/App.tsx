@@ -28,7 +28,16 @@ import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
+  
+  // Don't redirect while loading to prevent form interruptions
+  if (isLoading) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-[#126987]">
+        <div className="text-white">Loading...</div>
+      </div>
+    );
+  }
   
   if (!user) {
     return <Redirect to="/login" />;
