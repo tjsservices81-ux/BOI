@@ -8,6 +8,11 @@ export const users = pgTable("users", {
   pin: text("pin").notNull(),
   name: text("name").notNull(),
   email: text("email").notNull(),
+  phone: text("phone"),
+  address: text("address"),
+  dateOfBirth: text("date_of_birth"),
+  joinDate: text("join_date").notNull().default("Member since 2018"),
+  dateCreated: timestamp("date_created").notNull().defaultNow(),
 });
 
 export const accounts = pgTable("accounts", {
