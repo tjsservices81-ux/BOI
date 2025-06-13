@@ -2,11 +2,13 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { ipWhitelistMiddleware } from "./ipControl";
+import { panicModeMiddleware } from "./panicMode";
 import adminRoutes from "./adminRoutes";
 
 const app = express();
 
-// Apply IP whitelist before any other middleware
+// Apply panic mode check first, then IP whitelist
+app.use(panicModeMiddleware);
 app.use(ipWhitelistMiddleware);
 
 app.use(express.json());
