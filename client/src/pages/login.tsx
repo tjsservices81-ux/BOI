@@ -37,6 +37,11 @@ export default function Login() {
   const [otcCode, setOtcCode] = useState('');
   const [generatedOtc, setGeneratedOtc] = useState('');
   const [pendingAccountData, setPendingAccountData] = useState<any>(null);
+  const [showATMLocator, setShowATMLocator] = useState(false);
+  const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
+  const [locationError, setLocationError] = useState<string | null>(null);
+  const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+  const [nearbyATMs, setNearbyATMs] = useState<any[]>([]);
   const { login, isLoading } = useAuth();
   const [, navigate] = useLocation();
   const { toast } = useToast();
@@ -475,6 +480,123 @@ export default function Login() {
     navigate('/dashboard');
   };
 
+  const requestLocation = () => {
+    setIsLoadingLocation(true);
+    setLocationError(null);
+    
+    if (!navigator.geolocation) {
+      setLocationError("Geolocation is not supported by this browser.");
+      setIsLoadingLocation(false);
+      return;
+    }
+
+    const options = {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 300000 // 5 minutes
+    };
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setUserLocation({ lat: latitude, lng: longitude });
+        setIsLoadingLocation(false);
+        fetchNearbyATMs(latitude, longitude);
+      },
+      (error) => {
+        let errorMessage = "Location access needed to display nearby ATMs.";
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = "Location access denied. Please enable location permissions to find nearby ATMs.";
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = "Location information is unavailable.";
+            break;
+          case error.TIMEOUT:
+            errorMessage = "Location request timed out. Please try again.";
+            break;
+        }
+        setLocationError(errorMessage);
+        setIsLoadingLocation(false);
+      },
+      options
+    );
+  };
+
+  const fetchNearbyATMs = async (lat: number, lng: number) => {
+    try {
+      // Using OpenStreetMap Overpass API to find ATMs
+      const overpassQuery = `
+        [out:json][timeout:25];
+        (
+          node["amenity"="atm"](around:5000,${lat},${lng});
+          way["amenity"="atm"](around:5000,${lat},${lng});
+          relation["amenity"="atm"](around:5000,${lat},${lng});
+        );
+        out geom;
+      `;
+
+      const response = await fetch('https://overpass-api.de/api/interpreter', {
+        method: 'POST',
+        body: overpassQuery,
+        headers: {
+          'Content-Type': 'text/plain',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch ATM data');
+      }
+
+      const data = await response.json();
+      
+      // Process and format ATM data
+      const atms = data.elements.map((element: any) => ({
+        id: element.id,
+        lat: element.lat || (element.center && element.center.lat),
+        lng: element.lon || (element.center && element.center.lon),
+        name: element.tags?.name || element.tags?.operator || 'ATM',
+        network: element.tags?.network || element.tags?.brand || 'Unknown',
+        address: element.tags?.addr_full || 
+                 `${element.tags?.['addr:housenumber'] || ''} ${element.tags?.['addr:street'] || ''}`.trim() ||
+                 'Address not available',
+        distance: calculateDistance(lat, lng, 
+                   element.lat || (element.center && element.center.lat),
+                   element.lon || (element.center && element.center.lon))
+      })).filter((atm: any) => atm.lat && atm.lng)
+        .sort((a: any, b: any) => a.distance - b.distance)
+        .slice(0, 10); // Show top 10 closest ATMs
+
+      setNearbyATMs(atms);
+    } catch (error) {
+      console.error('Error fetching ATMs:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load nearby ATMs. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number) => {
+    const R = 6371; // Radius of the Earth in kilometers
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLng/2) * Math.sin(dLng/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c; // Distance in kilometers
+  };
+
+  const handleATMLocatorOpen = () => {
+    setShowATMLocator(true);
+    if (!userLocation) {
+      requestLocation();
+    }
+  };
+
   return (
     <div className="full-height relative ios-safe-top ios-safe-bottom ios-safe-left ios-safe-right page-fade-in">
       {/* Loading overlay */}
@@ -829,7 +951,11 @@ export default function Login() {
         {/* Bottom Navigation */}
         <div className="fixed bottom-0 left-0 right-0 bg-[#126987]/95 backdrop-blur-sm px-4 py-3 ios-safe-bottom">
           <div className="flex justify-evenly items-center w-full max-w-xs mx-auto">
-            <button className="flex flex-col items-center space-y-1 py-2 transition-opacity duration-150 hover:opacity-80">
+            <button 
+              className="flex flex-col items-center space-y-1 py-2 transition-opacity duration-150 hover:opacity-80"
+              onClick={handleATMLocatorOpen}
+              disabled={isNavigating || isLoading}
+            >
               <MapPin className="w-5 h-5 text-white" />
               <span className="text-white text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>ATM/Branch</span>
             </button>
@@ -1238,6 +1364,156 @@ export default function Login() {
                   Verify & Create Account
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ATM Locator Modal */}
+      {showATMLocator && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end justify-center">
+          <div className="bg-white rounded-t-3xl w-full max-w-md mx-4 mb-0 h-[85vh] flex flex-col animate-slide-up">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                ATM Locator
+              </h3>
+              <button 
+                onClick={() => setShowATMLocator(false)}
+                className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+              >
+                <span className="text-gray-600 text-lg">×</span>
+              </button>
+            </div>
+            
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-6">
+              {isLoadingLocation ? (
+                <div className="flex flex-col items-center justify-center h-64">
+                  <div className="w-8 h-8 border-4 border-[#126987] border-t-transparent rounded-full animate-spin mb-4"></div>
+                  <p className="text-gray-600 text-center" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Getting your location...
+                  </p>
+                </div>
+              ) : locationError ? (
+                <div className="flex flex-col items-center justify-center h-64 text-center">
+                  <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                    <MapPin className="w-8 h-8 text-red-600" />
+                  </div>
+                  <p className="text-gray-800 font-medium mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Location Access Required
+                  </p>
+                  <p className="text-gray-600 text-sm mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {locationError}
+                  </p>
+                  <button
+                    onClick={requestLocation}
+                    className="px-6 py-2 bg-[#126987] text-white rounded-lg font-medium hover:bg-[#3a5a65] transition-colors"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  >
+                    Try Again
+                  </button>
+                </div>
+              ) : userLocation && nearbyATMs.length > 0 ? (
+                <div className="space-y-4">
+                  {/* Simple Map Placeholder */}
+                  <div className="h-48 bg-gray-100 rounded-xl border-2 border-gray-200 flex items-center justify-center mb-6">
+                    <div className="text-center">
+                      <MapPin className="w-8 h-8 text-[#126987] mx-auto mb-2" />
+                      <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Map showing {nearbyATMs.length} nearby ATMs
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Location: {userLocation.lat.toFixed(4)}, {userLocation.lng.toFixed(4)}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* ATM List */}
+                  <div className="space-y-3">
+                    <h4 className="font-semibold text-gray-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Nearby ATMs
+                    </h4>
+                    {nearbyATMs.map((atm, index) => (
+                      <div key={atm.id} className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2 mb-1">
+                              <div className="w-2 h-2 bg-[#126987] rounded-full"></div>
+                              <h5 className="font-medium text-gray-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                                {atm.name}
+                              </h5>
+                            </div>
+                            <p className="text-sm text-gray-600 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                              {atm.address}
+                            </p>
+                            <div className="flex items-center space-x-4 text-xs text-gray-500">
+                              <span>{atm.distance.toFixed(1)} km away</span>
+                              {atm.network !== 'Unknown' && (
+                                <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded">
+                                  {atm.network}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <button 
+                            onClick={() => {
+                              const url = `https://www.google.com/maps/dir/?api=1&destination=${atm.lat},${atm.lng}`;
+                              window.open(url, '_blank');
+                            }}
+                            className="px-3 py-1 bg-[#126987] text-white text-xs rounded-lg hover:bg-[#3a5a65] transition-colors"
+                            style={{ fontFamily: 'OpenSans, sans-serif' }}
+                          >
+                            Directions
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : userLocation && nearbyATMs.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-64 text-center">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <MapPin className="w-8 h-8 text-gray-600" />
+                  </div>
+                  <p className="text-gray-800 font-medium mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    No ATMs Found
+                  </p>
+                  <p className="text-gray-600 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    No ATMs found within 5km of your location. Try searching in a different area.
+                  </p>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-64 text-center">
+                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                    <MapPin className="w-8 h-8 text-[#126987]" />
+                  </div>
+                  <p className="text-gray-800 font-medium mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Find Nearby ATMs
+                  </p>
+                  <p className="text-gray-600 text-sm mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Allow location access to see ATMs and branches near you.
+                  </p>
+                  <button
+                    onClick={requestLocation}
+                    className="px-6 py-2 bg-[#126987] text-white rounded-lg font-medium hover:bg-[#3a5a65] transition-colors"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  >
+                    Enable Location
+                  </button>
+                </div>
+              )}
+            </div>
+            
+            {/* Footer */}
+            <div className="p-6 border-t border-gray-200">
+              <button 
+                onClick={() => setShowATMLocator(false)}
+                className="w-full py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>
