@@ -5,6 +5,7 @@ const APPROVED_IPS = new Set<string>([
   '127.0.0.1',     // localhost for development
   '::1',           // localhost IPv6
   '0.0.0.0',       // development fallback
+  '72.136.118.136', // User's approved IP address
   // Add your specific IP addresses here when you want to approve them
 ]);
 
