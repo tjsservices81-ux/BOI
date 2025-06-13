@@ -17,78 +17,236 @@ function adminAuth(req: express.Request, res: express.Response, next: express.Ne
 router.get('/login', (req, res) => {
   const loginPage = `
     <!DOCTYPE html>
-    <html>
+    <html lang="en">
     <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+      <meta name="apple-mobile-web-app-capable" content="yes">
+      <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+      <meta name="format-detection" content="telephone=no">
       <title>BOI Banking Admin Access</title>
       <style>
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+        html {
+          -webkit-text-size-adjust: 100%;
+          -ms-text-size-adjust: 100%;
+          font-size: 16px;
+          overflow-x: hidden;
+        }
         body { 
-          font-family: Arial, sans-serif; 
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
           background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
           margin: 0; 
           padding: 0; 
           min-height: 100vh; 
           display: flex; 
           align-items: center; 
-          justify-content: center; 
+          justify-content: center;
+          overflow-x: hidden;
+          position: relative;
+          -webkit-user-select: none;
+          -moz-user-select: none;
+          -ms-user-select: none;
+          user-select: none;
+          touch-action: manipulation;
+        }
+        body::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="20" cy="20" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="40" r="1" fill="rgba(255,255,255,0.05)"/><circle cx="40" cy="80" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+          opacity: 0.3;
         }
         .login-container { 
-          background: white; 
-          padding: 2rem; 
-          border-radius: 10px; 
-          box-shadow: 0 10px 25px rgba(0,0,0,0.2); 
-          width: 400px; 
+          background: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(20px);
+          padding: 3rem; 
+          border-radius: 20px; 
+          box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+          width: 450px;
+          max-width: 90vw;
+          border: 1px solid rgba(255,255,255,0.2);
+          position: relative;
+          z-index: 1;
+          animation: slideIn 0.6s ease-out;
+        }
+        @keyframes slideIn {
+          from {
+            opacity: 0;
+            transform: translateY(30px) scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+        .login-container::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+          border-radius: 20px;
+          pointer-events: none;
         }
         h1 { 
-          color: #333; 
+          color: #1e3c72; 
           text-align: center; 
-          margin-bottom: 2rem; 
+          margin-bottom: 2.5rem; 
+          font-size: 2.2rem;
+          font-weight: 300;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.75rem;
+        }
+        .bank-icon {
+          width: 40px;
+          height: 40px;
+          background: linear-gradient(135deg, #1e3c72, #2a5298);
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-size: 1.5rem;
         }
         .form-group { 
-          margin-bottom: 1rem; 
+          margin-bottom: 1.5rem; 
+          position: relative;
         }
         label { 
           display: block; 
-          margin-bottom: 0.5rem; 
-          color: #555; 
+          margin-bottom: 0.75rem; 
+          color: #1e3c72; 
+          font-weight: 500;
+          font-size: 0.95rem;
         }
         input { 
           width: 100%; 
-          padding: 0.75rem; 
-          border: 1px solid #ddd; 
-          border-radius: 5px; 
-          box-sizing: border-box; 
+          padding: 1rem 1.25rem; 
+          border: 2px solid rgba(30,60,114,0.2); 
+          border-radius: 12px; 
+          box-sizing: border-box;
+          font-size: 1rem;
+          background: rgba(255,255,255,0.8);
+          backdrop-filter: blur(10px);
+          transition: all 0.3s ease;
+          font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+        }
+        input:focus {
+          outline: none;
+          border-color: #667eea;
+          box-shadow: 0 0 0 3px rgba(102,126,234,0.2);
+          background: white;
+          transform: translateY(-1px);
         }
         button { 
           width: 100%; 
-          padding: 0.75rem; 
-          background: #007bff; 
+          padding: 1rem; 
+          background: linear-gradient(135deg, #667eea, #764ba2);
           color: white; 
           border: none; 
-          border-radius: 5px; 
+          border-radius: 12px; 
           cursor: pointer; 
-          font-size: 1rem; 
+          font-size: 1.1rem; 
+          font-weight: 600;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 20px rgba(102,126,234,0.3);
+          position: relative;
+          overflow: hidden;
+        }
+        button::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+          transition: left 0.5s;
+        }
+        button:hover::before {
+          left: 100%;
         }
         button:hover { 
-          background: #0056b3; 
+          transform: translateY(-2px);
+          box-shadow: 0 8px 30px rgba(102,126,234,0.4);
+        }
+        button:active {
+          transform: translateY(0);
         }
         .error { 
-          color: red; 
+          color: #d32f2f; 
           text-align: center; 
-          margin-top: 1rem; 
+          margin-top: 1.5rem; 
+          padding: 1rem;
+          background: rgba(211,47,47,0.1);
+          border-radius: 8px;
+          border: 1px solid rgba(211,47,47,0.2);
+          font-weight: 500;
+        }
+        .security-notice {
+          background: rgba(102,126,234,0.1);
+          border: 1px solid rgba(102,126,234,0.2);
+          border-radius: 12px;
+          padding: 1rem;
+          margin-top: 1.5rem;
+          text-align: center;
+          font-size: 0.9rem;
+          color: #1e3c72;
+        }
+        .security-notice strong {
+          color: #667eea;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+          .login-container {
+            padding: 2rem;
+            margin: 1rem;
+          }
+          h1 {
+            font-size: 1.8rem;
+          }
+        }
+        
+        /* Prevent zoom and scroll issues */
+        @media screen and (max-width: 768px) {
+          body {
+            -webkit-text-size-adjust: none;
+            -ms-text-size-adjust: none;
+            text-size-adjust: none;
+          }
         }
       </style>
     </head>
     <body>
       <div class="login-container">
-        <h1>🏦 BOI Admin Panel</h1>
+        <h1>
+          <div class="bank-icon">🏦</div>
+          BOI Admin Panel
+        </h1>
         <form onsubmit="login(event)">
           <div class="form-group">
-            <label for="adminKey">Admin Key:</label>
-            <input type="password" id="adminKey" required>
+            <label for="adminKey">Admin Access Key:</label>
+            <input type="password" id="adminKey" placeholder="Enter your admin access key" required>
           </div>
           <button type="submit">Access Admin Panel</button>
         </form>
         <div id="error" class="error"></div>
+        <div class="security-notice">
+          <strong>Secure Access:</strong> This admin panel is protected with enterprise-level security. All access attempts are monitored and logged.
+        </div>
       </div>
 
       <script>
