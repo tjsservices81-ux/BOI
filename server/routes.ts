@@ -27,8 +27,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     saveUninitialized: false,
     cookie: {
       secure: false, // Set to true in production with HTTPS
-      httpOnly: true,
+      httpOnly: false, // Allow JavaScript access for SPA
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      sameSite: 'lax' // Allow cookies to be sent with same-site requests
     },
   }));
 
