@@ -127,11 +127,7 @@ export default function TransactionHistoryWorking() {
     window.addEventListener('transactionAdded', handleTransactionUpdate);
     window.addEventListener('balanceUpdate', handleTransactionUpdate);
     
-    // Refresh only when needed
-    const interval = setInterval(loadData, 5000);
-    
     return () => {
-      clearInterval(interval);
       window.removeEventListener('transactionUpdate', handleTransactionUpdate);
       window.removeEventListener('transactionDeleted', handleTransactionUpdate);
       window.removeEventListener('transactionAdded', handleTransactionUpdate);
