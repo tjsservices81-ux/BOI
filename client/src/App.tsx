@@ -43,47 +43,22 @@ function AppRoutes() {
   const [location] = useLocation();
   const [splashShown, setSplashShown] = useState(false);
   
-  // Set initial theme color to pure blue immediately on mount
+  // Always show splash first, regardless of auth state
   useEffect(() => {
-    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-    if (themeColorMeta) {
-      themeColorMeta.setAttribute('content', '#0000ff');
-    }
-    
     const hasShownSplash = sessionStorage.getItem('splashShown');
     if (hasShownSplash) {
       setSplashShown(true);
-      // If splash was already shown, set theme to #126987
-      if (themeColorMeta) {
-        themeColorMeta.setAttribute('content', '#126987');
-      }
     }
   }, []);
 
-  // Listen for splash completion
-  useEffect(() => {
-    const handleSplashComplete = () => {
-      setSplashShown(true);
-      const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-      if (themeColorMeta) {
-        themeColorMeta.setAttribute('content', '#126987');
-      }
-    };
-
-    window.addEventListener('splashComplete', handleSplashComplete);
-    return () => window.removeEventListener('splashComplete', handleSplashComplete);
-  }, []);
-
-  // If splash hasn't been shown yet and we're not explicitly on another route, show splash
-  if (!splashShown && location === '/') {
+  // If splash hasn't been shown yet, or we're on the splash route, show splash immediately
+  if (!splashShown || location === '/splash') {
     return <Splash />;
   }
   
-  // Show loading state while checking authentication (but not on login page)
-  if (isLoading && location !== '/login') {
-    return <div className="w-full h-full flex items-center justify-center bg-[#126987]">
-      <div className="text-white">Loading...</div>
-    </div>;
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return <Splash />;
   }
   
   // Always show navigation for authenticated users except on specific exclusion screens
