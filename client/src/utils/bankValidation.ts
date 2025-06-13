@@ -1,128 +1,49 @@
-// UK Bank Sort Code Database with ranges
-export const ukBankRanges = [
-  // Monzo Bank - All 04 codes (040000-049999)
-  { start: '040000', end: '049999', bank: 'Monzo Bank' },
+// UK Bank Sort Code Database - Exact mapping
+const sortCodeMap = {
+  // High Street Banks
+  "110062": "Halifax",
+  "309783": "Lloyds Bank",
+  "200003": "Barclays",
+  "400515": "HSBC UK",
+  "600001": "NatWest",
+  "072500": "Nationwide Building Society",
+  "089299": "Co-operative Bank",
+  "300083": "TSB Bank",
+  "090128": "Santander",
   
-  // Royal Bank of Scotland
-  { start: '830000', end: '839999', bank: 'Royal Bank of Scotland' },
-  
-  // Barclays Bank
-  { start: '200000', end: '209999', bank: 'Barclays Bank' },
-  
-  // HSBC Bank
-  { start: '400000', end: '404699', bank: 'HSBC Bank' },
-  { start: '404800', end: '409999', bank: 'HSBC Bank' },
-  
-  // First Direct (HSBC subsidiary)
-  { start: '404700', end: '404799', bank: 'First Direct' },
-  
-  // Lloyds Bank
-  { start: '300000', end: '309599', bank: 'Lloyds Bank' },
-  { start: '309700', end: '309999', bank: 'Lloyds Bank' },
-  
-  // TSB Bank (formerly part of Lloyds)
-  { start: '309600', end: '309699', bank: 'TSB Bank' },
-  { start: '777100', end: '779999', bank: 'TSB Bank' },
-  
-  // National Westminster Bank (NatWest)
-  { start: '600000', end: '608299', bank: 'National Westminster Bank' },
-  { start: '608400', end: '609999', bank: 'National Westminster Bank' },
-  
-  // Ulster Bank (RBS subsidiary)
-  { start: '608300', end: '608349', bank: 'Ulster Bank' },
-  
-  // Starling Bank
-  { start: '608350', end: '608399', bank: 'Starling Bank' },
-  { start: '236900', end: '236949', bank: 'Starling Bank' },
-  
-  // Santander UK
-  { start: '090100', end: '090199', bank: 'Santander UK' },
-  { start: '720000', end: '729999', bank: 'Santander UK' },
-  
-  // Halifax (Lloyds subsidiary)
-  { start: '110000', end: '119999', bank: 'Halifax' },
-  
-  // Bank of Scotland (Lloyds subsidiary)
-  { start: '120100', end: '129999', bank: 'Bank of Scotland' },
-  { start: '800000', end: '809999', bank: 'Bank of Scotland' },
-  
-  // Nationwide Building Society
-  { start: '070000', end: '079999', bank: 'Nationwide Building Society' },
-  
-  // Co-operative Bank
-  { start: '089000', end: '089999', bank: 'Co-operative Bank' },
-  
-  // Revolut
-  { start: '231400', end: '231499', bank: 'Revolut' },
-  
-  // Metro Bank
-  { start: '230500', end: '230599', bank: 'Metro Bank' },
-  
-  // Virgin Money
-  { start: '826200', end: '826299', bank: 'Virgin Money' },
-  { start: '051500', end: '051599', bank: 'Virgin Money' },
-  
-  // Tesco Bank
-  { start: '772000', end: '772099', bank: 'Tesco Bank' },
-  
-  // Yorkshire Bank
-  { start: '055000', end: '059999', bank: 'Yorkshire Bank' },
-  
-  // Bank of Ireland UK
-  { start: '902100', end: '902199', bank: 'Bank of Ireland (UK)' },
-  { start: '904800', end: '904899', bank: 'Bank of Ireland (UK)' },
-  
-  // Danske Bank (Northern Ireland)
-  { start: '950000', end: '959999', bank: 'Danske Bank (Northern Ireland)' },
-  
-  // First Trust Bank (Northern Ireland)
-  { start: '930000', end: '939999', bank: 'First Trust Bank (Northern Ireland)' },
-  
-  // Atom Bank
-  { start: '608380', end: '608389', bank: 'Atom Bank' },
-  
-  // Aldermore Bank
-  { start: '234800', end: '234899', bank: 'Aldermore Bank' },
-  
-  // Shawbrook Bank
-  { start: '234600', end: '234699', bank: 'Shawbrook Bank' },
-  
-  // OakNorth Bank
-  { start: '236100', end: '236199', bank: 'OakNorth Bank' },
-  
-  // ClearBank
-  { start: '235700', end: '235799', bank: 'ClearBank' },
-  
-  // Tide
-  { start: '236950', end: '236999', bank: 'Tide' },
-  
-  // Cashplus Bank
-  { start: '088700', end: '088799', bank: 'Cashplus Bank' },
-  
-  // Modulr Finance
-  { start: '235600', end: '235699', bank: 'Modulr Finance' }
-];
+  // Online / Challenger Banks
+  "040004": "Monzo",
+  "608371": "Starling Bank",
+  "230801": "Wise (Wise Payments Ltd)",
+  "231470": "Wise (via ClearBank)",
+  "232144": "Wise (ClearBank)",
+  "230553": "Cashplus Bank",
+  "239202": "Revolut",
+  "232715": "Monese",
+  "233114": "Tide (via ClearBank)",
+  "234105": "Atom Bank",
+  "234342": "Allica Bank",
+  "232328": "Kroo Bank",
+  "232422": "Zopa Bank"
+};
 
 export function validateUKSortCode(sortCode: string): string | null {
-  if (!sortCode || sortCode.length < 4) {
+  if (!sortCode || sortCode.length < 6) {
     return null;
   }
 
-  // Clean and pad the sort code
-  const cleanCode = sortCode.replace(/\D/g, '').padEnd(6, '0');
+  // Clean the sort code - remove any non-digits
+  const cleanCode = sortCode.replace(/\D/g, '');
   
-  if (cleanCode.length < 6) {
+  // Must be exactly 6 digits
+  if (cleanCode.length !== 6) {
     return null;
   }
 
-  // Check against ranges
-  for (const range of ukBankRanges) {
-    if (cleanCode >= range.start && cleanCode <= range.end) {
-      return range.bank;
-    }
-  }
-
-  return 'Unknown Bank';
+  // Look up the bank name using exact match
+  const bankName = sortCodeMap[cleanCode as keyof typeof sortCodeMap];
+  
+  return bankName || null;
 }
 
 export function validateUKAccountNumber(accountNumber: string): boolean {
