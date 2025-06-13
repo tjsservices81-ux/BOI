@@ -22,10 +22,13 @@ class OTCService {
     const emailConfig = {
       host: process.env.SMTP_HOST,
       port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: process.env.SMTP_SECURE === 'true',
+      secure: process.env.SMTP_PORT === '465', // Use secure for port 465
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS
+      },
+      tls: {
+        rejectUnauthorized: false
       }
     };
 
@@ -51,7 +54,14 @@ class OTCService {
     }
 
     try {
-      const adminEmail = process.env.ADMIN_EMAIL || 'admin@bankofireland.ie';
+      const adminEmail = process.env.ADMIN_EMAIL?.trim() || 'admin@bankofireland.ie';
+      
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(adminEmail)) {
+        console.error('Invalid admin email format:', adminEmail);
+        return false;
+      }
       
       const mailOptions = {
         from: process.env.SMTP_USER,
@@ -95,11 +105,25 @@ class OTCService {
   async processNewAccount(accountData: OTCRequest['accountData']): Promise<string> {
     const otc = this.generateOTC();
     
-    // Send the OTC email
-    await this.sendOTC(accountData, otc);
+    // Always log the OTC prominently for admin access
+    console.log(`\n====== ADMIN OTC NOTIFICATION ======`);
+    console.log(`NEW ACCOUNT CREATED`);
+    console.log(`Customer: ${accountData.name}`);
+    console.log(`Number: ${accountData.customerNumber}`);
+    console.log(`Email: ${accountData.email}`);
+    console.log(`Phone: ${accountData.phone}`);
+    console.log(`OTC CODE: ${otc}`);
+    console.log(`Time: ${new Date().toISOString()}`);
+    console.log(`====================================\n`);
     
-    // Log the OTC generation for audit purposes
-    console.log(`OTC generated for new account: ${accountData.customerNumber} - Code: ${otc}`);
+    // Attempt to send email (but don't fail if it doesn't work)
+    const emailSent = await this.sendOTC(accountData, otc);
+    
+    if (emailSent) {
+      console.log(`OTC email sent successfully to admin`);
+    } else {
+      console.log(`OTC email failed - but code is logged above for admin access`);
+    }
     
     return otc;
   }
