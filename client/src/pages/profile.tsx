@@ -399,13 +399,13 @@ export default function Profile() {
                 setIsSigningOut(true);
                 
                 // Wait for animation to start
-                await new Promise(resolve => setTimeout(resolve, 100));
+                await new Promise(resolve => setTimeout(resolve, 200));
                 
                 // Clear user data and logout
                 logout();
                 
-                // Wait for sign out animation to complete
-                await new Promise(resolve => setTimeout(resolve, 1500));
+                // Wait for sign out animation to complete (8 seconds total)
+                await new Promise(resolve => setTimeout(resolve, 7800));
                 
                 navigate('/login');
               }}
@@ -1035,73 +1035,171 @@ export default function Profile() {
         </div>
       )}
 
-      {/* Sign Out Animation Overlay */}
+      {/* Professional Sign Out Animation Overlay */}
       <AnimatePresence>
         {isSigningOut && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-b from-[#2c5f70] to-[#126987]"
+            transition={{ duration: 0.5 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-[#1a3c47] via-[#2c5f70] to-[#0d2329]"
           >
-            <div className="text-center">
+            {/* Animated background elements */}
+            <motion.div
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 0.1 }}
+              transition={{ delay: 0.3, duration: 1.5 }}
+              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent"
+            />
+            
+            <div className="text-center relative z-10">
+              {/* Main icon with sophisticated animation */}
               <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
+                initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.2, duration: 0.5 }}
-                className="mb-6"
+                transition={{ delay: 0.3, duration: 0.8, ease: "easeOut" }}
+                className="relative mb-8"
               >
+                {/* Outer ring */}
                 <motion.div
                   animate={{ rotate: 360 }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                  className="w-16 h-16 mx-auto mb-4 bg-white/20 rounded-full flex items-center justify-center"
+                  transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                  className="w-24 h-24 mx-auto border-2 border-white/20 rounded-full flex items-center justify-center relative"
                 >
-                  <LogOut className="w-8 h-8 text-white" />
+                  {/* Inner ring */}
+                  <motion.div
+                    animate={{ rotate: -360 }}
+                    transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+                    className="w-16 h-16 border border-white/30 rounded-full flex items-center justify-center"
+                  >
+                    {/* Icon container */}
+                    <motion.div
+                      animate={{ 
+                        scale: [1, 1.1, 1],
+                        opacity: [0.9, 1, 0.9]
+                      }}
+                      transition={{ 
+                        duration: 2, 
+                        repeat: Infinity, 
+                        ease: "easeInOut" 
+                      }}
+                      className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm"
+                    >
+                      <LogOut className="w-5 h-5 text-white" />
+                    </motion.div>
+                  </motion.div>
                 </motion.div>
+                
+                {/* Pulsing outer glow */}
+                <motion.div
+                  animate={{ 
+                    scale: [1, 1.3, 1],
+                    opacity: [0.3, 0.1, 0.3]
+                  }}
+                  transition={{ 
+                    duration: 3, 
+                    repeat: Infinity, 
+                    ease: "easeInOut" 
+                  }}
+                  className="absolute inset-0 w-24 h-24 mx-auto bg-white/10 rounded-full blur-md"
+                />
               </motion.div>
               
+              {/* Progressive text animations */}
               <motion.div
-                initial={{ y: 20, opacity: 0 }}
+                initial={{ y: 30, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.4, duration: 0.5 }}
-                className="text-white text-center"
+                transition={{ delay: 0.6, duration: 0.8 }}
+                className="text-white text-center mb-6"
               >
-                <h2 className="text-2xl font-bold mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Signing Out
-                </h2>
-                <motion.p 
-                  className="text-white/80"
+                <motion.h2 
+                  className="text-3xl font-light mb-3 tracking-wide" 
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
-                  animate={{ opacity: [0.8, 1, 0.8] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                  animate={{ opacity: [0.9, 1, 0.9] }}
+                  transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
                 >
-                  Securing your session...
-                </motion.p>
+                  Signing Out
+                </motion.h2>
+                
+                {/* Sequential status messages */}
+                <motion.div className="h-6 flex items-center justify-center">
+                  <motion.p 
+                    className="text-white/70 text-sm"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                    animate={{ opacity: [1, 1, 0] }}
+                    transition={{ duration: 2, times: [0, 0.7, 1] }}
+                  >
+                    Securing your session...
+                  </motion.p>
+                  <motion.p 
+                    className="text-white/70 text-sm absolute"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                    animate={{ opacity: [0, 0, 1, 1, 0] }}
+                    transition={{ duration: 6, times: [0, 0.25, 0.35, 0.65, 0.75] }}
+                  >
+                    Clearing sensitive data...
+                  </motion.p>
+                  <motion.p 
+                    className="text-white/70 text-sm absolute"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                    animate={{ opacity: [0, 0, 1, 1] }}
+                    transition={{ duration: 8, times: [0, 0.625, 0.75, 1] }}
+                  >
+                    Finalizing logout process...
+                  </motion.p>
+                </motion.div>
               </motion.div>
 
-              {/* Animated dots */}
+              {/* Professional progress indicator */}
               <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.6 }}
-                className="flex justify-center space-x-2 mt-6"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1, duration: 0.6 }}
+                className="relative"
               >
-                {[0, 1, 2].map((i) => (
+                {/* Progress bar background */}
+                <div className="w-64 h-1 bg-white/20 rounded-full mx-auto mb-4 overflow-hidden">
                   <motion.div
-                    key={i}
-                    className="w-2 h-2 bg-white/60 rounded-full"
-                    animate={{ 
-                      scale: [1, 1.2, 1],
-                      opacity: [0.6, 1, 0.6] 
-                    }}
-                    transition={{
-                      duration: 1,
-                      repeat: Infinity,
-                      delay: i * 0.2,
-                      ease: "easeInOut"
-                    }}
+                    initial={{ width: 0 }}
+                    animate={{ width: "100%" }}
+                    transition={{ duration: 7, ease: "easeInOut" }}
+                    className="h-full bg-gradient-to-r from-white/60 to-white/80 rounded-full"
                   />
-                ))}
+                </div>
+                
+                {/* Animated status dots */}
+                <div className="flex justify-center space-x-3">
+                  {[0, 1, 2, 3].map((i) => (
+                    <motion.div
+                      key={i}
+                      className="w-2 h-2 bg-white/40 rounded-full"
+                      animate={{ 
+                        scale: [1, 1.4, 1],
+                        opacity: [0.4, 1, 0.4],
+                        backgroundColor: ["rgba(255,255,255,0.4)", "rgba(255,255,255,0.9)", "rgba(255,255,255,0.4)"]
+                      }}
+                      transition={{
+                        duration: 1.5,
+                        repeat: Infinity,
+                        delay: i * 0.3,
+                        ease: "easeInOut"
+                      }}
+                    />
+                  ))}
+                </div>
+              </motion.div>
+              
+              {/* Completion message */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: [0, 0, 1] }}
+                transition={{ duration: 8, times: [0, 0.8, 1] }}
+                className="mt-6"
+              >
+                <p className="text-white/60 text-xs tracking-wide" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Thank you for banking with us
+                </p>
               </motion.div>
             </div>
           </motion.div>
