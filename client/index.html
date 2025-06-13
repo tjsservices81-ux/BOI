@@ -4,6 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     
+    <!-- Security Headers -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:; connect-src 'self' wss: https:;">
+    <meta name="referrer" content="no-referrer">
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+    
     <!-- iOS Web App Configuration -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
@@ -63,6 +68,95 @@
       if (themeColorMeta) {
         themeColorMeta.setAttribute('content', '#0000ff');
       }
+
+      // Security measures to prevent sharing and copying
+      document.addEventListener('DOMContentLoaded', function() {
+        // Disable right-click context menu
+        document.addEventListener('contextmenu', function(e) {
+          e.preventDefault();
+          return false;
+        });
+
+        // Disable text selection
+        document.addEventListener('selectstart', function(e) {
+          e.preventDefault();
+          return false;
+        });
+
+        // Disable drag and drop
+        document.addEventListener('dragstart', function(e) {
+          e.preventDefault();
+          return false;
+        });
+
+        // Disable keyboard shortcuts for copying/saving
+        document.addEventListener('keydown', function(e) {
+          // Disable Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+S, Ctrl+P, F12, Ctrl+U, Ctrl+Shift+I
+          if (e.ctrlKey && (e.keyCode === 65 || e.keyCode === 67 || e.keyCode === 86 || e.keyCode === 83 || e.keyCode === 80 || e.keyCode === 85)) {
+            e.preventDefault();
+            return false;
+          }
+          // Disable F12 (Developer Tools)
+          if (e.keyCode === 123) {
+            e.preventDefault();
+            return false;
+          }
+          // Disable Ctrl+Shift+I (Developer Tools)
+          if (e.ctrlKey && e.shiftKey && e.keyCode === 73) {
+            e.preventDefault();
+            return false;
+          }
+          // Disable Ctrl+Shift+C (Inspector)
+          if (e.ctrlKey && e.shiftKey && e.keyCode === 67) {
+            e.preventDefault();
+            return false;
+          }
+        });
+
+        // Disable image drag
+        const images = document.querySelectorAll('img');
+        images.forEach(img => {
+          img.addEventListener('dragstart', function(e) {
+            e.preventDefault();
+            return false;
+          });
+        });
+
+        // Hide URL bar on mobile
+        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+          setTimeout(function() {
+            window.scrollTo(0, 1);
+          }, 100);
+        }
+
+        // Prevent sharing via Web Share API detection
+        if ('share' in navigator) {
+          // Override the share function
+          navigator.share = function() {
+            return Promise.reject(new Error('Sharing is disabled for security reasons'));
+          };
+        }
+      });
+
+      // Additional protection against developer tools
+      setInterval(function() {
+        const devtools = {
+          open: false,
+          orientation: null
+        };
+        
+        setInterval(function() {
+          if (window.outerHeight - window.innerHeight > 160 || window.outerWidth - window.innerWidth > 160) {
+            if (!devtools.open) {
+              devtools.open = true;
+              // Redirect or close the page when dev tools are detected
+              window.location.reload();
+            }
+          } else {
+            devtools.open = false;
+          }
+        }, 500);
+      }, 1000);
     </script>
     <script type="module" src="/src/main.tsx"></script>
     <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->

@@ -37,7 +37,7 @@
   }
 }
 
-/* Critical performance optimizations */
+/* Critical performance optimizations + Security */
 * {
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
@@ -106,7 +106,7 @@ textarea {
   -moz-user-zoom: fixed;
 }
 
-/* Disable zoom on images and media */
+/* Disable zoom on images and media + Prevent saving */
 img, video, canvas {
   touch-action: manipulation;
   -webkit-user-zoom: fixed;
@@ -115,6 +115,35 @@ img, video, canvas {
   -webkit-user-drag: none;
   -moz-user-drag: none;
   user-drag: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  /* Prevent context menu on images */
+  -webkit-context-menu: none;
+  context-menu: none;
+}
+
+/* Additional security measures */
+.no-select {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Hide URL in address bar for PWA mode */
+@media (display-mode: standalone) {
+  :root {
+    --safe-area-inset-top: env(safe-area-inset-top);
+  }
+  
+  body {
+    padding-top: var(--safe-area-inset-top);
+  }
 }
 
 input, textarea {
