@@ -50,7 +50,8 @@ export const processTransfer = (
   recipientName: string,
   transferType: 'UK' | 'IBAN',
   reference: string,
-  exchangeRate?: number
+  exchangeRate?: number,
+  recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string }
 ): boolean => {
   console.log('Processing transfer:', { fromAccountId, amount, recipientName, transferType, reference });
   
@@ -106,6 +107,11 @@ export const processTransfer = (
       exchangeRate,
       convertedAmount: (amount * exchangeRate).toFixed(2),
       convertedCurrency: 'GBP'
+    }),
+    ...(recipientDetails && {
+      recipientAccountNumber: recipientDetails.accountNumber,
+      recipientSortCode: recipientDetails.sortCode,
+      recipientIban: recipientDetails.iban
     })
   };
   

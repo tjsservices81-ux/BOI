@@ -363,6 +363,29 @@ export default function TransactionHistoryWorking() {
                   </span>
                 </div>
 
+                {/* UK Transfer Recipient Details */}
+                {selectedTransaction.paymentMethod === 'UK Transfer' && (selectedTransaction.recipientAccountNumber || selectedTransaction.recipientSortCode) && (
+                  <>
+                    {selectedTransaction.recipientSortCode && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Sort Code:</span>
+                        <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          {selectedTransaction.recipientSortCode.replace(/(\d{2})(\d{2})(\d{2})/, '$1-$2-$3')}
+                        </span>
+                      </div>
+                    )}
+                    
+                    {selectedTransaction.recipientAccountNumber && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Account Number:</span>
+                        <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          {selectedTransaction.recipientAccountNumber}
+                        </span>
+                      </div>
+                    )}
+                  </>
+                )}
+
                 {/* Conversion Rate for UK Transfers */}
                 {selectedTransaction.paymentMethod === 'UK Transfer' && selectedTransaction.exchangeRate && (
                   <>

@@ -132,7 +132,11 @@ export default function UkTransfer() {
       formData.recipientName,
       'UK',
       ref,
-      exchangeRate
+      exchangeRate,
+      {
+        accountNumber: formData.accountNumber,
+        sortCode: formData.sortCode
+      }
     );
     
     if (!success) {
