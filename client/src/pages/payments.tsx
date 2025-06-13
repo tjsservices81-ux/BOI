@@ -119,7 +119,10 @@ export default function Payments() {
             Payments
           </span>
         </button>
-        <button className="text-white active:scale-95 transition-transform">
+        <button 
+          onClick={() => navigate("/profile")}
+          className="text-white active:scale-95 transition-transform"
+        >
           <User className="w-6 h-6" />
         </button>
       </div>
