@@ -6,7 +6,6 @@ import { z } from "zod";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { otcService } from "./otcService";
-import MemoryStore from "memorystore";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize database and sample data

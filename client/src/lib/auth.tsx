@@ -75,6 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = (userData: User) => {
     setUser(userData);
+    localStorage.setItem('bankingUser', JSON.stringify(userData));
   };
 
   const logout = async () => {
@@ -87,6 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error('Logout error:', error);
     }
     setUser(null);
+    localStorage.removeItem('bankingUser');
   };
 
   return (
