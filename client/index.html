@@ -33,7 +33,34 @@
     <title>Bank of Ireland</title>
   </head>
   <body style="background: transparent !important;">
-    <div id="root" style="background: transparent !important;"></div>
+    <div id="root" style="background: transparent !important;">
+      <!-- Immediate splash screen while JS loads -->
+      <div id="initial-splash" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: url('/attached_assets/IMG_0633 2_1749767538625.jpeg');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        z-index: 9999;
+      ">
+        <div style="position: absolute; bottom: 30%; left: 50%; transform: translateX(-50%); text-align: center;">
+          <p style="color: white; font-size: 16px; font-weight: 500; margin-bottom: 24px; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);">
+            Loading...
+          </p>
+          <div style="width: 24px; height: 24px; border: 2px solid white; border-top: transparent; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+        </div>
+      </div>
+      <style>
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      </style>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
     <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
     <script type="text/javascript" src="https://replit.com/public/js/replit-dev-banner.js"></script>
