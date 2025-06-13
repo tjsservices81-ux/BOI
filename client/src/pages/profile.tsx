@@ -273,7 +273,7 @@ export default function Profile() {
     UserDataManager.setUserData('bankTransactions', []);
     UserDataManager.setUserData('savedPayees', []);
     
-    // Also clear any legacy localStorage entries that might exist
+    // Clear any legacy localStorage entries that might exist
     localStorage.removeItem('bankTransactions');
     localStorage.removeItem('savedPayees');
     

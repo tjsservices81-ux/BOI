@@ -1,5 +1,6 @@
 // Authentication context for the banking app
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { UserDataManager } from "@/utils/userDataManager";
 
 interface User {
   id: number;
@@ -18,13 +19,16 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(() => {
-    // Initialize user state from localStorage immediately to prevent auth flash
-    const cachedUser = localStorage.getItem('bankingUser');
-    if (cachedUser) {
-      try {
-        return JSON.parse(cachedUser);
-      } catch (error) {
-        localStorage.removeItem('bankingUser');
+    // Initialize user state from UserDataManager to prevent auth flash
+    const currentUser = UserDataManager.getCurrentUser();
+    if (currentUser) {
+      const userProfile = UserDataManager.getUserProfile();
+      if (userProfile) {
+        return {
+          id: parseInt(currentUser),
+          name: userProfile.name,
+          email: userProfile.email
+        };
       }
     }
     return null;
@@ -33,14 +37,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = (userData: User) => {
     setUser(userData);
-    localStorage.setItem('bankingUser', JSON.stringify(userData));
+    // Set current user in UserDataManager instead of direct localStorage
+    UserDataManager.setCurrentUser(userData.id.toString());
   };
 
   const logout = async () => {
     try {
       // Clear user state immediately
       setUser(null);
-      localStorage.removeItem('bankingUser');
+      // Clear current user from UserDataManager instead of direct localStorage
+      UserDataManager.setCurrentUser('');
       
       // Call backend logout endpoint
       await fetch('/api/auth/logout', {
