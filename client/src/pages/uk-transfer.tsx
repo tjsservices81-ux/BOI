@@ -521,11 +521,10 @@ export default function UkTransfer() {
                   maxLength={8}
                   className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
-                  onChange={(e) => {
+                  onBlur={(e) => {
                     const value = e.target.value.replace(/\D/g, '');
                     const formatted = formatSortCode(value);
                     e.target.value = formatted;
-                    form.setValue('sortCode', value);
                     
                     if (value.length >= 4) {
                       const bank = validateUKSortCode(value);
@@ -557,10 +556,7 @@ export default function UkTransfer() {
                   maxLength={8}
                   className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, '');
-                    form.setValue('accountNumber', value);
-                  }}
+
                 />
                 {form.formState.errors.accountNumber && (
                   <p className="text-red-500 text-xs mt-2 font-medium">{form.formState.errors.accountNumber.message}</p>
@@ -603,7 +599,7 @@ export default function UkTransfer() {
 
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-[#126987] to-[#5a7b85] text-white py-4 rounded-lg font-bold touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-98 text-sm shadow-md"
+              className="w-full bg-gradient-to-r from-[#126987] to-[#5a7b85] text-white py-4 rounded-lg font-bold transition-all duration-150 ease-out active:scale-98 text-sm shadow-md"
               style={{ fontFamily: 'OpenSans, sans-serif' }}
             >
               Continue to Review
