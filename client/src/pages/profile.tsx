@@ -23,12 +23,12 @@ export default function Profile() {
     balance: '0.00'
   });
   const [profileData, setProfileData] = useState({
-    name: "John Murphy",
-    email: "john.murphy@email.ie",
-    phone: "+353 85 123 4567",
-    address: "123 Grafton Street, Dublin 2, D02 XY45",
-    dateOfBirth: "15 March 1985",
-    customerNumber: "BOI-789123456",
+    name: "James",
+    email: "hello@gmail.com",
+    phone: "+353 1 234 5678",
+    address: "Hello",
+    dateOfBirth: "2025-06-08",
+    customerNumber: "12345678",
     joinDate: "Member since 2018"
   });
 
@@ -52,19 +52,16 @@ export default function Profile() {
               joinDate: userData.joinDate || "Member since 2018"
             });
           } else {
-            // Fallback to localStorage if database doesn't have user data
-            const userProfile = UserDataManager.getUserProfile();
-            if (userProfile) {
-              setProfileData({
-                name: userProfile.name,
-                email: userProfile.email,
-                phone: userProfile.phone,
-                address: userProfile.address || "",
-                dateOfBirth: userProfile.dateOfBirth || "",
-                customerNumber: currentCustomerNumber,
-                joinDate: userProfile.joinDate || "Member since 2018"
-              });
-            }
+            // Keep James as the consistent user
+            setProfileData({
+              name: "James",
+              email: "hello@gmail.com",
+              phone: "+353 1 234 5678",
+              address: "Hello",
+              dateOfBirth: "2025-06-08",
+              customerNumber: currentCustomerNumber,
+              joinDate: "Member since 2018"
+            });
           }
         } catch (error) {
           console.error('Failed to load profile data:', error);
