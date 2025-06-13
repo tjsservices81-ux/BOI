@@ -12,6 +12,7 @@ export interface OTCRequest {
 
 class OTCService {
   private transporter: nodemailer.Transporter | null = null;
+  private otcStorage: Map<string, { code: string; expires: number; accountData: any }> = new Map();
 
   constructor() {
     this.initializeTransporter();
@@ -105,11 +106,13 @@ class OTCService {
 
   async sendOTCToAdmin(accountData: OTCRequest['accountData'], otc: string): Promise<boolean> {
     if (!this.transporter) {
+      console.log('No SMTP transporter available - email cannot be sent');
       return false;
     }
 
     try {
       const adminEmail = process.env.ADMIN_EMAIL?.trim() || 'admin@bankofireland.ie';
+      console.log('Attempting to send OTC to admin email:', adminEmail);
       
       // Validate email format
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -153,17 +156,62 @@ class OTCService {
         `
       };
 
-      await this.transporter.sendMail(mailOptions);
-      console.log(`Admin notification email sent successfully for account: ${accountData.customerNumber}`);
+      const info = await this.transporter.sendMail(mailOptions);
+      console.log(`✅ Admin OTC email sent successfully!`);
+      console.log(`📧 From: ${process.env.SMTP_USER}`);
+      console.log(`📧 To: ${adminEmail}`);
+      console.log(`📧 Subject: Account Verification Required - Code: ${otc}`);
+      console.log(`📧 Message ID: ${info.messageId}`);
+      console.log(`🔢 OTC Code: ${otc}`);
+      console.log(`👤 Customer: ${accountData.name} (${accountData.customerNumber})`);
       return true;
     } catch (error) {
-      console.error('Failed to send admin notification email:', error);
+      console.error('❌ Failed to send admin notification email:', error);
+      console.error('SMTP Error Details:', {
+        message: error.message,
+        code: error.code,
+        command: error.command
+      });
       return false;
     }
   }
 
+  storeOTC(customerNumber: string, code: string, accountData: any): void {
+    const expires = Date.now() + (10 * 60 * 1000); // 10 minutes expiry
+    this.otcStorage.set(customerNumber, { code, expires, accountData });
+    
+    // Clean up expired OTCs
+    setTimeout(() => {
+      this.otcStorage.delete(customerNumber);
+    }, 10 * 60 * 1000);
+  }
+
+  validateOTC(customerNumber: string, code: string): { isValid: boolean; accountData?: any } {
+    const stored = this.otcStorage.get(customerNumber);
+    
+    if (!stored) {
+      return { isValid: false };
+    }
+    
+    if (Date.now() > stored.expires) {
+      this.otcStorage.delete(customerNumber);
+      return { isValid: false };
+    }
+    
+    if (stored.code !== code) {
+      return { isValid: false };
+    }
+    
+    // Remove OTC after successful validation
+    this.otcStorage.delete(customerNumber);
+    return { isValid: true, accountData: stored.accountData };
+  }
+
   async processNewAccount(accountData: OTCRequest['accountData']): Promise<string> {
     const otc = this.generateOTC();
+    
+    // Store OTC for validation
+    this.storeOTC(accountData.customerNumber, otc, accountData);
     
     // Always log the OTC prominently for admin access
     console.log(`\n====== ADMIN OTC NOTIFICATION ======`);
