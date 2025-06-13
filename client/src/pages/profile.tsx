@@ -398,16 +398,18 @@ export default function Profile() {
               onClick={async () => {
                 setIsSigningOut(true);
                 
-                // Wait for animation to start
-                await new Promise(resolve => setTimeout(resolve, 200));
+                // Start the animation
+                await new Promise(resolve => setTimeout(resolve, 100));
                 
-                // Clear user data and logout
-                logout();
+                // Clear user data and logout after 1 second
+                setTimeout(async () => {
+                  await logout();
+                }, 1000);
                 
-                // Wait for sign out animation to complete (8 seconds total)
-                await new Promise(resolve => setTimeout(resolve, 7800));
-                
-                navigate('/login');
+                // Navigate to login after the full 8-second animation
+                setTimeout(() => {
+                  navigate('/login');
+                }, 8000);
               }}
               disabled={isSigningOut}
               className={`w-full flex items-center justify-center space-x-3 p-4 rounded-xl transition-all duration-300 ${

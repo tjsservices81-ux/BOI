@@ -38,15 +38,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
+      // Clear user state immediately
+      setUser(null);
+      localStorage.removeItem('bankingUser');
+      
+      // Call backend logout endpoint
       await fetch('/api/auth/logout', {
         method: 'POST',
         credentials: 'include',
       });
     } catch (error) {
       console.error('Logout error:', error);
+      // Even if backend fails, ensure local state is cleared
+      setUser(null);
+      localStorage.removeItem('bankingUser');
     }
-    setUser(null);
-    localStorage.removeItem('bankingUser');
   };
 
   return (
