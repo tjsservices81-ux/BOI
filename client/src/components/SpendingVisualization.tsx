@@ -43,36 +43,39 @@ export default function SpendingVisualization() {
     const loadTransactions = () => {
       const storedTransactions = JSON.parse(localStorage.getItem('bankTransactions') || '[]');
       
+      // Limit patterns to improve performance - only show recent transactions
+      const recentTransactions = storedTransactions.slice(-20);
+      
       // Convert transactions to visual patterns
-      const newPatterns: SpendingPattern[] = storedTransactions.map((tx: Transaction, index: number) => {
+      const newPatterns: SpendingPattern[] = recentTransactions.map((tx: Transaction) => {
         const amount = Math.abs(parseFloat(tx.amount));
         const category = getCategoryFromDescription(tx.description);
         
         return {
           x: Math.random() * dimensions.width,
           y: Math.random() * dimensions.height,
-          size: Math.min(Math.max(amount / 10, 3), 25), // Size based on amount
-          opacity: Math.min(0.1 + (amount / 1000), 0.3), // Opacity based on amount
+          size: Math.min(Math.max(amount / 10, 3), 20), // Smaller max size for performance
+          opacity: Math.min(0.1 + (amount / 1000), 0.25), // Reduced max opacity
           color: getCategoryColor(category),
           velocity: {
-            x: (Math.random() - 0.5) * 0.2,
-            y: (Math.random() - 0.5) * 0.2
+            x: (Math.random() - 0.5) * 0.15, // Slower movement
+            y: (Math.random() - 0.5) * 0.15
           },
           category,
           amount
         };
       });
 
-      // Add some ambient particles for atmosphere
-      const ambientParticles: SpendingPattern[] = Array.from({ length: 15 }, (_, index) => ({
+      // Reduced ambient particles for better performance
+      const ambientParticles: SpendingPattern[] = Array.from({ length: 8 }, () => ({
         x: Math.random() * dimensions.width,
         y: Math.random() * dimensions.height,
-        size: Math.random() * 3 + 1,
-        opacity: Math.random() * 0.05 + 0.02,
+        size: Math.random() * 2 + 1,
+        opacity: Math.random() * 0.03 + 0.01,
         color: '#126987',
         velocity: {
-          x: (Math.random() - 0.5) * 0.1,
-          y: (Math.random() - 0.5) * 0.1
+          x: (Math.random() - 0.5) * 0.08,
+          y: (Math.random() - 0.5) * 0.08
         },
         category: 'ambient',
         amount: 0
@@ -121,7 +124,17 @@ export default function SpendingVisualization() {
     canvas.width = dimensions.width;
     canvas.height = dimensions.height;
 
-    const animate = () => {
+    let lastTime = 0;
+    const targetFPS = 30; // Reduced frame rate for better performance
+    const frameInterval = 1000 / targetFPS;
+
+    const animate = (currentTime: number) => {
+      if (currentTime - lastTime < frameInterval) {
+        animationRef.current = requestAnimationFrame(animate);
+        return;
+      }
+      lastTime = currentTime;
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       setPatterns(currentPatterns => 
@@ -149,11 +162,11 @@ export default function SpendingVisualization() {
           ctx.arc(newX, newY, pattern.size, 0, Math.PI * 2);
           ctx.fill();
 
-          // Add subtle glow for larger transactions
-          if (pattern.amount > 100) {
-            ctx.globalAlpha = pattern.opacity * 0.3;
+          // Simplified glow effect - only for very large transactions
+          if (pattern.amount > 200) {
+            ctx.globalAlpha = pattern.opacity * 0.2;
             ctx.beginPath();
-            ctx.arc(newX, newY, pattern.size * 2, 0, Math.PI * 2);
+            ctx.arc(newX, newY, pattern.size * 1.5, 0, Math.PI * 2);
             ctx.fill();
           }
 

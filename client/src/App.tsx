@@ -22,7 +22,7 @@ import Insights from "@/pages/insights";
 import Transfer from "@/pages/transfer";
 import BillPay from "@/pages/bill-pay";
 import TransactionHistoryWorking from "@/pages/transaction-history-working";
-import DebugTransactions from "@/pages/debug-transactions";
+
 import Statements from "@/pages/statements";
 import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
@@ -174,11 +174,7 @@ function AppRoutes() {
               <TransactionHistoryWorking />
             </ProtectedRoute>
           </Route>
-          <Route path="/debug-transactions">
-            <ProtectedRoute>
-              <DebugTransactions />
-            </ProtectedRoute>
-          </Route>
+
           <Route path="/profile">
             <ProtectedRoute>
               <Profile />
