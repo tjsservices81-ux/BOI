@@ -68,7 +68,7 @@ export default function Splash() {
 
   return (
     <div 
-      className={`full-height relative overflow-hidden transition-all duration-500 ${
+      className={`full-height relative overflow-hidden transition-all duration-500 asset-instant ${
         isVisible ? 'opacity-100' : 'opacity-0'
       }`}
       style={{
@@ -77,7 +77,9 @@ export default function Splash() {
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
         userSelect: 'none',
-        pointerEvents: 'none'
+        pointerEvents: 'none',
+        opacity: 1,
+        visibility: 'visible'
       }}
       onClick={handleInteraction}
       onTouchStart={handleInteraction}

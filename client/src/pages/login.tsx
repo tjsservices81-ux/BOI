@@ -399,11 +399,13 @@ export default function Login() {
               <img 
                 src="/boi_logo.svg" 
                 alt="Bank of Ireland" 
-                className="h-10 filter brightness-0 invert mb-2"
+                className="h-10 filter brightness-0 invert mb-2 asset-instant"
                 loading="eager"
+                decoding="sync"
                 style={{ 
                   display: 'block',
                   opacity: 1,
+                  visibility: 'visible',
                   imageRendering: 'crisp-edges'
                 }}
               />
@@ -419,9 +421,14 @@ export default function Login() {
                   <img 
                     src="/icon_HID.svg" 
                     alt="Security" 
-                    className="w-10 h-10 filter brightness-0 invert animate-pulse"
+                    className="w-10 h-10 filter brightness-0 invert animate-pulse asset-instant"
                     loading="eager"
-                    style={{ imageRendering: 'crisp-edges' }}
+                    decoding="sync"
+                    style={{ 
+                      imageRendering: 'crisp-edges',
+                      opacity: 1,
+                      visibility: 'visible'
+                    }}
                   />
                 </div>
                 
