@@ -30,6 +30,8 @@ export default function UkTransfer() {
   const [formData, setFormData] = useState<UkTransferData | null>(null);
   const [exchangeRate, setExchangeRate] = useState<number>(0.85); // EUR to GBP rate
   const [gbpAmount, setGbpAmount] = useState<string>('0.00');
+  const [slideDirection, setSlideDirection] = useState<'in' | 'out'>('in');
+  const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
 
   const form = useForm<UkTransferData>({
     resolver: zodResolver(ukTransferSchema),
@@ -110,10 +112,18 @@ export default function UkTransfer() {
   const onSubmit = async (data: UkTransferData) => {
     setFormData(data);
     
-    // Fetch exchange rate when moving to confirmation
+    // Animate transition to confirm step
+    setIsTransitioning(true);
+    setSlideDirection('out');
+    
+    // Fetch exchange rate during transition
     await fetchExchangeRate();
     
-    setStep('confirm');
+    setTimeout(() => {
+      setStep('confirm');
+      setSlideDirection('in');
+      setIsTransitioning(false);
+    }, 300);
   };
 
   const executeTransfer = async () => {
@@ -145,9 +155,17 @@ export default function UkTransfer() {
     }
 
     // Immediately go to success screen and start animation
-    setStep('success');
-    setShowReference(false);
-    setAnimationProgress(0);
+    // Animate transition to success step
+    setIsTransitioning(true);
+    setSlideDirection('out');
+    
+    setTimeout(() => {
+      setStep('success');
+      setSlideDirection('in');
+      setIsTransitioning(false);
+      setShowReference(false);
+      setAnimationProgress(0);
+    }, 300);
     
     // Professional banking stages during 5-second animation
     const stages = [
