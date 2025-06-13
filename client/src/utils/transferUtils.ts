@@ -52,15 +52,15 @@ export const processTransfer = (
   reference: string,
   exchangeRate?: number
 ): boolean => {
-  console.log('Processing transfer:', { fromAccountId, amount, recipientName, transferType, reference });
+  // Processing transfer request
   
   // Get stored accounts using UserDataManager
   const accounts = UserDataManager.getUserData('bankAccounts', []);
   
-  console.log('Found accounts:', accounts);
+  // Found user accounts
   
   const selectedAccount = accounts.find((acc: any) => acc.id.toString() === fromAccountId);
-  console.log('Selected account:', selectedAccount);
+  // Selected account for transfer
   
   if (!selectedAccount) {
     // Account not found
@@ -68,7 +68,7 @@ export const processTransfer = (
   }
   
   const currentBalance = parseFloat(selectedAccount.balance);
-  console.log('Current balance:', currentBalance, 'Transfer amount:', amount);
+  // Checking balance and transfer amount
   
   if (amount > currentBalance) {
     // Insufficient funds - transfer failed

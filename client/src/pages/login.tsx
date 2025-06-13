@@ -746,7 +746,7 @@ export default function Login() {
               <button 
                 className="w-full bg-gray-50 border border-gray-200 ios-card p-3 flex items-center space-x-3 hover:bg-gray-100 active:scale-98 transition-all duration-150"
                 onClick={() => {
-                  console.log("PIN button clicked, current showPinLogin:", showPinLogin);
+                  // PIN button clicked
                   setShowPinLogin(!showPinLogin);
                 }}
               >

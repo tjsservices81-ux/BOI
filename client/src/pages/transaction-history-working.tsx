@@ -83,7 +83,7 @@ export default function TransactionHistoryWorking() {
       }
       
       const accountTransactions = updatedTransactions.filter((tx: any) => tx.accountId === accountId);
-      console.log('Loaded transactions for account', accountId, ':', accountTransactions);
+      // Loaded transactions for account
       
       // Update the transactions state with enhanced data
       setTransactions(accountTransactions);
