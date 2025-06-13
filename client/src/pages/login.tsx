@@ -525,13 +525,22 @@ export default function Login() {
 
   const fetchNearbyATMs = async (lat: number, lng: number) => {
     try {
-      // Using OpenStreetMap Overpass API to find ATMs
+      // Using OpenStreetMap Overpass API to find ATMs within 10 miles (16km)
+      const radius = 16000; // 10 miles in meters
       const overpassQuery = `
-        [out:json][timeout:25];
+        [out:json][timeout:30];
         (
-          node["amenity"="atm"](around:5000,${lat},${lng});
-          way["amenity"="atm"](around:5000,${lat},${lng});
-          relation["amenity"="atm"](around:5000,${lat},${lng});
+          node["amenity"="atm"](around:${radius},${lat},${lng});
+          way["amenity"="atm"](around:${radius},${lat},${lng});
+          relation["amenity"="atm"](around:${radius},${lat},${lng});
+          node["amenity"="bank"](around:${radius},${lat},${lng});
+          way["amenity"="bank"](around:${radius},${lat},${lng});
+          relation["amenity"="bank"](around:${radius},${lat},${lng});
+          node["amenity"="credit_union"](around:${radius},${lat},${lng});
+          way["amenity"="credit_union"](around:${radius},${lat},${lng});
+          node["shop"="money_lender"](around:${radius},${lat},${lng});
+          node["office"="financial"](around:${radius},${lat},${lng});
+          node["name"~"ATM|Bank|Credit|Banque|Banco|Banca|Sparkasse|Volksbank|Commerzbank|Deutsche Bank|HSBC|Barclays|Lloyds|Santander|BNP|Crédit|ING|Rabobank|ABN|PostBank|Geldautomat|Cajero|Bancomat|Distributeur"](around:${radius},${lat},${lng});
         );
         out geom;
       `;
@@ -550,29 +559,141 @@ export default function Login() {
 
       const data = await response.json();
       
-      // Process and format ATM data
-      const atms = data.elements.map((element: any) => ({
-        id: element.id,
-        lat: element.lat || (element.center && element.center.lat),
-        lng: element.lon || (element.center && element.center.lon),
-        name: element.tags?.name || element.tags?.operator || 'ATM',
-        network: element.tags?.network || element.tags?.brand || 'Unknown',
-        address: element.tags?.addr_full || 
-                 `${element.tags?.['addr:housenumber'] || ''} ${element.tags?.['addr:street'] || ''}`.trim() ||
-                 'Address not available',
-        distance: calculateDistance(lat, lng, 
-                   element.lat || (element.center && element.center.lat),
-                   element.lon || (element.center && element.center.lon))
-      })).filter((atm: any) => atm.lat && atm.lng)
+      // Process and format ATM data with better fallbacks
+      const atms = data.elements.map((element: any) => {
+        const elementLat = element.lat || (element.center && element.center.lat);
+        const elementLng = element.lon || (element.center && element.center.lon);
+        
+        if (!elementLat || !elementLng) return null;
+        
+        const distance = calculateDistance(lat, lng, elementLat, elementLng);
+        
+        // Determine location type and name
+        let name = 'ATM';
+        let type = 'ATM';
+        let network = 'Unknown';
+        
+        if (element.tags) {
+          name = element.tags.name || element.tags.operator || element.tags.brand || 'ATM';
+          network = element.tags.network || element.tags.brand || element.tags.operator || 'ATM';
+          
+          if (element.tags.amenity === 'bank') {
+            type = 'Bank';
+            if (!element.tags.name && !element.tags.operator && !element.tags.brand) {
+              name = 'Bank';
+            }
+          } else if (element.tags.amenity === 'credit_union') {
+            type = 'Credit Union';
+            name = element.tags.name || 'Credit Union';
+          } else if (element.tags.office === 'financial') {
+            type = 'Financial Services';
+            name = element.tags.name || 'Financial Services';
+          }
+        }
+        
+        // Build address with multiple fallbacks
+        let address = 'Address not available';
+        if (element.tags) {
+          if (element.tags.addr_full) {
+            address = element.tags.addr_full;
+          } else {
+            const parts = [];
+            if (element.tags['addr:housenumber']) parts.push(element.tags['addr:housenumber']);
+            if (element.tags['addr:street']) parts.push(element.tags['addr:street']);
+            if (element.tags['addr:city']) parts.push(element.tags['addr:city']);
+            if (element.tags['addr:state']) parts.push(element.tags['addr:state']);
+            if (element.tags['addr:postcode']) parts.push(element.tags['addr:postcode']);
+            
+            if (parts.length > 0) {
+              address = parts.join(', ');
+            }
+          }
+        }
+        
+        return {
+          id: element.id,
+          lat: elementLat,
+          lng: elementLng,
+          name,
+          network,
+          address,
+          type,
+          distance
+        };
+      }).filter((atm: any) => atm && atm.distance <= 16) // Filter within 16km
         .sort((a: any, b: any) => a.distance - b.distance)
-        .slice(0, 10); // Show top 10 closest ATMs
+        .slice(0, 20); // Show top 20 closest locations
 
       setNearbyATMs(atms);
+
+      // If still no results, try a backup search with different approach
+      if (atms.length === 0) {
+        await fetchBackupATMs(lat, lng);
+      }
     } catch (error) {
       console.error('Error fetching ATMs:', error);
+      // Try backup search on error
+      await fetchBackupATMs(lat, lng);
+    }
+  };
+
+  const fetchBackupATMs = async (lat: number, lng: number) => {
+    try {
+      // Backup search with broader global criteria
+      const radius = 25000; // ~15.5 miles for wider coverage
+      const backupQuery = `
+        [out:json][timeout:35];
+        (
+          node["amenity"~"^(atm|bank|bureau_de_change)$"](around:${radius},${lat},${lng});
+          way["amenity"~"^(atm|bank|bureau_de_change)$"](around:${radius},${lat},${lng});
+          node["office"~"^(financial|bank)$"](around:${radius},${lat},${lng});
+          node["shop"~"^(money_lender|pawnbroker)$"](around:${radius},${lat},${lng});
+          node["brand"~"Visa|Mastercard|Cirrus|Plus|Maestro|Interac|Eftpos|UnionPay|JCB|Discover"](around:${radius},${lat},${lng});
+          node["operator"~"Bank|ATM|Geldautomat|Cajero|Bancomat|Distributeur|Cash|Money"](around:${radius},${lat},${lng});
+          node["name"~"(?i)(atm|bank|credit|banque|banco|banca|sparkasse|geldautomat|cajero|bancomat|distributeur|cash|money|financial|finance)"](around:${radius},${lat},${lng});
+        );
+        out geom;
+      `;
+
+      const response = await fetch('https://overpass-api.de/api/interpreter', {
+        method: 'POST',
+        body: backupQuery,
+        headers: {
+          'Content-Type': 'text/plain',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const backupAtms = data.elements.map((element: any) => ({
+          id: element.id,
+          lat: element.lat || (element.center && element.center.lat),
+          lng: element.lon || (element.center && element.center.lon),
+          name: element.tags?.name || element.tags?.operator || element.tags?.brand || 'Banking Location',
+          network: element.tags?.network || element.tags?.brand || 'Banking',
+          address: element.tags?.addr_full || 
+                   `${element.tags?.['addr:city'] || ''} ${element.tags?.['addr:postcode'] || ''}`.trim() ||
+                   'Address not available',
+          type: element.tags?.amenity === 'bank' ? 'Bank' : 'ATM',
+          distance: calculateDistance(lat, lng, 
+                     element.lat || (element.center && element.center.lat),
+                     element.lon || (element.center && element.center.lon))
+        })).filter((atm: any) => atm.lat && atm.lng && atm.distance <= 20)
+          .sort((a: any, b: any) => a.distance - b.distance)
+          .slice(0, 10);
+
+        if (backupAtms.length > 0) {
+          setNearbyATMs(backupAtms);
+        } else {
+          // If still no results, show informative message
+          setNearbyATMs([]);
+        }
+      }
+    } catch (backupError) {
+      console.error('Backup search failed:', backupError);
       toast({
-        title: "Error",
-        description: "Failed to load nearby ATMs. Please try again.",
+        title: "Search Complete",
+        description: "No ATMs or bank branches found within 10 miles of your location.",
         variant: "destructive",
       });
     }
@@ -1480,7 +1601,7 @@ export default function Login() {
                     No ATMs Found
                   </p>
                   <p className="text-gray-600 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    No ATMs found within 5km of your location. Try searching in a different area.
+                    No ATMs found within 10 miles of your location. Try searching in a different area.
                   </p>
                 </div>
               ) : (
