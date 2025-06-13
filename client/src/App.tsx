@@ -20,8 +20,6 @@ import Cards from "@/pages/cards";
 import Insights from "@/pages/insights";
 import Transfer from "@/pages/transfer";
 import BillPay from "@/pages/bill-pay";
-import TransactionHistory from "@/pages/transaction-history";
-import TransactionHistorySimple from "@/pages/transaction-history-simple";
 import TransactionHistoryWorking from "@/pages/transaction-history-working";
 import DebugTransactions from "@/pages/debug-transactions";
 import Statements from "@/pages/statements";
@@ -74,16 +72,9 @@ function AppRoutes() {
     return () => window.removeEventListener('splashComplete', handleSplashComplete);
   }, []);
 
-  // If splash hasn't been shown yet and we're not explicitly on another route, show splash
+  // If splash hasn't been shown yet and we're at root, show splash
   if (!splashShown && location === '/') {
     return <Splash />;
-  }
-  
-  // Show loading state while checking authentication (but not on login page)
-  if (isLoading && location !== '/login') {
-    return <div className="w-full h-full flex items-center justify-center bg-[#126987]">
-      <div className="text-white">Loading...</div>
-    </div>;
   }
   
   // Always show navigation for authenticated users except on specific exclusion screens
@@ -97,7 +88,18 @@ function AppRoutes() {
         <Route path="/login" component={Login} />
         <Route path="/more" component={More} />
         <Route path="/">
-          {user ? <Dashboard /> : <Login />}
+          {/* Handle root route properly based on splash and auth state */}
+          {!splashShown ? (
+            <Splash />
+          ) : isLoading ? (
+            <div className="w-full h-full flex items-center justify-center bg-[#126987]">
+              <div className="text-white">Loading...</div>
+            </div>
+          ) : user ? (
+            <Dashboard />
+          ) : (
+            <Login />
+          )}
         </Route>
         <Route path="/dashboard">
           <ProtectedRoute>
