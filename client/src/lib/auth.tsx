@@ -17,34 +17,19 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  
-  // Check auth after splash completes
-  useEffect(() => {
-    const handleSplashComplete = () => {
-      const cachedUser = localStorage.getItem('bankingUser');
-      if (cachedUser) {
-        try {
-          setUser(JSON.parse(cachedUser));
-        } catch (error) {
-          localStorage.removeItem('bankingUser');
-        }
+  const [user, setUser] = useState<User | null>(() => {
+    // Initialize user state from localStorage immediately to prevent auth flash
+    const cachedUser = localStorage.getItem('bankingUser');
+    if (cachedUser) {
+      try {
+        return JSON.parse(cachedUser);
+      } catch (error) {
+        localStorage.removeItem('bankingUser');
       }
-    };
-
-    // Check if splash was already shown
-    const hasShownSplash = sessionStorage.getItem('splashShown');
-    if (hasShownSplash) {
-      handleSplashComplete();
-    } else {
-      window.addEventListener('splashComplete', handleSplashComplete);
     }
-
-    return () => {
-      window.removeEventListener('splashComplete', handleSplashComplete);
-    };
-  }, []);
+    return null;
+  });
+  const [isLoading, setIsLoading] = useState(false);
 
   const login = (userData: User) => {
     setUser(userData);

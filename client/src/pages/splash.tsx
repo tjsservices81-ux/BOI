@@ -15,14 +15,16 @@ export default function Splash() {
       themeColorMeta.setAttribute('content', '#0000ff');
     }
     
-    // Complete splash after duration (8 seconds total)
+    // Navigate to login after splash duration (8 seconds total)
     const finalTimer = setTimeout(() => {
       setIsVisible(false);
       // Mark splash as shown in session storage
       sessionStorage.setItem('splashShown', 'true');
       // Dispatch event to notify App.tsx that splash is complete
       window.dispatchEvent(new CustomEvent('splashComplete'));
-      // Let App.tsx handle navigation based on auth state
+      setTimeout(() => {
+        navigate('/login');
+      }, 300); // Brief fade out before navigation
     }, 8000); // 8 seconds total
 
     // Cleanup timer and remove splash class

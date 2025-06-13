@@ -50,7 +50,6 @@ function AppRoutes() {
   const { user } = useAuth();
   const [location] = useLocation();
   const [splashShown, setSplashShown] = useState(false);
-  const [initialLoad, setInitialLoad] = useState(true);
   
   // Set initial theme color to pure blue immediately on mount
   useEffect(() => {
@@ -62,14 +61,10 @@ function AppRoutes() {
     const hasShownSplash = sessionStorage.getItem('splashShown');
     if (hasShownSplash) {
       setSplashShown(true);
-      setInitialLoad(false);
       // If splash was already shown, set theme to #126987
       if (themeColorMeta) {
         themeColorMeta.setAttribute('content', '#126987');
       }
-    } else {
-      // First load - show splash regardless of auth state
-      setInitialLoad(true);
     }
   }, []);
 
@@ -77,7 +72,6 @@ function AppRoutes() {
   useEffect(() => {
     const handleSplashComplete = () => {
       setSplashShown(true);
-      setInitialLoad(false);
       const themeColorMeta = document.querySelector('meta[name="theme-color"]');
       if (themeColorMeta) {
         themeColorMeta.setAttribute('content', '#126987');
@@ -88,12 +82,11 @@ function AppRoutes() {
     return () => window.removeEventListener('splashComplete', handleSplashComplete);
   }, []);
 
-  // Always show splash on initial load, regardless of auth state
-  if (!splashShown || initialLoad) {
+  // Direct splash to login transition - no intermediate renders
+  if (!splashShown && location === '/') {
     return <Splash />;
   }
   
-  // After splash, show login if not authenticated
   if (splashShown && !user && location === '/') {
     return (
       <SecurityWrapper>
@@ -112,9 +105,14 @@ function AppRoutes() {
           <Route path="/login" component={Login} />
           <Route path="/more" component={More} />
           <Route path="/">
-            <ProtectedRoute>
+            {/* Handle root route properly based on splash and auth state */}
+            {!splashShown ? (
+              <Splash />
+            ) : !user ? (
+              <Login />
+            ) : (
               <Dashboard />
-            </ProtectedRoute>
+            )}
           </Route>
           <Route path="/dashboard">
             <ProtectedRoute>
