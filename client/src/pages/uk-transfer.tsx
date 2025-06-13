@@ -368,7 +368,7 @@ export default function UkTransfer() {
                     </div>
                     <div className="bg-red-50 border border-red-200 rounded-lg p-3 mt-3">
                       <p className="text-sm text-red-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        <strong>Important:</strong> This payment cannot be cancelled once processed.
+                        <strong>Important:</strong> This payment cannot be cancelled once sent.
                       </p>
                     </div>
                   </div>
