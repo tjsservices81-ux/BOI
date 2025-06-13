@@ -1235,7 +1235,7 @@ export default function Login() {
                   Cancel
                 </button>
                 <button
-                  onClick={handleOtcVerification}
+                  onClick={handleFirstOtcVerification}
                   disabled={otcCode.length !== 6}
                   className={`flex-1 p-3 rounded-xl font-semibold active:scale-98 transition-transform ${
                     otcCode.length === 6 
