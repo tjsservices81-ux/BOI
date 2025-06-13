@@ -78,7 +78,7 @@ export const processTransfer = (
   // Update balance in the account
   const newBalance = (currentBalance - amount).toFixed(2);
   selectedAccount.balance = newBalance;
-  console.log('New balance:', newBalance);
+  // Updated account balance
   
   // Update the accounts array
   const updatedAccounts = accounts.map((acc: any) => 
@@ -87,7 +87,7 @@ export const processTransfer = (
   
   // Store updated accounts using UserDataManager
   UserDataManager.setUserData('bankAccounts', updatedAccounts);
-  console.log('Updated accounts stored');
+  // Accounts updated in storage
   
   // Store transaction using UserDataManager
   const transactions = UserDataManager.getUserData('bankTransactions', []);
@@ -110,7 +110,7 @@ export const processTransfer = (
   
   transactions.push(newTransaction);
   UserDataManager.setUserData('bankTransactions', transactions);
-  console.log('Transaction stored:', newTransaction);
+  // Transaction stored successfully
   
   // Dispatch balance update event
   window.dispatchEvent(new CustomEvent('balanceUpdate', {
@@ -122,7 +122,7 @@ export const processTransfer = (
     detail: { accountId: parseInt(fromAccountId), transaction: newTransaction }
   }));
   
-  console.log('Balance update and transaction events dispatched');
+  // Events dispatched for UI updates
   
   return true;
 };
