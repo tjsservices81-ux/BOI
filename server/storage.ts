@@ -32,51 +32,9 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  // Access control methods
-  async checkAuthorization(email: string, ipAddress: string, deviceFingerprint: string): Promise<boolean> {
-    const [authorized] = await db.select().from(authorizedUsers)
-      .where(eq(authorizedUsers.email, email));
-    
-    if (!authorized || !authorized.isActive) {
-      return false;
-    }
-    
-    // Update last access time
-    await db.update(authorizedUsers)
-      .set({ lastAccess: new Date() })
-      .where(eq(authorizedUsers.email, email));
-    
-    return true;
-  }
-
-  async addAuthorizedUser(email: string, ipAddress: string, deviceFingerprint: string, approvedBy: string): Promise<void> {
-    await db.insert(authorizedUsers).values({
-      email,
-      ipAddress,
-      deviceFingerprint,
-      approvedBy,
-      isActive: true,
-      accessAttempts: 0
-    });
-  }
-
-  async logAccessAttempt(email: string, ipAddress: string, success: boolean): Promise<void> {
-    if (!success) {
-      // Increment failed access attempts
-      const [existing] = await db.select().from(authorizedUsers)
-        .where(eq(authorizedUsers.email, email));
-      
-      if (existing) {
-        await db.update(authorizedUsers)
-          .set({ accessAttempts: (existing.accessAttempts || 0) + 1 })
-          .where(eq(authorizedUsers.email, email));
-      }
-    }
-  }
-
   async getUserByCredentials(customerNumber: string, pin: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.customerNumber, customerNumber));
-    if (user && user.pin === pin && user.isAuthorized) {
+    if (user && user.pin === pin) {
       return user;
     }
     return undefined;

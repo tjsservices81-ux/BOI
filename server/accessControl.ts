@@ -4,18 +4,18 @@ import crypto from 'crypto';
 // Authorized access list - only these can access your app
 const AUTHORIZED_ACCESS = {
   // Add specific IPs you want to allow
-  allowedIPs: new Set([
+  allowedIPs: new Set<string>([
     '127.0.0.1', // localhost for development
     // Add your IP addresses here
   ]),
   
   // Device fingerprints you've approved
-  allowedDevices: new Set([
+  allowedDevices: new Set<string>([
     // Device fingerprints will be added when you approve them
   ]),
   
   // Master admin keys for emergency access
-  adminKeys: new Set([
+  adminKeys: new Set<string>([
     'BOI_ADMIN_2025_SECURE', // Change this to your secret key
   ])
 };
