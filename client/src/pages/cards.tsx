@@ -83,7 +83,7 @@ export default function Cards() {
   }, []);
 
   return (
-    <div className="h-screen flex flex-col bg-white ios-safe-top ios-safe-bottom page-fade-in">
+    <div className="h-screen flex flex-col bg-white ios-safe-top ios-safe-bottom">
       
       {/* Header */}
       <div className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0">
@@ -120,8 +120,7 @@ export default function Cards() {
             {cards.map((card, index) => (
               <div
                 key={index}
-                className="flex-shrink-0 w-full px-2 snap-center stagger-item"
-                style={{ animationDelay: `${index * 0.1}s` }}
+                className="flex-shrink-0 w-full px-2 snap-center"
               >
                 <div className="relative">
                   {/* Card */}

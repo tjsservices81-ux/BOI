@@ -14,7 +14,7 @@ export default function More() {
   };
 
   return (
-    <div className="h-screen relative ios-safe-top ios-safe-bottom ios-safe-left ios-safe-right overflow-hidden page-fade-in" style={{ maxHeight: '100vh' }}>
+    <div className="h-screen relative ios-safe-top ios-safe-bottom ios-safe-left ios-safe-right overflow-hidden" style={{ maxHeight: '100vh' }}>
       {/* Loading overlay for smooth transitions */}
       {isNavigating && (
         <div className="fixed inset-0 bg-black bg-opacity-20 z-50 flex items-center justify-center">
@@ -56,7 +56,7 @@ export default function More() {
             <div className="w-full max-w-sm mx-auto space-y-3">
               
               {/* Login with another ID */}
-              <button className="w-full bg-white rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-50 shadow-sm transition-colors duration-150 stagger-item" style={{ animationDelay: '0.1s' }}>
+              <button className="w-full bg-white rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-50 shadow-sm transition-colors duration-150">
                 <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
                   <User className="w-4 h-4 text-gray-600" />
                 </div>
@@ -65,7 +65,7 @@ export default function More() {
               </button>
 
               {/* Help & Support */}
-              <button className="w-full bg-white rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-50 shadow-sm transition-colors duration-150 stagger-item" style={{ animationDelay: '0.2s' }}>
+              <button className="w-full bg-white rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-50 shadow-sm transition-colors duration-150">
                 <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
                   <span className="text-gray-600 text-xs font-bold">?</span>
                 </div>
@@ -74,7 +74,7 @@ export default function More() {
               </button>
 
               {/* App Information */}
-              <button className="w-full bg-white rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-50 shadow-sm transition-colors duration-150 stagger-item" style={{ animationDelay: '0.3s' }}>
+              <button className="w-full bg-white rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-50 shadow-sm transition-colors duration-150">
                 <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
                   <span className="text-gray-600 text-xs font-bold">i</span>
                 </div>
@@ -83,7 +83,7 @@ export default function More() {
               </button>
 
               {/* Settings */}
-              <button className="w-full bg-white rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-50 shadow-sm transition-colors duration-150 stagger-item" style={{ animationDelay: '0.4s' }}>
+              <button className="w-full bg-white rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-50 shadow-sm transition-colors duration-150">
                 <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
                   <span className="text-gray-600 text-xs font-bold">⚙</span>
                 </div>

@@ -434,7 +434,7 @@ export default function UkTransfer() {
   }
 
   return (
-    <div className="page-container page-fade-in" style={{ 
+    <div className="page-container" style={{ 
       position: 'fixed', 
       top: 0, 
       left: 0, 
@@ -514,9 +514,6 @@ export default function UkTransfer() {
                 <label className="block text-sm font-semibold text-gray-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                   Sort Code
                 </label>
-                <p className="text-xs text-gray-500 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Try: 20-00-00 (Barclays), 40-00-00 (HSBC), 04-00-00 (Monzo)
-                </p>
                 <input
                   {...form.register('sortCode')}
                   type="text"
@@ -524,23 +521,6 @@ export default function UkTransfer() {
                   maxLength={8}
                   className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    const formattedValue = formatSortCode(value);
-                    form.setValue('sortCode', formattedValue.replace(/-/g, ''));
-                    
-                    // Identify bank when sort code is complete (6 digits)
-                    const cleanValue = value.replace(/\D/g, '');
-                    if (cleanValue.length >= 6) {
-                      const bank = validateUKSortCode(cleanValue);
-                      setIdentifiedBank(bank || '');
-                    } else {
-                      setIdentifiedBank('');
-                    }
-                    
-                    // Update the display value with formatting
-                    e.target.value = formattedValue;
-                  }}
                 />
                 {identifiedBank && (
                   <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded-md flex items-center">

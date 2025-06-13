@@ -365,7 +365,7 @@ export default function IbanTransfer() {
   }
 
   return (
-    <div className="page-container page-fade-in" style={{ 
+    <div className="page-container" style={{ 
       position: 'fixed', 
       top: 0, 
       left: 0, 

@@ -102,7 +102,7 @@ export default function Transactions() {
   const transactions = getTransactions();
 
   return (
-    <div className="h-screen bg-[#f5f5f5] overflow-hidden flex flex-col ios-safe-top ios-safe-bottom page-fade-in" style={{ maxHeight: '100vh' }}>
+    <div className="h-screen bg-[#f5f5f5] overflow-hidden flex flex-col ios-safe-top ios-safe-bottom" style={{ maxHeight: '100vh' }}>
       {/* Header - BOI Style */}
       <div className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0">
         <div className="flex items-center mb-4">
@@ -142,8 +142,7 @@ export default function Transactions() {
             {transactions.map((transaction, index) => (
               <div 
                 key={transaction.id}
-                className="px-4 py-4 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer haptic-feedback stagger-item"
-                style={{ animationDelay: `${index * 0.05}s` }}
+                className="px-4 py-4 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer haptic-feedback"
                 onClick={() => alert(`Transaction details: ${transaction.description}\nAmount: €${Math.abs(transaction.amount).toFixed(2)}\nDate: ${transaction.date}\nBalance after: €${transaction.balance.toFixed(2)}`)}
               >
                 <div className="flex justify-between items-start">

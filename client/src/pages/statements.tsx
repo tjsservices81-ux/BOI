@@ -30,7 +30,7 @@ export default function Statements() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20 page-fade-in">
+    <div className="min-h-screen bg-gray-50 pb-20">
       {/* Header */}
       <div className="bg-white px-6 py-4 shadow-sm">
         <div className="flex items-center">
