@@ -398,14 +398,15 @@ export default function Profile() {
               onClick={async () => {
                 setIsSigningOut(true);
                 
-                // Clear user data and logout after 1 second
+                // Clear user data and logout after 1 second but keep animation
                 setTimeout(async () => {
                   await logout();
-                  // Navigate immediately after logout completes
-                  setTimeout(() => {
-                    window.location.href = '/login';
-                  }, 7000);
                 }, 1000);
+                
+                // Navigate after full 8-second animation
+                setTimeout(() => {
+                  window.location.href = '/login';
+                }, 8000);
               }}
               disabled={isSigningOut}
               className={`w-full flex items-center justify-center space-x-3 p-4 rounded-xl transition-all duration-300 ${
