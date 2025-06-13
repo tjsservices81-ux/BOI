@@ -514,9 +514,7 @@ export default function UkTransfer() {
                 <label className="block text-sm font-semibold text-gray-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                   Sort Code
                 </label>
-                <p className="text-xs text-gray-500 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Try: 20-00-00 (Barclays), 40-00-00 (HSBC), 04-00-00 (Monzo)
-                </p>
+
                 <input
                   {...form.register('sortCode')}
                   type="text"
@@ -527,10 +525,12 @@ export default function UkTransfer() {
                   onChange={(e) => {
                     const value = e.target.value;
                     const formattedValue = formatSortCode(value);
-                    form.setValue('sortCode', formattedValue.replace(/-/g, ''));
+                    const cleanValue = value.replace(/\D/g, '');
+                    
+                    // Set the clean value (no hyphens) for form validation
+                    form.setValue('sortCode', cleanValue, { shouldValidate: true });
                     
                     // Identify bank when sort code is complete (6 digits)
-                    const cleanValue = value.replace(/\D/g, '');
                     if (cleanValue.length >= 6) {
                       const bank = validateUKSortCode(cleanValue);
                       setIdentifiedBank(bank || '');
