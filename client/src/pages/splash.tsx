@@ -15,12 +15,6 @@ export default function Splash() {
   ];
 
   useEffect(() => {
-    // Immediately hide initial HTML splash screen
-    const initialSplash = document.getElementById('initial-splash');
-    if (initialSplash) {
-      initialSplash.style.display = 'none';
-    }
-    
     // Add splash-specific full screen class for iOS PWA
     document.body.classList.add('splash-fullscreen');
     
