@@ -17,21 +17,9 @@ export function SecurityWrapper({ children }: SecurityWrapperProps) {
                          target.getAttribute('role') === 'textbox' ||
                          target.closest('[role="textbox"]');
       
-      // Allow ALL normal typing and editing operations in form fields
+      // Allow ALL interactions in form fields without any blocking
       if (isFormField) {
-        // Allow normal typing, backspace, delete, arrow keys, tab, enter, etc.
-        const normalKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab', 'Enter', 'Escape'];
-        if (normalKeys.includes(e.key) || e.key.length === 1) {
-          return true; // Allow all normal typing
-        }
-        
-        // Allow copy/paste/select all and editing operations
-        if (e.ctrlKey || e.metaKey) {
-          const allowedKeys = ['a', 'c', 'v', 'x', 'z', 'y']; 
-          if (allowedKeys.includes(e.key.toLowerCase())) {
-            return true;
-          }
-        }
+        return; // Don't interfere with form fields at all
       }
       
       // Only block developer shortcuts outside form fields
@@ -64,7 +52,7 @@ export function SecurityWrapper({ children }: SecurityWrapperProps) {
 
     const handleSelectStart = (e: Event) => {
       const target = e.target as HTMLElement;
-      // Allow text selection in input fields, textareas, and contenteditable elements
+      // Allow all interactions in form fields
       if (target.tagName === 'INPUT' || 
           target.tagName === 'TEXTAREA' || 
           target.contentEditable === 'true' ||
@@ -72,9 +60,9 @@ export function SecurityWrapper({ children }: SecurityWrapperProps) {
           target.closest('textarea') ||
           target.getAttribute('role') === 'textbox' ||
           target.closest('[role="textbox"]')) {
-        return true;
+        return; // Don't interfere with form fields
       }
-      // Only prevent selection outside form fields
+      // Only prevent text selection outside form fields
       e.preventDefault();
       return false;
     };
@@ -92,12 +80,12 @@ export function SecurityWrapper({ children }: SecurityWrapperProps) {
                          target.closest('input') ||
                          target.closest('textarea');
       
-      // Allow normal touch interaction with form fields
+      // Don't interfere with form fields at all
       if (isFormField) {
-        return true;
+        return;
       }
       
-      // Prevent long press on mobile that might trigger sharing (only outside form fields)
+      // Only prevent multi-touch gestures outside form fields
       if (e.touches.length > 1) {
         e.preventDefault();
       }
@@ -111,12 +99,12 @@ export function SecurityWrapper({ children }: SecurityWrapperProps) {
                          target.closest('input') ||
                          target.closest('textarea');
       
-      // Allow normal touch scrolling in form fields
+      // Don't interfere with form fields at all
       if (isFormField) {
-        return true;
+        return;
       }
       
-      // Prevent pinch zoom (only outside form fields)
+      // Only prevent pinch zoom outside form fields
       if (e.touches.length > 1) {
         e.preventDefault();
       }

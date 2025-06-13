@@ -103,11 +103,7 @@ export default function UkTransfer() {
         sessionStorage.removeItem('selectedPayee');
       }
     }
-    
-    // Refresh accounts only when needed
-    const interval = setInterval(loadAccounts, 5000);
-    return () => clearInterval(interval);
-  }, [form]);
+  }, []); // Only run once on mount
 
   const onSubmit = async (data: UkTransferData) => {
     setFormData(data);
