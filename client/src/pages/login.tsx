@@ -624,6 +624,13 @@ export default function Login() {
                     onMouseLeave={handleBiometricHoldEnd}
                     onTouchStart={handleBiometricHoldStart}
                     onTouchEnd={handleBiometricHoldEnd}
+                    style={{
+                      touchAction: 'manipulation',
+                      userSelect: 'none',
+                      WebkitUserSelect: 'none',
+                      WebkitTouchCallout: 'none',
+                      WebkitTapHighlightColor: 'transparent'
+                    }}
                   >
                     {/* Progress ring for holding */}
                     {isScanning && (
@@ -677,7 +684,17 @@ export default function Login() {
                       />
                     </div>
                   </div>
-                  <p className="text-gray-700 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  <p 
+                    className="text-gray-700 text-sm" 
+                    style={{ 
+                      fontFamily: 'OpenSans, sans-serif',
+                      touchAction: 'manipulation',
+                      userSelect: 'none',
+                      WebkitUserSelect: 'none',
+                      WebkitTouchCallout: 'none',
+                      WebkitTapHighlightColor: 'transparent'
+                    }}
+                  >
                     {biometricVerified ? 'Fingerprint verified' : isScanning ? 'Hold to scan fingerprint...' : 'Biometrics login'}
                   </p>
                 </div>
