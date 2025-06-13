@@ -72,7 +72,7 @@ function AppRoutes() {
         <Route path="/login" component={Login} />
         <Route path="/more" component={More} />
         <Route path="/">
-          {user ? <Dashboard /> : <Login />}
+          {user ? <Dashboard /> : <Redirect to="/login" />}
         </Route>
         <Route path="/dashboard">
           <ProtectedRoute>
