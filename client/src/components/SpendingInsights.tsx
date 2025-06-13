@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, DollarSign, Calendar, Eye, EyeOff } from 'lucide-react';
+import { UserDataManager } from '@/utils/userDataManager';
 
 interface SpendingData {
   totalSpent: number;
@@ -17,7 +18,7 @@ export default function SpendingInsights() {
 
   useEffect(() => {
     const calculateSpendingInsights = () => {
-      const transactions = JSON.parse(localStorage.getItem('bankTransactions') || '[]');
+      const transactions = UserDataManager.getUserTransactions();
       
       if (transactions.length === 0) {
         setSpendingData(null);

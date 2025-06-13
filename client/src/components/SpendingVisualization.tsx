@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { UserDataManager } from '@/utils/userDataManager';
 
 interface Transaction {
   id: number;
@@ -41,7 +42,7 @@ export default function SpendingVisualization() {
 
   useEffect(() => {
     const loadTransactions = () => {
-      const storedTransactions = JSON.parse(localStorage.getItem('bankTransactions') || '[]');
+      const storedTransactions = UserDataManager.getUserTransactions();
       
       // Limit patterns to improve performance - only show recent transactions
       const recentTransactions = storedTransactions.slice(-20);

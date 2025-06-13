@@ -18,7 +18,7 @@ export default function MiniSpendingChart({ accountId }: MiniSpendingChartProps)
   useEffect(() => {
     const calculateChartData = () => {
       // Use UserDataManager for consistent data access
-      const allTransactions = JSON.parse(localStorage.getItem('bankTransactions') || '[]');
+      const allTransactions = UserDataManager.getUserTransactions();
       
       // Early return if no transactions
       if (allTransactions.length === 0) {
