@@ -41,26 +41,32 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function AppRoutes() {
   const { user, isLoading } = useAuth();
   const [location] = useLocation();
-  const [showSplash, setShowSplash] = useState(() => {
-    // Only show splash if not already shown in this session
-    return !sessionStorage.getItem('splashShown');
-  });
-
-  // Listen for splash completion
+  const [splashShown, setSplashShown] = useState(false);
+  
+  // Set initial theme color to pure blue immediately on mount
   useEffect(() => {
-    const handleSplashComplete = () => {
-      setShowSplash(false);
-    };
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+    if (themeColorMeta) {
+      themeColorMeta.setAttribute('content', '#0000ff');
+    }
     
-    window.addEventListener('splashComplete', handleSplashComplete);
-    
-    return () => {
-      window.removeEventListener('splashComplete', handleSplashComplete);
-    };
+    const hasShownSplash = sessionStorage.getItem('splashShown');
+    if (hasShownSplash) {
+      setSplashShown(true);
+      // If splash was already shown, set theme to #126987
+      if (themeColorMeta) {
+        themeColorMeta.setAttribute('content', '#126987');
+      }
+    }
   }, []);
 
-  // Show splash if needed
-  if (showSplash) {
+  // If splash hasn't been shown yet, or we're on the splash route, show splash immediately
+  if (!splashShown || location === '/splash') {
+    return <Splash />;
+  }
+  
+  // Show loading state while checking authentication
+  if (isLoading) {
     return <Splash />;
   }
   

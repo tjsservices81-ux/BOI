@@ -15,12 +15,6 @@ export default function Splash() {
   ];
 
   useEffect(() => {
-    // Immediately hide initial HTML splash screen
-    const initialSplash = document.getElementById('initial-splash');
-    if (initialSplash) {
-      initialSplash.style.display = 'none';
-    }
-    
     // Add splash-specific full screen class for iOS PWA
     document.body.classList.add('splash-fullscreen');
     
@@ -44,10 +38,9 @@ export default function Splash() {
     // Navigate to login after all steps complete (8 seconds total)
     const finalTimer = setTimeout(() => {
       setIsVisible(false);
+      // Mark splash as shown in session storage
+      sessionStorage.setItem('splashShown', 'true');
       setTimeout(() => {
-        // Mark splash as completed and dispatch event
-        sessionStorage.setItem('splashShown', 'true');
-        window.dispatchEvent(new CustomEvent('splashComplete'));
         navigate('/login');
       }, 300); // Brief fade out before navigation
     }, loadingSteps.length * 1600);
