@@ -201,12 +201,9 @@ html {
 
 /* Page transition animations for UK transfer flow */
 .page-container {
-  animation-duration: 0.4s;
-  animation-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1);
+  animation-duration: 0.3s;
+  animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
   animation-fill-mode: both;
-  will-change: transform, opacity;
-  backface-visibility: hidden;
-  perspective: 1000px;
 }
 
 .slide-in-left {
@@ -219,27 +216,27 @@ html {
 
 .page-fade-in {
   animation-name: fadeIn;
-  animation-duration: 0.3s;
+  animation-duration: 0.2s;
 }
 
 @keyframes slideInFromLeft {
   0% {
-    transform: translate3d(100%, 0, 0);
+    transform: translateX(100%);
     opacity: 0;
   }
   100% {
-    transform: translate3d(0, 0, 0);
+    transform: translateX(0);
     opacity: 1;
   }
 }
 
 @keyframes slideInFromRight {
   0% {
-    transform: translate3d(-100%, 0, 0);
+    transform: translateX(-100%);
     opacity: 0;
   }
   100% {
-    transform: translate3d(0, 0, 0);
+    transform: translateX(0);
     opacity: 1;
   }
 }
@@ -247,28 +244,20 @@ html {
 @keyframes fadeIn {
   0% {
     opacity: 0;
-    transform: translateY(10px);
   }
   100% {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
 /* Success screen fade-in animation */
 .animate-fade-in {
-  animation: fadeIn 0.6s ease-out;
+  animation: fadeIn 0.5s ease-out;
 }
 
 /* Button active state transitions */
 .active\:scale-98:active {
   transform: scale(0.98);
-  transition: transform 0.1s ease-out;
-}
-
-/* Improved performance for animations */
-.page-container * {
-  transform-style: preserve-3d;
 }
 
 /* Prevent invisible text during font load */
