@@ -54,7 +54,7 @@ export default function BottomNavigation() {
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 ios-safe-bottom z-50 smooth-interaction">
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 ios-safe-bottom z-50 smooth-interaction bottom-nav-container">
       <div className="flex justify-around items-center h-12">
         {navigationItems.map((item) => (
           <button
@@ -67,18 +67,28 @@ export default function BottomNavigation() {
             <img 
               src={item.isActive ? item.highlightIcon : item.icon} 
               alt={item.label} 
-              className="w-6 h-6"
+              className="w-6 h-6 asset-instant"
               loading="eager"
-              style={{ imageRendering: 'crisp-edges' }}
+              decoding="sync"
+              style={{ 
+                imageRendering: 'crisp-edges',
+                opacity: 1,
+                visibility: 'visible',
+                display: 'block'
+              }}
             />
             <span 
-              className={`text-xs font-medium ${item.isActive ? 'text-[#126987]' : 'text-gray-600'}`}
-              style={{ fontFamily: 'OpenSans, sans-serif' }}
+              className={`text-xs font-medium asset-instant ${item.isActive ? 'text-[#126987]' : 'text-gray-600'}`}
+              style={{ 
+                fontFamily: 'OpenSans, sans-serif',
+                opacity: 1,
+                visibility: 'visible'
+              }}
             >
               {item.label}
             </span>
             {item.isActive && (
-              <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-[#126987] rounded-full"></div>
+              <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-[#126987] rounded-full asset-instant"></div>
             )}
           </button>
         ))}

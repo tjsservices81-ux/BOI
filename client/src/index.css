@@ -127,8 +127,35 @@ input, textarea {
 /* Font loading optimization - immediate display */
 @font-face {
   font-family: 'OpenSans';
+  font-style: normal;
+  font-weight: 400;
   font-display: block;
-  src: local('Open Sans'), local('OpenSans');
+  src: url('/OpenSans-Regular-webfont.woff2') format('woff2'),
+       url('/OpenSans-Regular-webfont.woff') format('woff'),
+       local('Open Sans Regular'),
+       local('OpenSans-Regular');
+}
+
+@font-face {
+  font-family: 'OpenSans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: block;
+  src: url('/OpenSans-Semibold-webfont.woff2') format('woff2'),
+       url('/OpenSans-Semibold-webfont.woff') format('woff'),
+       local('Open Sans Semibold'),
+       local('OpenSans-Semibold');
+}
+
+@font-face {
+  font-family: 'OpenSans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: block;
+  src: url('/OpenSans-Bold-webfont.woff2') format('woff2'),
+       url('/OpenSans-Bold-webfont.woff') format('woff'),
+       local('Open Sans Bold'),
+       local('OpenSans-Bold');
 }
 
 /* Critical rendering optimizations */
@@ -171,6 +198,32 @@ img, svg {
   visibility: visible !important;
   /* Prevent layout shifts */
   will-change: auto;
+  /* Instant loading - no delays */
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Prevent icon flickering */
+.lucide, .lucide-react, [data-lucide] {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: inline-block !important;
+  transition: none !important;
+  animation: none !important;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Force immediate text rendering */
+h1, h2, h3, h4, h5, h6, p, span, div, button, input, label {
+  font-family: 'OpenSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-display: block !important;
+  text-rendering: optimizeSpeed;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Prevent text flickering */
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 /* Force immediate font rendering */
@@ -297,6 +350,80 @@ input, select, textarea {
 
 .loading-visible {
   opacity: 1;
+}
+
+/* Critical component pre-rendering */
+.component-preload {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 500px;
+}
+
+/* Instant asset loading */
+.asset-instant {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: block !important;
+  transform: none !important;
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Prevent button icon delays */
+button svg, button .lucide {
+  opacity: 1 !important;
+  display: inline-block !important;
+  transition: none !important;
+}
+
+/* Instant bottom navigation rendering */
+.bottom-nav-container {
+  transform: translateZ(0);
+  will-change: auto;
+  backface-visibility: hidden;
+}
+
+.bottom-nav-container svg,
+.bottom-nav-container .lucide {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transition: none !important;
+}
+
+/* Form field instant rendering */
+input, textarea, select {
+  font-family: 'OpenSans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Card component instant loading */
+.card, .card-content, .card-header {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: none !important;
+}
+
+/* Dashboard elements instant render */
+.dashboard-card, .account-card, .quick-action {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Payment screen instant render */
+.payment-option, .transfer-option {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: none !important;
+}
+
+/* Prevent any delayed icon loading in lists */
+.list-item svg, .menu-item svg, .option-item svg {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: inline-block !important;
+  transition: none !important;
 }
 
 /* Preload critical assets to prevent flickering */
