@@ -203,7 +203,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         customerNumber: accountData.customerNumber
       });
     } catch (error) {
-      console.error('OTC generation failed:', error);
+      // OTC generation failed
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid account data format" });
       }
@@ -235,7 +235,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
     } catch (error) {
-      console.error('OTC validation failed:', error);
+      // OTC validation failed
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid validation data format" });
       }

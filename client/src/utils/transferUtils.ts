@@ -63,7 +63,7 @@ export const processTransfer = (
   console.log('Selected account:', selectedAccount);
   
   if (!selectedAccount) {
-    console.error('Account not found');
+    // Account not found
     return false;
   }
   
@@ -71,8 +71,7 @@ export const processTransfer = (
   console.log('Current balance:', currentBalance, 'Transfer amount:', amount);
   
   if (amount > currentBalance) {
-    console.error('Insufficient funds');
-    console.error('Transfer failed');
+    // Insufficient funds - transfer failed
     return false;
   }
   
