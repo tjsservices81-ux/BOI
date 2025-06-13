@@ -52,8 +52,181 @@ router.get('/check-ip/:ip', adminAuth, (req, res) => {
   res.json({ ip, approved });
 });
 
+// Admin login page
+router.get('/login', (req, res) => {
+  const loginPage = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>BOI Admin Login</title>
+      <style>
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+        }
+        
+        body {
+          background: linear-gradient(135deg, #0000ff 0%, #126987 100%);
+          min-height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 20px;
+        }
+        
+        .login-container {
+          background: white;
+          border-radius: 20px;
+          padding: 40px;
+          box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+          text-align: center;
+          max-width: 400px;
+          width: 100%;
+        }
+        
+        .logo {
+          width: 80px;
+          height: 80px;
+          background: #0000ff;
+          border-radius: 20px;
+          margin: 0 auto 30px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-size: 32px;
+          font-weight: bold;
+        }
+        
+        h1 {
+          color: #333;
+          font-size: 28px;
+          margin-bottom: 10px;
+        }
+        
+        p {
+          color: #666;
+          font-size: 16px;
+          margin-bottom: 30px;
+        }
+        
+        .form-group {
+          margin-bottom: 25px;
+          text-align: left;
+        }
+        
+        .form-group label {
+          display: block;
+          margin-bottom: 8px;
+          font-weight: 600;
+          color: #555;
+        }
+        
+        .form-group input {
+          width: 100%;
+          padding: 15px;
+          border: 2px solid #e0e0e0;
+          border-radius: 10px;
+          font-size: 16px;
+          transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus {
+          outline: none;
+          border-color: #0000ff;
+        }
+        
+        .btn {
+          background: #0000ff;
+          color: white;
+          border: none;
+          padding: 15px 30px;
+          border-radius: 10px;
+          font-size: 16px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s;
+          width: 100%;
+        }
+        
+        .btn:hover {
+          background: #0000cc;
+          transform: translateY(-2px);
+        }
+        
+        .error {
+          color: #e74c3c;
+          background: #ffebee;
+          padding: 10px;
+          border-radius: 5px;
+          margin-bottom: 20px;
+          display: none;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="login-container">
+        <div class="logo">🏦</div>
+        <h1>Admin Access</h1>
+        <p>Enter your admin key to manage access control</p>
+        
+        <div id="error" class="error"></div>
+        
+        <form onsubmit="login(event)">
+          <div class="form-group">
+            <label for="adminKey">Admin Key</label>
+            <input type="password" id="adminKey" placeholder="Enter admin key" required />
+          </div>
+          <button type="submit" class="btn">Access Admin Panel</button>
+        </form>
+      </div>
+      
+      <script>
+        function login(event) {
+          event.preventDefault();
+          
+          const adminKey = document.getElementById('adminKey').value;
+          const errorDiv = document.getElementById('error');
+          
+          if (!adminKey) {
+            showError('Please enter the admin key');
+            return;
+          }
+          
+          // Store the admin key and redirect to panel
+          localStorage.setItem('adminKey', adminKey);
+          window.location.href = '/admin/panel?key=' + encodeURIComponent(adminKey);
+        }
+        
+        function showError(message) {
+          const errorDiv = document.getElementById('error');
+          errorDiv.textContent = message;
+          errorDiv.style.display = 'block';
+          
+          setTimeout(() => {
+            errorDiv.style.display = 'none';
+          }, 5000);
+        }
+      </script>
+    </body>
+    </html>
+  `;
+  
+  res.send(loginPage);
+});
+
 // Admin panel HTML
-router.get('/panel', adminAuth, (req, res) => {
+router.get('/panel', (req, res) => {
+  const adminKey = req.query.key || req.headers['x-admin-key'];
+  const correctKey = 'BOI_ADMIN_2025_SECURE';
+  
+  if (!adminKey || adminKey !== correctKey) {
+    return res.redirect('/admin/login');
+  }
   const adminPanel = `
     <!DOCTYPE html>
     <html lang="en">
