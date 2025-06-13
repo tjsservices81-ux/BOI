@@ -7,7 +7,7 @@ import { z } from "zod";
 import { validateUKSortCode, formatSortCode, validateUKAccountNumber } from "../utils/bankValidation";
 import { getAccounts, processTransfer, generateReference } from "../utils/transferUtils";
 import { UserDataManager } from "../utils/userDataManager";
-import { identifyBankFromSortCode, formatSortCodeDisplay } from "../utils/ukBankDatabase";
+import { identifyBankFromSortCode, getBankDisplayName, type BankInfo } from "../utils/ukBankDatabase";
 
 const ukTransferSchema = z.object({
   recipientName: z.string().min(2, "Recipient name is required"),
@@ -24,7 +24,7 @@ export default function UkTransfer() {
   const [, navigate] = useLocation();
   const [step, setStep] = useState<'form' | 'confirm' | 'success'>('form');
   const [transferReference, setTransferReference] = useState<string>('');
-  const [identifiedBank, setIdentifiedBank] = useState<string>('');
+  const [identifiedBank, setIdentifiedBank] = useState<BankInfo | null>(null);
   const [showReference, setShowReference] = useState<boolean>(false);
   const [animationProgress, setAnimationProgress] = useState<number>(0);
   const [processingStage, setProcessingStage] = useState<string>('Verifying transfer details...');

@@ -1,114 +1,25 @@
-// UK bank sort code identification system
+// UK Extended Industry Sort Code Directory (EISCD) lookup system
+import eiscdData from '../data/eiscd.json';
 
 export interface BankInfo {
+  bankName: string;
+  branchName: string;
+}
+
+export interface LegacyBankInfo {
   name: string;
   shortName: string;
 }
 
-// Function to identify banks from sort codes
-function identifyBankFromPrefix(prefix: string): BankInfo | null {
-  const bankMappings: Array<{ prefixes: string[], bank: BankInfo }> = [
-    { prefixes: ['07'], bank: { name: 'Nationwide Building Society', shortName: 'Nationwide' } },
-    { prefixes: ['08'], bank: { name: 'The Co-operative Bank PLC', shortName: 'Co-operative Bank' } },
-    { prefixes: ['09'], bank: { name: 'Santander UK PLC', shortName: 'Santander' } },
-    { prefixes: ['11'], bank: { name: 'Halifax', shortName: 'Halifax' } },
-    { prefixes: ['16', '18', '83'], bank: { name: 'Royal Bank of Scotland PLC', shortName: 'RBS' } },
-    { prefixes: ['20', '23'], bank: { name: 'Barclays Bank PLC', shortName: 'Barclays' } },
-    { prefixes: ['30', '77'], bank: { name: 'Lloyds Bank PLC', shortName: 'Lloyds Bank' } },
-    { prefixes: ['40', '44'], bank: { name: 'HSBC Bank PLC', shortName: 'HSBC' } },
-    { prefixes: ['50', '51', '52', '53', '54', '55', '56', '60'], bank: { name: 'National Westminster Bank PLC', shortName: 'NatWest' } },
-    { prefixes: ['72'], bank: { name: 'Santander UK PLC', shortName: 'Santander' } },
-    { prefixes: ['82'], bank: { name: 'Clydesdale Bank PLC', shortName: 'Clydesdale Bank' } },
-    { prefixes: ['90'], bank: { name: 'Bank of Ireland (UK) PLC', shortName: 'Bank of Ireland UK' } },
-    { prefixes: ['98'], bank: { name: 'Ulster Bank Ltd', shortName: 'Ulster Bank' } },
-  ];
-
-  for (const mapping of bankMappings) {
-    if (mapping.prefixes.includes(prefix)) {
-      return mapping.bank;
-    }
-  }
-  return null;
-}
-
-// Detailed sort code mappings for more precise identification
-export const DETAILED_SORT_CODE_MAPPINGS: Record<string, BankInfo> = {
-  // Barclays ranges
-  '200000': { name: 'Barclays Bank PLC', shortName: 'Barclays' },
-  '200001': { name: 'Barclays Bank PLC', shortName: 'Barclays' },
-  '200002': { name: 'Barclays Bank PLC', shortName: 'Barclays' },
-  '200003': { name: 'Barclays Bank PLC', shortName: 'Barclays' },
-  '200004': { name: 'Barclays Bank PLC', shortName: 'Barclays' },
-  '200005': { name: 'Barclays Bank PLC', shortName: 'Barclays' },
-  '208000': { name: 'Barclays Bank PLC', shortName: 'Barclays' },
-  '234567': { name: 'Barclays Bank PLC', shortName: 'Barclays' },
-  
-  // HSBC ranges
-  '400000': { name: 'HSBC Bank PLC', shortName: 'HSBC' },
-  '400001': { name: 'HSBC Bank PLC', shortName: 'HSBC' },
-  '404784': { name: 'HSBC Bank PLC', shortName: 'HSBC' },
-  '444444': { name: 'HSBC Bank PLC', shortName: 'HSBC' },
-  
-  // NatWest ranges
-  '500000': { name: 'National Westminster Bank PLC', shortName: 'NatWest' },
-  '500001': { name: 'National Westminster Bank PLC', shortName: 'NatWest' },
-  '560003': { name: 'National Westminster Bank PLC', shortName: 'NatWest' },
-  '601613': { name: 'National Westminster Bank PLC', shortName: 'NatWest' },
-  
-  // Lloyds ranges
-  '300000': { name: 'Lloyds Bank PLC', shortName: 'Lloyds Bank' },
-  '309634': { name: 'Lloyds Bank PLC', shortName: 'Lloyds Bank' },
-  '770000': { name: 'Lloyds Bank PLC', shortName: 'Lloyds Bank' },
-  
-  // Santander ranges
-  '090128': { name: 'Santander UK PLC', shortName: 'Santander' },
-  '721234': { name: 'Santander UK PLC', shortName: 'Santander' },
-  
-  // Halifax ranges
-  '110000': { name: 'Halifax', shortName: 'Halifax' },
-  '113344': { name: 'Halifax', shortName: 'Halifax' },
-  
-  // Nationwide ranges
-  '070000': { name: 'Nationwide Building Society', shortName: 'Nationwide' },
-  '070116': { name: 'Nationwide Building Society', shortName: 'Nationwide' },
-  
-  // Monzo
-  '040004': { name: 'Monzo Bank Ltd', shortName: 'Monzo' },
-  
-  // Starling Bank
-  '608371': { name: 'Starling Bank Ltd', shortName: 'Starling Bank' },
-  
-  // Metro Bank
-  '238000': { name: 'Metro Bank PLC', shortName: 'Metro Bank' },
-  
-  // TSB
-  '773300': { name: 'TSB Bank PLC', shortName: 'TSB' },
-  
-  // Co-operative Bank
-  '089999': { name: 'The Co-operative Bank PLC', shortName: 'Co-operative Bank' },
-  
-  // First Direct
-  '401276': { name: 'First Direct', shortName: 'First Direct' },
-  
-  // Bank of Ireland UK
-  '902010': { name: 'Bank of Ireland (UK) PLC', shortName: 'Bank of Ireland UK' },
-  
-  // Ulster Bank
-  '983100': { name: 'Ulster Bank Ltd', shortName: 'Ulster Bank' },
-  
-  // Yorkshire Bank
-  '050000': { name: 'Yorkshire Bank PLC', shortName: 'Yorkshire Bank' },
-  
-  // Clydesdale Bank
-  '820000': { name: 'Clydesdale Bank PLC', shortName: 'Clydesdale Bank' },
-};
+// Pre-compiled EISCD lookup map for optimal performance
+const EISCD_LOOKUP: Record<string, BankInfo> = eiscdData as Record<string, BankInfo>;
 
 /**
- * Identifies the bank name from a UK sort code
- * @param sortCode - 6-digit sort code (with or without hyphens)
- * @returns Bank information or null if not found
+ * Fast EISCD lookup using the official Extended Industry Sort Code Directory
+ * @param sortCode - 6-digit UK sort code
+ * @returns Official bank and branch information or null if not found
  */
-export function identifyBankFromSortCode(sortCode: string): BankInfo | null {
+export function lookupEISCD(sortCode: string): BankInfo | null {
   if (!sortCode) return null;
   
   // Clean the sort code - remove any hyphens or spaces
@@ -117,14 +28,47 @@ export function identifyBankFromSortCode(sortCode: string): BankInfo | null {
   // Must be exactly 6 digits
   if (!/^\d{6}$/.test(cleanSortCode)) return null;
   
-  // First try exact match in detailed mappings
-  if (DETAILED_SORT_CODE_MAPPINGS[cleanSortCode]) {
-    return DETAILED_SORT_CODE_MAPPINGS[cleanSortCode];
-  }
+  // Direct lookup in EISCD database
+  return EISCD_LOOKUP[cleanSortCode] || null;
+}
+
+/**
+ * Creates a display-friendly bank name from EISCD data
+ * @param bankInfo - EISCD bank information
+ * @returns Short bank name for display
+ */
+export function getBankDisplayName(bankInfo: BankInfo): string {
+  // Extract short name from full bank name
+  const bankName = bankInfo.bankName;
   
-  // Then try prefix matching (first 2 digits)
-  const prefix = cleanSortCode.substring(0, 2);
-  return identifyBankFromPrefix(prefix);
+  if (bankName.includes('Barclays')) return 'Barclays';
+  if (bankName.includes('HSBC')) return 'HSBC';
+  if (bankName.includes('National Westminster') || bankName.includes('NatWest')) return 'NatWest';
+  if (bankName.includes('Lloyds')) return 'Lloyds Bank';
+  if (bankName.includes('Santander')) return 'Santander';
+  if (bankName.includes('Halifax')) return 'Halifax';
+  if (bankName.includes('Nationwide')) return 'Nationwide';
+  if (bankName.includes('Monzo')) return 'Monzo';
+  if (bankName.includes('Starling')) return 'Starling Bank';
+  if (bankName.includes('Metro Bank')) return 'Metro Bank';
+  if (bankName.includes('TSB')) return 'TSB';
+  if (bankName.includes('Co-operative')) return 'Co-operative Bank';
+  if (bankName.includes('Bank of Ireland')) return 'Bank of Ireland UK';
+  if (bankName.includes('Ulster Bank')) return 'Ulster Bank';
+  if (bankName.includes('Clydesdale')) return 'Clydesdale Bank';
+  if (bankName.includes('Royal Bank of Scotland')) return 'RBS';
+  
+  // Default to first two words of bank name
+  return bankName.split(' ').slice(0, 2).join(' ');
+}
+
+/**
+ * Identifies the bank name from a UK sort code using EISCD
+ * @param sortCode - 6-digit sort code (with or without hyphens)
+ * @returns Bank information from EISCD or null if not found
+ */
+export function identifyBankFromSortCode(sortCode: string): BankInfo | null {
+  return lookupEISCD(sortCode);
 }
 
 /**
