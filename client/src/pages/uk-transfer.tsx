@@ -7,6 +7,7 @@ import { z } from "zod";
 import { validateUKSortCode, formatSortCode, validateUKAccountNumber } from "../utils/bankValidation";
 import { getAccounts, processTransfer, generateReference } from "../utils/transferUtils";
 import { UserDataManager } from "../utils/userDataManager";
+import { identifyBankFromSortCode, formatSortCodeDisplay } from "../utils/ukBankDatabase";
 
 const ukTransferSchema = z.object({
   recipientName: z.string().min(2, "Recipient name is required"),
@@ -74,6 +75,26 @@ export default function UkTransfer() {
     }
   };
 
+  // Handle real-time sort code identification
+  const handleSortCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/[^\d]/g, ''); // Remove non-digits
+    
+    // Update form value
+    form.setValue('sortCode', value);
+    
+    // Identify bank if we have enough digits
+    if (value.length >= 2) {
+      const bankInfo = identifyBankFromSortCode(value);
+      if (bankInfo) {
+        setIdentifiedBank(bankInfo.shortName);
+      } else {
+        setIdentifiedBank('');
+      }
+    } else {
+      setIdentifiedBank('');
+    }
+  };
+
   useEffect(() => {
     const loadAccounts = () => {
       setAccounts(getAccounts());
@@ -94,6 +115,12 @@ export default function UkTransfer() {
           form.setValue('recipientName', payee.name);
           form.setValue('sortCode', sortCode.replace(/-/g, ''));
           form.setValue('accountNumber', accountNumber);
+          
+          // Identify bank for pre-filled sort code
+          const bankInfo = identifyBankFromSortCode(sortCode.replace(/-/g, ''));
+          if (bankInfo) {
+            setIdentifiedBank(bankInfo.shortName);
+          }
           
           // Clear the session storage after using
           sessionStorage.removeItem('selectedPayee');
