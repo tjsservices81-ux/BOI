@@ -40,8 +40,8 @@ export default function Profile() {
         name: userProfile.name,
         email: userProfile.email,
         phone: userProfile.phone,
-        address: userProfile.address || "Address not set",
-        dateOfBirth: userProfile.dateOfBirth || "Not provided",
+        address: userProfile.address || "",
+        dateOfBirth: userProfile.dateOfBirth || "",
         customerNumber: userProfile.customerNumber,
         joinDate: userProfile.joinDate ? `Member since ${new Date(userProfile.joinDate).getFullYear()}` : "Member since 2018"
       });
@@ -612,6 +612,35 @@ export default function Profile() {
                 />
               </div>
 
+              {/* Date of Birth */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Date of Birth
+                </label>
+                <input
+                  type="date"
+                  value={profileData.dateOfBirth || ''}
+                  onChange={(e) => setProfileData({ ...profileData, dateOfBirth: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-xl"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                />
+              </div>
+
+              {/* Address */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Address
+                </label>
+                <textarea
+                  value={profileData.address || ''}
+                  onChange={(e) => setProfileData({ ...profileData, address: e.target.value })}
+                  placeholder="Street address, City, County, Eircode"
+                  rows={3}
+                  className="w-full p-3 border border-gray-300 rounded-xl resize-none"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                />
+              </div>
+
               {/* Join Date */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -635,6 +664,8 @@ export default function Profile() {
                     name: profileData.name,
                     email: profileData.email,
                     phone: profileData.phone,
+                    dateOfBirth: profileData.dateOfBirth,
+                    address: profileData.address,
                     joinDate: profileData.joinDate
                   });
                   alert('Profile updated successfully');
