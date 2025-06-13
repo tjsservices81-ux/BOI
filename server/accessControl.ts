@@ -6,6 +6,8 @@ const AUTHORIZED_ACCESS = {
   // Add specific IPs you want to allow
   allowedIPs: new Set<string>([
     '127.0.0.1', // localhost for development
+    '72.136.118.136', // Your primary IP
+    '72.136.119.203', // Your current IP
     // Add your IP addresses here
   ]),
   
