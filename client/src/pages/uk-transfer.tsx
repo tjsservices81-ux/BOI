@@ -91,12 +91,17 @@ export default function UkTransfer() {
         const payee = JSON.parse(selectedPayeeData);
         if (payee.transferType === 'UK Transfer' && payee.accountInfo) {
           // Parse sort code and account number from accountInfo
-          const [sortCode, accountNumber] = payee.accountInfo.split(' ');
-          
-          // Pre-fill form with payee data
-          form.setValue('recipientName', payee.name);
-          form.setValue('sortCode', sortCode.replace(/-/g, ''));
-          form.setValue('accountNumber', accountNumber);
+          // Format: "12-34-56 12345678"
+          const parts = payee.accountInfo.split(' ');
+          if (parts.length >= 2) {
+            const sortCode = parts[0].replace(/-/g, ''); // Remove hyphens from sort code
+            const accountNumber = parts[1];
+            
+            // Pre-fill form with payee data
+            form.setValue('recipientName', payee.name);
+            form.setValue('sortCode', sortCode);
+            form.setValue('accountNumber', accountNumber);
+          }
           
           // Clear the session storage after using
           sessionStorage.removeItem('selectedPayee');
