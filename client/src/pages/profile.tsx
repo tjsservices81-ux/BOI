@@ -398,18 +398,14 @@ export default function Profile() {
               onClick={async () => {
                 setIsSigningOut(true);
                 
-                // Start the animation
-                await new Promise(resolve => setTimeout(resolve, 100));
-                
                 // Clear user data and logout after 1 second
                 setTimeout(async () => {
                   await logout();
+                  // Navigate immediately after logout completes
+                  setTimeout(() => {
+                    window.location.href = '/login';
+                  }, 7000);
                 }, 1000);
-                
-                // Navigate to login after the full 8-second animation
-                setTimeout(() => {
-                  navigate('/login');
-                }, 8000);
               }}
               disabled={isSigningOut}
               className={`w-full flex items-center justify-center space-x-3 p-4 rounded-xl transition-all duration-300 ${
@@ -1129,26 +1125,10 @@ export default function Profile() {
                   <motion.p 
                     className="text-white/70 text-sm"
                     style={{ fontFamily: 'OpenSans, sans-serif' }}
-                    animate={{ opacity: [1, 1, 0] }}
-                    transition={{ duration: 2, times: [0, 0.7, 1] }}
+                    animate={{ opacity: [1, 0.6, 1] }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
                   >
-                    Securing your session...
-                  </motion.p>
-                  <motion.p 
-                    className="text-white/70 text-sm absolute"
-                    style={{ fontFamily: 'OpenSans, sans-serif' }}
-                    animate={{ opacity: [0, 0, 1, 1, 0] }}
-                    transition={{ duration: 6, times: [0, 0.25, 0.35, 0.65, 0.75] }}
-                  >
-                    Clearing sensitive data...
-                  </motion.p>
-                  <motion.p 
-                    className="text-white/70 text-sm absolute"
-                    style={{ fontFamily: 'OpenSans, sans-serif' }}
-                    animate={{ opacity: [0, 0, 1, 1] }}
-                    transition={{ duration: 8, times: [0, 0.625, 0.75, 1] }}
-                  >
-                    Finalizing logout process...
+                    Signing out...
                   </motion.p>
                 </motion.div>
               </motion.div>
