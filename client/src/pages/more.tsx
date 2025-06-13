@@ -56,7 +56,7 @@ export default function More() {
             <div className="w-full max-w-sm mx-auto space-y-3">
               
               {/* Login with another ID */}
-              <button className="w-full bg-white rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-50 shadow-sm transition-colors duration-150">
+              <button className="w-full bg-white rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-50 shadow-sm transition-colors duration-150 stagger-item" style={{ animationDelay: '0.1s' }}>
                 <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
                   <User className="w-4 h-4 text-gray-600" />
                 </div>
@@ -65,7 +65,7 @@ export default function More() {
               </button>
 
               {/* Help & Support */}
-              <button className="w-full bg-white rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-50 shadow-sm transition-colors duration-150">
+              <button className="w-full bg-white rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-50 shadow-sm transition-colors duration-150 stagger-item" style={{ animationDelay: '0.2s' }}>
                 <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
                   <span className="text-gray-600 text-xs font-bold">?</span>
                 </div>
@@ -74,7 +74,7 @@ export default function More() {
               </button>
 
               {/* App Information */}
-              <button className="w-full bg-white rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-50 shadow-sm transition-colors duration-150">
+              <button className="w-full bg-white rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-50 shadow-sm transition-colors duration-150 stagger-item" style={{ animationDelay: '0.3s' }}>
                 <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
                   <span className="text-gray-600 text-xs font-bold">i</span>
                 </div>
@@ -83,7 +83,7 @@ export default function More() {
               </button>
 
               {/* Settings */}
-              <button className="w-full bg-white rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-50 shadow-sm transition-colors duration-150">
+              <button className="w-full bg-white rounded-lg p-4 flex items-center space-x-3 hover:bg-gray-50 shadow-sm transition-colors duration-150 stagger-item" style={{ animationDelay: '0.4s' }}>
                 <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
                   <span className="text-gray-600 text-xs font-bold">⚙</span>
                 </div>

@@ -142,7 +142,8 @@ export default function Transactions() {
             {transactions.map((transaction, index) => (
               <div 
                 key={transaction.id}
-                className="px-4 py-4 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer haptic-feedback"
+                className="px-4 py-4 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer haptic-feedback stagger-item"
+                style={{ animationDelay: `${index * 0.05}s` }}
                 onClick={() => alert(`Transaction details: ${transaction.description}\nAmount: €${Math.abs(transaction.amount).toFixed(2)}\nDate: ${transaction.date}\nBalance after: €${transaction.balance.toFixed(2)}`)}
               >
                 <div className="flex justify-between items-start">

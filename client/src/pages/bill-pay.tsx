@@ -70,7 +70,7 @@ export default function BillPay() {
             <h3 className="font-medium text-[var(--boi-gray)] mb-4">Recent Payees</h3>
             
             <div className="space-y-2">
-              {payees.map((payee) => {
+              {payees.map((payee, index) => {
                 const IconComponent = getPayeeIcon(payee.category);
                 const iconColorClass = getPayeeIconColor(payee.category);
                 
@@ -78,7 +78,8 @@ export default function BillPay() {
                   <Button
                     key={payee.id}
                     variant="ghost"
-                    className="w-full justify-between p-3 h-auto hover:bg-gray-50"
+                    className="w-full justify-between p-3 h-auto hover:bg-gray-50 stagger-item"
+                    style={{ animationDelay: `${index * 0.1}s` }}
                   >
                     <div className="flex items-center">
                       <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 ${iconColorClass}`}>
@@ -117,8 +118,8 @@ export default function BillPay() {
             <h3 className="font-medium text-[var(--boi-gray)] mb-4">Scheduled Payments</h3>
             
             <div className="space-y-3">
-              {scheduledPayments.map((payment) => (
-                <div key={payment.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              {scheduledPayments.map((payment, index) => (
+                <div key={payment.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg stagger-item" style={{ animationDelay: `${(index + 3) * 0.1}s` }}>
                   <div>
                     <p className="font-medium text-[var(--boi-gray)]">{payment.payeeName}</p>
                     <p className="text-sm text-[var(--boi-light-gray)]">
