@@ -59,18 +59,9 @@ function AppRoutes() {
     };
   }, []);
 
-  // Show splash immediately if needed, bypassing auth loading
+  // Show splash if needed
   if (showSplash) {
     return <Splash />;
-  }
-
-  // Only show loading state after splash is done
-  if (isLoading) {
-    return (
-      <div className="w-full h-full flex items-center justify-center bg-[#126987]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-      </div>
-    );
   }
   
   // Always show navigation for authenticated users except on specific exclusion screens
