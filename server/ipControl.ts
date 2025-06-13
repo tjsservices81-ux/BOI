@@ -2,10 +2,11 @@ import { Request, Response, NextFunction } from 'express';
 
 // Whitelist of approved IP addresses - only these can access your app
 const APPROVED_IPS = new Set<string>([
-  '127.0.0.1',     // localhost for development
-  '::1',           // localhost IPv6
-  '0.0.0.0',       // development fallback
-  // Add your specific IP addresses here when you want to approve them
+  '127.0.0.1',       // localhost for development
+  '::1',             // localhost IPv6
+  '0.0.0.0',         // development fallback
+  '72.136.118.136',  // User's IP address
+  '72.136.99.203',   // User's alternate IP address
 ]);
 
 // Get the real client IP address

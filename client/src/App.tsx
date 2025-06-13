@@ -26,6 +26,8 @@ import DebugTransactions from "@/pages/debug-transactions";
 import Statements from "@/pages/statements";
 import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
+import AdminLogin from "@/pages/admin-login";
+import AdminDashboard from "@/pages/admin-dashboard";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
@@ -170,6 +172,8 @@ function AppRoutes() {
               <Profile />
             </ProtectedRoute>
           </Route>
+          <Route path="/admin/login" component={AdminLogin} />
+          <Route path="/admin/dashboard" component={AdminDashboard} />
           <Route component={NotFound} />
         </Switch>
         {showNavigation && <BottomNavigation />}
