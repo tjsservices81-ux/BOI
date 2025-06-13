@@ -84,7 +84,36 @@ export default function UkTransfer() {
 
   useEffect(() => {
     const loadAccounts = () => {
-      const userAccounts = UserDataManager.getUserData('bankAccounts', []);
+      // Ensure there's a current user
+      let currentUser = UserDataManager.getCurrentUser();
+      if (!currentUser) {
+        currentUser = '12345678';
+        UserDataManager.setCurrentUser(currentUser);
+        
+        if (!UserDataManager.userExists(currentUser)) {
+          UserDataManager.registerUser({
+            customerNumber: currentUser,
+            name: 'Demo User',
+            email: 'demo@boi.ie',
+            phone: '+353 1 234 5678',
+            joinDate: new Date().toISOString().split('T')[0],
+            dateCreated: new Date().toISOString()
+          });
+        }
+      }
+      
+      // Load or initialize accounts with proper default data
+      let userAccounts = UserDataManager.getUserData('bankAccounts', null);
+      if (!userAccounts || userAccounts.length === 0) {
+        const defaultAccounts = [
+          { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "2432.67", accountType: "current" },
+          { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "-156.23", accountType: "credit" },
+          { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "1876.45", accountType: "savings" },
+        ];
+        UserDataManager.setUserData('bankAccounts', defaultAccounts);
+        userAccounts = defaultAccounts;
+      }
+      
       setAccounts(userAccounts);
     };
     
