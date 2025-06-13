@@ -18,6 +18,22 @@ export default function Dashboard() {
   
   // Local state for account balances that can be updated by transfers
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const [isNavigating, setIsNavigating] = useState(false);
+
+  // Enhanced navigation with smooth animations
+  const navigateWithAnimation = (path: string, animationType: 'slide-right' | 'slide-left' | 'slide-up' = 'slide-right') => {
+    setIsNavigating(true);
+    
+    // Add exit animation class to current page
+    document.body.classList.add('page-transitioning');
+    
+    // Small delay for smooth transition
+    setTimeout(() => {
+      setLocation(path);
+      setIsNavigating(false);
+      document.body.classList.remove('page-transitioning');
+    }, 150);
+  };
 
   // Load accounts using UserDataManager on mount
   useEffect(() => {
@@ -164,8 +180,8 @@ export default function Dashboard() {
             {accounts.map((account, index) => (
               <button 
                 key={account.id}
-                className="w-full flex items-center justify-between border-b border-gray-100 hover:bg-gray-50 touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-98 haptic-feedback relative stagger-item card-interactive"
-                onClick={() => setLocation(`/transactions/${account.id}`)}
+                className={`w-full flex items-center justify-between border-b border-gray-100 hover:bg-gray-50 touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-98 haptic-feedback relative stagger-item card-interactive ${isNavigating ? 'opacity-50 pointer-events-none' : ''}`}
+                onClick={() => navigateWithAnimation(`/transactions/${account.id}`, 'slide-right')}
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 {/* Colored side bar */}

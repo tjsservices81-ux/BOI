@@ -352,13 +352,50 @@ input, select, textarea {
   transition: none;
 }
 
-/* iOS-style page transitions - smooth sliding */
+/* Enhanced iOS-style page transitions - smooth sliding */
 .page-container {
-  animation: slideInFromRight 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  animation: slideInFromRight 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .page-fade-in {
-  animation: fadeIn 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  animation: fadeIn 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Page transition states */
+.page-transitioning {
+  overflow: hidden;
+}
+
+.page-transitioning * {
+  pointer-events: none;
+}
+
+/* Smooth exit animations for dashboard navigation */
+.dashboard-exit {
+  animation: slideOutToLeft 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* Enhanced slide animations with better easing */
+@keyframes slideOutToLeft {
+  0% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-30%) scale(0.95);
+  }
+}
+
+@keyframes slideInFromRight {
+  0% {
+    opacity: 0;
+    transform: translateX(100%) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
 }
 
 .page-slide-up {
