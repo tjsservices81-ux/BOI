@@ -41,23 +41,26 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function AppRoutes() {
   const { user, isLoading } = useAuth();
   const [location] = useLocation();
-  const [splashShown, setSplashShown] = useState(false);
-  
-  // Always show splash first, regardless of auth state
+  const [showSplash, setShowSplash] = useState(() => {
+    // Only show splash if not already shown in this session
+    return !sessionStorage.getItem('splashShown');
+  });
+
+  // Listen for splash completion
   useEffect(() => {
-    const hasShownSplash = sessionStorage.getItem('splashShown');
-    if (hasShownSplash) {
-      setSplashShown(true);
-    }
+    const handleSplashComplete = () => {
+      setShowSplash(false);
+    };
+    
+    window.addEventListener('splashComplete', handleSplashComplete);
+    
+    return () => {
+      window.removeEventListener('splashComplete', handleSplashComplete);
+    };
   }, []);
 
-  // If splash hasn't been shown yet, or we're on the splash route, show splash immediately
-  if (!splashShown || location === '/splash') {
-    return <Splash />;
-  }
-  
-  // Show loading state while checking authentication
-  if (isLoading) {
+  // Show splash if needed
+  if (showSplash) {
     return <Splash />;
   }
   
