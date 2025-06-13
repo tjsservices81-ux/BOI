@@ -41,14 +41,14 @@ export default function Apply() {
       id: 'car-finance',
       title: 'Car Finance',
       description: 'Competitive rates for new and used car purchases',
-      icon: '/device.svg',
+      icon: '/loan-calculator.svg',
       category: 'Finance'
     },
     {
       id: 'current-account',
       title: 'Current Account',
       description: 'Everyday banking with digital features and overdraft options',
-      icon: '/account.jpg',
+      icon: '/add_account.svg',
       category: 'Accounts'
     },
     {
@@ -111,12 +111,12 @@ export default function Apply() {
               <div className="flex items-start justify-between">
                 <div className="flex items-start space-x-4 flex-1">
                   {/* Product Icon */}
-                  <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <div className="w-14 h-14 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
                     {product.icon.endsWith('.svg') ? (
                       <img 
                         src={product.icon} 
                         alt={product.title}
-                        className="w-6 h-6"
+                        className="w-7 h-7"
                         style={{ 
                           filter: 'brightness(0) saturate(100%) invert(25%) sepia(85%) saturate(1011%) hue-rotate(168deg) brightness(93%) contrast(88%)'
                         }}
@@ -125,7 +125,7 @@ export default function Apply() {
                       <img 
                         src={product.icon} 
                         alt={product.title}
-                        className="w-8 h-8 rounded object-cover"
+                        className="w-9 h-9 rounded object-cover"
                       />
                     )}
                   </div>
