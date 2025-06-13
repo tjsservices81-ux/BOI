@@ -17,56 +17,19 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(false); // Start as false to prevent flash
-
-  // Check for cached user session on mount
-  useEffect(() => {
-    let mounted = true;
-    
-    // Check for cached user first
+  const [user, setUser] = useState<User | null>(() => {
+    // Initialize user state from localStorage immediately to prevent auth flash
     const cachedUser = localStorage.getItem('bankingUser');
     if (cachedUser) {
       try {
-        const userData = JSON.parse(cachedUser);
-        setUser(userData);
-        return;
+        return JSON.parse(cachedUser);
       } catch (error) {
         localStorage.removeItem('bankingUser');
       }
     }
-    
-    const checkAuth = async () => {
-      try {
-        const response = await fetch('/api/auth/user', {
-          method: 'GET',
-          credentials: 'include',
-        });
-        
-        if (response.ok && mounted) {
-          const userData = await response.json();
-          setUser(userData);
-          localStorage.setItem('bankingUser', JSON.stringify(userData));
-        } else if (mounted) {
-          setUser(null);
-          localStorage.removeItem('bankingUser');
-        }
-      } catch (error) {
-        if (mounted) {
-          setUser(null);
-          localStorage.removeItem('bankingUser');
-        }
-      }
-    };
-
-    if (!cachedUser) {
-      checkAuth();
-    }
-    
-    return () => {
-      mounted = false;
-    };
-  }, []);
+    return null;
+  });
+  const [isLoading, setIsLoading] = useState(false);
 
   const login = (userData: User) => {
     setUser(userData);

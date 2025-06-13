@@ -47,7 +47,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function AppRoutes() {
-  const { user, isLoading } = useAuth();
+  const { user } = useAuth();
   const [location] = useLocation();
   const [splashShown, setSplashShown] = useState(false);
   
@@ -82,24 +82,20 @@ function AppRoutes() {
     return () => window.removeEventListener('splashComplete', handleSplashComplete);
   }, []);
 
-  // If splash hasn't been shown yet and we're at root, show splash
+  // Direct splash to login transition - no intermediate renders
   if (!splashShown && location === '/') {
     return <Splash />;
   }
   
-  // Check if we should show the main app structure or just auth pages
-  const authRoutes = ['/login', '/splash'];
-  const isAuthRoute = authRoutes.includes(location);
-  const showNavigation = user && !isAuthRoute;
-
-  // If no user and not showing splash, only render login without app structure
-  if (!user && splashShown && location === '/') {
+  if (splashShown && !user && location === '/') {
     return (
       <SecurityWrapper>
         <Login />
       </SecurityWrapper>
     );
   }
+
+  const showNavigation = user && !['/login', '/splash'].includes(location);
 
   return (
     <SecurityWrapper>
