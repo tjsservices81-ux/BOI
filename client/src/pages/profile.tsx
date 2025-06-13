@@ -245,9 +245,9 @@ export default function Profile() {
 
 
   return (
-    <div className="h-screen bg-gradient-to-b from-[#2c5f70] to-[#126987] flex flex-col overflow-hidden page-slide-up relative">
+    <div className="h-screen bg-gradient-to-b from-[#126987] to-[#0d4e63] flex flex-col overflow-hidden page-slide-up relative">
       {/* Header */}
-      <div className="bg-[#2c5f70] px-4 py-6 pt-12 flex-shrink-0">
+      <div className="bg-[#126987] px-4 py-6 pt-12 flex-shrink-0">
         <div className="flex items-center justify-between">
           <button 
             onClick={() => navigate('/dashboard')}
