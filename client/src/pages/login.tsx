@@ -711,6 +711,19 @@ export default function Login() {
     return R * c; // Distance in kilometers
   };
 
+  const formatDistance = (km: number) => {
+    // Use miles for US/UK, kilometers for most other countries
+    const userLocale = navigator.language || 'en-US';
+    const isImperial = userLocale.includes('US') || userLocale.includes('GB');
+    
+    if (isImperial) {
+      const miles = km * 0.621371;
+      return `${miles.toFixed(1)} mi`;
+    } else {
+      return `${km.toFixed(1)} km`;
+    }
+  };
+
   const handleATMLocatorOpen = () => {
     setShowATMLocator(true);
     if (!userLocation) {
@@ -1569,8 +1582,13 @@ export default function Login() {
                               {atm.address}
                             </p>
                             <div className="flex items-center space-x-4 text-xs text-gray-500">
-                              <span>{atm.distance.toFixed(1)} km away</span>
-                              {atm.network !== 'Unknown' && (
+                              <span>{formatDistance(atm.distance)} away</span>
+                              {atm.type && atm.type !== 'ATM' && (
+                                <span className="px-2 py-1 bg-green-100 text-green-700 rounded">
+                                  {atm.type}
+                                </span>
+                              )}
+                              {atm.network !== 'Unknown' && atm.network !== 'ATM' && (
                                 <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded">
                                   {atm.network}
                                 </span>
