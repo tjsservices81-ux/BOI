@@ -119,7 +119,7 @@ class OTCService {
       }
       
       const mailOptions = {
-        from: process.env.SMTP_USER,
+        from: `"Bank of Ireland" <${process.env.SMTP_USER}>`,
         to: adminEmail,
         subject: `New Account Created - OTC: ${otc}`,
         html: `
