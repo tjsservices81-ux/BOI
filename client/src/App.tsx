@@ -82,19 +82,6 @@ function AppRoutes() {
     return () => window.removeEventListener('splashComplete', handleSplashComplete);
   }, []);
 
-  // Direct splash to login transition - no intermediate renders
-  if (!splashShown && location === '/') {
-    return <Splash />;
-  }
-  
-  if (splashShown && !user && location === '/') {
-    return (
-      <SecurityWrapper>
-        <Login />
-      </SecurityWrapper>
-    );
-  }
-
   const showNavigation = user && !['/login', '/splash'].includes(location);
 
   return (
@@ -111,7 +98,9 @@ function AppRoutes() {
             ) : !user ? (
               <Login />
             ) : (
-              <Dashboard />
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
             )}
           </Route>
           <Route path="/dashboard">
