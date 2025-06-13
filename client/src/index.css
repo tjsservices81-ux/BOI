@@ -199,6 +199,67 @@ html {
   /* Removed contain property that was causing element jiggling */
 }
 
+/* Page transition animations for UK transfer flow */
+.page-container {
+  animation-duration: 0.3s;
+  animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  animation-fill-mode: both;
+}
+
+.slide-in-left {
+  animation-name: slideInFromLeft;
+}
+
+.slide-in-right {
+  animation-name: slideInFromRight;
+}
+
+.page-fade-in {
+  animation-name: fadeIn;
+  animation-duration: 0.2s;
+}
+
+@keyframes slideInFromLeft {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromRight {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Success screen fade-in animation */
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Button active state transitions */
+.active\:scale-98:active {
+  transform: scale(0.98);
+}
+
 /* Prevent invisible text during font load */
 .font-loading {
   font-family: 'OpenSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;

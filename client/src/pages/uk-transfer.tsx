@@ -482,8 +482,8 @@ export default function UkTransfer() {
     );
   }
 
-  if (step === 'confirm') {
-    const selectedAccount = accounts.find(acc => acc.id === formData?.fromAccount);
+  if (step === 'confirm' && formData) {
+    const selectedAccount = accounts.find(acc => acc.id === formData.fromAccount);
 
     return (
       <div className={`page-container ${slideDirection === 'left' ? 'slide-in-left' : 'slide-in-right'}`} style={{ 
@@ -503,7 +503,12 @@ export default function UkTransfer() {
           </button>
         </div>
 
-        <div className="px-4 py-6">
+        <div style={{ 
+          flex: 1, 
+          overflowY: 'auto', 
+          WebkitOverflowScrolling: 'touch',
+          padding: '1rem'
+        }}>
           <div className="bg-white rounded-2xl p-6 shadow-sm border mb-6">
             <h2 className="font-semibold text-gray-900 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
               Transfer Details
@@ -513,32 +518,32 @@ export default function UkTransfer() {
               <div className="flex justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>From:</span>
                 <div className="text-right">
-                  <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{selectedAccount?.name}</p>
-                  <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>{selectedAccount?.number}</p>
+                  <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{selectedAccount?.displayName}</p>
+                  <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>{selectedAccount?.accountNumber}</p>
                 </div>
               </div>
               
               <div className="flex justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>To:</span>
                 <div className="text-right">
-                  <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{formData.recipientName}</p>
-                  <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>{formData.sortCode.replace(/(\d{2})(\d{2})(\d{2})/, '$1-$2-$3')} {formData.accountNumber}</p>
+                  <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{formData?.recipientName}</p>
+                  <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>{formData?.sortCode ? formatSortCode(formData.sortCode) : ''} {formData?.accountNumber}</p>
                 </div>
               </div>
               
               <div className="flex justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Amount:</span>
                 <div className="text-right">
-                  <span className="font-semibold text-[#126987] text-xl" style={{ fontFamily: 'OpenSans, sans-serif' }}>€{formData.amount}</span>
+                  <span className="font-semibold text-[#126987] text-xl" style={{ fontFamily: 'OpenSans, sans-serif' }}>€{formData?.amount}</span>
                   <p className="text-sm text-green-700 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    ≈ £{(parseFloat(formData.amount) * exchangeRate).toFixed(2)} GBP
+                    ≈ £{formData?.amount ? (parseFloat(formData.amount) * exchangeRate).toFixed(2) : '0.00'} GBP
                   </p>
                 </div>
               </div>
               
               <div className="flex justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Reference:</span>
-                <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{formData.reference}</span>
+                <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{formData?.reference}</span>
               </div>
               
               <div className="flex justify-between py-2">
