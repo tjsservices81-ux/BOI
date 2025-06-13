@@ -60,12 +60,8 @@ export default function Cards() {
 
     window.addEventListener('storage', handleStorageChange);
     
-    // Check for updates periodically in case of same-tab updates
-    const interval = setInterval(loadCardholderName, 1000);
-    
     return () => {
       window.removeEventListener('storage', handleStorageChange);
-      clearInterval(interval);
     };
   }, []);
 

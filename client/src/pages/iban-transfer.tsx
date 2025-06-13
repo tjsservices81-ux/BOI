@@ -70,9 +70,7 @@ export default function IbanTransfer() {
       }
     }
     
-    // Refresh accounts only when needed
-    const interval = setInterval(loadAccounts, 5000);
-    return () => clearInterval(interval);
+    return () => {};
   }, [form]);
 
   const onSubmit = (data: IbanTransferData) => {

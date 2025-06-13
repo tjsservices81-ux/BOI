@@ -77,37 +77,26 @@
           return false;
         });
 
-        // Disable text selection
+        // Security restrictions that don't interfere with form inputs
         document.addEventListener('selectstart', function(e) {
+          // Allow text selection in form elements
+          if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+            return true;
+          }
           e.preventDefault();
           return false;
         });
 
-        // Disable drag and drop
-        document.addEventListener('dragstart', function(e) {
-          e.preventDefault();
-          return false;
-        });
-
-        // Disable keyboard shortcuts for copying/saving
+        // Disable keyboard shortcuts for security (excluding form interference)
         document.addEventListener('keydown', function(e) {
-          // Disable Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+S, Ctrl+P, F12, Ctrl+U, Ctrl+Shift+I
-          if (e.ctrlKey && (e.keyCode === 65 || e.keyCode === 67 || e.keyCode === 86 || e.keyCode === 83 || e.keyCode === 80 || e.keyCode === 85)) {
-            e.preventDefault();
-            return false;
+          // Allow all keyboard input in form elements
+          if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+            return true;
           }
-          // Disable F12 (Developer Tools)
-          if (e.keyCode === 123) {
-            e.preventDefault();
-            return false;
-          }
-          // Disable Ctrl+Shift+I (Developer Tools)
-          if (e.ctrlKey && e.shiftKey && e.keyCode === 73) {
-            e.preventDefault();
-            return false;
-          }
-          // Disable Ctrl+Shift+C (Inspector)
-          if (e.ctrlKey && e.shiftKey && e.keyCode === 67) {
+          
+          // Block developer tools shortcuts only outside forms
+          if (e.key === 'F12' || 
+              (e.ctrlKey && e.shiftKey && ['I', 'C', 'J'].includes(e.key))) {
             e.preventDefault();
             return false;
           }
@@ -138,25 +127,7 @@
         }
       });
 
-      // Additional protection against developer tools
-      setInterval(function() {
-        const devtools = {
-          open: false,
-          orientation: null
-        };
-        
-        setInterval(function() {
-          if (window.outerHeight - window.innerHeight > 160 || window.outerWidth - window.innerWidth > 160) {
-            if (!devtools.open) {
-              devtools.open = true;
-              // Redirect or close the page when dev tools are detected
-              window.location.reload();
-            }
-          } else {
-            devtools.open = false;
-          }
-        }, 500);
-      }, 1000);
+      // Developer tools detection removed - was causing form interference
 
       // Register service worker for enhanced security
       if ('serviceWorker' in navigator) {

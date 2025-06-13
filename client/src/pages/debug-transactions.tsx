@@ -26,9 +26,7 @@ export default function DebugTransactions() {
     
     loadDebugData();
     
-    // Refresh every second
-    const interval = setInterval(loadDebugData, 1000);
-    return () => clearInterval(interval);
+    return () => {};
   }, []);
 
   const clearTransactions = () => {
