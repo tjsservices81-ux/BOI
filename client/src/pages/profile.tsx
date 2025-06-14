@@ -1,22 +1,20 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import { ChevronLeft, User, Mail, Phone, MapPin, Edit, LogOut, Cog, RefreshCw, X, Plus } from "lucide-react";
 import { useLocation } from "wouter";
-import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin, Calendar, CreditCard, X, Database, Trash2, RefreshCw, DollarSign, Plus } from "lucide-react";
 import { UserDataManager } from "@/utils/userDataManager";
 import { useAuth } from "@/lib/auth";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Profile() {
   const [, navigate] = useLocation();
-  const { logout } = useAuth();
+  const { logout, login } = useAuth();
   const [tapCount, setTapCount] = useState(0);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [accounts, setAccounts] = useState<any[]>([]);
-  const [editingAccount, setEditingAccount] = useState<any>(null);
-  const [newBalance, setNewBalance] = useState('');
   const [editingProfile, setEditingProfile] = useState(false);
-  const [showAddTransaction, setShowAddTransaction] = useState(false);
   const [showAddAccount, setShowAddAccount] = useState(false);
+  const [showAddTransaction, setShowAddTransaction] = useState(false);
   const [newAccountData, setNewAccountData] = useState({
     displayName: '',
     accountType: 'current',
@@ -25,15 +23,16 @@ export default function Profile() {
   const [profileData, setProfileData] = useState(() => {
     const currentCustomerNumber = UserDataManager.getCurrentUser();
     return {
-      name: "James",
-      email: "hello@gmail.com",
-      phone: "+353 1 234 5678",
-      address: "Hello",
-      dateOfBirth: "2025-06-08",
+      name: "",
+      email: "",
+      phone: "",
+      address: "",
+      dateOfBirth: "",
       customerNumber: currentCustomerNumber || "",
-      joinDate: "Member since 2018"
+      joinDate: ""
     };
   });
+  const [isLoading, setIsLoading] = useState(true);
 
   // Load profile data from database on component mount
   useEffect(() => {
@@ -41,13 +40,14 @@ export default function Profile() {
       const currentCustomerNumber = UserDataManager.getCurrentUser();
       
       if (currentCustomerNumber) {
+        setIsLoading(true);
         try {
           const response = await fetch(`/api/profile/${currentCustomerNumber}`);
           if (response.ok) {
             const userData = await response.json();
             setProfileData({
-              name: userData.name,
-              email: userData.email,
+              name: userData.name || "",
+              email: userData.email || "",
               phone: userData.phone || "",
               address: userData.address || "",
               dateOfBirth: userData.dateOfBirth || "",
@@ -55,7 +55,7 @@ export default function Profile() {
               joinDate: userData.joinDate || "Member since 2018"
             });
           } else {
-            // Keep James as the consistent user
+            // Fallback data when API call fails
             setProfileData({
               name: "James",
               email: "hello@gmail.com",
@@ -68,7 +68,21 @@ export default function Profile() {
           }
         } catch (error) {
           console.error('Failed to load profile data:', error);
+          // Set fallback data on error
+          setProfileData({
+            name: "James",
+            email: "hello@gmail.com",
+            phone: "+353 1 234 5678",
+            address: "Hello",
+            dateOfBirth: "2025-06-08",
+            customerNumber: currentCustomerNumber,
+            joinDate: "Member since 2018"
+          });
+        } finally {
+          setIsLoading(false);
         }
+      } else {
+        setIsLoading(false);
       }
     };
     
@@ -78,92 +92,36 @@ export default function Profile() {
   const userDetails = profileData;
 
   const handleProfilePictureTap = () => {
-    const newTapCount = tapCount + 1;
-    setTapCount(newTapCount);
+    setTapCount(prev => prev + 1);
     
-    if (newTapCount === 5) {
+    if (tapCount >= 4) {
       setShowAdminPanel(true);
       setTapCount(0);
-      loadAccounts();
+    } else {
+      setTimeout(() => {
+        if (tapCount < 4) {
+          setTapCount(0);
+        }
+      }, 2000);
     }
+  };
+
+  const handleSignOut = async () => {
+    setIsSigningOut(true);
     
-    // Reset tap count after 2 seconds of no taps
-    setTimeout(() => {
-      setTapCount(0);
+    setTimeout(async () => {
+      await logout();
+      UserDataManager.setCurrentUser("");
+      localStorage.removeItem('bankingUser');
+      navigate('/');
     }, 2000);
   };
 
-  const loadAccounts = () => {
+  // Load user accounts
+  useEffect(() => {
     const userAccounts = UserDataManager.getUserAccounts();
     setAccounts(userAccounts);
-  };
-
-  const updateAccountBalance = () => {
-    if (!editingAccount || !newBalance) return;
-    
-    const updatedAccounts = accounts.map(account => 
-      account.id === editingAccount.id 
-        ? { ...account, balance: parseFloat(newBalance).toFixed(2) }
-        : account
-    );
-    
-    setAccounts(updatedAccounts);
-    UserDataManager.setUserAccounts(updatedAccounts);
-    setEditingAccount(null);
-    setNewBalance('');
-    alert('Account balance updated successfully');
-  };
-
-  const startEditingBalance = (account: any) => {
-    setEditingAccount(account);
-    setNewBalance(account.balance);
-  };
-
-  const updateProfile = (updatedData: any) => {
-    setProfileData(updatedData);
-    
-    // Update user profile in UserDataManager
-    UserDataManager.updateUserProfile({
-      name: updatedData.name,
-      email: updatedData.email,
-      phone: updatedData.phone,
-      address: updatedData.address,
-      dateOfBirth: updatedData.dateOfBirth
-    });
-    
-    // Update card name if name changed
-    if (updatedData.name !== profileData.name) {
-      // Dispatch custom event to notify other components
-      window.dispatchEvent(new CustomEvent('profileUpdated', { 
-        detail: { name: updatedData.name } 
-      }));
-    }
-    
-    setEditingProfile(false);
-    alert('Profile updated successfully');
-  };
-
-  const sampleTransactions = [
-    { description: "McDonald's", amount: -8.99, type: "debit" },
-    { description: "ATM WITHDRAWAL", amount: -50.00, type: "debit" },
-    { description: "Tesco", amount: -35.67, type: "debit" },
-    { description: "Starbucks", amount: -4.50, type: "debit" },
-    { description: "Dunnes Stores", amount: -87.23, type: "debit" },
-    { description: "SuperValu", amount: -42.18, type: "debit" },
-    { description: "Centra", amount: -12.95, type: "debit" },
-    { description: "Penneys", amount: -29.99, type: "debit" },
-    { description: "Lidl", amount: -25.40, type: "debit" },
-    { description: "Aldi", amount: -31.85, type: "debit" },
-    { description: "Circle K", amount: -65.00, type: "debit" },
-    { description: "Insomnia Coffee", amount: -6.20, type: "debit" },
-    { description: "SALARY PAYMENT", amount: 2500.00, type: "credit" },
-    { description: "INTEREST PAYMENT", amount: 12.50, type: "credit" },
-    { description: "REFUND - AMAZON", amount: 45.99, type: "credit" }
-  ];
-
-  const generateAccountNumber = () => {
-    return Math.floor(1000 + Math.random() * 9000).toString();
-  };
+  }, []);
 
   const addNewAccount = () => {
     if (!newAccountData.displayName.trim()) {
@@ -171,82 +129,132 @@ export default function Profile() {
       return;
     }
 
-    const storedAccounts = UserDataManager.getUserData('bankAccounts', []);
-    const newId = Math.max(...storedAccounts.map((acc: any) => acc.id), 0) + 1;
+    const accountNumber = `IE${Math.random().toString().slice(2, 8)}BOI${Math.random().toString().slice(2, 6)}`;
+    const sortCode = '90-11-73';
     
     const newAccount = {
-      id: newId,
+      id: Date.now().toString(),
       displayName: newAccountData.displayName,
-      accountNumber: `****${generateAccountNumber()}`,
-      balance: newAccountData.balance,
-      accountType: newAccountData.accountType
+      accountNumber,
+      sortCode,
+      accountType: newAccountData.accountType,
+      balance: parseFloat(newAccountData.balance || '0').toFixed(2),
+      currency: 'EUR'
     };
 
-    const updatedAccounts = [...storedAccounts, newAccount];
-    UserDataManager.setUserData('bankAccounts', updatedAccounts);
+    const updatedAccounts = [...accounts, newAccount];
     setAccounts(updatedAccounts);
-
-    // Reset form
+    UserDataManager.setUserAccounts(updatedAccounts);
+    
     setNewAccountData({
       displayName: '',
       accountType: 'current',
       balance: '0.00'
     });
-
     setShowAddAccount(false);
-    alert(`Added new ${newAccountData.accountType} account: ${newAccountData.displayName}`);
-
-    // Dispatch events to notify other components
-    window.dispatchEvent(new CustomEvent('balanceUpdate'));
+    
+    window.dispatchEvent(new CustomEvent('accountUpdate'));
+    alert('Account added successfully!');
   };
 
-  const addSampleTransaction = (accountId: number) => {
-    const randomTransaction = sampleTransactions[Math.floor(Math.random() * sampleTransactions.length)];
-    const now = new Date();
+  const addSampleTransaction = (accountId: string) => {
+    const transactions = [
+      { 
+        description: 'Grocery Store Purchase', 
+        amount: -45.67, 
+        merchant: 'SuperValu',
+        category: 'Shopping'
+      },
+      { 
+        description: 'Coffee Shop', 
+        amount: -4.50, 
+        merchant: 'Starbucks',
+        category: 'Food & Drink'
+      },
+      { 
+        description: 'Salary Payment', 
+        amount: 2500.00, 
+        merchant: 'Company Ltd',
+        category: 'Income'
+      },
+      { 
+        description: 'Online Purchase', 
+        amount: -89.99, 
+        merchant: 'Amazon',
+        category: 'Shopping'
+      },
+      { 
+        description: 'ATM Withdrawal', 
+        amount: -100.00, 
+        merchant: 'BOI ATM',
+        category: 'Cash'
+      }
+    ];
+
+    const randomTransaction = transactions[Math.floor(Math.random() * transactions.length)];
     
-    const transaction = {
-      id: Date.now(),
-      accountId: accountId,
-      amount: randomTransaction.amount > 0 ? `+${randomTransaction.amount.toFixed(2)}` : randomTransaction.amount.toFixed(2),
+    const newTransaction = {
+      id: Date.now().toString(),
+      accountId,
+      date: new Date().toISOString().split('T')[0],
       description: randomTransaction.description,
-      category: randomTransaction.type === 'credit' ? 'income' : 'expense',
-      type: randomTransaction.type,
-      timestamp: now.toISOString()
+      amount: randomTransaction.amount,
+      balance: 0,
+      merchant: randomTransaction.merchant,
+      category: randomTransaction.category,
+      type: randomTransaction.amount > 0 ? 'credit' : 'debit'
     };
 
-    // Add transaction using UserDataManager
-    const existingTransactions = UserDataManager.getUserData('bankTransactions', []);
-    UserDataManager.setUserData('bankTransactions', [...existingTransactions, transaction]);
+    const existingTransactions = UserDataManager.getUserTransactions();
+    const updatedTransactions = [newTransaction, ...existingTransactions];
+    UserDataManager.setUserData('bankTransactions', updatedTransactions);
 
-    // Update account balance if it's a debit transaction
-    if (randomTransaction.type === 'debit') {
-      const storedAccounts = UserDataManager.getUserData('bankAccounts', []);
-      const updatedAccounts = storedAccounts.map((acc: any) => {
-        if (acc.id === accountId) {
-          const currentBalance = parseFloat(acc.balance);
-          const newBalance = Math.max(0, currentBalance + randomTransaction.amount);
-          return { ...acc, balance: newBalance.toFixed(2) };
-        }
-        return acc;
-      });
-      UserDataManager.setUserData('bankAccounts', updatedAccounts);
+    const account = accounts.find(acc => acc.id === accountId);
+    if (account) {
+      const updatedBalance = (parseFloat(account.balance) + randomTransaction.amount).toFixed(2);
+      const updatedAccounts = accounts.map(acc => 
+        acc.id === accountId 
+          ? { ...acc, balance: updatedBalance }
+          : acc
+      );
+      
       setAccounts(updatedAccounts);
+      UserDataManager.setUserAccounts(updatedAccounts);
+      
+      newTransaction.balance = parseFloat(updatedBalance);
+      
+      window.dispatchEvent(new CustomEvent('transactionUpdate'));
+      window.dispatchEvent(new CustomEvent('balanceUpdate'));
     }
 
-    // Dispatch events to notify other components
-    window.dispatchEvent(new CustomEvent('transactionUpdate'));
-    window.dispatchEvent(new CustomEvent('balanceUpdate'));
-    
     setShowAddTransaction(false);
-    alert(`Added transaction: ${randomTransaction.description} €${Math.abs(randomTransaction.amount)}`);
+    alert(`Sample transaction added to ${account?.displayName}`);
   };
 
   const resetToDefaults = () => {
-    // Reset accounts to zero balances for current user
+    if (!confirm('This will reset all account balances to 0.00 and clear all transactions. Continue?')) {
+      return;
+    }
+
     const defaultAccounts = [
-      { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "0.00", accountType: "current" },
-      { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "0.00", accountType: "credit" },
-      { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "0.00", accountType: "savings" },
+      {
+        id: '1',
+        displayName: 'Current Account',
+        accountNumber: 'IE12BOI90117312345678',
+        sortCode: '90-11-73',
+        accountType: 'current',
+        balance: '0.00',
+        currency: 'EUR'
+      },
+      {
+        id: '2', 
+        displayName: 'Savings Account',
+        accountNumber: 'IE34BOI90117387654321',
+        sortCode: '90-11-73',
+        accountType: 'savings',
+        balance: '0.00',
+        currency: 'EUR'
+      }
     ];
     
     // Clear all user data using UserDataManager
@@ -269,8 +277,6 @@ export default function Profile() {
     alert('Data reset to defaults successfully - all balances set to 0.00, transactions cleared');
   };
 
-
-
   return (
     <div className="h-screen bg-gradient-to-b from-[#126987] to-[#0d4e63] flex flex-col overflow-hidden page-slide-up relative">
       {/* Header */}
@@ -292,197 +298,144 @@ export default function Profile() {
       {/* Profile Content */}
       <div className="bg-white rounded-t-3xl mt-6 flex-1 overflow-hidden">
         <div className="h-full overflow-y-auto p-6 pb-32">
-          {/* Profile Header */}
-          <div className="flex items-center space-x-4 mb-8 pb-6 border-b border-gray-200">
-            <button 
-              onClick={handleProfilePictureTap}
-              className="w-20 h-20 bg-[#126987] rounded-full flex items-center justify-center active:scale-95 transition-transform"
-            >
-              <User className="w-10 h-10 text-white" />
-            </button>
-            <div className="flex-1">
-              <h2 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                {userDetails.name}
-              </h2>
-              <p className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                {userDetails.customerNumber}
-              </p>
-              <p className="text-sm text-gray-500 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                {userDetails.joinDate}
-              </p>
+          {isLoading ? (
+            /* Loading State */
+            <div className="flex items-center justify-center h-64">
+              <div className="w-8 h-8 border-4 border-[#126987] border-t-transparent rounded-full animate-spin"></div>
             </div>
-
-          </div>
-
-          {/* Personal Information */}
-          <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Personal Information
-            </h3>
-
-            <div className="space-y-4">
-              <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl">
-                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                  <Mail className="w-5 h-5 text-blue-600" />
-                </div>
+          ) : (
+            <>
+              {/* Profile Header */}
+              <div className="flex items-center space-x-4 mb-8 pb-6 border-b border-gray-200">
+                <button 
+                  onClick={handleProfilePictureTap}
+                  className="w-20 h-20 bg-[#126987] rounded-full flex items-center justify-center active:scale-95 transition-transform"
+                >
+                  <User className="w-10 h-10 text-white" />
+                </button>
                 <div className="flex-1">
-                  <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Email</p>
-                  <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {userDetails.email}
+                  <h2 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {userDetails.name}
+                  </h2>
+                  <p className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {userDetails.customerNumber}
+                  </p>
+                  <p className="text-sm text-gray-500 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {userDetails.joinDate}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl">
-                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                  <Phone className="w-5 h-5 text-green-600" />
+              {/* Personal Information */}
+              <div className="space-y-6">
+                <h3 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Personal Information
+                </h3>
+
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl">
+                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                      <Mail className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Email</p>
+                      <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        {userDetails.email}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl">
+                    <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                      <Phone className="w-5 h-5 text-green-600" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Phone</p>
+                      <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        {userDetails.phone}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl">
+                    <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                      <MapPin className="w-5 h-5 text-orange-600" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Address</p>
+                      <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        {userDetails.address || 'Not provided'}
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Phone</p>
-                  <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {userDetails.phone}
-                  </p>
+
+                {/* Action Buttons */}
+                <div className="space-y-3 mt-8">
+                  <button
+                    onClick={() => setEditingProfile(true)}
+                    className="w-full flex items-center space-x-4 p-4 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors active:scale-95"
+                  >
+                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                      <Edit className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div className="flex-1 text-left">
+                      <p className="font-semibold text-blue-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Edit Profile
+                      </p>
+                      <p className="text-sm text-blue-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Update your personal information
+                      </p>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => setShowAdminPanel(true)}
+                    className="w-full flex items-center space-x-4 p-4 bg-purple-50 rounded-xl hover:bg-purple-100 transition-colors active:scale-95"
+                  >
+                    <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                      <Cog className="w-5 h-5 text-purple-600" />
+                    </div>
+                    <div className="flex-1 text-left">
+                      <p className="font-semibold text-purple-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Account Settings
+                      </p>
+                      <p className="text-sm text-purple-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Manage accounts and data
+                      </p>
+                    </div>
+                  </button>
+
+                  <motion.button
+                    onClick={handleSignOut}
+                    className="w-full flex items-center space-x-4 p-4 bg-red-50 rounded-xl hover:bg-red-100 transition-colors active:scale-95"
+                    whileTap={{ scale: 0.95 }}
+                    disabled={isSigningOut}
+                  >
+                    <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                      <LogOut className="w-5 h-5 text-red-600" />
+                    </div>
+                    <div className="flex-1 text-left">
+                      <motion.span
+                        className="font-semibold text-red-900 block"
+                        style={{ fontFamily: 'OpenSans, sans-serif' }}
+                        animate={{
+                          opacity: isSigningOut ? [1, 0.5, 1] : 1,
+                        }}
+                        transition={{
+                          duration: 1,
+                          repeat: isSigningOut ? Infinity : 0,
+                          ease: "easeInOut"
+                        }}
+                      >
+                        {isSigningOut ? 'Signing Out...' : 'Sign Out'}
+                      </motion.span>
+                    </div>
+                  </motion.button>
                 </div>
               </div>
-
-              <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl">
-                <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
-                  <MapPin className="w-5 h-5 text-orange-600" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Address</p>
-                  <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {userDetails.address}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl">
-                <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                  <Calendar className="w-5 h-5 text-purple-600" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Date of Birth</p>
-                  <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {userDetails.dateOfBirth}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Account Options */}
-          <div className="mt-8 space-y-6">
-            <h3 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Account Options
-            </h3>
-
-            <div className="space-y-3">
-              <button className="w-full flex items-center space-x-4 p-4 bg-white border border-gray-200 rounded-xl active:scale-98 transition-transform">
-                <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-                  <Settings className="w-5 h-5 text-gray-600" />
-                </div>
-                <div className="flex-1 text-left">
-                  <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>Settings</p>
-                  <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Manage your preferences
-                  </p>
-                </div>
-                <ChevronLeft className="w-5 h-5 text-gray-400 transform rotate-180" />
-              </button>
-
-              <button className="w-full flex items-center space-x-4 p-4 bg-white border border-gray-200 rounded-xl active:scale-98 transition-transform">
-                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                  <Shield className="w-5 h-5 text-blue-600" />
-                </div>
-                <div className="flex-1 text-left">
-                  <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>Security</p>
-                  <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    PIN, biometrics & notifications
-                  </p>
-                </div>
-                <ChevronLeft className="w-5 h-5 text-gray-400 transform rotate-180" />
-              </button>
-
-              <button className="w-full flex items-center space-x-4 p-4 bg-white border border-gray-200 rounded-xl active:scale-98 transition-transform">
-                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                  <CreditCard className="w-5 h-5 text-green-600" />
-                </div>
-                <div className="flex-1 text-left">
-                  <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>Cards & Limits</p>
-                  <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Manage your cards and spending limits
-                  </p>
-                </div>
-                <ChevronLeft className="w-5 h-5 text-gray-400 transform rotate-180" />
-              </button>
-            </div>
-          </div>
-
-          {/* Logout Button */}
-          <div className="mt-8 pt-6 border-t border-gray-200 mb-8">
-            <motion.button 
-              onClick={async () => {
-                setIsSigningOut(true);
-                
-                // Logout and navigate after animation without refresh
-                setTimeout(async () => {
-                  try {
-                    await logout();
-                    navigate('/login');
-                  } catch (error) {
-                    navigate('/login');
-                  }
-                }, 8000);
-              }}
-              disabled={isSigningOut}
-              className={`w-full flex items-center justify-center space-x-3 p-4 rounded-xl transition-all duration-300 ${
-                isSigningOut 
-                  ? 'bg-red-100 border border-red-300' 
-                  : 'bg-red-50 border border-red-200 active:scale-98'
-              }`}
-              whileHover={!isSigningOut ? { scale: 1.02 } : {}}
-              whileTap={!isSigningOut ? { scale: 0.98 } : {}}
-              animate={isSigningOut ? {
-                backgroundColor: ['#fef2f2', '#fee2e2', '#fef2f2'],
-                borderColor: ['#fecaca', '#fca5a5', '#fecaca'],
-              } : {}}
-              transition={{
-                duration: 0.8,
-                repeat: isSigningOut ? Infinity : 0,
-                ease: "easeInOut"
-              }}
-            >
-              <motion.div
-                animate={isSigningOut ? { rotate: 360 } : { rotate: 0 }}
-                transition={{
-                  duration: 1,
-                  repeat: isSigningOut ? Infinity : 0,
-                  ease: "linear"
-                }}
-              >
-                <LogOut className={`w-5 h-5 transition-colors duration-300 ${
-                  isSigningOut ? 'text-red-700' : 'text-red-600'
-                }`} />
-              </motion.div>
-              <motion.span 
-                className={`font-semibold transition-colors duration-300 ${
-                  isSigningOut ? 'text-red-700' : 'text-red-600'
-                }`}
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
-                animate={isSigningOut ? {
-                  opacity: [1, 0.7, 1]
-                } : {}}
-                transition={{
-                  duration: 0.8,
-                  repeat: isSigningOut ? Infinity : 0,
-                  ease: "easeInOut"
-                }}
-              >
-                {isSigningOut ? 'Signing Out...' : 'Sign Out'}
-              </motion.span>
-            </motion.button>
-          </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -497,7 +450,7 @@ export default function Profile() {
                   Account Administration
                 </h2>
                 <p className="text-sm text-gray-600 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Manage user accounts and balances
+                  Manage your banking data
                 </p>
               </div>
               <button 
@@ -508,95 +461,110 @@ export default function Profile() {
               </button>
             </div>
 
-            {/* Account Balance Management */}
-            <div className="mb-6">
-              <h3 className="font-semibold text-gray-900 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Account Balances
-              </h3>
-              <div className="space-y-3">
-                {accounts.map((account) => (
-                  <div key={account.id} className="p-4 bg-gray-50 rounded-xl">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          {account.displayName}
-                        </p>
-                        <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          {account.accountNumber}
-                        </p>
-                        <p className="text-lg font-bold text-[#2c5f70]" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          €{account.balance}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => startEditingBalance(account)}
-                        className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center active:scale-95 transition-transform"
-                      >
-                        <Edit3 className="w-4 h-4 text-blue-600" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Balance Edit Modal */}
-            {editingAccount && (
-              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                <div className="bg-white rounded-2xl w-full max-w-sm p-6">
-                  <h3 className="text-xl font-bold text-gray-900 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Edit Balance
-                  </h3>
-                  <p className="text-gray-600 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {editingAccount.displayName} ({editingAccount.accountNumber})
+            {/* Admin Actions */}
+            <div className="space-y-4">
+              {/* Add Account */}
+              <button
+                onClick={() => setShowAddAccount(true)}
+                className="w-full flex items-center space-x-4 p-4 bg-green-50 rounded-xl hover:bg-green-100 transition-colors active:scale-95"
+              >
+                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                  <Plus className="w-5 h-5 text-green-600" />
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="font-semibold text-green-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Add New Account
                   </p>
-                  
-                  <div className="mb-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      New Balance (€)
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={newBalance}
-                      onChange={(e) => setNewBalance(e.target.value)}
-                      className="w-full p-3 border border-gray-300 rounded-xl text-lg font-semibold text-center"
-                      style={{ fontFamily: 'OpenSans, sans-serif' }}
-                      placeholder="0.00"
-                    />
+                  <p className="text-sm text-green-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Create additional bank accounts
+                  </p>
+                </div>
+              </button>
+
+              {/* Add Transaction */}
+              <button
+                onClick={() => setShowAddTransaction(true)}
+                className="w-full flex items-center space-x-4 p-4 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors active:scale-95"
+              >
+                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Plus className="w-5 h-5 text-blue-600" />
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="font-semibold text-blue-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Add Sample Transaction
+                  </p>
+                  <p className="text-sm text-blue-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Add test transactions to accounts
+                  </p>
+                </div>
+              </button>
+
+              {/* Reset Data */}
+              <button
+                onClick={resetToDefaults}
+                className="w-full flex items-center space-x-4 p-4 bg-orange-50 rounded-xl hover:bg-orange-100 transition-colors active:scale-95"
+              >
+                <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                  <RefreshCw className="w-5 h-5 text-orange-600" />
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="font-semibold text-orange-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Reset to Defaults
+                  </p>
+                  <p className="text-sm text-orange-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Set all account balances to 0.00 and clear transactions
+                  </p>
+                </div>
+              </button>
+
+              {/* Data Summary */}
+              <div className="mt-6 p-4 bg-gray-50 rounded-xl">
+                <h3 className="font-semibold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Data Summary
+                </h3>
+                <div className="space-y-2 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Accounts:</span>
+                    <span className="text-gray-900">
+                      {UserDataManager.getUserAccounts().length}
+                    </span>
                   </div>
-                  
-                  <div className="flex space-x-3">
-                    <button
-                      onClick={() => {
-                        setEditingAccount(null);
-                        setNewBalance('');
-                      }}
-                      className="flex-1 p-3 bg-gray-100 text-gray-700 rounded-xl font-semibold active:scale-98 transition-transform"
-                      style={{ fontFamily: 'OpenSans, sans-serif' }}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={updateAccountBalance}
-                      className="flex-1 p-3 bg-[#2c5f70] text-white rounded-xl font-semibold active:scale-98 transition-transform"
-                      style={{ fontFamily: 'OpenSans, sans-serif' }}
-                    >
-                      Update
-                    </button>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Transactions:</span>
+                    <span className="text-gray-900">
+                      {UserDataManager.getUserTransactions().length}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Saved Payees:</span>
+                    <span className="text-gray-900">
+                      {UserDataManager.getUserPayees().length}
+                    </span>
                   </div>
                 </div>
               </div>
-            )}
+            </div>
+          </div>
+        </div>
+      )}
 
+      {/* Profile Edit Modal */}
+      {editingProfile && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 max-h-[80vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Edit Profile
+              </h2>
+              <button 
+                onClick={() => setEditingProfile(false)}
+                className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center active:scale-95 transition-transform"
+              >
+                <X className="w-4 h-4 text-gray-600" />
+              </button>
+            </div>
 
-
-            {/* Profile Editing */}
-            <div className="space-y-4 mb-6">
-              <h3 className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Edit Profile Information
-              </h3>
-              
+            <div className="space-y-4">
               {/* Name */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -799,248 +767,15 @@ export default function Profile() {
                     console.error('Profile update error:', error);
                     alert('Failed to update profile');
                   }
+                  
+                  setEditingProfile(false);
                 }}
-                className="w-full py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors"
+                className="w-full bg-[#126987] text-white py-3 rounded-xl font-semibold hover:bg-[#0d4e63] transition-colors"
                 style={{ fontFamily: 'OpenSans, sans-serif' }}
               >
-                Save Profile Changes
+                Save Profile
               </button>
             </div>
-
-            {/* Admin Actions */}
-            <div className="space-y-4">
-
-              {/* Add New Account */}
-              <button 
-                onClick={() => setShowAddAccount(true)}
-                className="w-full flex items-center space-x-3 p-4 bg-green-50 border border-green-200 rounded-xl active:scale-98 transition-transform"
-              >
-                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                  <Plus className="w-5 h-5 text-green-600" />
-                </div>
-                <div className="flex-1 text-left">
-                  <p className="font-semibold text-green-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Add New Account
-                  </p>
-                  <p className="text-sm text-green-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Create current, savings, credit or loan accounts
-                  </p>
-                </div>
-              </button>
-
-              {/* Add Sample Transaction */}
-              <button 
-                onClick={() => setShowAddTransaction(true)}
-                className="w-full flex items-center space-x-3 p-4 bg-blue-50 border border-blue-200 rounded-xl active:scale-98 transition-transform"
-              >
-                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                  <Plus className="w-5 h-5 text-blue-600" />
-                </div>
-                <div className="flex-1 text-left">
-                  <p className="font-semibold text-blue-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Add Sample Transaction
-                  </p>
-                  <p className="text-sm text-blue-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Add test transactions to any account
-                  </p>
-                </div>
-              </button>
-
-              {/* Unblock Card */}
-              {UserDataManager.getUserData('cardBlocked') && (
-                <button 
-                  onClick={() => {
-                    UserDataManager.setUserData('cardBlocked', false);
-                    window.dispatchEvent(new CustomEvent('cardUnblocked'));
-                    alert('Card has been unblocked successfully');
-                  }}
-                  className="w-full flex items-center space-x-3 p-4 bg-green-50 border border-green-200 rounded-xl active:scale-98 transition-transform"
-                >
-                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                    <Shield className="w-5 h-5 text-green-600" />
-                  </div>
-                  <div className="flex-1 text-left">
-                    <p className="font-semibold text-green-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Unblock Card
-                    </p>
-                    <p className="text-sm text-green-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Remove the lost/stolen block from the user's card
-                    </p>
-                  </div>
-                </button>
-              )}
-
-              {/* Reset to Defaults */}
-              <button 
-                onClick={resetToDefaults}
-                className="w-full flex items-center space-x-3 p-4 bg-orange-50 border border-orange-200 rounded-xl active:scale-98 transition-transform"
-              >
-                <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
-                  <RefreshCw className="w-5 h-5 text-orange-600" />
-                </div>
-                <div className="flex-1 text-left">
-                  <p className="font-semibold text-orange-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Reset to Defaults
-                  </p>
-                  <p className="text-sm text-orange-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Set all account balances to 0.00 and clear transactions
-                  </p>
-                </div>
-              </button>
-
-              {/* Data Summary */}
-              <div className="mt-6 p-4 bg-gray-50 rounded-xl">
-                <h3 className="font-semibold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Data Summary
-                </h3>
-                <div className="space-y-2 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Accounts:</span>
-                    <span className="text-gray-900">
-                      {UserDataManager.getUserAccounts().length}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Transactions:</span>
-                    <span className="text-gray-900">
-                      {UserDataManager.getUserTransactions().length}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Saved Payees:</span>
-                    <span className="text-gray-900">
-                      {UserDataManager.getUserPayees().length}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Profile Edit Modal */}
-      {editingProfile && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md p-6 max-h-[80vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Edit Profile
-              </h2>
-              <button 
-                onClick={() => setEditingProfile(false)}
-                className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center active:scale-95 transition-transform"
-              >
-                <X className="w-4 h-4 text-gray-600" />
-              </button>
-            </div>
-
-            <form 
-              onSubmit={(e) => {
-                e.preventDefault();
-                const formData = new FormData(e.target as HTMLFormElement);
-                const updatedProfile = {
-                  name: formData.get('name') as string,
-                  email: formData.get('email') as string,
-                  phone: formData.get('phone') as string,
-                  address: formData.get('address') as string,
-                  dateOfBirth: formData.get('dateOfBirth') as string,
-                  customerNumber: profileData.customerNumber,
-                  joinDate: profileData.joinDate
-                };
-                updateProfile(updatedProfile);
-              }}
-              className="space-y-4"
-            >
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  defaultValue={profileData.name}
-                  className="w-full p-3 border border-gray-300 rounded-xl"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  defaultValue={profileData.email}
-                  className="w-full p-3 border border-gray-300 rounded-xl"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  name="phone"
-                  defaultValue={profileData.phone}
-                  className="w-full p-3 border border-gray-300 rounded-xl"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Address
-                </label>
-                <textarea
-                  name="address"
-                  defaultValue={profileData.address}
-                  rows={3}
-                  className="w-full p-3 border border-gray-300 rounded-xl resize-none"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Date of Birth
-                </label>
-                <input
-                  type="text"
-                  name="dateOfBirth"
-                  defaultValue={profileData.dateOfBirth}
-                  className="w-full p-3 border border-gray-300 rounded-xl"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                  placeholder="DD Month YYYY"
-                  required
-                />
-              </div>
-
-              <div className="flex space-x-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setEditingProfile(false)}
-                  className="flex-1 p-3 bg-gray-100 text-gray-700 rounded-xl font-semibold active:scale-98 transition-transform"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 p-3 bg-[#2c5f70] text-white rounded-xl font-semibold active:scale-98 transition-transform"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                >
-                  Save Changes
-                </button>
-              </div>
-            </form>
           </div>
         </div>
       )}
@@ -1072,7 +807,7 @@ export default function Profile() {
                     type="text"
                     value={newAccountData.displayName}
                     onChange={(e) => setNewAccountData({ ...newAccountData, displayName: e.target.value })}
-                    placeholder="e.g., My Savings Account"
+                    placeholder="e.g., Emergency Fund, Holiday Savings"
                     className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     style={{ fontFamily: 'OpenSans, sans-serif' }}
                   />
@@ -1232,147 +967,79 @@ export default function Profile() {
                 height: '100vh'
               }}
             >
-            {/* Animated background elements */}
-            <motion.div
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 0.1 }}
-              transition={{ delay: 0.3, duration: 1.5 }}
-              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent"
-            />
-            
-            <div className="text-center relative z-10">
-              {/* Main icon with sophisticated animation */}
+              {/* Animated background elements */}
               <motion.div
                 initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.3, duration: 0.8, ease: "easeOut" }}
-                className="relative mb-8"
-              >
-                {/* Outer ring */}
+                animate={{ scale: 1, opacity: 0.1 }}
+                transition={{ delay: 0.3, duration: 1.5 }}
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent"
+              />
+              
+              <div className="text-center relative z-10">
+                {/* Main icon with sophisticated animation */}
                 <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                  className="w-24 h-24 mx-auto border-2 border-white/20 rounded-full flex items-center justify-center relative"
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: 0.3, duration: 0.8, ease: "easeOut" }}
+                  className="relative mb-8"
                 >
-                  {/* Inner ring */}
+                  {/* Outer ring */}
                   <motion.div
-                    animate={{ rotate: -360 }}
-                    transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
-                    className="w-16 h-16 border border-white/30 rounded-full flex items-center justify-center"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                    className="w-24 h-24 mx-auto border-2 border-white/20 rounded-full flex items-center justify-center relative"
                   >
-                    {/* Icon container */}
+                    {/* Inner ring */}
                     <motion.div
-                      animate={{ 
-                        scale: [1, 1.1, 1],
-                        opacity: [0.9, 1, 0.9]
-                      }}
-                      transition={{ 
-                        duration: 2, 
-                        repeat: Infinity, 
-                        ease: "easeInOut" 
-                      }}
-                      className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm"
+                      animate={{ rotate: -360 }}
+                      transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+                      className="w-16 h-16 border border-white/30 rounded-full flex items-center justify-center"
                     >
-                      <LogOut className="w-5 h-5 text-white" />
+                      {/* Icon container */}
+                      <motion.div
+                        animate={{ 
+                          scale: [1, 1.1, 1],
+                          opacity: [0.9, 1, 0.9]
+                        }}
+                        transition={{ 
+                          duration: 2, 
+                          repeat: Infinity, 
+                          ease: "easeInOut" 
+                        }}
+                        className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm"
+                      >
+                        <LogOut className="w-5 h-5 text-white" />
+                      </motion.div>
                     </motion.div>
                   </motion.div>
                 </motion.div>
                 
-                {/* Pulsing outer glow */}
+                {/* Text with staggered animation */}
                 <motion.div
-                  animate={{ 
-                    scale: [1, 1.3, 1],
-                    opacity: [0.3, 0.1, 0.3]
-                  }}
-                  transition={{ 
-                    duration: 3, 
-                    repeat: Infinity, 
-                    ease: "easeInOut" 
-                  }}
-                  className="absolute inset-0 w-24 h-24 mx-auto bg-white/10 rounded-full blur-md"
-                />
-              </motion.div>
-              
-              {/* Progressive text animations */}
-              <motion.div
-                initial={{ y: 30, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.6, duration: 0.8 }}
-                className="text-white text-center mb-6"
-              >
-                <motion.h2 
-                  className="text-3xl font-light mb-3 tracking-wide" 
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                  animate={{ opacity: [0.9, 1, 0.9] }}
-                  transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.8, duration: 0.6 }}
+                  className="space-y-3"
                 >
-                  Signing Out
-                </motion.h2>
-                
-                {/* Sequential status messages */}
-                <motion.div className="h-6 flex items-center justify-center">
-                  <motion.p 
-                    className="text-white/70 text-sm"
+                  <motion.h2 
+                    className="text-2xl font-bold text-white" 
                     style={{ fontFamily: 'OpenSans, sans-serif' }}
-                    animate={{ opacity: [1, 0.6, 1] }}
-                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                    animate={{ opacity: [1, 0.8, 1] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                   >
-                    Signing out...
+                    Signing Out
+                  </motion.h2>
+                  <motion.p 
+                    className="text-white/70 text-sm max-w-xs mx-auto" 
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 1.2, duration: 0.5 }}
+                  >
+                    Thank you for using Bank of Ireland Mobile Banking
                   </motion.p>
                 </motion.div>
-              </motion.div>
-
-              {/* Professional progress indicator */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1, duration: 0.6 }}
-                className="relative"
-              >
-                {/* Progress bar background */}
-                <div className="w-64 h-1 bg-white/20 rounded-full mx-auto mb-4 overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: "100%" }}
-                    transition={{ duration: 7, ease: "easeInOut" }}
-                    className="h-full bg-gradient-to-r from-white/60 to-white/80 rounded-full"
-                  />
-                </div>
-                
-                {/* Animated status dots */}
-                <div className="flex justify-center space-x-3">
-                  {[0, 1, 2, 3].map((i) => (
-                    <motion.div
-                      key={i}
-                      className="w-2 h-2 bg-white/40 rounded-full"
-                      animate={{ 
-                        scale: [1, 1.4, 1],
-                        opacity: [0.4, 1, 0.4],
-                        backgroundColor: ["rgba(255,255,255,0.4)", "rgba(255,255,255,0.9)", "rgba(255,255,255,0.4)"]
-                      }}
-                      transition={{
-                        duration: 1.5,
-                        repeat: Infinity,
-                        delay: i * 0.3,
-                        ease: "easeInOut"
-                      }}
-                    />
-                  ))}
-                </div>
-              </motion.div>
-              
-              {/* Completion message */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: [0, 0, 1] }}
-                transition={{ duration: 8, times: [0, 0.8, 1] }}
-                className="mt-6"
-              >
-                <p className="text-white/60 text-xs tracking-wide" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Thank you for banking with us
-                </p>
-              </motion.div>
-            </div>
+              </div>
             </motion.div>
           </>
         )}
