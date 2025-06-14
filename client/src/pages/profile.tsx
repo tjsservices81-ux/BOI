@@ -31,16 +31,17 @@ export default function Profile() {
     dateOfBirth: '',
     joinDate: ''
   });
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [profileData, setProfileData] = useState(() => {
     const currentCustomerNumber = UserDataManager.getCurrentUser();
     return {
-      name: "James",
-      email: "hello@gmail.com",
-      phone: "+353 1 234 5678",
-      address: "Hello",
-      dateOfBirth: "2025-06-08",
+      name: "",
+      email: "",
+      phone: "",
+      address: "",
+      dateOfBirth: "",
       customerNumber: currentCustomerNumber || "",
-      joinDate: "Member since 2018"
+      joinDate: ""
     };
   });
 
@@ -75,7 +76,7 @@ export default function Profile() {
                 phone: userData.phone || "",
                 dateOfBirth: userData.dateOfBirth || "",
                 address: userData.address || "",
-                joinDate: userData.joinDate || "Member since 2018"
+                joinDate: userData.joinDate || ""
               };
               localStorage.setItem('bankUsers', JSON.stringify(allUsers));
             }
@@ -89,26 +90,30 @@ export default function Profile() {
     // Initial load
     loadProfileData();
     
-    // Listen for admin updates
+    // Listen for admin updates (but skip if currently updating to prevent overwriting)
     const handleAdminUpdate = () => {
-      loadProfileData();
+      if (!isUpdatingProfile) {
+        loadProfileData();
+      }
     };
     
-    // Listen for profile updates from admin panel
+    // Poll for updates every 30 seconds to catch admin changes (but skip if updating)
+    const pollInterval = setInterval(() => {
+      if (!isUpdatingProfile) {
+        loadProfileData();
+      }
+    }, 30000);
+    
+    // Add event listeners
     window.addEventListener('adminProfileUpdate', handleAdminUpdate);
     window.addEventListener('userProfileUpdate', handleAdminUpdate);
-    
-    // Poll for updates every 30 seconds to catch admin changes (reduced frequency)
-    const pollInterval = setInterval(() => {
-      loadProfileData();
-    }, 30000);
     
     return () => {
       window.removeEventListener('adminProfileUpdate', handleAdminUpdate);
       window.removeEventListener('userProfileUpdate', handleAdminUpdate);
       clearInterval(pollInterval);
     };
-  }, []);
+  }, [isUpdatingProfile]);
 
   const userDetails = profileData;
 
@@ -180,6 +185,9 @@ export default function Profile() {
     }
 
     try {
+      // Set updating flag to prevent automatic reloads
+      setIsUpdatingProfile(true);
+      
       const currentCustomerNumber = UserDataManager.getCurrentUser();
       
       // Prepare clean data for API
@@ -189,7 +197,7 @@ export default function Profile() {
         phone: editProfileData.phone?.trim() || '',
         address: editProfileData.address?.trim() || '',
         dateOfBirth: editProfileData.dateOfBirth || '',
-        joinDate: editProfileData.joinDate?.trim() || 'Member since 2018'
+        joinDate: editProfileData.joinDate?.trim() || ''
       };
       
       console.log('Sending profile update:', updateData);
@@ -201,46 +209,10 @@ export default function Profile() {
       };
       setProfileData(updatedProfileData);
       
-      // Update UserDataManager immediately to sync across components
-      UserDataManager.updateUserProfile({
-        name: updateData.name,
-        email: updateData.email,
-        phone: updateData.phone,
-        address: updateData.address,
-        dateOfBirth: updateData.dateOfBirth,
-        customerNumber: profileData.customerNumber,
-        joinDate: updateData.joinDate
-      });
-      
-      // Dispatch events immediately for instant UI updates
-      window.dispatchEvent(new CustomEvent('profileUpdated', { 
-        detail: { 
-          name: updateData.name,
-          email: updateData.email,
-          phone: updateData.phone,
-          address: updateData.address,
-          dateOfBirth: updateData.dateOfBirth,
-          joinDate: updateData.joinDate,
-          customerNumber: profileData.customerNumber
-        } 
-      }));
-      
-      window.dispatchEvent(new CustomEvent('adminProfileUpdate', {
-        detail: updatedProfileData
-      }));
-      
-      window.dispatchEvent(new CustomEvent('userProfileUpdate', {
-        detail: updatedProfileData
-      }));
-      
-      window.dispatchEvent(new CustomEvent('cardNameUpdate', {
-        detail: { name: updateData.name }
-      }));
-      
       // Close modal immediately for better UX
       setShowEditProfile(false);
       
-      // Update via API in background
+      // Update via API
       const response = await fetch(`/api/profile/${currentCustomerNumber}`, {
         method: 'PUT',
         headers: {
@@ -252,6 +224,18 @@ export default function Profile() {
       if (response.ok) {
         const updatedData = await response.json();
         console.log('Profile update successful:', updatedData);
+        
+        // Update UserDataManager with confirmed data from API
+        UserDataManager.updateUserProfile({
+          name: updatedData.name,
+          email: updatedData.email,
+          phone: updatedData.phone || '',
+          address: updatedData.address || '',
+          dateOfBirth: updatedData.dateOfBirth || '',
+          customerNumber: updatedData.customerNumber,
+          joinDate: updatedData.joinDate || 'Member since 2018'
+        });
+        
         alert('Profile updated successfully');
       } else {
         // If API fails, revert the changes
@@ -260,12 +244,6 @@ export default function Profile() {
         
         // Revert to original data
         setProfileData(profileData);
-        UserDataManager.updateUserProfile(profileData);
-        
-        // Dispatch revert events
-        window.dispatchEvent(new CustomEvent('profileUpdated', { detail: profileData }));
-        window.dispatchEvent(new CustomEvent('adminProfileUpdate', { detail: profileData }));
-        window.dispatchEvent(new CustomEvent('userProfileUpdate', { detail: profileData }));
         
         alert(`Failed to update profile: ${errorData.message || 'Unknown error'}`);
       }
@@ -274,14 +252,13 @@ export default function Profile() {
       
       // Revert changes on network error
       setProfileData(profileData);
-      UserDataManager.updateUserProfile(profileData);
-      
-      // Dispatch revert events
-      window.dispatchEvent(new CustomEvent('profileUpdated', { detail: profileData }));
-      window.dispatchEvent(new CustomEvent('adminProfileUpdate', { detail: profileData }));
-      window.dispatchEvent(new CustomEvent('userProfileUpdate', { detail: profileData }));
       
       alert('Network error - please check your connection and try again');
+    } finally {
+      // Always clear the updating flag
+      setTimeout(() => {
+        setIsUpdatingProfile(false);
+      }, 1000); // Small delay to ensure no immediate reloads
     }
   };
 
