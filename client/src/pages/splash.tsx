@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
+import { themeManager } from "@/utils/themeManager";
 
 export default function Splash() {
   const [, navigate] = useLocation();
@@ -9,11 +10,8 @@ export default function Splash() {
     // Add splash-specific full screen class for iOS PWA
     document.body.classList.add('splash-fullscreen');
     
-    // Change theme color to pure blue for splash screen
-    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-    if (themeColorMeta) {
-      themeColorMeta.setAttribute('content', '#0000ff');
-    }
+    // Set splash theme using theme manager
+    themeManager.setTheme('splash');
     
     // Navigate to login after splash duration (8 seconds total)
     const finalTimer = setTimeout(() => {
