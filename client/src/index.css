@@ -896,6 +896,31 @@ input[type="text"], input[type="email"], input[type="tel"], input[type="password
   font-variant-numeric: tabular-nums;
 }
 
+/* Admin panel click handling fixes */
+.admin-panel {
+  z-index: 9999 !important;
+  pointer-events: auto !important;
+}
+
+.admin-panel .modal-content {
+  pointer-events: auto !important;
+  touch-action: auto !important;
+}
+
+.admin-panel button {
+  pointer-events: auto !important;
+  touch-action: manipulation !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  cursor: pointer !important;
+  position: relative !important;
+  z-index: 10 !important;
+}
+
+.admin-panel button:active {
+  transform: scale(0.98) !important;
+}
+
 /* Prevent modal flash issues */
 .modal-content {
   opacity: 1;

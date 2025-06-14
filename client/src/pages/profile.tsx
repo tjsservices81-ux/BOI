@@ -525,7 +525,7 @@ export default function Profile() {
       {/* Admin Panel Modal */}
       {showAdminPanel && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 modal-overlay admin-panel"
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000] p-4 modal-overlay admin-panel"
           onClick={() => setShowAdminPanel(false)}
         >
           <div 
@@ -704,7 +704,7 @@ export default function Profile() {
 
       {/* Edit Profile Modal */}
       {showEditProfile && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
           <div className="bg-white rounded-2xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
@@ -827,7 +827,7 @@ export default function Profile() {
 
       {/* Edit Balance Modal */}
       {editingAccount && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
           <div className="bg-white rounded-2xl w-full max-w-md mx-4">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
@@ -896,7 +896,7 @@ export default function Profile() {
 
       {/* Add Account Modal */}
       {showAddAccount && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
           <div className="bg-white rounded-2xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
@@ -983,7 +983,7 @@ export default function Profile() {
 
       {/* Add Transaction Modal */}
       {showAddTransaction && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999] p-4">
           <div className="bg-white rounded-2xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
