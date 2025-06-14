@@ -29,7 +29,7 @@ import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
 import { useAppStateManager } from "@/hooks/useAppStateManager";
 import { useScrollManager } from "@/hooks/useScrollManager";
-import { FreshLaunchDetector } from "@/utils/freshLaunchDetector";
+import { setupAppTerminationDetection, isAppFreshStart } from "@/utils/directTerminationDetector";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
@@ -53,6 +53,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function AppRoutes() {
   const { user, isLoading } = useAuth();
   const [location] = useLocation();
+  
   const appStateManager = useAppStateManager();
   const scrollManager = useScrollManager({
     saveScrollPosition: appStateManager.saveScrollPosition,
@@ -60,26 +61,19 @@ function AppRoutes() {
   });
   
   const [splashShown, setSplashShown] = useState(() => {
-    // Check if this is a fresh launch (app was terminated)
-    const isFreshLaunch = FreshLaunchDetector.isFirstLaunch();
+    // Set up termination detection first
+    setupAppTerminationDetection();
     
-    // Set up termination detection
-    FreshLaunchDetector.setupTerminationDetection();
+    // Check if this is a fresh app start
+    const isFreshStart = isAppFreshStart();
     
-    if (isFreshLaunch) {
-      // Fresh launch after termination - show splash and prevent any restoration
-      console.log('Fresh launch detected - showing splash screen');
+    if (isFreshStart) {
+      // Fresh start - show splash screen
       return false;
     }
     
-    // App was just backgrounded - check if splash was already shown
-    const hadSplash = sessionStorage.getItem('splashShown') === 'true';
-    console.log('App resumed - splash already shown:', hadSplash);
-    return hadSplash;
-  });
-  
-  const [isFreshLaunch] = useState(() => {
-    return sessionStorage.getItem('appRunning') === 'true' && sessionStorage.getItem('splashShown') !== 'true';
+    // App was resumed - check if splash was already shown
+    return sessionStorage.getItem('splashShown') === 'true';
   });
   const [isInitialized, setIsInitialized] = useState(false);
   const [splashTransitioning, setSplashTransitioning] = useState(false);
@@ -92,27 +86,17 @@ function AppRoutes() {
       themeColorMeta.setAttribute('content', '#0000ff');
     }
     
-    // Skip ALL restoration logic if this is a fresh launch
-    if (!isFreshLaunch) {
-      const restoredState = appStateManager.restoreAppState();
-      if (restoredState) {
-        setSplashShown(true);
-        if (themeColorMeta) {
-          themeColorMeta.setAttribute('content', '#126987');
-        }
-      } else {
-        const hasShownSplash = sessionStorage.getItem('splashShown');
-        if (hasShownSplash) {
-          setSplashShown(true);
-          if (themeColorMeta) {
-            themeColorMeta.setAttribute('content', '#126987');
-          }
-        }
+    // Normal theme handling
+    const hasShownSplash = sessionStorage.getItem('splashShown') === 'true';
+    if (hasShownSplash) {
+      setSplashShown(true);
+      if (themeColorMeta) {
+        themeColorMeta.setAttribute('content', '#126987');
       }
     }
     
     setTimeout(() => setIsInitialized(true), 0);
-  }, [appStateManager, isFreshLaunch]);
+  }, [appStateManager]);
 
   // Listen for splash completion
   useEffect(() => {
