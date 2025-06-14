@@ -33,13 +33,12 @@ export default function More() {
             <ChevronLeft className="w-6 h-6 text-white" />
           </button>
           
-          <div className="flex items-center space-x-3">
-            <h1 className="text-xl font-bold text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Bank of Ireland
-            </h1>
-            <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center">
-              <Building2 className="w-5 h-5 text-white" />
-            </div>
+          <div className="flex items-center justify-center">
+            <img 
+              src="/boi_logo.svg" 
+              alt="Bank of Ireland" 
+              className="h-8 filter brightness-0 invert"
+            />
           </div>
           
           <div className="w-10 h-10" />
