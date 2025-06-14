@@ -4,10 +4,14 @@ import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin
 import { UserDataManager } from "@/utils/userDataManager";
 import { useAuth } from "@/lib/auth";
 import { motion, AnimatePresence } from "framer-motion";
+import { useToast } from "@/hooks/use-toast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export default function Profile() {
   const [, navigate] = useLocation();
   const { logout } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [tapCount, setTapCount] = useState(0);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
@@ -888,19 +892,16 @@ export default function Profile() {
                     {/* Unblock Card */}
                     {UserDataManager.getUserData('cardBlocked') && (
                       <button 
-                        onClick={() => {
-                          UserDataManager.setUserData('cardBlocked', false);
-                          window.dispatchEvent(new CustomEvent('cardUnblocked'));
-                          alert('Card has been unblocked successfully');
-                        }}
-                        className="w-full flex items-center space-x-3 p-4 bg-green-50 border border-green-200 rounded-xl active:scale-98 transition-transform"
+                        onClick={handleUnblockCard}
+                        disabled={unblockCardMutation.isPending}
+                        className="w-full flex items-center space-x-3 p-4 bg-green-50 border border-green-200 rounded-xl active:scale-98 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                           <CreditCard className="w-5 h-5 text-green-600" />
                         </div>
                         <div className="flex-1 text-left">
                           <p className="font-semibold text-green-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                            Unblock Card
+                            {unblockCardMutation.isPending ? 'Unblocking...' : 'Unblock Card'}
                           </p>
                           <p className="text-sm text-green-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                             Your card is currently blocked

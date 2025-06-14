@@ -2,9 +2,15 @@ import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
 import { ChevronLeft, User, Snowflake, Shield, Lock, CreditCard, AlertTriangle, X } from "lucide-react";
 import { UserDataManager } from "../utils/userDataManager";
+import { useAuth } from "@/lib/auth";
+import { useToast } from "@/hooks/use-toast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export default function Cards() {
   const [, navigate] = useLocation();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [currentCard, setCurrentCard] = useState(0);
   const [freezeToggle, setFreezeToggle] = useState(false);
   const [cardHolderName, setCardHolderName] = useState("JOHN MURPHY");
@@ -118,11 +124,43 @@ export default function Cards() {
     setShowBlockModal(true);
   };
 
+  // Card blocking mutation
+  const blockCardMutation = useMutation({
+    mutationFn: async (cardId: number) => {
+      const response = await fetch(`/api/cards/${cardId}/block`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to block card');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      setIsCardBlocked(true);
+      setShowBlockModal(false);
+      toast({
+        title: "Card Blocked",
+        description: "Card has been blocked successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ['cards'] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to block card. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const confirmBlockCard = () => {
-    // Block the card and save to storage
-    setIsCardBlocked(true);
-    UserDataManager.setUserData('cardBlocked', true);
-    setShowBlockModal(false);
+    // Use first card's ID as default - in real app would get from API
+    blockCardMutation.mutate(1);
   };
 
   return (

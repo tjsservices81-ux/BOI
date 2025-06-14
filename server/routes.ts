@@ -406,6 +406,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Card management endpoints
+  app.get("/api/cards/:userId", requireAuth, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const cards = await storage.getCardsByUserId(userId);
+      res.json(cards);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.patch("/api/cards/:cardId/block", requireAuth, async (req, res) => {
+    try {
+      const cardId = parseInt(req.params.cardId);
+      const card = await storage.updateCardStatus(cardId, "blocked");
+      
+      if (!card) {
+        return res.status(404).json({ message: "Card not found" });
+      }
+      
+      res.json({ 
+        message: "Card has been blocked successfully",
+        card 
+      });
+    } catch (error) {
+      console.error('Card blocking failed:', error);
+      res.status(500).json({ message: "Failed to block card" });
+    }
+  });
+
+  app.patch("/api/cards/:cardId/unblock", requireAuth, async (req, res) => {
+    try {
+      const cardId = parseInt(req.params.cardId);
+      const card = await storage.updateCardStatus(cardId, "active");
+      
+      if (!card) {
+        return res.status(404).json({ message: "Card not found" });
+      }
+      
+      res.json({ 
+        message: "Card successfully unblocked",
+        card 
+      });
+    } catch (error) {
+      console.error('Card unblocking failed:', error);
+      res.status(500).json({ message: "Failed to unblock card" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

@@ -425,6 +425,7 @@ export class MemStorage implements IStorage {
     const card: Card = {
       id: this.currentCardId++,
       ...insertCard,
+      status: insertCard.status || "active",
       createdAt: new Date()
     };
     this.cards.set(card.id, card);
