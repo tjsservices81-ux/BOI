@@ -28,60 +28,6 @@
   }
 }
 
-/* Complete status bar hiding for splash and sign-out */
-.fullscreen-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 99999;
-  /* Maximum coverage with negative margins */
-  height: calc(100vh + 100px);
-  width: 100vw;
-  margin-top: -100px;
-  margin-left: 0;
-  margin-right: 0;
-  /* Ensure content is positioned correctly */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding-top: 100px;
-  box-sizing: border-box;
-}
-
-/* Enhanced fullscreen for mobile browsers */
-@media screen and (max-width: 768px) {
-  .fullscreen-overlay {
-    /* Even more aggressive coverage for mobile */
-    height: calc(100vh + 150px);
-    margin-top: -150px;
-    padding-top: 150px;
-  }
-}
-
-/* PWA specific adjustments */
-@media (display-mode: standalone) {
-  .fullscreen-overlay {
-    /* In PWA, extend even further */
-    height: calc(100vh + 120px);
-    margin-top: -120px;
-    padding-top: 120px;
-  }
-}
-
-/* iOS Safari specific overrides */
-@supports (-webkit-touch-callout: none) {
-  .fullscreen-overlay {
-    /* iOS needs extra coverage */
-    height: calc(100vh + 200px);
-    margin-top: -200px;
-    padding-top: 200px;
-    /* Use large viewport height if available */
-    height: calc(100lvh + 200px);
-  }
-}
-
 /* Enhanced iOS standalone mode detection */
 @supports (-webkit-touch-callout: none) {
   .ios-app-mode {
