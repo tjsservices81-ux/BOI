@@ -578,6 +578,45 @@ export default function Profile() {
     alert(`Transaction Added Successfully!\n\n${randomTransaction.description}\nAmount: €${Math.abs(transactionAmount).toFixed(2)}\nNew Balance: €${newBalance.toFixed(2)}`);
   };
 
+  // Card unblocking mutation
+  const unblockCardMutation = useMutation({
+    mutationFn: async (cardId: number) => {
+      const response = await fetch(`/api/cards/${cardId}/unblock`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to unblock card');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      UserDataManager.setUserData('cardBlocked', false);
+      window.dispatchEvent(new CustomEvent('cardUnblocked'));
+      toast({
+        title: "Card Unblocked",
+        description: "Card successfully unblocked",
+      });
+      queryClient.invalidateQueries({ queryKey: ['cards'] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to unblock card. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleUnblockCard = () => {
+    // Use first card's ID as default - in real app would get from API
+    unblockCardMutation.mutate(1);
+  };
+
   const updateBalance = () => {
     if (!editingAccount || !newBalance.trim()) {
       alert('Please enter a valid balance');

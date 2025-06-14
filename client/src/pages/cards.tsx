@@ -340,12 +340,12 @@ export default function Cards() {
             </div>
           </div>
 
-          {/* Report Lost or Stolen */}
+          {/* Report Lost or Stolen / Card Status */}
           <button 
             onClick={handleReportLostStolen}
-            disabled={isCardBlocked}
+            disabled={isCardBlocked || blockCardMutation.isPending}
             className={`w-full bg-white rounded-2xl p-4 ios-card flex items-center justify-between active:scale-98 transition-transform ${
-              isCardBlocked ? 'opacity-50 cursor-not-allowed' : ''
+              isCardBlocked || blockCardMutation.isPending ? 'opacity-50 cursor-not-allowed' : ''
             }`}
           >
             <div className="flex items-center space-x-3">
@@ -357,7 +357,8 @@ export default function Cards() {
                 )}
               </div>
               <span className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                {isCardBlocked ? 'Card blocked - Contact us' : 'Report lost or stolen'}
+                {blockCardMutation.isPending ? 'Blocking card...' : 
+                 isCardBlocked ? 'Card blocked - Contact us' : 'Report lost or stolen'}
               </span>
             </div>
             <span className="text-gray-400">›</span>
@@ -426,10 +427,11 @@ export default function Cards() {
               <div className="space-y-3">
                 <button
                   onClick={confirmBlockCard}
-                  className="w-full bg-red-600 text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform"
+                  disabled={blockCardMutation.isPending}
+                  className="w-full bg-red-600 text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform disabled:opacity-50"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                 >
-                  Yes, Block Card
+                  {blockCardMutation.isPending ? 'Blocking...' : 'Yes, Block Card'}
                 </button>
                 
                 <button
