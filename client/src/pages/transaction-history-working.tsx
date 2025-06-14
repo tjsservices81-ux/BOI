@@ -219,7 +219,10 @@ export default function TransactionHistoryWorking() {
           Recent Transactions
         </h2>
 
-        <div className="space-y-2 mb-6">
+        <div 
+          className="space-y-2 mb-6" 
+          data-scroll-persist="transaction-list"
+        >
           {transactions.map((transaction, index) => {
             const IconComponent = getIcon(transaction.description);
             const isDebit = transaction.type === 'debit' || transaction.amount.startsWith('-');

@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from "@/lib/auth";
 import BottomNavigation from "@/components/BottomNavigation";
 import { SecurityWrapper } from "@/components/SecurityWrapper";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { appStateManager } from "@/utils/appStateManager";
 
 import Splash from "@/pages/splash";
 import Login from "@/pages/login";
@@ -49,15 +50,16 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function AppRoutes() {
   const { user, isLoading } = useAuth();
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
   const [splashShown, setSplashShown] = useState(() => {
     // Initialize splashShown state immediately to prevent flash
     return sessionStorage.getItem('splashShown') === 'true';
   });
   const [isInitialized, setIsInitialized] = useState(false);
   const [splashTransitioning, setSplashTransitioning] = useState(false);
+  const [stateRestored, setStateRestored] = useState(false);
   
-  // Set initial theme color to pure blue immediately on mount
+  // Initialize app state and theme
   useEffect(() => {
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
     if (themeColorMeta) {
@@ -76,6 +78,41 @@ function AppRoutes() {
     // Mark as initialized after a tick to prevent flash
     setTimeout(() => setIsInitialized(true), 0);
   }, []);
+
+  // Handle app state restoration and navigation persistence
+  useEffect(() => {
+    const handleStateRestored = (event: CustomEvent) => {
+      const { path } = event.detail;
+      setStateRestored(true);
+      
+      // Only restore navigation if user is authenticated and splash is complete
+      if (user && splashShown && path && path !== '/' && path !== '/login' && path !== '/splash') {
+        console.log('Restoring navigation to:', path);
+        navigate(path);
+      }
+    };
+
+    const handleRefreshData = () => {
+      // Refresh app data after being backgrounded for a long time
+      window.dispatchEvent(new CustomEvent('balanceUpdate'));
+      window.dispatchEvent(new CustomEvent('transactionUpdate'));
+    };
+
+    window.addEventListener('appStateRestored', handleStateRestored as EventListener);
+    window.addEventListener('refreshAppData', handleRefreshData);
+    
+    return () => {
+      window.removeEventListener('appStateRestored', handleStateRestored as EventListener);
+      window.removeEventListener('refreshAppData', handleRefreshData);
+    };
+  }, [user, splashShown, navigate]);
+
+  // Track current path for state persistence
+  useEffect(() => {
+    if (user && splashShown && location) {
+      appStateManager.setCurrentPath(location);
+    }
+  }, [location, user, splashShown]);
 
   // Listen for splash completion
   useEffect(() => {
