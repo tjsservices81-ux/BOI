@@ -767,17 +767,40 @@ export default function Profile() {
             <button 
               onClick={async () => {
                 setIsSigningOut(true);
-                // Hide status bar during sign out
+                
+                // Hide status bar completely during sign out
                 const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+                const viewportMeta = document.querySelector('meta[name="viewport"]');
+                
                 if (themeColorMeta) {
-                  themeColorMeta.setAttribute('content', 'transparent');
+                  themeColorMeta.setAttribute('content', '#1a3c47');
                 }
+                
+                // Enable fullscreen viewport
+                if (viewportMeta) {
+                  const originalViewport = viewportMeta.getAttribute('content');
+                  viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no');
+                  (window as any).signOutOriginalViewport = originalViewport;
+                }
+                
+                // Force fullscreen
+                window.scrollTo(0, 0);
+                document.documentElement.style.overflow = 'hidden';
+                document.body.style.overflow = 'hidden';
+                
                 setTimeout(async () => {
                   await logout();
-                  // Restore theme color before navigation
+                  
+                  // Restore everything before navigation
                   if (themeColorMeta) {
                     themeColorMeta.setAttribute('content', '#126987');
                   }
+                  if (viewportMeta && (window as any).signOutOriginalViewport) {
+                    viewportMeta.setAttribute('content', (window as any).signOutOriginalViewport);
+                  }
+                  document.documentElement.style.overflow = '';
+                  document.body.style.overflow = '';
+                  
                   navigate('/login');
                 }, 8000);
               }}
