@@ -59,13 +59,22 @@ class TransferSecurityService {
         console.log(`[DEV MODE] Would call ${request.userPhoneNumber} with transfer details`);
         
         // Auto-approve after 3 seconds to simulate user pressing 1
-        setTimeout(() => {
+        setTimeout(async () => {
           console.log(`[DEV MODE] Auto-approving transfer ${request.transferId}`);
           this.confirmations.set(request.transferId, {
+            transferId: request.transferId,
             confirmed: true,
-            timestamp: new Date(),
-            callSid: 'dev-mode-call'
+            timestamp: new Date().toISOString(),
+            method: 'dev-mode'
           });
+
+          // Process the actual transfer now that it's confirmed
+          await this.processConfirmedTransfer(request);
+
+          // Send confirmation SMS
+          await this.sendConfirmationSMS(request);
+          
+          console.log(`[DEV MODE] Transfer ${request.transferId} confirmed and processed`);
         }, 3000);
         
         return { success: true, callSid: 'dev-mode-simulation' };
@@ -101,13 +110,22 @@ class TransferSecurityService {
         console.log('Trial account detected, switching to development mode simulation');
         
         // Auto-approve after 3 seconds
-        setTimeout(() => {
+        setTimeout(async () => {
           console.log(`[TRIAL MODE] Auto-approving transfer ${request.transferId}`);
           this.confirmations.set(request.transferId, {
+            transferId: request.transferId,
             confirmed: true,
-            timestamp: new Date(),
-            callSid: 'trial-mode-call'
+            timestamp: new Date().toISOString(),
+            method: 'trial-mode'
           });
+
+          // Process the actual transfer now that it's confirmed
+          await this.processConfirmedTransfer(request);
+
+          // Send confirmation SMS
+          await this.sendConfirmationSMS(request);
+          
+          console.log(`[TRIAL MODE] Transfer ${request.transferId} confirmed and processed`);
         }, 3000);
         
         return { success: true, callSid: 'trial-mode-simulation' };
