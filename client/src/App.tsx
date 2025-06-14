@@ -121,6 +121,13 @@ function AppRoutes() {
     return () => window.removeEventListener('splashComplete', handleSplashComplete);
   }, []);
 
+  // Set up scroll container when main container is ready
+  useEffect(() => {
+    if (mainContainerRef.current) {
+      scrollManager.setScrollContainer(mainContainerRef.current);
+    }
+  }, [scrollManager]);
+
   // Prevent flash during initialization
   if (!isInitialized) {
     return (
@@ -135,7 +142,10 @@ function AppRoutes() {
   return (
     <SecurityWrapper>
       <ErrorBoundary>
-        <div className="w-full h-full overflow-hidden relative">
+        <div 
+          ref={mainContainerRef}
+          className="w-full h-full overflow-auto relative"
+        >
           <Switch>
             <Route path="/splash" component={Splash} />
             <Route path="/login" component={Login} />

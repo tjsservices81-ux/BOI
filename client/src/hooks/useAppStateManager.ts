@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
+import { AppLifecycleManager } from "@/utils/appLifecycle";
 
 interface AppState {
   currentRoute: string;
@@ -21,9 +22,11 @@ export function useAppStateManager() {
   const scrollPositions = useRef<Record<string, number>>({});
   const formDataRef = useRef<Record<string, any>>({});
   const sessionId = useRef<string>('');
+  const lifecycleManager = useRef<AppLifecycleManager>();
   
-  // Generate unique session ID on first load
+  // Initialize lifecycle manager and session ID
   useEffect(() => {
+    lifecycleManager.current = AppLifecycleManager.getInstance();
     if (!sessionId.current) {
       sessionId.current = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     }
@@ -126,12 +129,21 @@ export function useAppStateManager() {
         setHasBeenBackgrounded(true);
         saveAppState();
       } else if (hasBeenBackgrounded) {
-        // App is being foregrounded after being backgrounded
-        const restoredState = restoreAppState();
+        // App is being foregrounded - check if it was terminated
+        const wasTerminated = lifecycleManager.current?.checkIfTerminated();
         
-        if (restoredState && restoredState.currentRoute && restoredState.currentRoute !== location) {
-          // Restore to the exact route where user left off
-          setLocation(restoredState.currentRoute);
+        if (wasTerminated) {
+          // App was terminated, clear state and start fresh
+          clearAppState();
+          setHasBeenBackgrounded(false);
+        } else {
+          // App was just backgrounded, restore state
+          const restoredState = restoreAppState();
+          
+          if (restoredState && restoredState.currentRoute && restoredState.currentRoute !== location) {
+            // Restore to the exact route where user left off
+            setLocation(restoredState.currentRoute);
+          }
         }
       }
     };
