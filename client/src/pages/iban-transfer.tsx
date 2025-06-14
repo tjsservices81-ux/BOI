@@ -90,13 +90,22 @@ export default function IbanTransfer() {
       parseFloat(formData.amount),
       formData.recipientName,
       'IBAN',
-      ref
+      ref,
+      undefined, // No exchange rate for IBAN transfers
+      {
+        iban: formData.iban
+      }
     );
     
     if (!success) {
       console.error('Transfer failed');
+      alert('Transfer failed: Insufficient funds or invalid account details');
       return;
     }
+
+    // Dispatch events to update all components like UK transfers do
+    window.dispatchEvent(new CustomEvent('transactionUpdate'));
+    window.dispatchEvent(new CustomEvent('balanceUpdate'));
 
     // Immediately go to success screen and start animation
     setStep('success');

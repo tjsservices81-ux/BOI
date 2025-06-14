@@ -179,8 +179,13 @@ export default function UkTransfer() {
     
     if (!success) {
       console.error('Transfer failed');
+      alert('Transfer failed: Insufficient funds or invalid account details');
       return;
     }
+
+    // Dispatch events to update all components
+    window.dispatchEvent(new CustomEvent('transactionUpdate'));
+    window.dispatchEvent(new CustomEvent('balanceUpdate'));
 
     // Immediately go to success screen and start animation
     setStep('success');
