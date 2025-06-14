@@ -22,6 +22,14 @@ export default function Profile() {
     accountType: 'current',
     balance: '0.00'
   });
+  const [showEditProfile, setShowEditProfile] = useState(false);
+  const [editProfileData, setEditProfileData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    dateOfBirth: ''
+  });
   const [profileData, setProfileData] = useState(() => {
     const currentCustomerNumber = UserDataManager.getCurrentUser();
     return {
@@ -139,6 +147,76 @@ export default function Profile() {
   const startEditingBalance = (account: any) => {
     setEditingAccount(account);
     setNewBalance(account.balance);
+  };
+
+  const startEditingProfile = () => {
+    setEditProfileData({
+      name: profileData.name,
+      email: profileData.email,
+      phone: profileData.phone,
+      address: profileData.address,
+      dateOfBirth: profileData.dateOfBirth
+    });
+    setShowEditProfile(true);
+  };
+
+  const updateProfile = async () => {
+    if (!editProfileData.name.trim() || !editProfileData.email.trim()) {
+      alert('Name and email are required');
+      return;
+    }
+
+    try {
+      const currentCustomerNumber = UserDataManager.getCurrentUser();
+      
+      // Update via API
+      const response = await fetch(`/api/profile/${currentCustomerNumber}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editProfileData)
+      });
+
+      if (response.ok) {
+        const updatedData = await response.json();
+        
+        // Update local state
+        setProfileData({
+          ...profileData,
+          ...editProfileData
+        });
+        
+        // Update UserDataManager
+        UserDataManager.updateUserProfile({
+          name: editProfileData.name,
+          email: editProfileData.email,
+          phone: editProfileData.phone,
+          address: editProfileData.address,
+          dateOfBirth: editProfileData.dateOfBirth,
+          customerNumber: profileData.customerNumber,
+          joinDate: profileData.joinDate
+        });
+        
+        // Notify other components if name changed
+        if (editProfileData.name !== profileData.name) {
+          window.dispatchEvent(new CustomEvent('profileUpdated', { 
+            detail: { name: editProfileData.name } 
+          }));
+        }
+        
+        // Dispatch admin update event
+        window.dispatchEvent(new CustomEvent('adminProfileUpdate'));
+        
+        setShowEditProfile(false);
+        alert('Profile updated successfully');
+      } else {
+        alert('Failed to update profile');
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      alert('Error updating profile');
+    }
   };
 
 
@@ -626,6 +704,16 @@ export default function Profile() {
                       </span>
                     </div>
                   </div>
+                  
+                  <button 
+                    onClick={startEditingProfile}
+                    className="w-full mt-4 flex items-center justify-center space-x-2 p-3 bg-blue-50 border border-blue-200 rounded-xl active:scale-98 transition-transform"
+                  >
+                    <Edit3 className="w-4 h-4 text-blue-600" />
+                    <span className="font-semibold text-blue-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Edit Profile Information
+                    </span>
+                  </button>
                 </div>
               </div>
 
@@ -738,7 +826,112 @@ export default function Profile() {
         </div>
       )}
 
+      {/* Edit Profile Modal */}
+      {showEditProfile && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 max-h-[80vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Edit Profile Information
+              </h2>
+              <button 
+                onClick={() => setShowEditProfile(false)}
+                className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center active:scale-95 transition-transform"
+              >
+                <X className="w-4 h-4 text-gray-600" />
+              </button>
+            </div>
 
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Name *
+                </label>
+                <input
+                  type="text"
+                  value={editProfileData.name}
+                  onChange={(e) => setEditProfileData({ ...editProfileData, name: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  placeholder="Enter full name"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Email *
+                </label>
+                <input
+                  type="email"
+                  value={editProfileData.email}
+                  onChange={(e) => setEditProfileData({ ...editProfileData, email: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  placeholder="Enter email address"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Phone
+                </label>
+                <input
+                  type="tel"
+                  value={editProfileData.phone}
+                  onChange={(e) => setEditProfileData({ ...editProfileData, phone: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  placeholder="Enter phone number"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Address
+                </label>
+                <input
+                  type="text"
+                  value={editProfileData.address}
+                  onChange={(e) => setEditProfileData({ ...editProfileData, address: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  placeholder="Enter address"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Date of Birth
+                </label>
+                <input
+                  type="date"
+                  value={editProfileData.dateOfBirth}
+                  onChange={(e) => setEditProfileData({ ...editProfileData, dateOfBirth: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                />
+              </div>
+            </div>
+
+            <div className="flex space-x-3 mt-6">
+              <button
+                onClick={() => setShowEditProfile(false)}
+                className="flex-1 p-3 bg-gray-100 text-gray-700 rounded-xl font-semibold active:scale-98 transition-transform"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={updateProfile}
+                className="flex-1 p-3 bg-blue-600 text-white rounded-xl font-semibold active:scale-98 transition-transform"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Add Account Modal */}
       {showAddAccount && (
