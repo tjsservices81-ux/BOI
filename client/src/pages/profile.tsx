@@ -457,75 +457,86 @@ export default function Profile() {
     const randomTransaction = sampleTransactions[Math.floor(Math.random() * sampleTransactions.length)];
     const now = new Date();
     
-    // Get current accounts to calculate new balance
-    const storedAccounts = UserDataManager.getUserData('bankAccounts', []);
+    // Clear all caches first to ensure we get the most current data
+    UserDataManager.clearCache();
     
-    // Ensure storedAccounts is an array and not null
-    if (!Array.isArray(storedAccounts) || storedAccounts.length === 0) {
-      console.error('No accounts found for sample transaction');
+    // Get fresh account data
+    const currentAccounts = UserDataManager.getUserData('bankAccounts', []);
+    
+    if (!Array.isArray(currentAccounts) || currentAccounts.length === 0) {
+      alert('Error: No accounts found. Please refresh the page.');
       return;
     }
     
-    const targetAccount = storedAccounts.find((acc: any) => acc.id === accountId);
+    const targetAccount = currentAccounts.find((acc: any) => acc.id === accountId);
     if (!targetAccount) {
-      console.error('Target account not found for ID:', accountId);
+      alert('Error: Account not found. Please refresh the page.');
       return;
     }
     
-    const currentBalance = parseFloat(targetAccount.balance);
-    const transactionAmount = randomTransaction.type === 'credit' ? Math.abs(randomTransaction.amount) : -Math.abs(randomTransaction.amount);
+    // Parse current balance safely
+    const currentBalance = parseFloat(targetAccount.balance) || 0;
+    const rawAmount = Math.abs(randomTransaction.amount);
+    const transactionAmount = randomTransaction.type === 'credit' ? rawAmount : -rawAmount;
     const newBalance = currentBalance + transactionAmount;
     
+    // Create properly formatted transaction
     const transaction = {
       id: Date.now(),
       accountId: accountId,
-      amount: transactionAmount > 0 ? `+${transactionAmount.toFixed(2)}` : `${transactionAmount.toFixed(2)}`,
+      amount: transactionAmount >= 0 ? `+${transactionAmount.toFixed(2)}` : transactionAmount.toFixed(2),
       description: randomTransaction.description,
       category: randomTransaction.type === 'credit' ? 'income' : 'expense',
       type: randomTransaction.type,
-      timestamp: now.toISOString()
+      timestamp: now.toISOString(),
+      paymentMethod: 'Bank Transfer'
     };
 
-    // Add transaction using UserDataManager
-    const existingTransactions = UserDataManager.getUserData('bankTransactions', []);
-    const updatedTransactions = [...existingTransactions, transaction];
-    UserDataManager.setUserData('bankTransactions', updatedTransactions);
+    // Get current transactions and add new one
+    const currentTransactions = UserDataManager.getUserData('bankTransactions', []);
+    const updatedTransactions = [...currentTransactions, transaction];
     
-    console.log('Added transaction:', transaction);
-    console.log('Total transactions now:', updatedTransactions.length);
-    console.log('Current balance was:', currentBalance);
-    console.log('Transaction amount:', transactionAmount);
-    console.log('New balance is:', newBalance.toFixed(2));
-
-    // Update account balance
-    const updatedAccounts = storedAccounts.map((acc: any) => {
+    // Update account with new balance
+    const updatedAccounts = currentAccounts.map((acc: any) => {
       if (acc.id === accountId) {
         return { ...acc, balance: newBalance.toFixed(2) };
       }
       return acc;
     });
     
-    // Clear cache before and after updating data
-    UserDataManager.clearCache('bankAccounts');
-    UserDataManager.clearCache('bankTransactions');
-    
+    // Save everything to storage
+    UserDataManager.setUserData('bankTransactions', updatedTransactions);
     UserDataManager.setUserData('bankAccounts', updatedAccounts);
+    
+    // Update local state
     setAccounts(updatedAccounts);
     
-    // Clear cache again to ensure fresh data
+    // Clear cache again after updates
     UserDataManager.clearCache();
 
-    // Dispatch comprehensive events to notify other components
+    console.log('Sample Transaction Details:', {
+      account: targetAccount.type,
+      previousBalance: currentBalance.toFixed(2),
+      transactionAmount: transactionAmount.toFixed(2),
+      newBalance: newBalance.toFixed(2),
+      description: randomTransaction.description
+    });
+
+    // Notify all components of the changes
     window.dispatchEvent(new CustomEvent('transactionUpdate'));
     window.dispatchEvent(new CustomEvent('transactionAdded', {
-      detail: { transaction: transaction, accountId: accountId }
+      detail: { transaction, accountId }
     }));
     window.dispatchEvent(new CustomEvent('balanceUpdate', {
-      detail: { accountId: accountId, newBalance: newBalance.toFixed(2), accounts: updatedAccounts }
+      detail: { 
+        accountId, 
+        newBalance: newBalance.toFixed(2), 
+        accounts: updatedAccounts 
+      }
     }));
     
     setShowAddTransaction(false);
-    alert(`Added transaction: ${randomTransaction.description} €${Math.abs(transactionAmount).toFixed(2)} - New balance: €${newBalance.toFixed(2)}`);
+    alert(`Transaction Added Successfully!\n\n${randomTransaction.description}\nAmount: €${Math.abs(transactionAmount).toFixed(2)}\nNew Balance: €${newBalance.toFixed(2)}`);
   };
 
   const updateBalance = () => {
