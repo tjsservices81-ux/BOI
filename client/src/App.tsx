@@ -67,7 +67,7 @@ function AppRoutes() {
     FreshLaunchDetector.setupTerminationDetection();
     
     if (isFreshLaunch) {
-      // Fresh launch after termination - show splash
+      // Fresh launch after termination - show splash and prevent any restoration
       console.log('Fresh launch detected - showing splash screen');
       return false;
     }
@@ -76,6 +76,10 @@ function AppRoutes() {
     const hadSplash = sessionStorage.getItem('splashShown') === 'true';
     console.log('App resumed - splash already shown:', hadSplash);
     return hadSplash;
+  });
+  
+  const [isFreshLaunch] = useState(() => {
+    return sessionStorage.getItem('appRunning') === 'true' && sessionStorage.getItem('splashShown') !== 'true';
   });
   const [isInitialized, setIsInitialized] = useState(false);
   const [splashTransitioning, setSplashTransitioning] = useState(false);
@@ -88,23 +92,15 @@ function AppRoutes() {
       themeColorMeta.setAttribute('content', '#0000ff');
     }
     
-    // Check if this is a fresh launch first
-    const isFreshLaunch = FreshLaunchDetector.isFirstLaunch();
-    
-    if (isFreshLaunch) {
-      // Fresh start - show splash screen
-      setSplashShown(false);
-    } else {
-      // Check for restored state
+    // Skip ALL restoration logic if this is a fresh launch
+    if (!isFreshLaunch) {
       const restoredState = appStateManager.restoreAppState();
       if (restoredState) {
-        // We're restoring from a backgrounded state
         setSplashShown(true);
         if (themeColorMeta) {
           themeColorMeta.setAttribute('content', '#126987');
         }
       } else {
-        // Normal initialization - check splash state
         const hasShownSplash = sessionStorage.getItem('splashShown');
         if (hasShownSplash) {
           setSplashShown(true);
@@ -115,9 +111,8 @@ function AppRoutes() {
       }
     }
     
-    // Mark as initialized after a tick to prevent flash
     setTimeout(() => setIsInitialized(true), 0);
-  }, [appStateManager]);
+  }, [appStateManager, isFreshLaunch]);
 
   // Listen for splash completion
   useEffect(() => {

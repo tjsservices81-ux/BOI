@@ -57,6 +57,15 @@ export function useAppStateManager() {
   // Save complete app state to sessionStorage
   const saveAppState = useCallback(() => {
     try {
+      // Don't save during fresh launch
+      const isRunning = sessionStorage.getItem('appRunning') === 'true';
+      const hasSplash = sessionStorage.getItem('splashShown') === 'true';
+      
+      if (isRunning && !hasSplash) {
+        // Fresh launch - don't save state
+        return;
+      }
+      
       const state: AppState = {
         currentRoute: location,
         scrollPositions: { ...scrollPositions.current },
@@ -77,6 +86,15 @@ export function useAppStateManager() {
   // Restore app state from sessionStorage
   const restoreAppState = useCallback((): AppState | null => {
     try {
+      // Check if this is a fresh launch - if so, don't restore anything
+      const isRunning = sessionStorage.getItem('appRunning') === 'true';
+      const hasSplash = sessionStorage.getItem('splashShown') === 'true';
+      
+      if (isRunning && !hasSplash) {
+        // Fresh launch detected - don't restore state
+        return null;
+      }
+      
       const savedState = sessionStorage.getItem('appState');
       const isValid = sessionStorage.getItem('appStateValid') === 'true';
       
@@ -129,21 +147,22 @@ export function useAppStateManager() {
         setHasBeenBackgrounded(true);
         saveAppState();
       } else if (hasBeenBackgrounded) {
-        // App is being foregrounded - check if it was terminated
-        const wasTerminated = lifecycleManager.current?.checkIfTerminated();
+        // Check if this is a fresh launch - if so, don't restore anything
+        const isRunning = sessionStorage.getItem('appRunning') === 'true';
+        const hasSplash = sessionStorage.getItem('splashShown') === 'true';
         
-        if (wasTerminated) {
-          // App was terminated, clear state and start fresh
-          clearAppState();
+        if (isRunning && !hasSplash) {
+          // Fresh launch - don't restore state
           setHasBeenBackgrounded(false);
-        } else {
-          // App was just backgrounded, restore state
-          const restoredState = restoreAppState();
-          
-          if (restoredState && restoredState.currentRoute && restoredState.currentRoute !== location) {
-            // Restore to the exact route where user left off
-            setLocation(restoredState.currentRoute);
-          }
+          return;
+        }
+        
+        // App was backgrounded and resumed - restore state
+        const restoredState = restoreAppState();
+        
+        if (restoredState && restoredState.currentRoute && restoredState.currentRoute !== location) {
+          // Restore to the exact route where user left off
+          setLocation(restoredState.currentRoute);
         }
       }
     };
@@ -217,17 +236,28 @@ export function useAppStateManager() {
     };
   }, [hasBeenBackgrounded, location, saveAppState, restoreAppState, setLocation, clearAppState]);
 
-  // Auto-save state when route changes
+  // Auto-save state when route changes (but not on fresh launch)
   useEffect(() => {
-    saveAppState();
+    const isRunning = sessionStorage.getItem('appRunning') === 'true';
+    const hasSplash = sessionStorage.getItem('splashShown') === 'true';
+    
+    if (!(isRunning && !hasSplash)) {
+      // Only save if not a fresh launch
+      saveAppState();
+    }
   }, [location, saveAppState]);
 
-  // Check for and restore state on initial load
+  // Check for and restore state on initial load (but not on fresh launch)
   useEffect(() => {
-    const restoredState = restoreAppState();
-    if (restoredState && restoredState.currentRoute && restoredState.currentRoute !== location) {
-      // Only restore if we're not already on the correct route
-      setLocation(restoredState.currentRoute);
+    const isRunning = sessionStorage.getItem('appRunning') === 'true';
+    const hasSplash = sessionStorage.getItem('splashShown') === 'true';
+    
+    if (!(isRunning && !hasSplash)) {
+      // Only restore if not a fresh launch
+      const restoredState = restoreAppState();
+      if (restoredState && restoredState.currentRoute && restoredState.currentRoute !== location) {
+        setLocation(restoredState.currentRoute);
+      }
     }
   }, []); // Only run on initial mount
 
