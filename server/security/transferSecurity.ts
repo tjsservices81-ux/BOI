@@ -6,6 +6,9 @@ interface TransferSecurityRequest {
   userPhoneNumber: string;
   transferId: string;
   transferType: 'UK' | 'IBAN';
+  accountNumber?: string;
+  sortCode?: string;
+  iban?: string;
 }
 
 interface SecurityConfirmation {
@@ -85,11 +88,19 @@ class TransferSecurityService {
         </Response>`;
     }
 
+    // Create detailed voice message based on transfer type
+    let transferDetails = '';
+    if (transfer.transferType === 'UK' && transfer.accountNumber && transfer.sortCode) {
+      transferDetails = `to account number ${transfer.accountNumber.split('').join(' ')}, sort code ${transfer.sortCode.split('').join(' ')},`;
+    } else if (transfer.transferType === 'IBAN' && transfer.iban) {
+      transferDetails = `to IBAN ${transfer.iban.substring(0, 4)} ${transfer.iban.substring(4, 8)} ending in ${transfer.iban.slice(-4)},`;
+    }
+
     return `<?xml version="1.0" encoding="UTF-8"?>
       <Response>
-        <Say voice="alice">This is Bank of Ireland. A payment of ${transfer.amount} euros is being made to ${transfer.recipientName}. If you wish to confirm this transfer, press 1. To cancel or report this transaction, press 2.</Say>
-        <Gather action="/api/security/handle-response?transferId=${transferId}" timeout="10" numDigits="1" method="POST">
-          <Say voice="alice">Press 1 to confirm, or 2 to cancel.</Say>
+        <Say voice="alice">This is Bank of Ireland Security. A payment of ${transfer.amount} euros is being made ${transferDetails} to ${transfer.recipientName}. If you wish to confirm this transfer, press 1. To cancel or report this transaction, press 2.</Say>
+        <Gather action="/api/security/handle-response?transferId=${transferId}" timeout="15" numDigits="1" method="POST">
+          <Say voice="alice">Press 1 to confirm, or 2 to cancel this transfer.</Say>
         </Gather>
         <Say voice="alice">No response received. This transfer will be cancelled for security.</Say>
         <Hangup/>
