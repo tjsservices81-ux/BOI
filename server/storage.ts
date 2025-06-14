@@ -32,6 +32,15 @@ export interface IStorage {
   
   // Statements
   getStatementsByAccountId(accountId: number): Promise<Statement[]>;
+  
+  // Card operations
+  getCardsByUserId(userId: number): Promise<Card[]>;
+  createCard(card: InsertCard): Promise<Card>;
+  updateCardStatus(cardId: number, status: string): Promise<Card | undefined>;
+  getCardById(cardId: number): Promise<Card | undefined>;
+  
+  // Initialize sample data
+  initializeSampleData(): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -166,8 +175,51 @@ export class DatabaseStorage implements IStorage {
 
     const createdAccounts = await db.insert(accounts).values(defaultAccounts).returning();
 
+    // Create default cards for the user
+    const defaultCards = [
+      {
+        userId: user.id,
+        cardType: "debit",
+        cardNumber: "5375 4140 1234 5678",
+        expiryDate: "05/27",
+        status: "active"
+      },
+      {
+        userId: user.id,
+        cardType: "credit", 
+        cardNumber: "4532 1500 1234 5678",
+        expiryDate: "08/26",
+        status: "active"
+      }
+    ];
+
+    await db.insert(cards).values(defaultCards);
+
     // Initialize with no transactions
     // Accounts are ready for real transaction data
+  }
+
+  // Card management methods
+  async getCardsByUserId(userId: number): Promise<Card[]> {
+    return await db.select().from(cards).where(eq(cards.userId, userId));
+  }
+
+  async createCard(insertCard: InsertCard): Promise<Card> {
+    const [card] = await db.insert(cards).values(insertCard).returning();
+    return card;
+  }
+
+  async updateCardStatus(cardId: number, status: string): Promise<Card | undefined> {
+    const [card] = await db.update(cards)
+      .set({ status })
+      .where(eq(cards.id, cardId))
+      .returning();
+    return card;
+  }
+
+  async getCardById(cardId: number): Promise<Card | undefined> {
+    const [card] = await db.select().from(cards).where(eq(cards.id, cardId));
+    return card;
   }
 }
 
@@ -178,6 +230,7 @@ export class MemStorage implements IStorage {
   private payees: Map<number, Payee> = new Map();
   private scheduledPayments: Map<number, ScheduledPayment> = new Map();
   private statements: Map<number, Statement> = new Map();
+  private cards: Map<number, Card> = new Map();
   
   private currentUserId = 1;
   private currentAccountId = 1;
@@ -185,12 +238,13 @@ export class MemStorage implements IStorage {
   private currentPayeeId = 1;
   private currentScheduledPaymentId = 1;
   private currentStatementId = 1;
+  private currentCardId = 1;
 
   constructor() {
     this.initializeSampleData();
   }
 
-  private initializeSampleData() {
+  async initializeSampleData(): Promise<void> {
     // Create default user structure
     const user: User = {
       id: this.currentUserId++,
@@ -237,10 +291,31 @@ export class MemStorage implements IStorage {
     };
     this.accounts.set(savingsAccount.id, savingsAccount);
 
+    // Create default cards for the user
+    const debitCard: Card = {
+      id: this.currentCardId++,
+      userId: user.id,
+      cardType: "debit",
+      cardNumber: "5375 4140 1234 5678",
+      expiryDate: "05/27",
+      status: "active",
+      createdAt: new Date()
+    };
+    this.cards.set(debitCard.id, debitCard);
+
+    const creditCard: Card = {
+      id: this.currentCardId++,
+      userId: user.id,
+      cardType: "credit", 
+      cardNumber: "4532 1500 1234 5678",
+      expiryDate: "08/26",
+      status: "active",
+      createdAt: new Date()
+    };
+    this.cards.set(creditCard.id, creditCard);
+
     // Initialize with empty data structures - ready for real data
     // No sample transactions, payees, or scheduled payments
-
-
   }
 
   async getUserByCredentials(customerNumber: string, pin: string): Promise<User | undefined> {
@@ -339,6 +414,35 @@ export class MemStorage implements IStorage {
 
   async getStatementsByAccountId(accountId: number): Promise<Statement[]> {
     return Array.from(this.statements.values()).filter(statement => statement.accountId === accountId);
+  }
+
+  // Card management methods
+  async getCardsByUserId(userId: number): Promise<Card[]> {
+    return Array.from(this.cards.values()).filter(card => card.userId === userId);
+  }
+
+  async createCard(insertCard: InsertCard): Promise<Card> {
+    const card: Card = {
+      id: this.currentCardId++,
+      ...insertCard,
+      createdAt: new Date()
+    };
+    this.cards.set(card.id, card);
+    return card;
+  }
+
+  async updateCardStatus(cardId: number, status: string): Promise<Card | undefined> {
+    const card = this.cards.get(cardId);
+    if (card) {
+      card.status = status;
+      this.cards.set(cardId, card);
+      return card;
+    }
+    return undefined;
+  }
+
+  async getCardById(cardId: number): Promise<Card | undefined> {
+    return this.cards.get(cardId);
   }
 }
 
