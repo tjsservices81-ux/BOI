@@ -114,14 +114,23 @@ export default function Dashboard() {
       }
     };
 
+    const handleAccountsReset = (event: any) => {
+      if (event.detail?.accounts) {
+        setAccounts(event.detail.accounts);
+        UserDataManager.clearCache();
+      }
+    };
+
     window.addEventListener('balanceUpdate', handleBalanceUpdate as EventListener);
     window.addEventListener('adminProfileUpdate', handleProfileUpdate as EventListener);
     window.addEventListener('userProfileUpdate', handleProfileUpdate as EventListener);
+    window.addEventListener('accountsReset', handleAccountsReset as EventListener);
     
     return () => {
       window.removeEventListener('balanceUpdate', handleBalanceUpdate as EventListener);
       window.removeEventListener('adminProfileUpdate', handleProfileUpdate as EventListener);
       window.removeEventListener('userProfileUpdate', handleProfileUpdate as EventListener);
+      window.removeEventListener('accountsReset', handleAccountsReset as EventListener);
     };
   }, [accounts]);
 

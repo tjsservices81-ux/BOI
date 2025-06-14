@@ -550,24 +550,50 @@ export default function Profile() {
       { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "0.00", accountType: "savings" },
     ];
     
+    // Clear cache to ensure fresh data
+    UserDataManager.clearCache();
+    
     // Clear all user data using UserDataManager
     UserDataManager.setUserAccounts(defaultAccounts);
     UserDataManager.setUserData('bankTransactions', []);
     UserDataManager.setUserData('savedPayees', []);
     
-    // Also clear any legacy localStorage entries that might exist
+    // Force clear any legacy localStorage entries that might exist
+    const currentUser = UserDataManager.getCurrentUser();
+    if (currentUser) {
+      localStorage.removeItem(`user_${currentUser}_bankAccounts`);
+      localStorage.removeItem(`user_${currentUser}_bankTransactions`);
+      localStorage.removeItem(`user_${currentUser}_savedPayees`);
+    }
     localStorage.removeItem('bankTransactions');
     localStorage.removeItem('savedPayees');
+    localStorage.removeItem('bankAccounts');
     
+    // Update local state immediately
     setAccounts(defaultAccounts);
     
-    // Dispatch events to notify other components
+    // Clear cache again after setting new data
+    UserDataManager.clearCache();
+    
+    // Dispatch comprehensive events to notify all components
     window.dispatchEvent(new CustomEvent('transactionUpdate'));
+    window.dispatchEvent(new CustomEvent('transactionDeleted'));
     window.dispatchEvent(new CustomEvent('balanceUpdate', {
-      detail: { reset: true }
+      detail: { reset: true, accounts: defaultAccounts }
+    }));
+    window.dispatchEvent(new CustomEvent('accountsReset', {
+      detail: { accounts: defaultAccounts }
     }));
     
-    alert('Data reset to defaults successfully - all balances set to 0.00, transactions cleared');
+    // Force refresh by updating accounts again after a short delay
+    setTimeout(() => {
+      setAccounts([...defaultAccounts]);
+      window.dispatchEvent(new CustomEvent('balanceUpdate', {
+        detail: { reset: true, accounts: defaultAccounts }
+      }));
+    }, 100);
+    
+    alert('Data reset to defaults successfully - all balances set to €0.00, transactions cleared');
   };
 
   return (
