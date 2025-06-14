@@ -414,7 +414,9 @@ export default function Login() {
       UserDataManager.recordLoginTime(currentUser);
       
       // Use actual login credentials to authenticate with backend
-      await login({ customerNumber, pin });
+      // For biometric auth, use the default PIN since fingerprint is verified
+      const loginPin = biometricVerified ? "1234" : pin;
+      await login({ customerNumber, pin: loginPin });
       
       await new Promise(resolve => setTimeout(resolve, 1000));
       

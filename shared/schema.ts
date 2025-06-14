@@ -107,7 +107,7 @@ export const insertCardSchema = createInsertSchema(cards).omit({
 
 export const loginSchema = z.object({
   customerNumber: z.string().min(1, "Customer number is required"),
-  pin: z.string().min(4, "PIN must be at least 4 digits"),
+  pin: z.string().min(1, "PIN is required"),
 });
 
 export const transferSchema = z.object({

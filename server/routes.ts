@@ -53,8 +53,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         credentials = req.body.credentials;
       }
       
+      console.log('Credentials to validate:', { customerNumber: credentials.customerNumber, pin: credentials.pin, pinLength: credentials.pin?.length });
+      
       const { customerNumber, pin } = loginSchema.parse(credentials);
-      console.log('Parsed credentials:', { customerNumber, pin: '***' });
+      console.log('Parsed credentials:', { customerNumber, pin: '***', pinLength: pin.length });
       
       const user = await storage.getUserByCredentials(customerNumber, pin);
       
