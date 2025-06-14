@@ -1,7 +1,7 @@
 import { 
-  users, accounts, transactions, payees, scheduledPayments, statements,
-  type User, type Account, type Transaction, type Payee, type ScheduledPayment, type Statement,
-  type InsertUser, type InsertAccount, type InsertTransaction, type InsertPayee
+  users, accounts, transactions, payees, scheduledPayments, statements, cards,
+  type User, type Account, type Transaction, type Payee, type ScheduledPayment, type Statement, type Card,
+  type InsertUser, type InsertAccount, type InsertTransaction, type InsertPayee, type InsertCard
 } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";

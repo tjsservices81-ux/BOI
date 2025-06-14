@@ -485,7 +485,9 @@ export default function Profile() {
     const rawAmount = Math.abs(randomTransaction.amount);
     
     // Determine transaction type based on account type and transaction nature
-    let transactionType, transactionAmount, category;
+    let transactionType: 'debit' | 'credit' = 'debit';
+    let transactionAmount: number = 0;
+    let category: string = 'expense';
     
     if (targetAccount.accountType === 'current' || targetAccount.accountType === 'savings') {
       // For current/savings accounts: debits are expenses, credits are income
@@ -511,13 +513,13 @@ export default function Profile() {
       }
     }
     
-    const newBalance = currentBalance + transactionAmount;
+    const newBalance = currentBalance + (transactionAmount || 0);
     
     // Create properly formatted transaction
     const transaction = {
       id: Date.now(),
       accountId: accountId,
-      amount: transactionAmount >= 0 ? `+${transactionAmount.toFixed(2)}` : transactionAmount.toFixed(2),
+      amount: transactionAmount >= 0 ? `+${transactionAmount.toFixed(2)}` : `${transactionAmount.toFixed(2)}`,
       description: randomTransaction.description,
       category: category,
       type: transactionType,
@@ -548,7 +550,7 @@ export default function Profile() {
     UserDataManager.clearCache();
 
     console.log('Sample Transaction Details:', {
-      account: targetAccount.type,
+      account: targetAccount.accountType,
       previousBalance: currentBalance.toFixed(2),
       transactionAmount: transactionAmount.toFixed(2),
       newBalance: newBalance.toFixed(2),
