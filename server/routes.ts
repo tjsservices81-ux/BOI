@@ -192,12 +192,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/profile/:customerNumber", async (req, res) => {
     try {
       const { customerNumber } = req.params;
-      const user = await storage.getUserByCustomerNumber(customerNumber);
+      let user = await storage.getUserByCustomerNumber(customerNumber);
+      
+      // If user doesn't exist in database, create them with default data
       if (!user) {
-        return res.status(404).json({ message: "User not found" });
+        user = await storage.createUser({
+          customerNumber,
+          name: "James",
+          email: "hello@gmail.com",
+          phone: "+353 1 234 5678",
+          address: "Hello",
+          dateOfBirth: "2025-06-08",
+          pin: "000000",
+          joinDate: "Member since 2018"
+        });
       }
+      
       res.json(user);
     } catch (error) {
+      console.error('Get profile error:', error);
       res.status(500).json({ message: "Internal server error" });
     }
   });
@@ -216,10 +229,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       const updates = profileUpdateSchema.parse(req.body);
-      const updatedUser = await storage.updateUserProfile(customerNumber, updates);
       
+      // First try to update existing user
+      let updatedUser = await storage.updateUserProfile(customerNumber, updates);
+      
+      // If user doesn't exist, create them with the provided data
       if (!updatedUser) {
-        return res.status(404).json({ message: "User not found" });
+        const newUser = await storage.createUser({
+          customerNumber,
+          name: updates.name || "User",
+          email: updates.email || "user@example.com",
+          phone: updates.phone || "",
+          address: updates.address || "",
+          dateOfBirth: updates.dateOfBirth || "",
+          pin: "000000", // Default PIN, user can change later
+          joinDate: updates.joinDate || new Date().toISOString()
+        });
+        updatedUser = newUser;
       }
       
       res.json(updatedUser);
@@ -227,6 +253,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: error.errors[0].message });
       }
+      console.error('Profile update error:', error);
       res.status(500).json({ message: "Internal server error" });
     }
   });
