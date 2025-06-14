@@ -160,42 +160,8 @@ export class DatabaseStorage implements IStorage {
 
     const createdAccounts = await db.insert(accounts).values(defaultAccounts).returning();
 
-    // Create sample transactions for the current account
-    const currentAccount = createdAccounts[0];
-    const sampleTransactions = [
-      {
-        accountId: currentAccount.id,
-        amount: "-47.82",
-        description: "Tesco Ireland",
-        category: "shopping",
-        type: "debit",
-        paymentMethod: "Debit Card",
-        reference: "1234567890",
-        timestamp: new Date("2024-12-30T14:34:00Z")
-      },
-      {
-        accountId: currentAccount.id,
-        amount: "-25.00", 
-        description: "Spotify Premium",
-        category: "entertainment",
-        type: "debit",
-        paymentMethod: "Direct Debit",
-        reference: "DD123456",
-        timestamp: new Date("2024-12-29T10:15:00Z")
-      },
-      {
-        accountId: currentAccount.id,
-        amount: "+2500.00",
-        description: "Salary Payment",
-        category: "income",
-        type: "credit", 
-        paymentMethod: "Bank Transfer",
-        reference: "SAL202412",
-        timestamp: new Date("2024-12-28T09:00:00Z")
-      }
-    ];
-
-    await db.insert(transactions).values(sampleTransactions);
+    // Initialize with no transactions
+    // Accounts are ready for real transaction data
   }
 }
 
@@ -219,222 +185,56 @@ export class MemStorage implements IStorage {
   }
 
   private initializeSampleData() {
-    // Create sample user
+    // Create default user structure
     const user: User = {
       id: this.currentUserId++,
       customerNumber: "12345678",
       pin: "1234",
-      name: "James",
-      email: "hello@gmail.com",
-      phone: "+353 1 234 5678",
-      address: "Hello",
-      dateOfBirth: "2025-06-08",
-      joinDate: "Member since 2018",
+      name: "",
+      email: "",
+      phone: "",
+      address: "",
+      dateOfBirth: "",
+      joinDate: "",
       dateCreated: new Date()
     };
     this.users.set(user.id, user);
 
-    // Create sample accounts
+    // Create default accounts with zero balances
     const currentAccount: Account = {
       id: this.currentAccountId++,
       userId: user.id,
       accountType: "current",
-      accountNumber: "****4829",
-      balance: "8247.32",
+      accountNumber: "****2091",
+      balance: "0.00",
       displayName: "Current Account"
     };
     this.accounts.set(currentAccount.id, currentAccount);
-
-    const savingsAccount: Account = {
-      id: this.currentAccountId++,
-      userId: user.id,
-      accountType: "savings",
-      accountNumber: "****7251",
-      balance: "4600.00",
-      displayName: "Savings Account"
-    };
-    this.accounts.set(savingsAccount.id, savingsAccount);
 
     const creditCardAccount: Account = {
       id: this.currentAccountId++,
       userId: user.id,
       accountType: "credit",
       accountNumber: "****1820",
-      balance: "2000.00",
+      balance: "0.00",
       displayName: "Credit Card"
     };
     this.accounts.set(creditCardAccount.id, creditCardAccount);
 
-    const loanAccount: Account = {
+    const savingsAccount: Account = {
       id: this.currentAccountId++,
       userId: user.id,
-      accountType: "loan",
-      accountNumber: "****8923",
-      balance: "2500.00",
-      displayName: "Personal Loan"
+      accountType: "savings",
+      accountNumber: "****0978",
+      balance: "0.00",
+      displayName: "Savings Account"
     };
-    this.accounts.set(loanAccount.id, loanAccount);
+    this.accounts.set(savingsAccount.id, savingsAccount);
 
-    const depositAccount: Account = {
-      id: this.currentAccountId++,
-      userId: user.id,
-      accountType: "deposit",
-      accountNumber: "****7908",
-      balance: "100.00",
-      displayName: "Deposit - 365 Monthly Saver"
-    };
-    this.accounts.set(depositAccount.id, depositAccount);
+    // Initialize with empty data structures - ready for real data
+    // No sample transactions, payees, or scheduled payments
 
-    // Create sample transactions
-    const sampleTransactions: Transaction[] = [
-      {
-        id: this.currentTransactionId++,
-        accountId: currentAccount.id,
-        amount: "-47.82",
-        description: "Tesco Ireland",
-        category: "shopping",
-        type: "debit",
-        paymentMethod: "Debit Card",
-        reference: "1234567890",
-        timestamp: new Date("2024-12-30T14:34:00")
-      },
-      {
-        id: this.currentTransactionId++,
-        accountId: currentAccount.id,
-        amount: "-68.50",
-        description: "Applegreen",
-        category: "fuel",
-        type: "debit",
-        paymentMethod: "Debit Card",
-        reference: "9876543210",
-        timestamp: new Date("2024-12-29T08:15:00")
-      },
-      {
-        id: this.currentTransactionId++,
-        accountId: currentAccount.id,
-        amount: "+3200.00",
-        description: "Salary Deposit",
-        category: "salary",
-        type: "credit",
-        paymentMethod: "Direct Deposit",
-        reference: "SAL202412",
-        timestamp: new Date("2024-12-28T09:00:00")
-      },
-      {
-        id: this.currentTransactionId++,
-        accountId: currentAccount.id,
-        amount: "-87.20",
-        description: "The Brazen Head",
-        category: "dining",
-        type: "debit",
-        paymentMethod: "Debit Card",
-        reference: "5555666677",
-        timestamp: new Date("2024-12-27T19:45:00")
-      },
-      {
-        id: this.currentTransactionId++,
-        accountId: currentAccount.id,
-        amount: "-89.50",
-        description: "Electric Ireland",
-        category: "utilities",
-        type: "debit",
-        paymentMethod: "Bill Payment",
-        reference: "EI20241226",
-        timestamp: new Date("2024-12-26T10:30:00")
-      }
-    ];
 
-    sampleTransactions.forEach(transaction => {
-      this.transactions.set(transaction.id, transaction);
-    });
-
-    // Create sample payees
-    const samplePayees: Payee[] = [
-      {
-        id: this.currentPayeeId++,
-        userId: user.id,
-        name: "Electric Ireland",
-        iban: "IE29AIBK93115212345678",
-        category: "utilities",
-        lastAmount: "89.50"
-      },
-      {
-        id: this.currentPayeeId++,
-        userId: user.id,
-        name: "Virgin Media",
-        iban: "IE64BOFI90583812345678",
-        category: "internet",
-        lastAmount: "65.00"
-      },
-      {
-        id: this.currentPayeeId++,
-        userId: user.id,
-        name: "Dublin City Council",
-        iban: "IE89BOFI90123456789012",
-        category: "council",
-        lastAmount: "145.00"
-      }
-    ];
-
-    samplePayees.forEach(payee => {
-      this.payees.set(payee.id, payee);
-    });
-
-    // Create sample scheduled payments
-    const sampleScheduledPayments: ScheduledPayment[] = [
-      {
-        id: this.currentScheduledPaymentId++,
-        userId: user.id,
-        payeeName: "Mortgage Payment",
-        amount: "1250.00",
-        frequency: "monthly",
-        nextPayment: new Date("2025-01-01")
-      },
-      {
-        id: this.currentScheduledPaymentId++,
-        userId: user.id,
-        payeeName: "Phone Bill",
-        amount: "45.00",
-        frequency: "monthly",
-        nextPayment: new Date("2025-01-15")
-      }
-    ];
-
-    sampleScheduledPayments.forEach(payment => {
-      this.scheduledPayments.set(payment.id, payment);
-    });
-
-    // Create sample statements
-    const sampleStatements: Statement[] = [
-      {
-        id: this.currentStatementId++,
-        accountId: currentAccount.id,
-        month: "December",
-        year: 2024,
-        transactionCount: 23,
-        available: true
-      },
-      {
-        id: this.currentStatementId++,
-        accountId: currentAccount.id,
-        month: "November",
-        year: 2024,
-        transactionCount: 31,
-        available: true
-      },
-      {
-        id: this.currentStatementId++,
-        accountId: currentAccount.id,
-        month: "October",
-        year: 2024,
-        transactionCount: 28,
-        available: true
-      }
-    ];
-
-    sampleStatements.forEach(statement => {
-      this.statements.set(statement.id, statement);
-    });
   }
 
   async getUserByCredentials(customerNumber: string, pin: string): Promise<User | undefined> {
