@@ -770,7 +770,7 @@ export default function Profile() {
                 setTimeout(async () => {
                   await logout();
                   navigate('/login');
-                }, 4000);
+                }, 8000);
               }}
               className="w-full flex items-center space-x-4 p-4 bg-red-50 border border-red-200 rounded-xl active:scale-98 transition-transform"
             >
@@ -1303,111 +1303,88 @@ export default function Profile() {
         </div>
       )}
 
-      {/* Professional Sign Out Animation Overlay */}
+      {/* Enhanced Sign Out Animation */}
       <AnimatePresence>
         {isSigningOut && (
           <>
-            {/* Status bar overlay to match the sign-out screen background */}
+            {/* Status bar overlay */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.5 }}
               className="fixed top-0 left-0 right-0 h-12 z-[10000] bg-gradient-to-r from-[#1a3c47] via-[#2c5f70] to-[#1a3c47]"
-              style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                height: '48px',
-                zIndex: 10000,
-                background: 'linear-gradient(90deg, #1a3c47 0%, #2c5f70 50%, #1a3c47 100%)'
-              }}
             />
             
-            {/* Main overlay */}
+            {/* Main overlay with enhanced animation */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.5 }}
               className="fixed inset-0 z-[9999] bg-gradient-to-br from-[#1a3c47] via-[#2c5f70] to-[#0f2a31] flex items-center justify-center"
             >
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.1, duration: 0.4 }}
+                transition={{ delay: 0.2, duration: 0.6 }}
                 className="text-center"
               >
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                  className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full mx-auto mb-6"
-                />
+                {/* Enhanced spinner with pulsing effect */}
+                <motion.div className="relative mb-8">
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                    className="w-20 h-20 border-4 border-white/20 border-t-white rounded-full mx-auto"
+                  />
+                  <motion.div
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                    className="absolute inset-0 w-20 h-20 border-2 border-white/10 rounded-full mx-auto"
+                  />
+                </motion.div>
+
+                {/* Sequential text animations */}
                 <motion.h2
-                  initial={{ y: 10, opacity: 0 }}
+                  initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.3, duration: 0.3 }}
-                  className="text-2xl font-bold text-white mb-2"
+                  transition={{ delay: 0.8, duration: 0.6 }}
+                  className="text-2xl font-bold text-white mb-3"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                 >
                   Signing Out...
                 </motion.h2>
+
                 <motion.p
-                  initial={{ y: 10, opacity: 0 }}
+                  initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.4, duration: 0.3 }}
-                  className="text-white/80"
+                  transition={{ delay: 1.2, duration: 0.6 }}
+                  className="text-white/80 mb-4"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                 >
-                  Please wait while we securely log you out
+                  Securing your session
+                </motion.p>
+
+                {/* Progress indicator */}
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: "100%" }}
+                  transition={{ delay: 2, duration: 5, ease: "easeInOut" }}
+                  className="h-1 bg-white/30 rounded-full mx-auto max-w-48 mb-4"
+                />
+
+                <motion.p
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 4, duration: 0.8 }}
+                  className="text-white/60 text-sm"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  Thank you for using BOI Banking
                 </motion.p>
               </motion.div>
             </motion.div>
           </>
-        )}
-      </AnimatePresence>
-
-      {/* Full Screen Sign Out Animation */}
-      <AnimatePresence>
-        {isSigningOut && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-[#126987] z-[100] flex flex-col items-center justify-center"
-          >
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.2, duration: 0.5 }}
-              className="text-center"
-            >
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                className="w-16 h-16 border-4 border-white border-t-transparent rounded-full mx-auto mb-6"
-              />
-              <motion.h2
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.5, duration: 0.5 }}
-                className="text-2xl font-bold text-white mb-2"
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
-              >
-                Signing Out
-              </motion.h2>
-              <motion.p
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.7, duration: 0.5 }}
-                className="text-white/80"
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
-              >
-                Thank you for using BOI Banking
-              </motion.p>
-            </motion.div>
-          </motion.div>
         )}
       </AnimatePresence>
     </div>
