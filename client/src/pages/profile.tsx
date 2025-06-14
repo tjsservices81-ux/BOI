@@ -543,130 +543,158 @@ export default function Profile() {
                 </button>
               </div>
 
-              {/* Edit Profile */}
-              <button 
-                onClick={startEditingProfile}
-                className="w-full flex items-center space-x-3 p-4 bg-blue-50 border border-blue-200 rounded-xl active:scale-98 transition-transform mb-4"
-              >
-                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                  <Edit3 className="w-5 h-5 text-blue-600" />
-                </div>
-                <div className="flex-1 text-left">
-                  <h3 className="font-semibold text-blue-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Edit Profile
+              <div className="space-y-6">
+                {/* Profile Management Section */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Profile Management
                   </h3>
-                  <p className="text-sm text-blue-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Update profile information
-                  </p>
-                </div>
-              </button>
-
-              {/* Add Account */}
-              <button 
-                onClick={() => setShowAddAccount(true)}
-                className="w-full flex items-center space-x-3 p-4 bg-green-50 border border-green-200 rounded-xl active:scale-98 transition-transform mb-4"
-              >
-                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                  <Plus className="w-5 h-5 text-green-600" />
-                </div>
-                <div className="flex-1 text-left">
-                  <p className="font-semibold text-green-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Add Account
-                  </p>
-                  <p className="text-sm text-green-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Create new bank account
-                  </p>
-                </div>
-              </button>
-
-              {/* Add Sample Transaction */}
-              <button 
-                onClick={() => setShowAddTransaction(true)}
-                className="w-full flex items-center space-x-3 p-4 bg-blue-50 border border-blue-200 rounded-xl active:scale-98 transition-transform mb-4"
-              >
-                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                  <Plus className="w-5 h-5 text-blue-600" />
-                </div>
-                <div className="flex-1 text-left">
-                  <p className="font-semibold text-blue-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Add Sample Transaction
-                  </p>
-                  <p className="text-sm text-blue-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Add test transactions to any account
-                  </p>
-                </div>
-              </button>
-
-              {/* Unblock Card */}
-              {UserDataManager.getUserData('cardBlocked') && (
-                <button 
-                  onClick={() => {
-                    UserDataManager.setUserData('cardBlocked', false);
-                    window.dispatchEvent(new CustomEvent('cardUnblocked'));
-                    alert('Card has been unblocked successfully');
-                  }}
-                  className="w-full flex items-center space-x-3 p-4 bg-green-50 border border-green-200 rounded-xl active:scale-98 transition-transform mb-4"
-                >
-                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                    <CreditCard className="w-5 h-5 text-green-600" />
-                  </div>
-                  <div className="flex-1 text-left">
-                    <p className="font-semibold text-green-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Unblock Card
-                    </p>
-                    <p className="text-sm text-green-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Your card is currently blocked
-                    </p>
-                  </div>
-                </button>
-              )}
-
-              {/* Balance Management */}
-              <div className="space-y-3 mb-4">
-                <h3 className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Account Balances
-                </h3>
-                {accounts.map((account) => (
-                  <div key={account.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div>
-                      <p className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        {account.displayName}
+                  
+                  {/* Edit Profile */}
+                  <button 
+                    onClick={startEditingProfile}
+                    className="w-full flex items-center space-x-3 p-4 bg-blue-50 border border-blue-200 rounded-xl active:scale-98 transition-transform"
+                  >
+                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                      <Edit3 className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div className="flex-1 text-left">
+                      <p className="font-semibold text-blue-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Edit Profile
                       </p>
-                      <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        {account.accountNumber}
+                      <p className="text-sm text-blue-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Update profile information
                       </p>
                     </div>
-                    <button
-                      onClick={() => {
-                        setEditingAccount(account);
-                        setNewBalance(account.balance);
-                      }}
-                      className="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm font-medium"
-                      style={{ fontFamily: 'OpenSans, sans-serif' }}
-                    >
-                      €{account.balance}
-                    </button>
-                  </div>
-                ))}
-              </div>
+                  </button>
+                </div>
 
-              {/* Reset to Defaults */}
-              <button 
-                onClick={resetToDefaults}
-                className="w-full flex items-center space-x-3 p-4 bg-orange-50 border border-orange-200 rounded-xl active:scale-98 transition-transform"
-              >
-                <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
-                  <RefreshCw className="w-5 h-5 text-orange-600" />
+                {/* Account Management Section */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Account Management
+                  </h3>
+                  
+                  <div className="space-y-3">
+                    {/* Add Account */}
+                    <button 
+                      onClick={() => setShowAddAccount(true)}
+                      className="w-full flex items-center space-x-3 p-4 bg-green-50 border border-green-200 rounded-xl active:scale-98 transition-transform"
+                    >
+                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                        <Plus className="w-5 h-5 text-green-600" />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <p className="font-semibold text-green-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Add Account
+                        </p>
+                        <p className="text-sm text-green-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Create new bank account
+                        </p>
+                      </div>
+                    </button>
+
+                    {/* Add Sample Transaction */}
+                    <button 
+                      onClick={() => setShowAddTransaction(true)}
+                      className="w-full flex items-center space-x-3 p-4 bg-blue-50 border border-blue-200 rounded-xl active:scale-98 transition-transform"
+                    >
+                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                        <Plus className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <p className="font-semibold text-blue-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Add Sample Transaction
+                        </p>
+                        <p className="text-sm text-blue-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Add test transactions to any account
+                        </p>
+                      </div>
+                    </button>
+
+                    {/* Unblock Card */}
+                    {UserDataManager.getUserData('cardBlocked') && (
+                      <button 
+                        onClick={() => {
+                          UserDataManager.setUserData('cardBlocked', false);
+                          window.dispatchEvent(new CustomEvent('cardUnblocked'));
+                          alert('Card has been unblocked successfully');
+                        }}
+                        className="w-full flex items-center space-x-3 p-4 bg-green-50 border border-green-200 rounded-xl active:scale-98 transition-transform"
+                      >
+                        <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                          <CreditCard className="w-5 h-5 text-green-600" />
+                        </div>
+                        <div className="flex-1 text-left">
+                          <p className="font-semibold text-green-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                            Unblock Card
+                          </p>
+                          <p className="text-sm text-green-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                            Your card is currently blocked
+                          </p>
+                        </div>
+                      </button>
+                    )}
+                  </div>
                 </div>
-                <div className="flex-1 text-left">
-                  <p className="font-semibold text-orange-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Reset to Defaults
-                  </p>
-                  <p className="text-sm text-orange-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Clear all data and reset balances
-                  </p>
+
+                {/* Balance Management Section */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Balance Management
+                  </h3>
+                  
+                  <div className="space-y-3 mb-4">
+                    {accounts.map((account) => (
+                      <div key={account.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
+                        <div>
+                          <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                            {account.displayName}
+                          </p>
+                          <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                            {account.accountNumber}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => {
+                            setEditingAccount(account);
+                            setNewBalance(account.balance);
+                          }}
+                          className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-semibold hover:bg-blue-200 transition-colors"
+                          style={{ fontFamily: 'OpenSans, sans-serif' }}
+                        >
+                          €{account.balance}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </button>
+
+                {/* System Management Section */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    System Management
+                  </h3>
+                  
+                  {/* Reset to Defaults */}
+                  <button 
+                    onClick={resetToDefaults}
+                    className="w-full flex items-center space-x-3 p-4 bg-red-50 border border-red-200 rounded-xl active:scale-98 transition-transform"
+                  >
+                    <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                      <RefreshCw className="w-5 h-5 text-red-600" />
+                    </div>
+                    <div className="flex-1 text-left">
+                      <p className="font-semibold text-red-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Reset to Defaults
+                      </p>
+                      <p className="text-sm text-red-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Clear all data and reset balances
+                      </p>
+                    </div>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
