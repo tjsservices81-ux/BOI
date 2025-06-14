@@ -65,6 +65,9 @@ export default function Profile() {
 
   // Load profile data from database with real-time updates
   useEffect(() => {
+    // Set profile theme on component mount
+    themeManager.setTheme('profile');
+    
     const loadProfileData = async () => {
       const currentCustomerNumber = UserDataManager.getCurrentUser();
       if (!currentCustomerNumber) {
