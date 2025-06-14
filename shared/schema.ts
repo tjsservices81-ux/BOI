@@ -63,6 +63,16 @@ export const statements = pgTable("statements", {
   available: boolean("available").notNull().default(true),
 });
 
+export const cards = pgTable("cards", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  cardType: text("card_type").notNull(), // 'debit', 'credit'
+  cardNumber: text("card_number").notNull(),
+  expiryDate: text("expiry_date").notNull(),
+  status: text("status").notNull().default("active"), // 'active', 'blocked', 'frozen'
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 // Session storage table for authentication persistence
 export const sessions = pgTable(
   "sessions",
@@ -90,6 +100,11 @@ export const insertPayeeSchema = createInsertSchema(payees).omit({
   id: true,
 });
 
+export const insertCardSchema = createInsertSchema(cards).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const loginSchema = z.object({
   customerNumber: z.string().min(1, "Customer number is required"),
   pin: z.string().min(4, "PIN must be at least 4 digits"),
@@ -109,9 +124,11 @@ export type Transaction = typeof transactions.$inferSelect;
 export type Payee = typeof payees.$inferSelect;
 export type ScheduledPayment = typeof scheduledPayments.$inferSelect;
 export type Statement = typeof statements.$inferSelect;
+export type Card = typeof cards.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertAccount = z.infer<typeof insertAccountSchema>;
 export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
 export type InsertPayee = z.infer<typeof insertPayeeSchema>;
+export type InsertCard = z.infer<typeof insertCardSchema>;
 export type LoginRequest = z.infer<typeof loginSchema>;
 export type TransferRequest = z.infer<typeof transferSchema>;
