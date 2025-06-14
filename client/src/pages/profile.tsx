@@ -28,7 +28,8 @@ export default function Profile() {
     email: '',
     phone: '',
     address: '',
-    dateOfBirth: ''
+    dateOfBirth: '',
+    joinDate: ''
   });
   const [profileData, setProfileData] = useState(() => {
     const currentCustomerNumber = UserDataManager.getCurrentUser();
@@ -155,7 +156,8 @@ export default function Profile() {
       email: profileData.email,
       phone: profileData.phone,
       address: profileData.address,
-      dateOfBirth: profileData.dateOfBirth
+      dateOfBirth: profileData.dateOfBirth,
+      joinDate: profileData.joinDate
     });
     setShowEditProfile(true);
   };
@@ -195,7 +197,7 @@ export default function Profile() {
           address: editProfileData.address,
           dateOfBirth: editProfileData.dateOfBirth,
           customerNumber: profileData.customerNumber,
-          joinDate: profileData.joinDate
+          joinDate: editProfileData.joinDate
         });
         
         // Notify other components if name changed
@@ -703,6 +705,14 @@ export default function Profile() {
                         {profileData.customerNumber}
                       </span>
                     </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-700 font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Member Since:
+                      </span>
+                      <span className="text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        {profileData.joinDate}
+                      </span>
+                    </div>
                   </div>
                   
                   <button 
@@ -909,6 +919,20 @@ export default function Profile() {
                   onChange={(e) => setEditProfileData({ ...editProfileData, dateOfBirth: e.target.value })}
                   className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Member Since
+                </label>
+                <input
+                  type="text"
+                  value={editProfileData.joinDate}
+                  onChange={(e) => setEditProfileData({ ...editProfileData, joinDate: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  placeholder="e.g., Member since 2018"
                 />
               </div>
             </div>
