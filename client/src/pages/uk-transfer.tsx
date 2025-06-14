@@ -21,13 +21,15 @@ type UkTransferData = z.infer<typeof ukTransferSchema>;
 
 export default function UkTransfer() {
   const [, navigate] = useLocation();
-  const [step, setStep] = useState<'form' | 'confirm' | 'security' | 'success'>('form');
+  const [step, setStep] = useState<'form' | 'calling' | 'success' | 'cancelled'>('form');
   const [transferReference, setTransferReference] = useState<string>('');
   const [identifiedBank, setIdentifiedBank] = useState<string>('');
   const [showReference, setShowReference] = useState<boolean>(false);
   const [animationProgress, setAnimationProgress] = useState<number>(0);
-  const [processingStage, setProcessingStage] = useState<string>('Verifying transfer details...');
+  const [processingStage, setProcessingStage] = useState<string>('Initiating security call...');
   const [formData, setFormData] = useState<UkTransferData | null>(null);
+  const [transferId, setTransferId] = useState<string>('');
+  const [callSid, setCallSid] = useState<string>('');
   const [exchangeRate, setExchangeRate] = useState<number>(0.85); // EUR to GBP rate
   const [gbpAmount, setGbpAmount] = useState<string>('0.00');
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('left');
@@ -140,13 +142,131 @@ export default function UkTransfer() {
   const onSubmit = async (data: UkTransferData) => {
     console.log('Form submitted with data:', data);
     setFormData(data);
-    setTransferReference(generateReference());
+    const ref = generateReference();
+    setTransferReference(ref);
     
-    // Fetch exchange rate when moving to confirmation
+    // Fetch exchange rate
     await fetchExchangeRate();
     
-    setSlideDirection('left');
-    setStep('confirm');
+    // Immediately initiate Twilio voice call
+    setStep('calling');
+    setProcessingStage('Initiating security call...');
+    
+    try {
+      const userData = UserDataManager.getCurrentUserData();
+      if (!userData?.phone) {
+        alert('Phone number not found. Please update your profile.');
+        setStep('form');
+        return;
+      }
+
+      const uniqueTransferId = `UK_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      setTransferId(uniqueTransferId);
+
+      // Initiate voice call immediately
+      const response = await fetch('/api/security/initiate-transfer', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: data.amount,
+          recipientName: data.recipientName,
+          userPhoneNumber: userData.phone,
+          transferId: uniqueTransferId,
+          transferType: 'UK',
+          accountNumber: data.accountNumber,
+          sortCode: data.sortCode
+        }),
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        setCallSid(result.callSid);
+        setProcessingStage('Calling your phone for security confirmation...');
+        
+        // Start polling for confirmation
+        pollForConfirmation(uniqueTransferId);
+      } else {
+        alert('Failed to initiate security call: ' + (result.error || 'Unknown error'));
+        setStep('form');
+      }
+    } catch (error) {
+      console.error('Failed to initiate transfer:', error);
+      alert('Failed to initiate transfer. Please try again.');
+      setStep('form');
+    }
+  };
+
+  const pollForConfirmation = async (transferId: string) => {
+    const maxAttempts = 120; // 2 minutes
+    let attempts = 0;
+    
+    const checkStatus = async () => {
+      attempts++;
+      
+      try {
+        const response = await fetch(`/api/security/status/${transferId}`);
+        const status = await response.json();
+        
+        if (status.confirmed === true) {
+          // Transfer confirmed - process it
+          setProcessingStage('Transfer confirmed! Processing payment...');
+          
+          if (!formData) return;
+          
+          const transferSuccess = processConfirmedTransfer(
+            transferId,
+            formData.fromAccount,
+            parseFloat(formData.amount),
+            formData.recipientName,
+            'UK',
+            transferReference,
+            exchangeRate,
+            {
+              accountNumber: formData.accountNumber,
+              sortCode: formData.sortCode
+            }
+          );
+          
+          if (transferSuccess) {
+            // Dispatch events to update all components
+            window.dispatchEvent(new CustomEvent('transactionUpdate'));
+            window.dispatchEvent(new CustomEvent('balanceUpdate'));
+            
+            setStep('success');
+          } else {
+            alert('Transfer processing failed after confirmation');
+            setStep('form');
+          }
+          return;
+        }
+        
+        if (status.confirmed === false) {
+          // Transfer cancelled
+          setStep('cancelled');
+          return;
+        }
+        
+        // Still pending - continue polling
+        if (attempts < maxAttempts) {
+          setTimeout(checkStatus, 1000); // Check every second
+        } else {
+          // Timeout
+          setStep('cancelled');
+        }
+      } catch (error) {
+        console.error('Error checking transfer status:', error);
+        if (attempts < maxAttempts) {
+          setTimeout(checkStatus, 1000);
+        } else {
+          setStep('cancelled');
+        }
+      }
+    };
+    
+    checkStatus();
   };
 
   const goBackToForm = () => {
