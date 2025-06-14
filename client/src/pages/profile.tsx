@@ -281,6 +281,41 @@ export default function Profile() {
     window.dispatchEvent(new CustomEvent('balanceUpdate'));
   };
 
+  const updateBalance = () => {
+    if (!editingAccount || !newBalance.trim()) {
+      alert('Please enter a valid balance');
+      return;
+    }
+
+    const numericBalance = parseFloat(newBalance);
+    if (isNaN(numericBalance)) {
+      alert('Please enter a valid numeric amount');
+      return;
+    }
+
+    // Update the account balance in local state
+    const updatedAccounts = accounts.map(account => 
+      account.id === editingAccount.id 
+        ? { ...account, balance: numericBalance.toFixed(2) }
+        : account
+    );
+    
+    // Update UserDataManager
+    UserDataManager.setUserData('bankAccounts', updatedAccounts);
+    setAccounts(updatedAccounts);
+    
+    // Close the editing modal
+    setEditingAccount(null);
+    setNewBalance('');
+    
+    // Notify other components about the balance change
+    window.dispatchEvent(new CustomEvent('balanceUpdate', {
+      detail: { accountId: editingAccount.id, newBalance: numericBalance.toFixed(2) }
+    }));
+    
+    alert(`${editingAccount.displayName} balance updated to €${numericBalance.toFixed(2)}`);
+  };
+
   const resetToDefaults = () => {
     // Reset accounts to zero balances for current user
     const defaultAccounts = [
@@ -677,6 +712,75 @@ export default function Profile() {
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                 >
                   Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Balance Modal */}
+      {editingAccount && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md mx-4">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Edit Balance
+                </h2>
+                <button
+                  onClick={() => {
+                    setEditingAccount(null);
+                    setNewBalance('');
+                  }}
+                  className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+                >
+                  <X className="w-4 h-4 text-gray-600" />
+                </button>
+              </div>
+
+              <div className="mb-4">
+                <p className="text-gray-600 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Account: {editingAccount.displayName}
+                </p>
+                <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  {editingAccount.accountNumber}
+                </p>
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  New Balance (€)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={newBalance}
+                  onChange={(e) => setNewBalance(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  placeholder="Enter new balance"
+                  autoFocus
+                />
+              </div>
+
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => {
+                    setEditingAccount(null);
+                    setNewBalance('');
+                  }}
+                  className="flex-1 py-3 bg-gray-200 text-gray-800 rounded-xl font-semibold hover:bg-gray-300 transition-colors"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={updateBalance}
+                  className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  Update Balance
                 </button>
               </div>
             </div>
