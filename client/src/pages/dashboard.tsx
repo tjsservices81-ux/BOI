@@ -105,7 +105,7 @@ export default function Dashboard() {
     setAccounts(storedAccounts);
   }, []);
 
-  // Listen for balance updates from transfers and admin profile updates
+  // Listen for balance updates from transfers
   useEffect(() => {
     const handleBalanceUpdate = (event: CustomEvent) => {
       const { accountId, newBalance } = event.detail;
@@ -114,45 +114,9 @@ export default function Dashboard() {
       ));
     };
 
-    const handleProfileUpdate = async () => {
-      // Reload user data when admin updates profile
-      const currentUser = UserDataManager.getCurrentUser();
-      if (currentUser) {
-        try {
-          const response = await fetch(`/api/profile/${currentUser}?t=${Date.now()}`);
-          if (response.ok) {
-            const userData = await response.json();
-            // Update UserDataManager with fresh data
-            UserDataManager.updateUserProfile({
-              name: userData.name,
-              email: userData.email,
-              phone: userData.phone || "",
-              customerNumber: userData.customerNumber,
-              dateOfBirth: userData.dateOfBirth || "",
-              address: userData.address || "",
-              joinDate: userData.joinDate || "Member since 2018"
-            });
-            
-            // Refresh accounts if they may have changed
-            const updatedAccounts = UserDataManager.getUserData('bankAccounts', accounts);
-            setAccounts(updatedAccounts);
-          }
-        } catch (error) {
-          console.error('Failed to refresh profile data:', error);
-        }
-      }
-    };
-
     window.addEventListener('balanceUpdate', handleBalanceUpdate as EventListener);
-    window.addEventListener('adminProfileUpdate', handleProfileUpdate as EventListener);
-    window.addEventListener('userProfileUpdate', handleProfileUpdate as EventListener);
-    
-    return () => {
-      window.removeEventListener('balanceUpdate', handleBalanceUpdate as EventListener);
-      window.removeEventListener('adminProfileUpdate', handleProfileUpdate as EventListener);
-      window.removeEventListener('userProfileUpdate', handleProfileUpdate as EventListener);
-    };
-  }, [accounts]);
+    return () => window.removeEventListener('balanceUpdate', handleBalanceUpdate as EventListener);
+  }, []);
 
   // Store accounts in localStorage for transfer forms to access
   useEffect(() => {

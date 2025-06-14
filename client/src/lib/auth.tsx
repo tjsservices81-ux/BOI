@@ -31,32 +31,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  // Listen for admin profile updates to refresh user data immediately
-  useEffect(() => {
-    const handleProfileUpdate = (event: Event) => {
-      const customEvent = event as CustomEvent;
-      if (user && customEvent.detail) {
-        const updatedUser = {
-          id: user.id,
-          name: customEvent.detail.name || user.name,
-          email: customEvent.detail.email || user.email
-        };
-        
-        // Update user state immediately without flickering
-        setUser(updatedUser);
-        localStorage.setItem('bankingUser', JSON.stringify(updatedUser));
-      }
-    };
-
-    window.addEventListener('adminProfileUpdate', handleProfileUpdate);
-    window.addEventListener('userProfileUpdate', handleProfileUpdate);
-    
-    return () => {
-      window.removeEventListener('adminProfileUpdate', handleProfileUpdate);
-      window.removeEventListener('userProfileUpdate', handleProfileUpdate);
-    };
-  }, [user]);
-
   const login = (userData: User) => {
     setUser(userData);
     localStorage.setItem('bankingUser', JSON.stringify(userData));
