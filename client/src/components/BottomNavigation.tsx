@@ -23,7 +23,7 @@ export default function BottomNavigation() {
       icon: '/icon-footer-accounts.svg',
       highlightIcon: '/icon-footer-accounts-highlight.svg',
       path: '/dashboard',
-      isActive: location === '/dashboard' || (location === '/' && user)
+      isActive: location === '/' || location === '/dashboard'
     },
     {
       id: 'payments',

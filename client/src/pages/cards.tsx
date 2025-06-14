@@ -2,15 +2,9 @@ import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
 import { ChevronLeft, User, Snowflake, Shield, Lock, CreditCard, AlertTriangle, X } from "lucide-react";
 import { UserDataManager } from "../utils/userDataManager";
-import { useAuth } from "@/lib/auth";
-import { useToast } from "@/hooks/use-toast";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export default function Cards() {
   const [, navigate] = useLocation();
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
   const [currentCard, setCurrentCard] = useState(0);
   const [freezeToggle, setFreezeToggle] = useState(false);
   const [cardHolderName, setCardHolderName] = useState("JOHN MURPHY");
@@ -124,43 +118,11 @@ export default function Cards() {
     setShowBlockModal(true);
   };
 
-  // Card blocking mutation
-  const blockCardMutation = useMutation({
-    mutationFn: async (cardId: number) => {
-      const response = await fetch(`/api/cards/${cardId}/block`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to block card');
-      }
-      
-      return response.json();
-    },
-    onSuccess: () => {
-      setIsCardBlocked(true);
-      setShowBlockModal(false);
-      toast({
-        title: "Card Blocked",
-        description: "Card has been blocked successfully",
-      });
-      queryClient.invalidateQueries({ queryKey: ['cards'] });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: "Failed to block card. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
   const confirmBlockCard = () => {
-    // Use first card's ID as default - in real app would get from API
-    blockCardMutation.mutate(1);
+    // Block the card and save to storage
+    setIsCardBlocked(true);
+    UserDataManager.setUserData('cardBlocked', true);
+    setShowBlockModal(false);
   };
 
   return (
@@ -340,12 +302,12 @@ export default function Cards() {
             </div>
           </div>
 
-          {/* Report Lost or Stolen / Card Status */}
+          {/* Report Lost or Stolen */}
           <button 
             onClick={handleReportLostStolen}
-            disabled={isCardBlocked || blockCardMutation.isPending}
+            disabled={isCardBlocked}
             className={`w-full bg-white rounded-2xl p-4 ios-card flex items-center justify-between active:scale-98 transition-transform ${
-              isCardBlocked || blockCardMutation.isPending ? 'opacity-50 cursor-not-allowed' : ''
+              isCardBlocked ? 'opacity-50 cursor-not-allowed' : ''
             }`}
           >
             <div className="flex items-center space-x-3">
@@ -357,8 +319,7 @@ export default function Cards() {
                 )}
               </div>
               <span className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                {blockCardMutation.isPending ? 'Blocking card...' : 
-                 isCardBlocked ? 'Card blocked - Contact us' : 'Report lost or stolen'}
+                {isCardBlocked ? 'Card blocked - Contact us' : 'Report lost or stolen'}
               </span>
             </div>
             <span className="text-gray-400">›</span>
@@ -427,11 +388,10 @@ export default function Cards() {
               <div className="space-y-3">
                 <button
                   onClick={confirmBlockCard}
-                  disabled={blockCardMutation.isPending}
-                  className="w-full bg-red-600 text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform disabled:opacity-50"
+                  className="w-full bg-red-600 text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                 >
-                  {blockCardMutation.isPending ? 'Blocking...' : 'Yes, Block Card'}
+                  Yes, Block Card
                 </button>
                 
                 <button

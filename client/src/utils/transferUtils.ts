@@ -43,6 +43,61 @@ export const getAccounts = (): Account[] => {
   }));
 };
 
+export const processSecureTransfer = async (
+  fromAccountId: string,
+  amount: number,
+  recipientName: string,
+  transferType: 'UK' | 'IBAN',
+  reference: string,
+  exchangeRate?: number,
+  recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string }
+): Promise<{ success: boolean; transferId?: string; error?: string; requiresConfirmation?: boolean }> => {
+  console.log('Initiating secure transfer:', { fromAccountId, amount, recipientName, transferType, reference });
+
+  // Get user phone number for security call
+  const userProfile = UserDataManager.getUserProfile();
+  if (!userProfile?.phone) {
+    return { success: false, error: 'Phone number required for security verification' };
+  }
+
+  // Generate unique transfer ID
+  const transferId = `TXN${Date.now()}${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
+
+  try {
+    // Initiate security call
+    const securityResponse = await fetch('/api/security/initiate-transfer', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        amount: amount.toFixed(2),
+        recipientName,
+        userPhoneNumber: userProfile.phone,
+        transferId,
+        transferType
+      })
+    });
+
+    const securityResult = await securityResponse.json();
+    
+    if (!securityResult.success) {
+      return { success: false, error: securityResult.error || 'Security verification failed' };
+    }
+
+    console.log(`Security call initiated for transfer ${transferId}`);
+    
+    // Return pending status - actual transfer will be processed after voice confirmation
+    return { 
+      success: true, 
+      transferId, 
+      requiresConfirmation: true 
+    };
+
+  } catch (error) {
+    console.error('Failed to initiate secure transfer:', error);
+    return { success: false, error: 'Failed to initiate security verification' };
+  }
+};
+
 export const processTransfer = (
   fromAccountId: string,
   amount: number,
@@ -137,6 +192,41 @@ export const processTransfer = (
   console.log('Balance update and transaction events dispatched');
   
   return true;
+};
+
+export const checkTransferConfirmation = async (transferId: string): Promise<{ confirmed: boolean; status: any }> => {
+  try {
+    const response = await fetch(`/api/security/status/${transferId}`);
+    const result = await response.json();
+    return { confirmed: result.confirmed, status: result.status };
+  } catch (error) {
+    console.error('Failed to check transfer confirmation:', error);
+    return { confirmed: false, status: null };
+  }
+};
+
+export const processConfirmedTransfer = (
+  transferId: string,
+  fromAccountId: string,
+  amount: number,
+  recipientName: string,
+  transferType: 'UK' | 'IBAN',
+  reference: string,
+  exchangeRate?: number,
+  recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string }
+): boolean => {
+  console.log('Processing confirmed transfer:', { transferId, fromAccountId, amount, recipientName, transferType, reference });
+  
+  // Execute the actual transfer logic that was previously in processTransfer
+  const success = processTransfer(fromAccountId, amount, recipientName, transferType, reference, exchangeRate, recipientDetails);
+  
+  if (success) {
+    console.log(`Transfer ${transferId} completed successfully`);
+  } else {
+    console.error(`Transfer ${transferId} failed during processing`);
+  }
+  
+  return success;
 };
 
 export const generateReference = (): string => {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLocation } from "wouter";
 import { ChevronLeft, ChevronRight, CreditCard, Home, DollarSign, Car, Building2, Briefcase } from "lucide-react";
 
@@ -67,23 +67,15 @@ export default function Apply() {
     }
   ];
 
-  // Set apply theme color
-  useEffect(() => {
-    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-    if (themeColorMeta) {
-      themeColorMeta.setAttribute('content', '#126987');
-    }
-  }, []);
-
   const handleApplyClick = (productId: string, productTitle: string) => {
     // For demo purposes, show an alert - in real app would navigate to application form
     alert(`Application for ${productTitle} would begin here. This would typically open a detailed application form with eligibility checks and required documentation.`);
   };
 
   return (
-    <div className="h-screen flex flex-col bg-white ios-safe-top ios-safe-bottom page-slide-down overflow-hidden">
-      {/* Header - BOI Style - FIXED */}
-      <div className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0 relative z-10">
+    <div className="h-screen flex flex-col bg-white ios-safe-top ios-safe-bottom page-slide-down">
+      {/* Header - BOI Style */}
+      <div className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0">
         <button 
           onClick={() => navigate("/")}
           className="flex items-center text-white active:scale-95 transition-transform"
@@ -96,10 +88,9 @@ export default function Apply() {
         <div className="w-6 h-6" /> {/* Spacer for center alignment */}
       </div>
 
-      {/* Content - SCROLLABLE AREA ONLY */}
-      <div className="flex-1 bg-gray-50 overflow-hidden">
-        <div className="h-full overflow-y-auto px-4 py-6 pb-32">
-          {/* Header Section */}
+      {/* Content */}
+      <div className="flex-1 bg-gray-50 px-4 py-6 pb-32 ios-scroll overflow-y-auto">
+        {/* Header Section */}
         <div className="mb-6">
           <h1 className="text-2xl font-semibold text-gray-900 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
             Apply for Products
@@ -198,7 +189,6 @@ export default function Apply() {
             <strong>Important:</strong> All applications are subject to Bank of Ireland's lending criteria and approval. 
             Terms and conditions apply. Full details available on request.
           </p>
-        </div>
         </div>
       </div>
     </div>

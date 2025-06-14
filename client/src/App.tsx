@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Switch, Route, Redirect, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -8,6 +8,8 @@ import { AuthProvider, useAuth } from "@/lib/auth";
 import BottomNavigation from "@/components/BottomNavigation";
 import { SecurityWrapper } from "@/components/SecurityWrapper";
 import ErrorBoundary from "@/components/ErrorBoundary";
+
+
 
 import Splash from "@/pages/splash";
 import Login from "@/pages/login";
@@ -27,10 +29,6 @@ import TransactionHistoryWorking from "@/pages/transaction-history-working";
 import Statements from "@/pages/statements";
 import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
-import { useAppStateManager } from "@/hooks/useAppStateManager";
-import { useScrollManager } from "@/hooks/useScrollManager";
-import { setupAppTerminationDetection, isAppFreshStart } from "@/utils/directTerminationDetector";
-import { statusBarManager } from "@/utils/statusBarManager";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
@@ -53,78 +51,36 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function AppRoutes() {
   const { user, isLoading } = useAuth();
-  const [location] = useLocation();
-
-
-  
-  const appStateManager = useAppStateManager();
-  const scrollManager = useScrollManager({
-    saveScrollPosition: appStateManager.saveScrollPosition,
-    getScrollPosition: appStateManager.getScrollPosition
-  });
-  
+  const [location, navigate] = useLocation();
   const [splashShown, setSplashShown] = useState(() => {
-    // Set up termination detection first
-    setupAppTerminationDetection();
-    
-    // Check if this is a fresh app start
-    const isFreshStart = isAppFreshStart();
-    
-    if (isFreshStart) {
-      // Fresh start - show splash screen
-      return false;
-    }
-    
-    // App was resumed - check if splash was already shown
+    // Initialize splashShown state immediately to prevent flash
     return sessionStorage.getItem('splashShown') === 'true';
   });
   const [isInitialized, setIsInitialized] = useState(false);
-  const [authChecked, setAuthChecked] = useState(false);
   const [splashTransitioning, setSplashTransitioning] = useState(false);
-  const mainContainerRef = useRef<HTMLDivElement>(null);
+
   
-  // Set initial theme color and handle app state restoration
+  // Initialize app state and theme
   useEffect(() => {
-    // Only initialize splash theme if splash hasn't been shown yet
-    const hasShownSplash = sessionStorage.getItem('splashShown') === 'true';
-    
-    if (!hasShownSplash) {
-      // First time - show splash
-      statusBarManager.setSplashColor();
-    } else {
-      // App resumed - keep dashboard color
-      setSplashShown(true);
-      statusBarManager.setBankingColor();
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+    if (themeColorMeta) {
+      themeColorMeta.setAttribute('content', '#0000ff');
     }
-
-    // Force status bar color update on app resume for extended background periods
-    const handleAppResume = () => {
-      const splashHasBeenShown = sessionStorage.getItem('splashShown') === 'true';
-      if (splashHasBeenShown) {
-        // Use a slight delay to ensure the color takes effect
-        setTimeout(() => {
-          statusBarManager.forceUpdate();
-        }, 150);
-      }
-    };
-
-    // Listen for various app resume events
-    document.addEventListener('visibilitychange', handleAppResume);
-    window.addEventListener('focus', handleAppResume);
-    window.addEventListener('pageshow', handleAppResume);
     
-    // Wait for auth to be checked before showing content
-    setTimeout(() => {
-      setAuthChecked(true);
-      setIsInitialized(true);
-    }, 0);
+    const hasShownSplash = sessionStorage.getItem('splashShown');
+    if (hasShownSplash) {
+      setSplashShown(true);
+      // If splash was already shown, set theme to #126987
+      if (themeColorMeta) {
+        themeColorMeta.setAttribute('content', '#126987');
+      }
+    }
+    
+    // Mark as initialized after a tick to prevent flash
+    setTimeout(() => setIsInitialized(true), 0);
+  }, []);
 
-    return () => {
-      document.removeEventListener('visibilitychange', handleAppResume);
-      window.removeEventListener('focus', handleAppResume);
-      window.removeEventListener('pageshow', handleAppResume);
-    };
-  }, [appStateManager]);
+
 
   // Listen for splash completion
   useEffect(() => {
@@ -134,27 +90,19 @@ function AppRoutes() {
       setTimeout(() => {
         setSplashShown(true);
         setSplashTransitioning(false);
-        // Set theme to banking blue after splash
-        const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-        if (themeColorMeta) {
-          themeColorMeta.setAttribute('content', '#126987');
-        }
       }, 100);
+      const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+      if (themeColorMeta) {
+        themeColorMeta.setAttribute('content', '#126987');
+      }
     };
 
     window.addEventListener('splashComplete', handleSplashComplete);
     return () => window.removeEventListener('splashComplete', handleSplashComplete);
-  }, [user]);
+  }, []);
 
-  // Set up scroll container when main container is ready
-  useEffect(() => {
-    if (mainContainerRef.current) {
-      scrollManager.setScrollContainer(mainContainerRef.current);
-    }
-  }, [scrollManager]);
-
-  // Prevent flash during initialization and auth check
-  if (!isInitialized || !authChecked || (isLoading && !user)) {
+  // Prevent flash during initialization
+  if (!isInitialized) {
     return (
       <div className="w-full h-full bg-[#0000ff]">
         {/* Empty blue screen during initialization */}
@@ -167,10 +115,7 @@ function AppRoutes() {
   return (
     <SecurityWrapper>
       <ErrorBoundary>
-        <div 
-          ref={mainContainerRef}
-          className="w-full h-full overflow-hidden relative"
-        >
+        <div className="w-full h-full overflow-hidden relative">
           <Switch>
             <Route path="/splash" component={Splash} />
             <Route path="/login" component={Login} />
@@ -179,11 +124,7 @@ function AppRoutes() {
               {/* Handle root route properly based on splash and auth state */}
               {!splashShown || splashTransitioning ? (
                 <Splash />
-              ) : isLoading ? (
-                <div className="w-full h-full flex items-center justify-center bg-[#126987]">
-                  <div className="text-white">Loading...</div>
-                </div>
-              ) : !user ? (
+              ) : (!user || isLoading) ? (
                 <Login />
               ) : (
                 <Dashboard />
@@ -258,6 +199,7 @@ function AppRoutes() {
           <Route component={NotFound} />
         </Switch>
         {showNavigation && <BottomNavigation />}
+
         </div>
       </ErrorBoundary>
     </SecurityWrapper>

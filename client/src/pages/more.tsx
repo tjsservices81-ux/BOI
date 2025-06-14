@@ -1,18 +1,10 @@
 import { useLocation } from "wouter";
 import { ChevronLeft, User, HelpCircle, Info, Settings, Shield, Building2 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 export default function More() {
   const [, setLocation] = useLocation();
   const [isNavigating, setIsNavigating] = useState(false);
-
-  // Set more theme color
-  useEffect(() => {
-    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-    if (themeColorMeta) {
-      themeColorMeta.setAttribute('content', '#126987');
-    }
-  }, []);
 
   const handleNavigation = (path: string) => {
     setIsNavigating(true);

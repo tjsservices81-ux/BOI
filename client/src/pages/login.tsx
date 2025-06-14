@@ -50,12 +50,6 @@ export default function Login() {
   useEffect(() => {
     setAssetsLoaded(true);
     
-    // Set login theme color
-    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-    if (themeColorMeta) {
-      themeColorMeta.setAttribute('content', '#126987');
-    }
-    
     // Clear current user session on login page load
     UserDataManager.clearCurrentUser();
     
@@ -242,7 +236,14 @@ export default function Login() {
     UserDataManager.recordLoginTime(customerNumber);
     
     try {
-      await login({ customerNumber, pin });
+      const userProfile = UserDataManager.getUserProfile();
+      if (userProfile) {
+        login({
+          id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
+          name: userProfile.name,
+          email: userProfile.email
+        });
+      }
       navigate("/dashboard");
     } catch (error) {
       toast({
@@ -412,11 +413,14 @@ export default function Login() {
       
       // Record login time and authenticate through auth context
       UserDataManager.recordLoginTime(currentUser);
-      
-      // Use actual login credentials to authenticate with backend
-      // For biometric auth, use the default PIN since fingerprint is verified
-      const loginPin = biometricVerified ? "1234" : pin;
-      await login({ customerNumber, pin: loginPin });
+      const userProfile = UserDataManager.getUserProfile();
+      if (userProfile) {
+        login({
+          id: parseInt(currentUser.replace(/\D/g, '')) || 1,
+          name: userProfile.name,
+          email: userProfile.email
+        });
+      }
       
       await new Promise(resolve => setTimeout(resolve, 1000));
       
@@ -471,19 +475,15 @@ export default function Login() {
     // Initialize fresh account data and verify PIN
     UserDataManager.initializeFreshAccount(customerNumber);
     UserDataManager.recordLoginTime(customerNumber);
-    
-    // Authenticate with backend using credentials
-    try {
-      await login({ customerNumber, pin });
-      setPinVerified(true);
-    } catch (error) {
-      toast({
-        title: "Authentication Failed",
-        description: "Invalid PIN. Please try again.",
-        variant: "destructive",
+    const userProfile = UserDataManager.getUserProfile();
+    if (userProfile) {
+      login({
+        id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
+        name: userProfile.name,
+        email: userProfile.email
       });
-      return;
     }
+    setPinVerified(true);
     
     // Navigate to dashboard after verification
     navigate('/dashboard');
@@ -1318,24 +1318,18 @@ export default function Login() {
                   >
                     <div className="flex items-center justify-between">
                       <button
-                        onClick={async () => {
+                        onClick={() => {
                           UserDataManager.initializeFreshAccount(customerNumber);
                           UserDataManager.recordLoginTime(customerNumber);
-                          
-                          try {
-                            // Use default PIN for admin login or prompt for PIN
-                            await login({ customerNumber, pin: "1234" });
-                            setShowAdminLogin(false);
-                            setCustomerNumber(customerNumber);
-                            setBiometricVerified(true);
-                            navigate('/dashboard');
-                          } catch (error) {
-                            toast({
-                              title: "Login Failed",
-                              description: "Authentication error. Please try again.",
-                              variant: "destructive",
-                            });
-                          }
+                          login({
+                            id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
+                            name: userData.name,
+                            email: userData.email
+                          });
+                          setShowAdminLogin(false);
+                          setCustomerNumber(customerNumber);
+                          setBiometricVerified(true);
+                          navigate('/dashboard');
                         }}
                         className="flex-1 text-left hover:bg-gray-100 rounded-lg p-2 active:scale-98 transition-all"
                       >

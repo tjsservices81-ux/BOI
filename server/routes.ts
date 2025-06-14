@@ -6,6 +6,7 @@ import { z } from "zod";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { otcService } from "./otcService";
+import { transferSecurityService } from "./security/transferSecurity";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize database and sample data
@@ -45,19 +46,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication endpoints
   app.post("/api/auth/login", async (req, res) => {
     try {
-      console.log('Login request body:', req.body);
-      
-      // Handle both direct credentials and nested structure
-      let credentials = req.body;
-      if (req.body.credentials) {
-        credentials = req.body.credentials;
-      }
-      
-      console.log('Credentials to validate:', { customerNumber: credentials.customerNumber, pin: credentials.pin, pinLength: credentials.pin?.length });
-      
-      const { customerNumber, pin } = loginSchema.parse(credentials);
-      console.log('Parsed credentials:', { customerNumber, pin: '***', pinLength: pin.length });
-      
+      const { customerNumber, pin } = loginSchema.parse(req.body);
       const user = await storage.getUserByCredentials(customerNumber, pin);
       
       if (!user) {
@@ -68,10 +57,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       (req as any).session.userId = user.id;
       (req as any).session.user = { id: user.id, name: user.name, email: user.email };
 
-      console.log('Login successful for user:', user.customerNumber);
       res.json({ user: { id: user.id, name: user.name, email: user.email } });
     } catch (error) {
-      console.error('Login error:', error);
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: error.errors[0].message });
       }
@@ -420,53 +407,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Card management endpoints
-  app.get("/api/cards/:userId", requireAuth, async (req, res) => {
+  // Security API endpoints for voice call confirmation
+  app.post("/api/security/initiate-transfer", async (req, res) => {
     try {
-      const userId = parseInt(req.params.userId);
-      const cards = await storage.getCardsByUserId(userId);
-      res.json(cards);
+      const securityRequestSchema = z.object({
+        amount: z.string(),
+        recipientName: z.string(),
+        userPhoneNumber: z.string(),
+        transferId: z.string(),
+        transferType: z.enum(['UK', 'IBAN'])
+      });
+
+      const securityRequest = securityRequestSchema.parse(req.body);
+      const result = await transferSecurityService.initiateTransferSecurity(securityRequest);
+
+      if (result.success) {
+        res.json({ success: true, callSid: result.callSid });
+      } else {
+        res.status(400).json({ success: false, error: result.error });
+      }
     } catch (error) {
-      res.status(500).json({ message: "Internal server error" });
+      console.error('Security initiation failed:', error);
+      res.status(500).json({ success: false, error: "Failed to initiate security call" });
     }
   });
 
-  app.patch("/api/cards/:cardId/block", requireAuth, async (req, res) => {
+  // TwiML endpoint for voice response
+  app.get("/api/security/voice-response", (req, res) => {
+    const transferId = req.query.transferId as string;
+    const twimlResponse = transferSecurityService.generateVoiceResponse(transferId);
+    
+    res.set('Content-Type', 'text/xml');
+    res.send(twimlResponse);
+  });
+
+  // Handle user DTMF response
+  app.post("/api/security/handle-response", async (req, res) => {
     try {
-      const cardId = parseInt(req.params.cardId);
-      const card = await storage.updateCardStatus(cardId, "blocked");
+      const transferId = req.query.transferId as string;
+      const digits = req.body.Digits;
+
+      const result = await transferSecurityService.handleUserResponse(transferId, digits);
       
-      if (!card) {
-        return res.status(404).json({ message: "Card not found" });
+      let twimlResponse = '';
+      if (result.action === 'confirmed') {
+        twimlResponse = `<?xml version="1.0" encoding="UTF-8"?>
+          <Response>
+            <Say voice="alice">Thank you. Your transfer has been confirmed and will be processed shortly.</Say>
+            <Hangup/>
+          </Response>`;
+      } else {
+        twimlResponse = `<?xml version="1.0" encoding="UTF-8"?>
+          <Response>
+            <Say voice="alice">Your transfer has been cancelled for security. Contact customer service if this was not intended.</Say>
+            <Hangup/>
+          </Response>`;
       }
-      
-      res.json({ 
-        message: "Card has been blocked successfully",
-        card 
-      });
+
+      res.set('Content-Type', 'text/xml');
+      res.send(twimlResponse);
     } catch (error) {
-      console.error('Card blocking failed:', error);
-      res.status(500).json({ message: "Failed to block card" });
+      console.error('Failed to handle user response:', error);
+      const errorResponse = `<?xml version="1.0" encoding="UTF-8"?>
+        <Response>
+          <Say voice="alice">An error occurred. Please contact customer service.</Say>
+          <Hangup/>
+        </Response>`;
+      res.set('Content-Type', 'text/xml');
+      res.send(errorResponse);
     }
   });
 
-  app.patch("/api/cards/:cardId/unblock", requireAuth, async (req, res) => {
-    try {
-      const cardId = parseInt(req.params.cardId);
-      const card = await storage.updateCardStatus(cardId, "active");
-      
-      if (!card) {
-        return res.status(404).json({ message: "Card not found" });
-      }
-      
-      res.json({ 
-        message: "Card successfully unblocked",
-        card 
-      });
-    } catch (error) {
-      console.error('Card unblocking failed:', error);
-      res.status(500).json({ message: "Failed to unblock card" });
-    }
+  // Check transfer confirmation status
+  app.get("/api/security/status/:transferId", (req, res) => {
+    const transferId = req.params.transferId;
+    const isConfirmed = transferSecurityService.isTransferConfirmed(transferId);
+    const status = transferSecurityService.getConfirmationStatus(transferId);
+    
+    res.json({ 
+      transferId, 
+      confirmed: isConfirmed, 
+      status: status || null 
+    });
   });
 
   const httpServer = createServer(app);

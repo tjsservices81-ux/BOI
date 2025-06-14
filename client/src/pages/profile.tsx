@@ -4,14 +4,10 @@ import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin
 import { UserDataManager } from "@/utils/userDataManager";
 import { useAuth } from "@/lib/auth";
 import { motion, AnimatePresence } from "framer-motion";
-import { useToast } from "@/hooks/use-toast";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export default function Profile() {
   const [, navigate] = useLocation();
   const { logout } = useAuth();
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
   const [tapCount, setTapCount] = useState(0);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
@@ -68,12 +64,6 @@ export default function Profile() {
 
   // Load profile data from database with real-time updates
   useEffect(() => {
-    // Set profile theme color
-    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-    if (themeColorMeta) {
-      themeColorMeta.setAttribute('content', '#126987');
-    }
-    
     const loadProfileData = async () => {
       const currentCustomerNumber = UserDataManager.getCurrentUser();
       if (!currentCustomerNumber) {
@@ -465,7 +455,17 @@ export default function Profile() {
 
   const addSampleTransaction = (accountId: number) => {
     const randomTransaction = sampleTransactions[Math.floor(Math.random() * sampleTransactions.length)];
+    
+    // Create transaction date that's 0-2 days before current date
     const now = new Date();
+    const daysBack = Math.floor(Math.random() * 3); // 0, 1, or 2 days back
+    const transactionDate = new Date(now);
+    transactionDate.setDate(now.getDate() - daysBack);
+    
+    // Add some random hours/minutes to make it more realistic
+    const randomHours = Math.floor(Math.random() * 24);
+    const randomMinutes = Math.floor(Math.random() * 60);
+    transactionDate.setHours(randomHours, randomMinutes, 0, 0);
     
     // Clear all caches first to ensure we get the most current data
     UserDataManager.clearCache();
@@ -487,48 +487,19 @@ export default function Profile() {
     // Parse current balance safely
     const currentBalance = parseFloat(targetAccount.balance) || 0;
     const rawAmount = Math.abs(randomTransaction.amount);
-    
-    // Determine transaction type based on account type and transaction nature
-    let transactionType: 'debit' | 'credit' = 'debit';
-    let transactionAmount: number = 0;
-    let category: string = 'expense';
-    
-    if (targetAccount.accountType === 'current' || targetAccount.accountType === 'savings') {
-      // For current/savings accounts: debits are expenses, credits are income
-      if (randomTransaction.type === 'credit') {
-        transactionType = 'credit';
-        transactionAmount = rawAmount;
-        category = 'income';
-      } else {
-        transactionType = 'debit';
-        transactionAmount = -rawAmount;
-        category = 'expense';
-      }
-    } else if (targetAccount.accountType === 'credit') {
-      // For credit cards: credits are payments (reduce balance), debits are charges
-      if (randomTransaction.type === 'credit') {
-        transactionType = 'credit';
-        transactionAmount = rawAmount; // Payment reduces credit card balance
-        category = 'payment';
-      } else {
-        transactionType = 'debit';
-        transactionAmount = -rawAmount; // Charge increases credit card balance
-        category = 'expense';
-      }
-    }
-    
-    const newBalance = currentBalance + (transactionAmount || 0);
+    const transactionAmount = randomTransaction.type === 'credit' ? rawAmount : -rawAmount;
+    const newBalance = currentBalance + transactionAmount;
     
     // Create properly formatted transaction
     const transaction = {
       id: Date.now(),
       accountId: accountId,
-      amount: transactionAmount >= 0 ? `+${transactionAmount.toFixed(2)}` : `${transactionAmount.toFixed(2)}`,
+      amount: transactionAmount >= 0 ? `+${transactionAmount.toFixed(2)}` : transactionAmount.toFixed(2),
       description: randomTransaction.description,
-      category: category,
-      type: transactionType,
-      timestamp: now.toISOString(),
-      paymentMethod: 'Bank Transfer'
+      category: randomTransaction.type === 'credit' ? 'income' : 'expense',
+      type: randomTransaction.type,
+      timestamp: transactionDate.toISOString()
+      // Note: paymentMethod should only be added for actual transfer transactions, not regular purchases
     };
 
     // Get current transactions and add new one
@@ -554,7 +525,7 @@ export default function Profile() {
     UserDataManager.clearCache();
 
     console.log('Sample Transaction Details:', {
-      account: targetAccount.accountType,
+      account: targetAccount.type,
       previousBalance: currentBalance.toFixed(2),
       transactionAmount: transactionAmount.toFixed(2),
       newBalance: newBalance.toFixed(2),
@@ -576,45 +547,6 @@ export default function Profile() {
     
     setShowAddTransaction(false);
     alert(`Transaction Added Successfully!\n\n${randomTransaction.description}\nAmount: €${Math.abs(transactionAmount).toFixed(2)}\nNew Balance: €${newBalance.toFixed(2)}`);
-  };
-
-  // Card unblocking mutation
-  const unblockCardMutation = useMutation({
-    mutationFn: async (cardId: number) => {
-      const response = await fetch(`/api/cards/${cardId}/unblock`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to unblock card');
-      }
-      
-      return response.json();
-    },
-    onSuccess: () => {
-      UserDataManager.setUserData('cardBlocked', false);
-      window.dispatchEvent(new CustomEvent('cardUnblocked'));
-      toast({
-        title: "Card Unblocked",
-        description: "Card successfully unblocked",
-      });
-      queryClient.invalidateQueries({ queryKey: ['cards'] });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: "Failed to unblock card. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const handleUnblockCard = () => {
-    // Use first card's ID as default - in real app would get from API
-    unblockCardMutation.mutate(1);
   };
 
   const updateBalance = () => {
@@ -821,7 +753,7 @@ export default function Profile() {
                 setTimeout(async () => {
                   await logout();
                   navigate('/login');
-                }, 8000);
+                }, 4000);
               }}
               className="w-full flex items-center space-x-4 p-4 bg-red-50 border border-red-200 rounded-xl active:scale-98 transition-transform"
             >
@@ -931,16 +863,19 @@ export default function Profile() {
                     {/* Unblock Card */}
                     {UserDataManager.getUserData('cardBlocked') && (
                       <button 
-                        onClick={handleUnblockCard}
-                        disabled={unblockCardMutation.isPending}
-                        className="w-full flex items-center space-x-3 p-4 bg-green-50 border border-green-200 rounded-xl active:scale-98 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={() => {
+                          UserDataManager.setUserData('cardBlocked', false);
+                          window.dispatchEvent(new CustomEvent('cardUnblocked'));
+                          alert('Card has been unblocked successfully');
+                        }}
+                        className="w-full flex items-center space-x-3 p-4 bg-green-50 border border-green-200 rounded-xl active:scale-98 transition-transform"
                       >
                         <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                           <CreditCard className="w-5 h-5 text-green-600" />
                         </div>
                         <div className="flex-1 text-left">
                           <p className="font-semibold text-green-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                            {unblockCardMutation.isPending ? 'Unblocking...' : 'Unblock Card'}
+                            Unblock Card
                           </p>
                           <p className="text-sm text-green-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                             Your card is currently blocked
@@ -1351,88 +1286,111 @@ export default function Profile() {
         </div>
       )}
 
-      {/* Enhanced Sign Out Animation */}
+      {/* Professional Sign Out Animation Overlay */}
       <AnimatePresence>
         {isSigningOut && (
           <>
-            {/* Status bar overlay */}
+            {/* Status bar overlay to match the sign-out screen background */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: 0.3 }}
               className="fixed top-0 left-0 right-0 h-12 z-[10000] bg-gradient-to-r from-[#1a3c47] via-[#2c5f70] to-[#1a3c47]"
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: '48px',
+                zIndex: 10000,
+                background: 'linear-gradient(90deg, #1a3c47 0%, #2c5f70 50%, #1a3c47 100%)'
+              }}
             />
             
-            {/* Main overlay with enhanced animation */}
+            {/* Main overlay */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: 0.3 }}
               className="fixed inset-0 z-[9999] bg-gradient-to-br from-[#1a3c47] via-[#2c5f70] to-[#0f2a31] flex items-center justify-center"
             >
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.2, duration: 0.6 }}
+                transition={{ delay: 0.1, duration: 0.4 }}
                 className="text-center"
               >
-                {/* Enhanced spinner with pulsing effect */}
-                <motion.div className="relative mb-8">
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-                    className="w-20 h-20 border-4 border-white/20 border-t-white rounded-full mx-auto"
-                  />
-                  <motion.div
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                    className="absolute inset-0 w-20 h-20 border-2 border-white/10 rounded-full mx-auto"
-                  />
-                </motion.div>
-
-                {/* Sequential text animations */}
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full mx-auto mb-6"
+                />
                 <motion.h2
-                  initial={{ y: 20, opacity: 0 }}
+                  initial={{ y: 10, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.8, duration: 0.6 }}
-                  className="text-2xl font-bold text-white mb-3"
+                  transition={{ delay: 0.3, duration: 0.3 }}
+                  className="text-2xl font-bold text-white mb-2"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                 >
                   Signing Out...
                 </motion.h2>
-
                 <motion.p
-                  initial={{ y: 20, opacity: 0 }}
+                  initial={{ y: 10, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 1.2, duration: 0.6 }}
-                  className="text-white/80 mb-4"
+                  transition={{ delay: 0.4, duration: 0.3 }}
+                  className="text-white/80"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                 >
-                  Securing your session
-                </motion.p>
-
-                {/* Progress indicator */}
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: "100%" }}
-                  transition={{ delay: 2, duration: 5, ease: "easeInOut" }}
-                  className="h-1 bg-white/30 rounded-full mx-auto max-w-48 mb-4"
-                />
-
-                <motion.p
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 4, duration: 0.8 }}
-                  className="text-white/60 text-sm"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                >
-                  Thank you for using BOI Banking
+                  Please wait while we securely log you out
                 </motion.p>
               </motion.div>
             </motion.div>
           </>
+        )}
+      </AnimatePresence>
+
+      {/* Full Screen Sign Out Animation */}
+      <AnimatePresence>
+        {isSigningOut && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-[#126987] z-[100] flex flex-col items-center justify-center"
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+              className="text-center"
+            >
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                className="w-16 h-16 border-4 border-white border-t-transparent rounded-full mx-auto mb-6"
+              />
+              <motion.h2
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.5, duration: 0.5 }}
+                className="text-2xl font-bold text-white mb-2"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              >
+                Signing Out
+              </motion.h2>
+              <motion.p
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.7, duration: 0.5 }}
+                className="text-white/80"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              >
+                Thank you for using BOI Banking
+              </motion.p>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

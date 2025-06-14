@@ -74,12 +74,6 @@ export default function Dashboard() {
     }
     
     setAccounts(storedAccounts);
-    
-    // Set dashboard theme color
-    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-    if (themeColorMeta) {
-      themeColorMeta.setAttribute('content', '#126987');
-    }
   }, []);
 
   // Listen for balance updates from transfers and admin profile updates

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
-import { statusBarManager } from "@/utils/statusBarManager";
 
 export default function Splash() {
   const [, navigate] = useLocation();
@@ -10,8 +9,11 @@ export default function Splash() {
     // Add splash-specific full screen class for iOS PWA
     document.body.classList.add('splash-fullscreen');
     
-    // Set splash theme color
-    statusBarManager.setSplashColor();
+    // Change theme color to pure blue for splash screen
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+    if (themeColorMeta) {
+      themeColorMeta.setAttribute('content', '#0000ff');
+    }
     
     // Navigate to login after splash duration (8 seconds total)
     const finalTimer = setTimeout(() => {
@@ -29,6 +31,10 @@ export default function Splash() {
     return () => {
       clearTimeout(finalTimer);
       document.body.classList.remove('splash-fullscreen');
+      // Restore theme color to #126987 for other screens
+      if (themeColorMeta) {
+        themeColorMeta.setAttribute('content', '#126987');
+      }
     };
   }, [navigate]);
 
