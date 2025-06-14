@@ -854,6 +854,65 @@ a, button, input, select, textarea {
 /* Prevent flash of unstyled content and improve performance */
 .page-container {
   contain: layout style paint;
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Error boundary styling */
+.error-boundary {
+  background-color: #fee2e2;
+  border: 1px solid #fecaca;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin: 1rem;
+}
+
+/* Component loading states */
+.component-loading {
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Prevent form input delays */
+input[type="text"], input[type="email"], input[type="tel"], input[type="password"] {
+  opacity: 1 !important;
+  visibility: visible !important;
+  background-color: white;
+}
+
+/* Prevent transaction list flash */
+.transaction-item {
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
+}
+
+/* Account balance instant display */
+.balance-display {
+  opacity: 1 !important;
+  visibility: visible !important;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Prevent modal flash issues */
+.modal-content {
+  opacity: 1;
+  transform: none;
+  visibility: visible;
+}
+
+/* Touch feedback optimization */
+.touch-feedback {
+  transform: scale(0.98);
+  transition: transform 0.1s ease;
+}
+
+/* Prevent keyboard layout shifts */
+.keyboard-safe {
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
 }
 
 /* Optimize animations for 60fps */

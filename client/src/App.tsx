@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import BottomNavigation from "@/components/BottomNavigation";
 import { SecurityWrapper } from "@/components/SecurityWrapper";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 import Splash from "@/pages/splash";
 import Login from "@/pages/login";
@@ -108,21 +109,22 @@ function AppRoutes() {
 
   return (
     <SecurityWrapper>
-      <div className="w-full h-full overflow-hidden relative">
-        <Switch>
-          <Route path="/splash" component={Splash} />
-          <Route path="/login" component={Login} />
-          <Route path="/more" component={More} />
-          <Route path="/">
-            {/* Handle root route properly based on splash and auth state */}
-            {!splashShown || splashTransitioning ? (
-              <Splash />
-            ) : (!user || isLoading) ? (
-              <Login />
-            ) : (
-              <Dashboard />
-            )}
-          </Route>
+      <ErrorBoundary>
+        <div className="w-full h-full overflow-hidden relative">
+          <Switch>
+            <Route path="/splash" component={Splash} />
+            <Route path="/login" component={Login} />
+            <Route path="/more" component={More} />
+            <Route path="/">
+              {/* Handle root route properly based on splash and auth state */}
+              {!splashShown || splashTransitioning ? (
+                <Splash />
+              ) : (!user || isLoading) ? (
+                <Login />
+              ) : (
+                <Dashboard />
+              )}
+            </Route>
           <Route path="/dashboard">
             <ProtectedRoute>
               <Dashboard />
@@ -192,7 +194,8 @@ function AppRoutes() {
           <Route component={NotFound} />
         </Switch>
         {showNavigation && <BottomNavigation />}
-      </div>
+        </div>
+      </ErrorBoundary>
     </SecurityWrapper>
   );
 }
