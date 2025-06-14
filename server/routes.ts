@@ -194,18 +194,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { customerNumber } = req.params;
       let user = await storage.getUserByCustomerNumber(customerNumber);
       
-      // If user doesn't exist in database, create them with default data
+      // If user doesn't exist in database, return 404 instead of creating with fake data
       if (!user) {
-        user = await storage.createUser({
-          customerNumber,
-          name: "James",
-          email: "hello@gmail.com",
-          phone: "+353 1 234 5678",
-          address: "Hello",
-          dateOfBirth: "2025-06-08",
-          pin: "000000",
-          joinDate: "Member since 2018"
-        });
+        return res.status(404).json({ message: "User not found" });
       }
       
       res.json(user);
@@ -340,12 +331,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { customerNumber, code } = validationSchema.parse(req.body);
       const validation = otcService.validateOTC(customerNumber, code);
 
-      if (validation.isValid) {
-        res.json({ 
-          success: true, 
-          message: "OTC validated successfully",
-          accountData: validation.accountData
-        });
+      if (validation.isValid && validation.accountData) {
+        // Create the user in the database with their actual data
+        const userData = validation.accountData;
+        try {
+          const newUser = await storage.createUser({
+            customerNumber: userData.customerNumber,
+            name: userData.name,
+            email: userData.email,
+            phone: userData.phone,
+            address: userData.address || "",
+            dateOfBirth: userData.dateOfBirth || "",
+            pin: "000000", // Default PIN
+            joinDate: userData.joinDate || new Date().toISOString()
+          });
+
+          // Create default accounts for the new user
+          const defaultAccounts = [
+            {
+              userId: newUser.id,
+              accountType: "current" as const,
+              accountNumber: "****2091",
+              balance: "0.00",
+              displayName: "Current Account"
+            },
+            {
+              userId: newUser.id,
+              accountType: "credit" as const,
+              accountNumber: "****1820",
+              balance: "0.00",
+              displayName: "Credit Card"
+            },
+            {
+              userId: newUser.id,
+              accountType: "savings" as const,
+              accountNumber: "****0978",
+              balance: "0.00",
+              displayName: "Savings Account"
+            }
+          ];
+
+          // Create the accounts in the database
+          for (const accountData of defaultAccounts) {
+            await storage.createAccount(accountData);
+          }
+
+          console.log('User and accounts created in database:', newUser);
+
+          res.json({ 
+            success: true, 
+            message: "OTC validated successfully and account created",
+            accountData: validation.accountData,
+            user: newUser
+          });
+        } catch (dbError) {
+          console.error('Failed to create user in database:', dbError);
+          res.status(500).json({ 
+            success: false, 
+            message: "OTC valid but failed to create account" 
+          });
+        }
       } else {
         res.status(400).json({ 
           success: false, 

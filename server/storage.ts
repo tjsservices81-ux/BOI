@@ -16,6 +16,7 @@ export interface IStorage {
   // Account operations
   getAccountsByUserId(userId: number): Promise<Account[]>;
   getAccountById(accountId: number): Promise<Account | undefined>;
+  createAccount(account: InsertAccount): Promise<Account>;
   updateAccountBalance(accountId: number, newBalance: string): Promise<void>;
   
   // Transaction operations
@@ -82,6 +83,11 @@ export class DatabaseStorage implements IStorage {
 
   async getAccountById(accountId: number): Promise<Account | undefined> {
     const [account] = await db.select().from(accounts).where(eq(accounts.id, accountId));
+    return account;
+  }
+
+  async createAccount(insertAccount: InsertAccount): Promise<Account> {
+    const [account] = await db.insert(accounts).values(insertAccount).returning();
     return account;
   }
 
@@ -277,6 +283,15 @@ export class MemStorage implements IStorage {
 
   async getAccountById(accountId: number): Promise<Account | undefined> {
     return this.accounts.get(accountId);
+  }
+
+  async createAccount(insertAccount: InsertAccount): Promise<Account> {
+    const account: Account = {
+      id: this.currentAccountId++,
+      ...insertAccount
+    };
+    this.accounts.set(account.id, account);
+    return account;
   }
 
   async updateAccountBalance(accountId: number, newBalance: string): Promise<void> {
