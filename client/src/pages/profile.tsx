@@ -4,7 +4,6 @@ import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin
 import { UserDataManager } from "@/utils/userDataManager";
 import { useAuth } from "@/lib/auth";
 import { motion, AnimatePresence } from "framer-motion";
-import { themeManager } from "@/utils/themeManager";
 
 export default function Profile() {
   const [, navigate] = useLocation();

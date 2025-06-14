@@ -8,7 +8,6 @@ import { useAuth } from "@/lib/auth";
 import { User, ExternalLink, HelpCircle, Phone, Settings, Shield, MapPin, MoreHorizontal } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { UserDataManager } from "@/utils/userDataManager";
-import { themeManager } from "@/utils/themeManager";
 
 export default function Login() {
   const [customerNumber, setCustomerNumber] = useState("");
@@ -51,8 +50,11 @@ export default function Login() {
   useEffect(() => {
     setAssetsLoaded(true);
     
-    // Set login theme on component mount
-    themeManager.setTheme('login');
+    // Set login theme color
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+    if (themeColorMeta) {
+      themeColorMeta.setAttribute('content', '#126987');
+    }
     
     // Clear current user session on login page load
     UserDataManager.clearCurrentUser();

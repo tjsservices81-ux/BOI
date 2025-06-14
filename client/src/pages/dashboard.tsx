@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import SpendingVisualization from "../components/SpendingVisualization";
 import SpendingInsights from "../components/SpendingInsights";
 import { UserDataManager } from "../utils/userDataManager";
-import { themeManager } from "../utils/themeManager";
 
 interface Account {
   id: number;
@@ -76,8 +75,11 @@ export default function Dashboard() {
     
     setAccounts(storedAccounts);
     
-    // Set dashboard theme on component mount
-    themeManager.setTheme('dashboard');
+    // Set dashboard theme color
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+    if (themeColorMeta) {
+      themeColorMeta.setAttribute('content', '#126987');
+    }
   }, []);
 
   // Listen for balance updates from transfers and admin profile updates

@@ -30,7 +30,6 @@ import NotFound from "@/pages/not-found";
 import { useAppStateManager } from "@/hooks/useAppStateManager";
 import { useScrollManager } from "@/hooks/useScrollManager";
 import { setupAppTerminationDetection, isAppFreshStart } from "@/utils/directTerminationDetector";
-import { themeManager } from "@/utils/themeManager";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
@@ -55,28 +54,7 @@ function AppRoutes() {
   const { user, isLoading } = useAuth();
   const [location] = useLocation();
 
-  // Update theme based on current route when location changes
-  useEffect(() => {
-    if (!location) return;
-    
-    // Map routes to theme names
-    const routeThemeMap: Record<string, string> = {
-      '/': user ? 'dashboard' : 'login',
-      '/splash': 'splash',
-      '/login': 'login',
-      '/dashboard': 'dashboard',
-      '/profile': 'profile',
-      '/more': 'more',
-      '/apply': 'apply',
-      '/payments': 'payments',
-      '/transfer': 'transfer',
-      '/cards': 'cards',
-      '/insights': 'insights'
-    };
 
-    const themeName = routeThemeMap[location] || 'dashboard';
-    themeManager.setTheme(themeName);
-  }, [location, user]);
   
   const appStateManager = useAppStateManager();
   const scrollManager = useScrollManager({
@@ -106,15 +84,22 @@ function AppRoutes() {
   
   // Set initial theme color and handle app state restoration
   useEffect(() => {
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+    
     // Only initialize splash theme if splash hasn't been shown yet
     const hasShownSplash = sessionStorage.getItem('splashShown') === 'true';
     
     if (!hasShownSplash) {
       // First time - show splash
-      themeManager.setTheme('splash');
+      if (themeColorMeta) {
+        themeColorMeta.setAttribute('content', '#0000ff');
+      }
     } else {
-      // App resumed - don't override current theme, let individual pages set their own
+      // App resumed - keep dashboard color
       setSplashShown(true);
+      if (themeColorMeta) {
+        themeColorMeta.setAttribute('content', '#126987');
+      }
     }
     
     // Wait for auth to be checked before showing content
@@ -132,11 +117,10 @@ function AppRoutes() {
       setTimeout(() => {
         setSplashShown(true);
         setSplashTransitioning(false);
-        // Set theme based on auth state after splash
-        if (user) {
-          themeManager.handleSplashComplete('dashboard');
-        } else {
-          themeManager.handleSplashComplete('login');
+        // Set theme to banking blue after splash
+        const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+        if (themeColorMeta) {
+          themeColorMeta.setAttribute('content', '#126987');
         }
       }, 100);
     };
