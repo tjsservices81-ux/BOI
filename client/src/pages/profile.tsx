@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin, Calendar, CreditCard, X, RefreshCw, Plus } from "lucide-react";
+import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin, Calendar, CreditCard, X, RefreshCw, Plus, MessageCircle, Trash2 } from "lucide-react";
 import { UserDataManager } from "@/utils/userDataManager";
 import { useAuth } from "@/lib/auth";
 import { motion, AnimatePresence } from "framer-motion";
@@ -33,6 +33,15 @@ export default function Profile() {
   });
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+  
+  // Chat response management states
+  const [showChatResponses, setShowChatResponses] = useState(false);
+  const [chatResponses, setChatResponses] = useState<any[]>([]);
+  const [editingResponse, setEditingResponse] = useState<any>(null);
+  const [newResponse, setNewResponse] = useState({
+    triggers: '',
+    response: ''
+  });
   const [profileData, setProfileData] = useState(() => {
     const currentCustomerNumber = UserDataManager.getCurrentUser();
     // Try to get cached data first to prevent flash
@@ -160,7 +169,116 @@ export default function Profile() {
   useEffect(() => {
     const storedAccounts = UserDataManager.getUserAccounts();
     setAccounts(storedAccounts);
+    loadChatResponses();
   }, []);
+
+  // Chat response management functions
+  const getDefaultChatResponses = () => [
+    {
+      id: '1',
+      triggers: ['unblock card', 'card blocked', 'card not working', 'blocked card'],
+      response: "To unblock your card, go to Profile > Admin Panel and tap 'Unblock Card'. The card will be immediately available for use. If you need further assistance, please let me know!"
+    },
+    {
+      id: '2',
+      triggers: ['transfer money', 'send money', 'make transfer', 'how to transfer'],
+      response: "You can transfer money by tapping 'Payments' in the bottom menu, then selecting either 'UK Transfer' for domestic transfers or 'IBAN Transfer' for international transfers. Would you like specific help with either option?"
+    },
+    {
+      id: '3',
+      triggers: ['check balance', 'account balance', 'how much money'],
+      response: "Your account balances are displayed on the main dashboard when you log in. You can also tap on any account to see detailed transaction history and current balance."
+    },
+    {
+      id: '4',
+      triggers: ['forgot pin', 'reset pin', 'pin not working'],
+      response: "For security reasons, PIN resets need to be done through our secure channels. Please visit your nearest Bank of Ireland branch with valid ID, or call our customer service line at 0818 365 365."
+    },
+    {
+      id: '5',
+      triggers: ['app not working', 'technical issue', 'bug', 'error'],
+      response: "I'm sorry you're experiencing technical difficulties. Please try closing and reopening the app first. If the issue persists, you can contact our technical support team or visit a branch for assistance."
+    },
+    {
+      id: '6',
+      triggers: ['opening hours', 'branch hours', 'when open'],
+      response: "Most Bank of Ireland branches are open Monday-Friday 10:00-16:00, with some locations offering extended hours. You can find specific branch hours and locations using the ATM/Branch locator in the app."
+    },
+    {
+      id: '7',
+      triggers: ['fees', 'charges', 'cost', 'how much'],
+      response: "Transaction fees vary depending on the type of transfer and destination. UK transfers typically have lower fees than international transfers. You'll see all applicable fees before confirming any transaction."
+    },
+    {
+      id: '8',
+      triggers: ['hello', 'hi', 'hey', 'good morning', 'good afternoon'],
+      response: "Hello! Welcome to Bank of Ireland customer support. I'm here to help you with any questions about your accounts, transfers, cards, or app features. What can I assist you with today?"
+    }
+  ];
+
+  const loadChatResponses = () => {
+    const stored = UserDataManager.getUserData('chatResponses', null);
+    setChatResponses(stored || getDefaultChatResponses());
+  };
+
+  const saveChatResponses = (responses: any[]) => {
+    UserDataManager.setUserData('chatResponses', responses);
+    UserDataManager.clearCache('chatResponses');
+    setChatResponses(responses);
+  };
+
+  const addChatResponse = () => {
+    if (!newResponse.triggers.trim() || !newResponse.response.trim()) {
+      alert('Please fill in both triggers and response');
+      return;
+    }
+
+    const triggers = newResponse.triggers.split(',').map(t => t.trim()).filter(t => t.length > 0);
+    if (triggers.length === 0) {
+      alert('Please provide at least one trigger phrase');
+      return;
+    }
+
+    const newResponseObj = {
+      id: Date.now().toString(),
+      triggers,
+      response: newResponse.response.trim()
+    };
+
+    const updatedResponses = [...chatResponses, newResponseObj];
+    saveChatResponses(updatedResponses);
+    setNewResponse({ triggers: '', response: '' });
+  };
+
+  const updateChatResponse = (id: string, updatedData: any) => {
+    const triggers = updatedData.triggers.split(',').map((t: string) => t.trim()).filter((t: string) => t.length > 0);
+    if (triggers.length === 0) {
+      alert('Please provide at least one trigger phrase');
+      return;
+    }
+
+    const updatedResponses = chatResponses.map(response =>
+      response.id === id
+        ? { ...response, triggers, response: updatedData.response.trim() }
+        : response
+    );
+    saveChatResponses(updatedResponses);
+    setEditingResponse(null);
+  };
+
+  const deleteChatResponse = (id: string) => {
+    if (confirm('Are you sure you want to delete this chat response?')) {
+      const updatedResponses = chatResponses.filter(response => response.id !== id);
+      saveChatResponses(updatedResponses);
+    }
+  };
+
+  const resetChatResponses = () => {
+    if (confirm('Reset all chat responses to defaults? This will remove any custom responses you\'ve added.')) {
+      const defaultResponses = getDefaultChatResponses();
+      saveChatResponses(defaultResponses);
+    }
+  };
 
   const startEditingProfile = () => {
     setEditProfileData({
