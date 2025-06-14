@@ -29,7 +29,7 @@ import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
 import { useAppStateManager } from "@/hooks/useAppStateManager";
 import { useScrollManager } from "@/hooks/useScrollManager";
-import { SimpleTerminationDetector } from "@/utils/simpleTerminationDetector";
+import { FreshLaunchDetector } from "@/utils/freshLaunchDetector";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
@@ -60,25 +60,15 @@ function AppRoutes() {
   });
   
   const [splashShown, setSplashShown] = useState(() => {
-    // Initialize termination detector
-    SimpleTerminationDetector.initialize();
+    // Check if this is a fresh launch (app was terminated)
+    const isFreshLaunch = FreshLaunchDetector.isFirstLaunch();
     
-    // Check if app was terminated (swiped up)
-    const wasTerminated = SimpleTerminationDetector.wasTerminated();
-    
-    if (wasTerminated) {
-      // App was terminated - start fresh with splash
+    if (isFreshLaunch) {
+      // Fresh launch after termination - show splash
       return false;
     }
     
-    // Check if we're restoring from a backgrounded state
-    const restoredState = appStateManager.restoreAppState();
-    if (restoredState) {
-      // If we have saved state, splash was already shown
-      return true;
-    }
-    
-    // Otherwise check normal splash state
+    // App was just backgrounded - check if splash was already shown
     return sessionStorage.getItem('splashShown') === 'true';
   });
   const [isInitialized, setIsInitialized] = useState(false);
@@ -93,9 +83,9 @@ function AppRoutes() {
     }
     
     // Check if this is a fresh launch first
-    const wasTerminated = SimpleTerminationDetector.wasTerminated();
+    const isFreshLaunch = FreshLaunchDetector.isFirstLaunch();
     
-    if (wasTerminated) {
+    if (isFreshLaunch) {
       // Fresh start - show splash screen
       setSplashShown(false);
     } else {
