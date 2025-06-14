@@ -47,13 +47,14 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function AppRoutes() {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const [location] = useLocation();
   const [splashShown, setSplashShown] = useState(() => {
     // Initialize splashShown state immediately to prevent flash
     return sessionStorage.getItem('splashShown') === 'true';
   });
   const [isInitialized, setIsInitialized] = useState(false);
+  const [splashTransitioning, setSplashTransitioning] = useState(false);
   
   // Set initial theme color to pure blue immediately on mount
   useEffect(() => {
@@ -78,7 +79,12 @@ function AppRoutes() {
   // Listen for splash completion
   useEffect(() => {
     const handleSplashComplete = () => {
-      setSplashShown(true);
+      setSplashTransitioning(true);
+      // Small delay to prevent flash, then complete transition
+      setTimeout(() => {
+        setSplashShown(true);
+        setSplashTransitioning(false);
+      }, 100);
       const themeColorMeta = document.querySelector('meta[name="theme-color"]');
       if (themeColorMeta) {
         themeColorMeta.setAttribute('content', '#126987');
@@ -109,9 +115,9 @@ function AppRoutes() {
           <Route path="/more" component={More} />
           <Route path="/">
             {/* Handle root route properly based on splash and auth state */}
-            {!splashShown ? (
+            {!splashShown || splashTransitioning ? (
               <Splash />
-            ) : !user ? (
+            ) : (!user || isLoading) ? (
               <Login />
             ) : (
               <Dashboard />
