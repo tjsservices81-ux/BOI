@@ -27,6 +27,32 @@ export class FreshLaunchDetector {
     sessionStorage.removeItem('appStateValid');
   }
   
+  static setupTerminationDetection() {
+    // Set up event listeners to detect app termination
+    const clearRunningFlag = () => {
+      sessionStorage.removeItem(this.LAUNCH_FLAG);
+      console.log('App termination detected - clearing running flag');
+    };
+
+    // Multiple event listeners to catch different termination scenarios
+    window.addEventListener('beforeunload', clearRunningFlag);
+    window.addEventListener('pagehide', clearRunningFlag);
+    window.addEventListener('unload', clearRunningFlag);
+    
+    // Mobile-specific events
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        clearRunningFlag();
+      }
+    });
+    
+    // Focus events
+    window.addEventListener('blur', clearRunningFlag);
+    
+    // Page freeze/resume events (newer browsers)
+    document.addEventListener('freeze', clearRunningFlag);
+  }
+
   static markAppTermination() {
     // Remove the running flag when app is terminated
     sessionStorage.removeItem(this.LAUNCH_FLAG);

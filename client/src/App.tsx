@@ -63,13 +63,19 @@ function AppRoutes() {
     // Check if this is a fresh launch (app was terminated)
     const isFreshLaunch = FreshLaunchDetector.isFirstLaunch();
     
+    // Set up termination detection
+    FreshLaunchDetector.setupTerminationDetection();
+    
     if (isFreshLaunch) {
       // Fresh launch after termination - show splash
+      console.log('Fresh launch detected - showing splash screen');
       return false;
     }
     
     // App was just backgrounded - check if splash was already shown
-    return sessionStorage.getItem('splashShown') === 'true';
+    const hadSplash = sessionStorage.getItem('splashShown') === 'true';
+    console.log('App resumed - splash already shown:', hadSplash);
+    return hadSplash;
   });
   const [isInitialized, setIsInitialized] = useState(false);
   const [splashTransitioning, setSplashTransitioning] = useState(false);
