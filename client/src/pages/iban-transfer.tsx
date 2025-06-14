@@ -356,137 +356,155 @@ export default function IbanTransfer() {
     );
   }
 
-  // Form step
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-md mx-auto">
-        {/* Header */}
-        <div className="bg-purple-600 px-4 py-6">
-          <div className="flex items-center">
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="mr-4"
-            >
-              <ChevronLeft className="w-6 h-6 text-white" />
-            </button>
-            <h1 className="text-xl font-semibold text-white">IBAN Transfer</h1>
-          </div>
-        </div>
+    <div className="page-container page-fade-in" style={{ 
+      position: 'fixed', 
+      top: 0, 
+      left: 0, 
+      right: 0, 
+      bottom: 0, 
+      display: 'flex', 
+      flexDirection: 'column',
+      backgroundColor: '#f9fafb'
+    }}>
+      <div className="bg-[#7c3aed] px-4 py-3 flex items-center justify-between" style={{ flexShrink: 0 }}>
+        <button onClick={() => navigate('/payments')} className="flex items-center text-white">
+          <ChevronLeft className="w-5 h-5 mr-2" />
+          <span className="font-semibold text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>IBAN Transfer</span>
+        </button>
+      </div>
 
-        {/* Form */}
-        <div className="p-4">
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {/* From Account */}
+      <div style={{ 
+        flex: 1, 
+        overflowY: 'auto', 
+        WebkitOverflowScrolling: 'touch',
+        padding: '1rem'
+      }}>
+        <div style={{ backgroundColor: 'white', borderRadius: '0.75rem', padding: '1.5rem', marginBottom: '2rem' }}>
+          <div className="flex items-center mb-6">
+            <div className="w-12 h-12 bg-gradient-to-br from-[#7c3aed] to-[#a855f7] rounded-xl flex items-center justify-center mr-4">
+              <Globe className="w-6 h-6 text-white" />
+            </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <h2 className="font-bold text-gray-900 text-lg" style={{ fontFamily: 'OpenSans, sans-serif' }}>IBAN Transfer</h2>
+              <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>International bank transfer</p>
+            </div>
+          </div>
+
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <div className="bg-gray-50 rounded-lg p-4">
+              <label className="block text-sm font-semibold text-gray-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                <CreditCard className="w-4 h-4 inline mr-2" />
                 From Account
               </label>
               <select
                 {...form.register('fromAccount')}
-                className="w-full p-3 border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#7c3aed] focus:border-transparent text-sm bg-white shadow-sm"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
               >
-                <option value="">Select an account</option>
-                {accounts.map((account) => (
+                <option value="">Select account</option>
+                {accounts.map(account => (
                   <option key={account.id} value={account.id}>
-                    {account.displayName} - €{account.balance}
+                    {account.displayName} {account.accountNumber} - €{account.balance}
                   </option>
                 ))}
               </select>
               {form.formState.errors.fromAccount && (
-                <p className="text-red-500 text-sm mt-1">{form.formState.errors.fromAccount.message}</p>
+                <p className="text-red-500 text-xs mt-2 font-medium">{form.formState.errors.fromAccount.message}</p>
               )}
             </div>
 
-            {/* Recipient Name */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+            <div className="bg-gray-50 rounded-lg p-4">
+              <label className="block text-sm font-semibold text-gray-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                 Recipient Name
               </label>
               <input
                 type="text"
                 {...form.register('recipientName')}
-                className="w-full p-3 border border-gray-300 rounded-md text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
-                placeholder="Enter recipient's full name"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#7c3aed] focus:border-transparent text-sm bg-white shadow-sm"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+                placeholder="Enter full name"
               />
               {form.formState.errors.recipientName && (
-                <p className="text-red-500 text-sm mt-1">{form.formState.errors.recipientName.message}</p>
+                <p className="text-red-500 text-xs mt-2 font-medium">{form.formState.errors.recipientName.message}</p>
               )}
             </div>
 
-            {/* IBAN */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+            <div className="bg-gray-50 rounded-lg p-4">
+              <label className="block text-sm font-semibold text-gray-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                 IBAN
               </label>
               <input
                 type="text"
                 {...form.register('iban')}
                 onChange={handleIbanChange}
-                className="w-full p-3 border border-gray-300 rounded-md text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#7c3aed] focus:border-transparent text-sm bg-white shadow-sm"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
                 placeholder="GB29 NWBK 6016 1331 9268 19"
                 maxLength={39}
               />
               {identifiedCountry && (
-                <p className="text-purple-600 text-sm mt-1 flex items-center">
+                <div className="mt-2 bg-purple-50 p-2 rounded text-xs text-purple-800 flex items-center" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                   <Globe className="w-4 h-4 mr-1" />
                   {identifiedCountry}
-                </p>
+                </div>
               )}
               {form.formState.errors.iban && (
-                <p className="text-red-500 text-sm mt-1">{form.formState.errors.iban.message}</p>
+                <p className="text-red-500 text-xs mt-2 font-medium">{form.formState.errors.iban.message}</p>
               )}
             </div>
 
-            {/* Amount */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+            <div className="bg-gray-50 rounded-lg p-4">
+              <label className="block text-sm font-semibold text-gray-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                 Amount (EUR)
               </label>
               <input
                 type="number"
                 step="0.01"
                 {...form.register('amount')}
-                className="w-full p-3 border border-gray-300 rounded-md text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#7c3aed] focus:border-transparent text-sm bg-white shadow-sm"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
                 placeholder="0.00"
               />
               {form.formState.errors.amount && (
-                <p className="text-red-500 text-sm mt-1">{form.formState.errors.amount.message}</p>
+                <p className="text-red-500 text-xs mt-2 font-medium">{form.formState.errors.amount.message}</p>
               )}
             </div>
 
-            {/* Reference */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+            <div className="bg-gray-50 rounded-lg p-4">
+              <label className="block text-sm font-semibold text-gray-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                 Reference
               </label>
               <input
                 type="text"
                 {...form.register('reference')}
-                className="w-full p-3 border border-gray-300 rounded-md text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#7c3aed] focus:border-transparent text-sm bg-white shadow-sm"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
                 placeholder="Payment reference"
               />
               {form.formState.errors.reference && (
-                <p className="text-red-500 text-sm mt-1">{form.formState.errors.reference.message}</p>
+                <p className="text-red-500 text-xs mt-2 font-medium">{form.formState.errors.reference.message}</p>
               )}
             </div>
 
-            {/* Security Notice */}
-            <div className="bg-purple-50 p-4 rounded-md border border-purple-200 mt-6">
-              <div className="flex items-center space-x-2">
-                <Phone className="w-5 h-5 text-purple-600" />
-                <p className="text-purple-800 font-medium">Security Confirmation Required</p>
+            <div className="bg-purple-50 rounded-xl p-4 flex items-start space-x-3 mt-6">
+              <Phone className="w-5 h-5 text-purple-600 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-purple-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Voice Confirmation Required
+                </p>
+                <p className="text-xs text-purple-700 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  You'll receive a phone call to confirm this international transfer before processing.
+                </p>
               </div>
-              <p className="text-purple-700 text-sm mt-1">
-                You'll receive a phone call to confirm this international transfer before any money is sent.
-              </p>
             </div>
 
-            {/* Submit Button */}
             <button
               type="submit"
-              className="w-full py-4 bg-purple-600 text-white rounded-md font-medium hover:bg-purple-700 transition-colors mt-6"
+              className="w-full bg-[#7c3aed] text-white py-4 rounded-xl font-semibold active:scale-98 transition-transform mt-6"
+              style={{ fontFamily: 'OpenSans, sans-serif' }}
             >
-              Initiate Transfer
+              Send Transfer
             </button>
           </form>
         </div>

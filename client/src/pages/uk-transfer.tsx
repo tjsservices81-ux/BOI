@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { ChevronLeft, Info, Check, CreditCard, Building2, Building, Plus, X, Phone } from "lucide-react";
+import { ChevronLeft, Info, Check, CreditCard, Building2, Building, Plus, X, Phone, Euro } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -495,10 +495,7 @@ export default function UkTransfer() {
 
             <div className="bg-gray-50 rounded-lg p-4">
               <label className="block text-sm font-semibold text-gray-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                <span className="inline-flex items-center">
-                  <Euro className="w-4 h-4 mr-2" />
-                  Amount (EUR)
-                </span>
+                Amount (EUR)
               </label>
               <div className="relative">
                 <input
