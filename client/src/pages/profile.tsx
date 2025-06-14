@@ -15,7 +15,6 @@ export default function Profile() {
   const [editingAccount, setEditingAccount] = useState<any>(null);
   const [newBalance, setNewBalance] = useState('');
 
-  const [showAddTransaction, setShowAddTransaction] = useState(false);
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [newAccountData, setNewAccountData] = useState({
     displayName: '',
@@ -233,7 +232,7 @@ export default function Profile() {
           address: updatedData.address || '',
           dateOfBirth: updatedData.dateOfBirth || '',
           customerNumber: updatedData.customerNumber,
-          joinDate: updatedData.joinDate || 'Member since 2018'
+          joinDate: updatedData.joinDate || ''
         });
         
         alert('Profile updated successfully');
@@ -264,23 +263,7 @@ export default function Profile() {
 
 
 
-  const sampleTransactions = [
-    { description: "McDonald's", amount: -8.99, type: "debit" },
-    { description: "ATM WITHDRAWAL", amount: -50.00, type: "debit" },
-    { description: "Tesco", amount: -35.67, type: "debit" },
-    { description: "Starbucks", amount: -4.50, type: "debit" },
-    { description: "Dunnes Stores", amount: -87.23, type: "debit" },
-    { description: "SuperValu", amount: -42.18, type: "debit" },
-    { description: "Centra", amount: -12.95, type: "debit" },
-    { description: "Penneys", amount: -29.99, type: "debit" },
-    { description: "Lidl", amount: -25.40, type: "debit" },
-    { description: "Aldi", amount: -31.85, type: "debit" },
-    { description: "Circle K", amount: -65.00, type: "debit" },
-    { description: "Insomnia Coffee", amount: -6.20, type: "debit" },
-    { description: "SALARY PAYMENT", amount: 2500.00, type: "credit" },
-    { description: "INTEREST PAYMENT", amount: 12.50, type: "credit" },
-    { description: "REFUND - AMAZON", amount: 45.99, type: "credit" }
-  ];
+
 
   const generateAccountNumber = () => {
     return Math.floor(1000 + Math.random() * 9000).toString();
@@ -321,46 +304,7 @@ export default function Profile() {
     window.dispatchEvent(new CustomEvent('balanceUpdate'));
   };
 
-  const addSampleTransaction = (accountId: number) => {
-    const randomTransaction = sampleTransactions[Math.floor(Math.random() * sampleTransactions.length)];
-    const now = new Date();
-    
-    const transaction = {
-      id: Date.now(),
-      accountId: accountId,
-      amount: randomTransaction.amount > 0 ? `+${randomTransaction.amount.toFixed(2)}` : randomTransaction.amount.toFixed(2),
-      description: randomTransaction.description,
-      category: randomTransaction.type === 'credit' ? 'income' : 'expense',
-      type: randomTransaction.type,
-      timestamp: now.toISOString()
-    };
 
-    // Add transaction using UserDataManager
-    const existingTransactions = UserDataManager.getUserData('bankTransactions', []);
-    UserDataManager.setUserData('bankTransactions', [...existingTransactions, transaction]);
-
-    // Update account balance if it's a debit transaction
-    if (randomTransaction.type === 'debit') {
-      const storedAccounts = UserDataManager.getUserData('bankAccounts', []);
-      const updatedAccounts = storedAccounts.map((acc: any) => {
-        if (acc.id === accountId) {
-          const currentBalance = parseFloat(acc.balance);
-          const newBalance = Math.max(0, currentBalance + randomTransaction.amount);
-          return { ...acc, balance: newBalance.toFixed(2) };
-        }
-        return acc;
-      });
-      UserDataManager.setUserData('bankAccounts', updatedAccounts);
-      setAccounts(updatedAccounts);
-    }
-
-    // Dispatch events to notify other components
-    window.dispatchEvent(new CustomEvent('transactionUpdate'));
-    window.dispatchEvent(new CustomEvent('balanceUpdate'));
-    
-    setShowAddTransaction(false);
-    alert(`Added transaction: ${randomTransaction.description} €${Math.abs(randomTransaction.amount)}`);
-  };
 
   const resetToDefaults = () => {
     // Reset accounts to zero balances for current user
@@ -1112,10 +1056,9 @@ export default function Profile() {
 
               <div className="space-y-3">
                 {accounts.map((account) => (
-                  <button
+                  <div
                     key={account.id}
-                    onClick={() => addSampleTransaction(account.id)}
-                    className="w-full flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+                    className="w-full flex items-center justify-between p-4 bg-gray-50 rounded-xl"
                   >
                     <div className="text-left">
                       <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -1130,7 +1073,7 @@ export default function Profile() {
                         €{account.balance}
                       </p>
                     </div>
-                  </button>
+                  </div>
                 ))}
               </div>
 
