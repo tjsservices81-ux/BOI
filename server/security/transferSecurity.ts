@@ -50,34 +50,9 @@ class TransferSecurityService {
     this.pendingTransfers.set(request.transferId, request);
 
     try {
-      // Check if this is a trial account limitation
-      const isDevelopmentMode = process.env.NODE_ENV === 'development';
+      // Always attempt real Twilio call
+      console.log(`Attempting real voice call for transfer ${request.transferId} to ${request.userPhoneNumber}`);
       
-      if (isDevelopmentMode) {
-        // Development mode: simulate the call process
-        console.log(`[DEV MODE] Simulating security call for transfer ${request.transferId}`);
-        console.log(`[DEV MODE] Would call ${request.userPhoneNumber} with transfer details`);
-        
-        // Auto-approve after 3 seconds to simulate user pressing 1
-        setTimeout(async () => {
-          console.log(`[DEV MODE] Auto-approving transfer ${request.transferId}`);
-          this.confirmations.set(request.transferId, {
-            transferId: request.transferId,
-            confirmed: true,
-            timestamp: new Date().toISOString(),
-            method: 'voice'
-          });
-
-          // Process the actual transfer now that it's confirmed
-          await this.processConfirmedTransfer(request);
-          
-          console.log(`[DEV MODE] Transfer ${request.transferId} confirmed and processed`);
-        }, 3000);
-        
-        return { success: true, callSid: 'dev-mode-simulation' };
-      }
-
-      // Production mode: make actual Twilio call
       const domain = process.env.REPLIT_DEV_DOMAIN || 'workspace.replit.app';
       const twimlUrl = `https://${domain}/api/security/voice-response?transferId=${request.transferId}`;
       
@@ -89,7 +64,8 @@ class TransferSecurityService {
         record: false
       });
 
-      console.log(`Security call initiated for transfer ${request.transferId}, Call SID: ${call.sid}`);
+      console.log(`Real security call initiated for transfer ${request.transferId}, Call SID: ${call.sid}`);
+      console.log(`Your phone ${request.userPhoneNumber} should be ringing now!`);
       
       // Set timeout for transfer cancellation if no response
       setTimeout(() => {
@@ -102,27 +78,11 @@ class TransferSecurityService {
     } catch (error) {
       console.error('Failed to initiate security call:', error);
       
-      // If it's a trial account error, fall back to development mode
       if (error instanceof Error && (error.message.includes('unverified') || error.message.includes('Trial accounts'))) {
-        console.log('Trial account detected, switching to development mode simulation');
-        
-        // Auto-approve after 3 seconds
-        setTimeout(async () => {
-          console.log(`[TRIAL MODE] Auto-approving transfer ${request.transferId}`);
-          this.confirmations.set(request.transferId, {
-            transferId: request.transferId,
-            confirmed: true,
-            timestamp: new Date().toISOString(),
-            method: 'voice'
-          });
-
-          // Process the actual transfer now that it's confirmed
-          await this.processConfirmedTransfer(request);
-          
-          console.log(`[TRIAL MODE] Transfer ${request.transferId} confirmed and processed`);
-        }, 3000);
-        
-        return { success: true, callSid: 'trial-mode-simulation' };
+        return { 
+          success: false, 
+          error: `Cannot call unverified number ${request.userPhoneNumber}. Please verify this number in your Twilio Console at https://console.twilio.com/us1/develop/phone-numbers/manage/verified or upgrade to a paid account to call any number.` 
+        };
       }
       
       return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
