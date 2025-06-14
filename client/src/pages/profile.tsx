@@ -423,105 +423,142 @@ export default function Profile() {
       {/* Profile Content */}
       <div className="bg-white rounded-t-3xl mt-6 flex-1 overflow-hidden">
         <div className="h-full overflow-y-auto p-6 pb-32">
-          {/* Profile Header */}
-          <div className="flex flex-col items-center text-center mb-8">
-            <button 
-              onClick={handleProfilePictureTap}
-              className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mb-4 active:scale-95 transition-transform"
-            >
-              <User className="w-12 h-12 text-gray-600" />
-            </button>
-            <h2 className="text-2xl font-bold text-gray-900 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              {userDetails.name || "User"}
-            </h2>
-            <p className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              {userDetails.joinDate || ""}
-            </p>
-            <p className="text-sm text-gray-500 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Customer #{userDetails.customerNumber}
-            </p>
-          </div>
-
-          {/* Profile Details */}
-          <div className="space-y-4 mb-8">
-            <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl">
-              <Mail className="w-5 h-5 text-gray-600" />
-              <div>
-                <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Email</p>
-                <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  {userDetails.email || "Not provided"}
+          {/* Profile Card */}
+          <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-6 mb-6 text-white">
+            <div className="flex items-center space-x-4">
+              <button 
+                onClick={handleProfilePictureTap}
+                className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center active:scale-95 transition-transform"
+              >
+                <User className="w-8 h-8 text-white" />
+              </button>
+              <div className="flex-1">
+                <h2 className="text-xl font-bold mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  {userDetails.name || "User"}
+                </h2>
+                <p className="text-white/80 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Customer #{userDetails.customerNumber}
                 </p>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl">
-              <Phone className="w-5 h-5 text-gray-600" />
-              <div>
-                <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Phone</p>
-                <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  {userDetails.phone || "Not provided"}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl">
-              <MapPin className="w-5 h-5 text-gray-600" />
-              <div>
-                <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Address</p>
-                <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  {userDetails.address || "Not provided"}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl">
-              <Calendar className="w-5 h-5 text-gray-600" />
-              <div>
-                <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Date of Birth</p>
-                <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  {userDetails.dateOfBirth || "Not provided"}
+                <p className="text-white/70 text-xs mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  {userDetails.joinDate || ""}
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="space-y-4">
-            <button 
-              onClick={() => navigate('/settings')}
-              className="w-full flex items-center space-x-4 p-4 bg-white border border-gray-200 rounded-xl active:scale-98 transition-transform"
-            >
-              <Settings className="w-5 h-5 text-gray-600" />
-              <span className="flex-1 text-left font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Settings
-              </span>
-            </button>
+          {/* Personal Information */}
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              Personal Information
+            </h3>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <Mail className="w-4 h-4 text-gray-500" />
+                  <div>
+                    <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Email</p>
+                    <p className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      {userDetails.email || "Not provided"}
+                    </p>
+                  </div>
+                </div>
+              </div>
 
-            <button 
-              onClick={() => navigate('/security')}
-              className="w-full flex items-center space-x-4 p-4 bg-white border border-gray-200 rounded-xl active:scale-98 transition-transform"
-            >
-              <Shield className="w-5 h-5 text-gray-600" />
-              <span className="flex-1 text-left font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Security
-              </span>
-            </button>
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <Phone className="w-4 h-4 text-gray-500" />
+                  <div>
+                    <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Phone</p>
+                    <p className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      {userDetails.phone || "Not provided"}
+                    </p>
+                  </div>
+                </div>
+              </div>
 
-            <button 
-              onClick={async () => {
-                setIsSigningOut(true);
-                setTimeout(async () => {
-                  await logout();
-                  navigate('/auth');
-                }, 2000);
-              }}
-              className="w-full flex items-center space-x-4 p-4 bg-red-50 border border-red-200 rounded-xl active:scale-98 transition-transform"
-            >
-              <LogOut className="w-5 h-5 text-red-600" />
-              <span className="flex-1 text-left font-semibold text-red-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Sign Out
-              </span>
-            </button>
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <MapPin className="w-4 h-4 text-gray-500" />
+                  <div>
+                    <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Address</p>
+                    <p className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      {userDetails.address || "Not provided"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <Calendar className="w-4 h-4 text-gray-500" />
+                  <div>
+                    <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Date of Birth</p>
+                    <p className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      {userDetails.dateOfBirth || "Not provided"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Settings & Actions */}
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              Settings & Actions
+            </h3>
+            <div className="space-y-3">
+              <button 
+                onClick={() => navigate('/settings')}
+                className="w-full flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg active:scale-98 transition-transform"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                    <Settings className="w-4 h-4 text-gray-600" />
+                  </div>
+                  <span className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Settings
+                  </span>
+                </div>
+                <ChevronLeft className="w-4 h-4 text-gray-400 rotate-180" />
+              </button>
+
+              <button 
+                onClick={() => navigate('/security')}
+                className="w-full flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg active:scale-98 transition-transform"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                    <Shield className="w-4 h-4 text-gray-600" />
+                  </div>
+                  <span className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Security
+                  </span>
+                </div>
+                <ChevronLeft className="w-4 h-4 text-gray-400 rotate-180" />
+              </button>
+
+              <button 
+                onClick={async () => {
+                  setIsSigningOut(true);
+                  setTimeout(async () => {
+                    await logout();
+                    navigate('/auth');
+                  }, 2000);
+                }}
+                className="w-full flex items-center justify-between p-4 bg-red-50 border border-red-200 rounded-lg active:scale-98 transition-transform"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                    <LogOut className="w-4 h-4 text-red-600" />
+                  </div>
+                  <span className="font-medium text-red-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Sign Out
+                  </span>
+                </div>
+                <ChevronLeft className="w-4 h-4 text-red-400 rotate-180" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
