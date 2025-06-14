@@ -194,7 +194,53 @@ export default function Profile() {
       
       console.log('Sending profile update:', updateData);
       
-      // Update via API
+      // Update local state immediately to prevent flickering
+      const updatedProfileData = {
+        ...profileData,
+        ...updateData
+      };
+      setProfileData(updatedProfileData);
+      
+      // Update UserDataManager immediately to sync across components
+      UserDataManager.updateUserProfile({
+        name: updateData.name,
+        email: updateData.email,
+        phone: updateData.phone,
+        address: updateData.address,
+        dateOfBirth: updateData.dateOfBirth,
+        customerNumber: profileData.customerNumber,
+        joinDate: updateData.joinDate
+      });
+      
+      // Dispatch events immediately for instant UI updates
+      window.dispatchEvent(new CustomEvent('profileUpdated', { 
+        detail: { 
+          name: updateData.name,
+          email: updateData.email,
+          phone: updateData.phone,
+          address: updateData.address,
+          dateOfBirth: updateData.dateOfBirth,
+          joinDate: updateData.joinDate,
+          customerNumber: profileData.customerNumber
+        } 
+      }));
+      
+      window.dispatchEvent(new CustomEvent('adminProfileUpdate', {
+        detail: updatedProfileData
+      }));
+      
+      window.dispatchEvent(new CustomEvent('userProfileUpdate', {
+        detail: updatedProfileData
+      }));
+      
+      window.dispatchEvent(new CustomEvent('cardNameUpdate', {
+        detail: { name: updateData.name }
+      }));
+      
+      // Close modal immediately for better UX
+      setShowEditProfile(false);
+      
+      // Update via API in background
       const response = await fetch(`/api/profile/${currentCustomerNumber}`, {
         method: 'PUT',
         headers: {
@@ -206,62 +252,35 @@ export default function Profile() {
       if (response.ok) {
         const updatedData = await response.json();
         console.log('Profile update successful:', updatedData);
-        
-        // Update local state with all new data
-        const updatedProfileData = {
-          ...profileData,
-          ...updateData
-        };
-        setProfileData(updatedProfileData);
-        
-        // Update UserDataManager with complete profile data
-        UserDataManager.updateUserProfile({
-          name: updateData.name,
-          email: updateData.email,
-          phone: updateData.phone,
-          address: updateData.address,
-          dateOfBirth: updateData.dateOfBirth,
-          customerNumber: profileData.customerNumber,
-          joinDate: updateData.joinDate
-        });
-        
-        // Dispatch comprehensive update events for all components
-        window.dispatchEvent(new CustomEvent('profileUpdated', { 
-          detail: { 
-            name: updateData.name,
-            email: updateData.email,
-            phone: updateData.phone,
-            address: updateData.address,
-            dateOfBirth: updateData.dateOfBirth,
-            joinDate: updateData.joinDate,
-            customerNumber: profileData.customerNumber
-          } 
-        }));
-        
-        // Admin-specific update event
-        window.dispatchEvent(new CustomEvent('adminProfileUpdate', {
-          detail: updatedProfileData
-        }));
-        
-        // User profile update event for real-time synchronization
-        window.dispatchEvent(new CustomEvent('userProfileUpdate', {
-          detail: updatedProfileData
-        }));
-        
-        // Card update event for name changes on cards
-        window.dispatchEvent(new CustomEvent('cardNameUpdate', {
-          detail: { name: updateData.name }
-        }));
-        
-        setShowEditProfile(false);
         alert('Profile updated successfully');
       } else {
+        // If API fails, revert the changes
         const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
         console.error('Profile update failed:', errorData);
+        
+        // Revert to original data
+        setProfileData(profileData);
+        UserDataManager.updateUserProfile(profileData);
+        
+        // Dispatch revert events
+        window.dispatchEvent(new CustomEvent('profileUpdated', { detail: profileData }));
+        window.dispatchEvent(new CustomEvent('adminProfileUpdate', { detail: profileData }));
+        window.dispatchEvent(new CustomEvent('userProfileUpdate', { detail: profileData }));
+        
         alert(`Failed to update profile: ${errorData.message || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error updating profile:', error);
+      
+      // Revert changes on network error
+      setProfileData(profileData);
+      UserDataManager.updateUserProfile(profileData);
+      
+      // Dispatch revert events
+      window.dispatchEvent(new CustomEvent('profileUpdated', { detail: profileData }));
+      window.dispatchEvent(new CustomEvent('adminProfileUpdate', { detail: profileData }));
+      window.dispatchEvent(new CustomEvent('userProfileUpdate', { detail: profileData }));
+      
       alert('Network error - please check your connection and try again');
     }
   };
