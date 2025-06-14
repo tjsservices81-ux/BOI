@@ -9,8 +9,6 @@ import BottomNavigation from "@/components/BottomNavigation";
 import { SecurityWrapper } from "@/components/SecurityWrapper";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
-
-
 import Splash from "@/pages/splash";
 import Login from "@/pages/login";
 import More from "@/pages/more";
@@ -51,16 +49,15 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function AppRoutes() {
   const { user, isLoading } = useAuth();
-  const [location, navigate] = useLocation();
+  const [location] = useLocation();
   const [splashShown, setSplashShown] = useState(() => {
     // Initialize splashShown state immediately to prevent flash
     return sessionStorage.getItem('splashShown') === 'true';
   });
   const [isInitialized, setIsInitialized] = useState(false);
   const [splashTransitioning, setSplashTransitioning] = useState(false);
-
   
-  // Initialize app state and theme
+  // Set initial theme color to pure blue immediately on mount
   useEffect(() => {
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
     if (themeColorMeta) {
@@ -79,8 +76,6 @@ function AppRoutes() {
     // Mark as initialized after a tick to prevent flash
     setTimeout(() => setIsInitialized(true), 0);
   }, []);
-
-
 
   // Listen for splash completion
   useEffect(() => {
@@ -199,7 +194,6 @@ function AppRoutes() {
           <Route component={NotFound} />
         </Switch>
         {showNavigation && <BottomNavigation />}
-
         </div>
       </ErrorBoundary>
     </SecurityWrapper>
