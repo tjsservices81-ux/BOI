@@ -291,13 +291,19 @@ export default function Login() {
           setHoldProgress(0);
           
           // Initialize fresh account data based on entered customer number or last active user if none entered
+          let targetUser = null;
           if (customerNumber && UserDataManager.userExists(customerNumber)) {
+            targetUser = customerNumber;
+            UserDataManager.setCurrentUser(customerNumber);
             UserDataManager.initializeFreshAccount(customerNumber);
           } else if (!customerNumber) {
             // If no customer number entered, use last active user first, then fall back to most recent
             const lastActiveUser = UserDataManager.getLastActiveUser();
             if (lastActiveUser && UserDataManager.userExists(lastActiveUser)) {
+              targetUser = lastActiveUser;
+              UserDataManager.setCurrentUser(lastActiveUser);
               UserDataManager.initializeFreshAccount(lastActiveUser);
+              setCustomerNumber(lastActiveUser); // Update the display
             } else {
               // Fall back to most recent account if no last active user
               const allUsers = UserDataManager.getAllUsers();
@@ -308,7 +314,10 @@ export default function Login() {
                   const currentDate = new Date(allUsers[current].dateCreated);
                   return currentDate > latestDate ? current : latest;
                 });
+                targetUser = mostRecentUser;
+                UserDataManager.setCurrentUser(mostRecentUser);
                 UserDataManager.initializeFreshAccount(mostRecentUser);
+                setCustomerNumber(mostRecentUser); // Update the display
               }
             }
           }
