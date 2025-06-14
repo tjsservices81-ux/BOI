@@ -66,6 +66,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (credentials: LoginCredentials) => {
     setIsLoading(true);
     try {
+      console.log('Sending login request with:', credentials);
+      
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
@@ -75,11 +77,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         credentials: 'include',
       });
 
+      const data = await response.json();
+      console.log('Login response:', data);
+
       if (!response.ok) {
-        throw new Error('Login failed');
+        throw new Error(data.message || 'Login failed');
       }
 
-      const data = await response.json();
       setUser(data.user);
       localStorage.setItem('bankingUser', JSON.stringify(data.user));
     } finally {

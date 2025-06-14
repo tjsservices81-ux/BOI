@@ -412,14 +412,9 @@ export default function Login() {
       
       // Record login time and authenticate through auth context
       UserDataManager.recordLoginTime(currentUser);
-      const userProfile = UserDataManager.getUserProfile();
-      if (userProfile) {
-        login({
-          id: parseInt(currentUser.replace(/\D/g, '')) || 1,
-          name: userProfile.name,
-          email: userProfile.email
-        });
-      }
+      
+      // Use actual login credentials to authenticate with backend
+      await login({ customerNumber, pin });
       
       await new Promise(resolve => setTimeout(resolve, 1000));
       
@@ -474,15 +469,19 @@ export default function Login() {
     // Initialize fresh account data and verify PIN
     UserDataManager.initializeFreshAccount(customerNumber);
     UserDataManager.recordLoginTime(customerNumber);
-    const userProfile = UserDataManager.getUserProfile();
-    if (userProfile) {
-      login({
-        id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
-        name: userProfile.name,
-        email: userProfile.email
+    
+    // Authenticate with backend using credentials
+    try {
+      await login({ customerNumber, pin });
+      setPinVerified(true);
+    } catch (error) {
+      toast({
+        title: "Authentication Failed",
+        description: "Invalid PIN. Please try again.",
+        variant: "destructive",
       });
+      return;
     }
-    setPinVerified(true);
     
     // Navigate to dashboard after verification
     navigate('/dashboard');

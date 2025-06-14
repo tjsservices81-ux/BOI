@@ -45,7 +45,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication endpoints
   app.post("/api/auth/login", async (req, res) => {
     try {
-      const { customerNumber, pin } = loginSchema.parse(req.body);
+      console.log('Login request body:', req.body);
+      
+      // Handle both direct credentials and nested structure
+      let credentials = req.body;
+      if (req.body.credentials) {
+        credentials = req.body.credentials;
+      }
+      
+      const { customerNumber, pin } = loginSchema.parse(credentials);
+      console.log('Parsed credentials:', { customerNumber, pin: '***' });
+      
       const user = await storage.getUserByCredentials(customerNumber, pin);
       
       if (!user) {
@@ -56,8 +66,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       (req as any).session.userId = user.id;
       (req as any).session.user = { id: user.id, name: user.name, email: user.email };
 
+      console.log('Login successful for user:', user.customerNumber);
       res.json({ user: { id: user.id, name: user.name, email: user.email } });
     } catch (error) {
+      console.error('Login error:', error);
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: error.errors[0].message });
       }
