@@ -1316,18 +1316,24 @@ export default function Login() {
                   >
                     <div className="flex items-center justify-between">
                       <button
-                        onClick={() => {
+                        onClick={async () => {
                           UserDataManager.initializeFreshAccount(customerNumber);
                           UserDataManager.recordLoginTime(customerNumber);
-                          login({
-                            id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
-                            name: userData.name,
-                            email: userData.email
-                          });
-                          setShowAdminLogin(false);
-                          setCustomerNumber(customerNumber);
-                          setBiometricVerified(true);
-                          navigate('/dashboard');
+                          
+                          try {
+                            // Use default PIN for admin login or prompt for PIN
+                            await login({ customerNumber, pin: "1234" });
+                            setShowAdminLogin(false);
+                            setCustomerNumber(customerNumber);
+                            setBiometricVerified(true);
+                            navigate('/dashboard');
+                          } catch (error) {
+                            toast({
+                              title: "Login Failed",
+                              description: "Authentication error. Please try again.",
+                              variant: "destructive",
+                            });
+                          }
                         }}
                         className="flex-1 text-left hover:bg-gray-100 rounded-lg p-2 active:scale-98 transition-all"
                       >
