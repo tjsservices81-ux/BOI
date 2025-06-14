@@ -49,7 +49,11 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function AppRoutes() {
   const { user } = useAuth();
   const [location] = useLocation();
-  const [splashShown, setSplashShown] = useState(false);
+  const [splashShown, setSplashShown] = useState(() => {
+    // Initialize splashShown state immediately to prevent flash
+    return sessionStorage.getItem('splashShown') === 'true';
+  });
+  const [isInitialized, setIsInitialized] = useState(false);
   
   // Set initial theme color to pure blue immediately on mount
   useEffect(() => {
@@ -66,6 +70,9 @@ function AppRoutes() {
         themeColorMeta.setAttribute('content', '#126987');
       }
     }
+    
+    // Mark as initialized after a tick to prevent flash
+    setTimeout(() => setIsInitialized(true), 0);
   }, []);
 
   // Listen for splash completion
@@ -82,16 +89,12 @@ function AppRoutes() {
     return () => window.removeEventListener('splashComplete', handleSplashComplete);
   }, []);
 
-  // Direct splash to login transition - no intermediate renders
-  if (!splashShown && location === '/') {
-    return <Splash />;
-  }
-  
-  if (splashShown && !user && location === '/') {
+  // Prevent flash during initialization
+  if (!isInitialized) {
     return (
-      <SecurityWrapper>
-        <Login />
-      </SecurityWrapper>
+      <div className="w-full h-full bg-[#0000ff]">
+        {/* Empty blue screen during initialization */}
+      </div>
     );
   }
 
