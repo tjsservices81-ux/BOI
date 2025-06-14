@@ -304,10 +304,19 @@ export default function Profile() {
     const randomTransaction = sampleTransactions[Math.floor(Math.random() * sampleTransactions.length)];
     const now = new Date();
     
+    // Get current accounts to calculate new balance
+    const storedAccounts = UserDataManager.getUserData('bankAccounts', []);
+    const targetAccount = storedAccounts.find((acc: any) => acc.id === accountId);
+    if (!targetAccount) return;
+    
+    const currentBalance = parseFloat(targetAccount.balance);
+    const transactionAmount = randomTransaction.type === 'credit' ? Math.abs(randomTransaction.amount) : -Math.abs(randomTransaction.amount);
+    const newBalance = currentBalance + transactionAmount;
+    
     const transaction = {
       id: Date.now(),
       accountId: accountId,
-      amount: randomTransaction.amount > 0 ? `+${randomTransaction.amount.toFixed(2)}` : randomTransaction.amount.toFixed(2),
+      amount: transactionAmount > 0 ? `+${transactionAmount.toFixed(2)}` : `${transactionAmount.toFixed(2)}`,
       description: randomTransaction.description,
       category: randomTransaction.type === 'credit' ? 'income' : 'expense',
       type: randomTransaction.type,
@@ -319,11 +328,8 @@ export default function Profile() {
     UserDataManager.setUserData('bankTransactions', [...existingTransactions, transaction]);
 
     // Update account balance
-    const storedAccounts = UserDataManager.getUserData('bankAccounts', []);
     const updatedAccounts = storedAccounts.map((acc: any) => {
       if (acc.id === accountId) {
-        const currentBalance = parseFloat(acc.balance);
-        const newBalance = currentBalance + randomTransaction.amount;
         return { ...acc, balance: newBalance.toFixed(2) };
       }
       return acc;
@@ -333,10 +339,12 @@ export default function Profile() {
 
     // Dispatch events to notify other components
     window.dispatchEvent(new CustomEvent('transactionUpdate'));
-    window.dispatchEvent(new CustomEvent('balanceUpdate'));
+    window.dispatchEvent(new CustomEvent('balanceUpdate', {
+      detail: { accountId: accountId, newBalance: newBalance.toFixed(2) }
+    }));
     
     setShowAddTransaction(false);
-    alert(`Added transaction: ${randomTransaction.description} €${Math.abs(randomTransaction.amount)}`);
+    alert(`Added transaction: ${randomTransaction.description} €${Math.abs(transactionAmount).toFixed(2)} - New balance: €${newBalance.toFixed(2)}`);
   };
 
   const updateBalance = () => {
