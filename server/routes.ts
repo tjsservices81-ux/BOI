@@ -258,6 +258,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin-only profile update endpoint with real-time propagation
+  app.put("/api/admin/profile/:customerNumber", async (req, res) => {
+    try {
+      const { customerNumber } = req.params;
+      const adminUpdateSchema = z.object({
+        name: z.string().optional(),
+        email: z.string().email().optional(),
+        phone: z.string().optional(),
+        address: z.string().optional(),
+        dateOfBirth: z.string().optional(),
+        joinDate: z.string().optional(),
+        balance: z.string().optional(),
+        sortCode: z.string().optional()
+      });
+      
+      const updates = adminUpdateSchema.parse(req.body);
+      
+      // Update user profile in database
+      let updatedUser = await storage.updateUserProfile(customerNumber, updates);
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Return success with updated user data
+      res.json({
+        success: true,
+        user: updatedUser,
+        message: "Profile updated successfully by admin"
+      });
+    } catch (error) {
+      console.error('Admin profile update error:', error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors[0].message });
+      }
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // OTC generation for new account creation
   app.post("/api/admin/generate-otc", async (req, res) => {
     try {
