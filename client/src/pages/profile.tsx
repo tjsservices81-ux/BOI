@@ -477,7 +477,34 @@ export default function Profile() {
     // Parse current balance safely
     const currentBalance = parseFloat(targetAccount.balance) || 0;
     const rawAmount = Math.abs(randomTransaction.amount);
-    const transactionAmount = randomTransaction.type === 'credit' ? rawAmount : -rawAmount;
+    
+    // Determine transaction type based on account type and transaction nature
+    let transactionType, transactionAmount, category;
+    
+    if (targetAccount.accountType === 'current' || targetAccount.accountType === 'savings') {
+      // For current/savings accounts: debits are expenses, credits are income
+      if (randomTransaction.type === 'credit') {
+        transactionType = 'credit';
+        transactionAmount = rawAmount;
+        category = 'income';
+      } else {
+        transactionType = 'debit';
+        transactionAmount = -rawAmount;
+        category = 'expense';
+      }
+    } else if (targetAccount.accountType === 'credit') {
+      // For credit cards: credits are payments (reduce balance), debits are charges
+      if (randomTransaction.type === 'credit') {
+        transactionType = 'credit';
+        transactionAmount = rawAmount; // Payment reduces credit card balance
+        category = 'payment';
+      } else {
+        transactionType = 'debit';
+        transactionAmount = -rawAmount; // Charge increases credit card balance
+        category = 'expense';
+      }
+    }
+    
     const newBalance = currentBalance + transactionAmount;
     
     // Create properly formatted transaction
@@ -486,8 +513,8 @@ export default function Profile() {
       accountId: accountId,
       amount: transactionAmount >= 0 ? `+${transactionAmount.toFixed(2)}` : transactionAmount.toFixed(2),
       description: randomTransaction.description,
-      category: randomTransaction.type === 'credit' ? 'income' : 'expense',
-      type: randomTransaction.type,
+      category: category,
+      type: transactionType,
       timestamp: now.toISOString(),
       paymentMethod: 'Bank Transfer'
     };
