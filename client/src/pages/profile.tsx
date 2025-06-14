@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin, Calendar, CreditCard, X, Database, Trash2, RefreshCw, DollarSign, Plus } from "lucide-react";
+import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin, Calendar, CreditCard, X, RefreshCw, Plus } from "lucide-react";
 import { UserDataManager } from "@/utils/userDataManager";
 import { useAuth } from "@/lib/auth";
 import { motion, AnimatePresence } from "framer-motion";
@@ -141,29 +141,7 @@ export default function Profile() {
     setNewBalance(account.balance);
   };
 
-  const updateProfile = (updatedData: any) => {
-    setProfileData(updatedData);
-    
-    // Update user profile in UserDataManager
-    UserDataManager.updateUserProfile({
-      name: updatedData.name,
-      email: updatedData.email,
-      phone: updatedData.phone,
-      address: updatedData.address,
-      dateOfBirth: updatedData.dateOfBirth
-    });
-    
-    // Update card name if name changed
-    if (updatedData.name !== profileData.name) {
-      // Dispatch custom event to notify other components
-      window.dispatchEvent(new CustomEvent('profileUpdated', { 
-        detail: { name: updatedData.name } 
-      }));
-    }
-    
 
-    alert('Profile updated successfully');
-  };
 
   const sampleTransactions = [
     { description: "McDonald's", amount: -8.99, type: "debit" },
@@ -333,7 +311,6 @@ export default function Profile() {
                 {userDetails.joinDate}
               </p>
             </div>
-
           </div>
 
           {/* Personal Information */}
@@ -617,6 +594,40 @@ export default function Profile() {
 
             {/* Admin Actions */}
             <div className="space-y-4">
+              {/* Profile Management */}
+              <div className="mb-6">
+                <h3 className="font-semibold text-gray-900 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Profile Management
+                </h3>
+                <div className="p-4 bg-gray-50 rounded-xl">
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-700 font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Name:
+                      </span>
+                      <span className="text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        {profileData.name}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-700 font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Email:
+                      </span>
+                      <span className="text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        {profileData.email}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-700 font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Customer #:
+                      </span>
+                      <span className="text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        {profileData.customerNumber}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               {/* Add New Account */}
               <button 
