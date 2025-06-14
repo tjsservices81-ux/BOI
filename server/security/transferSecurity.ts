@@ -55,7 +55,6 @@ class TransferSecurityService {
         from: this.twilioNumber,
         to: request.userPhoneNumber,
         url: twimlUrl,
-        callerId: '+35314044000', // Bank of Ireland caller ID
         timeout: 30,
         record: false
       });
