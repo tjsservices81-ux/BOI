@@ -29,7 +29,7 @@ import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
 import { useAppStateManager } from "@/hooks/useAppStateManager";
 import { useScrollManager } from "@/hooks/useScrollManager";
-import { AppTerminationDetector } from "@/utils/appTerminationDetector";
+import { SimpleTerminationDetector } from "@/utils/simpleTerminationDetector";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
@@ -61,13 +61,13 @@ function AppRoutes() {
   
   const [splashShown, setSplashShown] = useState(() => {
     // Initialize termination detector
-    AppTerminationDetector.initialize();
+    SimpleTerminationDetector.initialize();
     
-    // Check if this is a fresh app launch (after termination)
-    const isFreshLaunch = AppTerminationDetector.isFreshLaunch();
+    // Check if app was terminated (swiped up)
+    const wasTerminated = SimpleTerminationDetector.wasTerminated();
     
-    if (isFreshLaunch) {
-      // App was terminated and relaunched - show splash screen
+    if (wasTerminated) {
+      // App was terminated - start fresh with splash
       return false;
     }
     
@@ -93,9 +93,9 @@ function AppRoutes() {
     }
     
     // Check if this is a fresh launch first
-    const isFreshLaunch = AppTerminationDetector.isFreshLaunch();
+    const wasTerminated = SimpleTerminationDetector.wasTerminated();
     
-    if (isFreshLaunch) {
+    if (wasTerminated) {
       // Fresh start - show splash screen
       setSplashShown(false);
     } else {
