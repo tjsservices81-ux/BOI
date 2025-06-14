@@ -59,6 +59,10 @@ export default function TransactionHistoryWorking() {
 
   useEffect(() => {
     const loadData = () => {
+      // Clear cache to ensure we get fresh data
+      UserDataManager.clearCache('bankTransactions');
+      UserDataManager.clearCache('bankAccounts');
+      
       // Get stored transactions for this specific account using UserDataManager
       const storedTransactions = UserDataManager.getUserData('bankTransactions', []);
       

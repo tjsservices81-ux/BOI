@@ -493,6 +493,9 @@ export default function Profile() {
     
     console.log('Added transaction:', transaction);
     console.log('Total transactions now:', updatedTransactions.length);
+    console.log('Current balance was:', currentBalance);
+    console.log('Transaction amount:', transactionAmount);
+    console.log('New balance is:', newBalance.toFixed(2));
 
     // Update account balance
     const updatedAccounts = storedAccounts.map((acc: any) => {
@@ -501,16 +504,24 @@ export default function Profile() {
       }
       return acc;
     });
+    
+    // Clear cache before and after updating data
+    UserDataManager.clearCache('bankAccounts');
+    UserDataManager.clearCache('bankTransactions');
+    
     UserDataManager.setUserData('bankAccounts', updatedAccounts);
     setAccounts(updatedAccounts);
+    
+    // Clear cache again to ensure fresh data
+    UserDataManager.clearCache();
 
-    // Dispatch events to notify other components
+    // Dispatch comprehensive events to notify other components
     window.dispatchEvent(new CustomEvent('transactionUpdate'));
     window.dispatchEvent(new CustomEvent('transactionAdded', {
       detail: { transaction: transaction, accountId: accountId }
     }));
     window.dispatchEvent(new CustomEvent('balanceUpdate', {
-      detail: { accountId: accountId, newBalance: newBalance.toFixed(2) }
+      detail: { accountId: accountId, newBalance: newBalance.toFixed(2), accounts: updatedAccounts }
     }));
     
     setShowAddTransaction(false);

@@ -79,10 +79,24 @@ export default function Dashboard() {
   // Listen for balance updates from transfers and admin profile updates
   useEffect(() => {
     const handleBalanceUpdate = (event: CustomEvent) => {
-      const { accountId, newBalance } = event.detail;
-      setAccounts(prev => prev.map(acc => 
-        acc.id === accountId ? { ...acc, balance: newBalance } : acc
-      ));
+      const { accountId, newBalance, accounts: updatedAccounts } = event.detail;
+      
+      // If updated accounts are provided in the event, use them
+      if (updatedAccounts) {
+        setAccounts(updatedAccounts);
+      } else {
+        // Otherwise, refresh from UserDataManager to get latest data
+        UserDataManager.clearCache('bankAccounts');
+        const freshAccounts = UserDataManager.getUserData('bankAccounts', []);
+        if (Array.isArray(freshAccounts) && freshAccounts.length > 0) {
+          setAccounts(freshAccounts);
+        } else {
+          // Fallback to updating individual account
+          setAccounts(prev => prev.map(acc => 
+            acc.id === accountId ? { ...acc, balance: newBalance } : acc
+          ));
+        }
+      }
     };
 
     const handleProfileUpdate = async () => {
