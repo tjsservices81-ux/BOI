@@ -98,7 +98,7 @@ function AppRoutes() {
     );
   }
 
-  const showNavigation = user && !['/login', '/splash'].includes(location);
+  const showNavigation = user && splashShown && !['/login', '/splash'].includes(location);
 
   return (
     <SecurityWrapper>

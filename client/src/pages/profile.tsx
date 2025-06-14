@@ -404,24 +404,26 @@ export default function Profile() {
 
   return (
     <div className="h-screen bg-gradient-to-b from-[#126987] to-[#0d4e63] flex flex-col overflow-hidden page-slide-up relative">
-      {/* Header */}
-      <div className="bg-[#126987] px-4 py-6 pt-12 flex-shrink-0">
-        <div className="flex items-center justify-between">
-          <button 
-            onClick={() => navigate('/dashboard')}
-            className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center active:scale-95 transition-transform"
-          >
-            <ChevronLeft className="w-6 h-6 text-white" />
-          </button>
-          <h1 className="text-xl font-bold text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-            Profile
-          </h1>
-          <div className="w-10 h-10" />
+      {/* Header - Hidden during sign out */}
+      {!isSigningOut && (
+        <div className="bg-[#126987] px-4 py-6 pt-12 flex-shrink-0">
+          <div className="flex items-center justify-between">
+            <button 
+              onClick={() => navigate('/dashboard')}
+              className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center active:scale-95 transition-transform"
+            >
+              <ChevronLeft className="w-6 h-6 text-white" />
+            </button>
+            <h1 className="text-xl font-bold text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              Profile
+            </h1>
+            <div className="w-10 h-10" />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Profile Content */}
-      <div className="bg-white rounded-t-3xl mt-6 flex-1 overflow-hidden">
+      <div className={`bg-white ${!isSigningOut ? 'rounded-t-3xl mt-6' : ''} flex-1 overflow-hidden`}>
         <div className="h-full overflow-y-auto p-6 pb-32">
           {/* Profile Header */}
           <div className="flex flex-col items-center text-center mb-8">
@@ -507,7 +509,7 @@ export default function Profile() {
                 setTimeout(async () => {
                   await logout();
                   navigate('/login');
-                }, 2000);
+                }, 4000);
               }}
               className="w-full flex items-center space-x-4 p-4 bg-red-50 border border-red-200 rounded-xl active:scale-98 transition-transform"
             >
@@ -1094,6 +1096,49 @@ export default function Profile() {
               </motion.div>
             </motion.div>
           </>
+        )}
+      </AnimatePresence>
+
+      {/* Full Screen Sign Out Animation */}
+      <AnimatePresence>
+        {isSigningOut && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-[#126987] z-[100] flex flex-col items-center justify-center"
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+              className="text-center"
+            >
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                className="w-16 h-16 border-4 border-white border-t-transparent rounded-full mx-auto mb-6"
+              />
+              <motion.h2
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.5, duration: 0.5 }}
+                className="text-2xl font-bold text-white mb-2"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              >
+                Signing Out
+              </motion.h2>
+              <motion.p
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.7, duration: 0.5 }}
+                className="text-white/80"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              >
+                Thank you for using BOI Banking
+              </motion.p>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
