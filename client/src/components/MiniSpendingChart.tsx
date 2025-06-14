@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, BarChart3 } from 'lucide-react';
-import { UserDataManager } from '@/utils/userDataManager';
 
 interface ChartData {
   date: string;
@@ -19,7 +18,7 @@ export default function MiniSpendingChart({ accountId }: MiniSpendingChartProps)
   useEffect(() => {
     const calculateChartData = () => {
       // Use UserDataManager for consistent data access
-      const allTransactions = UserDataManager.getUserTransactions();
+      const allTransactions = JSON.parse(localStorage.getItem('bankTransactions') || '[]');
       
       // Early return if no transactions
       if (allTransactions.length === 0) {
