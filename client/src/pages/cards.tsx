@@ -122,6 +122,8 @@ export default function Cards() {
     // Block the card and save to storage
     setIsCardBlocked(true);
     UserDataManager.setUserData('cardBlocked', true);
+    // Clear cache to ensure fresh data is loaded when navigating back
+    UserDataManager.clearCache('cardBlocked');
     setShowBlockModal(false);
   };
 

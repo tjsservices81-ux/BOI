@@ -865,6 +865,8 @@ export default function Profile() {
                       <button 
                         onClick={() => {
                           UserDataManager.setUserData('cardBlocked', false);
+                          // Clear cache to ensure fresh data is loaded when navigating back
+                          UserDataManager.clearCache('cardBlocked');
                           window.dispatchEvent(new CustomEvent('cardUnblocked'));
                           alert('Card has been unblocked successfully');
                         }}
