@@ -140,7 +140,7 @@ function AppRoutes() {
       <ErrorBoundary>
         <div 
           ref={mainContainerRef}
-          className="w-full h-full overflow-auto relative"
+          className="w-full h-full overflow-hidden relative"
         >
           <Switch>
             <Route path="/splash" component={Splash} />
