@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from "@/lib/auth";
 import BottomNavigation from "@/components/BottomNavigation";
 import { SecurityWrapper } from "@/components/SecurityWrapper";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import AppStateIndicator from "@/components/AppStateIndicator";
 import { appStateManager } from "@/utils/appStateManager";
 
 import Splash from "@/pages/splash";
@@ -231,6 +232,7 @@ function AppRoutes() {
           <Route component={NotFound} />
         </Switch>
         {showNavigation && <BottomNavigation />}
+        <AppStateIndicator />
         </div>
       </ErrorBoundary>
     </SecurityWrapper>
