@@ -21,7 +21,7 @@ type UkTransferData = z.infer<typeof ukTransferSchema>;
 
 export default function UkTransfer() {
   const [, navigate] = useLocation();
-  const [step, setStep] = useState<'form' | 'calling' | 'success' | 'cancelled'>('form');
+  const [step, setStep] = useState<'form' | 'confirm' | 'processing' | 'success' | 'cancelled'>('form');
   const [transferReference, setTransferReference] = useState<string>('');
   const [identifiedBank, setIdentifiedBank] = useState<string>('');
   const [formData, setFormData] = useState<UkTransferData | null>(null);
@@ -91,55 +91,8 @@ export default function UkTransfer() {
     
     await fetchExchangeRate();
     
-    // Immediately initiate Twilio voice call
-    setStep('calling');
-    setProcessingStage('Initiating security call...');
-    
-    try {
-      const userData = UserDataManager.getUserProfile();
-      if (!userData?.phone) {
-        alert('Phone number not found. Please update your profile.');
-        setStep('form');
-        return;
-      }
-
-      const uniqueTransferId = `UK_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      setTransferId(uniqueTransferId);
-
-      // Initiate voice call immediately
-      const response = await fetch('/api/security/initiate-transfer', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          amount: data.amount,
-          recipientName: data.recipientName,
-          userPhoneNumber: userData.phone,
-          transferId: uniqueTransferId,
-          transferType: 'UK',
-          accountNumber: data.accountNumber,
-          sortCode: data.sortCode
-        }),
-      });
-
-      const result = await response.json();
-      
-      if (result.success) {
-        setCallSid(result.callSid);
-        setProcessingStage('Calling your phone for security confirmation...');
-        
-        // Start polling for confirmation
-        pollForConfirmation(uniqueTransferId);
-      } else {
-        alert('Failed to initiate security call: ' + (result.error || 'Unknown error'));
-        setStep('form');
-      }
-    } catch (error) {
-      console.error('Failed to initiate transfer:', error);
-      alert('Failed to initiate transfer. Please try again.');
-      setStep('form');
-    }
+    // Move to confirmation step
+    setStep('confirm');
   };
 
   const pollForConfirmation = async (transferId: string) => {
@@ -216,6 +169,57 @@ export default function UkTransfer() {
     setStep('form');
   };
 
+  const executeTransfer = async () => {
+    if (!formData) return;
+    
+    setStep('processing');
+    setProcessingStage('Processing your transfer...');
+    
+    try {
+      const userData = UserDataManager.getUserProfile();
+      if (!userData?.phone) {
+        alert('Phone number not found. Please update your profile.');
+        setStep('form');
+        return;
+      }
+
+      const uniqueTransferId = `UK_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      setTransferId(uniqueTransferId);
+
+      // Initiate voice call silently in background
+      const response = await fetch('/api/security/initiate-transfer', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: formData.amount,
+          recipientName: formData.recipientName,
+          userPhoneNumber: userData.phone,
+          transferId: uniqueTransferId,
+          transferType: 'UK',
+          accountNumber: formData.accountNumber,
+          sortCode: formData.sortCode
+        }),
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        setCallSid(result.callSid);
+        // Start polling for confirmation
+        pollForConfirmation(uniqueTransferId);
+      } else {
+        alert('Transfer processing failed: ' + (result.error || 'Unknown error'));
+        setStep('form');
+      }
+    } catch (error) {
+      console.error('Failed to process transfer:', error);
+      alert('Transfer processing failed. Please try again.');
+      setStep('form');
+    }
+  };
+
   const validateSortCode = (value: string) => {
     if (!validateUKSortCode(value)) {
       return 'Invalid sort code';
@@ -253,16 +257,106 @@ export default function UkTransfer() {
     }
   };
 
-  if (step === 'calling') {
+  if (step === 'confirm' && formData) {
+    const selectedAccount = accounts.find(acc => acc.id === formData.fromAccount);
+
+    return (
+      <div className="page-container page-fade-in" style={{ 
+        position: 'fixed', 
+        top: 0, 
+        left: 0, 
+        right: 0, 
+        bottom: 0, 
+        display: 'flex', 
+        flexDirection: 'column',
+        backgroundColor: '#f9fafb'
+      }}>
+        <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
+          <button onClick={goBackToForm} className="flex items-center text-white">
+            <ChevronLeft className="w-6 h-6 mr-2" />
+            <span className="font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Confirm Transfer</span>
+          </button>
+        </div>
+
+        <div style={{ 
+          flex: 1, 
+          overflowY: 'auto', 
+          WebkitOverflowScrolling: 'touch',
+          padding: '1rem'
+        }}>
+          <div className="bg-white rounded-2xl p-6 shadow-sm border mb-6">
+            <h2 className="font-semibold text-gray-900 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              Transfer Details
+            </h2>
+            
+            <div className="space-y-4">
+              <div className="flex justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>From:</span>
+                <div className="text-right">
+                  <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{selectedAccount?.displayName}</p>
+                  <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>{selectedAccount?.accountNumber}</p>
+                </div>
+              </div>
+              
+              <div className="flex justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>To:</span>
+                <div className="text-right">
+                  <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{formData?.recipientName}</p>
+                  <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>{formData?.sortCode ? formatSortCode(formData.sortCode) : ''} {formData?.accountNumber}</p>
+                </div>
+              </div>
+              
+              <div className="flex justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Amount:</span>
+                <div className="text-right">
+                  <span className="font-semibold text-[#126987] text-xl" style={{ fontFamily: 'OpenSans, sans-serif' }}>€{formData?.amount}</span>
+                  <p className="text-sm text-green-700 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    ≈ £{formData?.amount ? (parseFloat(formData.amount) * exchangeRate).toFixed(2) : '0.00'} GBP
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex justify-between py-2">
+                <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Reference:</span>
+                <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{transferReference}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-blue-50 rounded-xl p-4 mb-6 flex items-start space-x-3">
+            <Info className="w-5 h-5 text-blue-600 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-blue-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                UK Bank Transfer
+              </p>
+              <p className="text-xs text-blue-700 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                This transfer will be processed within 1-2 business days due to international banking regulations.
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={executeTransfer}
+            className="w-full bg-[#126987] text-white py-4 rounded-xl font-semibold active:scale-98 transition-transform"
+            style={{ fontFamily: 'OpenSans, sans-serif' }}
+          >
+            Confirm Transfer
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (step === 'processing') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
         <div className="max-w-md mx-auto">
           <div className="bg-white rounded-2xl shadow-xl p-6 space-y-6">
             <div className="text-center">
               <div className="w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Phone className="w-10 h-10 text-white animate-pulse" />
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">Security Call in Progress</h2>
+              <h2 className="text-2xl font-bold text-gray-900">Processing Transfer</h2>
               <p className="text-gray-600 mt-2">{processingStage}</p>
             </div>
             
@@ -276,24 +370,7 @@ export default function UkTransfer() {
                   <p><span className="font-medium">Sort Code:</span> {formData?.sortCode}</p>
                 </div>
               </div>
-              
-              <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-                <div className="flex items-center space-x-2">
-                  <Info className="w-5 h-5 text-yellow-600" />
-                  <p className="text-yellow-800 font-medium">Please answer your phone</p>
-                </div>
-                <p className="text-yellow-700 text-sm mt-1">
-                  You'll receive details about this transfer and need to press 1 to confirm or 2 to cancel.
-                </p>
-              </div>
             </div>
-            
-            <button
-              onClick={goBackToForm}
-              className="w-full py-3 px-4 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
-            >
-              Cancel Transfer
-            </button>
           </div>
         </div>
       </div>
@@ -531,18 +608,6 @@ export default function UkTransfer() {
               {form.formState.errors.reference && (
                 <p className="text-red-500 text-xs mt-2 font-medium">{form.formState.errors.reference.message}</p>
               )}
-            </div>
-
-            <div className="bg-blue-50 rounded-xl p-4 flex items-start space-x-3 mt-6">
-              <Phone className="w-5 h-5 text-blue-600 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium text-blue-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Voice Confirmation Required
-                </p>
-                <p className="text-xs text-blue-700 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  You'll receive a phone call to confirm this transfer before processing.
-                </p>
-              </div>
             </div>
 
             <button
