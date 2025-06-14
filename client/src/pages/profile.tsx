@@ -283,21 +283,152 @@ export default function Profile() {
   };
 
   const sampleTransactions = [
+    // Restaurants & Fast Food
     { description: "McDonald's", amount: -8.99, type: "debit" },
-    { description: "ATM WITHDRAWAL", amount: -50.00, type: "debit" },
-    { description: "Tesco", amount: -35.67, type: "debit" },
+    { description: "Burger King", amount: -12.45, type: "debit" },
+    { description: "KFC", amount: -15.20, type: "debit" },
+    { description: "Subway", amount: -9.50, type: "debit" },
+    { description: "Pizza Hut", amount: -22.90, type: "debit" },
+    { description: "Domino's Pizza", amount: -18.75, type: "debit" },
+    { description: "Nando's", amount: -24.50, type: "debit" },
+    { description: "Eddie Rocket's", amount: -16.80, type: "debit" },
+    { description: "Supermac's", amount: -11.25, type: "debit" },
+    { description: "Apache Pizza", amount: -19.60, type: "debit" },
+    
+    // Coffee Shops
     { description: "Starbucks", amount: -4.50, type: "debit" },
+    { description: "Costa Coffee", amount: -3.85, type: "debit" },
+    { description: "Insomnia Coffee", amount: -6.20, type: "debit" },
+    { description: "Caffè Nero", amount: -4.25, type: "debit" },
+    { description: "Butler's Chocolate Café", amount: -7.90, type: "debit" },
+    { description: "Java Republic", amount: -5.15, type: "debit" },
+    
+    // Grocery Stores
+    { description: "Tesco", amount: -35.67, type: "debit" },
     { description: "Dunnes Stores", amount: -87.23, type: "debit" },
     { description: "SuperValu", amount: -42.18, type: "debit" },
-    { description: "Centra", amount: -12.95, type: "debit" },
-    { description: "Penneys", amount: -29.99, type: "debit" },
     { description: "Lidl", amount: -25.40, type: "debit" },
     { description: "Aldi", amount: -31.85, type: "debit" },
+    { description: "Marks & Spencer", amount: -58.90, type: "debit" },
+    { description: "Spar", amount: -18.75, type: "debit" },
+    { description: "Centra", amount: -12.95, type: "debit" },
+    { description: "Londis", amount: -14.60, type: "debit" },
+    { description: "Fresh", amount: -28.45, type: "debit" },
+    
+    // Retail & Shopping
+    { description: "Penneys", amount: -29.99, type: "debit" },
+    { description: "Brown Thomas", amount: -125.00, type: "debit" },
+    { description: "Zara", amount: -89.95, type: "debit" },
+    { description: "H&M", amount: -45.50, type: "debit" },
+    { description: "Next", amount: -67.80, type: "debit" },
+    { description: "River Island", amount: -78.25, type: "debit" },
+    { description: "IKEA", amount: -156.40, type: "debit" },
+    { description: "Harvey Norman", amount: -234.99, type: "debit" },
+    { description: "Currys PC World", amount: -189.00, type: "debit" },
+    { description: "Argos", amount: -76.50, type: "debit" },
+    
+    // Fuel & Transport
     { description: "Circle K", amount: -65.00, type: "debit" },
-    { description: "Insomnia Coffee", amount: -6.20, type: "debit" },
+    { description: "Topaz", amount: -58.75, type: "debit" },
+    { description: "Maxol", amount: -72.30, type: "debit" },
+    { description: "Texaco", amount: -61.45, type: "debit" },
+    { description: "Dublin Bus", amount: -2.70, type: "debit" },
+    { description: "Luas", amount: -2.10, type: "debit" },
+    { description: "Uber", amount: -18.90, type: "debit" },
+    { description: "Taxi Fare", amount: -14.50, type: "debit" },
+    { description: "Hailo", amount: -22.80, type: "debit" },
+    { description: "Car Park Fee", amount: -8.00, type: "debit" },
+    
+    // Entertainment & Leisure
+    { description: "Vue Cinema", amount: -12.50, type: "debit" },
+    { description: "Cineworld", amount: -11.90, type: "debit" },
+    { description: "Odeon Cinema", amount: -13.25, type: "debit" },
+    { description: "Spotify Premium", amount: -9.99, type: "debit" },
+    { description: "Netflix", amount: -15.99, type: "debit" },
+    { description: "Disney+", amount: -8.99, type: "debit" },
+    { description: "Amazon Prime", amount: -6.99, type: "debit" },
+    { description: "Xbox Live Gold", amount: -6.99, type: "debit" },
+    { description: "PlayStation Plus", amount: -8.99, type: "debit" },
+    { description: "Steam", amount: -29.99, type: "debit" },
+    
+    // Health & Beauty
+    { description: "Boots", amount: -34.75, type: "debit" },
+    { description: "Pharmacy", amount: -16.50, type: "debit" },
+    { description: "Lloyds Pharmacy", amount: -22.30, type: "debit" },
+    { description: "Hickey's Pharmacy", amount: -18.95, type: "debit" },
+    { description: "Hair Salon", amount: -65.00, type: "debit" },
+    { description: "Nail Salon", amount: -35.00, type: "debit" },
+    { description: "Gym Membership", amount: -49.99, type: "debit" },
+    { description: "David Lloyd", amount: -79.00, type: "debit" },
+    
+    // Online Shopping
+    { description: "Amazon", amount: -67.89, type: "debit" },
+    { description: "eBay", amount: -28.50, type: "debit" },
+    { description: "ASOS", amount: -95.40, type: "debit" },
+    { description: "Boohoo", amount: -42.75, type: "debit" },
+    { description: "Very.ie", amount: -156.80, type: "debit" },
+    { description: "Littlewoods", amount: -89.25, type: "debit" },
+    { description: "Done Deal", amount: -150.00, type: "debit" },
+    
+    // Utilities & Bills
+    { description: "Eir", amount: -65.00, type: "debit" },
+    { description: "Virgin Media", amount: -85.00, type: "debit" },
+    { description: "Sky Ireland", amount: -75.00, type: "debit" },
+    { description: "Electric Ireland", amount: -120.45, type: "debit" },
+    { description: "Bord Gáis Energy", amount: -98.75, type: "debit" },
+    { description: "Irish Water", amount: -45.60, type: "debit" },
+    { description: "Vodafone", amount: -35.00, type: "debit" },
+    { description: "Three Ireland", amount: -25.00, type: "debit" },
+    { description: "Meteor", amount: -20.00, type: "debit" },
+    
+    // ATM & Banking
+    { description: "ATM WITHDRAWAL", amount: -50.00, type: "debit" },
+    { description: "ATM WITHDRAWAL", amount: -100.00, type: "debit" },
+    { description: "ATM WITHDRAWAL", amount: -200.00, type: "debit" },
+    { description: "ATM WITHDRAWAL", amount: -30.00, type: "debit" },
+    { description: "Bank Charges", amount: -4.00, type: "debit" },
+    { description: "Overdraft Fee", amount: -25.00, type: "debit" },
+    { description: "International Transfer Fee", amount: -15.00, type: "debit" },
+    
+    // Insurance & Finance
+    { description: "Car Insurance", amount: -89.50, type: "debit" },
+    { description: "Health Insurance", amount: -125.00, type: "debit" },
+    { description: "Life Insurance", amount: -45.00, type: "debit" },
+    { description: "Home Insurance", amount: -67.25, type: "debit" },
+    { description: "Loan Payment", amount: -350.00, type: "debit" },
+    { description: "Credit Card Payment", amount: -500.00, type: "debit" },
+    
+    // Education & Learning
+    { description: "Course Fee", amount: -250.00, type: "debit" },
+    { description: "Book Purchase", amount: -45.80, type: "debit" },
+    { description: "Online Course", amount: -99.00, type: "debit" },
+    { description: "Language School", amount: -180.00, type: "debit" },
+    
+    // Credit Transactions
     { description: "SALARY PAYMENT", amount: 2500.00, type: "credit" },
+    { description: "SALARY PAYMENT", amount: 3200.00, type: "credit" },
+    { description: "SALARY PAYMENT", amount: 2800.00, type: "credit" },
+    { description: "PART-TIME SALARY", amount: 850.00, type: "credit" },
+    { description: "FREELANCE PAYMENT", amount: 650.00, type: "credit" },
     { description: "INTEREST PAYMENT", amount: 12.50, type: "credit" },
-    { description: "REFUND - AMAZON", amount: 45.99, type: "credit" }
+    { description: "DIVIDEND PAYMENT", amount: 89.75, type: "credit" },
+    { description: "TAX REFUND", amount: 345.80, type: "credit" },
+    { description: "REFUND - AMAZON", amount: 45.99, type: "credit" },
+    { description: "REFUND - ZARA", amount: 89.95, type: "credit" },
+    { description: "REFUND - ASOS", amount: 67.50, type: "credit" },
+    { description: "CASHBACK REWARD", amount: 25.00, type: "credit" },
+    { description: "LOYALTY POINTS", amount: 15.75, type: "credit" },
+    { description: "GIFT VOUCHER", amount: 50.00, type: "credit" },
+    { description: "EXPENSE REFUND", amount: 125.40, type: "credit" },
+    { description: "DEPOSIT RETURN", amount: 200.00, type: "credit" },
+    { description: "INSURANCE CLAIM", amount: 850.00, type: "credit" },
+    { description: "PENSION PAYMENT", amount: 1200.00, type: "credit" },
+    { description: "RENTAL INCOME", amount: 900.00, type: "credit" },
+    { description: "BONUS PAYMENT", amount: 500.00, type: "credit" },
+    { description: "OVERTIME PAY", amount: 280.50, type: "credit" },
+    { description: "COMMISSION", amount: 450.00, type: "credit" },
+    { description: "STUDENT GRANT", amount: 750.00, type: "credit" },
+    { description: "CHILD BENEFIT", amount: 140.00, type: "credit" }
   ];
 
   const addSampleTransaction = (accountId: number) => {
@@ -325,7 +456,11 @@ export default function Profile() {
 
     // Add transaction using UserDataManager
     const existingTransactions = UserDataManager.getUserData('bankTransactions', []);
-    UserDataManager.setUserData('bankTransactions', [...existingTransactions, transaction]);
+    const updatedTransactions = [...existingTransactions, transaction];
+    UserDataManager.setUserData('bankTransactions', updatedTransactions);
+    
+    console.log('Added transaction:', transaction);
+    console.log('Total transactions now:', updatedTransactions.length);
 
     // Update account balance
     const updatedAccounts = storedAccounts.map((acc: any) => {
@@ -339,6 +474,9 @@ export default function Profile() {
 
     // Dispatch events to notify other components
     window.dispatchEvent(new CustomEvent('transactionUpdate'));
+    window.dispatchEvent(new CustomEvent('transactionAdded', {
+      detail: { transaction: transaction, accountId: accountId }
+    }));
     window.dispatchEvent(new CustomEvent('balanceUpdate', {
       detail: { accountId: accountId, newBalance: newBalance.toFixed(2) }
     }));
