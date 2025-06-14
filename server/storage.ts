@@ -121,58 +121,44 @@ export class DatabaseStorage implements IStorage {
     const existingUsers = await db.select().from(users).limit(1);
     if (existingUsers.length > 0) return;
 
-    // Create sample user
+    // Create default user structure
     const [user] = await db.insert(users).values({
       customerNumber: "12345678",
       pin: "1234", 
-      name: "James",
-      email: "hello@gmail.com",
-      phone: "+353 1 234 5678",
-      address: "Hello",
-      dateOfBirth: "2025-06-08",
-      joinDate: "Member since 2018"
+      name: "",
+      email: "",
+      phone: "",
+      address: "",
+      dateOfBirth: "",
+      joinDate: ""
     }).returning();
 
-    // Create sample accounts
-    const sampleAccounts = [
+    // Create default accounts with zero balances
+    const defaultAccounts = [
       {
         userId: user.id,
         accountType: "current",
-        accountNumber: "****4829", 
-        balance: "8247.32",
+        accountNumber: "****2091", 
+        balance: "0.00",
         displayName: "Current Account"
-      },
-      {
-        userId: user.id,
-        accountType: "savings",
-        accountNumber: "****7251",
-        balance: "4600.00", 
-        displayName: "Savings Account"
       },
       {
         userId: user.id,
         accountType: "credit",
         accountNumber: "****1820",
-        balance: "2000.00",
+        balance: "0.00",
         displayName: "Credit Card"
       },
       {
         userId: user.id,
-        accountType: "loan",
-        accountNumber: "****8923",
-        balance: "2500.00",
-        displayName: "Personal Loan"
-      },
-      {
-        userId: user.id,
-        accountType: "deposit",
-        accountNumber: "****7908",
-        balance: "100.00",
-        displayName: "Deposit - 365 Monthly Saver"
+        accountType: "savings",
+        accountNumber: "****0978",
+        balance: "0.00", 
+        displayName: "Savings Account"
       }
     ];
 
-    const createdAccounts = await db.insert(accounts).values(sampleAccounts).returning();
+    const createdAccounts = await db.insert(accounts).values(defaultAccounts).returning();
 
     // Create sample transactions for the current account
     const currentAccount = createdAccounts[0];

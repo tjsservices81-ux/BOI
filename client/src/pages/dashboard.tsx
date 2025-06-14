@@ -48,58 +48,29 @@ export default function Dashboard() {
       if (!UserDataManager.userExists(currentUser)) {
         UserDataManager.registerUser({
           customerNumber: currentUser,
-          name: 'Demo User',
-          email: 'demo@boi.ie',
-          phone: '+353 1 234 5678',
-          joinDate: new Date().toISOString().split('T')[0],
+          name: '',
+          email: '',
+          phone: '',
+          joinDate: '',
           dateCreated: new Date().toISOString()
         });
       }
     }
     
-    // Load or initialize accounts with proper default data
+    // Load or initialize accounts with clean default data
     let storedAccounts = UserDataManager.getUserData('bankAccounts', null);
     if (!storedAccounts || storedAccounts.length === 0) {
-      // Initialize default accounts with realistic balances
+      // Initialize default accounts with zero balances
       const defaultAccounts = [
-        { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "2432.67", accountType: "current" },
-        { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "-156.23", accountType: "credit" },
-        { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "8750.00", accountType: "savings" },
+        { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "0.00", accountType: "current" },
+        { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "0.00", accountType: "credit" },
+        { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "0.00", accountType: "savings" },
       ];
       UserDataManager.setUserData('bankAccounts', defaultAccounts);
       storedAccounts = defaultAccounts;
       
-      // Also initialize some sample transactions for proper testing
-      const sampleTransactions = [
-        {
-          id: 1,
-          accountId: 1,
-          amount: "-45.60",
-          description: "TESCO STORES 2673",
-          timestamp: new Date(Date.now() - 86400000 * 1).toISOString(),
-          type: "debit",
-          balance: "2432.67"
-        },
-        {
-          id: 2,
-          accountId: 1,
-          amount: "-12.80",
-          description: "COFFEE DOCK DUBLIN",
-          timestamp: new Date(Date.now() - 86400000 * 2).toISOString(),
-          type: "debit",
-          balance: "2478.27"
-        },
-        {
-          id: 3,
-          accountId: 1,
-          amount: "+1250.00",
-          description: "SALARY CREDIT",
-          timestamp: new Date(Date.now() - 86400000 * 3).toISOString(),
-          type: "credit",
-          balance: "2491.07"
-        }
-      ];
-      UserDataManager.setUserData('bankTransactions', sampleTransactions);
+      // Initialize empty transactions array
+      UserDataManager.setUserData('bankTransactions', []);
     }
     
     setAccounts(storedAccounts);
