@@ -788,6 +788,93 @@ export default function Profile() {
         </div>
       )}
 
+      {/* Add Account Modal */}
+      {showAddAccount && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Add New Account
+                </h2>
+                <button
+                  onClick={() => setShowAddAccount(false)}
+                  className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+                >
+                  <X className="w-4 h-4 text-gray-600" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Account Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={newAccountData.displayName}
+                    onChange={(e) => setNewAccountData({ ...newAccountData, displayName: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                    placeholder="Enter account name"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Account Type
+                  </label>
+                  <select
+                    value={newAccountData.accountType}
+                    onChange={(e) => setNewAccountData({ ...newAccountData, accountType: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  >
+                    <option value="current">Current Account</option>
+                    <option value="savings">Savings Account</option>
+                    <option value="credit">Credit Card</option>
+                    <option value="loan">Loan Account</option>
+                    <option value="deposit">Deposit Account</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Initial Balance (€)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={newAccountData.balance}
+                    onChange={(e) => setNewAccountData({ ...newAccountData, balance: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                    placeholder="0.00"
+                  />
+                </div>
+              </div>
+
+              <div className="flex space-x-3 mt-6">
+                <button
+                  onClick={() => setShowAddAccount(false)}
+                  className="flex-1 py-3 bg-gray-200 text-gray-800 rounded-xl font-semibold hover:bg-gray-300 transition-colors"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={addNewAccount}
+                  className="flex-1 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-colors"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  Add Account
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Professional Sign Out Animation Overlay */}
       <AnimatePresence>
         {isSigningOut && (
