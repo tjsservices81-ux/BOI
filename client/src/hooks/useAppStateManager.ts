@@ -8,7 +8,6 @@ interface AppState {
   formData: Record<string, any>;
   timestamp: number;
   sessionId: string;
-  themeColor: string;
 }
 
 interface PageScrollPosition {
@@ -67,17 +66,12 @@ export function useAppStateManager() {
         return;
       }
       
-      // Get current theme color
-      const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-      const currentThemeColor = themeColorMeta?.getAttribute('content') || '#126987';
-
       const state: AppState = {
         currentRoute: location,
         scrollPositions: { ...scrollPositions.current },
         formData: { ...formDataRef.current },
         timestamp: Date.now(),
-        sessionId: sessionId.current,
-        themeColor: currentThemeColor
+        sessionId: sessionId.current
       };
       
       sessionStorage.setItem('appState', JSON.stringify(state));
@@ -125,14 +119,6 @@ export function useAppStateManager() {
       formDataRef.current = state.formData || {};
       sessionId.current = state.sessionId || sessionId.current;
       
-      // Restore theme color
-      if (state.themeColor) {
-        const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-        if (themeColorMeta) {
-          themeColorMeta.setAttribute('content', state.themeColor);
-        }
-      }
-      
       console.log('App resumed - restoring state');
       return state;
     } catch (error) {
@@ -174,19 +160,9 @@ export function useAppStateManager() {
         // App was backgrounded and resumed - restore state
         const restoredState = restoreAppState();
         
-        if (restoredState) {
-          // Restore theme color immediately
-          if (restoredState.themeColor) {
-            const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-            if (themeColorMeta) {
-              themeColorMeta.setAttribute('content', restoredState.themeColor);
-            }
-          }
-          
-          if (restoredState.currentRoute && restoredState.currentRoute !== location) {
-            // Restore to the exact route where user left off
-            setLocation(restoredState.currentRoute);
-          }
+        if (restoredState && restoredState.currentRoute && restoredState.currentRoute !== location) {
+          // Restore to the exact route where user left off
+          setLocation(restoredState.currentRoute);
         }
       }
     };
@@ -201,13 +177,6 @@ export function useAppStateManager() {
         // Page was restored from back/forward cache
         const restoredState = restoreAppState();
         if (restoredState) {
-          // Restore theme color immediately
-          if (restoredState.themeColor) {
-            const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-            if (themeColorMeta) {
-              themeColorMeta.setAttribute('content', restoredState.themeColor);
-            }
-          }
           setLocation(restoredState.currentRoute);
         }
       }

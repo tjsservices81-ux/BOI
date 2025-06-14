@@ -9,27 +9,11 @@ export default function Splash() {
     // Add splash-specific full screen class for iOS PWA
     document.body.classList.add('splash-fullscreen');
     
-    // Hide status bar completely
+    // Change theme color to pure blue for splash screen
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-    const viewportMeta = document.querySelector('meta[name="viewport"]');
-    
     if (themeColorMeta) {
-      themeColorMeta.setAttribute('content', '#0000FF');
+      themeColorMeta.setAttribute('content', '#0000ff');
     }
-    
-    // Modify viewport to enable fullscreen
-    if (viewportMeta) {
-      const originalViewport = viewportMeta.getAttribute('content');
-      viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no');
-      
-      // Store original for restoration
-      (window as any).originalViewport = originalViewport;
-    }
-    
-    // Force fullscreen using window.scrollTo
-    window.scrollTo(0, 0);
-    document.documentElement.style.overflow = 'hidden';
-    document.body.style.overflow = 'hidden';
     
     // Navigate to login after splash duration (8 seconds total)
     const finalTimer = setTimeout(() => {
@@ -47,20 +31,10 @@ export default function Splash() {
     return () => {
       clearTimeout(finalTimer);
       document.body.classList.remove('splash-fullscreen');
-      
       // Restore theme color to #126987 for other screens
       if (themeColorMeta) {
         themeColorMeta.setAttribute('content', '#126987');
       }
-      
-      // Restore viewport
-      if (viewportMeta && (window as any).originalViewport) {
-        viewportMeta.setAttribute('content', (window as any).originalViewport);
-      }
-      
-      // Restore scroll behavior
-      document.documentElement.style.overflow = '';
-      document.body.style.overflow = '';
     };
   }, [navigate]);
 
@@ -72,7 +46,7 @@ export default function Splash() {
 
   return (
     <div 
-      className={`fullscreen-overlay relative overflow-hidden transition-all duration-500 asset-instant ${
+      className={`full-height relative overflow-hidden transition-all duration-500 asset-instant ${
         isVisible ? 'opacity-100' : 'opacity-0'
       }`}
       style={{
