@@ -83,15 +83,37 @@ function AppRoutes() {
   // Set initial theme color and handle app state restoration
   useEffect(() => {
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-    if (themeColorMeta) {
-      themeColorMeta.setAttribute('content', '#0000ff');
+    
+    // Check if we have saved state with theme color
+    const savedState = sessionStorage.getItem('appState');
+    let restoredThemeColor = null;
+    
+    if (savedState) {
+      try {
+        const parsedState = JSON.parse(savedState);
+        restoredThemeColor = parsedState.themeColor;
+      } catch (error) {
+        console.error('Failed to parse saved state for theme color:', error);
+      }
     }
     
-    // Normal theme handling
+    // Set theme color based on state
+    if (themeColorMeta) {
+      if (restoredThemeColor) {
+        // Restore saved theme color
+        themeColorMeta.setAttribute('content', restoredThemeColor);
+      } else {
+        // Set initial blue for splash
+        themeColorMeta.setAttribute('content', '#0000ff');
+      }
+    }
+    
+    // Normal theme handling for splash shown state
     const hasShownSplash = sessionStorage.getItem('splashShown') === 'true';
     if (hasShownSplash) {
       setSplashShown(true);
-      if (themeColorMeta) {
+      if (themeColorMeta && !restoredThemeColor) {
+        // Only set default BOI color if we didn't restore a saved color
         themeColorMeta.setAttribute('content', '#126987');
       }
     }
