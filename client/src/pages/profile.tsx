@@ -15,10 +15,15 @@ export default function Profile() {
   const [editingProfile, setEditingProfile] = useState(false);
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [showAddTransaction, setShowAddTransaction] = useState(false);
+  const [showChangeBalance, setShowChangeBalance] = useState(false);
   const [newAccountData, setNewAccountData] = useState({
     displayName: '',
     accountType: 'current',
     balance: '0.00'
+  });
+  const [balanceChangeData, setBalanceChangeData] = useState({
+    accountId: '',
+    newBalance: '0.00'
   });
   const [profileData, setProfileData] = useState(() => {
     const currentCustomerNumber = UserDataManager.getCurrentUser();
@@ -510,6 +515,24 @@ export default function Profile() {
                   </p>
                   <p className="text-sm text-green-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     Create additional bank accounts
+                  </p>
+                </div>
+              </button>
+
+              {/* Change Balance */}
+              <button
+                onClick={() => setShowChangeBalance(true)}
+                className="w-full flex items-center space-x-4 p-4 bg-purple-50 rounded-xl hover:bg-purple-100 transition-colors active:scale-95"
+              >
+                <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                  <Edit className="w-5 h-5 text-purple-600" />
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="font-semibold text-purple-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Change Account Balance
+                  </p>
+                  <p className="text-sm text-purple-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Modify account balances directly
                   </p>
                 </div>
               </button>
