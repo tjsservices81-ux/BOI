@@ -8,8 +8,8 @@ import { AuthProvider, useAuth } from "@/lib/auth";
 import BottomNavigation from "@/components/BottomNavigation";
 import { SecurityWrapper } from "@/components/SecurityWrapper";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import AppStateIndicator from "@/components/AppStateIndicator";
-import { appStateManager } from "@/utils/appStateManager";
+
+
 
 import Splash from "@/pages/splash";
 import Login from "@/pages/login";
@@ -58,7 +58,7 @@ function AppRoutes() {
   });
   const [isInitialized, setIsInitialized] = useState(false);
   const [splashTransitioning, setSplashTransitioning] = useState(false);
-  const [stateRestored, setStateRestored] = useState(false);
+
   
   // Initialize app state and theme
   useEffect(() => {
@@ -80,40 +80,7 @@ function AppRoutes() {
     setTimeout(() => setIsInitialized(true), 0);
   }, []);
 
-  // Handle app state restoration and navigation persistence
-  useEffect(() => {
-    const handleStateRestored = (event: CustomEvent) => {
-      const { path } = event.detail;
-      setStateRestored(true);
-      
-      // Only restore navigation if user is authenticated and splash is complete
-      if (user && splashShown && path && path !== '/' && path !== '/login' && path !== '/splash') {
-        console.log('Restoring navigation to:', path);
-        navigate(path);
-      }
-    };
 
-    const handleRefreshData = () => {
-      // Refresh app data after being backgrounded for a long time
-      window.dispatchEvent(new CustomEvent('balanceUpdate'));
-      window.dispatchEvent(new CustomEvent('transactionUpdate'));
-    };
-
-    window.addEventListener('appStateRestored', handleStateRestored as EventListener);
-    window.addEventListener('refreshAppData', handleRefreshData);
-    
-    return () => {
-      window.removeEventListener('appStateRestored', handleStateRestored as EventListener);
-      window.removeEventListener('refreshAppData', handleRefreshData);
-    };
-  }, [user, splashShown, navigate]);
-
-  // Track current path for state persistence
-  useEffect(() => {
-    if (user && splashShown && location) {
-      appStateManager.setCurrentPath(location);
-    }
-  }, [location, user, splashShown]);
 
   // Listen for splash completion
   useEffect(() => {
@@ -232,7 +199,7 @@ function AppRoutes() {
           <Route component={NotFound} />
         </Switch>
         {showNavigation && <BottomNavigation />}
-        <AppStateIndicator />
+
         </div>
       </ErrorBoundary>
     </SecurityWrapper>

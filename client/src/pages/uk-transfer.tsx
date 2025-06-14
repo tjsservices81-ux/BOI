@@ -7,7 +7,7 @@ import { z } from "zod";
 import { validateUKSortCode, formatSortCode, validateUKAccountNumber } from "../utils/bankValidation";
 import { getAccounts, processConfirmedTransfer, generateReference } from "../utils/transferUtils";
 import { UserDataManager } from "../utils/userDataManager";
-import { appStateManager } from "../utils/appStateManager";
+
 
 const ukTransferSchema = z.object({
   recipientName: z.string().min(2, "Recipient name is required"),
@@ -44,31 +44,7 @@ export default function UkTransfer() {
     }
   });
 
-  // Load saved form state on component mount
-  useEffect(() => {
-    const savedFormState = appStateManager.getFormState('uk-transfer');
-    if (savedFormState && step === 'form') {
-      form.reset(savedFormState);
-    }
-  }, []);
 
-  // Save form state when form values change
-  useEffect(() => {
-    const subscription = form.watch((value) => {
-      if (step === 'form') {
-        appStateManager.saveFormState('uk-transfer', value);
-      }
-    });
-    
-    return () => subscription.unsubscribe();
-  }, [form, step]);
-
-  // Clear form state when transfer is completed
-  useEffect(() => {
-    if (step === 'success') {
-      appStateManager.clearFormState('uk-transfer');
-    }
-  }, [step]);
 
   const [accounts, setAccounts] = useState<any[]>([]);
 
