@@ -6,6 +6,7 @@ import { z } from "zod";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { otcService } from "./otcService";
+import { transferSecurityService } from "./security/transferSecurity";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize database and sample data
@@ -404,6 +405,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.status(500).json({ message: "Failed to validate OTC" });
     }
+  });
+
+  // Security API endpoints for voice call confirmation
+  app.post("/api/security/initiate-transfer", async (req, res) => {
+    try {
+      const securityRequestSchema = z.object({
+        amount: z.string(),
+        recipientName: z.string(),
+        userPhoneNumber: z.string(),
+        transferId: z.string(),
+        transferType: z.enum(['UK', 'IBAN'])
+      });
+
+      const securityRequest = securityRequestSchema.parse(req.body);
+      const result = await transferSecurityService.initiateTransferSecurity(securityRequest);
+
+      if (result.success) {
+        res.json({ success: true, callSid: result.callSid });
+      } else {
+        res.status(400).json({ success: false, error: result.error });
+      }
+    } catch (error) {
+      console.error('Security initiation failed:', error);
+      res.status(500).json({ success: false, error: "Failed to initiate security call" });
+    }
+  });
+
+  // TwiML endpoint for voice response
+  app.get("/api/security/voice-response", (req, res) => {
+    const transferId = req.query.transferId as string;
+    const twimlResponse = transferSecurityService.generateVoiceResponse(transferId);
+    
+    res.set('Content-Type', 'text/xml');
+    res.send(twimlResponse);
+  });
+
+  // Handle user DTMF response
+  app.post("/api/security/handle-response", async (req, res) => {
+    try {
+      const transferId = req.query.transferId as string;
+      const digits = req.body.Digits;
+
+      const result = await transferSecurityService.handleUserResponse(transferId, digits);
+      
+      let twimlResponse = '';
+      if (result.action === 'confirmed') {
+        twimlResponse = `<?xml version="1.0" encoding="UTF-8"?>
+          <Response>
+            <Say voice="alice">Thank you. Your transfer has been confirmed and will be processed shortly.</Say>
+            <Hangup/>
+          </Response>`;
+      } else {
+        twimlResponse = `<?xml version="1.0" encoding="UTF-8"?>
+          <Response>
+            <Say voice="alice">Your transfer has been cancelled for security. Contact customer service if this was not intended.</Say>
+            <Hangup/>
+          </Response>`;
+      }
+
+      res.set('Content-Type', 'text/xml');
+      res.send(twimlResponse);
+    } catch (error) {
+      console.error('Failed to handle user response:', error);
+      const errorResponse = `<?xml version="1.0" encoding="UTF-8"?>
+        <Response>
+          <Say voice="alice">An error occurred. Please contact customer service.</Say>
+          <Hangup/>
+        </Response>`;
+      res.set('Content-Type', 'text/xml');
+      res.send(errorResponse);
+    }
+  });
+
+  // Check transfer confirmation status
+  app.get("/api/security/status/:transferId", (req, res) => {
+    const transferId = req.params.transferId;
+    const isConfirmed = transferSecurityService.isTransferConfirmed(transferId);
+    const status = transferSecurityService.getConfirmationStatus(transferId);
+    
+    res.json({ 
+      transferId, 
+      confirmed: isConfirmed, 
+      status: status || null 
+    });
   });
 
   const httpServer = createServer(app);
