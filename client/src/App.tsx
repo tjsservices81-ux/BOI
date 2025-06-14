@@ -97,25 +97,26 @@ function AppRoutes() {
       }
     }
     
-    // Set theme color based on state
+    // Determine proper theme color
+    const hasShownSplash = sessionStorage.getItem('splashShown') === 'true';
+    const isFreshStart = isAppFreshStart();
+    
     if (themeColorMeta) {
-      if (restoredThemeColor) {
-        // Restore saved theme color
-        themeColorMeta.setAttribute('content', restoredThemeColor);
-      } else {
-        // Set initial blue for splash
+      if (hasShownSplash) {
+        // Splash has been shown - always use BOI color unless we have a saved color
+        themeColorMeta.setAttribute('content', restoredThemeColor || '#126987');
+      } else if (isFreshStart) {
+        // True fresh start - use splash blue
         themeColorMeta.setAttribute('content', '#0000ff');
+      } else {
+        // Not fresh start but splash not shown - use BOI color
+        themeColorMeta.setAttribute('content', restoredThemeColor || '#126987');
       }
     }
     
-    // Normal theme handling for splash shown state
-    const hasShownSplash = sessionStorage.getItem('splashShown') === 'true';
+    // Set splash shown state
     if (hasShownSplash) {
       setSplashShown(true);
-      if (themeColorMeta && !restoredThemeColor) {
-        // Only set default BOI color if we didn't restore a saved color
-        themeColorMeta.setAttribute('content', '#126987');
-      }
     }
     
     // Wait for auth to be checked before showing content
