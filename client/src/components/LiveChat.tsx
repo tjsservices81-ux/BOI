@@ -143,8 +143,8 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end justify-center z-50 p-4 sm:items-center">
-      <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-md h-[80vh] sm:h-[600px] flex flex-col shadow-2xl">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-3xl w-full max-w-md h-[85vh] max-h-[600px] flex flex-col shadow-2xl">
         {/* Header */}
         <div className="bg-[#126987] rounded-t-3xl sm:rounded-t-3xl px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-3">

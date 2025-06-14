@@ -110,14 +110,14 @@ export default function More() {
               {/* Live Chat Option */}
               <button 
                 onClick={() => setShowLiveChat(true)}
-                className="w-full bg-white border border-gray-100 rounded-2xl p-4 flex items-center space-x-3 hover:bg-gray-50 shadow-md transition-all duration-200 active:scale-98 ml-4" 
+                className="w-full bg-white border border-gray-100 rounded-xl p-3 flex items-center space-x-3 hover:bg-gray-50 shadow-sm transition-all duration-200 active:scale-98 ml-4" 
                 disabled={isNavigating}
               >
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-sm">
-                  <MessageCircle className="w-5 h-5 text-white" />
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-sm">
+                  <MessageCircle className="w-4 h-4 text-white" />
                 </div>
                 <div className="flex-1 text-left">
-                  <h4 className="text-base font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  <h4 className="text-sm font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     Live Chat
                   </h4>
                   <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
