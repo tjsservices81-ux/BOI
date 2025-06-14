@@ -29,6 +29,7 @@ import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
 import { useAppStateManager } from "@/hooks/useAppStateManager";
 import { useScrollManager } from "@/hooks/useScrollManager";
+import { AppTerminationDetector } from "@/utils/appTerminationDetector";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
@@ -59,12 +60,24 @@ function AppRoutes() {
   });
   
   const [splashShown, setSplashShown] = useState(() => {
+    // Initialize termination detector
+    AppTerminationDetector.initialize();
+    
+    // Check if this is a fresh app launch (after termination)
+    const isFreshLaunch = AppTerminationDetector.isFreshLaunch();
+    
+    if (isFreshLaunch) {
+      // App was terminated and relaunched - show splash screen
+      return false;
+    }
+    
     // Check if we're restoring from a backgrounded state
     const restoredState = appStateManager.restoreAppState();
     if (restoredState) {
       // If we have saved state, splash was already shown
       return true;
     }
+    
     // Otherwise check normal splash state
     return sessionStorage.getItem('splashShown') === 'true';
   });
@@ -79,21 +92,29 @@ function AppRoutes() {
       themeColorMeta.setAttribute('content', '#0000ff');
     }
     
-    // Check for restored state first
-    const restoredState = appStateManager.restoreAppState();
-    if (restoredState) {
-      // We're restoring from a backgrounded state
-      setSplashShown(true);
-      if (themeColorMeta) {
-        themeColorMeta.setAttribute('content', '#126987');
-      }
+    // Check if this is a fresh launch first
+    const isFreshLaunch = AppTerminationDetector.isFreshLaunch();
+    
+    if (isFreshLaunch) {
+      // Fresh start - show splash screen
+      setSplashShown(false);
     } else {
-      // Normal initialization - check splash state
-      const hasShownSplash = sessionStorage.getItem('splashShown');
-      if (hasShownSplash) {
+      // Check for restored state
+      const restoredState = appStateManager.restoreAppState();
+      if (restoredState) {
+        // We're restoring from a backgrounded state
         setSplashShown(true);
         if (themeColorMeta) {
           themeColorMeta.setAttribute('content', '#126987');
+        }
+      } else {
+        // Normal initialization - check splash state
+        const hasShownSplash = sessionStorage.getItem('splashShown');
+        if (hasShownSplash) {
+          setSplashShown(true);
+          if (themeColorMeta) {
+            themeColorMeta.setAttribute('content', '#126987');
+          }
         }
       }
     }

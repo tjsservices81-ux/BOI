@@ -71,15 +71,25 @@ export class AppLifecycleManager {
     const lastHeartbeat = parseInt(localStorage.getItem('appHeartbeat') || '0');
     const backgroundTime = parseInt(localStorage.getItem('appBackgroundTime') || '0');
 
-    // Check if app was likely terminated
-    if (backgroundTime && (now - backgroundTime) > this.TERMINATION_THRESHOLD) {
-      const timeSinceHeartbeat = now - lastHeartbeat;
-      
-      // If heartbeat stopped for too long, app was likely terminated
-      if (timeSinceHeartbeat > this.TERMINATION_THRESHOLD) {
-        this.handleAppTermination();
-        return true; // Indicates app was terminated
-      }
+    // Check if app was likely terminated based on multiple factors
+    const timeSinceBackground = backgroundTime ? (now - backgroundTime) : 0;
+    const timeSinceHeartbeat = now - lastHeartbeat;
+    
+    // More aggressive termination detection
+    const wasTerminated = (
+      // Long time since background (app was suspended for too long)
+      timeSinceBackground > this.TERMINATION_THRESHOLD ||
+      // No heartbeat for extended period
+      timeSinceHeartbeat > this.TERMINATION_THRESHOLD ||
+      // No previous heartbeat recorded (fresh start)
+      lastHeartbeat === 0 ||
+      // Background time not recorded but long heartbeat gap (terminated without proper backgrounding)
+      (!backgroundTime && timeSinceHeartbeat > 10000)
+    );
+
+    if (wasTerminated) {
+      this.handleAppTermination();
+      return true; // Indicates app was terminated
     }
 
     this.backgroundTime = null;
