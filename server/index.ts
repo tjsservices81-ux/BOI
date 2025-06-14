@@ -1,5 +1,24 @@
 import dotenv from 'dotenv';
-dotenv.config();
+import path from 'path';
+import fs from 'fs';
+
+// Load environment variables directly
+try {
+  const envPath = path.resolve(process.cwd(), '.env');
+  if (fs.existsSync(envPath)) {
+    const envContent = fs.readFileSync(envPath, 'utf8');
+    envContent.split('\n').forEach(line => {
+      const [key, value] = line.split('=');
+      if (key && value) {
+        process.env[key] = value;
+      }
+    });
+  }
+} catch (error) {
+  console.log('Failed to load .env file:', error);
+}
+
+dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";

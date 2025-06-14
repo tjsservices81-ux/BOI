@@ -26,6 +26,12 @@ class TransferSecurityService {
     const authToken = process.env.TWILIO_AUTH_TOKEN;
     this.twilioNumber = process.env.TWILIO_PHONE_NUMBER || '';
 
+    console.log('Twilio Config Debug:', {
+      accountSid: accountSid ? `${accountSid.substring(0, 6)}...` : 'undefined',
+      authToken: authToken ? `${authToken.substring(0, 6)}...` : 'undefined',
+      phoneNumber: this.twilioNumber
+    });
+
     if (accountSid && authToken) {
       this.client = twilio(accountSid, authToken);
     }
