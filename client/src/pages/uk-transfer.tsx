@@ -21,7 +21,7 @@ type UkTransferData = z.infer<typeof ukTransferSchema>;
 
 export default function UkTransfer() {
   const [, navigate] = useLocation();
-  const [step, setStep] = useState<'form' | 'calling' | 'success' | 'cancelled'>('form');
+  const [step, setStep] = useState<'form' | 'confirm' | 'success' | 'cancelled'>('form');
   const [transferReference, setTransferReference] = useState<string>('');
   const [identifiedBank, setIdentifiedBank] = useState<string>('');
   const [showReference, setShowReference] = useState<boolean>(false);
@@ -148,76 +148,46 @@ export default function UkTransfer() {
     // Fetch exchange rate
     await fetchExchangeRate();
     
-    // Immediately initiate Twilio voice call
-    setStep('calling');
-    setProcessingStage('Initiating security call...');
-    
-    try {
-      const userData = UserDataManager.getCurrentUser();
-      if (!userData || !userData.phone) {
-        alert('Phone number not found. Please update your profile.');
-        setStep('form');
-        return;
-      }
-
-      const uniqueTransferId = `UK_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      setTransferId(uniqueTransferId);
-
-      // Initiate voice call immediately
-      const response = await fetch('/api/security/initiate-transfer', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          amount: data.amount,
-          recipientName: data.recipientName,
-          userPhoneNumber: userData.phone,
-          transferId: uniqueTransferId,
-          transferType: 'UK',
-          accountNumber: data.accountNumber,
-          sortCode: data.sortCode
-        }),
-      });
-
-      const result = await response.json();
-      
-      if (result.success) {
-        setCallSid(result.callSid);
-        setProcessingStage('Calling your phone for security confirmation...');
-        
-        // Start polling for confirmation
-        pollForConfirmation(uniqueTransferId);
-      } else {
-        alert('Failed to initiate security call: ' + (result.error || 'Unknown error'));
-        setStep('form');
-      }
-    } catch (error) {
-      console.error('Failed to initiate transfer:', error);
-      alert('Failed to initiate transfer. Please try again.');
-      setStep('form');
-    }
+    // Move to confirmation step
+    setStep('confirm');
   };
 
-  const pollForConfirmation = async (transferId: string) => {
-    const maxAttempts = 120; // 2 minutes
-    let attempts = 0;
+  const executeTransfer = async () => {
+    if (!formData) return;
     
-    const checkStatus = async () => {
-      attempts++;
-      
-      try {
-        const response = await fetch(`/api/security/status/${transferId}`);
-        const status = await response.json();
+    // Start processing animation
+    setStep('success');
+    setShowReference(false);
+    setAnimationProgress(0);
+    
+    // Professional banking stages during 5-second animation
+    const stages = [
+      'Verifying transfer details...',
+      'Authenticating transaction...',
+      'Connecting to UK banking network...',
+      'Securing transfer protocol...',
+      'Finalizing payment...'
+    ];
+    
+    let stageIndex = 0;
+    
+    const interval = setInterval(() => {
+      setAnimationProgress(prev => {
+        const newProgress = prev + 2; // 2% every 100ms = 5 seconds
         
-        if (status.confirmed === true) {
-          // Transfer confirmed - process it
-          setProcessingStage('Transfer confirmed! Processing payment...');
+        // Update stage message every 20% (1 second)
+        const newStageIndex = Math.floor(newProgress / 20);
+        if (newStageIndex !== stageIndex && newStageIndex < stages.length) {
+          stageIndex = newStageIndex;
+          setProcessingStage(stages[newStageIndex]);
+        }
+        
+        if (newProgress >= 100) {
+          clearInterval(interval);
           
-          if (!formData) return;
-          
+          // Process the transfer
           const transferSuccess = processConfirmedTransfer(
-            transferId,
+            `UK_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             formData.fromAccount,
             parseFloat(formData.amount),
             formData.recipientName,
@@ -231,139 +201,118 @@ export default function UkTransfer() {
           );
           
           if (transferSuccess) {
+            // Add successful payee to recent payees
+            const payee = {
+              name: formData.recipientName,
+              accountInfo: `${formatSortCode(formData.sortCode)} ${formData.accountNumber}`,
+              transferType: 'UK Transfer',
+              timestamp: new Date().toISOString()
+            };
+            UserDataManager.addRecentPayee(payee);
+            
             // Dispatch events to update all components
             window.dispatchEvent(new CustomEvent('transactionUpdate'));
             window.dispatchEvent(new CustomEvent('balanceUpdate'));
             
-            setStep('success');
-          } else {
-            alert('Transfer processing failed after confirmation');
-            setStep('form');
+            setShowReference(true);
           }
-          return;
+          
+          return 100;
         }
-        
-        if (status.confirmed === false) {
-          // Transfer cancelled
-          setStep('cancelled');
-          return;
-        }
-        
-        // Still pending - continue polling
-        if (attempts < maxAttempts) {
-          setTimeout(checkStatus, 1000); // Check every second
-        } else {
-          // Timeout
-          setStep('cancelled');
-        }
-      } catch (error) {
-        console.error('Error checking transfer status:', error);
-        if (attempts < maxAttempts) {
-          setTimeout(checkStatus, 1000);
-        } else {
-          setStep('cancelled');
-        }
-      }
-    };
-    
-    checkStatus();
+        return newProgress;
+      });
+    }, 100);
   };
 
-  if (step === 'calling') {
+
+
+
+
+  if (step === 'confirm' && formData) {
+    const selectedAccount = accounts.find(acc => acc.id === formData.fromAccount);
+
     return (
-      <div>
+      <div className="page-container page-fade-in" style={{ 
+        position: 'fixed', 
+        top: 0, 
+        left: 0, 
+        right: 0, 
+        bottom: 0, 
+        display: 'flex', 
+        flexDirection: 'column',
+        backgroundColor: '#f9fafb'
+      }}>
         <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
-          <span className="font-medium text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-            Security Verification
-          </span>
+          <button onClick={() => setStep('form')} className="flex items-center text-white">
+            <ChevronLeft className="w-6 h-6 mr-2" />
+            <span className="font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Confirm Transfer</span>
+          </button>
         </div>
 
         <div style={{ 
-          position: 'fixed', 
-          top: 0, 
-          left: 0, 
-          right: 0, 
-          bottom: 0, 
-          background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
-          zIndex: 1000,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
+          flex: 1, 
+          overflowY: 'auto', 
+          WebkitOverflowScrolling: 'touch',
+          padding: '1rem'
         }}>
-          <div className="text-center space-y-8 px-8 max-w-md w-full">
-            <div className="w-20 h-20 bg-[#126987] rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
-              <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
-            </div>
+          <div className="bg-white rounded-2xl p-6 shadow-sm border mb-6">
+            <h2 className="font-semibold text-gray-900 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              Transfer Details
+            </h2>
             
             <div className="space-y-4">
-              <h1 className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Security Verification
-              </h1>
-              <p className="text-lg text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                {processingStage}
-              </p>
-            </div>
-            
-            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-gray-200 shadow-lg">
-              <div className="flex items-center justify-center space-x-3 mb-3">
-                <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
-                <span className="text-sm font-semibold text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Voice Call In Progress
-                </span>
+              <div className="flex justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>From:</span>
+                <div className="text-right">
+                  <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{selectedAccount?.displayName}</p>
+                  <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>{selectedAccount?.accountNumber}</p>
+                </div>
               </div>
-              <p className="text-xs text-gray-500 leading-relaxed" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Please answer the call from +35314044000 and press 1 to confirm your transfer or 2 to cancel
+              
+              <div className="flex justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>To:</span>
+                <div className="text-right">
+                  <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{formData?.recipientName}</p>
+                  <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>{formData?.sortCode ? formatSortCode(formData.sortCode) : ''} {formData?.accountNumber}</p>
+                </div>
+              </div>
+              
+              <div className="flex justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Amount:</span>
+                <div className="text-right">
+                  <span className="font-semibold text-[#126987] text-xl" style={{ fontFamily: 'OpenSans, sans-serif' }}>€{formData?.amount}</span>
+                  <p className="text-sm text-green-700 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    ≈ £{formData?.amount ? (parseFloat(formData.amount) * exchangeRate).toFixed(2) : '0.00'} GBP
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex justify-between py-2">
+                <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Reference:</span>
+                <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{formData?.reference}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-blue-50 rounded-xl p-4 mb-6 flex items-start space-x-3">
+            <Info className="w-5 h-5 text-blue-600 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-blue-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                UK Bank Transfer
+              </p>
+              <p className="text-xs text-blue-700 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                This transfer will be processed within 1-2 business days due to international banking regulations.
               </p>
             </div>
           </div>
-        </div>
-      </div>
-    );
-  }
 
-  if (step === 'cancelled') {
-    return (
-      <div>
-        <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
-          <span className="font-medium text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-            Transfer Cancelled
-          </span>
-        </div>
-
-        <div className="px-4 py-4">
-          <div className="text-center max-w-sm mx-auto">
-            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <X className="w-6 h-6 text-red-600" />
-            </div>
-            
-            <h1 className="text-xl font-semibold text-gray-900 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Transfer Cancelled
-            </h1>
-            
-            <p className="text-gray-600 mb-6 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Your UK bank transfer has been cancelled
-            </p>
-            
-            <div className="flex space-x-3">
-              <button 
-                onClick={() => navigate('/dashboard')}
-                className="flex-1 bg-[#126987] text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform text-sm"
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
-              >
-                Back to Dashboard
-              </button>
-              <button 
-                onClick={() => {
-                  setStep('form');
-                  form.reset();
-                }}
-                className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold active:scale-98 transition-transform text-sm"
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
-              >
-                Try Again
-              </button>
-            </div>
-          </div>
+          <button
+            onClick={executeTransfer}
+            className="w-full bg-[#126987] text-white py-4 rounded-xl font-semibold active:scale-98 transition-transform"
+            style={{ fontFamily: 'OpenSans, sans-serif' }}
+          >
+            Confirm Transfer
+          </button>
         </div>
       </div>
     );
