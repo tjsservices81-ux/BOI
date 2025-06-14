@@ -195,6 +195,14 @@ export function useAppStateManager() {
     document.addEventListener('pause', handleAppStateChange);
     document.addEventListener('resume', handleAppStateChange);
 
+    // Listen for app termination events
+    const handleAppTermination = () => {
+      clearAppState();
+      lifecycleManager.current?.reset();
+    };
+    
+    window.addEventListener('appTerminated', handleAppTermination);
+
     // Cleanup
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
@@ -205,8 +213,9 @@ export function useAppStateManager() {
       window.removeEventListener('focus', handleAppStateChange);
       document.removeEventListener('pause', handleAppStateChange);
       document.removeEventListener('resume', handleAppStateChange);
+      window.removeEventListener('appTerminated', handleAppTermination);
     };
-  }, [hasBeenBackgrounded, location, saveAppState, restoreAppState, setLocation]);
+  }, [hasBeenBackgrounded, location, saveAppState, restoreAppState, setLocation, clearAppState]);
 
   // Auto-save state when route changes
   useEffect(() => {
