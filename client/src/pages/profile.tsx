@@ -1038,6 +1038,33 @@ export default function Profile() {
                   </div>
                 </div>
 
+                {/* Live Chat Management Section */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Live Chat Management
+                  </h3>
+                  
+                  <div className="space-y-3">
+                    {/* Manage Chat Responses */}
+                    <button 
+                      onClick={() => setShowChatResponses(true)}
+                      className="w-full flex items-center space-x-3 p-4 bg-purple-50 border border-purple-200 rounded-xl active:scale-98 transition-transform"
+                    >
+                      <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                        <MessageCircle className="w-5 h-5 text-purple-600" />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <p className="font-semibold text-purple-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Manage Chat Responses
+                        </p>
+                        <p className="text-sm text-purple-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Edit automated chat replies ({chatResponses.length} responses)
+                        </p>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
                 {/* System Management Section */}
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -1513,6 +1540,198 @@ export default function Profile() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Chat Response Management Modal */}
+      {showChatResponses && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000] p-4">
+          <div className="bg-white rounded-2xl w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Live Chat Response Management
+                </h2>
+                <button
+                  onClick={() => setShowChatResponses(false)}
+                  className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+                >
+                  <X className="w-4 h-4 text-gray-600" />
+                </button>
+              </div>
+
+              {/* Add New Response */}
+              <div className="mb-6 p-4 bg-gray-50 rounded-xl">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Add New Response
+                </h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Trigger Phrases (comma-separated)
+                    </label>
+                    <input
+                      type="text"
+                      value={newResponse.triggers}
+                      onChange={(e) => setNewResponse({ ...newResponse, triggers: e.target.value })}
+                      placeholder="e.g. help, support, question"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#126987]"
+                      style={{ fontFamily: 'OpenSans, sans-serif' }}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Response Text
+                    </label>
+                    <textarea
+                      value={newResponse.response}
+                      onChange={(e) => setNewResponse({ ...newResponse, response: e.target.value })}
+                      placeholder="Enter the response that will be sent to users..."
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#126987]"
+                      style={{ fontFamily: 'OpenSans, sans-serif' }}
+                    />
+                  </div>
+                  <button
+                    onClick={addChatResponse}
+                    className="px-4 py-2 bg-[#126987] text-white rounded-lg hover:bg-[#0d4e63] transition-colors"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  >
+                    Add Response
+                  </button>
+                </div>
+              </div>
+
+              {/* Existing Responses */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Current Responses ({chatResponses.length})
+                  </h3>
+                  <button
+                    onClick={resetChatResponses}
+                    className="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 transition-colors"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  >
+                    Reset to Defaults
+                  </button>
+                </div>
+
+                {chatResponses.map((response) => (
+                  <div key={response.id} className="border border-gray-200 rounded-xl p-4">
+                    {editingResponse?.id === response.id ? (
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                            Trigger Phrases
+                          </label>
+                          <input
+                            type="text"
+                            defaultValue={response.triggers.join(', ')}
+                            ref={(el) => {
+                              if (el) {
+                                el.dataset.triggers = response.triggers.join(', ');
+                              }
+                            }}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#126987]"
+                            style={{ fontFamily: 'OpenSans, sans-serif' }}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                            Response Text
+                          </label>
+                          <textarea
+                            defaultValue={response.response}
+                            ref={(el) => {
+                              if (el) {
+                                el.dataset.response = response.response;
+                              }
+                            }}
+                            rows={3}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#126987]"
+                            style={{ fontFamily: 'OpenSans, sans-serif' }}
+                          />
+                        </div>
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => {
+                              const triggersInput = document.querySelector(`input[data-triggers="${response.triggers.join(', ')}"]`) as HTMLInputElement;
+                              const responseInput = document.querySelector(`textarea[data-response="${response.response}"]`) as HTMLTextAreaElement;
+                              if (triggersInput && responseInput) {
+                                updateChatResponse(response.id, {
+                                  triggers: triggersInput.value,
+                                  response: responseInput.value
+                                });
+                              }
+                            }}
+                            className="px-3 py-1 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition-colors"
+                            style={{ fontFamily: 'OpenSans, sans-serif' }}
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={() => setEditingResponse(null)}
+                            className="px-3 py-1 bg-gray-500 text-white rounded-lg text-sm hover:bg-gray-600 transition-colors"
+                            style={{ fontFamily: 'OpenSans, sans-serif' }}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex-1">
+                            <div className="mb-2">
+                              <span className="text-sm font-medium text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                                Triggers:
+                              </span>
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {response.triggers.map((trigger: string, index: number) => (
+                                  <span
+                                    key={index}
+                                    className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
+                                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                                  >
+                                    {trigger}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                            <div>
+                              <span className="text-sm font-medium text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                                Response:
+                              </span>
+                              <p className="text-sm text-gray-600 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                                {response.response}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex space-x-2 ml-4">
+                            <button
+                              onClick={() => setEditingResponse(response)}
+                              className="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm hover:bg-blue-200 transition-colors"
+                              style={{ fontFamily: 'OpenSans, sans-serif' }}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => deleteChatResponse(response.id)}
+                              className="px-3 py-1 bg-red-100 text-red-700 rounded-lg text-sm hover:bg-red-200 transition-colors"
+                              style={{ fontFamily: 'OpenSans, sans-serif' }}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
