@@ -24,23 +24,22 @@ export interface Transaction {
 }
 
 export const getAccounts = (): Account[] => {
-  // Get current balances from localStorage
-  const storedAccounts = JSON.parse(localStorage.getItem('bankAccounts') || '[]');
+  // Get current balances using UserDataManager
+  const storedAccounts = UserDataManager.getUserData('bankAccounts', []);
   const defaultAccounts = [
-    { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "2322.40", accountType: "current" },
-    { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "2000.00", accountType: "credit" },
-    { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "7500.00", accountType: "savings" },
-    { id: 4, displayName: "Personal Loan", accountNumber: "****8923", balance: "2500.00", accountType: "loan" },
-    { id: 5, displayName: "Deposit - 365 Monthly Saver", accountNumber: "****7908", balance: "100.00", accountType: "deposit" }
+    { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "0.00", accountType: "current" },
+    { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "0.00", accountType: "credit" },
+    { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "0.00", accountType: "savings" }
   ];
   
-  const accounts = storedAccounts.length > 0 ? storedAccounts : defaultAccounts;
+  // Ensure we have valid account data
+  const accounts = (Array.isArray(storedAccounts) && storedAccounts.length > 0) ? storedAccounts : defaultAccounts;
   
   return accounts.map((acc: any) => ({
     id: acc.id.toString(),
     name: acc.displayName,
     number: acc.accountNumber.replace('****', '-'),
-    balance: `€${parseFloat(acc.balance).toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+    balance: `€${parseFloat(acc.balance || '0.00').toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
   }));
 };
 
@@ -60,7 +59,13 @@ export const processTransfer = (
   
   console.log('Found accounts:', accounts);
   
-  const selectedAccount = accounts.find((acc: any) => acc.id.toString() === fromAccountId);
+  // Ensure accounts is an array and not null
+  if (!Array.isArray(accounts) || accounts.length === 0) {
+    console.error('No accounts available for transfer');
+    return false;
+  }
+  
+  const selectedAccount = accounts.find((acc: any) => acc && acc.id && acc.id.toString() === fromAccountId);
   console.log('Selected account:', selectedAccount);
   
   if (!selectedAccount) {

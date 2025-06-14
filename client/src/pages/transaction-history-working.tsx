@@ -90,11 +90,25 @@ export default function TransactionHistoryWorking() {
       
       // Get account info and balance using UserDataManager
       const storedAccounts = UserDataManager.getUserData('bankAccounts', []);
-      const currentAccount = storedAccounts.find((acc: any) => acc.id === accountId);
       
-      if (currentAccount) {
-        setBalance(currentAccount.balance);
-        setAccountInfo(currentAccount);
+      // Ensure storedAccounts is an array and not null
+      if (Array.isArray(storedAccounts) && storedAccounts.length > 0) {
+        const currentAccount = storedAccounts.find((acc: any) => acc.id === accountId);
+        
+        if (currentAccount) {
+          setBalance(currentAccount.balance);
+          setAccountInfo(currentAccount);
+        }
+      } else {
+        // Set default values if no accounts found
+        setBalance('0.00');
+        setAccountInfo({
+          id: accountId,
+          displayName: accountId === 1 ? "Current Account" : accountId === 2 ? "Credit Card" : "Savings Account",
+          accountNumber: accountId === 1 ? "****2091" : accountId === 2 ? "****1820" : "****0978",
+          balance: "0.00",
+          accountType: accountId === 1 ? "current" : accountId === 2 ? "credit" : "savings"
+        });
       }
       
       // Format stored transactions for this account (preserve all data including exchange rates)

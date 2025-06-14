@@ -459,8 +459,18 @@ export default function Profile() {
     
     // Get current accounts to calculate new balance
     const storedAccounts = UserDataManager.getUserData('bankAccounts', []);
+    
+    // Ensure storedAccounts is an array and not null
+    if (!Array.isArray(storedAccounts) || storedAccounts.length === 0) {
+      console.error('No accounts found for sample transaction');
+      return;
+    }
+    
     const targetAccount = storedAccounts.find((acc: any) => acc.id === accountId);
-    if (!targetAccount) return;
+    if (!targetAccount) {
+      console.error('Target account not found for ID:', accountId);
+      return;
+    }
     
     const currentBalance = parseFloat(targetAccount.balance);
     const transactionAmount = randomTransaction.type === 'credit' ? Math.abs(randomTransaction.amount) : -Math.abs(randomTransaction.amount);
