@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin, Calendar, CreditCard, X, RefreshCw, Plus, RotateCw } from "lucide-react";
+import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin, Calendar, CreditCard, X, RefreshCw, Plus } from "lucide-react";
 import { UserDataManager } from "@/utils/userDataManager";
 import { useAuth } from "@/lib/auth";
 import { motion, AnimatePresence } from "framer-motion";
@@ -31,7 +31,6 @@ export default function Profile() {
     dateOfBirth: '',
     joinDate: ''
   });
-  const [isRefreshing, setIsRefreshing] = useState(true);
   const [profileData, setProfileData] = useState(() => {
     const currentCustomerNumber = UserDataManager.getCurrentUser();
     return {
@@ -79,29 +78,15 @@ export default function Profile() {
           }
         } catch (error) {
           console.error('Failed to load profile data:', error);
-        } finally {
-          // Stop refresh animation after data loads
-          setTimeout(() => {
-            setIsRefreshing(false);
-          }, 1000);
         }
-      } else {
-        // Stop refresh animation if no user
-        setTimeout(() => {
-          setIsRefreshing(false);
-        }, 1000);
       }
     };
-    
-    // Show refresh animation on initial load
-    setIsRefreshing(true);
     
     // Initial load
     loadProfileData();
     
     // Listen for admin updates
     const handleAdminUpdate = () => {
-      setIsRefreshing(true);
       loadProfileData();
     };
     
@@ -377,20 +362,9 @@ export default function Profile() {
           >
             <ChevronLeft className="w-6 h-6 text-white" />
           </button>
-          <div className="flex items-center space-x-3">
-            <h1 className="text-xl font-bold text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Profile
-            </h1>
-            {isRefreshing && (
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                className="flex items-center justify-center"
-              >
-                <RotateCw className="w-5 h-5 text-white/80" />
-              </motion.div>
-            )}
-          </div>
+          <h1 className="text-xl font-bold text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+            Profile
+          </h1>
           <div className="w-10 h-10" />
         </div>
       </div>
