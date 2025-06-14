@@ -22,9 +22,10 @@ class TransferSecurityService {
   private confirmations: Map<string, SecurityConfirmation> = new Map();
 
   constructor() {
-    const accountSid = process.env.TWILIO_ACCOUNT_SID;
-    const authToken = process.env.TWILIO_AUTH_TOKEN;
-    this.twilioNumber = process.env.TWILIO_PHONE_NUMBER || '';
+    // Set Twilio credentials directly for now
+    const accountSid = process.env.TWILIO_ACCOUNT_SID || 'ACfb6104431dc681bd562257cad773c58d';
+    const authToken = process.env.TWILIO_AUTH_TOKEN || 'ff7bc789a8898b95f9968cb3a6ac1a89';
+    this.twilioNumber = process.env.TWILIO_PHONE_NUMBER || '+14379803631';
 
     console.log('Twilio Config Debug:', {
       accountSid: accountSid ? `${accountSid.substring(0, 6)}...` : 'undefined',
@@ -46,8 +47,9 @@ class TransferSecurityService {
     this.pendingTransfers.set(request.transferId, request);
 
     try {
-      // Create TwiML for voice call
-      const twimlUrl = `${process.env.REPLIT_DOMAIN || 'http://localhost:5000'}/api/security/voice-response?transferId=${request.transferId}`;
+      // Create TwiML for voice call - use Replit domain for webhook
+      const domain = process.env.REPLIT_DEV_DOMAIN || 'workspace.replit.app';
+      const twimlUrl = `https://${domain}/api/security/voice-response?transferId=${request.transferId}`;
       
       const call = await this.client.calls.create({
         from: this.twilioNumber,

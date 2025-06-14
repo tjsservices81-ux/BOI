@@ -1,22 +1,11 @@
+// Set Twilio environment variables first
+process.env.TWILIO_ACCOUNT_SID = 'ACfb6104431dc681bd562257cad773c58d';
+process.env.TWILIO_AUTH_TOKEN = 'ff7bc789a8898b95f9968cb3a6ac1a89';
+process.env.TWILIO_PHONE_NUMBER = '+14379803631';
+
 import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
-
-// Load environment variables directly
-try {
-  const envPath = path.resolve(process.cwd(), '.env');
-  if (fs.existsSync(envPath)) {
-    const envContent = fs.readFileSync(envPath, 'utf8');
-    envContent.split('\n').forEach(line => {
-      const [key, value] = line.split('=');
-      if (key && value) {
-        process.env[key] = value;
-      }
-    });
-  }
-} catch (error) {
-  console.log('Failed to load .env file:', error);
-}
 
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
