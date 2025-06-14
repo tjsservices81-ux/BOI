@@ -378,12 +378,12 @@ export default function IbanTransfer() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             {/* From Account */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 From Account
               </label>
               <select
                 {...form.register('fromAccount')}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full p-3 border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
               >
                 <option value="">Select an account</option>
                 {accounts.map((account) => (
@@ -399,13 +399,13 @@ export default function IbanTransfer() {
 
             {/* Recipient Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Recipient Name
               </label>
               <input
                 type="text"
                 {...form.register('recipientName')}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full p-3 border border-gray-300 rounded-md text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
                 placeholder="Enter recipient's full name"
               />
               {form.formState.errors.recipientName && (
@@ -415,14 +415,14 @@ export default function IbanTransfer() {
 
             {/* IBAN */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 IBAN
               </label>
               <input
                 type="text"
                 {...form.register('iban')}
                 onChange={handleIbanChange}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full p-3 border border-gray-300 rounded-md text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
                 placeholder="GB29 NWBK 6016 1331 9268 19"
                 maxLength={39}
               />
@@ -439,14 +439,14 @@ export default function IbanTransfer() {
 
             {/* Amount */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Amount (EUR)
               </label>
               <input
                 type="number"
                 step="0.01"
                 {...form.register('amount')}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full p-3 border border-gray-300 rounded-md text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
                 placeholder="0.00"
               />
               {form.formState.errors.amount && (
@@ -456,13 +456,13 @@ export default function IbanTransfer() {
 
             {/* Reference */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Reference
               </label>
               <input
                 type="text"
                 {...form.register('reference')}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full p-3 border border-gray-300 rounded-md text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-purple-500 focus:border-purple-500"
                 placeholder="Payment reference"
               />
               {form.formState.errors.reference && (
@@ -471,7 +471,7 @@ export default function IbanTransfer() {
             </div>
 
             {/* Security Notice */}
-            <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+            <div className="bg-purple-50 p-4 rounded-md border border-purple-200 mt-6">
               <div className="flex items-center space-x-2">
                 <Phone className="w-5 h-5 text-purple-600" />
                 <p className="text-purple-800 font-medium">Security Confirmation Required</p>
@@ -484,7 +484,7 @@ export default function IbanTransfer() {
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full py-3 px-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg font-medium hover:from-purple-700 hover:to-indigo-700 transition-colors"
+              className="w-full py-4 bg-purple-600 text-white rounded-md font-medium hover:bg-purple-700 transition-colors mt-6"
             >
               Initiate Transfer
             </button>
