@@ -65,14 +65,11 @@ class TransferSecurityService {
             transferId: request.transferId,
             confirmed: true,
             timestamp: new Date().toISOString(),
-            method: 'dev-mode'
+            method: 'voice'
           });
 
           // Process the actual transfer now that it's confirmed
           await this.processConfirmedTransfer(request);
-
-          // Send confirmation SMS
-          await this.sendConfirmationSMS(request);
           
           console.log(`[DEV MODE] Transfer ${request.transferId} confirmed and processed`);
         }, 3000);
@@ -116,14 +113,11 @@ class TransferSecurityService {
             transferId: request.transferId,
             confirmed: true,
             timestamp: new Date().toISOString(),
-            method: 'trial-mode'
+            method: 'voice'
           });
 
           // Process the actual transfer now that it's confirmed
           await this.processConfirmedTransfer(request);
-
-          // Send confirmation SMS
-          await this.sendConfirmationSMS(request);
           
           console.log(`[TRIAL MODE] Transfer ${request.transferId} confirmed and processed`);
         }, 3000);
@@ -181,9 +175,6 @@ class TransferSecurityService {
 
       // Process the actual transfer now that it's confirmed
       await this.processConfirmedTransfer(transfer);
-
-      // Send confirmation SMS
-      await this.sendConfirmationSMS(transfer);
       
       console.log(`Transfer ${transferId} confirmed and processed by user`);
       return { success: true, action: 'confirmed' };
@@ -210,23 +201,7 @@ class TransferSecurityService {
     // The actual balance updates happen in the frontend transfer logic
   }
 
-  private async sendConfirmationSMS(transfer: TransferSecurityRequest): Promise<void> {
-    if (!this.client) return;
 
-    try {
-      const message = `Your payment of €${transfer.amount} to ${transfer.recipientName} has been successfully confirmed.`;
-      
-      await this.client.messages.create({
-        from: this.twilioNumber,
-        to: transfer.userPhoneNumber,
-        body: message
-      });
-
-      console.log(`Confirmation SMS sent for transfer ${transfer.transferId}`);
-    } catch (error) {
-      console.error('Failed to send confirmation SMS:', error);
-    }
-  }
 
   private cancelTransfer(transferId: string, reason: string): void {
     this.confirmations.set(transferId, {
