@@ -29,10 +29,6 @@ export default function Splash() {
     return () => {
       clearTimeout(finalTimer);
       document.body.classList.remove('splash-fullscreen');
-      // Restore theme color to #126987 for other screens
-      if (themeColorMeta) {
-        themeColorMeta.setAttribute('content', '#126987');
-      }
     };
   }, [navigate]);
 

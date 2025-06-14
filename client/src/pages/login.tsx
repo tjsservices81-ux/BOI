@@ -51,6 +51,9 @@ export default function Login() {
   useEffect(() => {
     setAssetsLoaded(true);
     
+    // Set login theme on component mount
+    themeManager.setTheme('login');
+    
     // Clear current user session on login page load
     UserDataManager.clearCurrentUser();
     
