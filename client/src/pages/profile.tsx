@@ -14,7 +14,7 @@ export default function Profile() {
   const [accounts, setAccounts] = useState<any[]>([]);
   const [editingAccount, setEditingAccount] = useState<any>(null);
   const [newBalance, setNewBalance] = useState('');
-  const [editingProfile, setEditingProfile] = useState(false);
+
   const [showAddTransaction, setShowAddTransaction] = useState(false);
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [newAccountData, setNewAccountData] = useState({
@@ -35,14 +35,15 @@ export default function Profile() {
     };
   });
 
-  // Load profile data from database on component mount
+  // Load profile data from database with real-time updates
   useEffect(() => {
     const loadProfileData = async () => {
       const currentCustomerNumber = UserDataManager.getCurrentUser();
       
       if (currentCustomerNumber) {
         try {
-          const response = await fetch(`/api/profile/${currentCustomerNumber}`);
+          // Always fetch fresh data from API - no caching
+          const response = await fetch(`/api/profile/${currentCustomerNumber}?t=${Date.now()}`);
           if (response.ok) {
             const userData = await response.json();
             setProfileData({
@@ -54,16 +55,16 @@ export default function Profile() {
               customerNumber: userData.customerNumber,
               joinDate: userData.joinDate || "Member since 2018"
             });
-          } else {
-            // Keep James as the consistent user
-            setProfileData({
-              name: "James",
-              email: "hello@gmail.com",
-              phone: "+353 1 234 5678",
-              address: "Hello",
-              dateOfBirth: "2025-06-08",
-              customerNumber: currentCustomerNumber,
-              joinDate: "Member since 2018"
+            
+            // Update UserDataManager with fresh data
+            UserDataManager.updateUserProfile({
+              name: userData.name,
+              email: userData.email,
+              phone: userData.phone || "",
+              customerNumber: userData.customerNumber,
+              dateOfBirth: userData.dateOfBirth || "",
+              address: userData.address || "",
+              joinDate: userData.joinDate || "Member since 2018"
             });
           }
         } catch (error) {
@@ -72,7 +73,28 @@ export default function Profile() {
       }
     };
     
+    // Initial load
     loadProfileData();
+    
+    // Listen for admin updates
+    const handleAdminUpdate = () => {
+      loadProfileData();
+    };
+    
+    // Listen for profile updates from admin panel
+    window.addEventListener('adminProfileUpdate', handleAdminUpdate);
+    window.addEventListener('userProfileUpdate', handleAdminUpdate);
+    
+    // Poll for updates every 5 seconds to catch admin changes
+    const pollInterval = setInterval(() => {
+      loadProfileData();
+    }, 5000);
+    
+    return () => {
+      window.removeEventListener('adminProfileUpdate', handleAdminUpdate);
+      window.removeEventListener('userProfileUpdate', handleAdminUpdate);
+      clearInterval(pollInterval);
+    };
   }, []);
 
   const userDetails = profileData;
@@ -139,7 +161,7 @@ export default function Profile() {
       }));
     }
     
-    setEditingProfile(false);
+
     alert('Profile updated successfully');
   };
 
@@ -591,221 +613,7 @@ export default function Profile() {
 
 
 
-            {/* Profile Editing */}
-            <div className="space-y-4 mb-6">
-              <h3 className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Edit Profile Information
-              </h3>
-              
-              {/* Name */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Name
-                </label>
-                <input
-                  type="text"
-                  value={profileData.name}
-                  onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
-                  className="w-full p-3 border border-gray-300 rounded-xl"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                />
-              </div>
 
-              {/* Email */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Email
-                </label>
-                <input
-                  type="email"
-                  value={profileData.email}
-                  onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
-                  className="w-full p-3 border border-gray-300 rounded-xl"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                />
-              </div>
-
-              {/* Phone */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Phone
-                </label>
-                <input
-                  type="tel"
-                  value={profileData.phone}
-                  onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
-                  className="w-full p-3 border border-gray-300 rounded-xl"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                />
-              </div>
-
-              {/* Customer Number */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Customer Number
-                </label>
-                <input
-                  type="text"
-                  value={profileData.customerNumber}
-                  onChange={(e) => setProfileData({ ...profileData, customerNumber: e.target.value })}
-                  placeholder="12345678"
-                  className="w-full p-3 border border-gray-300 rounded-xl"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                />
-              </div>
-
-              {/* Date of Birth */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Date of Birth
-                </label>
-                <input
-                  type="date"
-                  value={profileData.dateOfBirth || ''}
-                  onChange={(e) => setProfileData({ ...profileData, dateOfBirth: e.target.value })}
-                  className="w-full p-3 border border-gray-300 rounded-xl"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                />
-              </div>
-
-              {/* Address */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Address
-                </label>
-                <textarea
-                  value={profileData.address || ''}
-                  onChange={(e) => setProfileData({ ...profileData, address: e.target.value })}
-                  placeholder="Street address, City, County, Eircode"
-                  rows={3}
-                  className="w-full p-3 border border-gray-300 rounded-xl resize-none"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                />
-              </div>
-
-              {/* Join Date */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Member Since
-                </label>
-                <input
-                  type="text"
-                  value={profileData.joinDate}
-                  onChange={(e) => setProfileData({ ...profileData, joinDate: e.target.value })}
-                  placeholder="Member since 2018"
-                  className="w-full p-3 border border-gray-300 rounded-xl"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                />
-              </div>
-
-              {/* Save Profile Button */}
-              <button
-                onClick={async () => {
-                  const currentCustomerNumber = UserDataManager.getCurrentUser();
-                  
-                  if (!currentCustomerNumber) {
-                    alert('No user logged in');
-                    return;
-                  }
-                  
-                  try {
-                    // Update profile in database
-                    const response = await fetch(`/api/profile/${currentCustomerNumber}`, {
-                      method: 'PUT',
-                      headers: {
-                        'Content-Type': 'application/json',
-                      },
-                      body: JSON.stringify({
-                        name: profileData.name,
-                        email: profileData.email,
-                        phone: profileData.phone,
-                        address: profileData.address,
-                        dateOfBirth: profileData.dateOfBirth,
-                        joinDate: profileData.joinDate
-                      })
-                    });
-                    
-                    if (response.ok) {
-                      const updatedUser = await response.json();
-                      
-                      // 1. Update UserDataManager (localStorage) with complete user data
-                      UserDataManager.updateUserProfile({
-                        name: profileData.name,
-                        email: profileData.email,
-                        phone: profileData.phone,
-                        customerNumber: profileData.customerNumber,
-                        dateOfBirth: profileData.dateOfBirth,
-                        address: profileData.address,
-                        joinDate: profileData.joinDate
-                      });
-                      
-                      // 2. Update auth context with new user information
-                      const updatedAuthUser = {
-                        id: parseInt(profileData.customerNumber.replace(/\D/g, '')) || 1,
-                        name: profileData.name,
-                        email: profileData.email
-                      };
-                      login(updatedAuthUser);
-                      
-                      // 3. Update localStorage banking user cache
-                      localStorage.setItem('bankingUser', JSON.stringify(updatedAuthUser));
-                      
-                      // 4. If customer number changed, update current user session
-                      if (profileData.customerNumber !== currentCustomerNumber) {
-                        UserDataManager.setCurrentUser(profileData.customerNumber);
-                        
-                        // Transfer all user data to new customer number
-                        const userData = UserDataManager.getAllUsers()[currentCustomerNumber];
-                        if (userData) {
-                          UserDataManager.registerUser({
-                            ...userData,
-                            customerNumber: profileData.customerNumber,
-                            name: profileData.name,
-                            email: profileData.email,
-                            phone: profileData.phone,
-                            address: profileData.address,
-                            dateOfBirth: profileData.dateOfBirth,
-                            joinDate: profileData.joinDate
-                          });
-                          
-                          // Copy all account and transaction data to new customer number
-                          const accounts = UserDataManager.getUserAccounts();
-                          const transactions = UserDataManager.getUserData('bankTransactions', []);
-                          const payees = UserDataManager.getUserData('savedPayees', []);
-                          
-                          UserDataManager.setUserAccounts(accounts);
-                          UserDataManager.setUserData('bankTransactions', transactions);
-                          UserDataManager.setUserData('savedPayees', payees);
-                          
-                          // Remove old customer number data
-                          UserDataManager.removeUser(currentCustomerNumber);
-                        }
-                      }
-                      
-                      // 5. Dispatch events to notify all components of the update
-                      window.dispatchEvent(new CustomEvent('userProfileUpdate', {
-                        detail: {
-                          name: profileData.name,
-                          email: profileData.email,
-                          customerNumber: profileData.customerNumber
-                        }
-                      }));
-                      
-                      alert('Profile updated successfully across all systems');
-                    } else {
-                      alert('Failed to update profile');
-                    }
-                  } catch (error) {
-                    console.error('Profile update error:', error);
-                    alert('Failed to update profile');
-                  }
-                }}
-                className="w-full py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors"
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
-              >
-                Save Profile Changes
-              </button>
-            </div>
 
             {/* Admin Actions */}
             <div className="space-y-4">
@@ -919,131 +727,7 @@ export default function Profile() {
         </div>
       )}
 
-      {/* Profile Edit Modal */}
-      {editingProfile && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md p-6 max-h-[80vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Edit Profile
-              </h2>
-              <button 
-                onClick={() => setEditingProfile(false)}
-                className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center active:scale-95 transition-transform"
-              >
-                <X className="w-4 h-4 text-gray-600" />
-              </button>
-            </div>
 
-            <form 
-              onSubmit={(e) => {
-                e.preventDefault();
-                const formData = new FormData(e.target as HTMLFormElement);
-                const updatedProfile = {
-                  name: formData.get('name') as string,
-                  email: formData.get('email') as string,
-                  phone: formData.get('phone') as string,
-                  address: formData.get('address') as string,
-                  dateOfBirth: formData.get('dateOfBirth') as string,
-                  customerNumber: profileData.customerNumber,
-                  joinDate: profileData.joinDate
-                };
-                updateProfile(updatedProfile);
-              }}
-              className="space-y-4"
-            >
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  defaultValue={profileData.name}
-                  className="w-full p-3 border border-gray-300 rounded-xl"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  defaultValue={profileData.email}
-                  className="w-full p-3 border border-gray-300 rounded-xl"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  name="phone"
-                  defaultValue={profileData.phone}
-                  className="w-full p-3 border border-gray-300 rounded-xl"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Address
-                </label>
-                <textarea
-                  name="address"
-                  defaultValue={profileData.address}
-                  rows={3}
-                  className="w-full p-3 border border-gray-300 rounded-xl resize-none"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Date of Birth
-                </label>
-                <input
-                  type="text"
-                  name="dateOfBirth"
-                  defaultValue={profileData.dateOfBirth}
-                  className="w-full p-3 border border-gray-300 rounded-xl"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                  placeholder="DD Month YYYY"
-                  required
-                />
-              </div>
-
-              <div className="flex space-x-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setEditingProfile(false)}
-                  className="flex-1 p-3 bg-gray-100 text-gray-700 rounded-xl font-semibold active:scale-98 transition-transform"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 p-3 bg-[#2c5f70] text-white rounded-xl font-semibold active:scale-98 transition-transform"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                >
-                  Save Changes
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* Add Account Modal */}
       {showAddAccount && (
