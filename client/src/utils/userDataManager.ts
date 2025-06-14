@@ -21,8 +21,6 @@ export class UserDataManager {
     localStorage.setItem('currentUser', customerNumber);
     // Also store as last active user for biometric authentication
     this.setLastActiveUser(customerNumber);
-    // Emit user change event for components to update
-    window.dispatchEvent(new CustomEvent('userChanged', { detail: { customerNumber } }));
   }
 
   // Get the current active user
@@ -75,8 +73,6 @@ export class UserDataManager {
   static clearCurrentUser() {
     this.currentUser = null;
     localStorage.removeItem('currentUser');
-    // Emit user change event to clear components
-    window.dispatchEvent(new CustomEvent('userChanged', { detail: { customerNumber: null } }));
   }
 
   // Get user-specific storage key

@@ -35,35 +35,75 @@ export default function Dashboard() {
     }, 150);
   };
 
-  // Load accounts for current user only
+  // Load accounts using UserDataManager on mount
   useEffect(() => {
-    const currentUser = UserDataManager.getCurrentUser();
+    // Ensure there's a current user - if not, set a default
+    let currentUser = UserDataManager.getCurrentUser();
     if (!currentUser) {
-      setLocation('/login');
-      return;
-    }
-
-    // Load accounts for the current logged-in user
-    const userAccounts = UserDataManager.getUserAccounts();
-    setAccounts(userAccounts);
-  }, [setLocation]);
-
-  // Listen for user changes and reload data
-  useEffect(() => {
-    const handleUserChange = () => {
-      const currentUser = UserDataManager.getCurrentUser();
-      if (currentUser) {
-        const userAccounts = UserDataManager.getUserAccounts();
-        setAccounts(userAccounts);
-      } else {
-        setLocation('/login');
+      // Set a default user if none exists
+      currentUser = '12345678';
+      UserDataManager.setCurrentUser(currentUser);
+      
+      // Register default user if they don't exist
+      if (!UserDataManager.userExists(currentUser)) {
+        UserDataManager.registerUser({
+          customerNumber: currentUser,
+          name: 'Demo User',
+          email: 'demo@boi.ie',
+          phone: '+353 1 234 5678',
+          joinDate: new Date().toISOString().split('T')[0],
+          dateCreated: new Date().toISOString()
+        });
       }
-    };
-
-    // Listen for custom events when user data changes
-    window.addEventListener('userChanged', handleUserChange);
-    return () => window.removeEventListener('userChanged', handleUserChange);
-  }, [setLocation]);
+    }
+    
+    // Load or initialize accounts with proper default data
+    let storedAccounts = UserDataManager.getUserData('bankAccounts', null);
+    if (!storedAccounts || storedAccounts.length === 0) {
+      // Initialize default accounts with realistic balances
+      const defaultAccounts = [
+        { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "2432.67", accountType: "current" },
+        { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "-156.23", accountType: "credit" },
+        { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "8750.00", accountType: "savings" },
+      ];
+      UserDataManager.setUserData('bankAccounts', defaultAccounts);
+      storedAccounts = defaultAccounts;
+      
+      // Also initialize some sample transactions for proper testing
+      const sampleTransactions = [
+        {
+          id: 1,
+          accountId: 1,
+          amount: "-45.60",
+          description: "TESCO STORES 2673",
+          timestamp: new Date(Date.now() - 86400000 * 1).toISOString(),
+          type: "debit",
+          balance: "2432.67"
+        },
+        {
+          id: 2,
+          accountId: 1,
+          amount: "-12.80",
+          description: "COFFEE DOCK DUBLIN",
+          timestamp: new Date(Date.now() - 86400000 * 2).toISOString(),
+          type: "debit",
+          balance: "2478.27"
+        },
+        {
+          id: 3,
+          accountId: 1,
+          amount: "+1250.00",
+          description: "SALARY CREDIT",
+          timestamp: new Date(Date.now() - 86400000 * 3).toISOString(),
+          type: "credit",
+          balance: "2491.07"
+        }
+      ];
+      UserDataManager.setUserData('bankTransactions', sampleTransactions);
+    }
+    
+    setAccounts(storedAccounts);
+  }, []);
 
   // Listen for balance updates from transfers
   useEffect(() => {
@@ -77,6 +117,11 @@ export default function Dashboard() {
     window.addEventListener('balanceUpdate', handleBalanceUpdate as EventListener);
     return () => window.removeEventListener('balanceUpdate', handleBalanceUpdate as EventListener);
   }, []);
+
+  // Store accounts in localStorage for transfer forms to access
+  useEffect(() => {
+    localStorage.setItem('bankAccounts', JSON.stringify(accounts));
+  }, [accounts]);
 
   // Get color for account type
   const getAccountColor = (accountType: string) => {
@@ -120,96 +165,45 @@ export default function Dashboard() {
           }}
         />
         
-        {/* Dark overlay for better text contrast */}
-        <div className="absolute inset-0 bg-black/30" />
-        
-        {/* Header content */}
-        <div className="relative z-10 p-4 flex items-end h-full">
-          <div className="w-full">
-            <h1 className="text-2xl font-bold mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>Good evening</h1>
-            <p className="text-sm opacity-90" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Welcome back to your banking
-            </p>
-          </div>
+        <div className="relative z-10 h-full flex flex-col justify-center px-4">
+          <h1 className="text-2xl font-light mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>Welcome</h1>
+          <p className="text-white/90 text-sm font-light" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+            Last login: {UserDataManager.getLastLoginTime()}
+          </p>
         </div>
       </div>
 
-      {/* Main content area with rounded corners */}
-      <div className="bg-gray-50 rounded-t-3xl flex-1 overflow-hidden flex flex-col">
-        {/* Accounts section */}
-        <div className="flex-1 overflow-y-auto ios-scroll px-4 pt-6 pb-4">
-          
-          {/* Accounts */}
-          <div className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Accounts
-            </h2>
-            <div className="space-y-3">
-              {accounts.map((account) => (
-                <div 
-                  key={account.id}
-                  className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 active:scale-98 transition-transform cursor-pointer"
-                  onClick={() => navigateWithAnimation('/transactions')}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className={`w-3 h-3 rounded-full ${getAccountColor(account.accountType)}`} />
-                      <div>
-                        <h3 className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          {account.displayName}
-                        </h3>
-                        <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          {account.accountNumber}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        €{account.balance}
-                      </p>
-                    </div>
+      {/* Main content area - white card with rounded top corners */}
+      <div className="flex-1 px-0 -mt-8 overflow-y-auto ios-scroll" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+        <div className="bg-white rounded-t-3xl shadow-lg min-h-full">
+          <div className="pt-6 pb-32" style={{ overscrollBehavior: 'contain' }}>
+            {accounts.map((account, index) => (
+              <button 
+                key={account.id}
+                className={`w-full flex items-center justify-between border-b border-gray-100 hover:bg-gray-50 touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-98 haptic-feedback relative stagger-item card-interactive ${isNavigating ? 'opacity-50 pointer-events-none' : ''}`}
+                onClick={() => navigateWithAnimation(`/transactions/${account.id}`, 'slide-right')}
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                {/* Colored side bar */}
+                <div className={`absolute left-0 top-0 bottom-0 w-1 ${getAccountColor(account.accountType)}`}></div>
+                
+                <div className="flex items-center justify-between w-full px-6 py-4">
+                  <div className="text-left">
+                    <p className="font-medium text-sm text-gray-800 boi-regular-font">{account.displayName.toUpperCase()}</p>
+                    <p className="text-xs text-gray-500 mt-0.5 boi-regular-font">{account.accountNumber}</p>
+                  </div>
+                  <div className="flex items-center">
+                    <p className="text-lg font-semibold text-[#126987] boi-semibold-font">€{parseFloat(account.balance).toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                    <ChevronRight className="h-4 w-4 ml-3 text-gray-400" />
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Spending Insights */}
-          <SpendingInsights />
-
-          {/* Quick Actions */}
-          <div className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Quick Actions
-            </h2>
-            <div className="grid grid-cols-2 gap-3">
-              <button 
-                className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex flex-col items-center space-y-2 active:scale-98 transition-transform"
-                onClick={() => navigateWithAnimation('/transfer')}
-              >
-                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                  <ChevronRight className="w-5 h-5 text-blue-600" />
-                </div>
-                <span className="text-sm font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Transfer
-                </span>
               </button>
-              
-              <button 
-                className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex flex-col items-center space-y-2 active:scale-98 transition-transform"
-                onClick={() => navigateWithAnimation('/payee')}
-              >
-                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                  <User className="w-5 h-5 text-green-600" />
-                </div>
-                <span className="text-sm font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Pay Someone
-                </span>
-              </button>
-            </div>
+            ))}
           </div>
         </div>
       </div>
+
+
     </div>
   );
 }
