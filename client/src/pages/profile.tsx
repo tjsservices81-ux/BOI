@@ -22,14 +22,17 @@ export default function Profile() {
     accountType: 'current',
     balance: '0.00'
   });
-  const [profileData, setProfileData] = useState({
-    name: "James",
-    email: "hello@gmail.com",
-    phone: "+353 1 234 5678",
-    address: "Hello",
-    dateOfBirth: "2025-06-08",
-    customerNumber: "12345678",
-    joinDate: "Member since 2018"
+  const [profileData, setProfileData] = useState(() => {
+    const currentCustomerNumber = UserDataManager.getCurrentUser();
+    return {
+      name: "James",
+      email: "hello@gmail.com",
+      phone: "+353 1 234 5678",
+      address: "Hello",
+      dateOfBirth: "2025-06-08",
+      customerNumber: currentCustomerNumber || "",
+      joinDate: "Member since 2018"
+    };
   });
 
   // Load profile data from database on component mount
