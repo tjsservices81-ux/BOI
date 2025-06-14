@@ -380,33 +380,32 @@ export default function UkTransfer() {
 
   // Form step
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+    <div className="min-h-screen bg-white">
       <div className="max-w-md mx-auto">
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6">
-            <div className="flex items-center justify-between">
-              <button
-                onClick={() => navigate('/dashboard')}
-                className="p-2 hover:bg-white/20 rounded-lg transition-colors"
-              >
-                <ChevronLeft className="w-6 h-6 text-white" />
-              </button>
-              <h1 className="text-xl font-semibold text-white">UK Bank Transfer</h1>
-              <div className="w-10"></div>
-            </div>
+        {/* Header */}
+        <div className="bg-blue-600 px-4 py-6">
+          <div className="flex items-center">
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="mr-4"
+            >
+              <ChevronLeft className="w-6 h-6 text-white" />
+            </button>
+            <h1 className="text-xl font-semibold text-white">UK Bank Transfer</h1>
           </div>
+        </div>
 
-          {/* Form */}
-          <form onSubmit={form.handleSubmit(onSubmit)} className="p-6 space-y-6">
+        {/* Form */}
+        <div className="p-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             {/* From Account */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 From Account
               </label>
               <select
                 {...form.register('fromAccount')}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full p-3 border border-gray-300 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="">Select an account</option>
                 {accounts.map((account) => (
@@ -422,13 +421,13 @@ export default function UkTransfer() {
 
             {/* Recipient Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Recipient Name
               </label>
               <input
                 type="text"
                 {...form.register('recipientName')}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full p-3 border border-gray-300 rounded-md text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Enter recipient's full name"
               />
               {form.formState.errors.recipientName && (
@@ -438,13 +437,13 @@ export default function UkTransfer() {
 
             {/* Account Number */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Account Number
               </label>
               <input
                 type="text"
                 {...form.register('accountNumber', { validate: validateAccountNum })}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full p-3 border border-gray-300 rounded-md text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="12345678"
                 maxLength={8}
               />
@@ -455,14 +454,14 @@ export default function UkTransfer() {
 
             {/* Sort Code */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Sort Code
               </label>
               <input
                 type="text"
                 {...form.register('sortCode', { validate: validateSortCode })}
                 onChange={handleSortCodeChange}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full p-3 border border-gray-300 rounded-md text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="12-34-56"
                 maxLength={8}
               />
@@ -479,14 +478,14 @@ export default function UkTransfer() {
 
             {/* Amount */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Amount (EUR)
               </label>
               <input
                 type="number"
                 step="0.01"
                 {...form.register('amount')}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full p-3 border border-gray-300 rounded-md text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="0.00"
               />
               {gbpAmount !== '0.00' && (
@@ -501,13 +500,13 @@ export default function UkTransfer() {
 
             {/* Reference */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Reference
               </label>
               <input
                 type="text"
                 {...form.register('reference')}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full p-3 border border-gray-300 rounded-md text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Payment reference"
               />
               {form.formState.errors.reference && (
@@ -516,7 +515,7 @@ export default function UkTransfer() {
             </div>
 
             {/* Security Notice */}
-            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+            <div className="bg-blue-50 p-4 rounded-md border border-blue-200 mt-6">
               <div className="flex items-center space-x-2">
                 <Phone className="w-5 h-5 text-blue-600" />
                 <p className="text-blue-800 font-medium">Security Confirmation Required</p>
@@ -529,7 +528,7 @@ export default function UkTransfer() {
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-medium hover:from-blue-700 hover:to-indigo-700 transition-colors"
+              className="w-full py-4 bg-blue-600 text-white rounded-md font-medium hover:bg-blue-700 transition-colors mt-6"
             >
               Initiate Transfer
             </button>

@@ -358,25 +358,24 @@ export default function IbanTransfer() {
 
   // Form step
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100 p-4">
+    <div className="min-h-screen bg-white">
       <div className="max-w-md mx-auto">
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          {/* Header */}
-          <div className="bg-gradient-to-r from-purple-600 to-indigo-600 p-6">
-            <div className="flex items-center justify-between">
-              <button
-                onClick={() => navigate('/dashboard')}
-                className="p-2 hover:bg-white/20 rounded-lg transition-colors"
-              >
-                <ChevronLeft className="w-6 h-6 text-white" />
-              </button>
-              <h1 className="text-xl font-semibold text-white">IBAN Transfer</h1>
-              <div className="w-10"></div>
-            </div>
+        {/* Header */}
+        <div className="bg-purple-600 px-4 py-6">
+          <div className="flex items-center">
+            <button
+              onClick={() => navigate('/dashboard')}
+              className="mr-4"
+            >
+              <ChevronLeft className="w-6 h-6 text-white" />
+            </button>
+            <h1 className="text-xl font-semibold text-white">IBAN Transfer</h1>
           </div>
+        </div>
 
-          {/* Form */}
-          <form onSubmit={form.handleSubmit(onSubmit)} className="p-6 space-y-6">
+        {/* Form */}
+        <div className="p-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             {/* From Account */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
