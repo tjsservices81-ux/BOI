@@ -72,12 +72,28 @@ export default function Cards() {
       loadCardStatus();
     };
 
+    const handleProfileUpdate = () => {
+      loadCardholderName();
+    };
+
+    const handleCardNameUpdate = () => {
+      loadCardholderName();
+    };
+
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('cardUnblocked', handleCardUnblocked);
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+    window.addEventListener('adminProfileUpdate', handleProfileUpdate);
+    window.addEventListener('userProfileUpdate', handleProfileUpdate);
+    window.addEventListener('cardNameUpdate', handleCardNameUpdate);
     
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('cardUnblocked', handleCardUnblocked);
+      window.removeEventListener('profileUpdated', handleProfileUpdate);
+      window.removeEventListener('adminProfileUpdate', handleProfileUpdate);
+      window.removeEventListener('userProfileUpdate', handleProfileUpdate);
+      window.removeEventListener('cardNameUpdate', handleCardNameUpdate);
     };
   }, []);
 

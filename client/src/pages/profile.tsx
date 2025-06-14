@@ -183,13 +183,14 @@ export default function Profile() {
       if (response.ok) {
         const updatedData = await response.json();
         
-        // Update local state
-        setProfileData({
+        // Update local state with all new data
+        const updatedProfileData = {
           ...profileData,
           ...editProfileData
-        });
+        };
+        setProfileData(updatedProfileData);
         
-        // Update UserDataManager
+        // Update UserDataManager with complete profile data
         UserDataManager.updateUserProfile({
           name: editProfileData.name,
           email: editProfileData.email,
@@ -200,15 +201,33 @@ export default function Profile() {
           joinDate: editProfileData.joinDate
         });
         
-        // Notify other components if name changed
-        if (editProfileData.name !== profileData.name) {
-          window.dispatchEvent(new CustomEvent('profileUpdated', { 
-            detail: { name: editProfileData.name } 
-          }));
-        }
+        // Dispatch comprehensive update events for all components
+        window.dispatchEvent(new CustomEvent('profileUpdated', { 
+          detail: { 
+            name: editProfileData.name,
+            email: editProfileData.email,
+            phone: editProfileData.phone,
+            address: editProfileData.address,
+            dateOfBirth: editProfileData.dateOfBirth,
+            joinDate: editProfileData.joinDate,
+            customerNumber: profileData.customerNumber
+          } 
+        }));
         
-        // Dispatch admin update event
-        window.dispatchEvent(new CustomEvent('adminProfileUpdate'));
+        // Admin-specific update event
+        window.dispatchEvent(new CustomEvent('adminProfileUpdate', {
+          detail: updatedProfileData
+        }));
+        
+        // User profile update event for real-time synchronization
+        window.dispatchEvent(new CustomEvent('userProfileUpdate', {
+          detail: updatedProfileData
+        }));
+        
+        // Card update event for name changes on cards
+        window.dispatchEvent(new CustomEvent('cardNameUpdate', {
+          detail: { name: editProfileData.name }
+        }));
         
         setShowEditProfile(false);
         alert('Profile updated successfully');

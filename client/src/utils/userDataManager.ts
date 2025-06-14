@@ -129,8 +129,33 @@ export class UserDataManager {
 
     const allUsers = this.getAllUsers();
     if (allUsers[currentUser]) {
+      const previousData = { ...allUsers[currentUser] };
       allUsers[currentUser] = { ...allUsers[currentUser], ...updates };
       localStorage.setItem('bankUsers', JSON.stringify(allUsers));
+      
+      // Dispatch storage event for cross-component synchronization
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: 'bankUsers',
+        newValue: JSON.stringify(allUsers),
+        oldValue: JSON.stringify({ ...allUsers, [currentUser]: previousData })
+      }));
+      
+      // Dispatch comprehensive profile update events
+      const updatedProfile = allUsers[currentUser];
+      window.dispatchEvent(new CustomEvent('profileUpdated', { 
+        detail: updatedProfile
+      }));
+      
+      window.dispatchEvent(new CustomEvent('userProfileUpdate', {
+        detail: updatedProfile
+      }));
+      
+      // Dispatch specific events for name changes (affects cards)
+      if (updates.name && updates.name !== previousData.name) {
+        window.dispatchEvent(new CustomEvent('cardNameUpdate', {
+          detail: { name: updates.name }
+        }));
+      }
     }
   }
 
