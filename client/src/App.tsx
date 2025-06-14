@@ -54,6 +54,29 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function AppRoutes() {
   const { user, isLoading } = useAuth();
   const [location] = useLocation();
+
+  // Update theme based on current route when location changes
+  useEffect(() => {
+    if (!location) return;
+    
+    // Map routes to theme names
+    const routeThemeMap: Record<string, string> = {
+      '/': user ? 'dashboard' : 'login',
+      '/splash': 'splash',
+      '/login': 'login',
+      '/dashboard': 'dashboard',
+      '/profile': 'profile',
+      '/more': 'more',
+      '/apply': 'apply',
+      '/payments': 'payments',
+      '/transfer': 'transfer',
+      '/cards': 'cards',
+      '/insights': 'insights'
+    };
+
+    const themeName = routeThemeMap[location] || 'dashboard';
+    themeManager.setTheme(themeName);
+  }, [location, user]);
   
   const appStateManager = useAppStateManager();
   const scrollManager = useScrollManager({
@@ -83,19 +106,15 @@ function AppRoutes() {
   
   // Set initial theme color and handle app state restoration
   useEffect(() => {
-    // Initialize with splash theme
-    themeManager.setTheme('splash');
-    
-    // Normal theme handling
+    // Only initialize splash theme if splash hasn't been shown yet
     const hasShownSplash = sessionStorage.getItem('splashShown') === 'true';
-    if (hasShownSplash) {
+    
+    if (!hasShownSplash) {
+      // First time - show splash
+      themeManager.setTheme('splash');
+    } else {
+      // App resumed - don't override current theme, let individual pages set their own
       setSplashShown(true);
-      // Set theme based on auth state
-      if (user) {
-        themeManager.setTheme('dashboard');
-      } else {
-        themeManager.setTheme('login');
-      }
     }
     
     // Wait for auth to be checked before showing content
@@ -103,7 +122,7 @@ function AppRoutes() {
       setAuthChecked(true);
       setIsInitialized(true);
     }, 0);
-  }, [appStateManager, user]);
+  }, [appStateManager]);
 
   // Listen for splash completion
   useEffect(() => {

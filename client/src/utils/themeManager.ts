@@ -95,9 +95,25 @@ class ThemeManager {
     // Listen for visibility changes to maintain theme
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden) {
-        // App resumed - restore the correct theme
-        this.restoreThemeFromStorage();
+        // App resumed - restore the correct theme with a small delay to ensure DOM is ready
+        setTimeout(() => {
+          this.restoreThemeFromStorage();
+        }, 50);
       }
+    });
+
+    // Also listen for pageshow event (back/forward cache)
+    window.addEventListener('pageshow', () => {
+      setTimeout(() => {
+        this.restoreThemeFromStorage();
+      }, 50);
+    });
+
+    // Listen for focus events as additional safety
+    window.addEventListener('focus', () => {
+      setTimeout(() => {
+        this.restoreThemeFromStorage();
+      }, 50);
     });
 
     this.isInitialized = true;
