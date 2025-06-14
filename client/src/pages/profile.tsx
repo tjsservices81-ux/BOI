@@ -455,7 +455,17 @@ export default function Profile() {
 
   const addSampleTransaction = (accountId: number) => {
     const randomTransaction = sampleTransactions[Math.floor(Math.random() * sampleTransactions.length)];
+    
+    // Create transaction date that's 0-2 days before current date
     const now = new Date();
+    const daysBack = Math.floor(Math.random() * 3); // 0, 1, or 2 days back
+    const transactionDate = new Date(now);
+    transactionDate.setDate(now.getDate() - daysBack);
+    
+    // Add some random hours/minutes to make it more realistic
+    const randomHours = Math.floor(Math.random() * 24);
+    const randomMinutes = Math.floor(Math.random() * 60);
+    transactionDate.setHours(randomHours, randomMinutes, 0, 0);
     
     // Clear all caches first to ensure we get the most current data
     UserDataManager.clearCache();
@@ -488,8 +498,8 @@ export default function Profile() {
       description: randomTransaction.description,
       category: randomTransaction.type === 'credit' ? 'income' : 'expense',
       type: randomTransaction.type,
-      timestamp: now.toISOString(),
-      paymentMethod: 'Bank Transfer'
+      timestamp: transactionDate.toISOString()
+      // Note: paymentMethod should only be added for actual transfer transactions, not regular purchases
     };
 
     // Get current transactions and add new one
