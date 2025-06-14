@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { ChevronLeft, ChevronRight, CreditCard, Home, DollarSign, Car, Building2, Briefcase } from "lucide-react";
-import { themeManager } from "@/utils/themeManager";
 
 interface ProductTile {
   id: string;
@@ -68,9 +67,12 @@ export default function Apply() {
     }
   ];
 
-  // Set apply theme on component mount
+  // Set apply theme color
   useEffect(() => {
-    themeManager.setTheme('apply');
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+    if (themeColorMeta) {
+      themeColorMeta.setAttribute('content', '#126987');
+    }
   }, []);
 
   const handleApplyClick = (productId: string, productTitle: string) => {

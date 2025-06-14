@@ -64,8 +64,11 @@ export default function Profile() {
 
   // Load profile data from database with real-time updates
   useEffect(() => {
-    // Set profile theme on component mount
-    themeManager.setTheme('profile');
+    // Set profile theme color
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+    if (themeColorMeta) {
+      themeColorMeta.setAttribute('content', '#126987');
+    }
     
     const loadProfileData = async () => {
       const currentCustomerNumber = UserDataManager.getCurrentUser();

@@ -101,12 +101,31 @@ function AppRoutes() {
         themeColorMeta.setAttribute('content', '#126987');
       }
     }
+
+    // Add listener to maintain correct status bar color on app resume
+    const handleVisibilityChange = () => {
+      if (!document.hidden && hasShownSplash) {
+        // App resumed and splash has been shown - keep banking color
+        setTimeout(() => {
+          const meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) {
+            meta.setAttribute('content', '#126987');
+          }
+        }, 50);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     
     // Wait for auth to be checked before showing content
     setTimeout(() => {
       setAuthChecked(true);
       setIsInitialized(true);
     }, 0);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [appStateManager]);
 
   // Listen for splash completion
