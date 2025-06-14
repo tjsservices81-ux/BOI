@@ -279,11 +279,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validation = otcService.validateOTC(customerNumber, code);
 
       if (validation.isValid) {
-        res.json({ 
-          success: true, 
-          message: "OTC validated successfully",
-          accountData: validation.accountData
-        });
+        // Create user in database after successful OTC validation
+        const accountData = validation.accountData;
+        try {
+          const newUser = await storage.createUser({
+            customerNumber: accountData.customerNumber,
+            name: accountData.name,
+            email: accountData.email,
+            phone: accountData.phone,
+            address: accountData.address || "",
+            dateOfBirth: accountData.dateOfBirth || "",
+            pin: "000000", // Default PIN
+            joinDate: new Date().toISOString()
+          });
+          
+          res.json({ 
+            success: true, 
+            message: "OTC validated successfully and account created",
+            accountData: newUser
+          });
+        } catch (dbError) {
+          console.error('Database user creation failed:', dbError);
+          res.status(500).json({ 
+            success: false, 
+            message: "Account validation succeeded but creation failed" 
+          });
+        }
       } else {
         res.status(400).json({ 
           success: false, 
