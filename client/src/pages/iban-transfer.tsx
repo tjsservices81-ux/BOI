@@ -4,7 +4,7 @@ import { ChevronLeft, Info, Check, CreditCard, Globe } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { getAccounts, processTransfer, generateReference } from "../utils/transferUtils";
+import { getAccounts, processTransfer, processSecureTransfer, checkTransferConfirmation, processConfirmedTransfer, generateReference } from "../utils/transferUtils";
 import { UserDataManager } from "../utils/userDataManager";
 
 const ibanTransferSchema = z.object({
@@ -24,7 +24,7 @@ type IbanTransferData = z.infer<typeof ibanTransferSchema>;
 
 export default function IbanTransfer() {
   const [, navigate] = useLocation();
-  const [step, setStep] = useState<'form' | 'confirm' | 'success'>('form');
+  const [step, setStep] = useState<'form' | 'confirm' | 'security' | 'success'>('form');
   const [transferReference, setTransferReference] = useState<string>('');
   const [showReference, setShowReference] = useState<boolean>(false);
   const [animationProgress, setAnimationProgress] = useState<number>(0);
@@ -78,36 +78,101 @@ export default function IbanTransfer() {
     setStep('confirm');
   };
 
-  const executeTransfer = () => {
+  const executeTransfer = async () => {
     if (!formData) return;
     
     // Generate unique reference only when transfer starts
     const ref = generateReference();
     setTransferReference(ref);
     
-    const success = processTransfer(
-      formData.fromAccount,
-      parseFloat(formData.amount),
-      formData.recipientName,
-      'IBAN',
-      ref,
-      undefined, // No exchange rate for IBAN transfers
-      {
-        iban: formData.iban
+    try {
+      // Initiate secure transfer with voice call confirmation
+      const securityResult = await processSecureTransfer(
+        formData.fromAccount,
+        parseFloat(formData.amount),
+        formData.recipientName,
+        'IBAN',
+        ref,
+        undefined, // No exchange rate for IBAN transfers
+        {
+          iban: formData.iban
+        }
+      );
+      
+      if (!securityResult.success) {
+        alert(securityResult.error || 'Security verification failed');
+        return;
       }
-    );
-    
-    if (!success) {
-      console.error('Transfer failed');
-      alert('Transfer failed: Insufficient funds or invalid account details');
+
+      if (securityResult.requiresConfirmation && securityResult.transferId) {
+        // Show security confirmation screen
+        setStep('security');
+        setProcessingStage('Initiating security call...');
+        
+        // Poll for confirmation status
+        const pollConfirmation = async (transferId: string) => {
+          const maxAttempts = 60; // 60 seconds
+          let attempts = 0;
+          
+          const checkStatus = async () => {
+            attempts++;
+            const { confirmed, status } = await checkTransferConfirmation(transferId);
+            
+            if (confirmed) {
+              // Process the confirmed transfer
+              const transferSuccess = processConfirmedTransfer(
+                transferId,
+                formData.fromAccount,
+                parseFloat(formData.amount),
+                formData.recipientName,
+                'IBAN',
+                ref,
+                undefined,
+                {
+                  iban: formData.iban
+                }
+              );
+              
+              if (transferSuccess) {
+                // Dispatch events to update all components
+                window.dispatchEvent(new CustomEvent('transactionUpdate'));
+                window.dispatchEvent(new CustomEvent('balanceUpdate'));
+                
+                // Go to success screen
+                setStep('success');
+              } else {
+                alert('Transfer processing failed after confirmation');
+              }
+              return;
+            }
+            
+            if (status && !status.confirmed && status.method !== 'timeout') {
+              alert('Transfer cancelled by user or security system');
+              setStep('form');
+              return;
+            }
+            
+            if (attempts < maxAttempts) {
+              setTimeout(checkStatus, 1000); // Check every second
+            } else {
+              alert('Security confirmation timeout. Transfer cancelled.');
+              setStep('form');
+            }
+          };
+          
+          checkStatus();
+        };
+        
+        pollConfirmation(securityResult.transferId);
+        return;
+      }
+    } catch (error) {
+      console.error('Secure transfer failed:', error);
+      alert('Transfer failed: Unable to initiate security verification');
       return;
     }
 
-    // Dispatch events to update all components like UK transfers do
-    window.dispatchEvent(new CustomEvent('transactionUpdate'));
-    window.dispatchEvent(new CustomEvent('balanceUpdate'));
-
-    // Immediately go to success screen and start animation
+    // If no security confirmation required (fallback)
     setStep('success');
     setShowReference(false);
     setAnimationProgress(0);
@@ -155,6 +220,58 @@ export default function IbanTransfer() {
   };
 
 
+
+  if (step === 'security') {
+    return (
+      <div>
+        <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
+          <span className="font-medium text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+            Security Verification
+          </span>
+        </div>
+
+        <div style={{ 
+          position: 'fixed', 
+          top: 0, 
+          left: 0, 
+          right: 0, 
+          bottom: 0, 
+          background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+          zIndex: 1000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <div className="text-center space-y-8 px-8 max-w-md w-full">
+            <div className="w-20 h-20 bg-[#126987] rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
+              <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+            </div>
+            
+            <div className="space-y-4">
+              <h1 className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Security Verification
+              </h1>
+              <p className="text-lg text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                {processingStage}
+              </p>
+            </div>
+            
+            <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-gray-200 shadow-lg">
+              <div className="flex items-center justify-center space-x-3 mb-3">
+                <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+                <span className="text-sm font-semibold text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Voice Call In Progress
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 leading-relaxed" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Please answer the call from +35314044000 and press 1 to confirm your transfer or 2 to cancel
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (step === 'success') {
     return (

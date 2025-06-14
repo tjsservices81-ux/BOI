@@ -104,10 +104,13 @@ class TransferSecurityService {
         method: 'voice'
       });
 
+      // Process the actual transfer now that it's confirmed
+      await this.processConfirmedTransfer(transfer);
+
       // Send confirmation SMS
       await this.sendConfirmationSMS(transfer);
       
-      console.log(`Transfer ${transferId} confirmed by user`);
+      console.log(`Transfer ${transferId} confirmed and processed by user`);
       return { success: true, action: 'confirmed' };
     } else {
       // Cancel transfer
@@ -115,6 +118,21 @@ class TransferSecurityService {
       console.log(`Transfer ${transferId} cancelled by user`);
       return { success: true, action: 'cancelled' };
     }
+  }
+
+  private async processConfirmedTransfer(transfer: TransferSecurityRequest): Promise<void> {
+    // Here we would integrate with the actual transfer processing logic
+    // For now, we'll simulate the transfer processing
+    console.log(`Processing confirmed transfer: ${transfer.transferId}`);
+    
+    // In a real implementation, this would:
+    // 1. Debit the sender's account
+    // 2. Process the international/UK transfer
+    // 3. Update transaction records
+    // 4. Send to payment networks (SWIFT, Faster Payments, etc.)
+    
+    // For this implementation, we'll mark it as processed
+    // The actual balance updates happen in the frontend transfer logic
   }
 
   private async sendConfirmationSMS(transfer: TransferSecurityRequest): Promise<void> {
