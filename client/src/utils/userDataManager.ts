@@ -14,6 +14,9 @@ export interface UserData {
 
 export class UserDataManager {
   private static currentUser: string | null = null;
+  private static dataCache: Map<string, any> = new Map();
+  private static cacheTimestamps: Map<string, number> = new Map();
+  private static readonly CACHE_DURATION = 30000; // 30 seconds
 
   // Set the current active user
   static setCurrentUser(customerNumber: string) {
@@ -90,14 +93,43 @@ export class UserDataManager {
     localStorage.setItem(userKey, JSON.stringify(data));
   }
 
-  // Retrieve user-specific data
+  // Retrieve user-specific data with caching
   static getUserData(key: string, defaultValue: any = null) {
     try {
       const userKey = this.getUserKey(key);
+      const cacheKey = `${this.getCurrentUser()}_${key}`;
+      
+      // Check cache first
+      const cachedData = this.dataCache.get(cacheKey);
+      const cacheTime = this.cacheTimestamps.get(cacheKey);
+      
+      if (cachedData !== undefined && cacheTime && (Date.now() - cacheTime) < this.CACHE_DURATION) {
+        return cachedData;
+      }
+      
+      // Get from localStorage
       const stored = localStorage.getItem(userKey);
-      return stored ? JSON.parse(stored) : defaultValue;
+      const data = stored ? JSON.parse(stored) : defaultValue;
+      
+      // Cache the result
+      this.dataCache.set(cacheKey, data);
+      this.cacheTimestamps.set(cacheKey, Date.now());
+      
+      return data;
     } catch (error) {
       return defaultValue;
+    }
+  }
+
+  // Clear cache for specific user data
+  static clearCache(key?: string) {
+    if (key) {
+      const cacheKey = `${this.getCurrentUser()}_${key}`;
+      this.dataCache.delete(cacheKey);
+      this.cacheTimestamps.delete(cacheKey);
+    } else {
+      this.dataCache.clear();
+      this.cacheTimestamps.clear();
     }
   }
 

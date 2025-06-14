@@ -30,6 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return null;
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(true); // Start as true to prevent flash
 
   // Listen for admin profile updates to refresh user data immediately
   useEffect(() => {

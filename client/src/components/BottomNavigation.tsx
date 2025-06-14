@@ -1,7 +1,20 @@
 import { useLocation } from "wouter";
+import { useAuth } from "@/lib/auth";
+import { useState, useEffect } from "react";
 
 export default function BottomNavigation() {
   const [location, setLocation] = useLocation();
+  const { user } = useAuth();
+  const [isVisible, setIsVisible] = useState(false);
+
+  // Prevent navigation flash by ensuring user is authenticated
+  useEffect(() => {
+    if (user) {
+      setIsVisible(true);
+    } else {
+      setIsVisible(false);
+    }
+  }, [user]);
 
   const navigationItems = [
     {
@@ -49,12 +62,12 @@ export default function BottomNavigation() {
   // Hide navigation on transfer pages when keyboard is active
   const shouldHideNavigation = location.includes('/transfer') || location.includes('/iban-transfer') || location.includes('/uk-transfer');
   
-  if (shouldHideNavigation) {
+  if (shouldHideNavigation || !isVisible) {
     return null;
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 ios-safe-bottom z-50 bottom-nav-container">
+    <div className={`fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 ios-safe-bottom z-50 bottom-nav-container bottom-navigation ${isVisible ? '' : 'hidden'}`}>
       <div className="flex justify-around items-center h-12">
         {navigationItems.map((item) => (
           <button
