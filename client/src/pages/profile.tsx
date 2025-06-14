@@ -475,6 +475,27 @@ export default function Profile() {
 
             {/* Admin Actions */}
             <div className="space-y-4">
+              {/* Edit Profile */}
+              <button
+                onClick={() => {
+                  setShowAdminPanel(false);
+                  setEditingProfile(true);
+                }}
+                className="w-full flex items-center space-x-4 p-4 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors active:scale-95"
+              >
+                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Edit className="w-5 h-5 text-blue-600" />
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="font-semibold text-blue-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Edit Profile
+                  </p>
+                  <p className="text-sm text-blue-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Update your personal information
+                  </p>
+                </div>
+              </button>
+
               {/* Add Account */}
               <button
                 onClick={() => setShowAddAccount(true)}
