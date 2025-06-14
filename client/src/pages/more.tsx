@@ -86,48 +86,26 @@ export default function More() {
               <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />
             </button>
 
-            {/* Help & Support */}
-            <div className="space-y-3">
-              <button 
-                className="w-full bg-white border border-gray-100 rounded-2xl p-5 flex items-center space-x-4 hover:bg-gray-50 shadow-lg transition-all duration-200 active:scale-98 stagger-item" 
-                style={{ animationDelay: '0.2s' }}
-                disabled={isNavigating}
-              >
-                <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-md">
-                  <HelpCircle className="w-6 h-6 text-white" />
-                </div>
-                <div className="flex-1 text-left">
-                  <h3 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Help & Support
-                  </h3>
-                  <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Get help and contact support
-                  </p>
-                </div>
-                <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />
-              </button>
-
-              {/* Live Chat Option */}
-              <button 
-                onClick={() => setShowLiveChat(true)}
-                className="w-full bg-white border border-gray-100 rounded-2xl p-5 flex items-center space-x-4 hover:bg-gray-50 shadow-lg transition-all duration-200 active:scale-98 stagger-item" 
-                style={{ animationDelay: '0.25s' }}
-                disabled={isNavigating}
-              >
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-md">
-                  <MessageCircle className="w-6 h-6 text-white" />
-                </div>
-                <div className="flex-1 text-left">
-                  <h3 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Live Chat
-                  </h3>
-                  <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Chat with our support team
-                  </p>
-                </div>
-                <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />
-              </button>
-            </div>
+            {/* Live Chat */}
+            <button 
+              onClick={() => setShowLiveChat(true)}
+              className="w-full bg-white border border-gray-100 rounded-2xl p-5 flex items-center space-x-4 hover:bg-gray-50 shadow-lg transition-all duration-200 active:scale-98 stagger-item" 
+              style={{ animationDelay: '0.2s' }}
+              disabled={isNavigating}
+            >
+              <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-md">
+                <MessageCircle className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1 text-left">
+                <h3 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Live Chat
+                </h3>
+                <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Get help and contact support
+                </p>
+              </div>
+              <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />
+            </button>
 
             {/* App Information */}
             <button 
