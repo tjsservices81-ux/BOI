@@ -1,34 +1,27 @@
-// Direct approach: clear session flag on any app exit, detect fresh start by missing flag
+// Improved termination detection - only clear flag on actual termination
 export function setupAppTerminationDetection() {
   const APP_RUNNING_FLAG = 'appIsRunning';
   
   // Mark app as running when it starts
   sessionStorage.setItem(APP_RUNNING_FLAG, 'true');
   
-  // Clear running flag on any potential termination event
+  // Clear running flag only on definitive termination events
   const clearFlag = () => {
     sessionStorage.removeItem(APP_RUNNING_FLAG);
     console.log('App termination event - clearing running flag');
   };
   
-  // Comprehensive event listeners for termination detection
+  // Only listen for definitive termination events
   window.addEventListener('beforeunload', clearFlag);
-  window.addEventListener('pagehide', clearFlag);
   window.addEventListener('unload', clearFlag);
   
-  // Mobile-specific events
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
+  // For mobile PWAs - only clear on pagehide if the page is being discarded
+  window.addEventListener('pagehide', (event) => {
+    // Only clear if the page is being permanently discarded
+    if (!event.persisted) {
       clearFlag();
     }
   });
-  
-  // Focus events
-  window.addEventListener('blur', clearFlag);
-  
-  // Additional mobile app events
-  document.addEventListener('pause', clearFlag);
-  document.addEventListener('freeze', clearFlag);
 }
 
 export function isAppFreshStart(): boolean {
