@@ -30,6 +30,7 @@ import NotFound from "@/pages/not-found";
 import { useAppStateManager } from "@/hooks/useAppStateManager";
 import { useScrollManager } from "@/hooks/useScrollManager";
 import { setupAppTerminationDetection, isAppFreshStart } from "@/utils/directTerminationDetector";
+import { statusBarManager } from "@/utils/statusBarManager";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
@@ -84,38 +85,33 @@ function AppRoutes() {
   
   // Set initial theme color and handle app state restoration
   useEffect(() => {
-    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-    
     // Only initialize splash theme if splash hasn't been shown yet
     const hasShownSplash = sessionStorage.getItem('splashShown') === 'true';
     
     if (!hasShownSplash) {
       // First time - show splash
-      if (themeColorMeta) {
-        themeColorMeta.setAttribute('content', '#0000ff');
-      }
+      statusBarManager.setSplashColor();
     } else {
       // App resumed - keep dashboard color
       setSplashShown(true);
-      if (themeColorMeta) {
-        themeColorMeta.setAttribute('content', '#126987');
-      }
+      statusBarManager.setBankingColor();
     }
 
-    // Add listener to maintain correct status bar color on app resume
-    const handleVisibilityChange = () => {
-      if (!document.hidden && hasShownSplash) {
-        // App resumed and splash has been shown - keep banking color
+    // Force status bar color update on app resume for extended background periods
+    const handleAppResume = () => {
+      const splashHasBeenShown = sessionStorage.getItem('splashShown') === 'true';
+      if (splashHasBeenShown) {
+        // Use a slight delay to ensure the color takes effect
         setTimeout(() => {
-          const meta = document.querySelector('meta[name="theme-color"]');
-          if (meta) {
-            meta.setAttribute('content', '#126987');
-          }
-        }, 50);
+          statusBarManager.forceUpdate();
+        }, 150);
       }
     };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    // Listen for various app resume events
+    document.addEventListener('visibilitychange', handleAppResume);
+    window.addEventListener('focus', handleAppResume);
+    window.addEventListener('pageshow', handleAppResume);
     
     // Wait for auth to be checked before showing content
     setTimeout(() => {
@@ -124,7 +120,9 @@ function AppRoutes() {
     }, 0);
 
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      document.removeEventListener('visibilitychange', handleAppResume);
+      window.removeEventListener('focus', handleAppResume);
+      window.removeEventListener('pageshow', handleAppResume);
     };
   }, [appStateManager]);
 

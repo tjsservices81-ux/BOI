@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
+import { statusBarManager } from "@/utils/statusBarManager";
 
 export default function Splash() {
   const [, navigate] = useLocation();
@@ -10,10 +11,7 @@ export default function Splash() {
     document.body.classList.add('splash-fullscreen');
     
     // Set splash theme color
-    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-    if (themeColorMeta) {
-      themeColorMeta.setAttribute('content', '#0000ff');
-    }
+    statusBarManager.setSplashColor();
     
     // Navigate to login after splash duration (8 seconds total)
     const finalTimer = setTimeout(() => {
