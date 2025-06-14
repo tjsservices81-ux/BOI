@@ -76,6 +76,7 @@ function AppRoutes() {
     return sessionStorage.getItem('splashShown') === 'true';
   });
   const [isInitialized, setIsInitialized] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
   const [splashTransitioning, setSplashTransitioning] = useState(false);
   const mainContainerRef = useRef<HTMLDivElement>(null);
   
@@ -95,7 +96,11 @@ function AppRoutes() {
       }
     }
     
-    setTimeout(() => setIsInitialized(true), 0);
+    // Wait for auth to be checked before showing content
+    setTimeout(() => {
+      setAuthChecked(true);
+      setIsInitialized(true);
+    }, 0);
   }, [appStateManager]);
 
   // Listen for splash completion
@@ -124,8 +129,8 @@ function AppRoutes() {
     }
   }, [scrollManager]);
 
-  // Prevent flash during initialization
-  if (!isInitialized) {
+  // Prevent flash during initialization and auth check
+  if (!isInitialized || !authChecked || (isLoading && !user)) {
     return (
       <div className="w-full h-full bg-[#0000ff]">
         {/* Empty blue screen during initialization */}
@@ -150,7 +155,11 @@ function AppRoutes() {
               {/* Handle root route properly based on splash and auth state */}
               {!splashShown || splashTransitioning ? (
                 <Splash />
-              ) : (!user || isLoading) ? (
+              ) : isLoading ? (
+                <div className="w-full h-full flex items-center justify-center bg-[#126987]">
+                  <div className="text-white">Loading...</div>
+                </div>
+              ) : !user ? (
                 <Login />
               ) : (
                 <Dashboard />
