@@ -7,9 +7,14 @@ interface User {
   email: string;
 }
 
+interface LoginCredentials {
+  customerNumber: string;
+  pin: string;
+}
+
 interface AuthContextType {
   user: User | null;
-  login: (user: User) => void;
+  login: (credentials: LoginCredentials) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
 }
@@ -58,9 +63,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [user]);
 
-  const login = (userData: User) => {
-    setUser(userData);
-    localStorage.setItem('bankingUser', JSON.stringify(userData));
+  const login = async (credentials: LoginCredentials) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(credentials),
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Login failed');
+      }
+
+      const data = await response.json();
+      setUser(data.user);
+      localStorage.setItem('bankingUser', JSON.stringify(data.user));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const logout = async () => {

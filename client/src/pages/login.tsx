@@ -242,14 +242,7 @@ export default function Login() {
     UserDataManager.recordLoginTime(customerNumber);
     
     try {
-      const userProfile = UserDataManager.getUserProfile();
-      if (userProfile) {
-        login({
-          id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
-          name: userProfile.name,
-          email: userProfile.email
-        });
-      }
+      await login({ customerNumber, pin });
       navigate("/dashboard");
     } catch (error) {
       toast({
