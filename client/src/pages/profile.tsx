@@ -629,10 +629,10 @@ export default function Profile() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#126987] to-[#0d4e63] flex flex-col page-slide-up relative">
+    <div className="h-screen bg-gradient-to-b from-[#126987] to-[#0d4e63] page-slide-up relative overflow-hidden">
       {/* Header - Hidden during sign out */}
       {!isSigningOut && (
-        <div className="bg-[#126987] px-4 py-6 pt-12 flex-shrink-0">
+        <div className="bg-[#126987] px-4 py-6 pt-12 relative z-10">
           <div className="flex items-center justify-between">
             <button 
               onClick={() => navigate('/dashboard')}
@@ -649,8 +649,9 @@ export default function Profile() {
       )}
 
       {/* Profile Content */}
-      <div className={`bg-white ${!isSigningOut ? 'rounded-t-3xl mt-6' : ''} flex-1 min-h-0`}>
-        <div className="h-full overflow-y-auto p-6 pb-40">
+      <div className={`bg-white ${!isSigningOut ? 'rounded-t-3xl' : ''} absolute inset-x-0 ${!isSigningOut ? 'top-32' : 'top-0'} bottom-0 overflow-y-auto overscroll-behavior-y-contain`} 
+           style={{ WebkitOverflowScrolling: 'touch' }}>
+        <div className="p-6 pb-32 min-h-full">
           {isLoadingProfile ? (
             <div className="flex flex-col items-center justify-center h-64">
               <div className="w-16 h-16 border-4 border-gray-200 border-t-[#126987] rounded-full animate-spin mb-4"></div>
