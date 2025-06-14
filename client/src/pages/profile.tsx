@@ -506,7 +506,7 @@ export default function Profile() {
                 setIsSigningOut(true);
                 setTimeout(async () => {
                   await logout();
-                  navigate('/auth');
+                  navigate('/login');
                 }, 2000);
               }}
               className="w-full flex items-center space-x-4 p-4 bg-red-50 border border-red-200 rounded-xl active:scale-98 transition-transform"
