@@ -65,16 +65,20 @@ export default function Profile() {
               joinDate: userData.joinDate || "Member since 2018"
             });
             
-            // Update UserDataManager with fresh data
-            UserDataManager.updateUserProfile({
-              name: userData.name,
-              email: userData.email,
-              phone: userData.phone || "",
-              customerNumber: userData.customerNumber,
-              dateOfBirth: userData.dateOfBirth || "",
-              address: userData.address || "",
-              joinDate: userData.joinDate || "Member since 2018"
-            });
+            // Update UserDataManager with fresh data (silent update to prevent loops)
+            const allUsers = JSON.parse(localStorage.getItem('bankUsers') || '{}');
+            if (allUsers[userData.customerNumber]) {
+              allUsers[userData.customerNumber] = {
+                ...allUsers[userData.customerNumber],
+                name: userData.name,
+                email: userData.email,
+                phone: userData.phone || "",
+                dateOfBirth: userData.dateOfBirth || "",
+                address: userData.address || "",
+                joinDate: userData.joinDate || "Member since 2018"
+              };
+              localStorage.setItem('bankUsers', JSON.stringify(allUsers));
+            }
           }
         } catch (error) {
           console.error('Failed to load profile data:', error);
@@ -94,10 +98,10 @@ export default function Profile() {
     window.addEventListener('adminProfileUpdate', handleAdminUpdate);
     window.addEventListener('userProfileUpdate', handleAdminUpdate);
     
-    // Poll for updates every 5 seconds to catch admin changes
+    // Poll for updates every 30 seconds to catch admin changes (reduced frequency)
     const pollInterval = setInterval(() => {
       loadProfileData();
-    }, 5000);
+    }, 30000);
     
     return () => {
       window.removeEventListener('adminProfileUpdate', handleAdminUpdate);
@@ -168,48 +172,68 @@ export default function Profile() {
       return;
     }
 
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(editProfileData.email)) {
+      alert('Please enter a valid email address');
+      return;
+    }
+
     try {
       const currentCustomerNumber = UserDataManager.getCurrentUser();
       
+      // Prepare clean data for API
+      const updateData = {
+        name: editProfileData.name.trim(),
+        email: editProfileData.email.trim(),
+        phone: editProfileData.phone?.trim() || '',
+        address: editProfileData.address?.trim() || '',
+        dateOfBirth: editProfileData.dateOfBirth || '',
+        joinDate: editProfileData.joinDate?.trim() || 'Member since 2018'
+      };
+      
+      console.log('Sending profile update:', updateData);
+      
       // Update via API
       const response = await fetch(`/api/profile/${currentCustomerNumber}`, {
-        method: 'PATCH',
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(editProfileData)
+        body: JSON.stringify(updateData)
       });
 
       if (response.ok) {
         const updatedData = await response.json();
+        console.log('Profile update successful:', updatedData);
         
         // Update local state with all new data
         const updatedProfileData = {
           ...profileData,
-          ...editProfileData
+          ...updateData
         };
         setProfileData(updatedProfileData);
         
         // Update UserDataManager with complete profile data
         UserDataManager.updateUserProfile({
-          name: editProfileData.name,
-          email: editProfileData.email,
-          phone: editProfileData.phone,
-          address: editProfileData.address,
-          dateOfBirth: editProfileData.dateOfBirth,
+          name: updateData.name,
+          email: updateData.email,
+          phone: updateData.phone,
+          address: updateData.address,
+          dateOfBirth: updateData.dateOfBirth,
           customerNumber: profileData.customerNumber,
-          joinDate: editProfileData.joinDate
+          joinDate: updateData.joinDate
         });
         
         // Dispatch comprehensive update events for all components
         window.dispatchEvent(new CustomEvent('profileUpdated', { 
           detail: { 
-            name: editProfileData.name,
-            email: editProfileData.email,
-            phone: editProfileData.phone,
-            address: editProfileData.address,
-            dateOfBirth: editProfileData.dateOfBirth,
-            joinDate: editProfileData.joinDate,
+            name: updateData.name,
+            email: updateData.email,
+            phone: updateData.phone,
+            address: updateData.address,
+            dateOfBirth: updateData.dateOfBirth,
+            joinDate: updateData.joinDate,
             customerNumber: profileData.customerNumber
           } 
         }));
@@ -226,17 +250,19 @@ export default function Profile() {
         
         // Card update event for name changes on cards
         window.dispatchEvent(new CustomEvent('cardNameUpdate', {
-          detail: { name: editProfileData.name }
+          detail: { name: updateData.name }
         }));
         
         setShowEditProfile(false);
         alert('Profile updated successfully');
       } else {
-        alert('Failed to update profile');
+        const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+        console.error('Profile update failed:', errorData);
+        alert(`Failed to update profile: ${errorData.message || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error updating profile:', error);
-      alert('Error updating profile');
+      alert('Network error - please check your connection and try again');
     }
   };
 
