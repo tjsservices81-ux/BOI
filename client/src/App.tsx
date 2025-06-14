@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Switch, Route, Redirect, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -27,6 +27,8 @@ import TransactionHistoryWorking from "@/pages/transaction-history-working";
 import Statements from "@/pages/statements";
 import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
+import { useAppStateManager } from "@/hooks/useAppStateManager";
+import { useScrollManager } from "@/hooks/useScrollManager";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
@@ -50,32 +52,55 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function AppRoutes() {
   const { user, isLoading } = useAuth();
   const [location] = useLocation();
+  const appStateManager = useAppStateManager();
+  const scrollManager = useScrollManager({
+    saveScrollPosition: appStateManager.saveScrollPosition,
+    getScrollPosition: appStateManager.getScrollPosition
+  });
+  
   const [splashShown, setSplashShown] = useState(() => {
-    // Initialize splashShown state immediately to prevent flash
+    // Check if we're restoring from a backgrounded state
+    const restoredState = appStateManager.restoreAppState();
+    if (restoredState) {
+      // If we have saved state, splash was already shown
+      return true;
+    }
+    // Otherwise check normal splash state
     return sessionStorage.getItem('splashShown') === 'true';
   });
   const [isInitialized, setIsInitialized] = useState(false);
   const [splashTransitioning, setSplashTransitioning] = useState(false);
+  const mainContainerRef = useRef<HTMLDivElement>(null);
   
-  // Set initial theme color to pure blue immediately on mount
+  // Set initial theme color and handle app state restoration
   useEffect(() => {
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
     if (themeColorMeta) {
       themeColorMeta.setAttribute('content', '#0000ff');
     }
     
-    const hasShownSplash = sessionStorage.getItem('splashShown');
-    if (hasShownSplash) {
+    // Check for restored state first
+    const restoredState = appStateManager.restoreAppState();
+    if (restoredState) {
+      // We're restoring from a backgrounded state
       setSplashShown(true);
-      // If splash was already shown, set theme to #126987
       if (themeColorMeta) {
         themeColorMeta.setAttribute('content', '#126987');
+      }
+    } else {
+      // Normal initialization - check splash state
+      const hasShownSplash = sessionStorage.getItem('splashShown');
+      if (hasShownSplash) {
+        setSplashShown(true);
+        if (themeColorMeta) {
+          themeColorMeta.setAttribute('content', '#126987');
+        }
       }
     }
     
     // Mark as initialized after a tick to prevent flash
     setTimeout(() => setIsInitialized(true), 0);
-  }, []);
+  }, [appStateManager]);
 
   // Listen for splash completion
   useEffect(() => {
