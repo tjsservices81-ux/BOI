@@ -1,7 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLocation } from "wouter";
 import { ChevronLeft, ChevronRight, CreditCard, Home, DollarSign, Car, Building2, Briefcase } from "lucide-react";
-import { themeManager } from "@/utils/themeManager";
 
 interface ProductTile {
   id: string;
@@ -67,11 +66,6 @@ export default function Apply() {
       category: 'Business'
     }
   ];
-
-  // Set apply theme on component mount
-  useEffect(() => {
-    themeManager.setTheme('apply');
-  }, []);
 
   const handleApplyClick = (productId: string, productTitle: string) => {
     // For demo purposes, show an alert - in real app would navigate to application form

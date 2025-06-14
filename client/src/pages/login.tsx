@@ -8,7 +8,6 @@ import { useAuth } from "@/lib/auth";
 import { User, ExternalLink, HelpCircle, Phone, Settings, Shield, MapPin, MoreHorizontal } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { UserDataManager } from "@/utils/userDataManager";
-import { themeManager } from "@/utils/themeManager";
 
 export default function Login() {
   const [customerNumber, setCustomerNumber] = useState("");
@@ -50,9 +49,6 @@ export default function Login() {
   // Assets are always loaded - no delays
   useEffect(() => {
     setAssetsLoaded(true);
-    
-    // Set login theme on component mount
-    themeManager.setTheme('login');
     
     // Clear current user session on login page load
     UserDataManager.clearCurrentUser();

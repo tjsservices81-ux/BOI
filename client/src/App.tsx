@@ -29,8 +29,6 @@ import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
 import { useAppStateManager } from "@/hooks/useAppStateManager";
 import { useScrollManager } from "@/hooks/useScrollManager";
-import { setupAppTerminationDetection, isAppFreshStart } from "@/utils/directTerminationDetector";
-import { themeManager } from "@/utils/themeManager";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
@@ -62,18 +60,7 @@ function AppRoutes() {
   });
   
   const [splashShown, setSplashShown] = useState(() => {
-    // Set up termination detection first
-    setupAppTerminationDetection();
-    
-    // Check if this is a fresh app start
-    const isFreshStart = isAppFreshStart();
-    
-    if (isFreshStart) {
-      // Fresh start - show splash screen
-      return false;
-    }
-    
-    // App was resumed - check if splash was already shown
+    // Simple logic - check if splash was already shown
     return sessionStorage.getItem('splashShown') === 'true';
   });
   const [isInitialized, setIsInitialized] = useState(false);
@@ -83,19 +70,34 @@ function AppRoutes() {
   
   // Set initial theme color and handle app state restoration
   useEffect(() => {
-    // Initialize with splash theme
-    themeManager.setTheme('splash');
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
     
-    // Normal theme handling
+    // Simple theme color logic - always use BOI color except for true fresh starts
     const hasShownSplash = sessionStorage.getItem('splashShown') === 'true';
+    
+    if (themeColorMeta) {
+      if (hasShownSplash) {
+        // Splash has been shown - use BOI color
+        themeColorMeta.setAttribute('content', '#126987');
+      } else {
+        // Check if this is truly a fresh start by checking for any app data
+        const hasAnyAppData = sessionStorage.getItem('appState') || 
+                             sessionStorage.getItem('bankingUser') || 
+                             localStorage.getItem('bankingUser');
+        
+        if (hasAnyAppData) {
+          // Has app data - use BOI color
+          themeColorMeta.setAttribute('content', '#126987');
+        } else {
+          // No app data - use splash blue
+          themeColorMeta.setAttribute('content', '#0000ff');
+        }
+      }
+    }
+    
+    // Set splash shown state
     if (hasShownSplash) {
       setSplashShown(true);
-      // Set theme based on auth state
-      if (user) {
-        themeManager.setTheme('dashboard');
-      } else {
-        themeManager.setTheme('login');
-      }
     }
     
     // Wait for auth to be checked before showing content
@@ -103,7 +105,7 @@ function AppRoutes() {
       setAuthChecked(true);
       setIsInitialized(true);
     }, 0);
-  }, [appStateManager, user]);
+  }, [appStateManager]);
 
   // Listen for splash completion
   useEffect(() => {
@@ -113,18 +115,16 @@ function AppRoutes() {
       setTimeout(() => {
         setSplashShown(true);
         setSplashTransitioning(false);
-        // Set theme based on auth state after splash
-        if (user) {
-          themeManager.handleSplashComplete('dashboard');
-        } else {
-          themeManager.handleSplashComplete('login');
-        }
       }, 100);
+      const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+      if (themeColorMeta) {
+        themeColorMeta.setAttribute('content', '#126987');
+      }
     };
 
     window.addEventListener('splashComplete', handleSplashComplete);
     return () => window.removeEventListener('splashComplete', handleSplashComplete);
-  }, [user]);
+  }, []);
 
   // Set up scroll container when main container is ready
   useEffect(() => {

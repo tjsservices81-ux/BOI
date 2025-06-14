@@ -1,16 +1,10 @@
 import { useLocation } from "wouter";
 import { ChevronLeft, User, HelpCircle, Info, Settings, Shield, Building2 } from "lucide-react";
-import { useState, useEffect } from "react";
-import { themeManager } from "@/utils/themeManager";
+import { useState } from "react";
 
 export default function More() {
   const [, setLocation] = useLocation();
   const [isNavigating, setIsNavigating] = useState(false);
-
-  // Set more theme on component mount
-  useEffect(() => {
-    themeManager.setTheme('more');
-  }, []);
 
   const handleNavigation = (path: string) => {
     setIsNavigating(true);
