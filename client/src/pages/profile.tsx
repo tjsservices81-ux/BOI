@@ -32,8 +32,25 @@ export default function Profile() {
     joinDate: ''
   });
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [profileData, setProfileData] = useState(() => {
     const currentCustomerNumber = UserDataManager.getCurrentUser();
+    // Try to get cached data first to prevent flash
+    if (currentCustomerNumber) {
+      const allUsers = JSON.parse(localStorage.getItem('bankUsers') || '{}');
+      const cachedUser = allUsers[currentCustomerNumber];
+      if (cachedUser) {
+        return {
+          name: cachedUser.name || "",
+          email: cachedUser.email || "",
+          phone: cachedUser.phone || "",
+          address: cachedUser.address || "",
+          dateOfBirth: cachedUser.dateOfBirth || "",
+          customerNumber: currentCustomerNumber,
+          joinDate: cachedUser.joinDate || ""
+        };
+      }
+    }
     return {
       name: "",
       email: "",
@@ -49,7 +66,10 @@ export default function Profile() {
   useEffect(() => {
     const loadProfileData = async () => {
       const currentCustomerNumber = UserDataManager.getCurrentUser();
-      if (!currentCustomerNumber) return;
+      if (!currentCustomerNumber) {
+        setIsLoadingProfile(false);
+        return;
+      }
 
       try {
         const response = await fetch(`/api/profile/${currentCustomerNumber}`);
@@ -86,6 +106,8 @@ export default function Profile() {
         }
       } catch (error) {
         console.error('Failed to load profile data:', error);
+      } finally {
+        setIsLoadingProfile(false);
       }
     };
 
@@ -571,24 +593,31 @@ export default function Profile() {
       {/* Profile Content */}
       <div className={`bg-white ${!isSigningOut ? 'rounded-t-3xl mt-6' : ''} flex-1 overflow-hidden`}>
         <div className="h-full overflow-y-auto p-6 pb-32">
-          {/* Profile Header */}
-          <div className="flex flex-col items-center text-center mb-8">
-            <button 
-              onClick={handleProfilePictureTap}
-              className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mb-4 active:scale-95 transition-transform"
-            >
-              <User className="w-12 h-12 text-gray-600" />
-            </button>
-            <h2 className="text-2xl font-bold text-gray-900 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              {userDetails.name || "User"}
-            </h2>
-            <p className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              {userDetails.joinDate || ""}
-            </p>
-            <p className="text-sm text-gray-500 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Customer #{userDetails.customerNumber}
-            </p>
-          </div>
+          {isLoadingProfile ? (
+            <div className="flex flex-col items-center justify-center h-64">
+              <div className="w-16 h-16 border-4 border-gray-200 border-t-[#126987] rounded-full animate-spin mb-4"></div>
+              <p className="text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Loading profile...</p>
+            </div>
+          ) : (
+            <>
+              {/* Profile Header */}
+              <div className="flex flex-col items-center text-center mb-8">
+                <button 
+                  onClick={handleProfilePictureTap}
+                  className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mb-4 active:scale-95 transition-transform"
+                >
+                  <User className="w-12 h-12 text-gray-600" />
+                </button>
+                <h2 className="text-2xl font-bold text-gray-900 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  {userDetails.name || "User"}
+                </h2>
+                <p className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  {userDetails.joinDate || ""}
+                </p>
+                <p className="text-sm text-gray-500 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Customer #{userDetails.customerNumber}
+                </p>
+              </div>
 
           {/* Profile Details */}
           <div className="space-y-4 mb-8">
@@ -665,6 +694,8 @@ export default function Profile() {
               </span>
             </button>
           </div>
+            </>
+          )}
         </div>
       </div>
 
