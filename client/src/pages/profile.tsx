@@ -767,8 +767,17 @@ export default function Profile() {
             <button 
               onClick={async () => {
                 setIsSigningOut(true);
+                // Hide status bar during sign out
+                const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+                if (themeColorMeta) {
+                  themeColorMeta.setAttribute('content', 'transparent');
+                }
                 setTimeout(async () => {
                   await logout();
+                  // Restore theme color before navigation
+                  if (themeColorMeta) {
+                    themeColorMeta.setAttribute('content', '#126987');
+                  }
                   navigate('/login');
                 }, 8000);
               }}
@@ -1307,22 +1316,13 @@ export default function Profile() {
       <AnimatePresence>
         {isSigningOut && (
           <>
-            {/* Status bar overlay */}
+            {/* Main fullscreen overlay with enhanced animation */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.5 }}
-              className="fixed top-0 left-0 right-0 h-12 z-[10000] bg-gradient-to-r from-[#1a3c47] via-[#2c5f70] to-[#1a3c47]"
-            />
-            
-            {/* Main overlay with enhanced animation */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.5 }}
-              className="fixed inset-0 z-[9999] bg-gradient-to-br from-[#1a3c47] via-[#2c5f70] to-[#0f2a31] flex items-center justify-center"
+              className="fullscreen-overlay bg-gradient-to-br from-[#1a3c47] via-[#2c5f70] to-[#0f2a31] flex items-center justify-center"
             >
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}

@@ -9,10 +9,10 @@ export default function Splash() {
     // Add splash-specific full screen class for iOS PWA
     document.body.classList.add('splash-fullscreen');
     
-    // Change theme color to pure blue for splash screen
+    // Hide status bar by making theme color transparent
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
     if (themeColorMeta) {
-      themeColorMeta.setAttribute('content', '#0000ff');
+      themeColorMeta.setAttribute('content', 'transparent');
     }
     
     // Navigate to login after splash duration (8 seconds total)
@@ -46,7 +46,7 @@ export default function Splash() {
 
   return (
     <div 
-      className={`full-height relative overflow-hidden transition-all duration-500 asset-instant ${
+      className={`fullscreen-overlay relative overflow-hidden transition-all duration-500 asset-instant ${
         isVisible ? 'opacity-100' : 'opacity-0'
       }`}
       style={{
