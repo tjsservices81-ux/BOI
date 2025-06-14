@@ -728,7 +728,7 @@ export default function Profile() {
                     if (response.ok) {
                       const updatedUser = await response.json();
                       
-                      // Also update localStorage for consistency
+                      // 1. Update UserDataManager (localStorage) with complete user data
                       UserDataManager.updateUserProfile({
                         name: profileData.name,
                         email: profileData.email,
@@ -739,12 +739,59 @@ export default function Profile() {
                         joinDate: profileData.joinDate
                       });
                       
-                      // If customer number changed, update current user
+                      // 2. Update auth context with new user information
+                      const updatedAuthUser = {
+                        id: parseInt(profileData.customerNumber.replace(/\D/g, '')) || 1,
+                        name: profileData.name,
+                        email: profileData.email
+                      };
+                      login(updatedAuthUser);
+                      
+                      // 3. Update localStorage banking user cache
+                      localStorage.setItem('bankingUser', JSON.stringify(updatedAuthUser));
+                      
+                      // 4. If customer number changed, update current user session
                       if (profileData.customerNumber !== currentCustomerNumber) {
                         UserDataManager.setCurrentUser(profileData.customerNumber);
+                        
+                        // Transfer all user data to new customer number
+                        const userData = UserDataManager.getAllUsers()[currentCustomerNumber];
+                        if (userData) {
+                          UserDataManager.registerUser({
+                            ...userData,
+                            customerNumber: profileData.customerNumber,
+                            name: profileData.name,
+                            email: profileData.email,
+                            phone: profileData.phone,
+                            address: profileData.address,
+                            dateOfBirth: profileData.dateOfBirth,
+                            joinDate: profileData.joinDate
+                          });
+                          
+                          // Copy all account and transaction data to new customer number
+                          const accounts = UserDataManager.getUserAccounts();
+                          const transactions = UserDataManager.getUserData('bankTransactions', []);
+                          const payees = UserDataManager.getUserData('savedPayees', []);
+                          
+                          UserDataManager.setUserAccounts(accounts);
+                          UserDataManager.setUserData('bankTransactions', transactions);
+                          UserDataManager.setUserData('savedPayees', payees);
+                          
+                          // Remove old customer number data
+                          UserDataManager.removeUser(currentCustomerNumber);
+                        }
                       }
                       
-                      alert('Profile updated successfully');
+                      // 5. Dispatch events to notify all components of the update
+                      window.dispatchEvent(new CustomEvent('userProfileUpdate', {
+                        detail: {
+                          name: profileData.name,
+                          email: profileData.email,
+                          customerNumber: profileData.customerNumber
+                        }
+                      }));
+                      
+                      alert('Profile updated successfully across all systems');
                     } else {
                       alert('Failed to update profile');
                     }
