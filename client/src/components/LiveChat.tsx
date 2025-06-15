@@ -429,8 +429,11 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       responses: [
         "Hello! I'm here to help with your banking needs. What can I assist you with today?",
         "Hi there! Welcome to Bank of Ireland support. How can I help you today?",
-        "Good to see you! I'm ready to assist with any banking questions or issues you might have.",
-        "Hello! Thanks for reaching out. What banking matter can I help you with today?"
+        "Lovely to hear from you! I'm ready to assist with any banking questions or issues you might have.",
+        "Hello! Thanks for reaching out. What banking matter can I help you with today?",
+        "Hi! Great to see you. What can I sort out for you today?",
+        "Good to speak with you! How can I help with your banking today?",
+        "Hello there! I'm here to help - what's on your mind?"
       ]
     },
     {
@@ -439,9 +442,12 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       triggers: ['thank you', 'thanks', 'appreciate', 'helpful'],
       responses: [
         "You're very welcome! Is there anything else I can help you with today?",
-        "Happy to help! Feel free to reach out if you need any other assistance.",
-        "Glad I could assist! Let me know if you have any other questions.",
-        "You're welcome! I'm here if you need help with anything else."
+        "Brilliant, happy to help! Feel free to reach out if you need any other assistance.",
+        "Lovely, glad I could assist! Let me know if you have any other questions.",
+        "You're welcome! I'm here if you need help with anything else.",
+        "No worries at all! Anything else I can sort out for you?",
+        "Perfect, always happy to help! Just give me a shout if you need anything else.",
+        "You're all sorted then! Feel free to contact us anytime you need assistance."
       ]
     },
     {
@@ -720,7 +726,15 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
               ) : (
                 <>
                   <h3 className="text-white font-semibold text-lg" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {chatState.agentName} – Support Specialist
+                    {chatState.agentName} – {(() => {
+                      const specialties: { [key: string]: string } = {
+                        'Emma': 'General Support',
+                        'James': 'Transfer Specialist',
+                        'Sarah': 'Security Specialist',
+                        'Michael': 'Technical Support'
+                      };
+                      return specialties[chatState.agentName] || 'Support Specialist';
+                    })()}
                   </h3>
                   <p className="text-white/80 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     {isTyping ? typingText : 'Online now'}
