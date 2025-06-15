@@ -74,6 +74,39 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
+// Chat messages table for persistent chat storage
+export const chatMessages = pgTable("chat_messages", {
+  id: serial("id").primaryKey(),
+  sessionId: text("session_id").notNull(),
+  userId: integer("user_id"),
+  text: text("text").notNull(),
+  isUser: boolean("is_user").notNull(),
+  agentName: text("agent_name"),
+  timestamp: timestamp("timestamp").notNull().defaultNow(),
+});
+
+// Chat responses table for managing automated responses
+export const chatResponses = pgTable("chat_responses", {
+  id: serial("id").primaryKey(),
+  category: text("category").notNull(),
+  triggers: jsonb("triggers").notNull(), // Array of trigger phrases
+  responses: jsonb("responses").notNull(), // Array of response variations
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Chat sessions table for tracking chat sessions
+export const chatSessions = pgTable("chat_sessions", {
+  id: serial("id").primaryKey(),
+  sessionId: text("session_id").notNull().unique(),
+  userId: integer("user_id"),
+  agentName: text("agent_name").notNull(),
+  isActive: boolean("is_active").notNull().default(true),
+  startedAt: timestamp("started_at").notNull().defaultNow(),
+  endedAt: timestamp("ended_at"),
+});
+
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
 });
@@ -87,6 +120,18 @@ export const insertTransactionSchema = createInsertSchema(transactions).omit({
 });
 
 export const insertPayeeSchema = createInsertSchema(payees).omit({
+  id: true,
+});
+
+export const insertChatMessageSchema = createInsertSchema(chatMessages).omit({
+  id: true,
+});
+
+export const insertChatResponseSchema = createInsertSchema(chatResponses).omit({
+  id: true,
+});
+
+export const insertChatSessionSchema = createInsertSchema(chatSessions).omit({
   id: true,
 });
 
@@ -109,9 +154,15 @@ export type Transaction = typeof transactions.$inferSelect;
 export type Payee = typeof payees.$inferSelect;
 export type ScheduledPayment = typeof scheduledPayments.$inferSelect;
 export type Statement = typeof statements.$inferSelect;
+export type ChatMessage = typeof chatMessages.$inferSelect;
+export type ChatResponse = typeof chatResponses.$inferSelect;
+export type ChatSession = typeof chatSessions.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertAccount = z.infer<typeof insertAccountSchema>;
 export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
 export type InsertPayee = z.infer<typeof insertPayeeSchema>;
+export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
+export type InsertChatResponse = z.infer<typeof insertChatResponseSchema>;
+export type InsertChatSession = z.infer<typeof insertChatSessionSchema>;
 export type LoginRequest = z.infer<typeof loginSchema>;
 export type TransferRequest = z.infer<typeof transferSchema>;

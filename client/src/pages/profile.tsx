@@ -1588,13 +1588,26 @@ export default function Profile() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Response Text
+                      Category
+                    </label>
+                    <input
+                      type="text"
+                      value={newResponse.category}
+                      onChange={(e) => setNewResponse({ ...newResponse, category: e.target.value })}
+                      placeholder="e.g. transfers, cards, balance"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#126987]"
+                      style={{ fontFamily: 'OpenSans, sans-serif' }}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Response Variations
                     </label>
                     <textarea
-                      value={newResponse.response}
-                      onChange={(e) => setNewResponse({ ...newResponse, response: e.target.value })}
-                      placeholder="Enter the response that will be sent to users..."
-                      rows={3}
+                      value={newResponse.responses}
+                      onChange={(e) => setNewResponse({ ...newResponse, responses: e.target.value })}
+                      placeholder="Enter response variations (one per line)..."
+                      rows={4}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#126987]"
                       style={{ fontFamily: 'OpenSans, sans-serif' }}
                     />

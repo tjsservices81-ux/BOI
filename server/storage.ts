@@ -1,7 +1,10 @@
 import { 
   users, accounts, transactions, payees, scheduledPayments, statements,
+  chatMessages, chatResponses, chatSessions,
   type User, type Account, type Transaction, type Payee, type ScheduledPayment, type Statement,
-  type InsertUser, type InsertAccount, type InsertTransaction, type InsertPayee
+  type ChatMessage, type ChatResponse, type ChatSession,
+  type InsertUser, type InsertAccount, type InsertTransaction, type InsertPayee,
+  type InsertChatMessage, type InsertChatResponse, type InsertChatSession
 } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
