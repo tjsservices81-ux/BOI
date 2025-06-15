@@ -79,25 +79,9 @@ function AppRoutes() {
       sessionStorage.setItem('app_cold_start', 'true');
     }
     
-    // Set blue theme color immediately for splash screen
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
     if (themeColorMeta) {
-      themeColorMeta.setAttribute('content', '#000DFF');
-    } else {
-      // Create theme-color meta tag if it doesn't exist
-      const newThemeMeta = document.createElement('meta');
-      newThemeMeta.setAttribute('name', 'theme-color');
-      newThemeMeta.setAttribute('content', '#000DFF');
-      document.head.appendChild(newThemeMeta);
-    }
-
-    // Ensure PWA status bar is properly configured
-    const statusBarMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
-    if (!statusBarMeta) {
-      const newStatusBarMeta = document.createElement('meta');
-      newStatusBarMeta.setAttribute('name', 'apple-mobile-web-app-status-bar-style');
-      newStatusBarMeta.setAttribute('content', 'default');
-      document.head.appendChild(newStatusBarMeta);
+      themeColorMeta.setAttribute('content', '#0000ff');
     }
     
     // Always start with splash screen for cold launch
@@ -206,12 +190,11 @@ function AppRoutes() {
       setTimeout(() => {
         setSplashShown(true);
         setSplashTransitioning(false);
-        // Only change theme color after splash is fully complete
-        const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-        if (themeColorMeta) {
-          themeColorMeta.setAttribute('content', '#126987');
-        }
       }, 100);
+      const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+      if (themeColorMeta) {
+        themeColorMeta.setAttribute('content', '#126987');
+      }
     };
 
     window.addEventListener('splashComplete', handleSplashComplete);
@@ -225,7 +208,7 @@ function AppRoutes() {
       const themeColorMeta = document.querySelector('meta[name="theme-color"]');
       if (themeColorMeta) {
         if (location === '/splash') {
-          themeColorMeta.setAttribute('content', '#000DFF');
+          themeColorMeta.setAttribute('content', '#0000ff');
         } else {
           themeColorMeta.setAttribute('content', '#126987');
         }

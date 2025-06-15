@@ -17,32 +17,11 @@ export default function Splash() {
     // Add splash-specific full screen class for iOS PWA
     document.body.classList.add('splash-fullscreen');
     
-    // Set status bar to match splash blue background for PWA
+    // Change theme color to pure blue for splash screen
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
     if (themeColorMeta) {
-      themeColorMeta.setAttribute('content', '#000DFF');
+      themeColorMeta.setAttribute('content', '#0000ff');
     }
-    
-    // Set status bar style to blend with blue background in PWA mode
-    const statusBarMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
-    if (statusBarMeta) {
-      statusBarMeta.setAttribute('content', 'default');
-    } else {
-      const newStatusBarMeta = document.createElement('meta');
-      newStatusBarMeta.setAttribute('name', 'apple-mobile-web-app-status-bar-style');
-      newStatusBarMeta.setAttribute('content', 'default');
-      document.head.appendChild(newStatusBarMeta);
-    }
-    
-    // Set viewport for full screen experience
-    const viewportMeta = document.querySelector('meta[name="viewport"]');
-    if (viewportMeta) {
-      viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no');
-    }
-    
-    // Add body class to hide status bar on mobile browsers
-    document.documentElement.classList.add('splash-active');
-    document.body.classList.add('splash-status-hidden');
     
     // Navigate to login after splash duration (8 seconds total)
     const finalTimer = setTimeout(() => {
@@ -63,22 +42,9 @@ export default function Splash() {
     return () => {
       clearTimeout(finalTimer);
       document.body.classList.remove('splash-fullscreen');
-      
       // Restore theme color to #126987 for other screens
       if (themeColorMeta) {
         themeColorMeta.setAttribute('content', '#126987');
-      }
-      
-      // Restore normal status bar styling
-      const statusBarMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
-      if (statusBarMeta) {
-        statusBarMeta.setAttribute('content', 'default');
-      }
-      
-      // Restore normal viewport
-      const viewportMeta = document.querySelector('meta[name="viewport"]');
-      if (viewportMeta) {
-        viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0');
       }
     };
   }, [navigate]);
@@ -91,7 +57,7 @@ export default function Splash() {
 
   return (
     <div 
-      className={`splash-container relative overflow-hidden transition-all duration-500 asset-instant ${
+      className={`full-height relative overflow-hidden transition-all duration-500 asset-instant ${
         isVisible ? 'opacity-100' : 'opacity-0'
       }`}
       style={{
@@ -107,16 +73,6 @@ export default function Splash() {
       onClick={handleInteraction}
       onTouchStart={handleInteraction}
     >
-      {/* Status bar overlay to blend with splash background */}
-      <div 
-        className="absolute top-0 left-0 right-0 z-40"
-        style={{
-          height: 'env(safe-area-inset-top, 44px)',
-          background: '#000DFF',
-          pointerEvents: 'none'
-        }}
-      />
-      
       {/* Prevent any interactions */}
       <div 
         className="absolute inset-0 z-50"
