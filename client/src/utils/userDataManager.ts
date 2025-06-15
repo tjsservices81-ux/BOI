@@ -119,15 +119,24 @@ export class UserDataManager {
     }
   }
 
-  // Clear cache for specific user data
+  // Clear cache for specific user data with proper synchronization
   static clearCache(key?: string) {
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) return;
+
     if (key) {
-      const cacheKey = `${this.getCurrentUser()}_${key}`;
+      const cacheKey = `${currentUser}_${key}`;
       this.dataCache.delete(cacheKey);
       this.cacheTimestamps.delete(cacheKey);
     } else {
-      this.dataCache.clear();
-      this.cacheTimestamps.clear();
+      // Clear all cache entries for current user
+      const userPrefix = `${currentUser}_`;
+      for (const [cacheKey] of this.dataCache) {
+        if (cacheKey.startsWith(userPrefix)) {
+          this.dataCache.delete(cacheKey);
+          this.cacheTimestamps.delete(cacheKey);
+        }
+      }
     }
   }
 

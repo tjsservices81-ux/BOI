@@ -706,46 +706,46 @@ button svg, button .lucide {
 
 .bottom-nav-container svg,
 .bottom-nav-container .lucide {
-  opacity: 1 !important;
-  visibility: visible !important;
-  transition: none !important;
+  opacity: 1;
+  visibility: visible;
+  transition: none;
 }
 
 /* Form field instant rendering */
 input, textarea, select {
-  font-family: 'OpenSans', -apple-system, BlinkMacSystemFont, sans-serif !important;
-  opacity: 1 !important;
-  visibility: visible !important;
+  font-family: 'OpenSans', -apple-system, BlinkMacSystemFont, sans-serif;
+  opacity: 1;
+  visibility: visible;
 }
 
 /* Card component instant loading */
 .card, .card-content, .card-header {
-  opacity: 1 !important;
-  visibility: visible !important;
-  transform: none !important;
+  opacity: 1;
+  visibility: visible;
+  transform: none;
 }
 
 /* Dashboard elements instant render */
 .dashboard-card, .account-card, .quick-action {
-  opacity: 1 !important;
-  visibility: visible !important;
+  opacity: 1;
+  visibility: visible;
   transform: translateZ(0);
   backface-visibility: hidden;
 }
 
 /* Payment screen instant render */
 .payment-option, .transfer-option {
-  opacity: 1 !important;
-  visibility: visible !important;
-  transform: none !important;
+  opacity: 1;
+  visibility: visible;
+  transform: none;
 }
 
 /* Prevent any delayed icon loading in lists */
 .list-item svg, .menu-item svg, .option-item svg {
-  opacity: 1 !important;
-  visibility: visible !important;
-  display: inline-block !important;
-  transition: none !important;
+  opacity: 1;
+  visibility: visible;
+  display: inline-block;
+  transition: none;
 }
 
 /* Preload critical assets to prevent flickering */
