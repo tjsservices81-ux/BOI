@@ -7,7 +7,7 @@ export default function Insights() {
   return (
     <div className="h-full bg-[#f5f5f5] overflow-hidden flex flex-col ios-safe-top ios-safe-bottom page-fade-in">
       {/* Header */}
-      <div className="bg-[#126987] text-white px-4 py-6 status-bar-safe">
+      <div className="bg-[#106C88] text-white px-4 py-6 status-bar-safe">
         <div className="flex items-center mb-2">
           <button 
             onClick={() => setLocation('/')}
@@ -30,7 +30,7 @@ export default function Insights() {
           {/* Filter Tabs */}
           <div className="px-4 mb-6">
             <div className="flex space-x-2">
-              <button className="px-4 py-2 bg-[#126987] text-white rounded-full text-sm font-medium boi-regular-font">
+              <button className="px-4 py-2 bg-[#106C88] text-white rounded-full text-sm font-medium boi-regular-font">
                 ALL INSIGHTS (7)
               </button>
               <button className="px-4 py-2 bg-gray-100 text-gray-600 rounded-full text-sm font-medium boi-regular-font hover:bg-gray-200 transition-colors">
@@ -64,7 +64,7 @@ export default function Insights() {
                     <span className="text-xs text-gray-600 boi-regular-font">Apr</span>
                   </div>
                   <div className="w-full bg-gray-100 rounded-full h-2">
-                    <div className="bg-[#126987] h-2 rounded-full" style={{width: '45%'}}></div>
+                    <div className="bg-[#106C88] h-2 rounded-full" style={{width: '45%'}}></div>
                   </div>
                 </div>
               </div>
@@ -105,7 +105,7 @@ export default function Insights() {
                     <span className="text-xs text-gray-600 boi-regular-font">01 May</span>
                   </div>
                   <div className="w-full bg-gray-100 rounded-full h-2">
-                    <div className="bg-[#126987] h-2 rounded-full" style={{width: '100%'}}></div>
+                    <div className="bg-[#106C88] h-2 rounded-full" style={{width: '100%'}}></div>
                   </div>
                 </div>
                 <div>
@@ -179,7 +179,7 @@ export default function Insights() {
           </button>
           
           <button 
-            className="flex flex-col items-center text-gray-400 hover:text-[#126987] transition-colors"
+            className="flex flex-col items-center text-gray-400 hover:text-[#106C88] transition-colors"
             onClick={() => alert('Payments: Transfer money, pay bills, manage payees')}
           >
             <img src="/icon-footer-payments.svg" alt="Payments" className="w-5 h-5 mb-1" />
@@ -187,21 +187,21 @@ export default function Insights() {
           </button>
           
           <button 
-            className="flex flex-col items-center text-gray-400 hover:text-[#126987] transition-colors"
+            className="flex flex-col items-center text-gray-400 hover:text-[#106C88] transition-colors"
             onClick={() => setLocation('/cards')}
           >
             <img src="/icon-footer-cards.svg" alt="Cards" className="w-5 h-5 mb-1" />
             <span className="text-xs font-medium boi-regular-font">Cards</span>
           </button>
           
-          <button className="flex flex-col items-center text-[#126987] relative">
+          <button className="flex flex-col items-center text-[#106C88] relative">
             <img src="/icon-footer-services-highlight.svg" alt="Services" className="w-5 h-5 mb-1" />
             <span className="text-xs font-medium boi-regular-font">Services</span>
-            <div className="absolute -bottom-3 left-1/2 w-12 h-1 bg-[#126987]" style={{ marginLeft: '-24px' }}></div>
+            <div className="absolute -bottom-3 left-1/2 w-12 h-1 bg-[#106C88]" style={{ marginLeft: '-24px' }}></div>
           </button>
           
           <button 
-            className="flex flex-col items-center text-gray-400 hover:text-[#126987] transition-colors"
+            className="flex flex-col items-center text-gray-400 hover:text-[#106C88] transition-colors"
             onClick={() => alert('Apply: Apply for loans, credit cards, and other products')}
           >
             <img src="/icon-footer-apply.svg" alt="Apply" className="w-5 h-5 mb-1" />

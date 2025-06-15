@@ -26,7 +26,7 @@ export default function More() {
   };
 
   return (
-    <div className="h-screen bg-gradient-to-br from-[#126987] to-[#0d4e63] flex flex-col overflow-hidden page-slide-up relative">
+    <div className="h-screen bg-gradient-to-br from-[#106C88] to-[#0d4e63] flex flex-col overflow-hidden page-slide-up relative">
       {/* Loading overlay for smooth transitions */}
       {isNavigating && (
         <div className="fixed inset-0 bg-black bg-opacity-30 z-50 flex items-center justify-center backdrop-blur-sm">
@@ -35,7 +35,7 @@ export default function More() {
       )}
       
       {/* Header */}
-      <div className="bg-[#126987] px-4 py-6 pt-12 flex-shrink-0 shadow-lg">
+      <div className="bg-[#106C88] px-4 py-6 pt-12 flex-shrink-0 shadow-lg">
         <div className="flex items-center justify-between">
           <button 
             onClick={() => handleNavigation('/dashboard')}
@@ -82,7 +82,7 @@ export default function More() {
               onClick={() => handleNavigation('/profile')}
               disabled={isNavigating}
             >
-              <div className="w-12 h-12 bg-gradient-to-br from-[#126987] to-[#0d4e63] rounded-2xl flex items-center justify-center shadow-md">
+              <div className="w-12 h-12 bg-gradient-to-br from-[#106C88] to-[#0d4e63] rounded-2xl flex items-center justify-center shadow-md">
                 <User className="w-6 h-6 text-white" />
               </div>
               <div className="flex-1 text-left">

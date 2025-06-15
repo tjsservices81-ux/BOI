@@ -75,7 +75,7 @@ export default function Apply() {
   return (
     <div className="h-screen flex flex-col bg-white ios-safe-top ios-safe-bottom page-slide-down">
       {/* Header - BOI Style */}
-      <div className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0">
+      <div className="bg-[#106C88] flex items-center justify-between px-4 py-3 flex-shrink-0">
         <button 
           onClick={() => navigate("/")}
           className="flex items-center text-white active:scale-95 transition-transform"
@@ -137,7 +137,7 @@ export default function Apply() {
                         {product.title}
                       </h3>
                       {product.popular && (
-                        <span className="bg-[#126987] text-white text-xs px-2 py-0.5 rounded-full">
+                        <span className="bg-[#106C88] text-white text-xs px-2 py-0.5 rounded-full">
                           Popular
                         </span>
                       )}
@@ -154,7 +154,7 @@ export default function Apply() {
                 {/* Apply Button */}
                 <button
                   onClick={() => handleApplyClick(product.id, product.title)}
-                  className="ml-4 bg-[#126987] text-white px-4 py-2 rounded-xl text-sm font-medium active:scale-95 transition-all duration-200 hover:bg-[#0f5a6b] flex items-center space-x-1"
+                  className="ml-4 bg-[#106C88] text-white px-4 py-2 rounded-xl text-sm font-medium active:scale-95 transition-all duration-200 hover:bg-[#0f5a6b] flex items-center space-x-1"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                 >
                   <span>Apply</span>
@@ -174,10 +174,10 @@ export default function Apply() {
             Our team is here to help you choose the right product. Visit any branch, call us, or book an appointment online.
           </p>
           <div className="mt-3 flex space-x-3">
-            <button className="text-[#126987] text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+            <button className="text-[#106C88] text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>
               Find a Branch
             </button>
-            <button className="text-[#126987] text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+            <button className="text-[#106C88] text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>
               Book Appointment
             </button>
           </div>

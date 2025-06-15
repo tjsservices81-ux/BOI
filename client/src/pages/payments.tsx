@@ -16,7 +16,7 @@ export default function Payments() {
       id: 'iban',
       title: 'European Transfer',
       subtitle: 'IBAN transfer to any European bank',
-      icon: <Globe className="w-6 h-6 text-[#126987]" />,
+      icon: <Globe className="w-6 h-6 text-[#106C88]" />,
       description: 'Send money to Europe using IBAN',
       popular: true
     },
@@ -24,7 +24,7 @@ export default function Payments() {
       id: 'domestic',
       title: 'UK Bank Transfer',
       subtitle: 'Account number and sort code',
-      icon: <MapPin className="w-6 h-6 text-[#126987]" />,
+      icon: <MapPin className="w-6 h-6 text-[#106C88]" />,
       description: 'Transfer to UK bank accounts',
       popular: false
     },
@@ -32,7 +32,7 @@ export default function Payments() {
       id: 'internal',
       title: 'Between BOI Accounts',
       subtitle: 'Move money between your accounts',
-      icon: <ArrowUpDown className="w-6 h-6 text-[#126987]" />,
+      icon: <ArrowUpDown className="w-6 h-6 text-[#106C88]" />,
       description: 'Instant transfer between your BOI accounts',
       popular: false
     }
@@ -109,7 +109,7 @@ export default function Payments() {
   return (
     <div className="h-screen flex flex-col bg-white ios-safe-top ios-safe-bottom page-container page-fade-in">
       {/* Header */}
-      <div className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0">
+      <div className="bg-[#106C88] flex items-center justify-between px-4 py-3 flex-shrink-0">
         <button 
           onClick={() => navigate("/")}
           className="flex items-center text-white active:scale-95 transition-transform"
@@ -149,7 +149,7 @@ export default function Payments() {
                 else if (option.id === 'domestic') navigate('/uk-transfer');
                 else setSelectedPaymentType(option.id);
               }}
-              className="w-full bg-white rounded-2xl p-5 shadow-sm active:scale-98 transition-all duration-200 border-2 border-transparent hover:border-[#126987]/20 stagger-item card-interactive"
+              className="w-full bg-white rounded-2xl p-5 shadow-sm active:scale-98 transition-all duration-200 border-2 border-transparent hover:border-[#106C88]/20 stagger-item card-interactive"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
               <div className="flex items-center justify-between">
@@ -163,7 +163,7 @@ export default function Payments() {
                         {option.title}
                       </h3>
                       {option.popular && (
-                        <span className="bg-[#126987] text-white text-xs px-2 py-0.5 rounded-full">
+                        <span className="bg-[#106C88] text-white text-xs px-2 py-0.5 rounded-full">
                           Popular
                         </span>
                       )}
@@ -189,7 +189,7 @@ export default function Payments() {
               onClick={() => setShowRecentPayees(true)}
               className="bg-blue-50 rounded-xl p-4 text-center active:scale-95 transition-transform"
             >
-              <div className="w-8 h-8 bg-[#126987] rounded-full flex items-center justify-center mx-auto mb-2">
+              <div className="w-8 h-8 bg-[#106C88] rounded-full flex items-center justify-center mx-auto mb-2">
                 <Users className="w-4 h-4 text-white" />
               </div>
               <span className="text-sm font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -197,7 +197,7 @@ export default function Payments() {
               </span>
             </button>
             <button className="bg-blue-50 rounded-xl p-4 text-center active:scale-95 transition-transform">
-              <div className="w-8 h-8 bg-[#126987] rounded-full flex items-center justify-center mx-auto mb-2">
+              <div className="w-8 h-8 bg-[#106C88] rounded-full flex items-center justify-center mx-auto mb-2">
                 <img src="/Add-payee.svg" alt="Add" className="w-4 h-4" />
               </div>
               <span className="text-sm font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -230,9 +230,9 @@ export default function Payments() {
                     <div className="flex items-center space-x-3">
                       <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                         {payment.paymentMethod === 'UK Transfer' ? (
-                          <MapPin className="w-5 h-5 text-[#126987]" />
+                          <MapPin className="w-5 h-5 text-[#106C88]" />
                         ) : (
-                          <Globe className="w-5 h-5 text-[#126987]" />
+                          <Globe className="w-5 h-5 text-[#106C88]" />
                         )}
                       </div>
                       <div className="text-left">

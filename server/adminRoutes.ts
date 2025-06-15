@@ -135,7 +135,7 @@ router.get('/login', (req, res) => {
         }
         
         body {
-          background: linear-gradient(135deg, #0000ff 0%, #126987 100%);
+          background: linear-gradient(135deg, #0000ff 0%, #106C88 100%);
           min-height: 100vh;
           display: flex;
           align-items: center;
@@ -319,7 +319,7 @@ router.get('/panel', (req, res) => {
         }
         
         .header {
-          background: linear-gradient(135deg, #0000ff 0%, #126987 100%);
+          background: linear-gradient(135deg, #0000ff 0%, #106C88 100%);
           color: white;
           padding: 30px;
           border-radius: 15px;

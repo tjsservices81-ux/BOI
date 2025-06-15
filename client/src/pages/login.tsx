@@ -744,7 +744,7 @@ export default function Login() {
     <div className="full-height relative ios-safe-top ios-safe-bottom ios-safe-left ios-safe-right page-fade-in">
       {/* Loading overlay */}
       {(isNavigating || isLoginAnimating) && (
-        <div className="fixed inset-0 bg-gradient-to-br from-[#126987] to-[#2d5a6b] z-50 flex flex-col items-center justify-center">
+        <div className="fixed inset-0 bg-gradient-to-br from-[#106C88] to-[#2d5a6b] z-50 flex flex-col items-center justify-center">
           {/* Background overlay pattern */}
           <div 
             className="absolute inset-0 opacity-10"
@@ -970,7 +970,7 @@ export default function Login() {
                   disabled={isLoading}
                   className={`w-full py-2.5 ios-button font-semibold text-sm mb-3 transition-all duration-200 ${
                     biometricVerified || pinVerified 
-                      ? 'bg-[#126987] text-white hover:bg-[#3a5a65] active:scale-95' 
+                      ? 'bg-[#106C88] text-white hover:bg-[#3a5a65] active:scale-95' 
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   } disabled:opacity-50`}
                   style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}
@@ -980,7 +980,7 @@ export default function Login() {
 
                 {/* Forgot PIN */}
                 <div className="text-center mb-3">
-                  <button className="text-[#126987] text-xs flex items-center justify-center space-x-1 active:scale-95 transition-transform" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
+                  <button className="text-[#106C88] text-xs flex items-center justify-center space-x-1 active:scale-95 transition-transform" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
                     <span>Forgot your PIN?</span>
                     <ExternalLink className="w-2.5 h-2.5" />
                   </button>
@@ -991,7 +991,7 @@ export default function Login() {
 
                 {/* Alternative Login */}
                 <div className="text-center">
-                  <button className="flex items-center justify-center space-x-2 text-[#126987] text-xs mx-auto active:scale-95 transition-transform" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
+                  <button className="flex items-center justify-center space-x-2 text-[#106C88] text-xs mx-auto active:scale-95 transition-transform" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
                     <User className="w-3 h-3" />
                     <span>Log in with another ID</span>
                   </button>
@@ -1054,7 +1054,7 @@ export default function Login() {
                     <Button 
                       type="submit" 
                       className={`w-full text-white hover:bg-[#3a5a65] ${
-                        pinVerified ? 'bg-green-600' : 'bg-[#126987]'
+                        pinVerified ? 'bg-green-600' : 'bg-[#106C88]'
                       }`}
                       disabled={isLoading || pinVerified}
                       style={{ fontFamily: 'OpenSans, sans-serif' }}
@@ -1092,7 +1092,7 @@ export default function Login() {
         </div>
 
         {/* Bottom Navigation */}
-        <div className="fixed bottom-0 left-0 right-0 bg-[#126987]/95 backdrop-blur-sm px-4 py-3 ios-safe-bottom">
+        <div className="fixed bottom-0 left-0 right-0 bg-[#106C88]/95 backdrop-blur-sm px-4 py-3 ios-safe-bottom">
           <div className="flex justify-evenly items-center w-full max-w-xs mx-auto">
             <button 
               className="flex flex-col items-center space-y-1 py-2 transition-opacity duration-150 hover:opacity-80"
@@ -1533,7 +1533,7 @@ export default function Login() {
             <div className="flex-1 overflow-y-auto p-6">
               {isLoadingLocation ? (
                 <div className="flex flex-col items-center justify-center h-64">
-                  <div className="w-8 h-8 border-4 border-[#126987] border-t-transparent rounded-full animate-spin mb-4"></div>
+                  <div className="w-8 h-8 border-4 border-[#106C88] border-t-transparent rounded-full animate-spin mb-4"></div>
                   <p className="text-gray-600 text-center" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     Getting your location...
                   </p>
@@ -1551,7 +1551,7 @@ export default function Login() {
                   </p>
                   <button
                     onClick={requestLocation}
-                    className="px-6 py-2 bg-[#126987] text-white rounded-lg font-medium hover:bg-[#3a5a65] transition-colors"
+                    className="px-6 py-2 bg-[#106C88] text-white rounded-lg font-medium hover:bg-[#3a5a65] transition-colors"
                     style={{ fontFamily: 'OpenSans, sans-serif' }}
                   >
                     Try Again
@@ -1562,7 +1562,7 @@ export default function Login() {
                   {/* Simple Map Placeholder */}
                   <div className="h-48 bg-gray-100 rounded-xl border-2 border-gray-200 flex items-center justify-center mb-6">
                     <div className="text-center">
-                      <MapPin className="w-8 h-8 text-[#126987] mx-auto mb-2" />
+                      <MapPin className="w-8 h-8 text-[#106C88] mx-auto mb-2" />
                       <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                         Map showing {nearbyATMs.length} nearby ATMs
                       </p>
@@ -1582,7 +1582,7 @@ export default function Login() {
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <div className="flex items-center space-x-2 mb-1">
-                              <div className="w-2 h-2 bg-[#126987] rounded-full"></div>
+                              <div className="w-2 h-2 bg-[#106C88] rounded-full"></div>
                               <h5 className="font-medium text-gray-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                                 {atm.name}
                               </h5>
@@ -1609,7 +1609,7 @@ export default function Login() {
                               const url = `https://www.google.com/maps/dir/?api=1&destination=${atm.lat},${atm.lng}`;
                               window.open(url, '_blank');
                             }}
-                            className="px-3 py-1 bg-[#126987] text-white text-xs rounded-lg hover:bg-[#3a5a65] transition-colors"
+                            className="px-3 py-1 bg-[#106C88] text-white text-xs rounded-lg hover:bg-[#3a5a65] transition-colors"
                             style={{ fontFamily: 'OpenSans, sans-serif' }}
                           >
                             Directions
@@ -1634,7 +1634,7 @@ export default function Login() {
               ) : (
                 <div className="flex flex-col items-center justify-center h-64 text-center">
                   <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-                    <MapPin className="w-8 h-8 text-[#126987]" />
+                    <MapPin className="w-8 h-8 text-[#106C88]" />
                   </div>
                   <p className="text-gray-800 font-medium mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     Find Nearby ATMs
@@ -1644,7 +1644,7 @@ export default function Login() {
                   </p>
                   <button
                     onClick={requestLocation}
-                    className="px-6 py-2 bg-[#126987] text-white rounded-lg font-medium hover:bg-[#3a5a65] transition-colors"
+                    className="px-6 py-2 bg-[#106C88] text-white rounded-lg font-medium hover:bg-[#3a5a65] transition-colors"
                     style={{ fontFamily: 'OpenSans, sans-serif' }}
                   >
                     Enable Location

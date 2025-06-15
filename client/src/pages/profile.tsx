@@ -766,10 +766,10 @@ export default function Profile() {
   };
 
   return (
-    <div className="h-screen bg-gradient-to-b from-[#126987] to-[#0d4e63] page-slide-up relative overflow-hidden">
+    <div className="h-screen bg-gradient-to-b from-[#106C88] to-[#0d4e63] page-slide-up relative overflow-hidden">
       {/* Header - Hidden during sign out */}
       {!isSigningOut && (
-        <div className="bg-[#126987] px-4 py-6 pt-12 relative z-10">
+        <div className="bg-[#106C88] px-4 py-6 pt-12 relative z-10">
           <div className="flex items-center justify-between">
             <button 
               onClick={() => navigate('/dashboard')}
@@ -791,7 +791,7 @@ export default function Profile() {
         <div className="p-6 pb-32 min-h-full">
           {isLoadingProfile ? (
             <div className="flex flex-col items-center justify-center h-64">
-              <div className="w-16 h-16 border-4 border-gray-200 border-t-[#126987] rounded-full animate-spin mb-4"></div>
+              <div className="w-16 h-16 border-4 border-gray-200 border-t-[#106C88] rounded-full animate-spin mb-4"></div>
               <p className="text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Loading profile...</p>
             </div>
           ) : (
@@ -1514,7 +1514,7 @@ export default function Profile() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-[#126987] z-[100] flex flex-col items-center justify-center"
+            className="fixed inset-0 bg-[#106C88] z-[100] flex flex-col items-center justify-center"
           >
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
@@ -1582,7 +1582,7 @@ export default function Profile() {
                       value={newResponse.triggers}
                       onChange={(e) => setNewResponse({ ...newResponse, triggers: e.target.value })}
                       placeholder="e.g. help, support, question"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#126987]"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#106C88]"
                       style={{ fontFamily: 'OpenSans, sans-serif' }}
                     />
                   </div>
@@ -1595,7 +1595,7 @@ export default function Profile() {
                       value={newResponse.category}
                       onChange={(e) => setNewResponse({ ...newResponse, category: e.target.value })}
                       placeholder="e.g. transfers, cards, balance"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#126987]"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#106C88]"
                       style={{ fontFamily: 'OpenSans, sans-serif' }}
                     />
                   </div>
@@ -1608,13 +1608,13 @@ export default function Profile() {
                       onChange={(e) => setNewResponse({ ...newResponse, responses: e.target.value })}
                       placeholder="Enter response variations (one per line)..."
                       rows={4}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#126987]"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#106C88]"
                       style={{ fontFamily: 'OpenSans, sans-serif' }}
                     />
                   </div>
                   <button
                     onClick={addChatResponse}
-                    className="px-4 py-2 bg-[#126987] text-white rounded-lg hover:bg-[#0d4e63] transition-colors"
+                    className="px-4 py-2 bg-[#106C88] text-white rounded-lg hover:bg-[#0d4e63] transition-colors"
                     style={{ fontFamily: 'OpenSans, sans-serif' }}
                   >
                     Add Response
@@ -1653,7 +1653,7 @@ export default function Profile() {
                                 el.dataset.triggers = response.triggers.join(', ');
                               }
                             }}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#126987]"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#106C88]"
                             style={{ fontFamily: 'OpenSans, sans-serif' }}
                           />
                         </div>
@@ -1669,7 +1669,7 @@ export default function Profile() {
                               }
                             }}
                             rows={3}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#126987]"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#106C88]"
                             style={{ fontFamily: 'OpenSans, sans-serif' }}
                           />
                         </div>

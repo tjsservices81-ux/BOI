@@ -73,7 +73,7 @@ export default function BottomNavigation() {
           <button
             key={item.id}
             className={`navigation-item flex flex-col items-center space-y-1 py-2 px-3 rounded-lg touch-manipulation relative ${
-              item.isActive ? 'text-[#126987]' : 'text-gray-400 hover:text-[#126987]'
+              item.isActive ? 'text-[#106C88]' : 'text-gray-400 hover:text-[#106C88]'
             }`}
             onClick={() => setLocation(item.path)}
           >
@@ -91,7 +91,7 @@ export default function BottomNavigation() {
               }}
             />
             <span 
-              className={`text-xs font-medium asset-instant ${item.isActive ? 'text-[#126987]' : 'text-gray-600'}`}
+              className={`text-xs font-medium asset-instant ${item.isActive ? 'text-[#106C88]' : 'text-gray-600'}`}
               style={{ 
                 fontFamily: 'OpenSans, sans-serif',
                 opacity: 1,
@@ -101,7 +101,7 @@ export default function BottomNavigation() {
               {item.label}
             </span>
             {item.isActive && (
-              <div className="absolute -bottom-2 left-1/2 w-12 h-1 bg-[#126987] rounded-full asset-instant" style={{ marginLeft: '-24px' }}></div>
+              <div className="absolute -bottom-2 left-1/2 w-12 h-1 bg-[#106C88] rounded-full asset-instant" style={{ marginLeft: '-24px' }}></div>
             )}
           </button>
         ))}
