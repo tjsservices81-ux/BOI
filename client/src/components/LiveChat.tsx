@@ -524,30 +524,30 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-3xl w-full max-w-md h-[85vh] max-h-[600px] flex flex-col shadow-2xl">
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+      <div className="bg-white w-full h-full md:w-[90vw] md:h-[90vh] md:rounded-3xl md:max-w-4xl md:max-h-[800px] flex flex-col shadow-2xl">
         {/* Header */}
-        <div className="bg-[#126987] rounded-t-3xl px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-              <MessageCircle className="w-5 h-5 text-white" />
+        <div className="bg-[#126987] md:rounded-t-3xl px-6 py-6 flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+              <MessageCircle className="w-6 h-6 text-white" />
             </div>
             <div>
               {chatState.queueStatus === 'waiting' ? (
                 <>
-                  <h3 className="text-white font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  <h3 className="text-white font-semibold text-lg" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     Live Chat Support
                   </h3>
-                  <p className="text-white/80 text-xs" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  <p className="text-white/80 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     Connecting you to an agent...
                   </p>
                 </>
               ) : (
                 <>
-                  <h3 className="text-white font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  <h3 className="text-white font-semibold text-lg" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     {chatState.agentName} – Support Specialist
                   </h3>
-                  <p className="text-white/80 text-xs" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  <p className="text-white/80 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     {isTyping ? typingText : 'Online now'}
                   </p>
                 </>
@@ -556,30 +556,30 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
           </div>
           <button
             onClick={handleCloseChat}
-            className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors"
+            className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors"
           >
-            <X className="w-5 h-5 text-white" />
+            <X className="w-6 h-6 text-white" />
           </button>
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-gray-50">
           {/* Queue status message */}
           {chatState.queueStatus === 'waiting' && (
             <div className="flex justify-center">
-              <div className="bg-orange-50 text-orange-800 px-4 py-4 rounded-2xl text-sm text-center max-w-[90%] border border-orange-200">
-                <div className="flex items-center justify-center mb-2">
-                  <div className="w-3 h-3 bg-orange-400 rounded-full animate-pulse mr-2"></div>
-                  <p className="font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              <div className="bg-orange-50 text-orange-800 px-6 py-6 rounded-2xl text-base text-center max-w-[95%] border border-orange-200">
+                <div className="flex items-center justify-center mb-3">
+                  <div className="w-4 h-4 bg-orange-400 rounded-full animate-pulse mr-3"></div>
+                  <p className="font-semibold text-lg" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     You're now in the queue
                   </p>
                 </div>
-                <p style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                <p className="text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                   Please wait while we connect you to an available agent...
                 </p>
                 {queueTimeRemaining > 0 && (
-                  <p className="text-xs text-orange-600 mt-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Estimated wait time: {Math.ceil(queueTimeRemaining / 1000 / 60)} minute{Math.ceil(queueTimeRemaining / 1000 / 60) !== 1 ? 's' : ''}
+                  <p className="text-orange-600 font-medium mt-3 text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Estimated wait: {Math.ceil(queueTimeRemaining / 1000 / 60)} minute{Math.ceil(queueTimeRemaining / 1000 / 60) !== 1 ? 's' : ''}
                   </p>
                 )}
               </div>
@@ -608,29 +608,29 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
               key={message.id}
               className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
             >
-              <div className={`max-w-[80%] ${message.isUser ? 'order-2' : 'order-1'}`}>
+              <div className={`max-w-[75%] ${message.isUser ? 'order-2' : 'order-1'}`}>
                 <div
-                  className={`px-4 py-2 rounded-2xl ${
+                  className={`px-5 py-4 rounded-2xl ${
                     message.isUser
                       ? 'bg-[#126987] text-white rounded-br-sm'
-                      : 'bg-gray-100 text-gray-900 rounded-bl-sm'
+                      : 'bg-white text-gray-900 rounded-bl-sm shadow-sm border border-gray-100'
                   }`}
                 >
-                  <p className="text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  <p className="text-base leading-relaxed" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     {message.text}
                   </p>
                 </div>
-                <p className={`text-xs text-gray-500 mt-1 ${message.isUser ? 'text-right' : 'text-left'}`}>
+                <p className={`text-sm text-gray-500 mt-2 ${message.isUser ? 'text-right' : 'text-left'}`}>
                   {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </p>
               </div>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center ml-2 mr-2 flex-shrink-0 ${
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center ml-3 mr-3 flex-shrink-0 ${
                 message.isUser ? 'order-1 bg-[#126987]' : 'order-2 bg-gray-200'
               }`}>
                 {message.isUser ? (
-                  <User className="w-4 h-4 text-white" />
+                  <User className="w-5 h-5 text-white" />
                 ) : (
-                  <Bot className="w-4 h-4 text-gray-600" />
+                  <Bot className="w-5 h-5 text-gray-600" />
                 )}
               </div>
             </div>
@@ -663,7 +663,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
         </div>
 
         {/* Input */}
-        <div className="p-4 border-t border-gray-100">
+        <div className="p-6 border-t border-gray-200 bg-white">
           {chatState.queueStatus === 'connected' && (
             <div className="mb-3 flex justify-center">
               <button
