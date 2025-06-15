@@ -223,6 +223,12 @@ img, video, canvas {
   body {
     padding-top: var(--safe-area-inset-top);
   }
+  
+  /* Remove safe area padding for splash screen */
+  body.splash-fullscreen {
+    padding-top: 0 !important;
+    margin: 0 !important;
+  }
 }
 
 input, textarea {

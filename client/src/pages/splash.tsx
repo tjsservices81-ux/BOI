@@ -61,14 +61,20 @@ export default function Splash() {
         isVisible ? 'opacity-100' : 'opacity-0'
       }`}
       style={{
-        backgroundImage: `url('/IMG_0633_1749764752035.jpeg')`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
+        backgroundColor: '#0000FF',
         userSelect: 'none',
         pointerEvents: 'none',
         opacity: 1,
-        visibility: 'visible'
+        visibility: 'visible',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        width: '100%',
+        height: '100%',
+        margin: 0,
+        padding: 0
       }}
       onClick={handleInteraction}
       onTouchStart={handleInteraction}
