@@ -36,7 +36,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   // Don't redirect while loading to prevent form interruptions
   if (isLoading) {
     return (
-      <div className="w-full h-full flex items-center justify-center bg-[#126987]">
+      <div className="w-full h-full flex items-center justify-center bg-[#106C88]">
         <div className="text-white">Loading...</div>
       </div>
     );
@@ -61,7 +61,7 @@ function AppRoutes() {
   useEffect(() => {
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
     if (themeColorMeta) {
-      themeColorMeta.setAttribute('content', '#0000ff');
+      themeColorMeta.setAttribute('content', '#106C88');
     }
     
     // Mark app as ready after initialization
@@ -81,7 +81,7 @@ function AppRoutes() {
       }, 100);
       const themeColorMeta = document.querySelector('meta[name="theme-color"]');
       if (themeColorMeta) {
-        themeColorMeta.setAttribute('content', '#126987');
+        themeColorMeta.setAttribute('content', '#106C88');
       }
     };
 
@@ -94,7 +94,7 @@ function AppRoutes() {
   // Show blue screen until app is ready
   if (!isAppReady) {
     return (
-      <div className="w-full h-full bg-[#0000ff]">
+      <div className="w-full h-full bg-[#106C88]">
         {/* Initialization screen */}
       </div>
     );
@@ -103,7 +103,7 @@ function AppRoutes() {
   return (
     <SecurityWrapper>
       <ErrorBoundary>
-        <div className="w-full h-full overflow-hidden relative">
+        <div className="w-full h-full overflow-hidden relative bg-[#106C88]">
           <Switch>
             <Route path="/splash" component={Splash} />
             <Route path="/login" component={Login} />
