@@ -23,7 +23,7 @@ export default function Splash() {
       themeColorMeta.setAttribute('content', '#0000ff');
     }
     
-    // Add status bar styling for splash screen
+    // Hide status bar completely for splash screen
     const statusBarMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
     if (statusBarMeta) {
       statusBarMeta.setAttribute('content', 'black-translucent');
@@ -36,10 +36,13 @@ export default function Splash() {
     
     // Set viewport for full screen experience
     const viewportMeta = document.querySelector('meta[name="viewport"]');
-    const originalViewport = viewportMeta?.getAttribute('content') || '';
     if (viewportMeta) {
-      viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0, viewport-fit=cover');
+      viewportMeta.setAttribute('content', 'width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no');
     }
+    
+    // Add body class to hide status bar on mobile browsers
+    document.documentElement.classList.add('splash-active');
+    document.body.classList.add('splash-status-hidden');
     
     // Navigate to login after splash duration (8 seconds total)
     const finalTimer = setTimeout(() => {
