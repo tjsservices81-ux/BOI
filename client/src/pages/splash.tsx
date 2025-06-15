@@ -17,10 +17,10 @@ export default function Splash() {
     // Add splash-specific full screen class for iOS PWA
     document.body.classList.add('splash-fullscreen');
     
-    // Change theme color to pure blue for splash screen
+    // Change theme color to correct blue for splash screen
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
     if (themeColorMeta) {
-      themeColorMeta.setAttribute('content', '#0000ff');
+      themeColorMeta.setAttribute('content', '#000DFF');
     }
     
     // Navigate to login after splash duration (8 seconds total)

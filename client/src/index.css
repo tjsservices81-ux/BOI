@@ -808,12 +808,7 @@ img {
 /* Splash screen specific styling */
 .splash-fullscreen {
   /* Pure blue status bar for splash screen only */
-  --splash-theme-color: #0000ff;
-}
-
-/* Apply pure blue theme color to status bar on splash screen */
-.splash-fullscreen meta[name="theme-color"] {
-  content: "#0000ff";
+  --splash-theme-color: #000DFF;
 }
 
 @media (display-mode: standalone) {
