@@ -142,7 +142,10 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   const queueTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    // Use a small delay to ensure DOM is updated
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    }, 100);
   };
 
   useEffect(() => {
@@ -657,7 +660,10 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
           left: 0,
           right: 0,
           bottom: '88px', // Leave space for bottom navigation
-          height: 'auto'
+          height: 'calc(100vh - 88px)',
+          maxHeight: 'calc(100vh - 88px)',
+          display: 'flex',
+          flexDirection: 'column'
         }}
       >
         {/* Header */}
@@ -696,8 +702,16 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
           </button>
         </div>
 
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-gray-50">
+        {/* Messages Container */}
+        <div 
+          className="flex-1 overflow-y-auto bg-gray-50 relative"
+          style={{ 
+            WebkitOverflowScrolling: 'touch',
+            overscrollBehavior: 'contain',
+            minHeight: 0
+          }}
+        >
+          <div className="p-6 space-y-6 pb-6">
           {/* Queue status message */}
           {chatState.queueStatus === 'waiting' && (
             <div className="flex justify-center">
@@ -793,11 +807,18 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
             </div>
           )}
           
-          <div ref={messagesEndRef} />
+            <div ref={messagesEndRef} />
+          </div>
         </div>
 
         {/* Input Area */}
-        <div className="p-4 border-t border-gray-200 bg-white">
+        <div 
+          className="p-4 border-t border-gray-200 bg-white flex-shrink-0"
+          style={{ 
+            paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))',
+            position: 'relative'
+          }}
+        >
           {chatState.queueStatus === 'waiting' ? (
             <div className="text-center py-2">
               <p className="text-gray-500 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -813,10 +834,15 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
                     onKeyPress={handleKeyPress}
+                    onFocus={scrollToBottom}
                     placeholder="Type your message..."
                     className="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#126987] focus:border-transparent text-base"
-                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                    style={{ 
+                      fontFamily: 'OpenSans, sans-serif',
+                      fontSize: '16px' // Prevents zoom on iOS
+                    }}
                     disabled={isTyping}
+                    autoComplete="off"
                   />
                 </div>
                 <button

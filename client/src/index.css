@@ -2,6 +2,48 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Mobile keyboard and viewport handling */
+.chat-container {
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  scroll-behavior: smooth;
+}
+
+.chat-input-area {
+  position: sticky;
+  bottom: 0;
+  background: white;
+  border-top: 1px solid #e5e7eb;
+  z-index: 10;
+}
+
+/* Prevent viewport zooming on input focus */
+input[type="text"], input[type="email"], input[type="password"], textarea {
+  font-size: 16px !important;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* iOS specific keyboard handling */
+@supports (-webkit-touch-callout: none) {
+  .chat-container {
+    height: -webkit-fill-available;
+  }
+  
+  .chat-input-area {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
+
 @keyframes slideIn {
   0% {
     opacity: 0;
