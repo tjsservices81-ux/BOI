@@ -76,14 +76,6 @@ export class UserDataManager {
     localStorage.setItem(loginKey, Date.now().toString());
   }
 
-
-
-  // Clear current user session
-  static clearCurrentUser() {
-    this.currentUser = null;
-    localStorage.removeItem('currentUser');
-  }
-
   // Get user-specific storage key
   private static getUserKey(key: string): string {
     const currentUser = this.getCurrentUser();

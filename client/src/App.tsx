@@ -67,16 +67,18 @@ function AppRoutes() {
       }
     });
     
+    // Check if this is a forced cold start
+    const forceColdStart = localStorage.getItem('force_cold_start') === 'true';
+    
+    if (forceColdStart) {
+      // This is a cold restart after app was closed
+      localStorage.removeItem('force_cold_start');
+      localStorage.removeItem('bankingUser');
+      sessionStorage.clear();
+    }
+    
     // Mark this as a cold start for auth provider
     sessionStorage.setItem('app_cold_start', 'true');
-    
-    // Clear any auth session flags except the cold start marker
-    const sessionKeys = Object.keys(sessionStorage);
-    sessionKeys.forEach(key => {
-      if (key !== 'app_cold_start') {
-        sessionStorage.removeItem(key);
-      }
-    });
     
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
     if (themeColorMeta) {
@@ -133,7 +135,8 @@ function AppRoutes() {
     };
 
     const handleBeforeUnload = () => {
-      // Mark app as being closed
+      // Mark app as being closed and force cold restart
+      localStorage.setItem('force_cold_start', 'true');
       sessionStorage.setItem('app_closed', 'true');
     };
 
