@@ -454,14 +454,14 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     }));
     
     setInputText("");
-    setIsTyping(true);
-    setTypingText(`${chatState.agentName} is typing...`);
-
-    // Realistic typing delay based on message length
-    const baseDelay = 800;
-    const typingSpeed = 50; // ms per character
-    const responseLength = Math.random() * 100 + 20; // Estimated response length
-    const typingDelay = baseDelay + (responseLength * typingSpeed);
+    
+    // Add realistic human delay (5-6 seconds) before agent starts typing
+    const humanDelay = Math.random() * 1000 + 5000; // 5-6 seconds
+    
+    setTimeout(() => {
+      setIsTyping(true);
+      setTypingText(`${chatState.agentName} is typing...`);
+    }, humanDelay);
 
     setTimeout(async () => {
       try {
@@ -471,13 +471,11 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
         // 3-5 words per second = 200-333ms per word
         const words = responseData.text.split(' ').length;
         const wordsPerSecond = Math.random() * 2 + 3; // 3-5 words per second
-        const realisticDelay = Math.max(1500, (words / wordsPerSecond) * 1000);
+        const realisticDelay = Math.max(2000, (words / wordsPerSecond) * 1000);
         
         // Add some natural variation (±20%)
         const variation = (Math.random() - 0.5) * 0.4;
         const finalDelay = realisticDelay * (1 + variation);
-        
-        setTypingText(`${chatState.agentName} is typing...`);
         
         setTimeout(() => {
           const botMessage: ChatMessage = {
@@ -515,7 +513,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
         setIsTyping(false);
         setTypingText("");
       }
-    }, 800); // Brief delay before starting to type
+    }, humanDelay + 1000); // Start generating response after human delay + 1 second
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {

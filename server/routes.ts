@@ -615,37 +615,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const { message, conversationHistory, agentName, customerNumber } = requestSchema.parse(req.body);
 
-      // Get customer's recent transfer data if available
+      // Get customer's recent transfer data from request body if available
       let transferContext = '';
-      if (customerNumber) {
-        try {
-          const user = await storage.getUserByCustomerNumber(customerNumber);
-          if (user) {
-            // Get the most recent transaction
-            const accounts = await storage.getAccountsByUserId(user.id);
-            if (accounts.length > 0) {
-              const recentTransactions = await storage.getTransactionsByAccountId(accounts[0].id);
-              const lastTransfer = recentTransactions
-                .filter(t => t.type === 'transfer')
-                .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0];
-              
-              if (lastTransfer) {
-                const transferDate = new Date(lastTransfer.timestamp).toLocaleDateString('en-GB');
-                const transferAmount = parseFloat(lastTransfer.amount);
-                transferContext = `\n\nCUSTOMER'S RECENT TRANSFER CONTEXT:
-Last transfer: £${Math.abs(transferAmount)} to ${lastTransfer.description} on ${transferDate}
+      
+      // The client will pass transaction data in the request body
+      const requestedTransactionData = req.body.transactionData;
+      if (requestedTransactionData && requestedTransactionData.length > 0) {
+        // Find the most recent transfer transaction
+        const transferTransactions = requestedTransactionData
+          .filter((tx: any) => tx.category === 'transfer' || tx.paymentMethod?.includes('Transfer'))
+          .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+        
+        if (transferTransactions.length > 0) {
+          const lastTransfer = transferTransactions[0];
+          const transferDate = new Date(lastTransfer.timestamp).toLocaleDateString('en-GB');
+          const transferAmount = parseFloat(lastTransfer.amount.replace('-', ''));
+          
+          // Extract recipient name from description
+          const recipientMatch = lastTransfer.description.match(/Transfer to (.+)/);
+          const recipientName = recipientMatch ? recipientMatch[1] : 'recipient';
+          
+          transferContext = `\n\nCUSTOMER'S RECENT TRANSFER CONTEXT:
+Last transfer: €${transferAmount.toFixed(2)} to ${recipientName} on ${transferDate}
 Reference: ${lastTransfer.reference || 'Not specified'}
-Transaction ID: TID${Math.abs(Math.floor(transferAmount * 1000))}UK
+Transaction ID: ${lastTransfer.id}
 Status: Confirmed and processed
-Use this information when customer asks about their recent transfer, transaction ID, reference, or confirmation status.`;
-              }
-            }
-          }
-        } catch (error) {
-          console.error('Error fetching transfer context:', error);
+Use this exact information when customer asks about their recent transfer, transaction ID, reference, or confirmation status.`;
+        } else {
+          transferContext = `\n\nCUSTOMER'S RECENT TRANSFER CONTEXT:
+No transfers found yet on your account.`;
         }
       }
-
+      
       // Prepare conversation history for OpenAI
       const messages = [
         ...conversationHistory.map(msg => ({
