@@ -7,12 +7,22 @@ export default function More() {
   const [, setLocation] = useLocation();
   const [isNavigating, setIsNavigating] = useState(false);
   const [showLiveChat, setShowLiveChat] = useState(false);
+  const [isLoadingChat, setIsLoadingChat] = useState(false);
 
   const handleNavigation = (path: string) => {
     setIsNavigating(true);
     setTimeout(() => {
       setLocation(path);
     }, 150);
+  };
+
+  const handleLiveChatClick = () => {
+    setIsLoadingChat(true);
+    // Simulate loading time for a realistic experience
+    setTimeout(() => {
+      setIsLoadingChat(false);
+      setShowLiveChat(true);
+    }, 1200); // 1.2 seconds loading
   };
 
   return (
@@ -90,23 +100,27 @@ export default function More() {
 
             {/* Live Chat */}
             <button 
-              onClick={() => setShowLiveChat(true)}
+              onClick={handleLiveChatClick}
               className="w-full bg-white border border-gray-100 rounded-2xl p-5 flex items-center space-x-4 hover:bg-gray-50 shadow-lg transition-all duration-200 active:scale-98 stagger-item" 
               style={{ animationDelay: '0.2s' }}
-              disabled={isNavigating}
+              disabled={isNavigating || isLoadingChat}
             >
               <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-md">
-                <MessageCircle className="w-6 h-6 text-white" />
+                {isLoadingChat ? (
+                  <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <MessageCircle className="w-6 h-6 text-white" />
+                )}
               </div>
               <div className="flex-1 text-left">
                 <h3 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Live Chat
+                  {isLoadingChat ? 'Connecting...' : 'Live Chat'}
                 </h3>
                 <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Chat with our support team
+                  {isLoadingChat ? 'Please wait while we set up your chat session' : 'Chat with our support team'}
                 </p>
               </div>
-              <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />
+              {!isLoadingChat && <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />}
             </button>
 
             {/* App Information */}
