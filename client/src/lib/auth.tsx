@@ -18,25 +18,23 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => {
-    // Initialize user state from localStorage immediately to prevent auth flash
-    const cachedUser = localStorage.getItem('bankingUser');
-    if (cachedUser) {
-      try {
-        return JSON.parse(cachedUser);
-      } catch (error) {
-        localStorage.removeItem('bankingUser');
-      }
-    }
-    return null;
-  });
+  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false); // Start as false to prevent flash
 
   // Initialize auth state properly to prevent flash
   useEffect(() => {
-    // Small delay to ensure smooth initialization
+    // Check localStorage for existing user after initialization delay
     const timer = setTimeout(() => {
+      const cachedUser = localStorage.getItem('bankingUser');
+      if (cachedUser) {
+        try {
+          const userData = JSON.parse(cachedUser);
+          setUser(userData);
+        } catch (error) {
+          localStorage.removeItem('bankingUser');
+        }
+      }
       setIsInitialized(true);
     }, 50);
     return () => clearTimeout(timer);
