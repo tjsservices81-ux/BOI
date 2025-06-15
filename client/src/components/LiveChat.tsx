@@ -261,27 +261,55 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
           
           // Add welcome message from agent with realistic typing delay
           setTimeout(() => {
-            // Personalized welcome messages based on agent personality
+            // Natural, varied welcome messages that sound like real Bank of Ireland support staff
             const welcomeMessages: { [key: string]: string[] } = {
               'Emma': [
-                `Hi there! I'm Emma from Bank of Ireland support. How can I help you today?`,
-                `Hello! Emma here, ready to help with your banking. What can I sort out for you?`,
-                `Hi! I'm Emma, your Bank of Ireland support specialist today. What's on your mind?`
+                `Hey there, you're through to the Bank of Ireland team — I'm Emma, how can I help you today?`,
+                `Good to have you here — this is Emma from Bank of Ireland support, what can I do for you?`,
+                `Hi, this is Emma here from Bank of Ireland — what can I help you with?`,
+                `Hello, welcome to Bank of Ireland support. Emma speaking — how's your day going?`,
+                `You've reached the Bank of Ireland team, Emma here — what brings you to chat today?`,
+                `Hi there! Emma from Bank of Ireland support — what can I sort out for you?`,
+                `Good day! This is Emma with Bank of Ireland — what's on your mind?`,
+                `Hello there, Bank of Ireland support here — Emma speaking, how can I help?`,
+                `Hi, Emma here from the Bank of Ireland team — what can I do for you today?`,
+                `Hey! You're through to Bank of Ireland support, Emma speaking — how can I help?`
               ],
               'James': [
-                `Hi, James here from Bank of Ireland transfers team. How can I assist with your payment query?`,
-                `Hello, I'm James - I'll help you with your transfer query. What do you need to know?`,
-                `Hi there, James from BOI transfers speaking. What can I help you with today?`
+                `Hey there, you're through to the Bank of Ireland team — I'm James, how can I help you today?`,
+                `Good to have you here — this is James from Bank of Ireland transfers, what can I do for you?`,
+                `Hi, this is James here from Bank of Ireland — what can I help you with?`,
+                `Hello, welcome to Bank of Ireland support. James speaking — how's your day going?`,
+                `You've reached the Bank of Ireland team, James here — what brings you to chat today?`,
+                `Hi there! James from Bank of Ireland transfers — what can I sort out for you?`,
+                `Good day! This is James with Bank of Ireland — what's on your mind?`,
+                `Hello there, Bank of Ireland support here — James speaking, how can I help?`,
+                `Hi, James here from the Bank of Ireland team — what can I do for you today?`,
+                `Hey! You're through to Bank of Ireland support, James speaking — how can I help?`
               ],
               'Sarah': [
-                `Hi, I'm Sarah from Bank of Ireland security team. How can I help secure your account today?`,
-                `Hello, Sarah here - I'll help with your account security. What can I assist you with?`,
-                `Hi there, this is Sarah from BOI account security. How can I help you today?`
+                `Hey there, you're through to the Bank of Ireland team — I'm Sarah, how can I help you today?`,
+                `Good to have you here — this is Sarah from Bank of Ireland security, what can I do for you?`,
+                `Hi, this is Sarah here from Bank of Ireland — what can I help you with?`,
+                `Hello, welcome to Bank of Ireland support. Sarah speaking — how's your day going?`,
+                `You've reached the Bank of Ireland team, Sarah here — what brings you to chat today?`,
+                `Hi there! Sarah from Bank of Ireland security — what can I sort out for you?`,
+                `Good day! This is Sarah with Bank of Ireland — what's on your mind?`,
+                `Hello there, Bank of Ireland support here — Sarah speaking, how can I help?`,
+                `Hi, Sarah here from the Bank of Ireland team — what can I do for you today?`,
+                `Hey! You're through to Bank of Ireland support, Sarah speaking — how can I help?`
               ],
               'Michael': [
-                `Hi, I'm Michael from Bank of Ireland tech support. What technical issue can I help you with?`,
-                `Hello there, Michael here to help with your technical issue. What's going on?`,
-                `Hi, this is Michael - I'll get that sorted for you. What seems to be the problem?`
+                `Hey there, you're through to the Bank of Ireland team — I'm Michael, how can I help you today?`,
+                `Good to have you here — this is Michael from Bank of Ireland tech support, what can I do for you?`,
+                `Hi, this is Michael here from Bank of Ireland — what can I help you with?`,
+                `Hello, welcome to Bank of Ireland support. Michael speaking — how's your day going?`,
+                `You've reached the Bank of Ireland team, Michael here — what brings you to chat today?`,
+                `Hi there! Michael from Bank of Ireland tech support — what can I sort out for you?`,
+                `Good day! This is Michael with Bank of Ireland — what's on your mind?`,
+                `Hello there, Bank of Ireland support here — Michael speaking, how can I help?`,
+                `Hi, Michael here from the Bank of Ireland team — what can I do for you today?`,
+                `Hey! You're through to Bank of Ireland support, Michael speaking — how can I help?`
               ]
             };
             
@@ -427,13 +455,16 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       category: 'greeting',
       triggers: ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening'],
       responses: [
-        "Hello! I'm here to help with your banking needs. What can I assist you with today?",
-        "Hi there! Welcome to Bank of Ireland support. How can I help you today?",
-        "Lovely to hear from you! I'm ready to assist with any banking questions or issues you might have.",
-        "Hello! Thanks for reaching out. What banking matter can I help you with today?",
-        "Hi! Great to see you. What can I sort out for you today?",
-        "Good to speak with you! How can I help with your banking today?",
-        "Hello there! I'm here to help - what's on your mind?"
+        "Hey there! Good to hear from you. What can I help you with today?",
+        "Hi! How's your day going? What brings you to Bank of Ireland support?",
+        "Hello there! What can I sort out for you today?",
+        "Good to see you! What's on your mind?",
+        "Hi! How can I help you with your banking today?",
+        "Hey! What can I do for you?",
+        "Hello! What brings you here today?",
+        "Hi there! How can I help?",
+        "Good day! What can I assist you with?",
+        "Hey! What's going on with your banking?"
       ]
     },
     {
