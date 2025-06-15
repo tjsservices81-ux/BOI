@@ -105,6 +105,35 @@ export default function Splash() {
         style={{ pointerEvents: 'none' }}
       />
       
+      {/* Bank of Ireland Logo - Centered on blue background */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <img 
+          src="/boi_logo.svg" 
+          alt="Bank of Ireland"
+          className="h-16 w-auto opacity-100"
+          style={{
+            filter: 'brightness(0) invert(1)', // Makes logo white
+            maxWidth: '200px',
+            height: 'auto'
+          }}
+        />
+      </div>
+      
+      {/* White curve at bottom */}
+      <div className="absolute bottom-0 left-0 right-0 h-32">
+        <svg 
+          viewBox="0 0 375 128" 
+          className="w-full h-full"
+          preserveAspectRatio="none"
+          style={{ transform: 'translateY(1px)' }}
+        >
+          <path 
+            d="M0,128 L375,128 L375,64 Q187.5,0 0,64 Z" 
+            fill="white"
+          />
+        </svg>
+      </div>
+      
       {/* Animated loading spinner positioned where it appears in the screenshot */}
       <div className="absolute" style={{ bottom: '30%', left: '50%', transform: 'translateX(-50%)' }}>
         <div className="flex justify-center">
