@@ -167,78 +167,78 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     {
       id: '1',
       category: 'card_issues',
-      triggers: ['unblock card', 'card blocked', 'card not working', 'blocked card', 'card issue'],
+      triggers: ['unblock card', 'card blocked', 'card not working', 'blocked card', 'card issue', 'lost card', 'stolen card', 'replacement card', 'new card'],
       responses: [
-        "I can help you with your card issue. To unblock your card, go to Profile > Admin Panel and tap 'Unblock Card'. Your card will be available immediately.",
-        "Let me assist you with that card problem. You can unblock your card through Profile > Admin Panel > 'Unblock Card'. It takes effect right away.",
-        "I see you're having card troubles. The quickest way to unblock it is through your Profile > Admin Panel. Look for the 'Unblock Card' option.",
-        "No worries, I can guide you through unblocking your card. Navigate to Profile > Admin Panel and select 'Unblock Card' for instant activation."
+        "I can help you with your card issue right away. To unblock your card, go to Profile > Admin Panel and tap 'Unblock Card'. Your card will be available immediately for transactions.",
+        "Let me sort that card problem for you. You can unblock your card through Profile > Admin Panel > 'Unblock Card'. It takes effect instantly, so you'll be able to use it straight away.",
+        "I see you're having card troubles - that's frustrating! The quickest way to unblock it is through your Profile > Admin Panel. Look for the 'Unblock Card' option and it'll be working again in seconds.",
+        "No problem at all, I'll walk you through unblocking your card. Navigate to Profile > Admin Panel and select 'Unblock Card' for instant activation. If you're still having issues after that, just let me know."
       ]
     },
     {
       id: '2',
       category: 'transfers',
-      triggers: ['transfer money', 'send money', 'make transfer', 'how to transfer', 'payment'],
+      triggers: ['transfer money', 'send money', 'make transfer', 'how to transfer', 'payment', 'pending transfer', 'international transfer', 'swift code', 'iban transfer', 'uk transfer', 'transfer limit', 'transfer fee'],
       responses: [
-        "For transfers, tap 'Payments' in the bottom menu. Choose 'UK Transfer' for domestic or 'IBAN Transfer' for international. Which type do you need?",
-        "I can help with transfers! Go to 'Payments' at the bottom, then select UK Transfer for domestic or IBAN Transfer for international payments. What are you looking to do?",
-        "Transfer process is straightforward - use the 'Payments' section at the bottom. UK Transfer handles domestic payments, IBAN Transfer covers international. Which suits your needs?",
-        "Money transfers are easy through our 'Payments' feature. You'll find UK Transfer and IBAN Transfer options there. Are you sending domestically or internationally?"
+        "Absolutely, I'll help you with transfers. For UK transfers, tap 'Payments' then 'UK Transfer' - these are usually instant and free between UK accounts. For international transfers, use 'IBAN Transfer' which typically takes 1-3 working days. What type of transfer are you looking to make?",
+        "I can definitely help with that transfer. Use the 'Payments' section at the bottom - UK Transfer for domestic payments (instant and usually free) or IBAN Transfer for international (small fee applies, 1-3 days). Are you sending money within the UK or abroad?",
+        "No problem! The transfer process is quite simple. Go to 'Payments' at the bottom of your screen. UK Transfer handles domestic payments instantly, while IBAN Transfer covers international payments with competitive exchange rates. Which country are you sending to?",
+        "I'll walk you through the transfer options. In 'Payments', you'll see UK Transfer for domestic payments (instant, no fees) and IBAN Transfer for international (£2-15 fee depending on amount, arrives 1-3 working days). What's the destination for your transfer?"
       ]
     },
     {
       id: '3',
-      category: 'balance',
-      triggers: ['check balance', 'account balance', 'how much money', 'balance'],
+      category: 'account_info',
+      triggers: ['check balance', 'account balance', 'how much money', 'balance', 'statement', 'iban', 'sort code', 'account number', 'account details', 'routing number'],
       responses: [
-        "Your account balances appear on the main dashboard. You can also tap any account for detailed transaction history and current balance.",
-        "Check your balances right on the dashboard when you log in. Tap on any account to see more details and transaction history too.",
-        "All your account balances are displayed on the main screen. For more detailed information, just tap on the specific account you're interested in.",
-        "Your balances are visible on the dashboard homepage. Want to see transaction details? Just tap on any account for the full breakdown."
+        "Your account balances are displayed right on the main dashboard when you log in. For detailed statements or account numbers, just tap on any account to see the full breakdown including IBAN and sort code.",
+        "All your balances are visible on the homepage dashboard. If you need your IBAN, sort code, or detailed statements, tap on the specific account and you'll find all those details there.",
+        "You can see all your account balances on the main screen. For account numbers, IBAN details, or monthly statements, just tap the account you're interested in - everything's there.",
+        "Your current balances are shown on the dashboard. Need your account details like IBAN or sort code? Tap on any account and you'll see the full account information plus transaction history."
       ]
     },
     {
       id: '4',
-      category: 'pin_issues',
-      triggers: ['forgot pin', 'reset pin', 'pin not working', 'pin problem'],
+      category: 'login_issues',
+      triggers: ['forgot pin', 'reset pin', 'pin not working', 'pin problem', 'login issues', 'password reset', 'cant log in', "can't access", 'locked out', 'forgotten password'],
       responses: [
-        "For security, PIN resets require secure verification. Please visit your nearest Bank of Ireland branch with valid ID, or call customer service at 0818 365 365.",
-        "PIN resets need to be handled securely. You can visit any Bank of Ireland branch with photo ID, or contact our customer service team at 0818 365 365.",
-        "I understand PIN issues are frustrating. For your security, you'll need to visit a branch with valid ID or call our secure line at 0818 365 365 for reset assistance.",
-        "PIN problems require secure authentication. Head to your local Bank of Ireland branch with ID, or give us a call at 0818 365 365 for secure PIN reset."
+        "I understand how frustrating login issues can be. For security reasons, PIN resets need to be done through secure channels. You can visit any Bank of Ireland branch with photo ID, or call our customer service team at 0818 365 365 and they'll sort it out for you.",
+        "Login problems are definitely annoying! For your security, PIN resets require verification at a branch with valid ID, or you can call our secure line at 0818 365 365 where the team can help reset it safely.",
+        "I can help point you in the right direction for PIN issues. Due to security protocols, you'll need to visit your local Bank of Ireland branch with ID, or ring customer service at 0818 365 365 for a secure PIN reset.",
+        "PIN troubles happen to everyone! For your protection, we need to verify your identity for resets. Pop into any branch with photo ID, or call 0818 365 365 where our team can handle the reset securely over the phone."
       ]
     },
     {
       id: '5',
-      category: 'technical',
-      triggers: ['app not working', 'technical issue', 'bug', 'error', 'crash', 'problem'],
+      category: 'atm_issues',
+      triggers: ['atm not working', 'atm problem', 'withdrawal issue', 'atm fee', 'atm limit', 'cash machine', 'atm charges', 'daily limit', 'atm declined'],
       responses: [
-        "Sorry you're experiencing technical difficulties. Try closing and reopening the app first. If issues persist, our technical support team can help further.",
-        "That's frustrating! First, try force-closing and restarting the app. If the problem continues, our tech support team has additional troubleshooting steps.",
-        "Technical issues can be annoying. Start by fully closing and reopening the app. Still having trouble? Our technical support can dig deeper into the issue.",
-        "I apologize for the technical trouble. Please try restarting the app completely. If that doesn't resolve it, our tech team can provide more advanced solutions."
+        "ATM issues can be really inconvenient! Your daily withdrawal limit is typically £300, and there's no charge for using Bank of Ireland ATMs. If your card was declined, try a different ATM first - sometimes it's just a machine issue. If problems persist, I can help check your account status.",
+        "I can help with ATM troubles. Bank of Ireland ATMs are free to use, and your daily limit is usually £300. If you're getting declined, it might be a network issue with that particular machine. Try another ATM, and if it still doesn't work, let me know - we can check if there's an issue with your card.",
+        "ATM problems are frustrating when you need cash! Your standard daily limit is £300, and you won't be charged for using our ATMs. If a withdrawal failed, try a different machine first - sometimes it's just a connectivity issue. Still having trouble? I can look into your account for any restrictions.",
+        "Let me help with that ATM issue. You can withdraw up to £300 daily from Bank of Ireland ATMs without charges. If your transaction was declined, it could be a temporary machine problem - try another ATM. If it happens again, there might be a card restriction I can help investigate."
       ]
     },
     {
       id: '6',
-      category: 'hours',
-      triggers: ['opening hours', 'branch hours', 'when open', 'hours'],
+      category: 'fees_charges',
+      triggers: ['fees', 'charges', 'cost', 'how much', 'price', 'overdraft', 'overdraft fee', 'monthly fee', 'account fee', 'maintenance fee'],
       responses: [
-        "Most Bank of Ireland branches operate Monday-Friday 10:00-16:00, with some offering extended hours. Use our ATM/Branch locator in the app for specific locations.",
-        "Branch hours are typically Monday-Friday 10:00-16:00, though some locations have different schedules. Check the ATM/Branch locator for exact hours near you.",
-        "Standard hours are Monday-Friday 10:00-16:00 for most branches. Some locations offer extended service. The app's branch locator shows specific hours for each location.",
-        "You'll find most branches open Monday-Friday 10:00-16:00. For precise hours and locations, use the ATM/Branch locator feature in your app."
+        "I can explain our fee structure. Current accounts have no monthly maintenance fee if you keep a minimum £3,000 balance, otherwise it's £5 monthly. Overdraft rates are 19.9% APR up to £2,000. International transfers are £2-15 depending on amount and destination. What specific fees were you asking about?",
+        "Our fees are quite competitive! No monthly charges on current accounts with £3,000+ balance, £5 monthly otherwise. Overdrafts are 19.9% APR (much better than most banks). UK transfers are free, international ones £2-15. Unpaid item fees are £10. Which fees concern you?",
+        "Let me break down the main fees: Current accounts are free with £3,000 balance, £5/month below that. Overdraft is 19.9% APR up to £2,000 limit. ATM withdrawals abroad are €2.50. Standing orders and direct debits are free. What particular charges are you concerned about?",
+        "Happy to clarify our charges! Account maintenance is £5 monthly unless you keep £3,000+ (then it's free). Arranged overdraft is 19.9% APR, unpaid items £10. International payments vary £2-15 by destination. No charges for UK payments or most online banking. Need details on any specific fee?"
       ]
     },
     {
       id: '7',
-      category: 'fees',
-      triggers: ['fees', 'charges', 'cost', 'how much', 'price'],
+      category: 'direct_debits',
+      triggers: ['direct debit', 'standing order', 'recurring payment', 'cancel direct debit', 'set up direct debit', 'automatic payment', 'dd', 'monthly payment'],
       responses: [
-        "Transaction fees depend on transfer type and destination. UK transfers typically cost less than international ones. You'll see all fees before confirming.",
-        "Fees vary by transaction type and destination country. Domestic transfers are usually cheaper than international. All costs are shown before you confirm.",
-        "Transfer costs depend on where you're sending money. UK transfers have lower fees than international ones. We display all charges before final confirmation.",
-        "Pricing varies based on transfer destination and type. Domestic UK transfers are more affordable than international. You'll see exact fees before proceeding."
+        "I can help with direct debits and standing orders. To set up a new direct debit, you'll need the company's sort code and account number - they usually provide this on their forms. To cancel one, go to your account and find 'Manage Payments'. Standing orders for regular transfers can be set up in the 'Payments' section. What do you need help with?",
+        "Direct debits are really convenient for bills! If you need to set one up, the company will provide their bank details and you can authorize it through your account. To cancel or view existing ones, check 'Manage Payments' in your account view. Standing orders for regular transfers work similarly. What are you looking to do?",
+        "Happy to help with direct debits! Setting them up is easy - just need the payee's details which they'll provide. To manage existing direct debits or standing orders, look in your account under 'Manage Payments'. You can cancel, view, or modify them there. Are you setting up something new or managing an existing payment?",
+        "Direct debits make paying bills so much easier! To create a new one, you'll get a form from the company with their bank details to authorize. To check or cancel existing direct debits, go to 'Manage Payments' in your account. Standing orders for regular transfers are in the 'Payments' section. How can I help?"
       ]
     },
     {
@@ -265,13 +265,46 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     },
     {
       id: '10',
-      category: 'goodbye',
-      triggers: ['bye', 'goodbye', 'see you', 'thanks bye', 'done'],
+      category: 'account_opening',
+      triggers: ['open account', 'new account', 'account opening', 'create account', 'apply for account', 'student account', 'business account'],
       responses: [
-        "Goodbye! Have a great day and don't hesitate to reach out if you need anything else.",
-        "Take care! Feel free to contact us anytime you need banking assistance.",
-        "Have a wonderful day! We're always here when you need banking support.",
-        "Goodbye! Thanks for using Bank of Ireland. Contact us anytime you need help."
+        "I'd be happy to help with opening a new account! We offer current accounts, savings accounts, student accounts, and business accounts. You'll need photo ID and proof of address from the last 3 months. Would you like to know about a specific type of account, or shall I arrange for a specialist to call you?",
+        "Great choice in choosing Bank of Ireland for a new account! We have several options - current accounts (free with £3,000 balance), savings accounts with competitive rates, and specialized accounts for students and businesses. What type of account interests you most?",
+        "Opening an account is straightforward! You'll need valid photo ID and a recent utility bill or bank statement for proof of address. We offer current accounts, savings, student accounts with perks, and business accounts. Which would suit your needs best?",
+        "I can definitely help with account opening! Our current accounts are popular (no fees with £3,000+ balance), or we have savings accounts with great rates. For students, we have special accounts with overdraft facilities. What are you looking for?"
+      ]
+    },
+    {
+      id: '11',
+      category: 'mortgage_loans',
+      triggers: ['mortgage', 'home loan', 'loan', 'personal loan', 'car loan', 'credit', 'borrowing', 'interest rate'],
+      responses: [
+        "I can provide some initial information about our lending products. We offer mortgages from 3.2% APR, personal loans £1,000-£25,000, and car finance options. For detailed rates and applications, let me connect you with our lending specialist who can assess your specific needs and provide accurate quotes.",
+        "We have several lending options available! Mortgages start from 3.2% APR depending on deposit and circumstances. Personal loans range £1,000-£25,000 with competitive rates. For the best advice and rates specific to your situation, let me escalate this to our lending team who can help properly.",
+        "Happy to discuss our loan products! We offer mortgages (rates from 3.2% APR), personal loans up to £25,000, car finance, and business loans. However, for accurate rates and to discuss your specific requirements, let me escalate that to a specialist who'll assist you shortly.",
+        "Our lending products include mortgages from 3.2% APR, personal loans £1,000-£25,000, and various credit options. Given the complexity of lending decisions, let me escalate that to a specialist who'll assist you shortly with detailed information and applications."
+      ]
+    },
+    {
+      id: '12',
+      category: 'verification',
+      triggers: ['verify', 'verification', 'proof of identity', 'id check', 'security check', 'authenticate', 'confirm identity'],
+      responses: [
+        "For security verification, I'll need to confirm some details with you. Can you provide your full name, date of birth, and the first line of your registered address? This helps us ensure we're speaking with the account holder.",
+        "Security is really important to us! To verify your identity, I'll need your full name as registered, date of birth, and your postcode. Once verified, I can access your account details and help with any queries you have.",
+        "Let me verify your identity first for security. Could you confirm your full name, date of birth, and the last four digits of the card ending in the number you're calling about? This ensures I'm speaking with the right person.",
+        "I need to run through some security questions first. Can you tell me your full registered name, date of birth, and first line of your address? Once I've verified these details, I can help with any account queries."
+      ]
+    },
+    {
+      id: '13',
+      category: 'goodbye',
+      triggers: ['bye', 'goodbye', 'see you', 'thanks bye', 'done', 'finished', 'thats all'],
+      responses: [
+        "Perfect! Glad I could help you today. If you need anything else, just pop back into chat anytime. Have a brilliant day!",
+        "Lovely chatting with you! Don't hesitate to get in touch if you need any other banking help. Take care and have a great day!",
+        "All sorted then! Feel free to contact us anytime you need assistance. Thanks for banking with Bank of Ireland - have a wonderful day!",
+        "Great stuff! Always happy to help. If anything else comes up, just start a new chat and we'll be right here. Have a fantastic day!"
       ]
     }
   ];
@@ -309,10 +342,13 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     }
     
     const fallbackResponses = [
-      "I'd be happy to help you with that. Could you provide a bit more detail about what you're looking for?",
-      "I want to make sure I understand correctly. Can you tell me more about what you need assistance with?",
-      "Let me help you with that. Could you elaborate on the specific issue you're experiencing?",
-      "I'm here to assist! Can you provide more details so I can give you the best possible help?"
+      "I'd be happy to help you with that banking query. Could you give me a bit more detail about what you're looking for? I'm here to assist with any Bank of Ireland services.",
+      "That's an interesting question! Let me make sure I understand what you need help with. Can you tell me a bit more about the specific banking issue or service you're asking about?",
+      "I want to give you the best possible help with your banking needs. Could you provide some more details about what you're trying to do or what issue you're experiencing?",
+      "Thanks for reaching out! I'm here to help with all your Bank of Ireland banking needs. Could you elaborate a bit more on what you're looking for assistance with today?",
+      "Let me escalate that to a specialist who'll assist you shortly with the specific details you need.",
+      "That's quite a technical query! Let me escalate that to a specialist who'll assist you shortly and can provide the detailed information you're looking for.",
+      "I want to make sure you get the most accurate information for that. Let me escalate that to a specialist who'll assist you shortly."
     ];
     
     const fallbackIndex = Math.floor(Math.random() * fallbackResponses.length);
