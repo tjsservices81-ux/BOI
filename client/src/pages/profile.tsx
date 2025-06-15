@@ -40,7 +40,8 @@ export default function Profile() {
   const [editingResponse, setEditingResponse] = useState<any>(null);
   const [newResponse, setNewResponse] = useState({
     triggers: '',
-    response: ''
+    responses: '',
+    category: ''
   });
   const [profileData, setProfileData] = useState(() => {
     const currentCustomerNumber = UserDataManager.getCurrentUser();
@@ -228,26 +229,34 @@ export default function Profile() {
   };
 
   const addChatResponse = () => {
-    if (!newResponse.triggers.trim() || !newResponse.response.trim()) {
-      alert('Please fill in both triggers and response');
+    if (!newResponse.triggers.trim() || !newResponse.responses.trim() || !newResponse.category.trim()) {
+      alert('Please fill in triggers, responses, and category');
       return;
     }
 
     const triggers = newResponse.triggers.split(',').map(t => t.trim()).filter(t => t.length > 0);
+    const responses = newResponse.responses.split('\n').map(r => r.trim()).filter(r => r.length > 0);
+    
     if (triggers.length === 0) {
       alert('Please provide at least one trigger phrase');
+      return;
+    }
+    
+    if (responses.length === 0) {
+      alert('Please provide at least one response');
       return;
     }
 
     const newResponseObj = {
       id: Date.now().toString(),
+      category: newResponse.category.trim(),
       triggers,
-      response: newResponse.response.trim()
+      responses
     };
 
     const updatedResponses = [...chatResponses, newResponseObj];
     saveChatResponses(updatedResponses);
-    setNewResponse({ triggers: '', response: '' });
+    setNewResponse({ triggers: '', responses: '', category: '' });
   };
 
   const updateChatResponse = (id: string, updatedData: any) => {

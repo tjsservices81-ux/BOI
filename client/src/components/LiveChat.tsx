@@ -7,12 +7,14 @@ interface ChatMessage {
   text: string;
   isUser: boolean;
   timestamp: Date;
+  agentName?: string;
 }
 
 interface ChatResponse {
   triggers: string[];
-  response: string;
+  responses: string[]; // Multiple response variations
   id: string;
+  category: string;
 }
 
 interface LiveChatProps {
@@ -20,17 +22,44 @@ interface LiveChatProps {
   onClose: () => void;
 }
 
+interface ChatState {
+  messages: ChatMessage[];
+  isActive: boolean;
+  agentName: string;
+  sessionId: string;
+  lastResponseIndex: { [key: string]: number }; // Track last used response for each category
+}
+
 export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: '1',
-      text: "Hi! I'm here to help you with your banking needs. How can I assist you today?",
-      isUser: false,
-      timestamp: new Date()
+  const [chatState, setChatState] = useState<ChatState>(() => {
+    // Load persistent chat state
+    const saved = UserDataManager.getUserData('liveChatState', null);
+    if (saved) {
+      return {
+        ...saved,
+        messages: saved.messages.map((msg: any) => ({
+          ...msg,
+          timestamp: new Date(msg.timestamp)
+        }))
+      };
     }
-  ]);
+    
+    // Initialize new chat session
+    const agentNames = ['Mark', 'Sarah', 'James', 'Emma', 'David', 'Lisa'];
+    const randomAgent = agentNames[Math.floor(Math.random() * agentNames.length)];
+    
+    return {
+      messages: [],
+      isActive: true,
+      agentName: randomAgent,
+      sessionId: `chat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      lastResponseIndex: {}
+    };
+  });
+
   const [inputText, setInputText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [typingText, setTypingText] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -39,48 +68,125 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [chatState.messages, isTyping]);
+
+  // Save chat state whenever it changes
+  useEffect(() => {
+    if (chatState.messages.length > 0 || !chatState.isActive) {
+      UserDataManager.setUserData('liveChatState', chatState);
+    }
+  }, [chatState]);
 
   const getDefaultResponses = (): ChatResponse[] => [
     {
       id: '1',
-      triggers: ['unblock card', 'card blocked', 'card not working', 'blocked card'],
-      response: "To unblock your card, go to Profile > Admin Panel and tap 'Unblock Card'. The card will be immediately available for use. If you need further assistance, please let me know!"
+      category: 'card_issues',
+      triggers: ['unblock card', 'card blocked', 'card not working', 'blocked card', 'card issue'],
+      responses: [
+        "I can help you with your card issue. To unblock your card, go to Profile > Admin Panel and tap 'Unblock Card'. Your card will be available immediately.",
+        "Let me assist you with that card problem. You can unblock your card through Profile > Admin Panel > 'Unblock Card'. It takes effect right away.",
+        "I see you're having card troubles. The quickest way to unblock it is through your Profile > Admin Panel. Look for the 'Unblock Card' option.",
+        "No worries, I can guide you through unblocking your card. Navigate to Profile > Admin Panel and select 'Unblock Card' for instant activation."
+      ]
     },
     {
       id: '2',
-      triggers: ['transfer money', 'send money', 'make transfer', 'how to transfer'],
-      response: "You can transfer money by tapping 'Payments' in the bottom menu, then selecting either 'UK Transfer' for domestic transfers or 'IBAN Transfer' for international transfers. Would you like specific help with either option?"
+      category: 'transfers',
+      triggers: ['transfer money', 'send money', 'make transfer', 'how to transfer', 'payment'],
+      responses: [
+        "For transfers, tap 'Payments' in the bottom menu. Choose 'UK Transfer' for domestic or 'IBAN Transfer' for international. Which type do you need?",
+        "I can help with transfers! Go to 'Payments' at the bottom, then select UK Transfer for domestic or IBAN Transfer for international payments. What are you looking to do?",
+        "Transfer process is straightforward - use the 'Payments' section at the bottom. UK Transfer handles domestic payments, IBAN Transfer covers international. Which suits your needs?",
+        "Money transfers are easy through our 'Payments' feature. You'll find UK Transfer and IBAN Transfer options there. Are you sending domestically or internationally?"
+      ]
     },
     {
       id: '3',
-      triggers: ['check balance', 'account balance', 'how much money'],
-      response: "Your account balances are displayed on the main dashboard when you log in. You can also tap on any account to see detailed transaction history and current balance."
+      category: 'balance',
+      triggers: ['check balance', 'account balance', 'how much money', 'balance'],
+      responses: [
+        "Your account balances appear on the main dashboard. You can also tap any account for detailed transaction history and current balance.",
+        "Check your balances right on the dashboard when you log in. Tap on any account to see more details and transaction history too.",
+        "All your account balances are displayed on the main screen. For more detailed information, just tap on the specific account you're interested in.",
+        "Your balances are visible on the dashboard homepage. Want to see transaction details? Just tap on any account for the full breakdown."
+      ]
     },
     {
       id: '4',
-      triggers: ['forgot pin', 'reset pin', 'pin not working'],
-      response: "For security reasons, PIN resets need to be done through our secure channels. Please visit your nearest Bank of Ireland branch with valid ID, or call our customer service line at 0818 365 365."
+      category: 'pin_issues',
+      triggers: ['forgot pin', 'reset pin', 'pin not working', 'pin problem'],
+      responses: [
+        "For security, PIN resets require secure verification. Please visit your nearest Bank of Ireland branch with valid ID, or call customer service at 0818 365 365.",
+        "PIN resets need to be handled securely. You can visit any Bank of Ireland branch with photo ID, or contact our customer service team at 0818 365 365.",
+        "I understand PIN issues are frustrating. For your security, you'll need to visit a branch with valid ID or call our secure line at 0818 365 365 for reset assistance.",
+        "PIN problems require secure authentication. Head to your local Bank of Ireland branch with ID, or give us a call at 0818 365 365 for secure PIN reset."
+      ]
     },
     {
       id: '5',
-      triggers: ['app not working', 'technical issue', 'bug', 'error'],
-      response: "I'm sorry you're experiencing technical difficulties. Please try closing and reopening the app first. If the issue persists, you can contact our technical support team or visit a branch for assistance."
+      category: 'technical',
+      triggers: ['app not working', 'technical issue', 'bug', 'error', 'crash', 'problem'],
+      responses: [
+        "Sorry you're experiencing technical difficulties. Try closing and reopening the app first. If issues persist, our technical support team can help further.",
+        "That's frustrating! First, try force-closing and restarting the app. If the problem continues, our tech support team has additional troubleshooting steps.",
+        "Technical issues can be annoying. Start by fully closing and reopening the app. Still having trouble? Our technical support can dig deeper into the issue.",
+        "I apologize for the technical trouble. Please try restarting the app completely. If that doesn't resolve it, our tech team can provide more advanced solutions."
+      ]
     },
     {
       id: '6',
-      triggers: ['opening hours', 'branch hours', 'when open'],
-      response: "Most Bank of Ireland branches are open Monday-Friday 10:00-16:00, with some locations offering extended hours. You can find specific branch hours and locations using the ATM/Branch locator in the app."
+      category: 'hours',
+      triggers: ['opening hours', 'branch hours', 'when open', 'hours'],
+      responses: [
+        "Most Bank of Ireland branches operate Monday-Friday 10:00-16:00, with some offering extended hours. Use our ATM/Branch locator in the app for specific locations.",
+        "Branch hours are typically Monday-Friday 10:00-16:00, though some locations have different schedules. Check the ATM/Branch locator for exact hours near you.",
+        "Standard hours are Monday-Friday 10:00-16:00 for most branches. Some locations offer extended service. The app's branch locator shows specific hours for each location.",
+        "You'll find most branches open Monday-Friday 10:00-16:00. For precise hours and locations, use the ATM/Branch locator feature in your app."
+      ]
     },
     {
       id: '7',
-      triggers: ['fees', 'charges', 'cost', 'how much'],
-      response: "Transaction fees vary depending on the type of transfer and destination. UK transfers typically have lower fees than international transfers. You'll see all applicable fees before confirming any transaction."
+      category: 'fees',
+      triggers: ['fees', 'charges', 'cost', 'how much', 'price'],
+      responses: [
+        "Transaction fees depend on transfer type and destination. UK transfers typically cost less than international ones. You'll see all fees before confirming.",
+        "Fees vary by transaction type and destination country. Domestic transfers are usually cheaper than international. All costs are shown before you confirm.",
+        "Transfer costs depend on where you're sending money. UK transfers have lower fees than international ones. We display all charges before final confirmation.",
+        "Pricing varies based on transfer destination and type. Domestic UK transfers are more affordable than international. You'll see exact fees before proceeding."
+      ]
     },
     {
       id: '8',
-      triggers: ['hello', 'hi', 'hey', 'good morning', 'good afternoon'],
-      response: "Hello! Welcome to Bank of Ireland customer support. I'm here to help you with any questions about your accounts, transfers, cards, or app features. What can I assist you with today?"
+      category: 'greeting',
+      triggers: ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening'],
+      responses: [
+        "Hello! I'm here to help with your banking needs. What can I assist you with today?",
+        "Hi there! Welcome to Bank of Ireland support. How can I help you today?",
+        "Good to see you! I'm ready to assist with any banking questions or issues you might have.",
+        "Hello! Thanks for reaching out. What banking matter can I help you with today?"
+      ]
+    },
+    {
+      id: '9',
+      category: 'thanks',
+      triggers: ['thank you', 'thanks', 'appreciate', 'helpful'],
+      responses: [
+        "You're very welcome! Is there anything else I can help you with today?",
+        "Happy to help! Feel free to reach out if you need any other assistance.",
+        "Glad I could assist! Let me know if you have any other questions.",
+        "You're welcome! I'm here if you need help with anything else."
+      ]
+    },
+    {
+      id: '10',
+      category: 'goodbye',
+      triggers: ['bye', 'goodbye', 'see you', 'thanks bye', 'done'],
+      responses: [
+        "Goodbye! Have a great day and don't hesitate to reach out if you need anything else.",
+        "Take care! Feel free to contact us anytime you need banking assistance.",
+        "Have a wonderful day! We're always here when you need banking support.",
+        "Goodbye! Thanks for using Bank of Ireland. Contact us anytime you need help."
+      ]
     }
   ];
 
@@ -89,19 +195,45 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     return stored || getDefaultResponses();
   };
 
-  const findResponse = (userMessage: string): string => {
+  const findResponse = (userMessage: string): { text: string; category: string } => {
     const responses = getChatResponses();
     const lowerMessage = userMessage.toLowerCase();
     
     for (const response of responses) {
       for (const trigger of response.triggers) {
         if (lowerMessage.includes(trigger.toLowerCase())) {
-          return response.response;
+          // Get next response variation to avoid repetition
+          const lastIndex = chatState.lastResponseIndex[response.category] || 0;
+          const nextIndex = (lastIndex + 1) % response.responses.length;
+          
+          setChatState(prev => ({
+            ...prev,
+            lastResponseIndex: {
+              ...prev.lastResponseIndex,
+              [response.category]: nextIndex
+            }
+          }));
+          
+          return {
+            text: response.responses[nextIndex],
+            category: response.category
+          };
         }
       }
     }
     
-    return "I'm sorry, I didn't quite understand that. Would you like me to connect you with a live agent for personalized assistance? You can also try asking about transfers, card issues, account balances, or app features.";
+    const fallbackResponses = [
+      "I'd be happy to help you with that. Could you provide a bit more detail about what you're looking for?",
+      "I want to make sure I understand correctly. Can you tell me more about what you need assistance with?",
+      "Let me help you with that. Could you elaborate on the specific issue you're experiencing?",
+      "I'm here to assist! Can you provide more details so I can give you the best possible help?"
+    ];
+    
+    const fallbackIndex = Math.floor(Math.random() * fallbackResponses.length);
+    return {
+      text: fallbackResponses[fallbackIndex],
+      category: 'fallback'
+    };
   };
 
   const handleSendMessage = async () => {
@@ -114,23 +246,39 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       timestamp: new Date()
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    setChatState(prev => ({
+      ...prev,
+      messages: [...prev.messages, userMessage]
+    }));
+    
     setInputText("");
     setIsTyping(true);
+    setTypingText(`${chatState.agentName} is typing...`);
 
-    // Simulate typing delay for more realistic feel
+    // Realistic typing delay based on message length
+    const baseDelay = 800;
+    const typingSpeed = 50; // ms per character
+    const responseLength = Math.random() * 100 + 20; // Estimated response length
+    const typingDelay = baseDelay + (responseLength * typingSpeed);
+
     setTimeout(() => {
-      const response = findResponse(userMessage.text);
+      const responseData = findResponse(userMessage.text);
       const botMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
-        text: response,
+        text: responseData.text,
         isUser: false,
-        timestamp: new Date()
+        timestamp: new Date(),
+        agentName: chatState.agentName
       };
 
-      setMessages(prev => [...prev, botMessage]);
+      setChatState(prev => ({
+        ...prev,
+        messages: [...prev.messages, botMessage]
+      }));
+      
       setIsTyping(false);
-    }, 1000 + Math.random() * 2000); // 1-3 second delay
+      setTypingText("");
+    }, typingDelay);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -140,23 +288,47 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     }
   };
 
+  const handleEndChat = () => {
+    setChatState(prev => ({
+      ...prev,
+      isActive: false
+    }));
+    
+    // Clear chat state
+    localStorage.removeItem('liveChatState');
+    
+    // Reset to initial state
+    const agentNames = ['Mark', 'Sarah', 'James', 'Emma', 'David', 'Lisa'];
+    const randomAgent = agentNames[Math.floor(Math.random() * agentNames.length)];
+    
+    setChatState({
+      messages: [],
+      isActive: true,
+      agentName: randomAgent,
+      sessionId: `chat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      lastResponseIndex: {}
+    });
+    
+    onClose();
+  };
+
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-3xl w-full max-w-md h-[85vh] max-h-[600px] flex flex-col shadow-2xl">
         {/* Header */}
-        <div className="bg-[#126987] rounded-t-3xl sm:rounded-t-3xl px-4 py-4 flex items-center justify-between">
+        <div className="bg-[#126987] rounded-t-3xl px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
               <MessageCircle className="w-5 h-5 text-white" />
             </div>
             <div>
               <h3 className="text-white font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Live Chat Support
+                {chatState.agentName} – Support Specialist
               </h3>
               <p className="text-white/80 text-xs" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                We're here to help
+                {isTyping ? typingText : 'Online now'}
               </p>
             </div>
           </div>
@@ -170,7 +342,18 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {messages.map((message) => (
+          {/* Welcome message for new chats */}
+          {chatState.messages.length === 0 && (
+            <div className="flex justify-center">
+              <div className="bg-blue-50 text-blue-800 px-4 py-2 rounded-2xl text-sm text-center max-w-[80%]">
+                <p style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Hi! I'm {chatState.agentName}, your support specialist. Please send me a message to get started.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {chatState.messages.map((message) => (
             <div
               key={message.id}
               className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
@@ -214,6 +397,9 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
                     <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
                   </div>
                 </div>
+                <p className="text-xs text-gray-500 mt-1 text-left">
+                  {typingText}
+                </p>
               </div>
               <div className="order-2 w-8 h-8 rounded-full flex items-center justify-center ml-2 flex-shrink-0 bg-gray-200">
                 <Bot className="w-4 h-4 text-gray-600" />
@@ -226,6 +412,18 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
 
         {/* Input */}
         <div className="p-4 border-t border-gray-100">
+          {chatState.messages.length > 0 && (
+            <div className="mb-3 flex justify-center">
+              <button
+                onClick={handleEndChat}
+                className="text-red-600 text-sm font-medium hover:text-red-700 transition-colors"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              >
+                End Chat
+              </button>
+            </div>
+          )}
+          
           <div className="flex items-center space-x-2">
             <div className="flex-1 relative">
               <input
