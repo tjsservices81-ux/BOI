@@ -67,18 +67,17 @@ function AppRoutes() {
       }
     });
     
-    // Check if this is a forced cold start
+    // Check if this is a forced cold start (only after real app closure)
     const forceColdStart = localStorage.getItem('force_cold_start') === 'true';
     
     if (forceColdStart) {
-      // This is a cold restart after app was closed
+      // This is a cold restart after app was actually closed
       localStorage.removeItem('force_cold_start');
       localStorage.removeItem('bankingUser');
       sessionStorage.clear();
+      // Mark this as a cold start for auth provider
+      sessionStorage.setItem('app_cold_start', 'true');
     }
-    
-    // Mark this as a cold start for auth provider
-    sessionStorage.setItem('app_cold_start', 'true');
     
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
     if (themeColorMeta) {
@@ -99,21 +98,14 @@ function AppRoutes() {
     const handleVisibilityChange = () => {
       if (document.hidden) {
         isAppVisible = false;
-        // App is being backgrounded - store current state
+        // App is being backgrounded - just track state, don't set reload timers
         sessionStorage.setItem('app_backgrounded', Date.now().toString());
         sessionStorage.setItem('current_location', location);
       } else {
-        // App is being foregrounded - restore proper state
-        const backgroundTime = sessionStorage.getItem('app_backgrounded');
-        if (backgroundTime && !isAppVisible) {
-          const timeAway = Date.now() - parseInt(backgroundTime);
-          // Only reload for very long absence (30+ seconds) to prevent accidental reloads
-          if (timeAway > 30000) {
-            window.location.reload();
-          } else {
-            // Restore complete app state when returning from background
-            restoreAppStateOnForeground();
-          }
+        // App is being foregrounded - restore state without any reloading
+        if (!isAppVisible) {
+          // Always restore app state when returning from background
+          restoreAppStateOnForeground();
         }
         isAppVisible = true;
         sessionStorage.removeItem('app_backgrounded');
@@ -146,27 +138,33 @@ function AppRoutes() {
     };
 
     const handlePageHide = () => {
-      // App is being swiped away or closed - mark for cold restart
-      localStorage.setItem('force_cold_start', 'true');
-      sessionStorage.setItem('app_closed', 'true');
+      // Only mark for cold restart if this is actually an app closure
+      // PageHide can trigger for various reasons, so we're more conservative
+      sessionStorage.setItem('page_hidden', 'true');
     };
 
     const handlePageShow = (event: PageTransitionEvent) => {
-      // App is being restored - check if we need cold restart
+      // Only reload if this was a true app closure (page cache was not used)
       const forceColdStart = localStorage.getItem('force_cold_start') === 'true';
       
-      if (event.persisted || sessionStorage.getItem('app_closed') || forceColdStart) {
-        // Clear the flag and force full reload for cold launch
+      if (forceColdStart) {
+        // This was a real app closure - force full reload for cold launch
         localStorage.removeItem('force_cold_start');
-        sessionStorage.removeItem('app_closed');
+        sessionStorage.clear();
         window.location.reload();
+      } else {
+        // This was just backgrounding/foregrounding - restore state
+        sessionStorage.removeItem('page_hidden');
+        restoreAppStateOnForeground();
       }
     };
 
     const handleBeforeUnload = () => {
-      // Mark app as being closed and force cold restart
-      localStorage.setItem('force_cold_start', 'true');
-      sessionStorage.setItem('app_closed', 'true');
+      // Only mark for cold restart on actual app closure
+      // beforeUnload can trigger for many reasons, so we're conservative
+      if (document.visibilityState === 'hidden') {
+        localStorage.setItem('force_cold_start', 'true');
+      }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
