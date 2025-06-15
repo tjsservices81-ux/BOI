@@ -15,13 +15,7 @@ interface Account {
 }
 
 export default function Dashboard() {
-  const { user, isLoading } = useAuth();
   const [, setLocation] = useLocation();
-  
-  // Authentication guard - prevent rendering if not logged in
-  if (!user || isLoading) {
-    return null;
-  }
   
   // Local state for account balances that can be updated by transfers
   const [accounts, setAccounts] = useState<Account[]>([]);
