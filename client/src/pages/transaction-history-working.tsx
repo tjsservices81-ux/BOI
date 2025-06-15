@@ -118,8 +118,7 @@ export default function TransactionHistoryWorking() {
       const accountTransactions = updatedTransactions.filter((tx: any) => tx.accountId === accountId);
       console.log('Loaded transactions for account', accountId, ':', accountTransactions);
       
-      // Update the transactions state with enhanced data
-      setTransactions(accountTransactions);
+      // Don't set transactions here - wait for sorting
       
       // Get account info and balance using UserDataManager
       const storedAccounts = UserDataManager.getUserData('bankAccounts', []);
