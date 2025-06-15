@@ -2,6 +2,46 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Splash screen status bar styling */
+.splash-fullscreen {
+  /* Extend content behind status bar */
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+
+/* Full height splash container that extends behind status bar */
+.splash-container {
+  height: 100vh;
+  height: 100dvh;
+  width: 100vw;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  background: #0000ff;
+  /* Extend behind safe areas on iOS */
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* iOS PWA specific status bar handling */
+@supports (-webkit-touch-callout: none) {
+  .splash-fullscreen {
+    /* Ensure content extends to top of screen */
+    -webkit-appearance: none;
+    overflow: hidden;
+  }
+  
+  .splash-container {
+    /* Full viewport on iOS including status bar area */
+    height: 100vh;
+    height: -webkit-fill-available;
+    padding-top: 0;
+  }
+}
+
 /* Mobile keyboard and viewport handling */
 .chat-container {
   height: 100vh;
