@@ -58,6 +58,7 @@ function AppRoutes() {
   });
   const [isInitialized, setIsInitialized] = useState(false);
   const [splashTransitioning, setSplashTransitioning] = useState(false);
+  const [authStabilized, setAuthStabilized] = useState(false);
 
   
   // Initialize app state and theme
@@ -90,6 +91,8 @@ function AppRoutes() {
       setTimeout(() => {
         setSplashShown(true);
         setSplashTransitioning(false);
+        // Stabilize auth state after splash transition completes
+        setTimeout(() => setAuthStabilized(true), 50);
       }, 100);
       const themeColorMeta = document.querySelector('meta[name="theme-color"]');
       if (themeColorMeta) {
@@ -124,6 +127,8 @@ function AppRoutes() {
               {/* Handle root route properly based on splash and auth state */}
               {!splashShown || splashTransitioning ? (
                 <Splash />
+              ) : !authStabilized ? (
+                <div className="w-full h-full bg-[#126987]" />
               ) : (!user || isLoading) ? (
                 <Login />
               ) : (
