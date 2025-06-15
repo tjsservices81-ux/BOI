@@ -1496,9 +1496,9 @@ input {
 
 /* Ensure no white gaps at top on iOS */
 html, body {
-  background-color: #106C88;
+  background-color: #126987;
 }
 
 #root {
-  background-color: #106C88;
+  background-color: #126987;
 }

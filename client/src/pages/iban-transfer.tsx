@@ -403,9 +403,9 @@ export default function IbanTransfer() {
       bottom: 0, 
       display: 'flex', 
       flexDirection: 'column',
-      backgroundColor: '#106C88'
+      backgroundColor: '#126987'
     }}>
-      <div className="bg-[#106C88] px-4 py-3 flex items-center justify-between" style={{ flexShrink: 0 }}>
+      <div className="bg-[#126987] px-4 py-3 flex items-center justify-between" style={{ flexShrink: 0 }}>
         <button onClick={() => navigate('/payments')} className="flex items-center text-white">
           <ChevronLeft className="w-5 h-5 mr-2" />
           <span className="font-semibold text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>International Transfer</span>
