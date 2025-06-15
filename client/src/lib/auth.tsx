@@ -12,6 +12,7 @@ interface AuthContextType {
   login: (user: User) => void;
   logout: () => void;
   isLoading: boolean;
+  isInitialized: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -30,7 +31,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return null;
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(true); // Start as true to prevent flash
+  const [isInitialized, setIsInitialized] = useState(false); // Start as false to prevent flash
+
+  // Initialize auth state properly to prevent flash
+  useEffect(() => {
+    // Mark as initialized after checking localStorage
+    setIsInitialized(true);
+  }, []);
 
   // Listen for admin profile updates to refresh user data immediately
   useEffect(() => {
@@ -89,6 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         logout,
         isLoading,
+        isInitialized,
       }}
     >
       {children}

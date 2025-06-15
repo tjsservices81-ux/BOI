@@ -50,7 +50,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function AppRoutes() {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, isInitialized: authInitialized } = useAuth();
   const [location, navigate] = useLocation();
   const [splashShown, setSplashShown] = useState(() => {
     // Initialize splashShown state immediately to prevent flash
@@ -60,7 +60,7 @@ function AppRoutes() {
   const [splashTransitioning, setSplashTransitioning] = useState(false);
   
   // Strict authentication guard - only allow dashboard when user is confirmed
-  const isAuthenticated = user && !isLoading;
+  const isAuthenticated = user && !isLoading && authInitialized;
 
   
   // Initialize app state and theme
@@ -104,8 +104,8 @@ function AppRoutes() {
     return () => window.removeEventListener('splashComplete', handleSplashComplete);
   }, []);
 
-  // Prevent flash during initialization
-  if (!isInitialized) {
+  // Prevent flash during initialization - wait for both app and auth to initialize
+  if (!isInitialized || !authInitialized) {
     return (
       <div className="w-full h-full bg-[#0000ff]">
         {/* Empty blue screen during initialization */}
