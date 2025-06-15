@@ -20,7 +20,6 @@ export default function Dashboard() {
   // Local state for account balances that can be updated by transfers
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [isNavigating, setIsNavigating] = useState(false);
-  const [isContentReady, setIsContentReady] = useState(false);
 
   // Enhanced navigation with smooth animations
   const navigateWithAnimation = (path: string, animationType: 'slide-right' | 'slide-left' | 'slide-up' = 'slide-right') => {
@@ -76,8 +75,6 @@ export default function Dashboard() {
     }
     
     setAccounts(storedAccounts);
-    // Set content ready after accounts are loaded
-    setTimeout(() => setIsContentReady(true), 100);
   }, []);
 
   // Listen for balance updates from transfers and admin profile updates
@@ -209,7 +206,7 @@ export default function Dashboard() {
 
       {/* Main content area - white card with rounded top corners */}
       <div className="flex-1 px-0 -mt-8 overflow-y-auto ios-scroll" style={{ maxHeight: 'calc(100vh - 200px)' }}>
-        <div className="bg-[#126987] rounded-t-3xl shadow-lg min-h-full" style={{ backgroundColor: isContentReady ? 'white' : '#126987' }}>
+        <div className="bg-white rounded-t-3xl shadow-lg min-h-full">
           <div className="pt-6 pb-32" style={{ overscrollBehavior: 'contain' }}>
             {accounts.map((account, index) => (
               <button 
