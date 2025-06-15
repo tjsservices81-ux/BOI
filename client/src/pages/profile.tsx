@@ -168,9 +168,16 @@ export default function Profile() {
 
   // Admin panel functions
   useEffect(() => {
-    const storedAccounts = UserDataManager.getUserAccounts();
-    setAccounts(storedAccounts);
-    loadChatResponses();
+    try {
+      const storedAccounts = UserDataManager.getUserAccounts();
+      setAccounts(storedAccounts);
+      loadChatResponses();
+    } catch (error) {
+      console.error('Error initializing admin panel:', error);
+      // Set default empty accounts if there's an error
+      setAccounts([]);
+      setChatResponses([]);
+    }
   }, []);
 
   // Chat response management functions
@@ -218,8 +225,13 @@ export default function Profile() {
   ];
 
   const loadChatResponses = () => {
-    const stored = UserDataManager.getUserData('chatResponses', null);
-    setChatResponses(stored || getDefaultChatResponses());
+    try {
+      const stored = UserDataManager.getUserData('chatResponses', null);
+      setChatResponses(stored || getDefaultChatResponses());
+    } catch (error) {
+      console.error('Error loading chat responses:', error);
+      setChatResponses(getDefaultChatResponses());
+    }
   };
 
   const saveChatResponses = (responses: any[]) => {
