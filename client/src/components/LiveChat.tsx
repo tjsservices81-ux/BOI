@@ -528,7 +528,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
 
         {/* Input */}
         <div className="p-4 border-t border-gray-100">
-          {chatState.queueStatus === 'connected' && chatState.messages.length > 0 && (
+          {chatState.queueStatus === 'connected' && (
             <div className="mb-3 flex justify-center">
               <button
                 onClick={handleEndChat}
