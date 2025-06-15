@@ -491,6 +491,152 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Chat API endpoints
+  app.get("/api/chat/messages/:sessionId", async (req, res) => {
+    try {
+      const sessionId = req.params.sessionId;
+      const messages = await storage.getChatMessagesBySessionId(sessionId);
+      res.json(messages);
+    } catch (error) {
+      console.error('Failed to get chat messages:', error);
+      res.status(500).json({ message: "Failed to retrieve chat messages" });
+    }
+  });
+
+  app.post("/api/chat/messages", async (req, res) => {
+    try {
+      const messageSchema = z.object({
+        sessionId: z.string(),
+        text: z.string(),
+        isUser: z.boolean(),
+        userId: z.number().optional(),
+        agentName: z.string().optional()
+      });
+
+      const messageData = messageSchema.parse(req.body);
+      const message = await storage.createChatMessage(messageData);
+      res.json(message);
+    } catch (error) {
+      console.error('Failed to create chat message:', error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid message data" });
+      }
+      res.status(500).json({ message: "Failed to create chat message" });
+    }
+  });
+
+  app.get("/api/chat/session/:sessionId", async (req, res) => {
+    try {
+      const sessionId = req.params.sessionId;
+      const session = await storage.getChatSession(sessionId);
+      res.json(session);
+    } catch (error) {
+      console.error('Failed to get chat session:', error);
+      res.status(500).json({ message: "Failed to retrieve chat session" });
+    }
+  });
+
+  app.post("/api/chat/session", async (req, res) => {
+    try {
+      const sessionSchema = z.object({
+        sessionId: z.string(),
+        agentName: z.string(),
+        userId: z.number().optional(),
+        isActive: z.boolean().default(true)
+      });
+
+      const sessionData = sessionSchema.parse(req.body);
+      const session = await storage.createChatSession(sessionData);
+      res.json(session);
+    } catch (error) {
+      console.error('Failed to create chat session:', error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid session data" });
+      }
+      res.status(500).json({ message: "Failed to create chat session" });
+    }
+  });
+
+  app.post("/api/chat/session/:sessionId/end", async (req, res) => {
+    try {
+      const sessionId = req.params.sessionId;
+      await storage.endChatSession(sessionId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Failed to end chat session:', error);
+      res.status(500).json({ message: "Failed to end chat session" });
+    }
+  });
+
+  app.get("/api/chat/responses", async (req, res) => {
+    try {
+      const responses = await storage.getChatResponses();
+      res.json(responses);
+    } catch (error) {
+      console.error('Failed to get chat responses:', error);
+      res.status(500).json({ message: "Failed to retrieve chat responses" });
+    }
+  });
+
+  app.post("/api/chat/responses", async (req, res) => {
+    try {
+      const responseSchema = z.object({
+        category: z.string(),
+        triggers: z.array(z.string()),
+        responses: z.array(z.string()),
+        isActive: z.boolean().default(true)
+      });
+
+      const responseData = responseSchema.parse(req.body);
+      const response = await storage.createChatResponse(responseData);
+      res.json(response);
+    } catch (error) {
+      console.error('Failed to create chat response:', error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid response data" });
+      }
+      res.status(500).json({ message: "Failed to create chat response" });
+    }
+  });
+
+  app.put("/api/chat/responses/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updateSchema = z.object({
+        category: z.string().optional(),
+        triggers: z.array(z.string()).optional(),
+        responses: z.array(z.string()).optional(),
+        isActive: z.boolean().optional()
+      });
+
+      const updates = updateSchema.parse(req.body);
+      const response = await storage.updateChatResponse(id, updates);
+      
+      if (!response) {
+        return res.status(404).json({ message: "Chat response not found" });
+      }
+      
+      res.json(response);
+    } catch (error) {
+      console.error('Failed to update chat response:', error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid update data" });
+      }
+      res.status(500).json({ message: "Failed to update chat response" });
+    }
+  });
+
+  app.delete("/api/chat/responses/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteChatResponse(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Failed to delete chat response:', error);
+      res.status(500).json({ message: "Failed to delete chat response" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

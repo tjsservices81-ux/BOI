@@ -35,6 +35,17 @@ export interface IStorage {
   
   // Statements
   getStatementsByAccountId(accountId: number): Promise<Statement[]>;
+  
+  // Chat operations
+  getChatMessagesBySessionId(sessionId: string): Promise<ChatMessage[]>;
+  createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
+  getChatSession(sessionId: string): Promise<ChatSession | undefined>;
+  createChatSession(session: InsertChatSession): Promise<ChatSession>;
+  endChatSession(sessionId: string): Promise<void>;
+  getChatResponses(): Promise<ChatResponse[]>;
+  createChatResponse(response: InsertChatResponse): Promise<ChatResponse>;
+  updateChatResponse(id: number, updates: Partial<ChatResponse>): Promise<ChatResponse | undefined>;
+  deleteChatResponse(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -122,6 +133,55 @@ export class DatabaseStorage implements IStorage {
 
   async getStatementsByAccountId(accountId: number): Promise<Statement[]> {
     return await db.select().from(statements).where(eq(statements.accountId, accountId));
+  }
+
+  // Chat operations
+  async getChatMessagesBySessionId(sessionId: string): Promise<ChatMessage[]> {
+    return await db.select().from(chatMessages).where(eq(chatMessages.sessionId, sessionId));
+  }
+
+  async createChatMessage(message: InsertChatMessage): Promise<ChatMessage> {
+    const [newMessage] = await db.insert(chatMessages).values(message).returning();
+    return newMessage;
+  }
+
+  async getChatSession(sessionId: string): Promise<ChatSession | undefined> {
+    const [session] = await db.select().from(chatSessions).where(eq(chatSessions.sessionId, sessionId));
+    return session;
+  }
+
+  async createChatSession(session: InsertChatSession): Promise<ChatSession> {
+    const [newSession] = await db.insert(chatSessions).values(session).returning();
+    return newSession;
+  }
+
+  async endChatSession(sessionId: string): Promise<void> {
+    await db.update(chatSessions)
+      .set({ isActive: false, endedAt: new Date() })
+      .where(eq(chatSessions.sessionId, sessionId));
+  }
+
+  async getChatResponses(): Promise<ChatResponse[]> {
+    return await db.select().from(chatResponses).where(eq(chatResponses.isActive, true));
+  }
+
+  async createChatResponse(response: InsertChatResponse): Promise<ChatResponse> {
+    const [newResponse] = await db.insert(chatResponses).values(response).returning();
+    return newResponse;
+  }
+
+  async updateChatResponse(id: number, updates: Partial<ChatResponse>): Promise<ChatResponse | undefined> {
+    const [updated] = await db.update(chatResponses)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(chatResponses.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteChatResponse(id: number): Promise<void> {
+    await db.update(chatResponses)
+      .set({ isActive: false })
+      .where(eq(chatResponses.id, id));
   }
 
   // Initialize sample data for first-time setup
@@ -342,6 +402,90 @@ export class MemStorage implements IStorage {
 
   async getStatementsByAccountId(accountId: number): Promise<Statement[]> {
     return Array.from(this.statements.values()).filter(statement => statement.accountId === accountId);
+  }
+
+  // Chat operations - in-memory implementation
+  private chatMessages: Map<number, ChatMessage> = new Map();
+  private chatSessions: Map<number, ChatSession> = new Map();
+  private chatResponses: Map<number, ChatResponse> = new Map();
+  private currentChatMessageId = 1;
+  private currentChatSessionId = 1;
+  private currentChatResponseId = 1;
+
+  async getChatMessagesBySessionId(sessionId: string): Promise<ChatMessage[]> {
+    return Array.from(this.chatMessages.values()).filter(msg => msg.sessionId === sessionId);
+  }
+
+  async createChatMessage(message: InsertChatMessage): Promise<ChatMessage> {
+    const chatMessage: ChatMessage = {
+      id: this.currentChatMessageId++,
+      ...message,
+      userId: message.userId || null,
+      agentName: message.agentName || null,
+      timestamp: message.timestamp || new Date()
+    };
+    this.chatMessages.set(chatMessage.id, chatMessage);
+    return chatMessage;
+  }
+
+  async getChatSession(sessionId: string): Promise<ChatSession | undefined> {
+    return Array.from(this.chatSessions.values()).find(session => session.sessionId === sessionId);
+  }
+
+  async createChatSession(session: InsertChatSession): Promise<ChatSession> {
+    const chatSession: ChatSession = {
+      id: this.currentChatSessionId++,
+      ...session,
+      userId: session.userId || null,
+      endedAt: session.endedAt || null,
+      startedAt: session.startedAt || new Date(),
+      isActive: session.isActive !== undefined ? session.isActive : true
+    };
+    this.chatSessions.set(chatSession.id, chatSession);
+    return chatSession;
+  }
+
+  async endChatSession(sessionId: string): Promise<void> {
+    const session = await this.getChatSession(sessionId);
+    if (session) {
+      session.isActive = false;
+      session.endedAt = new Date();
+      this.chatSessions.set(session.id, session);
+    }
+  }
+
+  async getChatResponses(): Promise<ChatResponse[]> {
+    return Array.from(this.chatResponses.values()).filter(response => response.isActive);
+  }
+
+  async createChatResponse(response: InsertChatResponse): Promise<ChatResponse> {
+    const chatResponse: ChatResponse = {
+      id: this.currentChatResponseId++,
+      ...response,
+      createdAt: response.createdAt || new Date(),
+      updatedAt: response.updatedAt || new Date(),
+      isActive: response.isActive !== undefined ? response.isActive : true
+    };
+    this.chatResponses.set(chatResponse.id, chatResponse);
+    return chatResponse;
+  }
+
+  async updateChatResponse(id: number, updates: Partial<ChatResponse>): Promise<ChatResponse | undefined> {
+    const response = this.chatResponses.get(id);
+    if (response) {
+      const updated = { ...response, ...updates, updatedAt: new Date() };
+      this.chatResponses.set(id, updated);
+      return updated;
+    }
+    return undefined;
+  }
+
+  async deleteChatResponse(id: number): Promise<void> {
+    const response = this.chatResponses.get(id);
+    if (response) {
+      response.isActive = false;
+      this.chatResponses.set(id, response);
+    }
   }
 }
 
