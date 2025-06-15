@@ -163,6 +163,63 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     }
   }, [chatState, currentUser]);
 
+  // Handle app lifecycle events to end chat sessions
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        // App is backgrounded or closed - end chat session
+        handleEndChat();
+      }
+    };
+
+    const handleBeforeUnload = () => {
+      // App is being closed - end chat session
+      handleEndChat();
+    };
+
+    const handlePageHide = () => {
+      // Page is being hidden (mobile swipe away) - end chat session
+      handleEndChat();
+    };
+
+    // Listen for various app lifecycle events
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('pagehide', handlePageHide);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('pagehide', handlePageHide);
+    };
+  }, []);
+
+  // Clear session when app starts fresh
+  useEffect(() => {
+    // Check if this is a fresh app load (not navigation)
+    const isAppFreshLoad = !sessionStorage.getItem('app_navigation_active');
+    
+    if (isAppFreshLoad) {
+      // Clear any stored chat state for fresh start
+      if (currentUser) {
+        const userChatKey = `liveChatState_${currentUser}`;
+        localStorage.removeItem(userChatKey);
+      }
+      
+      // Reset chat state completely
+      setChatState(prev => ({
+        ...prev,
+        messages: [],
+        sessionId: `session_${Date.now()}`,
+        isActive: false,
+        queueStatus: 'idle'
+      }));
+      
+      // Mark that navigation is now active
+      sessionStorage.setItem('app_navigation_active', 'true');
+    }
+  }, [currentUser]);
+
   // Cleanup timer on component unmount to prevent memory leaks
   useEffect(() => {
     return () => {
