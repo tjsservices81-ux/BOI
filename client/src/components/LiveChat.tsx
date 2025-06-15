@@ -581,9 +581,13 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 backdrop-animate-in">
       <div 
-        className={`bg-white w-full h-full md:w-[90vw] md:h-[90vh] md:rounded-3xl md:max-w-4xl md:max-h-[800px] flex flex-col shadow-2xl ${
+        className={`bg-white w-full md:w-[90vw] md:h-[90vh] md:rounded-3xl md:max-w-4xl md:max-h-[800px] flex flex-col shadow-2xl ${
           isAnimating ? 'chat-animate-out' : 'chat-animate-in'
         }`}
+        style={{ 
+          height: 'calc(100vh - 88px)', // Account for bottom navigation height (60px + padding)
+          maxHeight: 'calc(100vh - 88px)'
+        }}
       >
         {/* Header */}
         <div className="bg-[#126987] md:rounded-t-3xl px-6 py-6 flex items-center justify-between">
