@@ -103,7 +103,9 @@ export default function TransactionHistoryWorking() {
   }, []);
 
   useEffect(() => {
+    console.log('USEEFFECT TRIGGERED - Starting data load');
     const loadData = () => {
+      console.log('LOADDATA FUNCTION CALLED');
       // Force clear all cache to ensure we get fresh data
       UserDataManager.clearCache();
       
@@ -195,6 +197,7 @@ export default function TransactionHistoryWorking() {
       console.log('Final sorted transactions:', sortedTransactions.map((tx: any) => `${tx.id}: ${tx.description} - ${tx.timestamp}`));
       
       // Update the UI with properly sorted transactions
+      console.log('SETTING SORTED TRANSACTIONS IN LOADDATA:', sortedTransactions.map((tx: any) => `${tx.id}: ${tx.description}`));
       setTransactions(sortedTransactions);
     };
     
@@ -202,6 +205,7 @@ export default function TransactionHistoryWorking() {
 
     // Listen for transaction events with immediate refresh
     const handleTransactionUpdate = () => {
+      console.log('TRANSACTION EVENT TRIGGERED - handleTransactionUpdate called');
       // Force immediate cache clear and reload
       UserDataManager.clearCache();
       setTimeout(() => {
