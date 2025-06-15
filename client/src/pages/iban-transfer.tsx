@@ -403,7 +403,7 @@ export default function IbanTransfer() {
       bottom: 0, 
       display: 'flex', 
       flexDirection: 'column',
-      backgroundColor: '#126987'
+      backgroundColor: '#f9fafb'
     }}>
       <div className="bg-[#126987] px-4 py-3 flex items-center justify-between" style={{ flexShrink: 0 }}>
         <button onClick={() => navigate('/payments')} className="flex items-center text-white">
