@@ -17,20 +17,35 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => {
-    // Initialize user state from localStorage immediately to prevent auth flash
-    const cachedUser = localStorage.getItem('bankingUser');
-    if (cachedUser) {
-      try {
-        return JSON.parse(cachedUser);
-      } catch (error) {
-        localStorage.removeItem('bankingUser');
-      }
-    }
-    return null;
-  });
+  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(true); // Start as true to prevent flash
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Initialize auth state on mount - check for valid session
+  useEffect(() => {
+    // Check if this is a cold start (app was closed and reopened)
+    const wasColdStart = sessionStorage.getItem('app_cold_start') === 'true';
+    
+    if (wasColdStart) {
+      // Cold start - clear all auth state and require fresh login
+      localStorage.removeItem('bankingUser');
+      setUser(null);
+      setIsInitialized(true);
+      sessionStorage.removeItem('app_cold_start');
+    } else {
+      // Normal navigation - check for cached user
+      const cachedUser = localStorage.getItem('bankingUser');
+      if (cachedUser) {
+        try {
+          const parsedUser = JSON.parse(cachedUser);
+          setUser(parsedUser);
+        } catch (error) {
+          localStorage.removeItem('bankingUser');
+        }
+      }
+      setIsInitialized(true);
+    }
+  }, []);
 
   // Listen for admin profile updates to refresh user data immediately
   useEffect(() => {

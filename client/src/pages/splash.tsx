@@ -28,9 +28,12 @@ export default function Splash() {
       setIsVisible(false);
       // Mark splash as shown in session storage
       sessionStorage.setItem('splashShown', 'true');
+      // Clear the cold start flag to allow normal auth flow
+      sessionStorage.removeItem('app_cold_start');
       // Dispatch event to notify App.tsx that splash is complete
       window.dispatchEvent(new CustomEvent('splashComplete'));
       setTimeout(() => {
+        // Always navigate to login after splash for cold starts
         navigate('/login');
       }, 300); // Brief fade out before navigation
     }, 8000); // 8 seconds total

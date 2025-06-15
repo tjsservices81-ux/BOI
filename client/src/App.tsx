@@ -67,8 +67,16 @@ function AppRoutes() {
       }
     });
     
-    // Clear session storage completely
-    sessionStorage.clear();
+    // Mark this as a cold start for auth provider
+    sessionStorage.setItem('app_cold_start', 'true');
+    
+    // Clear any auth session flags except the cold start marker
+    const sessionKeys = Object.keys(sessionStorage);
+    sessionKeys.forEach(key => {
+      if (key !== 'app_cold_start') {
+        sessionStorage.removeItem(key);
+      }
+    });
     
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
     if (themeColorMeta) {
@@ -107,14 +115,18 @@ function AppRoutes() {
     };
 
     const handlePageHide = () => {
-      // App is being swiped away or closed
+      // App is being swiped away or closed - mark for cold restart
+      localStorage.setItem('force_cold_start', 'true');
       sessionStorage.setItem('app_closed', 'true');
     };
 
     const handlePageShow = (event: PageTransitionEvent) => {
-      // App is being restored
-      if (event.persisted || sessionStorage.getItem('app_closed')) {
-        // Force reload for cold launch behavior
+      // App is being restored - check if we need cold restart
+      const forceColdStart = localStorage.getItem('force_cold_start') === 'true';
+      
+      if (event.persisted || sessionStorage.getItem('app_closed') || forceColdStart) {
+        // Clear the flag and force full reload for cold launch
+        localStorage.removeItem('force_cold_start');
         sessionStorage.removeItem('app_closed');
         window.location.reload();
       }
@@ -179,12 +191,14 @@ function AppRoutes() {
             <Route path="/login" component={Login} />
             <Route path="/more" component={More} />
             <Route path="/">
-              {/* Handle root route - show splash/login for non-authenticated users, redirect authenticated users to dashboard */}
-              <ProtectedRoute fallback={
-                !splashShown || splashTransitioning ? <Splash /> : <Login />
-              }>
+              {/* Handle root route - always show proper sequence for cold starts */}
+              {!splashShown || splashTransitioning ? (
+                <Splash />
+              ) : !user ? (
+                <Login />
+              ) : (
                 <Redirect to="/dashboard" />
-              </ProtectedRoute>
+              )}
             </Route>
           <Route path="/dashboard">
             <ProtectedRoute>

@@ -34,6 +34,12 @@ export class UserDataManager {
     return this.currentUser;
   }
 
+  // Clear current user session
+  static clearCurrentUser() {
+    this.currentUser = null;
+    localStorage.removeItem('currentUser');
+  }
+
   // Store last active user for biometric authentication
   static setLastActiveUser(customerNumber: string) {
     localStorage.setItem('lastActiveUser', customerNumber);
