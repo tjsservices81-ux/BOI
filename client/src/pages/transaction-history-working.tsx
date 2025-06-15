@@ -117,6 +117,11 @@ export default function TransactionHistoryWorking() {
       const accountTransactions = updatedTransactions.filter((tx: any) => tx.accountId === accountId);
       console.log('Loaded transactions for account', accountId, ':', accountTransactions);
       
+      // Debug: Log transaction timestamps and IDs for sorting verification
+      accountTransactions.forEach((tx: any) => {
+        console.log(`Transaction ${tx.id}: ${tx.description} - ${tx.timestamp} (${new Date(tx.timestamp).getTime()})`);
+      });
+      
       // Update the transactions state with enhanced data
       setTransactions(accountTransactions);
       
@@ -153,18 +158,26 @@ export default function TransactionHistoryWorking() {
         type: tx.type
       }));
       
-      // Only use actual stored transactions - no sample data
+      // Sort transactions: newest first, with ID as tiebreaker for same timestamps
       const sortedTransactions = formattedStored.sort((a: any, b: any) => {
-        const timeA = new Date(a.timestamp).getTime();
-        const timeB = new Date(b.timestamp).getTime();
+        // Convert timestamps to comparable numbers
+        const timeA = new Date(a.timestamp || 0).getTime();
+        const timeB = new Date(b.timestamp || 0).getTime();
         
-        // If timestamps are invalid, use the ID as fallback (newer IDs are typically larger)
-        if (isNaN(timeA) || isNaN(timeB)) {
-          return Number(b.id) - Number(a.id);
+        // If timestamps are different and valid, sort by time (newest first)
+        if (timeA !== timeB && !isNaN(timeA) && !isNaN(timeB)) {
+          return timeB - timeA;
         }
         
-        return timeB - timeA;
+        // For same timestamps or invalid timestamps, use ID (higher = newer)
+        const idA = parseInt(String(a.id)) || 0;
+        const idB = parseInt(String(b.id)) || 0;
+        
+        return idB - idA;
       });
+      
+      // Debug: Log final sorted order
+      console.log('Final sorted transactions:', sortedTransactions.map((tx: any) => `${tx.id}: ${tx.description} - ${tx.timestamp}`));
       
       setTransactions(sortedTransactions);
     };
