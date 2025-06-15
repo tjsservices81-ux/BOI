@@ -131,12 +131,12 @@ export class UserDataManager {
     } else {
       // Clear all cache entries for current user
       const userPrefix = `${currentUser}_`;
-      for (const [cacheKey] of this.dataCache) {
-        if (cacheKey.startsWith(userPrefix)) {
-          this.dataCache.delete(cacheKey);
-          this.cacheTimestamps.delete(cacheKey);
+      this.dataCache.forEach((value, key) => {
+        if (key.startsWith(userPrefix)) {
+          this.dataCache.delete(key);
+          this.cacheTimestamps.delete(key);
         }
-      }
+      });
     }
   }
 

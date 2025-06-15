@@ -18,33 +18,58 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isInitialized, setIsInitialized] = useState(false);
 
   // Initialize auth state on mount - check for valid session
   useEffect(() => {
-    // Check if this is a cold start (app was closed and reopened)
-    const wasColdStart = sessionStorage.getItem('app_cold_start') === 'true';
+    let isMounted = true;
     
-    if (wasColdStart) {
-      // Cold start - clear all auth state and require fresh login
-      localStorage.removeItem('bankingUser');
-      setUser(null);
-      setIsInitialized(true);
-      sessionStorage.removeItem('app_cold_start');
-    } else {
-      // Normal navigation - check for cached user
-      const cachedUser = localStorage.getItem('bankingUser');
-      if (cachedUser) {
-        try {
-          const parsedUser = JSON.parse(cachedUser);
-          setUser(parsedUser);
-        } catch (error) {
+    const initializeAuth = async () => {
+      try {
+        // Check if this is a cold start (app was closed and reopened)
+        const wasColdStart = sessionStorage.getItem('app_cold_start') === 'true';
+        
+        if (wasColdStart) {
+          // Cold start - clear all auth state and require fresh login
           localStorage.removeItem('bankingUser');
+          if (isMounted) {
+            setUser(null);
+            setIsLoading(false);
+            setIsInitialized(true);
+          }
+          sessionStorage.removeItem('app_cold_start');
+        } else {
+          // Normal navigation - check for cached user
+          const cachedUser = localStorage.getItem('bankingUser');
+          if (cachedUser && isMounted) {
+            try {
+              const parsedUser = JSON.parse(cachedUser);
+              setUser(parsedUser);
+            } catch (error) {
+              localStorage.removeItem('bankingUser');
+              setUser(null);
+            }
+          }
+          if (isMounted) {
+            setIsLoading(false);
+            setIsInitialized(true);
+          }
+        }
+      } catch (error) {
+        if (isMounted) {
+          setUser(null);
+          setIsLoading(false);
+          setIsInitialized(true);
         }
       }
-      setIsInitialized(true);
-    }
+    };
+
+    initializeAuth();
+    
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   // Listen for admin profile updates to refresh user data immediately
