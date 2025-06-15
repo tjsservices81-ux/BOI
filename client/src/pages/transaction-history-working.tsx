@@ -188,7 +188,7 @@ export default function TransactionHistoryWorking() {
 
   return (
     <div className="h-screen bg-gray-50 flex flex-col overflow-hidden"
-      style={{ backgroundColor: '#f9fafb', maxHeight: '100vh' }}>
+      style={{ backgroundColor: '#f9fafb', height: '100vh', maxHeight: '100vh' }}>
       <div className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0">
         <button onClick={() => navigate('/dashboard')} className="flex items-center text-white">
           <ChevronLeft className="w-5 h-5 mr-2" />
@@ -214,9 +214,11 @@ export default function TransactionHistoryWorking() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 pb-24 transaction-scroll-container"
+      <div className="flex-1 overflow-y-auto p-4 transaction-scroll-container"
         style={{ 
-          minHeight: 0
+          minHeight: 0,
+          maxHeight: 'calc(100vh - 200px)',
+          paddingBottom: '100px'
         }}>
         {/* Mini spending chart for visual insights */}
         <MiniSpendingChart accountId={accountId} />

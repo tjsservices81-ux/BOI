@@ -487,15 +487,17 @@ input, select, textarea {
 .transaction-scroll-container {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
-  scroll-behavior: smooth;
-  will-change: scroll-position;
+  scroll-behavior: auto;
+  position: relative;
+  height: 100%;
 }
 
-/* iOS scroll momentum optimization */
+/* iOS scroll momentum optimization with fixed height */
 @supports (-webkit-touch-callout: none) {
   .transaction-scroll-container {
     -webkit-overflow-scrolling: touch;
     overflow-scrolling: touch;
+    transform: translateZ(0);
   }
 }
 
