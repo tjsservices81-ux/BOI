@@ -30,7 +30,7 @@ import Statements from "@/pages/statements";
 import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
+function ProtectedRoute({ children, fallback }: { children: React.ReactNode; fallback?: React.ReactNode }) {
   const { user, isLoading } = useAuth();
   
   // Don't redirect while loading to prevent form interruptions
@@ -43,7 +43,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   }
   
   if (!user) {
-    return <Redirect to="/login" />;
+    return fallback ? <>{fallback}</> : <Redirect to="/login" />;
   }
   
   return <>{children}</>;
