@@ -42,9 +42,25 @@ export default function TransactionHistoryWorking() {
     // Update data using UserDataManager
     UserDataManager.setUserData('bankTransactions', enhancedTransactions);
     
-    // Update local state immediately with filtered account transactions
+    // Update local state with filtered and sorted account transactions
     const accountTransactions = enhancedTransactions.filter((tx: any) => tx.accountId === accountId);
-    setTransactions(accountTransactions);
+    
+    // Sort transactions: newest first, with ID as tiebreaker
+    const sortedTransactions = accountTransactions.sort((a: any, b: any) => {
+      const timeA = new Date(a.timestamp || 0).getTime();
+      const timeB = new Date(b.timestamp || 0).getTime();
+      
+      if (timeA !== timeB && !isNaN(timeA) && !isNaN(timeB)) {
+        return timeB - timeA;
+      }
+      
+      const idA = parseInt(String(a.id)) || 0;
+      const idB = parseInt(String(b.id)) || 0;
+      
+      return idB - idA;
+    });
+    
+    setTransactions(sortedTransactions);
     
     // Close modals
     setSelectedTransaction(null);
@@ -87,10 +103,11 @@ export default function TransactionHistoryWorking() {
   }, []);
 
   useEffect(() => {
+    console.log('USEEFFECT TRIGGERED - Starting data load');
     const loadData = () => {
-      // Clear cache to ensure we get fresh data
-      UserDataManager.clearCache('bankTransactions');
-      UserDataManager.clearCache('bankAccounts');
+      console.log('LOADDATA FUNCTION CALLED');
+      // Force clear all cache to ensure we get fresh data
+      UserDataManager.clearCache();
       
       // Get stored transactions for this specific account using UserDataManager
       const storedTransactions = UserDataManager.getUserData('bankTransactions', []);
@@ -118,7 +135,12 @@ export default function TransactionHistoryWorking() {
       const accountTransactions = updatedTransactions.filter((tx: any) => tx.accountId === accountId);
       console.log('Loaded transactions for account', accountId, ':', accountTransactions);
       
-      // Don't set transactions here - wait for sorting
+      // Debug: Log transaction timestamps and IDs for sorting verification
+      accountTransactions.forEach((tx: any) => {
+        console.log(`Transaction ${tx.id}: ${tx.description} - ${tx.timestamp} (${new Date(tx.timestamp).getTime()})`);
+      });
+      
+      // Remove this early setTransactions call - we'll set it after sorting
       
       // Get account info and balance using UserDataManager
       const storedAccounts = UserDataManager.getUserData('bankAccounts', []);
@@ -153,31 +175,56 @@ export default function TransactionHistoryWorking() {
         type: tx.type
       }));
       
-      // Only use actual stored transactions - no sample data
-      const sortedTransactions = formattedStored.sort((a: any, b: any) => 
-        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      );
+      // Sort transactions: newest first, with ID as tiebreaker for same timestamps
+      const sortedTransactions = formattedStored.sort((a: any, b: any) => {
+        // Convert timestamps to comparable numbers
+        const timeA = new Date(a.timestamp || 0).getTime();
+        const timeB = new Date(b.timestamp || 0).getTime();
+        
+        // If timestamps are different and valid, sort by time (newest first)
+        if (timeA !== timeB && !isNaN(timeA) && !isNaN(timeB)) {
+          return timeB - timeA;
+        }
+        
+        // For same timestamps or invalid timestamps, use ID (higher = newer)
+        const idA = parseInt(String(a.id)) || 0;
+        const idB = parseInt(String(b.id)) || 0;
+        
+        return idB - idA;
+      });
       
+      // Debug: Log final sorted order
+      console.log('Final sorted transactions:', sortedTransactions.map((tx: any) => `${tx.id}: ${tx.description} - ${tx.timestamp}`));
+      
+      // Update the UI with properly sorted transactions
+      console.log('SETTING SORTED TRANSACTIONS IN LOADDATA:', sortedTransactions.map((tx: any) => `${tx.id}: ${tx.description}`));
       setTransactions(sortedTransactions);
     };
     
     loadData();
 
-    // Listen for transaction events
+    // Listen for transaction events with immediate refresh
     const handleTransactionUpdate = () => {
-      loadData();
+      console.log('TRANSACTION EVENT TRIGGERED - handleTransactionUpdate called');
+      // Force immediate cache clear and reload
+      UserDataManager.clearCache();
+      setTimeout(() => {
+        loadData();
+      }, 100);
     };
 
     window.addEventListener('transactionUpdate', handleTransactionUpdate);
     window.addEventListener('transactionDeleted', handleTransactionUpdate);
     window.addEventListener('transactionAdded', handleTransactionUpdate);
     window.addEventListener('balanceUpdate', handleTransactionUpdate);
+    window.addEventListener('transferComplete', handleTransactionUpdate);
     
     return () => {
       window.removeEventListener('transactionUpdate', handleTransactionUpdate);
       window.removeEventListener('transactionDeleted', handleTransactionUpdate);
       window.removeEventListener('transactionAdded', handleTransactionUpdate);
       window.removeEventListener('balanceUpdate', handleTransactionUpdate);
+      window.removeEventListener('transferComplete', handleTransactionUpdate);
     };
   }, []);
 
