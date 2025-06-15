@@ -82,6 +82,7 @@ export default function Splash() {
 
   return (
     <div 
+      data-splash-active
       className={`full-height relative overflow-hidden transition-all duration-500 asset-instant splash-container ${
         isVisible ? 'opacity-100' : 'opacity-0'
       }`}

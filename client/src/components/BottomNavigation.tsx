@@ -1,19 +1,51 @@
 import { useLocation } from "wouter";
 import { useAuth } from "@/lib/auth";
+import { useEffect, useState } from "react";
 
 export default function BottomNavigation() {
   const [location, setLocation] = useLocation();
   const { user } = useAuth();
+  const [isSplashActive, setIsSplashActive] = useState(true);
 
-  // Determine if navigation should be visible based on current route and auth state
+  // Monitor splash screen state
+  useEffect(() => {
+    const checkSplashState = () => {
+      const splashElement = document.querySelector('[data-splash-active]');
+      const isCurrentlySplash = splashElement !== null || location === '/' || location === '/splash';
+      setIsSplashActive(isCurrentlySplash);
+    };
+
+    // Check immediately
+    checkSplashState();
+
+    // Monitor DOM changes and route changes
+    const observer = new MutationObserver(checkSplashState);
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    // Check on route changes
+    const interval = setInterval(checkSplashState, 100);
+
+    return () => {
+      observer.disconnect();
+      clearInterval(interval);
+    };
+  }, [location]);
+
+  // Determine if navigation should be visible
   const shouldShowNavigation = () => {
+    // Never show during splash screen
+    if (isSplashActive) return false;
+    
     // Don't show if user is not authenticated
     if (!user) return false;
     
     // Don't show on login/splash screens
     if (['/login', '/splash'].includes(location)) return false;
     
-    // Don't show on transfer pages (they have their own logic for keyboard handling)
+    // Don't show on root path during initial loading
+    if (location === '/') return false;
+    
+    // Don't show on transfer pages
     if (location.includes('/transfer') || location.includes('/iban-transfer') || location.includes('/uk-transfer')) return false;
     
     // Show on all other authenticated pages
