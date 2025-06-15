@@ -77,16 +77,24 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       if (saved) {
         try {
           const parsedState = JSON.parse(saved);
+          // Restore any active chat state (waiting, connected) but not ended
           if (parsedState && parsedState.isActive && parsedState.queueStatus !== 'ended') {
-            setChatState({
-              ...parsedState,
-              messages: parsedState.messages.map((msg: any) => ({
-                ...msg,
-                timestamp: new Date(msg.timestamp)
-              })),
-              queueStartTime: parsedState.queueStartTime ? new Date(parsedState.queueStartTime) : undefined
-            });
-            return;
+            // Check if session is still valid (within 24 hours)
+            const lastActivity = parsedState.lastActivity || 0;
+            const now = Date.now();
+            const sessionTimeout = 24 * 60 * 60 * 1000; // 24 hours
+            
+            if (now - lastActivity < sessionTimeout) {
+              setChatState({
+                ...parsedState,
+                messages: parsedState.messages.map((msg: any) => ({
+                  ...msg,
+                  timestamp: new Date(msg.timestamp)
+                })),
+                queueStartTime: parsedState.queueStartTime ? new Date(parsedState.queueStartTime) : undefined
+              });
+              return;
+            }
           }
         } catch (error) {
           console.error('Error parsing chat state:', error);
@@ -115,11 +123,26 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
 
   // Save user-specific chat state to persist across page navigation
   useEffect(() => {
-    if (currentUser && chatState.isActive && chatState.queueStatus !== 'ended') {
+    if (currentUser && chatState.isActive) {
       const userChatKey = `liveChatState_${currentUser}`;
-      localStorage.setItem(userChatKey, JSON.stringify(chatState));
+      const persistentState = {
+        ...chatState,
+        // Preserve connection state and queue status during navigation
+        isPersistent: true,
+        lastActivity: Date.now()
+      };
+      localStorage.setItem(userChatKey, JSON.stringify(persistentState));
     }
   }, [chatState, currentUser]);
+
+  // Cleanup timer on component unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (queueTimerRef.current) {
+        clearInterval(queueTimerRef.current);
+      }
+    };
+  }, []);
 
   // Queue timer effect
   useEffect(() => {
