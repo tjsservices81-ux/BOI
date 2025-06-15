@@ -406,6 +406,9 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
         content: msg.text
       }));
 
+      // Get current user's transaction data from UserDataManager
+      const userTransactions = currentUser ? UserDataManager.getUserTransactions() : [];
+
       const response = await fetch('/api/chat/ai-response', {
         method: 'POST',
         headers: {
@@ -415,7 +418,8 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
           message: userMessage,
           conversationHistory: conversationHistory,
           agentName: chatState.agentName,
-          customerNumber: currentUser
+          customerNumber: currentUser,
+          transactionData: userTransactions
         }),
       });
 
