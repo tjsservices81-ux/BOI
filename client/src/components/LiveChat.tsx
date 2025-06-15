@@ -34,21 +34,46 @@ interface ChatState {
 }
 
 export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
+  const currentUser = UserDataManager.getCurrentUser();
+  
   const [chatState, setChatState] = useState<ChatState>(() => {
-    // Load persistent chat state to survive page navigation
-    const saved = UserDataManager.getUserData('liveChatState', null);
-    if (saved && saved.isActive) {
+    if (!currentUser) {
+      // No user logged in - return inactive state
       return {
-        ...saved,
-        messages: saved.messages.map((msg: any) => ({
-          ...msg,
-          timestamp: new Date(msg.timestamp)
-        })),
-        queueStartTime: saved.queueStartTime ? new Date(saved.queueStartTime) : undefined
+        messages: [],
+        isActive: false,
+        agentName: '',
+        sessionId: '',
+        lastResponseIndex: {},
+        queueStatus: 'ended',
+        queueStartTime: undefined,
+        estimatedWaitTime: 0
       };
     }
+
+    // Load user-specific chat state using customer number
+    const userChatKey = `liveChatState_${currentUser}`;
+    const saved = localStorage.getItem(userChatKey);
     
-    // Initialize new chat session only if no active session exists
+    if (saved) {
+      try {
+        const parsedState = JSON.parse(saved);
+        if (parsedState && parsedState.isActive) {
+          return {
+            ...parsedState,
+            messages: parsedState.messages.map((msg: any) => ({
+              ...msg,
+              timestamp: new Date(msg.timestamp)
+            })),
+            queueStartTime: parsedState.queueStartTime ? new Date(parsedState.queueStartTime) : undefined
+          };
+        }
+      } catch (error) {
+        console.error('Error parsing chat state:', error);
+      }
+    }
+    
+    // Initialize new chat session for this specific user
     const agentNames = ['Mark', 'Sarah', 'James', 'Emma', 'David', 'Lisa'];
     const randomAgent = agentNames[Math.floor(Math.random() * agentNames.length)];
     
@@ -59,7 +84,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       messages: [],
       isActive: true,
       agentName: randomAgent,
-      sessionId: `chat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      sessionId: `chat_${currentUser}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       lastResponseIndex: {},
       queueStatus: 'waiting',
       queueStartTime: new Date(),
@@ -82,12 +107,13 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     scrollToBottom();
   }, [chatState.messages, isTyping]);
 
-  // Save chat state to persist across page navigation (only cleared on "End Chat")
+  // Save user-specific chat state to persist across page navigation
   useEffect(() => {
-    if (chatState.isActive) {
-      UserDataManager.setUserData('liveChatState', chatState);
+    if (currentUser && chatState.isActive) {
+      const userChatKey = `liveChatState_${currentUser}`;
+      localStorage.setItem(userChatKey, JSON.stringify(chatState));
     }
-  }, [chatState]);
+  }, [chatState, currentUser]);
 
   // Queue timer effect
   useEffect(() => {
@@ -427,16 +453,15 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   };
 
   const handleEndChat = () => {
-    // Completely clear all chat data from localStorage
-    localStorage.removeItem('liveChatState');
-    localStorage.removeItem('chatMessages');
-    localStorage.removeItem('chatSessionId');
-    localStorage.removeItem('chatAgentName');
-    localStorage.removeItem('chatHistory');
+    if (!currentUser) return;
     
-    // Clear any other potential chat-related storage
+    // Clear only the current user's chat data from localStorage
+    const userChatKey = `liveChatState_${currentUser}`;
+    localStorage.removeItem(userChatKey);
+    
+    // Clear any other user-specific chat-related storage
     Object.keys(localStorage).forEach(key => {
-      if (key.startsWith('chat') || key.startsWith('liveChat')) {
+      if (key.includes(`_${currentUser}_`) && (key.includes('chat') || key.includes('liveChat'))) {
         localStorage.removeItem(key);
       }
     });
