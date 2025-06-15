@@ -212,7 +212,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
         messages: [],
         sessionId: `session_${Date.now()}`,
         isActive: false,
-        queueStatus: 'idle'
+        queueStatus: 'ended'
       }));
       
       // Mark that navigation is now active

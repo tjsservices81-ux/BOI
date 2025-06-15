@@ -133,7 +133,7 @@ export default function Cards() {
       {/* Header */}
       <div className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0">
         <button 
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/dashboard")}
           className="flex items-center text-white"
         >
           <ChevronLeft className="w-6 h-6" />

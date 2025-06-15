@@ -43,7 +43,7 @@ export default function Transfer() {
       });
       queryClient.invalidateQueries({ queryKey: ["/api/accounts"] });
       queryClient.invalidateQueries({ queryKey: ["/api/transactions"] });
-      navigate("/");
+      navigate("/dashboard");
     },
     onError: (error: any) => {
       toast({
@@ -85,7 +85,7 @@ export default function Transfer() {
             variant="ghost" 
             size="icon" 
             className="mr-4"
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/dashboard")}
           >
             <ArrowLeft className="text-[var(--boi-gray)]" />
           </Button>
