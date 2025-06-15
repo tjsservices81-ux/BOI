@@ -2,6 +2,33 @@ import { useState, useRef, useEffect } from "react";
 import { X, Send, MessageCircle, User, Bot } from "lucide-react";
 import { UserDataManager } from "../utils/userDataManager";
 
+const chatVariants = {
+  hidden: {
+    opacity: 0,
+    scale: 0.8,
+    y: 50,
+  },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: {
+      type: "spring",
+      duration: 0.6,
+      bounce: 0.3,
+    },
+  },
+  exit: {
+    opacity: 0,
+    scale: 0.9,
+    y: 30,
+    transition: {
+      duration: 0.3,
+      ease: "easeInOut",
+    },
+  },
+};
+
 interface ChatMessage {
   id: string;
   text: string;
@@ -110,6 +137,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   const [isTyping, setIsTyping] = useState(false);
   const [typingText, setTypingText] = useState("");
   const [queueTimeRemaining, setQueueTimeRemaining] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queueTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -540,15 +568,23 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   };
 
   const handleCloseChat = () => {
-    // Just close the chat window without ending the session
-    onClose();
+    // Animate out then close
+    setIsAnimating(true);
+    setTimeout(() => {
+      onClose();
+      setIsAnimating(false);
+    }, 300);
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
-      <div className="bg-white w-full h-full md:w-[90vw] md:h-[90vh] md:rounded-3xl md:max-w-4xl md:max-h-[800px] flex flex-col shadow-2xl">
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 backdrop-animate-in">
+      <div 
+        className={`bg-white w-full h-full md:w-[90vw] md:h-[90vh] md:rounded-3xl md:max-w-4xl md:max-h-[800px] flex flex-col shadow-2xl ${
+          isAnimating ? 'chat-animate-out' : 'chat-animate-in'
+        }`}
+      >
         {/* Header */}
         <div className="bg-[#126987] md:rounded-t-3xl px-6 py-6 flex items-center justify-between">
           <div className="flex items-center space-x-4">
