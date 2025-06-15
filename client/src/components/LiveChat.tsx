@@ -357,7 +357,8 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
         body: JSON.stringify({
           message: userMessage,
           conversationHistory: conversationHistory,
-          agentName: chatState.agentName
+          agentName: chatState.agentName,
+          customerNumber: currentUser
         }),
       });
 

@@ -609,10 +609,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
           role: z.enum(['user', 'assistant']),
           content: z.string()
         })).default([]),
-        agentName: z.string().default('Support Agent')
+        agentName: z.string().default('Support Agent'),
+        customerNumber: z.string().optional()
       });
 
-      const { message, conversationHistory, agentName } = requestSchema.parse(req.body);
+      const { message, conversationHistory, agentName, customerNumber } = requestSchema.parse(req.body);
+
+      // Get customer's recent transfer data if available
+      let transferContext = '';
+      if (customerNumber) {
+        try {
+          const user = await storage.getUserByCustomerNumber(customerNumber);
+          if (user) {
+            // Get the most recent transaction
+            const accounts = await storage.getAccountsByUserId(user.id);
+            if (accounts.length > 0) {
+              const recentTransactions = await storage.getTransactionsByAccountId(accounts[0].id);
+              const lastTransfer = recentTransactions
+                .filter(t => t.type === 'transfer')
+                .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0];
+              
+              if (lastTransfer) {
+                const transferDate = new Date(lastTransfer.timestamp).toLocaleDateString('en-GB');
+                const transferAmount = parseFloat(lastTransfer.amount);
+                transferContext = `\n\nCUSTOMER'S RECENT TRANSFER CONTEXT:
+Last transfer: £${Math.abs(transferAmount)} to ${lastTransfer.description} on ${transferDate}
+Reference: ${lastTransfer.reference || 'Not specified'}
+Transaction ID: TID${Math.abs(Math.floor(transferAmount * 1000))}UK
+Status: Confirmed and processed
+Use this information when customer asks about their recent transfer, transaction ID, reference, or confirmation status.`;
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching transfer context:', error);
+        }
+      }
 
       // Prepare conversation history for OpenAI
       const messages = [
@@ -623,7 +655,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         { role: 'user' as const, content: message }
       ];
 
-      const aiResponse = await generateChatResponse(messages, agentName);
+      const aiResponse = await generateChatResponse(messages, agentName, transferContext);
       
       res.json({ 
         response: aiResponse,
