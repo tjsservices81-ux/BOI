@@ -79,7 +79,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
 
     const agentNames = ['Mark', 'Sarah', 'James', 'Emma', 'David', 'Lisa'];
     const randomAgent = agentNames[Math.floor(Math.random() * agentNames.length)];
-    const waitTime = Math.floor(Math.random() * 90000) + 60000;
+    const waitTime = Math.floor(Math.random() * 30000) + 30000; // 30-60 seconds (max 1 minute)
     
     return {
       messages: [],
