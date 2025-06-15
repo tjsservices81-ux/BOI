@@ -109,20 +109,35 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
             queueStatus: 'connected'
           }));
           
-          // Add welcome message from agent
+          // Add welcome message from agent with realistic typing delay
           setTimeout(() => {
-            const welcomeMessage: ChatMessage = {
-              id: Date.now().toString(),
-              text: `Hi there! I'm ${chatState.agentName} from Bank of Ireland support. How can I help you today?`,
-              isUser: false,
-              timestamp: new Date(),
-              agentName: chatState.agentName
-            };
+            const welcomeText = `Hi there! I'm ${chatState.agentName} from Bank of Ireland support. How can I help you today?`;
+            const words = welcomeText.split(' ').length;
+            const wordsPerSecond = Math.random() * 2 + 3; // 3-5 words per second
+            const realisticDelay = Math.max(1000, (words / wordsPerSecond) * 1000);
+            const variation = (Math.random() - 0.5) * 0.4;
+            const finalDelay = realisticDelay * (1 + variation);
             
-            setChatState(prev => ({
-              ...prev,
-              messages: [welcomeMessage]
-            }));
+            setIsTyping(true);
+            setTypingText(`${chatState.agentName} is typing...`);
+            
+            setTimeout(() => {
+              const welcomeMessage: ChatMessage = {
+                id: Date.now().toString(),
+                text: welcomeText,
+                isUser: false,
+                timestamp: new Date(),
+                agentName: chatState.agentName
+              };
+              
+              setChatState(prev => ({
+                ...prev,
+                messages: [welcomeMessage]
+              }));
+              
+              setIsTyping(false);
+              setTypingText("");
+            }, finalDelay);
           }, 500);
         }
       };
@@ -334,22 +349,37 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
 
     setTimeout(() => {
       const responseData = findResponse(userMessage.text);
-      const botMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        text: responseData.text,
-        isUser: false,
-        timestamp: new Date(),
-        agentName: chatState.agentName
-      };
-
-      setChatState(prev => ({
-        ...prev,
-        messages: [...prev.messages, botMessage]
-      }));
       
-      setIsTyping(false);
-      setTypingText("");
-    }, typingDelay);
+      // Calculate realistic typing delay based on response length
+      // 3-5 words per second = 200-333ms per word
+      const words = responseData.text.split(' ').length;
+      const wordsPerSecond = Math.random() * 2 + 3; // 3-5 words per second
+      const realisticDelay = Math.max(1000, (words / wordsPerSecond) * 1000);
+      
+      // Add some natural variation (±20%)
+      const variation = (Math.random() - 0.5) * 0.4;
+      const finalDelay = realisticDelay * (1 + variation);
+      
+      setTypingText(`${chatState.agentName} is typing...`);
+      
+      setTimeout(() => {
+        const botMessage: ChatMessage = {
+          id: (Date.now() + 1).toString(),
+          text: responseData.text,
+          isUser: false,
+          timestamp: new Date(),
+          agentName: chatState.agentName
+        };
+
+        setChatState(prev => ({
+          ...prev,
+          messages: [...prev.messages, botMessage]
+        }));
+        
+        setIsTyping(false);
+        setTypingText("");
+      }, finalDelay);
+    }, 800); // Brief delay before starting to type
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
