@@ -28,24 +28,15 @@ interface ChatState {
   agentName: string;
   sessionId: string;
   lastResponseIndex: { [key: string]: number }; // Track last used response for each category
-  queueStatus: 'waiting' | 'connected' | 'ended';
-  queueStartTime?: Date;
+  queueStatus: 'waiting' | 'connected' | 'ended' | 'closed';
+  queueStartTime?: Date | null;
   estimatedWaitTime?: number;
 }
 
 export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   const [chatState, setChatState] = useState<ChatState>(() => {
-    // Load persistent chat state
-    const saved = UserDataManager.getUserData('liveChatState', null);
-    if (saved) {
-      return {
-        ...saved,
-        messages: saved.messages.map((msg: any) => ({
-          ...msg,
-          timestamp: new Date(msg.timestamp)
-        }))
-      };
-    }
+    // Always start fresh - ignore any saved state
+    // This ensures complete session reset after "End Chat"
     
     // Initialize new chat session
     const agentNames = ['Mark', 'Sarah', 'James', 'Emma', 'David', 'Lisa'];
@@ -81,12 +72,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     scrollToBottom();
   }, [chatState.messages, isTyping]);
 
-  // Save chat state whenever it changes
-  useEffect(() => {
-    if (chatState.messages.length > 0 || !chatState.isActive) {
-      UserDataManager.setUserData('liveChatState', chatState);
-    }
-  }, [chatState]);
+  // No chat state persistence - chat always starts fresh after "End Chat"
 
   // Queue timer effect
   useEffect(() => {
@@ -426,30 +412,37 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   };
 
   const handleEndChat = () => {
-    setChatState(prev => ({
-      ...prev,
-      isActive: false
-    }));
-    
-    // Clear chat state
+    // Completely clear all chat data from localStorage
     localStorage.removeItem('liveChatState');
+    localStorage.removeItem('chatMessages');
+    localStorage.removeItem('chatSessionId');
+    localStorage.removeItem('chatAgentName');
+    localStorage.removeItem('chatHistory');
     
-    // Reset to initial state
-    const agentNames = ['Mark', 'Sarah', 'James', 'Emma', 'David', 'Lisa'];
-    const randomAgent = agentNames[Math.floor(Math.random() * agentNames.length)];
-    const waitTime = Math.floor(Math.random() * 90000) + 60000;
-    
-    setChatState({
-      messages: [],
-      isActive: true,
-      agentName: randomAgent,
-      sessionId: `chat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      lastResponseIndex: {},
-      queueStatus: 'waiting',
-      queueStartTime: new Date(),
-      estimatedWaitTime: waitTime
+    // Clear any other potential chat-related storage
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith('chat') || key.startsWith('liveChat')) {
+        localStorage.removeItem(key);
+      }
     });
     
+    // Reset all component state completely
+    setChatState({
+      messages: [],
+      isActive: false,
+      agentName: '',
+      sessionId: '',
+      lastResponseIndex: {},
+      queueStatus: 'ended',
+      queueStartTime: undefined,
+      estimatedWaitTime: 0
+    });
+    
+    // Clear input and typing states
+    setInputText('');
+    setIsTyping(false);
+    
+    // Close the chat completely
     onClose();
   };
 
