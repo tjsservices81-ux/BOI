@@ -595,9 +595,9 @@ export default function Profile() {
   const addSampleTransaction = (accountId: number) => {
     const randomTransaction = sampleTransactions[Math.floor(Math.random() * sampleTransactions.length)];
     
-    // Create transaction date that's 0-2 days before current date
+    // Create transaction date that's 2-30 days before current date
     const now = new Date();
-    const daysBack = Math.floor(Math.random() * 3); // 0, 1, or 2 days back
+    const daysBack = Math.floor(Math.random() * 29) + 2; // 2 to 30 days back
     const transactionDate = new Date(now);
     transactionDate.setDate(now.getDate() - daysBack);
     
