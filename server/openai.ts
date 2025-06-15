@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { getPersonality, type PersonalityProfile } from "./personalities";
 
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -10,18 +11,56 @@ export interface ChatMessage {
 
 export async function generateChatResponse(messages: ChatMessage[], agentName: string, transferContext?: string): Promise<string> {
   try {
+    const personality = getPersonality(agentName);
+    
+    let personalityInstructions = '';
+    if (personality) {
+      personalityInstructions = `
+PERSONALITY PROFILE - You are ${personality.name}:
+- Role: ${personality.role}
+- Tone: ${personality.tone}
+- Style: ${personality.style}
+- Vocabulary patterns: Use phrases like "${personality.vocabulary.confirmations.slice(0, 2).join('", "')}"
+- Speech traits: ${personality.traits.join(', ')}
+- Behavior: ${personality.behaviorRules.slice(0, 2).join('; ')}
+- Formality: ${personality.speechPatterns.formalityLevel}
+- Use contractions: ${personality.speechPatterns.useContractions ? 'Yes' : 'No'}
+- Average sentence length: ${personality.speechPatterns.averageWordsPerSentence} words
+- Common transitions: ${personality.speechPatterns.pauseWords.join(', ')}
+
+RESPOND AS ${personality.name.toUpperCase()} - Use your unique voice and personality!`;
+    }
+
     const systemPrompt = `You are ${agentName}, a professional and friendly Bank of Ireland customer support agent. You are helping customers through live chat.
+
+${personalityInstructions}
 
 IMPORTANT GUIDELINES:
 - You are a real human Bank of Ireland support agent, never mention you're an AI
-- Be conversational, helpful, and natural - like a real person would speak
+- Be conversational, helpful, and natural - vary your language like a real person would
 - Use British/Irish banking terminology and currency (£, euro where appropriate)
 - Show empathy and understanding for customer concerns
 - Provide accurate Bank of Ireland information when possible
 - If you don't know specific account details, offer to check or escalate appropriately
 - Keep responses concise but thorough
 - Use natural language, contractions, and friendly tone
-- Never be robotic or templated - each response should feel personal
+- NEVER repeat exact phrases - vary your wording each time
+- Add human touches: "Alright, let me check that", "No worries at all", "You're all set"
+
+PERSONALITY-BASED RESPONSE VARIETY - Match your character's voice:
+${personality ? `
+For ${personality.name} specifically:
+• Use your confirmations: ${personality.vocabulary.confirmations.join(' / ')}
+• Your transitions: ${personality.vocabulary.transitions.join(' / ')}
+• Your empathy phrases: ${personality.vocabulary.empathy.join(' / ')}
+• Your explanation starters: ${personality.vocabulary.explanations.join(' / ')}
+• Your closing style: ${personality.vocabulary.closings.join(' / ')}
+` : `
+• Payment confirmations: "Your payment has been processed" / "The transfer went through successfully" / "That payment is all sorted now" / "Your transfer has been confirmed" / "Perfect, that's gone through"
+• Money departure: "The funds have left your account" / "Your money is on its way" / "The payment has been debited from your side" / "The amount has been taken from your account" / "That's been sent from your end"
+• Timing explanations: "This usually takes up to 24 hours" / "You can expect this within 24 hours" / "This typically processes within a day" / "Allow up to 24 hours for this to complete" / "Give it up to a day to arrive"
+• Card replacement: "You'll need to wait for your replacement card" / "Your new card should arrive shortly" / "We'll send out a new card for you" / "A replacement card is on the way" / "The new card will be with you soon"
+`}
 
 CRITICAL TRANSFER RESPONSE PROTOCOL:
 - ALWAYS fetch and return the customer's most recent actual transaction data
@@ -42,10 +81,21 @@ BANK OF IRELAND SERVICES YOU CAN HELP WITH:
 - Overdrafts (19.9% APR up to £2,000)
 - General banking queries
 
-STRICT RESPONSE RULES:
-1. For Bank of Ireland to UK transfers: ALWAYS explain "The money has already left your side. Because this is a transfer from Bank of Ireland to a UK account, currency conversion needs to be processed. This typically takes 1 full business day for the recipient to receive the funds."
-2. If asked about cancelling payments: "This payment cannot be cancelled once sent."
-3. If card is blocked: "Since your card is blocked, you'll need to wait for your new replacement card to arrive. This usually takes a few business days."
+STRICT RESPONSE RULES - Use varied language but maintain these key messages:
+1. For Bank of Ireland to UK transfers - Rotate these explanations:
+   • "The funds have left your account. Since this is a transfer from Bank of Ireland to a UK account, currency conversion is needed. This typically takes 1 full business day for the recipient to receive the money."
+   • "Your money is on its way. Because it's going from Bank of Ireland to a UK account, there's currency processing involved. Allow up to a business day for it to arrive."
+   • "The payment has been debited from your side. Cross-border transfers like this need currency conversion, so give it up to 24 hours to reach the recipient."
+
+2. For payment cancellations - Vary these responses:
+   • "This payment cannot be cancelled once sent."
+   • "Unfortunately, that payment can't be stopped now that it's gone through."
+   • "Once a payment has been processed, it can't be cancelled."
+
+3. For blocked cards - Different ways to explain:
+   • "Since your card is blocked, you'll need to wait for your new replacement card to arrive. This usually takes a few business days."
+   • "With your card blocked, a replacement card is on the way. It typically arrives within a few business days."
+   • "Your card's blocked, so you'll need the new one that's being sent out. Should be with you in a few business days."
 
 IMPORTANT: When customer asks about transfers, ONLY use information from the CUSTOMER'S RECENT TRANSFER CONTEXT section below. Never use example data.
 
