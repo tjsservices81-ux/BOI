@@ -28,6 +28,9 @@ interface ChatState {
   agentName: string;
   sessionId: string;
   lastResponseIndex: { [key: string]: number }; // Track last used response for each category
+  queueStatus: 'waiting' | 'connected' | 'ended';
+  queueStartTime?: Date;
+  estimatedWaitTime?: number;
 }
 
 export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
@@ -48,19 +51,27 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     const agentNames = ['Mark', 'Sarah', 'James', 'Emma', 'David', 'Lisa'];
     const randomAgent = agentNames[Math.floor(Math.random() * agentNames.length)];
     
+    // Generate random wait time between 1-2.5 minutes (60000-150000ms)
+    const waitTime = Math.floor(Math.random() * 90000) + 60000;
+    
     return {
       messages: [],
       isActive: true,
       agentName: randomAgent,
       sessionId: `chat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      lastResponseIndex: {}
+      lastResponseIndex: {},
+      queueStatus: 'waiting',
+      queueStartTime: new Date(),
+      estimatedWaitTime: waitTime
     };
   });
 
   const [inputText, setInputText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [typingText, setTypingText] = useState("");
+  const [queueTimeRemaining, setQueueTimeRemaining] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const queueTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -76,6 +87,66 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       UserDataManager.setUserData('liveChatState', chatState);
     }
   }, [chatState]);
+
+  // Queue timer effect
+  useEffect(() => {
+    if (chatState.queueStatus === 'waiting' && chatState.estimatedWaitTime && chatState.queueStartTime) {
+      const startTime = chatState.queueStartTime.getTime();
+      const waitTime = chatState.estimatedWaitTime;
+      
+      // Update remaining time every second
+      const updateTimer = () => {
+        const now = Date.now();
+        const elapsed = now - startTime;
+        const remaining = Math.max(0, waitTime - elapsed);
+        
+        setQueueTimeRemaining(remaining);
+        
+        if (remaining <= 0) {
+          // Connect to agent
+          setChatState(prev => ({
+            ...prev,
+            queueStatus: 'connected'
+          }));
+          
+          // Add welcome message from agent
+          setTimeout(() => {
+            const welcomeMessage: ChatMessage = {
+              id: Date.now().toString(),
+              text: `Hi there! I'm ${chatState.agentName} from Bank of Ireland support. How can I help you today?`,
+              isUser: false,
+              timestamp: new Date(),
+              agentName: chatState.agentName
+            };
+            
+            setChatState(prev => ({
+              ...prev,
+              messages: [welcomeMessage]
+            }));
+          }, 500);
+        }
+      };
+      
+      updateTimer();
+      queueTimerRef.current = setInterval(updateTimer, 1000);
+      
+      return () => {
+        if (queueTimerRef.current) {
+          clearInterval(queueTimerRef.current);
+          queueTimerRef.current = null;
+        }
+      };
+    }
+  }, [chatState.queueStatus, chatState.estimatedWaitTime, chatState.queueStartTime, chatState.agentName]);
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (queueTimerRef.current) {
+        clearInterval(queueTimerRef.current);
+      }
+    };
+  }, []);
 
   const getDefaultResponses = (): ChatResponse[] => [
     {
@@ -300,13 +371,17 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     // Reset to initial state
     const agentNames = ['Mark', 'Sarah', 'James', 'Emma', 'David', 'Lisa'];
     const randomAgent = agentNames[Math.floor(Math.random() * agentNames.length)];
+    const waitTime = Math.floor(Math.random() * 90000) + 60000;
     
     setChatState({
       messages: [],
       isActive: true,
       agentName: randomAgent,
       sessionId: `chat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      lastResponseIndex: {}
+      lastResponseIndex: {},
+      queueStatus: 'waiting',
+      queueStartTime: new Date(),
+      estimatedWaitTime: waitTime
     });
     
     onClose();
@@ -324,12 +399,25 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
               <MessageCircle className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="text-white font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                {chatState.agentName} – Support Specialist
-              </h3>
-              <p className="text-white/80 text-xs" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                {isTyping ? typingText : 'Online now'}
-              </p>
+              {chatState.queueStatus === 'waiting' ? (
+                <>
+                  <h3 className="text-white font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Live Chat Support
+                  </h3>
+                  <p className="text-white/80 text-xs" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Connecting you to an agent...
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h3 className="text-white font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {chatState.agentName} – Support Specialist
+                  </h3>
+                  <p className="text-white/80 text-xs" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {isTyping ? typingText : 'Online now'}
+                  </p>
+                </>
+              )}
             </div>
           </div>
           <button
@@ -342,12 +430,40 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {/* Welcome message for new chats */}
-          {chatState.messages.length === 0 && (
+          {/* Queue status message */}
+          {chatState.queueStatus === 'waiting' && (
             <div className="flex justify-center">
-              <div className="bg-blue-50 text-blue-800 px-4 py-2 rounded-2xl text-sm text-center max-w-[80%]">
+              <div className="bg-orange-50 text-orange-800 px-4 py-4 rounded-2xl text-sm text-center max-w-[90%] border border-orange-200">
+                <div className="flex items-center justify-center mb-2">
+                  <div className="w-3 h-3 bg-orange-400 rounded-full animate-pulse mr-2"></div>
+                  <p className="font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    You're now in the queue
+                  </p>
+                </div>
                 <p style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Hi! I'm {chatState.agentName}, your support specialist. Please send me a message to get started.
+                  Please wait while we connect you to an available agent...
+                </p>
+                {queueTimeRemaining > 0 && (
+                  <p className="text-xs text-orange-600 mt-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Estimated wait time: {Math.ceil(queueTimeRemaining / 1000 / 60)} minute{Math.ceil(queueTimeRemaining / 1000 / 60) !== 1 ? 's' : ''}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Connection success message */}
+          {chatState.queueStatus === 'connected' && chatState.messages.length === 0 && (
+            <div className="flex justify-center">
+              <div className="bg-green-50 text-green-800 px-4 py-3 rounded-2xl text-sm text-center max-w-[90%] border border-green-200">
+                <div className="flex items-center justify-center mb-1">
+                  <div className="w-3 h-3 bg-green-400 rounded-full mr-2"></div>
+                  <p className="font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    You're now connected with {chatState.agentName} – Support Specialist
+                  </p>
+                </div>
+                <p className="text-xs text-green-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Online now
                 </p>
               </div>
             </div>
@@ -412,7 +528,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
 
         {/* Input */}
         <div className="p-4 border-t border-gray-100">
-          {chatState.messages.length > 0 && (
+          {chatState.queueStatus === 'connected' && chatState.messages.length > 0 && (
             <div className="mb-3 flex justify-center">
               <button
                 onClick={handleEndChat}
@@ -424,27 +540,35 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
             </div>
           )}
           
-          <div className="flex items-center space-x-2">
-            <div className="flex-1 relative">
-              <input
-                type="text"
-                value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Type your message..."
-                className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#126987] focus:border-transparent"
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
-                disabled={isTyping}
-              />
+          {chatState.queueStatus === 'waiting' ? (
+            <div className="text-center">
+              <p className="text-gray-500 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Please wait to be connected before sending messages...
+              </p>
             </div>
-            <button
-              onClick={handleSendMessage}
-              disabled={!inputText.trim() || isTyping}
-              className="w-12 h-12 bg-[#126987] rounded-full flex items-center justify-center hover:bg-[#0d4e63] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Send className="w-5 h-5 text-white" />
-            </button>
-          </div>
+          ) : (
+            <div className="flex items-center space-x-2">
+              <div className="flex-1 relative">
+                <input
+                  type="text"
+                  value={inputText}
+                  onChange={(e) => setInputText(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Type your message..."
+                  className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#126987] focus:border-transparent"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  disabled={isTyping || chatState.queueStatus !== 'connected'}
+                />
+              </div>
+              <button
+                onClick={handleSendMessage}
+                disabled={!inputText.trim() || isTyping || chatState.queueStatus !== 'connected'}
+                className="w-12 h-12 bg-[#126987] rounded-full flex items-center justify-center hover:bg-[#0d4e63] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Send className="w-5 h-5 text-white" />
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
