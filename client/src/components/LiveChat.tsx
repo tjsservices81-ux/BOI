@@ -36,49 +36,22 @@ interface ChatState {
 export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   const currentUser = UserDataManager.getCurrentUser();
   
-  const [chatState, setChatState] = useState<ChatState>(() => {
+  const initializeFreshChat = () => {
     if (!currentUser) {
-      // No user logged in - return inactive state
       return {
         messages: [],
         isActive: false,
         agentName: '',
         sessionId: '',
         lastResponseIndex: {},
-        queueStatus: 'ended',
+        queueStatus: 'ended' as const,
         queueStartTime: undefined,
         estimatedWaitTime: 0
       };
     }
 
-    // Load user-specific chat state using customer number
-    const userChatKey = `liveChatState_${currentUser}`;
-    const saved = localStorage.getItem(userChatKey);
-    
-    if (saved) {
-      try {
-        const parsedState = JSON.parse(saved);
-        // Only restore state if chat is active AND not ended
-        if (parsedState && parsedState.isActive && parsedState.queueStatus !== 'ended') {
-          return {
-            ...parsedState,
-            messages: parsedState.messages.map((msg: any) => ({
-              ...msg,
-              timestamp: new Date(msg.timestamp)
-            })),
-            queueStartTime: parsedState.queueStartTime ? new Date(parsedState.queueStartTime) : undefined
-          };
-        }
-      } catch (error) {
-        console.error('Error parsing chat state:', error);
-      }
-    }
-    
-    // Initialize new chat session for this specific user
     const agentNames = ['Mark', 'Sarah', 'James', 'Emma', 'David', 'Lisa'];
     const randomAgent = agentNames[Math.floor(Math.random() * agentNames.length)];
-    
-    // Generate random wait time between 1-2.5 minutes (60000-150000ms)
     const waitTime = Math.floor(Math.random() * 90000) + 60000;
     
     return {
@@ -87,11 +60,20 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       agentName: randomAgent,
       sessionId: `chat_${currentUser}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       lastResponseIndex: {},
-      queueStatus: 'waiting',
+      queueStatus: 'waiting' as const,
       queueStartTime: new Date(),
       estimatedWaitTime: waitTime
     };
-  });
+  };
+  
+  const [chatState, setChatState] = useState<ChatState>(initializeFreshChat);
+  
+  // Reset chat state when component is opened
+  useEffect(() => {
+    if (isOpen && currentUser) {
+      setChatState(initializeFreshChat());
+    }
+  }, [isOpen, currentUser]);
 
   const [inputText, setInputText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -110,7 +92,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
 
   // Save user-specific chat state to persist across page navigation
   useEffect(() => {
-    if (currentUser && chatState.isActive) {
+    if (currentUser && chatState.isActive && chatState.queueStatus !== 'ended') {
       const userChatKey = `liveChatState_${currentUser}`;
       localStorage.setItem(userChatKey, JSON.stringify(chatState));
     }
@@ -472,6 +454,12 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   const handleEndChat = () => {
     if (!currentUser) return;
     
+    // Clear all timers
+    if (queueTimerRef.current) {
+      clearInterval(queueTimerRef.current);
+      queueTimerRef.current = null;
+    }
+    
     // Clear only the current user's chat data from localStorage
     const userChatKey = `liveChatState_${currentUser}`;
     localStorage.removeItem(userChatKey);
@@ -483,27 +471,23 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       }
     });
     
-    // Mark session as ended and save state
-    const endedState = {
+    // Reset all component state completely
+    setChatState({
       messages: [],
       isActive: false,
       agentName: '',
       sessionId: '',
       lastResponseIndex: {},
-      queueStatus: 'ended' as const,
+      queueStatus: 'ended',
       queueStartTime: undefined,
       estimatedWaitTime: 0
-    };
-    
-    // Save the ended state to prevent restoration
-    localStorage.setItem(userChatKey, JSON.stringify(endedState));
-    
-    // Reset all component state completely
-    setChatState(endedState);
+    });
     
     // Clear input and typing states
     setInputText('');
     setIsTyping(false);
+    setTypingText('');
+    setQueueTimeRemaining(0);
     
     // Close the chat completely
     onClose();
