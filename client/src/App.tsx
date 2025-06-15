@@ -82,12 +82,12 @@ function AppRoutes() {
     // Set blue theme color immediately for splash screen
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
     if (themeColorMeta) {
-      themeColorMeta.setAttribute('content', '#0000ff');
+      themeColorMeta.setAttribute('content', '#000DFF');
     } else {
       // Create theme-color meta tag if it doesn't exist
       const newThemeMeta = document.createElement('meta');
       newThemeMeta.setAttribute('name', 'theme-color');
-      newThemeMeta.setAttribute('content', '#0000ff');
+      newThemeMeta.setAttribute('content', '#000DFF');
       document.head.appendChild(newThemeMeta);
     }
 
@@ -225,7 +225,7 @@ function AppRoutes() {
       const themeColorMeta = document.querySelector('meta[name="theme-color"]');
       if (themeColorMeta) {
         if (location === '/splash') {
-          themeColorMeta.setAttribute('content', '#0000ff');
+          themeColorMeta.setAttribute('content', '#000DFF');
         } else {
           themeColorMeta.setAttribute('content', '#126987');
         }

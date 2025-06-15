@@ -20,7 +20,7 @@
   right: 0;
   bottom: 0;
   z-index: 9999;
-  background: #0000ff;
+  background: #000DFF;
   /* Extend behind safe areas on iOS */
   padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
