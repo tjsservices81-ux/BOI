@@ -121,12 +121,12 @@ function AppRoutes() {
             <Route path="/login" component={Login} />
             <Route path="/more" component={More} />
             <Route path="/">
-              {/* Handle root route - always show splash if not shown, otherwise login */}
-              {!splashShown || splashTransitioning ? (
-                <Splash />
-              ) : (
-                <Login />
-              )}
+              {/* Handle root route - show splash/login for non-authenticated users, redirect authenticated users to dashboard */}
+              <ProtectedRoute fallback={
+                !splashShown || splashTransitioning ? <Splash /> : <Login />
+              }>
+                <Redirect to="/dashboard" />
+              </ProtectedRoute>
             </Route>
           <Route path="/dashboard">
             <ProtectedRoute>

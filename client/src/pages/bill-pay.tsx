@@ -55,7 +55,7 @@ export default function BillPay() {
             variant="ghost" 
             size="icon" 
             className="mr-4"
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/dashboard")}
           >
             <ArrowLeft className="text-[var(--boi-gray)]" />
           </Button>

@@ -180,7 +180,7 @@ export default function TransactionHistoryWorking() {
       backgroundColor: '#f9fafb'
     }}>
       <div className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0">
-        <button onClick={() => navigate('/')} className="flex items-center text-white">
+        <button onClick={() => navigate('/dashboard')} className="flex items-center text-white">
           <ChevronLeft className="w-5 h-5 mr-2" />
           <span className="font-semibold text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
             {accountInfo?.displayName || 'Account'}
