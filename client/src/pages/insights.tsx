@@ -171,7 +171,7 @@ export default function Insights() {
       <div className="bg-white border-t border-gray-200 ios-safe-bottom">
         <div className="flex justify-around items-center py-3">
           <button 
-            className="flex flex-col items-center text-gray-400 hover:text-[#126987] transition-colors haptic-feedback"
+            className="flex flex-col items-center text-gray-400 hover:text-[#106C88] transition-colors haptic-feedback"
             onClick={() => setLocation('/')}
           >
             <img src="/icon-footer-accounts.svg" alt="Accounts" className="w-5 h-5 mb-1" />

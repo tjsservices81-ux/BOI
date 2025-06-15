@@ -81,7 +81,7 @@ function AppRoutes() {
       }, 100);
       const themeColorMeta = document.querySelector('meta[name="theme-color"]');
       if (themeColorMeta) {
-        themeColorMeta.setAttribute('content', '#126987');
+        themeColorMeta.setAttribute('content', '#106C88');
       }
     };
 
