@@ -835,7 +835,7 @@ img {
 @media (display-mode: standalone) {
   .splash-fullscreen {
     /* Remove padding-top - extend splash behind safe area */
-    background: #000DFF !important;
+    background: transparent !important;
   }
   
   .splash-fullscreen::before {
@@ -855,8 +855,8 @@ img {
   }
   
   .splash-fullscreen .splash-container {
-    background-color: #000DFF !important;
-    background-blend-mode: multiply;
+    /* Keep original background image and blue fallback */
+    background-color: #000DFF;
   }
 }
 
