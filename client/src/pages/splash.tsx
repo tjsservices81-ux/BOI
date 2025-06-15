@@ -86,11 +86,15 @@ export default function Splash() {
         isVisible ? 'opacity-100' : 'opacity-0'
       }`}
       style={{
-        backgroundColor: '#000DFF',
+        backgroundImage: `url('/IMG_0633_1749764752035.jpeg')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
         userSelect: 'none',
         pointerEvents: 'none',
         opacity: 1,
-        visibility: 'visible'
+        visibility: 'visible',
+        backgroundColor: '#000DFF'
       }}
       onClick={handleInteraction}
       onTouchStart={handleInteraction}
@@ -101,26 +105,8 @@ export default function Splash() {
         style={{ pointerEvents: 'none' }}
       />
       
-      {/* Bank of Ireland Logo - centered and visible */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        <img 
-          src="/boi_logo.svg" 
-          alt="Bank of Ireland"
-          className="w-48 h-auto asset-instant"
-          style={{
-            filter: 'brightness(0) invert(1)', // Convert to white
-            opacity: 1,
-            visibility: 'visible',
-            maxWidth: '60%',
-            height: 'auto'
-          }}
-          loading="eager"
-          decoding="sync"
-        />
-      </div>
-      
-      {/* Animated loading spinner positioned below logo */}
-      <div className="absolute" style={{ bottom: '25%', left: '50%', transform: 'translateX(-50%)' }}>
+      {/* Animated loading spinner positioned where it appears in the screenshot */}
+      <div className="absolute" style={{ bottom: '30%', left: '50%', transform: 'translateX(-50%)' }}>
         <div className="flex justify-center">
           <div 
             className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"
