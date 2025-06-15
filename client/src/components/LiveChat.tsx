@@ -620,16 +620,18 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
           {isTyping && (
             <div className="flex justify-start">
               <div className="order-1 max-w-[80%]">
-                <div className="bg-gray-100 text-gray-900 rounded-2xl rounded-bl-sm px-4 py-2">
-                  <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+                <div className="bg-gray-100 text-gray-900 rounded-2xl rounded-bl-sm px-4 py-3">
+                  <div className="flex items-center space-x-1">
+                    <span className="text-gray-600 text-sm mr-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      {chatState.agentName} is typing
+                    </span>
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0ms', animationDuration: '1.4s'}}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.2s', animationDuration: '1.4s'}}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.4s', animationDuration: '1.4s'}}></div>
+                    </div>
                   </div>
                 </div>
-                <p className="text-xs text-gray-500 mt-1 text-left">
-                  {typingText}
-                </p>
               </div>
               <div className="order-2 w-8 h-8 rounded-full flex items-center justify-center ml-2 flex-shrink-0 bg-gray-200">
                 <Bot className="w-4 h-4 text-gray-600" />
