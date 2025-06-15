@@ -33,17 +33,14 @@ import NotFound from "@/pages/not-found";
 function ProtectedRoute({ children, fallback }: { children: React.ReactNode; fallback?: React.ReactNode }) {
   const { user, isLoading } = useAuth();
   
-  // Don't redirect while loading to prevent form interruptions
-  if (isLoading) {
-    return (
-      <div className="w-full h-full flex items-center justify-center bg-[#126987]">
-        <div className="text-white">Loading...</div>
-      </div>
-    );
+  // Prevent any flash by immediately redirecting if no user
+  if (!user && !isLoading) {
+    return fallback ? <>{fallback}</> : <Redirect to="/login" />;
   }
   
-  if (!user) {
-    return fallback ? <>{fallback}</> : <Redirect to="/login" />;
+  // Show nothing while loading to prevent flash
+  if (isLoading) {
+    return null;
   }
   
   return <>{children}</>;
@@ -242,10 +239,8 @@ function AppRoutes() {
               {/* Handle root route - always show proper sequence for cold starts */}
               {!splashShown || splashTransitioning ? (
                 <Splash />
-              ) : !user ? (
-                <Login />
               ) : (
-                <Redirect to="/dashboard" />
+                <Login />
               )}
             </Route>
           <Route path="/dashboard">
