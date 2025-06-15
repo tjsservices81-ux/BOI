@@ -58,6 +58,9 @@ function AppRoutes() {
   });
   const [isInitialized, setIsInitialized] = useState(false);
   const [splashTransitioning, setSplashTransitioning] = useState(false);
+  
+  // Strict authentication guard - only allow dashboard when user is confirmed
+  const isAuthenticated = user && !isLoading;
 
   
   // Initialize app state and theme
@@ -110,7 +113,7 @@ function AppRoutes() {
     );
   }
 
-  const showNavigation = user && splashShown && !['/login', '/splash'].includes(location);
+  const showNavigation = isAuthenticated && splashShown && !['/login', '/splash'].includes(location);
 
   return (
     <SecurityWrapper>
@@ -121,10 +124,10 @@ function AppRoutes() {
             <Route path="/login" component={Login} />
             <Route path="/more" component={More} />
             <Route path="/">
-              {/* Handle root route properly based on splash and auth state */}
+              {/* Strict login state guard - Dashboard only renders if user is authenticated */}
               {!splashShown || splashTransitioning ? (
                 <Splash />
-              ) : (!user || isLoading) ? (
+              ) : !isAuthenticated ? (
                 <Login />
               ) : (
                 <Dashboard />

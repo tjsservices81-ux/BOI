@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import SpendingVisualization from "../components/SpendingVisualization";
 import SpendingInsights from "../components/SpendingInsights";
 import { UserDataManager } from "../utils/userDataManager";
+import { useAuth } from "../lib/auth";
 
 interface Account {
   id: number;
@@ -14,7 +15,13 @@ interface Account {
 }
 
 export default function Dashboard() {
+  const { user, isLoading } = useAuth();
   const [, setLocation] = useLocation();
+  
+  // Authentication guard - prevent rendering if not logged in
+  if (!user || isLoading) {
+    return null;
+  }
   
   // Local state for account balances that can be updated by transfers
   const [accounts, setAccounts] = useState<Account[]>([]);
