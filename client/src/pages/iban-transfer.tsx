@@ -154,14 +154,14 @@ export default function IbanTransfer() {
 
   if (step === 'success') {
     return (
-      <div className="bg-white min-h-screen">
+      <div>
         <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
           <span className="font-medium text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
             Transfer Complete
           </span>
         </div>
 
-        <div className="px-4 py-4 bg-white">
+        <div className="px-4 py-4">
           <div className="text-center max-w-sm mx-auto">
             {showReference && (
               <>
@@ -403,7 +403,7 @@ export default function IbanTransfer() {
       bottom: 0, 
       display: 'flex', 
       flexDirection: 'column',
-      backgroundColor: '#126987'
+      backgroundColor: '#f9fafb'
     }}>
       <div className="bg-[#126987] px-4 py-3 flex items-center justify-between" style={{ flexShrink: 0 }}>
         <button onClick={() => navigate('/payments')} className="flex items-center text-white">

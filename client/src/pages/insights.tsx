@@ -5,7 +5,7 @@ export default function Insights() {
   const [, setLocation] = useLocation();
 
   return (
-    <div className="h-full bg-[#126987] overflow-hidden flex flex-col ios-safe-top ios-safe-bottom page-fade-in">
+    <div className="h-full bg-[#f5f5f5] overflow-hidden flex flex-col ios-safe-top ios-safe-bottom page-fade-in">
       {/* Header */}
       <div className="bg-[#126987] text-white px-4 py-6 status-bar-safe">
         <div className="flex items-center mb-2">

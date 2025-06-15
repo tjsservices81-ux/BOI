@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import SpendingVisualization from "../components/SpendingVisualization";
 import SpendingInsights from "../components/SpendingInsights";
 import { UserDataManager } from "../utils/userDataManager";
-import { useAuth } from "../lib/auth";
 
 interface Account {
   id: number;
@@ -20,7 +19,6 @@ export default function Dashboard() {
   // Local state for account balances that can be updated by transfers
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [isNavigating, setIsNavigating] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(false);
 
   // Enhanced navigation with smooth animations
   const navigateWithAnimation = (path: string, animationType: 'slide-right' | 'slide-left' | 'slide-up' = 'slide-right') => {
@@ -76,11 +74,6 @@ export default function Dashboard() {
     }
     
     setAccounts(storedAccounts);
-    
-    // Add initialization delay to prevent flash
-    setTimeout(() => {
-      setIsInitialized(true);
-    }, 150);
   }, []);
 
   // Listen for balance updates from transfers and admin profile updates
@@ -171,15 +164,6 @@ export default function Dashboard() {
       default: return 'bg-gray-500';
     }
   };
-
-  // Show blue screen until fully initialized to prevent flash
-  if (!isInitialized) {
-    return (
-      <div className="h-screen bg-[#126987] overflow-hidden flex flex-col ios-safe-bottom relative" style={{ maxHeight: '100vh' }}>
-        {/* Prevent any content rendering during initialization */}
-      </div>
-    );
-  }
 
   return (
     <div className={`h-screen bg-[#126987] overflow-hidden flex flex-col ios-safe-bottom relative page-fade-in ${isNavigating ? 'dashboard-exit' : ''}`} style={{ maxHeight: '100vh' }}>

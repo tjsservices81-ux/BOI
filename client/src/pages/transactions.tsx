@@ -1,6 +1,5 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useLocation } from "wouter";
-import { UserDataManager } from "../utils/userDataManager";
 
 interface Transaction {
   id: string;
@@ -53,44 +52,57 @@ export default function Transactions() {
   };
 
   const getTransactions = (): Transaction[] => {
-    // Get real transaction data from user storage
-    const allTransactions = UserDataManager.getUserData('bankTransactions', []);
-    const accounts = UserDataManager.getUserData('bankAccounts', []);
-    
-    // Find the specific account we're viewing
-    const currentAccount = accounts.find((acc: any) => {
-      if (accountType === 'current' && acc.accountType === 'current') return true;
-      if (accountType === 'credit' && acc.accountType === 'credit') return true;
-      if (accountType === 'savings' && acc.accountType === 'savings') return true;
-      return false;
-    });
-    
-    if (!currentAccount) return [];
-    
-    // Filter transactions for this account and format them
-    const accountTransactions = allTransactions
-      .filter((tx: any) => tx.accountId === currentAccount.id)
-      .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-      .map((tx: any) => ({
-        id: tx.id.toString(),
-        date: new Date(tx.timestamp).toLocaleDateString('en-IE', { 
-          day: 'numeric', 
-          month: 'short', 
-          year: 'numeric' 
-        }),
-        description: tx.description,
-        amount: parseFloat(tx.amount),
-        balance: parseFloat(currentAccount.balance), // Current balance for now
-        type: tx.type
-      }));
-    
-    return accountTransactions;
+    switch (accountType) {
+      case 'current':
+        return [
+          { id: "1", date: "27 Apr 2021", description: "ATM WITHDRAWAL DUBLIN", amount: -50.00, balance: 2322.40, type: "debit" },
+          { id: "2", date: "26 Apr 2021", description: "DIRECT DEBIT ELECTRIC IRELAND", amount: -89.50, balance: 2372.40, type: "debit" },
+          { id: "3", date: "25 Apr 2021", description: "ONLINE PURCHASE AMAZON.IE", amount: -45.99, balance: 2461.90, type: "debit" },
+          { id: "4", date: "24 Apr 2021", description: "SALARY CREDIT", amount: 2800.00, balance: 2507.89, type: "credit" },
+          { id: "5", date: "23 Apr 2021", description: "CONTACTLESS PAYMENT TESCO", amount: -32.45, balance: -292.11, type: "debit" },
+          { id: "6", date: "22 Apr 2021", description: "STANDING ORDER RENT", amount: -1200.00, balance: -259.66, type: "debit" },
+          { id: "7", date: "21 Apr 2021", description: "TRANSFER FROM SAVINGS", amount: 500.00, balance: 940.34, type: "credit" },
+          { id: "8", date: "20 Apr 2021", description: "CARD PAYMENT SUPERVALU", amount: -28.75, balance: 440.34, type: "debit" }
+        ];
+      case 'credit':
+        return [
+          { id: "1", date: "27 Apr 2021", description: "PAYMENT RECEIVED", amount: 500.00, balance: 2000.00, type: "credit" },
+          { id: "2", date: "26 Apr 2021", description: "ONLINE PURCHASE BOOKING.COM", amount: -245.80, balance: 1500.00, type: "debit" },
+          { id: "3", date: "25 Apr 2021", description: "CONTACTLESS PAYMENT CENTRA", amount: -12.50, balance: 1745.80, type: "debit" },
+          { id: "4", date: "24 Apr 2021", description: "ONLINE PURCHASE ZARA.COM", amount: -89.99, balance: 1758.30, type: "debit" },
+          { id: "5", date: "23 Apr 2021", description: "RESTAURANT PAYMENT", amount: -67.45, balance: 1848.29, type: "debit" },
+          { id: "6", date: "22 Apr 2021", description: "FUEL PURCHASE APPLEGREEN", amount: -55.20, balance: 1915.74, type: "debit" },
+          { id: "7", date: "21 Apr 2021", description: "CASHBACK REWARD", amount: 15.50, balance: 1970.94, type: "credit" }
+        ];
+      case 'savings':
+        return [
+          { id: "1", date: "27 Apr 2021", description: "INTEREST CREDIT", amount: 12.50, balance: 7500.00, type: "credit" },
+          { id: "2", date: "20 Apr 2021", description: "TRANSFER TO CURRENT", amount: -500.00, balance: 7487.50, type: "debit" },
+          { id: "3", date: "15 Apr 2021", description: "DEPOSIT", amount: 1000.00, balance: 7987.50, type: "credit" },
+          { id: "4", date: "10 Apr 2021", description: "INTEREST CREDIT", amount: 11.80, balance: 6987.50, type: "credit" },
+          { id: "5", date: "05 Apr 2021", description: "MONTHLY SAVINGS", amount: 200.00, balance: 6975.70, type: "credit" }
+        ];
+      case 'loan':
+        return [
+          { id: "1", date: "27 Apr 2021", description: "MONTHLY PAYMENT", amount: -150.00, balance: 2500.00, type: "debit" },
+          { id: "2", date: "20 Apr 2021", description: "INTEREST CHARGE", amount: -25.80, balance: 2650.00, type: "debit" },
+          { id: "3", date: "15 Apr 2021", description: "PAYMENT RECEIVED", amount: -200.00, balance: 2675.80, type: "credit" },
+          { id: "4", date: "01 Apr 2021", description: "MONTHLY PAYMENT", amount: -150.00, balance: 2875.80, type: "debit" }
+        ];
+      case 'deposit':
+        return [
+          { id: "1", date: "27 Apr 2021", description: "MONTHLY DEPOSIT", amount: 100.00, balance: 100.00, type: "credit" },
+          { id: "2", date: "20 Apr 2021", description: "ACCOUNT OPENED", amount: 0.00, balance: 0.00, type: "credit" }
+        ];
+      default:
+        return [];
+    }
   };
 
   const transactions = getTransactions();
 
   return (
-    <div className="h-screen bg-[#126987] overflow-hidden flex flex-col ios-safe-top ios-safe-bottom page-fade-in" style={{ maxHeight: '100vh' }}>
+    <div className="h-screen bg-[#f5f5f5] overflow-hidden flex flex-col ios-safe-top ios-safe-bottom page-fade-in" style={{ maxHeight: '100vh' }}>
       {/* Header - BOI Style */}
       <div className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0">
         <div className="flex items-center mb-4">

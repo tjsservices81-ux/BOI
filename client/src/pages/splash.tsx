@@ -18,6 +18,8 @@ export default function Splash() {
     // Navigate to login after splash duration (8 seconds total)
     const finalTimer = setTimeout(() => {
       setIsVisible(false);
+      // Mark splash as shown in session storage
+      sessionStorage.setItem('splashShown', 'true');
       // Dispatch event to notify App.tsx that splash is complete
       window.dispatchEvent(new CustomEvent('splashComplete'));
       setTimeout(() => {

@@ -36,7 +36,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   // Don't redirect while loading to prevent form interruptions
   if (isLoading) {
     return (
-      <div className="w-full h-full flex items-center justify-center bg-[#106C88]">
+      <div className="w-full h-full flex items-center justify-center bg-[#126987]">
         <div className="text-white">Loading...</div>
       </div>
     );
@@ -50,22 +50,34 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function AppRoutes() {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const [location, navigate] = useLocation();
-  const [splashShown, setSplashShown] = useState(false);
+  const [splashShown, setSplashShown] = useState(() => {
+    // Initialize splashShown state immediately to prevent flash
+    return sessionStorage.getItem('splashShown') === 'true';
+  });
+  const [isInitialized, setIsInitialized] = useState(false);
   const [splashTransitioning, setSplashTransitioning] = useState(false);
-  const [isAppReady, setIsAppReady] = useState(false);
 
   
   // Initialize app state and theme
   useEffect(() => {
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
     if (themeColorMeta) {
-      themeColorMeta.setAttribute('content', '#106C88');
+      themeColorMeta.setAttribute('content', '#0000ff');
     }
     
-    // Mark app as ready after initialization
-    setTimeout(() => setIsAppReady(true), 0);
+    const hasShownSplash = sessionStorage.getItem('splashShown');
+    if (hasShownSplash) {
+      setSplashShown(true);
+      // If splash was already shown, set theme to #126987
+      if (themeColorMeta) {
+        themeColorMeta.setAttribute('content', '#126987');
+      }
+    }
+    
+    // Mark as initialized after a tick to prevent flash
+    setTimeout(() => setIsInitialized(true), 0);
   }, []);
 
 
@@ -81,7 +93,7 @@ function AppRoutes() {
       }, 100);
       const themeColorMeta = document.querySelector('meta[name="theme-color"]');
       if (themeColorMeta) {
-        themeColorMeta.setAttribute('content', '#106C88');
+        themeColorMeta.setAttribute('content', '#126987');
       }
     };
 
@@ -89,29 +101,30 @@ function AppRoutes() {
     return () => window.removeEventListener('splashComplete', handleSplashComplete);
   }, []);
 
-  const showNavigation = user && splashShown && !['/login', '/splash'].includes(location);
-
-  // Show blue screen until app is ready
-  if (!isAppReady) {
+  // Prevent flash during initialization
+  if (!isInitialized) {
     return (
-      <div className="w-full h-full bg-[#106C88]">
-        {/* Initialization screen */}
+      <div className="w-full h-full bg-[#0000ff]">
+        {/* Empty blue screen during initialization */}
       </div>
     );
   }
 
+  const showNavigation = user && splashShown && !['/login', '/splash'].includes(location);
+
   return (
     <SecurityWrapper>
       <ErrorBoundary>
-        <div className="w-full h-full overflow-hidden relative bg-[#106C88]">
+        <div className="w-full h-full overflow-hidden relative">
           <Switch>
             <Route path="/splash" component={Splash} />
             <Route path="/login" component={Login} />
             <Route path="/more" component={More} />
             <Route path="/">
+              {/* Handle root route properly based on splash and auth state */}
               {!splashShown || splashTransitioning ? (
                 <Splash />
-              ) : !user ? (
+              ) : (!user || isLoading) ? (
                 <Login />
               ) : (
                 <Dashboard />
