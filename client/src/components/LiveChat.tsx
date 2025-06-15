@@ -652,7 +652,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 z-50 backdrop-animate-in">
       <div 
-        className={`bg-white w-full md:w-[90vw] md:h-[90vh] md:rounded-3xl md:max-w-4xl md:max-h-[800px] flex flex-col shadow-2xl absolute ${
+        className={`bg-white w-full md:w-[90vw] md:h-[90vh] md:rounded-3xl md:max-w-4xl md:max-h-[800px] chat-container shadow-2xl absolute ${
           isAnimating ? 'chat-animate-out' : 'chat-animate-in'
         }`}
         style={{ 
@@ -661,9 +661,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
           right: 0,
           bottom: '88px', // Leave space for bottom navigation
           height: 'calc(100vh - 88px)',
-          maxHeight: 'calc(100vh - 88px)',
-          display: 'flex',
-          flexDirection: 'column'
+          maxHeight: 'calc(100vh - 88px)'
         }}
       >
         {/* Header */}
@@ -703,14 +701,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
         </div>
 
         {/* Messages Container */}
-        <div 
-          className="flex-1 overflow-y-auto bg-gray-50 relative"
-          style={{ 
-            WebkitOverflowScrolling: 'touch',
-            overscrollBehavior: 'contain',
-            minHeight: 0
-          }}
-        >
+        <div className="chat-messages bg-gray-50">
           <div className="p-6 space-y-6 pb-6">
           {/* Queue status message */}
           {chatState.queueStatus === 'waiting' && (
@@ -812,13 +803,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
         </div>
 
         {/* Input Area */}
-        <div 
-          className="p-4 border-t border-gray-200 bg-white flex-shrink-0"
-          style={{ 
-            paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))',
-            position: 'relative'
-          }}
-        >
+        <div className="chat-input-area p-4">
           {chatState.queueStatus === 'waiting' ? (
             <div className="text-center py-2">
               <p className="text-gray-500 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
