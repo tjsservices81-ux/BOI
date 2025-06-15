@@ -87,6 +87,13 @@ export default function BottomNavigation() {
   // Hide navigation on transfer pages when keyboard is active
   const shouldHideNavigation = location.includes('/transfer') || location.includes('/iban-transfer') || location.includes('/uk-transfer');
   
+  // Ensure navigation is always restored when returning to main pages
+  useEffect(() => {
+    if (!shouldHideNavigation && user && !['/login', '/splash'].includes(location)) {
+      setIsVisible(true);
+    }
+  }, [location, shouldHideNavigation, user]);
+  
   if (shouldHideNavigation || !isVisible) {
     return null;
   }

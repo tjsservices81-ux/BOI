@@ -143,11 +143,10 @@ input, textarea, [contenteditable="true"] {
   user-select: text !important;
 }
 
-/* Prevent overscroll and bounce effects globally */
+/* Prevent overscroll and bounce effects selectively */
 html, body {
-  overscroll-behavior: none;
   overscroll-behavior-x: none;
-  overscroll-behavior-y: none;
+  overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
   width: 100%;
   height: 100%;
@@ -410,13 +409,13 @@ h1, h2, h3, h4, h5, h6, p, span, div, button, input, label {
   pointer-events: none;
 }
 
-/* Prevent modal z-index issues */
+/* Z-index hierarchy - centralized management */
 .modal-overlay {
-  z-index: 9999 !important;
+  z-index: 1000;
 }
 
 .admin-panel {
-  z-index: 10000 !important;
+  z-index: 1100;
 }
 
 /* Prevent button flash states */

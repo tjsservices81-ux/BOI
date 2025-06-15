@@ -53,6 +53,14 @@ function AppRoutes() {
   const [isInitialized, setIsInitialized] = useState(false);
   const [splashTransitioning, setSplashTransitioning] = useState(false);
 
+  // Centralized theme color management
+  const updateThemeColor = (color: string) => {
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+    if (themeColorMeta) {
+      themeColorMeta.setAttribute('content', color);
+    }
+  };
+
   
   // Initialize app state and theme - always start fresh
   useEffect(() => {
