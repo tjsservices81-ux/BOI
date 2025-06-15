@@ -58,7 +58,8 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     if (saved) {
       try {
         const parsedState = JSON.parse(saved);
-        if (parsedState && parsedState.isActive) {
+        // Only restore state if chat is active AND not ended
+        if (parsedState && parsedState.isActive && parsedState.queueStatus !== 'ended') {
           return {
             ...parsedState,
             messages: parsedState.messages.map((msg: any) => ({
@@ -482,17 +483,23 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       }
     });
     
-    // Reset all component state completely
-    setChatState({
+    // Mark session as ended and save state
+    const endedState = {
       messages: [],
       isActive: false,
       agentName: '',
       sessionId: '',
       lastResponseIndex: {},
-      queueStatus: 'ended',
+      queueStatus: 'ended' as const,
       queueStartTime: undefined,
       estimatedWaitTime: 0
-    });
+    };
+    
+    // Save the ended state to prevent restoration
+    localStorage.setItem(userChatKey, JSON.stringify(endedState));
+    
+    // Reset all component state completely
+    setChatState(endedState);
     
     // Clear input and typing states
     setInputText('');
