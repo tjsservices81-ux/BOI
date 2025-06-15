@@ -88,9 +88,8 @@ export default function TransactionHistoryWorking() {
 
   useEffect(() => {
     const loadData = () => {
-      // Clear cache to ensure we get fresh data
-      UserDataManager.clearCache('bankTransactions');
-      UserDataManager.clearCache('bankAccounts');
+      // Force clear all cache to ensure we get fresh data
+      UserDataManager.clearCache();
       
       // Get stored transactions for this specific account using UserDataManager
       const storedTransactions = UserDataManager.getUserData('bankTransactions', []);
@@ -155,30 +154,44 @@ export default function TransactionHistoryWorking() {
       }));
       
       // Only use actual stored transactions - no sample data
-      const sortedTransactions = formattedStored.sort((a: any, b: any) => 
-        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      );
+      const sortedTransactions = formattedStored.sort((a: any, b: any) => {
+        const timeA = new Date(a.timestamp).getTime();
+        const timeB = new Date(b.timestamp).getTime();
+        
+        // If timestamps are invalid, use the ID as fallback (newer IDs are typically larger)
+        if (isNaN(timeA) || isNaN(timeB)) {
+          return Number(b.id) - Number(a.id);
+        }
+        
+        return timeB - timeA;
+      });
       
       setTransactions(sortedTransactions);
     };
     
     loadData();
 
-    // Listen for transaction events
+    // Listen for transaction events with immediate refresh
     const handleTransactionUpdate = () => {
-      loadData();
+      // Force immediate cache clear and reload
+      UserDataManager.clearCache();
+      setTimeout(() => {
+        loadData();
+      }, 100);
     };
 
     window.addEventListener('transactionUpdate', handleTransactionUpdate);
     window.addEventListener('transactionDeleted', handleTransactionUpdate);
     window.addEventListener('transactionAdded', handleTransactionUpdate);
     window.addEventListener('balanceUpdate', handleTransactionUpdate);
+    window.addEventListener('transferComplete', handleTransactionUpdate);
     
     return () => {
       window.removeEventListener('transactionUpdate', handleTransactionUpdate);
       window.removeEventListener('transactionDeleted', handleTransactionUpdate);
       window.removeEventListener('transactionAdded', handleTransactionUpdate);
       window.removeEventListener('balanceUpdate', handleTransactionUpdate);
+      window.removeEventListener('transferComplete', handleTransactionUpdate);
     };
   }, []);
 
