@@ -50,6 +50,17 @@ export default function TransactionHistoryWorking() {
     setSelectedTransaction(null);
     setShowDeleteConfirm(false);
     
+    // Restore bottom navigation after deletion
+    setTimeout(() => {
+      const navElement = document.querySelector('[data-bottom-nav]') as HTMLElement;
+      if (navElement) {
+        navElement.style.display = 'block';
+        navElement.classList.remove('hidden');
+        navElement.style.visibility = 'visible';
+        navElement.style.opacity = '1';
+      }
+    }, 100);
+    
     // Dispatch events to update other components
     window.dispatchEvent(new CustomEvent('transactionDeleted', {
       detail: { transactionId: selectedTransaction?.id }
@@ -277,7 +288,21 @@ export default function TransactionHistoryWorking() {
 
       {/* Transaction Detail Modal */}
       {selectedTransaction && (
-        <div style={{ 
+        <div 
+          onClick={() => {
+            setSelectedTransaction(null);
+            // Restore bottom navigation when modal closes
+            setTimeout(() => {
+              const navElement = document.querySelector('[data-bottom-nav]') as HTMLElement;
+              if (navElement) {
+                navElement.style.display = 'block';
+                navElement.classList.remove('hidden');
+                navElement.style.visibility = 'visible';
+                navElement.style.opacity = '1';
+              }
+            }, 50);
+          }}
+          style={{ 
           position: 'fixed', 
           top: 0, 
           left: 0, 
@@ -290,13 +315,27 @@ export default function TransactionHistoryWorking() {
           justifyContent: 'center',
           padding: '1rem'
         }}>
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto shadow-xl">
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto shadow-xl">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                 Transaction Details
               </h2>
               <button 
-                onClick={() => setSelectedTransaction(null)}
+                onClick={() => {
+                  setSelectedTransaction(null);
+                  // Restore bottom navigation when modal closes
+                  setTimeout(() => {
+                    const navElement = document.querySelector('[data-bottom-nav]') as HTMLElement;
+                    if (navElement) {
+                      navElement.style.display = 'block';
+                      navElement.classList.remove('hidden');
+                      navElement.style.visibility = 'visible';
+                      navElement.style.opacity = '1';
+                    }
+                  }, 50);
+                }}
                 className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center active:scale-95 transition-transform"
               >
                 <span className="text-gray-600 text-lg">×</span>
@@ -463,7 +502,19 @@ export default function TransactionHistoryWorking() {
               {/* Action Buttons */}
               <div className="pt-4 space-y-3">
                 <button 
-                  onClick={() => setSelectedTransaction(null)}
+                  onClick={() => {
+                    setSelectedTransaction(null);
+                    // Restore bottom navigation when modal closes
+                    setTimeout(() => {
+                      const navElement = document.querySelector('[data-bottom-nav]') as HTMLElement;
+                      if (navElement) {
+                        navElement.style.display = 'block';
+                        navElement.classList.remove('hidden');
+                        navElement.style.visibility = 'visible';
+                        navElement.style.opacity = '1';
+                      }
+                    }, 50);
+                  }}
                   className="w-full bg-[#126987] text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                 >
@@ -527,7 +578,19 @@ export default function TransactionHistoryWorking() {
                 Yes, Delete Transaction
               </button>
               <button 
-                onClick={() => setShowDeleteConfirm(false)}
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  // Restore bottom navigation when modal closes
+                  setTimeout(() => {
+                    const navElement = document.querySelector('[data-bottom-nav]') as HTMLElement;
+                    if (navElement) {
+                      navElement.style.display = 'block';
+                      navElement.classList.remove('hidden');
+                      navElement.style.visibility = 'visible';
+                      navElement.style.opacity = '1';
+                    }
+                  }, 50);
+                }}
                 className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold active:scale-98 transition-transform"
                 style={{ fontFamily: 'OpenSans, sans-serif' }}
               >
