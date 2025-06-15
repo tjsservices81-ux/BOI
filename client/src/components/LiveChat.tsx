@@ -68,9 +68,32 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   
   const [chatState, setChatState] = useState<ChatState>(initializeFreshChat);
   
-  // Reset chat state when component is opened
+  // Load persisted chat state when component opens, or initialize fresh if none exists
   useEffect(() => {
     if (isOpen && currentUser) {
+      const userChatKey = `liveChatState_${currentUser}`;
+      const saved = localStorage.getItem(userChatKey);
+      
+      if (saved) {
+        try {
+          const parsedState = JSON.parse(saved);
+          if (parsedState && parsedState.isActive && parsedState.queueStatus !== 'ended') {
+            setChatState({
+              ...parsedState,
+              messages: parsedState.messages.map((msg: any) => ({
+                ...msg,
+                timestamp: new Date(msg.timestamp)
+              })),
+              queueStartTime: parsedState.queueStartTime ? new Date(parsedState.queueStartTime) : undefined
+            });
+            return;
+          }
+        } catch (error) {
+          console.error('Error parsing chat state:', error);
+        }
+      }
+      
+      // Initialize fresh chat if no valid saved state
       setChatState(initializeFreshChat());
     }
   }, [isOpen, currentUser]);
@@ -493,6 +516,11 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     onClose();
   };
 
+  const handleCloseChat = () => {
+    // Just close the chat window without ending the session
+    onClose();
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -527,7 +555,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
             </div>
           </div>
           <button
-            onClick={onClose}
+            onClick={handleCloseChat}
             className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors"
           >
             <X className="w-5 h-5 text-white" />
