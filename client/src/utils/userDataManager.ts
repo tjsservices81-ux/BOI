@@ -311,6 +311,24 @@ export class UserDataManager {
     });
   }
 
+  // Clear temporary state for cold launch
+  static clearTemporaryState() {
+    // Clear cache and session-related data
+    this.dataCache.clear();
+    this.cacheTimestamps.clear();
+    
+    // Clear temporary storage items
+    const keys = Object.keys(localStorage);
+    keys.forEach(key => {
+      if (key.includes('chat') || key.includes('liveChat') || key.includes('tempState') || key.includes('session_')) {
+        localStorage.removeItem(key);
+      }
+    });
+    
+    // Clear session storage
+    sessionStorage.clear();
+  }
+
   // Admin function to clear all data
   static clearAllData() {
     // Clear all localStorage data

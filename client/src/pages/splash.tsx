@@ -6,6 +6,14 @@ export default function Splash() {
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
+    // Ensure complete state clearing during splash
+    const keys = Object.keys(localStorage);
+    keys.forEach(key => {
+      if (key.includes('chat') || key.includes('liveChat') || key.includes('tempState') || key.includes('session_')) {
+        localStorage.removeItem(key);
+      }
+    });
+    
     // Add splash-specific full screen class for iOS PWA
     document.body.classList.add('splash-fullscreen');
     

@@ -52,32 +52,90 @@ function ProtectedRoute({ children, fallback }: { children: React.ReactNode; fal
 function AppRoutes() {
   const { user, isLoading } = useAuth();
   const [location, navigate] = useLocation();
-  const [splashShown, setSplashShown] = useState(() => {
-    // Initialize splashShown state immediately to prevent flash
-    return sessionStorage.getItem('splashShown') === 'true';
-  });
+  const [splashShown, setSplashShown] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [splashTransitioning, setSplashTransitioning] = useState(false);
 
   
-  // Initialize app state and theme
+  // Initialize app state and theme - always start fresh
   useEffect(() => {
+    // Clear temporary state for cold launch behavior
+    const keys = Object.keys(localStorage);
+    keys.forEach(key => {
+      if (key.includes('chat') || key.includes('liveChat') || key.includes('tempState') || key.includes('session_')) {
+        localStorage.removeItem(key);
+      }
+    });
+    
+    // Clear session storage completely
+    sessionStorage.clear();
+    
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
     if (themeColorMeta) {
       themeColorMeta.setAttribute('content', '#0000ff');
     }
     
-    const hasShownSplash = sessionStorage.getItem('splashShown');
-    if (hasShownSplash) {
-      setSplashShown(true);
-      // If splash was already shown, set theme to #126987
-      if (themeColorMeta) {
-        themeColorMeta.setAttribute('content', '#126987');
-      }
-    }
+    // Always start with splash screen for cold launch
+    setSplashShown(false);
     
     // Mark as initialized after a tick to prevent flash
     setTimeout(() => setIsInitialized(true), 0);
+  }, []);
+
+  // Handle app visibility changes for proper lifecycle management
+  useEffect(() => {
+    let isAppVisible = true;
+    
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        isAppVisible = false;
+        // App is being backgrounded or closed
+        sessionStorage.setItem('app_backgrounded', Date.now().toString());
+      } else {
+        // App is being foregrounded
+        const backgroundTime = sessionStorage.getItem('app_backgrounded');
+        if (backgroundTime && !isAppVisible) {
+          const timeAway = Date.now() - parseInt(backgroundTime);
+          // If app was away for more than 5 seconds, treat as cold launch
+          if (timeAway > 5000) {
+            window.location.reload();
+          }
+        }
+        isAppVisible = true;
+        sessionStorage.removeItem('app_backgrounded');
+      }
+    };
+
+    const handlePageHide = () => {
+      // App is being swiped away or closed
+      sessionStorage.setItem('app_closed', 'true');
+    };
+
+    const handlePageShow = (event: PageTransitionEvent) => {
+      // App is being restored
+      if (event.persisted || sessionStorage.getItem('app_closed')) {
+        // Force reload for cold launch behavior
+        sessionStorage.removeItem('app_closed');
+        window.location.reload();
+      }
+    };
+
+    const handleBeforeUnload = () => {
+      // Mark app as being closed
+      sessionStorage.setItem('app_closed', 'true');
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('pagehide', handlePageHide);
+    window.addEventListener('pageshow', handlePageShow);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pagehide', handlePageHide);
+      window.removeEventListener('pageshow', handlePageShow);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
   }, []);
 
 

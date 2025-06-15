@@ -176,19 +176,57 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden) {
-        // App is backgrounded or closed - end chat session
-        handleEndChat();
+        // App is backgrounded or closed - clear chat state immediately
+        if (queueTimerRef.current) {
+          clearInterval(queueTimerRef.current);
+          queueTimerRef.current = null;
+        }
+        
+        // Clear all chat-related localStorage for fresh start
+        if (currentUser) {
+          const userChatKey = `liveChatState_${currentUser}`;
+          localStorage.removeItem(userChatKey);
+          
+          // Clear any other user-specific chat storage
+          Object.keys(localStorage).forEach(key => {
+            if (key.includes(`_${currentUser}_`) && (key.includes('chat') || key.includes('liveChat'))) {
+              localStorage.removeItem(key);
+            }
+          });
+        }
       }
     };
 
     const handleBeforeUnload = () => {
-      // App is being closed - end chat session
-      handleEndChat();
+      // App is being closed - clear all chat state
+      if (queueTimerRef.current) {
+        clearInterval(queueTimerRef.current);
+        queueTimerRef.current = null;
+      }
+      
+      // Force clear all chat storage
+      Object.keys(localStorage).forEach(key => {
+        if (key.includes('chat') || key.includes('liveChat')) {
+          localStorage.removeItem(key);
+        }
+      });
     };
 
     const handlePageHide = () => {
-      // Page is being hidden (mobile swipe away) - end chat session
-      handleEndChat();
+      // Page is being hidden (mobile swipe away) - clear state
+      if (queueTimerRef.current) {
+        clearInterval(queueTimerRef.current);
+        queueTimerRef.current = null;
+      }
+      
+      // Clear chat storage for cold restart
+      if (currentUser) {
+        Object.keys(localStorage).forEach(key => {
+          if (key.includes('chat') || key.includes('liveChat')) {
+            localStorage.removeItem(key);
+          }
+        });
+      }
     };
 
     // Listen for various app lifecycle events
@@ -201,7 +239,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('pagehide', handlePageHide);
     };
-  }, []);
+  }, [currentUser]);
 
   // Clear session when app starts fresh
   useEffect(() => {
