@@ -107,11 +107,11 @@ function AppRoutes() {
     return () => window.removeEventListener('splashComplete', handleSplashComplete);
   }, []);
 
-  // Prevent flash during initialization - wait for both app and auth to initialize
+  // Show blue initialization screen until everything is ready
   if (!isInitialized || !authInitialized) {
     return (
       <div className="w-full h-full bg-[#0000ff]">
-        {/* Empty blue screen during initialization */}
+        {/* Blue initialization screen prevents any flash */}
       </div>
     );
   }

@@ -35,8 +35,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Initialize auth state properly to prevent flash
   useEffect(() => {
-    // Mark as initialized after checking localStorage
-    setIsInitialized(true);
+    // Small delay to ensure smooth initialization
+    const timer = setTimeout(() => {
+      setIsInitialized(true);
+    }, 50);
+    return () => clearTimeout(timer);
   }, []);
 
   // Listen for admin profile updates to refresh user data immediately
