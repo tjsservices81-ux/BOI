@@ -405,16 +405,21 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     const responseLength = Math.random() * 100 + 20; // Estimated response length
     const typingDelay = baseDelay + (responseLength * typingSpeed);
 
-    // Get AI response immediately and show appropriate typing time
-    (async () => {
+    setTimeout(async () => {
       try {
-        setTypingText(`${chatState.agentName} is typing...`);
-        
         const responseData = await generateAIResponse(userMessage.text);
         
-        // Shorter, more realistic typing delay (1-3 seconds)
+        // Calculate realistic typing delay based on response length
+        // 3-5 words per second = 200-333ms per word
         const words = responseData.text.split(' ').length;
-        const typingDelay = Math.min(3000, Math.max(1000, words * 80)); // 80ms per word, max 3 seconds
+        const wordsPerSecond = Math.random() * 2 + 3; // 3-5 words per second
+        const realisticDelay = Math.max(1500, (words / wordsPerSecond) * 1000);
+        
+        // Add some natural variation (±20%)
+        const variation = (Math.random() - 0.5) * 0.4;
+        const finalDelay = realisticDelay * (1 + variation);
+        
+        setTypingText(`${chatState.agentName} is typing...`);
         
         setTimeout(() => {
           const botMessage: ChatMessage = {
@@ -432,10 +437,10 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
           
           setIsTyping(false);
           setTypingText("");
-        }, typingDelay);
+        }, finalDelay);
       } catch (error) {
         console.error('Error in AI response handling:', error);
-        
+        // Create fallback response on error
         const errorMessage: ChatMessage = {
           id: (Date.now() + 1).toString(),
           text: "I'm experiencing some technical difficulties at the moment. Please bear with me while I resolve this, or feel free to try your question again.",
@@ -452,7 +457,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
         setIsTyping(false);
         setTypingText("");
       }
-    })();
+    }, 800); // Brief delay before starting to type
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
