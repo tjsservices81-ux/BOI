@@ -17,20 +17,20 @@ export default function Splash() {
     // Add splash-specific full screen class for iOS PWA
     document.body.classList.add('splash-fullscreen');
     
-    // Set status bar to match splash blue background
+    // Set status bar to match splash blue background for PWA
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
     if (themeColorMeta) {
       themeColorMeta.setAttribute('content', '#0000ff');
     }
     
-    // Hide status bar completely for splash screen
+    // Set status bar style to blend with blue background in PWA mode
     const statusBarMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
     if (statusBarMeta) {
-      statusBarMeta.setAttribute('content', 'black-translucent');
+      statusBarMeta.setAttribute('content', 'default');
     } else {
       const newStatusBarMeta = document.createElement('meta');
       newStatusBarMeta.setAttribute('name', 'apple-mobile-web-app-status-bar-style');
-      newStatusBarMeta.setAttribute('content', 'black-translucent');
+      newStatusBarMeta.setAttribute('content', 'default');
       document.head.appendChild(newStatusBarMeta);
     }
     
