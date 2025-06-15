@@ -557,12 +557,12 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
                   placeholder="Type your message..."
                   className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#126987] focus:border-transparent"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
-                  disabled={isTyping || chatState.queueStatus !== 'connected'}
+                  disabled={isTyping}
                 />
               </div>
               <button
                 onClick={handleSendMessage}
-                disabled={!inputText.trim() || isTyping || chatState.queueStatus !== 'connected'}
+                disabled={!inputText.trim() || isTyping}
                 className="w-12 h-12 bg-[#126987] rounded-full flex items-center justify-center hover:bg-[#0d4e63] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Send className="w-5 h-5 text-white" />
