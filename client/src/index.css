@@ -221,7 +221,7 @@ img, video, canvas {
   }
   
   body {
-    padding-top: var(--safe-area-inset-top);
+    /* Remove padding-top for splash screen - handled by splash-specific rules */
   }
 }
 
@@ -834,8 +834,20 @@ img {
 /* iOS PWA status bar color override */
 @media (display-mode: standalone) {
   .splash-fullscreen {
-    padding-top: env(safe-area-inset-top);
+    /* Remove padding-top - extend splash behind safe area */
     background: #000DFF !important;
+  }
+  
+  .splash-fullscreen::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: env(safe-area-inset-top, 0);
+    background-color: #000DFF;
+    z-index: 9999;
+    pointer-events: none;
   }
   
   .splash-fullscreen .full-height {
