@@ -35,10 +35,20 @@ interface ChatState {
 
 export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   const [chatState, setChatState] = useState<ChatState>(() => {
-    // Always start fresh - ignore any saved state
-    // This ensures complete session reset after "End Chat"
+    // Load persistent chat state to survive page navigation
+    const saved = UserDataManager.getUserData('liveChatState', null);
+    if (saved && saved.isActive) {
+      return {
+        ...saved,
+        messages: saved.messages.map((msg: any) => ({
+          ...msg,
+          timestamp: new Date(msg.timestamp)
+        })),
+        queueStartTime: saved.queueStartTime ? new Date(saved.queueStartTime) : undefined
+      };
+    }
     
-    // Initialize new chat session
+    // Initialize new chat session only if no active session exists
     const agentNames = ['Mark', 'Sarah', 'James', 'Emma', 'David', 'Lisa'];
     const randomAgent = agentNames[Math.floor(Math.random() * agentNames.length)];
     
@@ -72,7 +82,12 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     scrollToBottom();
   }, [chatState.messages, isTyping]);
 
-  // No chat state persistence - chat always starts fresh after "End Chat"
+  // Save chat state to persist across page navigation (only cleared on "End Chat")
+  useEffect(() => {
+    if (chatState.isActive) {
+      UserDataManager.setUserData('liveChatState', chatState);
+    }
+  }, [chatState]);
 
   // Queue timer effect
   useEffect(() => {
