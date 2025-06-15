@@ -1,45 +1,24 @@
 import { useLocation } from "wouter";
 import { useAuth } from "@/lib/auth";
-import { useState, useEffect } from "react";
 
 export default function BottomNavigation() {
   const [location, setLocation] = useLocation();
   const { user } = useAuth();
-  const [isVisible, setIsVisible] = useState(false);
 
-  // Prevent navigation flash by ensuring user is authenticated
-  useEffect(() => {
-    if (user) {
-      setIsVisible(true);
-    } else {
-      setIsVisible(false);
-    }
-  }, [user]);
-
-  // Handle app focus restoration to ensure navigation stays visible
-  useEffect(() => {
-    const handleAppFocus = () => {
-      // Force navigation visibility if user is authenticated and not on excluded screens
-      if (user && !['/login', '/splash'].includes(location)) {
-        setIsVisible(true);
-      }
-    };
-
-    const handleAppBlur = () => {
-      // Store navigation state when app loses focus
-      if (user && isVisible) {
-        sessionStorage.setItem('nav_was_visible', 'true');
-      }
-    };
-
-    window.addEventListener('focus', handleAppFocus);
-    window.addEventListener('blur', handleAppBlur);
+  // Determine if navigation should be visible based on current route and auth state
+  const shouldShowNavigation = () => {
+    // Don't show if user is not authenticated
+    if (!user) return false;
     
-    return () => {
-      window.removeEventListener('focus', handleAppFocus);
-      window.removeEventListener('blur', handleAppBlur);
-    };
-  }, [user, location, isVisible]);
+    // Don't show on login/splash screens
+    if (['/login', '/splash'].includes(location)) return false;
+    
+    // Don't show on transfer pages (they have their own logic for keyboard handling)
+    if (location.includes('/transfer') || location.includes('/iban-transfer') || location.includes('/uk-transfer')) return false;
+    
+    // Show on all other authenticated pages
+    return true;
+  };
 
   const navigationItems = [
     {
@@ -84,24 +63,15 @@ export default function BottomNavigation() {
     }
   ];
 
-  // Hide navigation on transfer pages when keyboard is active
-  const shouldHideNavigation = location.includes('/transfer') || location.includes('/iban-transfer') || location.includes('/uk-transfer');
-  
-  // Ensure navigation is always restored when returning to main pages
-  useEffect(() => {
-    if (!shouldHideNavigation && user && !['/login', '/splash'].includes(location)) {
-      setIsVisible(true);
-    }
-  }, [location, shouldHideNavigation, user]);
-  
-  if (shouldHideNavigation || !isVisible) {
+  // Don't render if navigation shouldn't be visible
+  if (!shouldShowNavigation()) {
     return null;
   }
 
   return (
     <div 
       data-bottom-nav
-      className={`fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 ios-safe-bottom z-50 bottom-nav-container bottom-navigation ${isVisible ? '' : 'hidden'}`}
+      className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 ios-safe-bottom z-50 bottom-nav-container bottom-navigation"
     >
       <div className="flex justify-around items-center h-12">
         {navigationItems.map((item) => (

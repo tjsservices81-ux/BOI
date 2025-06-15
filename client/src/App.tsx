@@ -233,8 +233,6 @@ function AppRoutes() {
     );
   }
 
-  const showNavigation = user && splashShown && !['/login', '/splash'].includes(location);
-
   return (
     <SecurityWrapper>
       <ErrorBoundary>
@@ -319,7 +317,7 @@ function AppRoutes() {
           </Route>
           <Route component={NotFound} />
         </Switch>
-        {showNavigation && <BottomNavigation />}
+        <BottomNavigation />
 
         </div>
       </ErrorBoundary>

@@ -68,23 +68,7 @@ export default function TransactionHistoryWorking() {
     window.dispatchEvent(new CustomEvent('transactionUpdate'));
   };
 
-  // Ensure navigation is restored when this page loads
-  useEffect(() => {
-    // Force navigation visibility on mount
-    const navElement = document.querySelector('[data-bottom-nav]') as HTMLElement;
-    if (navElement) {
-      navElement.style.display = 'block';
-      navElement.classList.remove('hidden');
-    }
-    
-    // Clean up on unmount to prevent interference
-    return () => {
-      const navElement = document.querySelector('[data-bottom-nav]') as HTMLElement;
-      if (navElement) {
-        navElement.style.display = '';
-      }
-    };
-  }, []);
+
 
   useEffect(() => {
     const loadData = () => {
