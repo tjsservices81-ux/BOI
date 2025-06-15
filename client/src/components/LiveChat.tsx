@@ -721,48 +721,49 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input */}
-        <div className="p-6 border-t border-gray-200 bg-white">
-          {chatState.queueStatus === 'connected' && (
-            <div className="mb-3 flex justify-center">
-              <button
-                onClick={handleEndChat}
-                className="text-red-600 text-sm font-medium hover:text-red-700 transition-colors"
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
-              >
-                End Chat
-              </button>
-            </div>
-          )}
-          
+        {/* Input Area */}
+        <div className="p-4 border-t border-gray-200 bg-white">
           {chatState.queueStatus === 'waiting' ? (
-            <div className="text-center">
+            <div className="text-center py-2">
               <p className="text-gray-500 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                 Please wait to be connected before sending messages...
               </p>
             </div>
           ) : (
-            <div className="flex items-center space-x-2">
-              <div className="flex-1 relative">
-                <input
-                  type="text"
-                  value={inputText}
-                  onChange={(e) => setInputText(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Type your message..."
-                  className="w-full px-5 py-4 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#126987] focus:border-transparent text-base"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                  disabled={isTyping}
-                />
+            <>
+              <div className="flex items-center space-x-3 mb-3">
+                <div className="flex-1 relative">
+                  <input
+                    type="text"
+                    value={inputText}
+                    onChange={(e) => setInputText(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Type your message..."
+                    className="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#126987] focus:border-transparent text-base"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                    disabled={isTyping}
+                  />
+                </div>
+                <button
+                  onClick={handleSendMessage}
+                  disabled={!inputText.trim() || isTyping}
+                  className="w-11 h-11 bg-[#126987] rounded-full flex items-center justify-center hover:bg-[#0d4e63] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                >
+                  <Send className="w-5 h-5 text-white" />
+                </button>
               </div>
-              <button
-                onClick={handleSendMessage}
-                disabled={!inputText.trim() || isTyping}
-                className="w-12 h-12 bg-[#126987] rounded-full flex items-center justify-center hover:bg-[#0d4e63] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Send className="w-5 h-5 text-white" />
-              </button>
-            </div>
+              
+              {/* End Chat button positioned properly */}
+              <div className="flex justify-center pt-2">
+                <button
+                  onClick={handleEndChat}
+                  className="text-red-600 text-sm font-medium hover:text-red-700 transition-colors px-4 py-2 rounded-lg hover:bg-red-50"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  End Chat
+                </button>
+              </div>
+            </>
           )}
         </div>
       </div>
