@@ -187,8 +187,8 @@ export default function TransactionHistoryWorking() {
   };
 
   return (
-    <div className="page-container min-h-screen bg-gray-50 flex flex-col"
-      style={{ backgroundColor: '#f9fafb' }}>
+    <div className="h-screen bg-gray-50 flex flex-col overflow-hidden"
+      style={{ backgroundColor: '#f9fafb', maxHeight: '100vh' }}>
       <div className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0">
         <button onClick={() => navigate('/dashboard')} className="flex items-center text-white">
           <ChevronLeft className="w-5 h-5 mr-2" />
@@ -198,7 +198,7 @@ export default function TransactionHistoryWorking() {
         </button>
       </div>
 
-      <div className="bg-[#126987] text-white p-6">
+      <div className="bg-[#126987] text-white p-6 flex-shrink-0">
         <div className="flex justify-between items-center">
           <div>
             <p className="text-sm opacity-90" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -214,9 +214,8 @@ export default function TransactionHistoryWorking() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 pb-24"
+      <div className="flex-1 overflow-y-auto p-4 pb-24 transaction-scroll-container"
         style={{ 
-          WebkitOverflowScrolling: 'touch',
           minHeight: 0
         }}>
         {/* Mini spending chart for visual insights */}
