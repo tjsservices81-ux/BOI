@@ -77,8 +77,14 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       };
     }
 
-    const agentNames = ['Mark', 'Sarah', 'James', 'Emma', 'David', 'Lisa'];
-    const randomAgent = agentNames[Math.floor(Math.random() * agentNames.length)];
+    // AI personalities with different specializations
+    const agentProfiles = [
+      { name: 'Emma', specialty: 'General Support' },
+      { name: 'James', specialty: 'Transfer Support' },
+      { name: 'Sarah', specialty: 'Account Security' },
+      { name: 'Michael', specialty: 'Technical Support' }
+    ];
+    const randomAgent = agentProfiles[Math.floor(Math.random() * agentProfiles.length)].name;
     const waitTime = Math.floor(Math.random() * 30000) + 30000; // 30-60 seconds (max 1 minute)
     
     return {
@@ -255,7 +261,32 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
           
           // Add welcome message from agent with realistic typing delay
           setTimeout(() => {
-            const welcomeText = `Hi there! I'm ${chatState.agentName} from Bank of Ireland support. How can I help you today?`;
+            // Personalized welcome messages based on agent personality
+            const welcomeMessages: { [key: string]: string[] } = {
+              'Emma': [
+                `Hi there! I'm Emma from Bank of Ireland support. How can I help you today?`,
+                `Hello! Emma here, ready to help with your banking. What can I sort out for you?`,
+                `Hi! I'm Emma, your Bank of Ireland support specialist today. What's on your mind?`
+              ],
+              'James': [
+                `Hi, James here from Bank of Ireland transfers team. How can I assist with your payment query?`,
+                `Hello, I'm James - I'll help you with your transfer query. What do you need to know?`,
+                `Hi there, James from BOI transfers speaking. What can I help you with today?`
+              ],
+              'Sarah': [
+                `Hi, I'm Sarah from Bank of Ireland security team. How can I help secure your account today?`,
+                `Hello, Sarah here - I'll help with your account security. What can I assist you with?`,
+                `Hi there, this is Sarah from BOI account security. How can I help you today?`
+              ],
+              'Michael': [
+                `Hi, I'm Michael from Bank of Ireland tech support. What technical issue can I help you with?`,
+                `Hello there, Michael here to help with your technical issue. What's going on?`,
+                `Hi, this is Michael - I'll get that sorted for you. What seems to be the problem?`
+              ]
+            };
+            
+            const agentMessages = welcomeMessages[chatState.agentName as keyof typeof welcomeMessages] || welcomeMessages['Emma'];
+            const welcomeText = agentMessages[Math.floor(Math.random() * agentMessages.length)];
             const words = welcomeText.split(' ').length;
             const wordsPerSecond = Math.random() * 2 + 3; // 3-5 words per second
             const realisticDelay = Math.max(1000, (words / wordsPerSecond) * 1000);
@@ -314,9 +345,11 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       triggers: ['unblock card', 'card blocked', 'card not working', 'blocked card', 'card issue', 'lost card', 'stolen card', 'replacement card', 'new card'],
       responses: [
         "I can help you with your card issue right away. To unblock your card, go to Profile > Admin Panel and tap 'Unblock Card'. Your card will be available immediately for transactions.",
-        "Let me sort that card problem for you. You can unblock your card through Profile > Admin Panel > 'Unblock Card'. It takes effect instantly, so you'll be able to use it straight away.",
-        "I see you're having card troubles - that's frustrating! The quickest way to unblock it is through your Profile > Admin Panel. Look for the 'Unblock Card' option and it'll be working again in seconds.",
-        "No problem at all, I'll walk you through unblocking your card. Navigate to Profile > Admin Panel and select 'Unblock Card' for instant activation. If you're still having issues after that, just let me know."
+        "No worries at all, let me sort that card problem for you. You can unblock your card through Profile > Admin Panel > 'Unblock Card'. It takes effect instantly, so you'll be able to use it straight away.",
+        "I completely understand how frustrating that must be! The quickest way to unblock it is through your Profile > Admin Panel. Look for the 'Unblock Card' option and it'll be working again in seconds.",
+        "Right, I'll walk you through unblocking your card. Navigate to Profile > Admin Panel and select 'Unblock Card' for instant activation. If you're still having issues after that, just let me know.",
+        "Alright, let me help with that card issue. Head to Profile > Admin Panel and you'll see the 'Unblock Card' option there. Once you tap it, your card should be good to go immediately.",
+        "For your security, your card has been blocked, but I can help you get it working again. Go to Profile > Admin Panel and select 'Unblock Card' - that'll restore full access right away."
       ]
     },
     {
@@ -324,10 +357,12 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       category: 'transfers',
       triggers: ['transfer money', 'send money', 'make transfer', 'how to transfer', 'payment', 'pending transfer', 'international transfer', 'swift code', 'iban transfer', 'uk transfer', 'transfer limit', 'transfer fee'],
       responses: [
-        "Absolutely, I'll help you with transfers. For UK transfers, tap 'Payments' then 'UK Transfer' - these are usually instant and free between UK accounts. For international transfers, use 'IBAN Transfer' which typically takes 1-3 working days. What type of transfer are you looking to make?",
-        "I can definitely help with that transfer. Use the 'Payments' section at the bottom - UK Transfer for domestic payments (instant and usually free) or IBAN Transfer for international (small fee applies, 1-3 days). Are you sending money within the UK or abroad?",
-        "No problem! The transfer process is quite simple. Go to 'Payments' at the bottom of your screen. UK Transfer handles domestic payments instantly, while IBAN Transfer covers international payments with competitive exchange rates. Which country are you sending to?",
-        "I'll walk you through the transfer options. In 'Payments', you'll see UK Transfer for domestic payments (instant, no fees) and IBAN Transfer for international (£2-15 fee depending on amount, arrives 1-3 working days). What's the destination for your transfer?"
+        "Absolutely, I'll help you with transfers. For UK transfers, tap 'Payments' then 'UK Transfer' - these typically take up to 24 hours. For international transfers, use 'IBAN Transfer' which usually takes 1-3 working days. What type of transfer are you looking to make?",
+        "I can definitely help with that transfer. Use the 'Payments' section at the bottom - UK Transfer for domestic payments (up to 24 hours) or IBAN Transfer for international (small fee applies, 1-3 days). Are you sending money within the UK or abroad?",
+        "Right, let me walk you through the transfer options. Go to 'Payments' at the bottom of your screen. UK Transfer handles domestic payments in up to 24 hours, while IBAN Transfer covers international payments with competitive exchange rates. Which country are you sending to?",
+        "No worries, I'll explain the transfer process. In 'Payments', you'll see UK Transfer for domestic payments (up to 24 hours) and IBAN Transfer for international (£2-15 fee depending on amount, arrives 1-3 working days). What's the destination for your transfer?",
+        "Let me help you sort that transfer. The 'Payments' section has two options - UK Transfer for domestic payments (allow up to 24 hours) or IBAN Transfer for international transfers (typically 1-3 days with a small fee). Where are you sending the money?",
+        "Alright, I can guide you through the transfer process. Head to 'Payments' where you'll find UK Transfer for domestic payments (up to 24 hours processing) and IBAN Transfer for international transfers. What type of payment are you making?"
       ]
     },
     {
@@ -336,9 +371,11 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       triggers: ['check balance', 'account balance', 'how much money', 'balance', 'statement', 'iban', 'sort code', 'account number', 'account details', 'routing number'],
       responses: [
         "Your account balances are displayed right on the main dashboard when you log in. For detailed statements or account numbers, just tap on any account to see the full breakdown including IBAN and sort code.",
-        "All your balances are visible on the homepage dashboard. If you need your IBAN, sort code, or detailed statements, tap on the specific account and you'll find all those details there.",
-        "You can see all your account balances on the main screen. For account numbers, IBAN details, or monthly statements, just tap the account you're interested in - everything's there.",
-        "Your current balances are shown on the dashboard. Need your account details like IBAN or sort code? Tap on any account and you'll see the full account information plus transaction history."
+        "Brilliant, all your balances are visible on the homepage dashboard. If you need your IBAN, sort code, or detailed statements, tap on the specific account and you'll find all those details there.",
+        "Perfect! You can see all your account balances on the main screen. For account numbers, IBAN details, or monthly statements, just tap the account you're interested in - everything's there.",
+        "Right, your current balances are shown on the dashboard. Need your account details like IBAN or sort code? Tap on any account and you'll see the full account information plus transaction history.",
+        "Let me help you with that. Your balances appear on the main dashboard, and for specific account details like IBAN or sort code, simply tap on the account to view all the information.",
+        "No worries at all! All account balances are on your homepage. For detailed statements or account numbers, tap any account and you'll get the complete breakdown including IBAN and sort codes."
       ]
     },
     {
@@ -346,8 +383,8 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       category: 'login_issues',
       triggers: ['forgot pin', 'reset pin', 'pin not working', 'pin problem', 'login issues', 'password reset', 'cant log in', "can't access", 'locked out', 'forgotten password'],
       responses: [
-        "I understand how frustrating login issues can be. For security reasons, PIN resets need to be done through secure channels. You can visit any Bank of Ireland branch with photo ID, or call our customer service team at 0818 365 365 and they'll sort it out for you.",
-        "Login problems are definitely annoying! For your security, PIN resets require verification at a branch with valid ID, or you can call our secure line at 0818 365 365 where the team can help reset it safely.",
+        "I completely understand how frustrating login issues can be. For your account's protection, PIN resets need to be done through secure channels. You can visit any Bank of Ireland branch with photo ID, or call our customer service team at 0818 365 365 and they'll sort it out for you.",
+        "I know how annoying login problems can be! For your security, PIN resets require verification at a branch with valid ID, or you can call our secure line at 0818 365 365 where the team can help reset it safely.",
         "I can help point you in the right direction for PIN issues. Due to security protocols, you'll need to visit your local Bank of Ireland branch with ID, or ring customer service at 0818 365 365 for a secure PIN reset.",
         "PIN troubles happen to everyone! For your protection, we need to verify your identity for resets. Pop into any branch with photo ID, or call 0818 365 365 where our team can handle the reset securely over the phone."
       ]
