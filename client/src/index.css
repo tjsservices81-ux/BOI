@@ -808,44 +808,12 @@ img {
 /* Splash screen specific styling */
 .splash-fullscreen {
   /* Pure blue status bar for splash screen only */
-  --splash-theme-color: #000DFF;
-  --status-bar-color: #000DFF;
+  --splash-theme-color: #0000ff;
 }
 
-/* iOS Safari status bar integration for splash */
-@supports (-webkit-appearance: none) {
-  .splash-fullscreen {
-    background-color: #000DFF !important;
-  }
-  
-  .splash-fullscreen::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: env(safe-area-inset-top, 44px);
-    background-color: #000DFF;
-    z-index: 9999;
-    pointer-events: none;
-  }
-}
-
-/* iOS PWA status bar color override */
-@media (display-mode: standalone) {
-  .splash-fullscreen {
-    padding-top: env(safe-area-inset-top);
-    background: #000DFF !important;
-  }
-  
-  .splash-fullscreen .full-height {
-    background: transparent;
-  }
-  
-  .splash-fullscreen .splash-container {
-    background-color: #000DFF !important;
-    background-blend-mode: multiply;
-  }
+/* Apply pure blue theme color to status bar on splash screen */
+.splash-fullscreen meta[name="theme-color"] {
+  content: "#0000ff";
 }
 
 @media (display-mode: standalone) {

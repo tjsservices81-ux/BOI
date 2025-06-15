@@ -15,7 +15,7 @@
     <meta name="apple-mobile-web-app-title" content="BOI Mobile" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="application-name" content="BOI Mobile" />
-    <meta name="theme-color" content="#000DFF" />
+    <meta name="theme-color" content="#0000ff" />
     
     <!-- Critical font preloading for instant rendering -->
     <link rel="preload" href="/OpenSans-Regular-webfont.woff2" as="font" type="font/woff2" crossorigin>
@@ -63,10 +63,10 @@
   <body style="background: transparent !important;">
     <div id="root" style="background: transparent !important;"></div>
     <script>
-      // Set theme color to correct blue immediately before React loads
+      // Set theme color to pure blue immediately before React loads
       const themeColorMeta = document.querySelector('meta[name="theme-color"]');
       if (themeColorMeta) {
-        themeColorMeta.setAttribute('content', '#000DFF');
+        themeColorMeta.setAttribute('content', '#0000ff');
       }
 
       // Security measures to prevent sharing and copying

@@ -81,7 +81,7 @@ function AppRoutes() {
     
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
     if (themeColorMeta) {
-      themeColorMeta.setAttribute('content', '#000DFF');
+      themeColorMeta.setAttribute('content', '#0000ff');
     }
     
     // Always start with splash screen for cold launch
@@ -118,7 +118,7 @@ function AppRoutes() {
 
       // Set correct theme color based on current location
       if (location === '/splash') {
-        themeColorMeta.setAttribute('content', '#000DFF');
+        themeColorMeta.setAttribute('content', '#0000ff');
       } else {
         themeColorMeta.setAttribute('content', '#126987');
       }
@@ -208,7 +208,7 @@ function AppRoutes() {
       const themeColorMeta = document.querySelector('meta[name="theme-color"]');
       if (themeColorMeta) {
         if (location === '/splash') {
-          themeColorMeta.setAttribute('content', '#000DFF');
+          themeColorMeta.setAttribute('content', '#0000ff');
         } else {
           themeColorMeta.setAttribute('content', '#126987');
         }
@@ -222,7 +222,7 @@ function AppRoutes() {
   // Prevent flash during initialization
   if (!isInitialized) {
     return (
-      <div className="w-full h-full bg-[#000DFF]">
+      <div className="w-full h-full bg-[#0000ff]">
         {/* Empty blue screen during initialization */}
       </div>
     );
