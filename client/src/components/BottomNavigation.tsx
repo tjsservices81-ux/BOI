@@ -16,6 +16,31 @@ export default function BottomNavigation() {
     }
   }, [user]);
 
+  // Handle app focus restoration to ensure navigation stays visible
+  useEffect(() => {
+    const handleAppFocus = () => {
+      // Force navigation visibility if user is authenticated and not on excluded screens
+      if (user && !['/login', '/splash'].includes(location)) {
+        setIsVisible(true);
+      }
+    };
+
+    const handleAppBlur = () => {
+      // Store navigation state when app loses focus
+      if (user && isVisible) {
+        sessionStorage.setItem('nav_was_visible', 'true');
+      }
+    };
+
+    window.addEventListener('focus', handleAppFocus);
+    window.addEventListener('blur', handleAppBlur);
+    
+    return () => {
+      window.removeEventListener('focus', handleAppFocus);
+      window.removeEventListener('blur', handleAppBlur);
+    };
+  }, [user, location, isVisible]);
+
   const navigationItems = [
     {
       id: 'accounts',
@@ -67,7 +92,10 @@ export default function BottomNavigation() {
   }
 
   return (
-    <div className={`fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 ios-safe-bottom z-50 bottom-nav-container bottom-navigation ${isVisible ? '' : 'hidden'}`}>
+    <div 
+      data-bottom-nav
+      className={`fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 ios-safe-bottom z-50 bottom-nav-container bottom-navigation ${isVisible ? '' : 'hidden'}`}
+    >
       <div className="flex justify-around items-center h-12">
         {navigationItems.map((item) => (
           <button

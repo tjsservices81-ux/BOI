@@ -99,20 +99,49 @@ function AppRoutes() {
     const handleVisibilityChange = () => {
       if (document.hidden) {
         isAppVisible = false;
-        // App is being backgrounded or closed
+        // App is being backgrounded - store current state
         sessionStorage.setItem('app_backgrounded', Date.now().toString());
+        sessionStorage.setItem('current_location', location);
       } else {
-        // App is being foregrounded
+        // App is being foregrounded - restore proper state
         const backgroundTime = sessionStorage.getItem('app_backgrounded');
         if (backgroundTime && !isAppVisible) {
           const timeAway = Date.now() - parseInt(backgroundTime);
-          // If app was away for more than 5 seconds, treat as cold launch
-          if (timeAway > 5000) {
+          // Only reload for very long absence (30+ seconds) to prevent accidental reloads
+          if (timeAway > 30000) {
             window.location.reload();
+          } else {
+            // Restore complete app state when returning from background
+            restoreAppStateOnForeground();
           }
         }
         isAppVisible = true;
         sessionStorage.removeItem('app_backgrounded');
+      }
+    };
+
+    const restoreThemeForCurrentScreen = () => {
+      const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+      if (!themeColorMeta) return;
+
+      // Set correct theme color based on current location
+      if (location === '/splash') {
+        themeColorMeta.setAttribute('content', '#0000ff');
+      } else {
+        themeColorMeta.setAttribute('content', '#126987');
+      }
+    };
+
+    const restoreAppStateOnForeground = () => {
+      // Restore theme color
+      restoreThemeForCurrentScreen();
+      
+      // Force navigation visibility restoration if needed
+      if (user && splashShown && !['/login', '/splash'].includes(location)) {
+        const navElement = document.querySelector('[data-bottom-nav]') as HTMLElement;
+        if (navElement && navElement.classList.contains('hidden')) {
+          navElement.classList.remove('hidden');
+        }
       }
     };
 
@@ -173,6 +202,24 @@ function AppRoutes() {
     window.addEventListener('splashComplete', handleSplashComplete);
     return () => window.removeEventListener('splashComplete', handleSplashComplete);
   }, []);
+
+  // Restore app state when returning from background - MUST be before conditional return
+  useEffect(() => {
+    const handleFocusRestore = () => {
+      // Restore correct theme color
+      const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+      if (themeColorMeta) {
+        if (location === '/splash') {
+          themeColorMeta.setAttribute('content', '#0000ff');
+        } else {
+          themeColorMeta.setAttribute('content', '#126987');
+        }
+      }
+    };
+
+    window.addEventListener('focus', handleFocusRestore);
+    return () => window.removeEventListener('focus', handleFocusRestore);
+  }, [location]);
 
   // Prevent flash during initialization
   if (!isInitialized) {
