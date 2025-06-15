@@ -50,14 +50,10 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function AppRoutes() {
-  const { user, isLoading, isInitialized: authInitialized } = useAuth();
+  const { user } = useAuth();
   const [location, navigate] = useLocation();
   const [splashShown, setSplashShown] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(false);
   const [splashTransitioning, setSplashTransitioning] = useState(false);
-  
-  // Strict authentication guard - only allow dashboard when user is confirmed
-  const isAuthenticated = user && !isLoading && authInitialized;
 
   
   // Initialize app state and theme
@@ -66,25 +62,7 @@ function AppRoutes() {
     if (themeColorMeta) {
       themeColorMeta.setAttribute('content', '#0000ff');
     }
-    
-    // Mark as initialized after a tick to prevent flash
-    setTimeout(() => setIsInitialized(true), 0);
   }, []);
-
-  // Check splash state only after auth is initialized
-  useEffect(() => {
-    if (authInitialized) {
-      const hasShownSplash = sessionStorage.getItem('splashShown');
-      if (hasShownSplash) {
-        setSplashShown(true);
-        // If splash was already shown, set theme to #126987
-        const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-        if (themeColorMeta) {
-          themeColorMeta.setAttribute('content', '#126987');
-        }
-      }
-    }
-  }, [authInitialized]);
 
 
 
@@ -107,16 +85,7 @@ function AppRoutes() {
     return () => window.removeEventListener('splashComplete', handleSplashComplete);
   }, []);
 
-  // Show blue initialization screen until everything is ready
-  if (!isInitialized || !authInitialized) {
-    return (
-      <div className="w-full h-full bg-[#0000ff]">
-        {/* Blue initialization screen prevents any flash */}
-      </div>
-    );
-  }
-
-  const showNavigation = isAuthenticated && splashShown && !['/login', '/splash'].includes(location);
+  const showNavigation = user && splashShown && !['/login', '/splash'].includes(location);
 
   return (
     <SecurityWrapper>
@@ -127,29 +96,13 @@ function AppRoutes() {
             <Route path="/login" component={Login} />
             <Route path="/more" component={More} />
             <Route path="/">
-              {(() => {
-                // Always show splash first if not shown
-                if (!splashShown || splashTransitioning) {
-                  return <Splash />;
-                }
-                
-                // Show login if auth not initialized or no user
-                if (!authInitialized || !user) {
-                  return <Login />;
-                }
-                
-                // Show loading during auth check
-                if (isLoading) {
-                  return (
-                    <div className="w-full h-full flex items-center justify-center bg-[#126987]">
-                      <div className="text-white">Loading...</div>
-                    </div>
-                  );
-                }
-                
-                // Only show dashboard when everything is confirmed
-                return <Dashboard />;
-              })()}
+              {!splashShown || splashTransitioning ? (
+                <Splash />
+              ) : !user ? (
+                <Login />
+              ) : (
+                <Dashboard />
+              )}
             </Route>
           <Route path="/dashboard">
             <ProtectedRoute>
