@@ -79,9 +79,25 @@ function AppRoutes() {
       sessionStorage.setItem('app_cold_start', 'true');
     }
     
+    // Set blue theme color immediately for splash screen
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
     if (themeColorMeta) {
       themeColorMeta.setAttribute('content', '#0000ff');
+    } else {
+      // Create theme-color meta tag if it doesn't exist
+      const newThemeMeta = document.createElement('meta');
+      newThemeMeta.setAttribute('name', 'theme-color');
+      newThemeMeta.setAttribute('content', '#0000ff');
+      document.head.appendChild(newThemeMeta);
+    }
+
+    // Ensure PWA status bar is properly configured
+    const statusBarMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+    if (!statusBarMeta) {
+      const newStatusBarMeta = document.createElement('meta');
+      newStatusBarMeta.setAttribute('name', 'apple-mobile-web-app-status-bar-style');
+      newStatusBarMeta.setAttribute('content', 'default');
+      document.head.appendChild(newStatusBarMeta);
     }
     
     // Always start with splash screen for cold launch
