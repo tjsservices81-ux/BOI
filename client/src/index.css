@@ -810,6 +810,24 @@ img {
   /* Pure blue status bar for splash screen only */
   --splash-theme-color: #000DFF;
   --status-bar-color: #000DFF;
+  background: #000DFF !important;
+}
+
+/* Ensure clean blue background across all splash elements */
+.splash-fullscreen * {
+  background-color: transparent !important;
+}
+
+.splash-fullscreen .splash-container {
+  background: #000DFF !important;
+}
+
+/* Remove any white shapes or curved elements */
+.splash-fullscreen::after,
+.splash-fullscreen *::before,
+.splash-fullscreen *::after {
+  background: transparent !important;
+  border-color: transparent !important;
 }
 
 /* iOS Safari status bar integration for splash */
@@ -828,6 +846,10 @@ img {
     background-color: #000DFF;
     z-index: 9999;
     pointer-events: none;
+  }
+  
+  .splash-fullscreen .splash-container {
+    background: #000DFF !important;
   }
 }
 
