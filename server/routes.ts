@@ -7,6 +7,7 @@ import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { otcService } from "./otcService";
 import { transferSecurityService } from "./security/transferSecurity";
+import { generateChatResponse } from "./openai";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize database and sample data
@@ -596,6 +597,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid response data" });
       }
       res.status(500).json({ message: "Failed to create chat response" });
+    }
+  });
+
+  // AI-powered chat response endpoint
+  app.post("/api/chat/ai-response", async (req, res) => {
+    try {
+      const requestSchema = z.object({
+        message: z.string(),
+        conversationHistory: z.array(z.object({
+          role: z.enum(['user', 'assistant']),
+          content: z.string()
+        })).default([]),
+        agentName: z.string().default('Support Agent')
+      });
+
+      const { message, conversationHistory, agentName } = requestSchema.parse(req.body);
+
+      // Prepare conversation history for OpenAI
+      const messages = [
+        ...conversationHistory.map(msg => ({
+          role: msg.role as 'user' | 'assistant',
+          content: msg.content
+        })),
+        { role: 'user' as const, content: message }
+      ];
+
+      const aiResponse = await generateChatResponse(messages, agentName);
+      
+      res.json({ 
+        response: aiResponse,
+        agentName: agentName
+      });
+    } catch (error) {
+      console.error('Failed to generate AI response:', error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid request data" });
+      }
+      res.status(500).json({ message: "Failed to generate AI response" });
     }
   });
 

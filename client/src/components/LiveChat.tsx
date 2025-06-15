@@ -341,48 +341,43 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     return stored || getDefaultResponses();
   };
 
-  const findResponse = (userMessage: string): { text: string; category: string } => {
-    const responses = getChatResponses();
-    const lowerMessage = userMessage.toLowerCase();
-    
-    for (const response of responses) {
-      for (const trigger of response.triggers) {
-        if (lowerMessage.includes(trigger.toLowerCase())) {
-          // Get next response variation to avoid repetition
-          const lastIndex = chatState.lastResponseIndex[response.category] || 0;
-          const nextIndex = (lastIndex + 1) % response.responses.length;
-          
-          setChatState(prev => ({
-            ...prev,
-            lastResponseIndex: {
-              ...prev.lastResponseIndex,
-              [response.category]: nextIndex
-            }
-          }));
-          
-          return {
-            text: response.responses[nextIndex],
-            category: response.category
-          };
-        }
+  const generateAIResponse = async (userMessage: string): Promise<{ text: string; category: string }> => {
+    try {
+      // Prepare conversation history for AI context
+      const conversationHistory = chatState.messages.map(msg => ({
+        role: msg.isUser ? 'user' as const : 'assistant' as const,
+        content: msg.text
+      }));
+
+      const response = await fetch('/api/chat/ai-response', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: userMessage,
+          conversationHistory: conversationHistory,
+          agentName: chatState.agentName
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get AI response');
       }
+
+      const data = await response.json();
+      return {
+        text: data.response,
+        category: 'ai-generated'
+      };
+    } catch (error) {
+      console.error('Error getting AI response:', error);
+      // Fallback to a natural error message
+      return {
+        text: "I'm experiencing some technical difficulties at the moment. Please bear with me while I resolve this, or feel free to try your question again.",
+        category: 'error'
+      };
     }
-    
-    const fallbackResponses = [
-      "I'd be happy to help you with that banking query. Could you give me a bit more detail about what you're looking for? I'm here to assist with any Bank of Ireland services.",
-      "That's an interesting question! Let me make sure I understand what you need help with. Can you tell me a bit more about the specific banking issue or service you're asking about?",
-      "I want to give you the best possible help with your banking needs. Could you provide some more details about what you're trying to do or what issue you're experiencing?",
-      "Thanks for reaching out! I'm here to help with all your Bank of Ireland banking needs. Could you elaborate a bit more on what you're looking for assistance with today?",
-      "Let me escalate that to a specialist who'll assist you shortly with the specific details you need.",
-      "That's quite a technical query! Let me escalate that to a specialist who'll assist you shortly and can provide the detailed information you're looking for.",
-      "I want to make sure you get the most accurate information for that. Let me escalate that to a specialist who'll assist you shortly."
-    ];
-    
-    const fallbackIndex = Math.floor(Math.random() * fallbackResponses.length);
-    return {
-      text: fallbackResponses[fallbackIndex],
-      category: 'fallback'
-    };
   };
 
   const handleSendMessage = async () => {
@@ -410,25 +405,45 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     const responseLength = Math.random() * 100 + 20; // Estimated response length
     const typingDelay = baseDelay + (responseLength * typingSpeed);
 
-    setTimeout(() => {
-      const responseData = findResponse(userMessage.text);
-      
-      // Calculate realistic typing delay based on response length
-      // 3-5 words per second = 200-333ms per word
-      const words = responseData.text.split(' ').length;
-      const wordsPerSecond = Math.random() * 2 + 3; // 3-5 words per second
-      const realisticDelay = Math.max(1000, (words / wordsPerSecond) * 1000);
-      
-      // Add some natural variation (±20%)
-      const variation = (Math.random() - 0.5) * 0.4;
-      const finalDelay = realisticDelay * (1 + variation);
-      
-      setTypingText(`${chatState.agentName} is typing...`);
-      
-      setTimeout(() => {
-        const botMessage: ChatMessage = {
+    setTimeout(async () => {
+      try {
+        const responseData = await generateAIResponse(userMessage.text);
+        
+        // Calculate realistic typing delay based on response length
+        // 3-5 words per second = 200-333ms per word
+        const words = responseData.text.split(' ').length;
+        const wordsPerSecond = Math.random() * 2 + 3; // 3-5 words per second
+        const realisticDelay = Math.max(1500, (words / wordsPerSecond) * 1000);
+        
+        // Add some natural variation (±20%)
+        const variation = (Math.random() - 0.5) * 0.4;
+        const finalDelay = realisticDelay * (1 + variation);
+        
+        setTypingText(`${chatState.agentName} is typing...`);
+        
+        setTimeout(() => {
+          const botMessage: ChatMessage = {
+            id: (Date.now() + 1).toString(),
+            text: responseData.text,
+            isUser: false,
+            timestamp: new Date(),
+            agentName: chatState.agentName
+          };
+
+          setChatState(prev => ({
+            ...prev,
+            messages: [...prev.messages, botMessage]
+          }));
+          
+          setIsTyping(false);
+          setTypingText("");
+        }, finalDelay);
+      } catch (error) {
+        console.error('Error in AI response handling:', error);
+        // Create fallback response on error
+        const errorMessage: ChatMessage = {
           id: (Date.now() + 1).toString(),
-          text: responseData.text,
+          text: "I'm experiencing some technical difficulties at the moment. Please bear with me while I resolve this, or feel free to try your question again.",
           isUser: false,
           timestamp: new Date(),
           agentName: chatState.agentName
@@ -436,12 +451,12 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
 
         setChatState(prev => ({
           ...prev,
-          messages: [...prev.messages, botMessage]
+          messages: [...prev.messages, errorMessage]
         }));
         
         setIsTyping(false);
         setTypingText("");
-      }, finalDelay);
+      }
     }, 800); // Brief delay before starting to type
   };
 
