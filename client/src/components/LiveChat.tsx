@@ -691,7 +691,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
                   onChange={(e) => setInputText(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Type your message..."
-                  className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#126987] focus:border-transparent"
+                  className="w-full px-5 py-4 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#126987] focus:border-transparent text-base"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                   disabled={isTyping}
                 />
