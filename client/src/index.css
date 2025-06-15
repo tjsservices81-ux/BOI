@@ -1009,7 +1009,7 @@ input[type="text"], input[type="email"], input[type="tel"], input[type="password
 
 /* Optimize focus states */
 button:focus, a:focus, input:focus, select:focus, textarea:focus {
-  outline: 2px solid #106C88;
+  outline: 2px solid #126987;
   outline-offset: 2px;
   transition: outline-offset 0.1s ease;
 }
@@ -1496,9 +1496,9 @@ input {
 
 /* Ensure no white gaps at top on iOS */
 html, body {
-  background-color: #106C88;
+  background-color: #126987;
 }
 
 #root {
-  background-color: #106C88;
+  background-color: #126987;
 }

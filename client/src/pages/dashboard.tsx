@@ -175,19 +175,19 @@ export default function Dashboard() {
   // Show blue screen until fully initialized to prevent flash
   if (!isInitialized) {
     return (
-      <div className="h-screen bg-[#106C88] overflow-hidden flex flex-col ios-safe-bottom relative" style={{ maxHeight: '100vh' }}>
+      <div className="h-screen bg-[#126987] overflow-hidden flex flex-col ios-safe-bottom relative" style={{ maxHeight: '100vh' }}>
         {/* Prevent any content rendering during initialization */}
       </div>
     );
   }
 
   return (
-    <div className={`h-screen bg-[#106C88] overflow-hidden flex flex-col ios-safe-bottom relative page-fade-in ${isNavigating ? 'dashboard-exit' : ''}`} style={{ maxHeight: '100vh' }}>
+    <div className={`h-screen bg-[#126987] overflow-hidden flex flex-col ios-safe-bottom relative page-fade-in ${isNavigating ? 'dashboard-exit' : ''}`} style={{ maxHeight: '100vh' }}>
       {/* Ambient spending visualization background */}
       <SpendingVisualization />
       
       {/* Blue header bar */}
-      <div className="bg-[#106C88] flex items-end justify-between px-4 pb-3 flex-shrink-0" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px) + 12px, 56px)' }}>
+      <div className="bg-[#126987] flex items-end justify-between px-4 pb-3 flex-shrink-0" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px) + 12px, 56px)' }}>
         <div className="flex items-center">
           <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-6 filter brightness-0 invert" />
         </div>
@@ -239,7 +239,7 @@ export default function Dashboard() {
                     <p className="text-xs text-gray-500 mt-0.5 boi-regular-font">{account.accountNumber}</p>
                   </div>
                   <div className="flex items-center">
-                    <p className="text-lg font-semibold text-[#106C88] boi-semibold-font">€{parseFloat(account.balance).toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                    <p className="text-lg font-semibold text-[#126987] boi-semibold-font">€{parseFloat(account.balance).toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                     <ChevronRight className="h-4 w-4 ml-3 text-gray-400" />
                   </div>
                 </div>

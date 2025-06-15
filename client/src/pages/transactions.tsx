@@ -102,9 +102,9 @@ export default function Transactions() {
   const transactions = getTransactions();
 
   return (
-    <div className="h-screen bg-[#f5f5f5] overflow-hidden flex flex-col ios-safe-top ios-safe-bottom page-fade-in" style={{ maxHeight: '100vh' }}>
+    <div className="h-screen bg-[#126987] overflow-hidden flex flex-col ios-safe-top ios-safe-bottom page-fade-in" style={{ maxHeight: '100vh' }}>
       {/* Header - BOI Style */}
-      <div className="bg-[#106C88] flex items-center justify-between px-4 py-3 flex-shrink-0">
+      <div className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0">
         <div className="flex items-center mb-4">
           <button 
             onClick={() => setLocation('/')}
@@ -180,13 +180,13 @@ export default function Transactions() {
         <div className="px-4 pt-4 pb-2">
           <div className="grid grid-cols-2 gap-3">
             <button 
-              className="bg-[#106C88] text-white py-3 px-4 rounded-lg font-medium boi-semibold-font hover:bg-[#3a5963] transition-colors haptic-feedback"
+              className="bg-[#126987] text-white py-3 px-4 rounded-lg font-medium boi-semibold-font hover:bg-[#3a5963] transition-colors haptic-feedback"
               onClick={() => alert('Transfer Money: Send money to another account or external bank')}
             >
               Transfer
             </button>
             <button 
-              className="border border-[#106C88] text-[#106C88] py-3 px-4 rounded-lg font-medium boi-semibold-font hover:bg-[#106C88] hover:text-white transition-colors haptic-feedback"
+              className="border border-[#126987] text-[#126987] py-3 px-4 rounded-lg font-medium boi-semibold-font hover:bg-[#126987] hover:text-white transition-colors haptic-feedback"
               onClick={() => alert('Pay Bills: Utilities, credit cards, and other bill payments')}
             >
               Pay Bills
@@ -205,7 +205,7 @@ export default function Transactions() {
                 alert(`Downloading ${getAccountTitle()} statement\nPeriod: ${startDate} - ${endDate}\nFormat: PDF\n\nStatement will be available in your downloads.`);
               }}
             >
-              <svg className="w-5 h-5 text-[#106C88] mb-1" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="w-5 h-5 text-[#126987] mb-1" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
               </svg>
               <span className="text-xs font-medium text-gray-700 boi-regular-font">Statements</span>
@@ -215,7 +215,7 @@ export default function Transactions() {
               className="flex flex-col items-center py-3 px-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors haptic-feedback"
               onClick={() => alert('Export Transactions:\n• PDF Format\n• CSV Format\n• Excel Format\n\nSelect date range and format to export your transaction history.')}
             >
-              <svg className="w-5 h-5 text-[#106C88] mb-1" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="w-5 h-5 text-[#126987] mb-1" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clipRule="evenodd" />
               </svg>
               <span className="text-xs font-medium text-gray-700 boi-regular-font">Export</span>
@@ -225,7 +225,7 @@ export default function Transactions() {
               className="flex flex-col items-center py-3 px-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors haptic-feedback"
               onClick={() => alert('Search & Filter:\n• Search by description\n• Filter by amount range\n• Filter by date range\n• Filter by transaction type\n\nFind specific transactions quickly.')}
             >
-              <svg className="w-5 h-5 text-[#106C88] mb-1" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="w-5 h-5 text-[#126987] mb-1" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
               </svg>
               <span className="text-xs font-medium text-gray-700 boi-regular-font">Search</span>

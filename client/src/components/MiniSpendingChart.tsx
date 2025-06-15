@@ -77,7 +77,7 @@ export default function MiniSpendingChart({ accountId }: MiniSpendingChartProps)
     <div className="bg-white rounded-2xl p-4 mb-4 shadow-sm border border-gray-100">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center space-x-2">
-          <BarChart3 className="w-4 h-4 text-[#106C88]" />
+          <BarChart3 className="w-4 h-4 text-[#126987]" />
           <h4 className="font-medium text-gray-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
             Weekly Spending
           </h4>
@@ -100,7 +100,7 @@ export default function MiniSpendingChart({ accountId }: MiniSpendingChartProps)
             <div key={day.date} className="flex flex-col items-center flex-1">
               <div className="relative w-full">
                 <div 
-                  className="bg-gradient-to-t from-[#106C88] to-[#5a7b85] rounded-sm transition-all duration-500 ease-out"
+                  className="bg-gradient-to-t from-[#126987] to-[#5a7b85] rounded-sm transition-all duration-500 ease-out"
                   style={{ 
                     height: `${Math.max((day.amount / maxAmount) * 40, day.amount > 0 ? 2 : 0)}px`,
                     width: '100%'

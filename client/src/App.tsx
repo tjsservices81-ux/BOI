@@ -36,7 +36,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   // Don't redirect while loading to prevent form interruptions
   if (isLoading) {
     return (
-      <div className="w-full h-full flex items-center justify-center bg-[#106C88]">
+      <div className="w-full h-full flex items-center justify-center bg-[#126987]">
         <div className="text-white">Loading...</div>
       </div>
     );
@@ -81,7 +81,7 @@ function AppRoutes() {
       }, 100);
       const themeColorMeta = document.querySelector('meta[name="theme-color"]');
       if (themeColorMeta) {
-        themeColorMeta.setAttribute('content', '#106C88');
+        themeColorMeta.setAttribute('content', '#126987');
       }
     };
 

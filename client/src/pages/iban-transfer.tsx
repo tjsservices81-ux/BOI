@@ -155,7 +155,7 @@ export default function IbanTransfer() {
   if (step === 'success') {
     return (
       <div>
-        <div className="bg-[#106C88] px-4 py-3 flex items-center justify-between">
+        <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
           <span className="font-medium text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
             Transfer Complete
           </span>
@@ -196,7 +196,7 @@ export default function IbanTransfer() {
                 <div className="text-center space-y-8 px-8 max-w-md w-full">
                   {/* Bank of Ireland Professional Logo Area */}
                   <div className="mb-8">
-                    <div className="w-20 h-20 bg-[#106C88] rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
+                    <div className="w-20 h-20 bg-[#126987] rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
                       <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
                     </div>
                   </div>
@@ -215,13 +215,13 @@ export default function IbanTransfer() {
                   <div className="space-y-6">
                     <div className="w-full bg-white rounded-full h-4 overflow-hidden shadow-inner border border-gray-200">
                       <div 
-                        className="bg-gradient-to-r from-[#106C88] via-[#5a7b85] to-[#106C88] h-4 rounded-full transition-all duration-300 ease-out shadow-sm relative"
+                        className="bg-gradient-to-r from-[#126987] via-[#5a7b85] to-[#126987] h-4 rounded-full transition-all duration-300 ease-out shadow-sm relative"
                         style={{ width: `${animationProgress}%` }}
                       >
                         <div className="absolute inset-0 bg-white opacity-20 rounded-full animate-pulse"></div>
                       </div>
                     </div>
-                    <p className="text-xl font-semibold text-[#106C88]" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    <p className="text-xl font-semibold text-[#126987]" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                       {Math.round(animationProgress)}% Complete
                     </p>
                   </div>
@@ -285,7 +285,7 @@ export default function IbanTransfer() {
                 <div className="flex space-x-3 mt-4">
                   <button 
                     onClick={() => navigate('/dashboard')}
-                    className="flex-1 bg-[#106C88] text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform text-sm"
+                    className="flex-1 bg-[#126987] text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform text-sm"
                     style={{ fontFamily: 'OpenSans, sans-serif' }}
                   >
                     Back to Dashboard
@@ -323,7 +323,7 @@ export default function IbanTransfer() {
         flexDirection: 'column',
         backgroundColor: '#f9fafb'
       }}>
-        <div className="bg-[#106C88] px-4 py-3 flex items-center justify-between">
+        <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
           <button onClick={() => setStep('form')} className="flex items-center text-white">
             <ChevronLeft className="w-6 h-6 mr-2" />
             <span className="font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Confirm Transfer</span>
@@ -360,7 +360,7 @@ export default function IbanTransfer() {
               
               <div className="flex justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Amount:</span>
-                <span className="font-semibold text-[#106C88] text-xl" style={{ fontFamily: 'OpenSans, sans-serif' }}>€{formData?.amount}</span>
+                <span className="font-semibold text-[#126987] text-xl" style={{ fontFamily: 'OpenSans, sans-serif' }}>€{formData?.amount}</span>
               </div>
               
               <div className="flex justify-between py-2">
@@ -384,7 +384,7 @@ export default function IbanTransfer() {
 
           <button
             onClick={executeTransfer}
-            className="w-full bg-[#106C88] text-white py-4 rounded-xl font-semibold active:scale-98 transition-transform"
+            className="w-full bg-[#126987] text-white py-4 rounded-xl font-semibold active:scale-98 transition-transform"
             style={{ fontFamily: 'OpenSans, sans-serif' }}
           >
             Confirm Transfer
@@ -403,9 +403,9 @@ export default function IbanTransfer() {
       bottom: 0, 
       display: 'flex', 
       flexDirection: 'column',
-      backgroundColor: '#f9fafb'
+      backgroundColor: '#126987'
     }}>
-      <div className="bg-[#106C88] px-4 py-3 flex items-center justify-between" style={{ flexShrink: 0 }}>
+      <div className="bg-[#126987] px-4 py-3 flex items-center justify-between" style={{ flexShrink: 0 }}>
         <button onClick={() => navigate('/payments')} className="flex items-center text-white">
           <ChevronLeft className="w-5 h-5 mr-2" />
           <span className="font-semibold text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>International Transfer</span>

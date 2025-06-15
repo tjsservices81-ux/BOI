@@ -586,7 +586,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
         }`}
       >
         {/* Header */}
-        <div className="bg-[#106C88] md:rounded-t-3xl px-6 py-6 flex items-center justify-between">
+        <div className="bg-[#126987] md:rounded-t-3xl px-6 py-6 flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
               <MessageCircle className="w-6 h-6 text-white" />
@@ -671,7 +671,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
                 <div
                   className={`px-5 py-4 rounded-2xl ${
                     message.isUser
-                      ? 'bg-[#106C88] text-white rounded-br-sm'
+                      ? 'bg-[#126987] text-white rounded-br-sm'
                       : 'bg-white text-gray-900 rounded-bl-sm shadow-sm border border-gray-100'
                   }`}
                 >
@@ -684,7 +684,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
                 </p>
               </div>
               <div className={`w-10 h-10 rounded-full flex items-center justify-center ml-3 mr-3 flex-shrink-0 ${
-                message.isUser ? 'order-1 bg-[#106C88]' : 'order-2 bg-gray-200'
+                message.isUser ? 'order-1 bg-[#126987]' : 'order-2 bg-gray-200'
               }`}>
                 {message.isUser ? (
                   <User className="w-5 h-5 text-white" />
@@ -750,7 +750,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
                   onChange={(e) => setInputText(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Type your message..."
-                  className="w-full px-5 py-4 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#106C88] focus:border-transparent text-base"
+                  className="w-full px-5 py-4 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#126987] focus:border-transparent text-base"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                   disabled={isTyping}
                 />
@@ -758,7 +758,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
               <button
                 onClick={handleSendMessage}
                 disabled={!inputText.trim() || isTyping}
-                className="w-12 h-12 bg-[#106C88] rounded-full flex items-center justify-center hover:bg-[#0d4e63] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-12 h-12 bg-[#126987] rounded-full flex items-center justify-center hover:bg-[#0d4e63] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Send className="w-5 h-5 text-white" />
               </button>

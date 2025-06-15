@@ -68,7 +68,7 @@ class OTCService {
         subject: 'Bank of Ireland - Account Verification Code',
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #106C88;">Account Verification Required</h2>
+            <h2 style="color: #126987;">Account Verification Required</h2>
             <p>Hello ${accountData.name},</p>
             <p>Thank you for creating your Bank of Ireland account. To complete the account setup process, please use the verification code below:</p>
             
@@ -79,7 +79,7 @@ class OTCService {
             </div>
             
             <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-              <h4 style="color: #106C88; margin-top: 0;">Account Details:</h4>
+              <h4 style="color: #126987; margin-top: 0;">Account Details:</h4>
               <p><strong>Customer Number:</strong> ${accountData.customerNumber}</p>
               <p><strong>Name:</strong> ${accountData.name}</p>
               <p><strong>Email:</strong> ${accountData.email}</p>

@@ -5,8 +5,8 @@
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "theme_color": "#106C88",
-  "background_color": "#106C88",
+  "theme_color": "#126987",
+  "background_color": "#126987",
   "scope": "/",
   "lang": "en-IE",
   "icons": [

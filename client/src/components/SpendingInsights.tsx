@@ -104,7 +104,7 @@ export default function SpendingInsights() {
       {isVisible && (
         <div className="mt-2 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-2xl p-4 shadow-xl w-80 animate-in slide-in-from-right duration-300">
           <h3 className="font-semibold text-gray-900 mb-4 flex items-center" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-            <DollarSign className="w-4 h-4 mr-2 text-[#106C88]" />
+            <DollarSign className="w-4 h-4 mr-2 text-[#126987]" />
             Spending Insights
           </h3>
 
@@ -199,7 +199,7 @@ export default function SpendingInsights() {
 
   function getCategoryColor(category: string): string {
     const colors: { [key: string]: string } = {
-      'Transfers': '#106C88',
+      'Transfers': '#126987',
       'Cash': '#6b7280',
       'Bills': '#ef4444',
       'Dining': '#f59e0b',
