@@ -16,12 +16,36 @@ export default function Splash() {
     
     // Add splash-specific full screen class for iOS PWA
     document.body.classList.add('splash-fullscreen');
+    document.documentElement.style.setProperty('--status-bar-color', '#000DFF');
     
-    // Change theme color to correct blue for splash screen
-    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-    if (themeColorMeta) {
-      themeColorMeta.setAttribute('content', '#000DFF');
-    }
+    // Comprehensive theme color update for splash screen
+    const updateThemeColor = () => {
+      const themeColorMeta = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement;
+      if (themeColorMeta) {
+        themeColorMeta.content = '#000DFF';
+      }
+      
+      // Create or update additional iOS-specific status bar configuration
+      const iosStatusMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]') as HTMLMetaElement;
+      if (iosStatusMeta) {
+        iosStatusMeta.content = 'default';
+      }
+      
+      // Force PWA status bar color update
+      if ('setAppBadge' in navigator) {
+        // PWA-specific color updates
+        document.body.style.backgroundColor = '#000DFF';
+        setTimeout(() => {
+          document.body.style.backgroundColor = '';
+        }, 100);
+      }
+    };
+    
+    // Update immediately and with delays for iOS PWA
+    updateThemeColor();
+    setTimeout(updateThemeColor, 50);
+    setTimeout(updateThemeColor, 200);
+    setTimeout(updateThemeColor, 1000);
     
     // Navigate to login after splash duration (8 seconds total)
     const finalTimer = setTimeout(() => {
@@ -43,6 +67,7 @@ export default function Splash() {
       clearTimeout(finalTimer);
       document.body.classList.remove('splash-fullscreen');
       // Restore theme color to #126987 for other screens
+      const themeColorMeta = document.querySelector('meta[name="theme-color"]');
       if (themeColorMeta) {
         themeColorMeta.setAttribute('content', '#126987');
       }
@@ -57,7 +82,7 @@ export default function Splash() {
 
   return (
     <div 
-      className={`full-height relative overflow-hidden transition-all duration-500 asset-instant ${
+      className={`full-height relative overflow-hidden transition-all duration-500 asset-instant splash-container ${
         isVisible ? 'opacity-100' : 'opacity-0'
       }`}
       style={{
@@ -68,7 +93,8 @@ export default function Splash() {
         userSelect: 'none',
         pointerEvents: 'none',
         opacity: 1,
-        visibility: 'visible'
+        visibility: 'visible',
+        backgroundColor: '#000DFF'
       }}
       onClick={handleInteraction}
       onTouchStart={handleInteraction}
