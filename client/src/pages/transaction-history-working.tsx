@@ -42,9 +42,25 @@ export default function TransactionHistoryWorking() {
     // Update data using UserDataManager
     UserDataManager.setUserData('bankTransactions', enhancedTransactions);
     
-    // Update local state immediately with filtered account transactions
+    // Update local state with filtered and sorted account transactions
     const accountTransactions = enhancedTransactions.filter((tx: any) => tx.accountId === accountId);
-    setTransactions(accountTransactions);
+    
+    // Sort transactions: newest first, with ID as tiebreaker
+    const sortedTransactions = accountTransactions.sort((a: any, b: any) => {
+      const timeA = new Date(a.timestamp || 0).getTime();
+      const timeB = new Date(b.timestamp || 0).getTime();
+      
+      if (timeA !== timeB && !isNaN(timeA) && !isNaN(timeB)) {
+        return timeB - timeA;
+      }
+      
+      const idA = parseInt(String(a.id)) || 0;
+      const idB = parseInt(String(b.id)) || 0;
+      
+      return idB - idA;
+    });
+    
+    setTransactions(sortedTransactions);
     
     // Close modals
     setSelectedTransaction(null);
@@ -122,8 +138,7 @@ export default function TransactionHistoryWorking() {
         console.log(`Transaction ${tx.id}: ${tx.description} - ${tx.timestamp} (${new Date(tx.timestamp).getTime()})`);
       });
       
-      // Update the transactions state with enhanced data
-      setTransactions(accountTransactions);
+      // Remove this early setTransactions call - we'll set it after sorting
       
       // Get account info and balance using UserDataManager
       const storedAccounts = UserDataManager.getUserData('bankAccounts', []);
@@ -179,6 +194,7 @@ export default function TransactionHistoryWorking() {
       // Debug: Log final sorted order
       console.log('Final sorted transactions:', sortedTransactions.map((tx: any) => `${tx.id}: ${tx.description} - ${tx.timestamp}`));
       
+      // Update the UI with properly sorted transactions
       setTransactions(sortedTransactions);
     };
     
