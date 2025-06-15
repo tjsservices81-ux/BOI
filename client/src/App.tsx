@@ -54,6 +54,7 @@ function AppRoutes() {
   const [location, navigate] = useLocation();
   const [splashShown, setSplashShown] = useState(false);
   const [splashTransitioning, setSplashTransitioning] = useState(false);
+  const [isAppReady, setIsAppReady] = useState(false);
 
   
   // Initialize app state and theme
@@ -62,6 +63,9 @@ function AppRoutes() {
     if (themeColorMeta) {
       themeColorMeta.setAttribute('content', '#0000ff');
     }
+    
+    // Mark app as ready after initialization
+    setTimeout(() => setIsAppReady(true), 0);
   }, []);
 
 
@@ -86,6 +90,15 @@ function AppRoutes() {
   }, []);
 
   const showNavigation = user && splashShown && !['/login', '/splash'].includes(location);
+
+  // Show blue screen until app is ready
+  if (!isAppReady) {
+    return (
+      <div className="w-full h-full bg-[#0000ff]">
+        {/* Initialization screen */}
+      </div>
+    );
+  }
 
   return (
     <SecurityWrapper>

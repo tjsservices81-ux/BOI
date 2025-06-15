@@ -20,6 +20,19 @@ export default function Dashboard() {
   // Local state for account balances that can be updated by transfers
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [isNavigating, setIsNavigating] = useState(false);
+  
+  // Add mounting guard to prevent flash during initial render
+  const [isMounted, setIsMounted] = useState(false);
+  
+  useEffect(() => {
+    // Only show dashboard after a brief delay to prevent flash
+    const timer = setTimeout(() => setIsMounted(true), 10);
+    return () => clearTimeout(timer);
+  }, []);
+  
+  if (!isMounted) {
+    return null;
+  }
 
   // Enhanced navigation with smooth animations
   const navigateWithAnimation = (path: string, animationType: 'slide-right' | 'slide-left' | 'slide-up' = 'slide-right') => {
