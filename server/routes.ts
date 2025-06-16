@@ -9,6 +9,7 @@ import { otcService } from "./otcService";
 import { transferSecurityService } from "./security/transferSecurity";
 import { generateChatResponse } from "./openai";
 import { isDeviceBlocked, addDeviceSession } from "./deviceSessions";
+import { isAccountActiveOnOtherDevice, setUserDeviceSession, removeUserDeviceSession } from "./deviceExclusiveAuth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize database and sample data
@@ -134,12 +135,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userAgent
       });
 
+      // Check if this account is already active on another device
+      if (isAccountActiveOnOtherDevice(user.id, deviceSessionId)) {
+        console.log(`🚫 ACCOUNT ALREADY ACTIVE: User ${user.id} attempted login from ${deviceModel}, but account is active on another device`);
+        return res.status(403).json({ 
+          message: "This account is already active on another device." 
+        });
+      }
+
+      // Lock this account to the current device
+      setUserDeviceSession({
+        userId: user.id,
+        deviceSessionId,
+        deviceModel,
+        ipAddress,
+        loginTime: new Date().toISOString(),
+        userAgent
+      });
+
       // Store user and device session in session
       (req as any).session.userId = user.id;
       (req as any).session.user = { id: user.id, name: user.name, email: user.email };
       (req as any).session.deviceSessionId = deviceSessionId;
 
       console.log(`📱 NEW DEVICE SESSION: ${deviceModel} (${ipAddress}) - Session: ${deviceSessionId}`);
+      console.log(`🔒 ACCOUNT LOCKED TO DEVICE: User ${user.id} locked to ${deviceModel}`);
 
       res.json({ user: { id: user.id, name: user.name, email: user.email } });
     } catch (error) {
