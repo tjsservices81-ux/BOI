@@ -913,7 +913,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
                 </div>
               </div>
               <div className="order-2 w-8 h-8 rounded-full flex items-center justify-center ml-2 flex-shrink-0 bg-gray-200">
-                <Bot className="w-4 h-4 text-gray-600" />
+                <User className="w-4 h-4 text-gray-600" />
               </div>
             </div>
           )}
