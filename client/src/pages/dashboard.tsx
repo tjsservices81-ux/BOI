@@ -24,15 +24,24 @@ export default function Dashboard() {
   const navigateWithAnimation = (path: string, animationType: 'slide-right' | 'slide-left' | 'slide-up' = 'slide-right') => {
     setIsNavigating(true);
     
-    // Add exit animation class to current page
+    // Add page transition classes
+    const currentPage = document.querySelector('.page-container') || document.body;
     document.body.classList.add('page-transitioning');
     
-    // Small delay for smooth transition
+    // Add exit animation based on type
+    if (animationType === 'slide-right') {
+      currentPage.classList.add('page-slide-out-left');
+    } else if (animationType === 'slide-left') {
+      currentPage.classList.add('page-slide-out-right');
+    }
+    
+    // Navigate after animation starts
     setTimeout(() => {
       setLocation(path);
       setIsNavigating(false);
       document.body.classList.remove('page-transitioning');
-    }, 150);
+      currentPage.classList.remove('page-slide-out-left', 'page-slide-out-right');
+    }, 200);
   };
 
   // Load accounts using UserDataManager on mount
@@ -183,7 +192,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className={`h-screen bg-[#126987] overflow-hidden flex flex-col ios-safe-bottom relative page-fade-in ${isNavigating ? 'dashboard-exit' : ''}`} style={{ maxHeight: '100vh' }}>
+    <div className={`page-container h-screen bg-[#126987] overflow-hidden flex flex-col ios-safe-bottom relative page-fade-slide-in ${isNavigating ? 'dashboard-exit' : ''}`} style={{ maxHeight: '100vh' }}>
       {/* Ambient spending visualization background */}
       <SpendingVisualization />
       

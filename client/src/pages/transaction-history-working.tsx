@@ -5,15 +5,40 @@ import MiniSpendingChart from "../components/MiniSpendingChart";
 import { UserDataManager } from "../utils/userDataManager.ts";
 
 export default function TransactionHistoryWorking() {
-  const [, navigate] = useLocation();
+  const [, setLocation] = useLocation();
   const [match, params] = useRoute("/transactions/:accountId");
   const [transactions, setTransactions] = useState<any[]>([]);
   const [balance, setBalance] = useState<string>('0.00');
   const [accountInfo, setAccountInfo] = useState<any>(null);
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
   
   const accountId = params?.accountId ? parseInt(params.accountId) : 1;
+
+  // Enhanced navigation with smooth animations
+  const navigateWithAnimation = (path: string, animationType: 'slide-right' | 'slide-left' | 'slide-up' = 'slide-right') => {
+    setIsNavigating(true);
+    
+    // Add page transition classes
+    const currentPage = document.querySelector('.page-container') || document.body;
+    document.body.classList.add('page-transitioning');
+    
+    // Add exit animation based on type
+    if (animationType === 'slide-right') {
+      currentPage.classList.add('page-slide-out-left');
+    } else if (animationType === 'slide-left') {
+      currentPage.classList.add('page-slide-out-right');
+    }
+    
+    // Navigate after animation starts
+    setTimeout(() => {
+      setLocation(path);
+      setIsNavigating(false);
+      document.body.classList.remove('page-transitioning');
+      currentPage.classList.remove('page-slide-out-left', 'page-slide-out-right');
+    }, 200);
+  };
 
   const handleDeleteTransaction = () => {
     if (!selectedTransaction) return;
@@ -170,10 +195,10 @@ export default function TransactionHistoryWorking() {
   };
 
   return (
-    <div className="h-screen bg-gray-50 flex flex-col overflow-hidden"
+    <div className="page-container h-screen bg-gray-50 flex flex-col overflow-hidden page-slide-in-right"
       style={{ backgroundColor: '#f9fafb', height: '100vh', maxHeight: '100vh' }}>
       <div className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0">
-        <button onClick={() => navigate('/dashboard')} className="flex items-center text-white">
+        <button onClick={() => navigateWithAnimation('/dashboard', 'slide-left')} className="flex items-center text-white">
           <ChevronLeft className="w-5 h-5 mr-2" />
           <span className="font-semibold text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
             {accountInfo?.displayName || 'Account'}
