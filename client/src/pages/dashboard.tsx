@@ -68,12 +68,12 @@ export default function Dashboard() {
       }
     }
     
-    // Load or initialize accounts with Bank of Ireland sample data
+    // Load or initialize accounts with clean default data
     let storedAccounts = UserDataManager.getUserData('bankAccounts', null);
     if (!storedAccounts || storedAccounts.length === 0) {
-      // Initialize default accounts with Bank of Ireland sample balances
+      // Initialize default accounts with zero balances
       const defaultAccounts = [
-        { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "135.02", accountType: "current" },
+        { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "0.00", accountType: "current" },
         { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "0.00", accountType: "credit" },
         { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "0.00", accountType: "savings" },
       ];
@@ -147,7 +147,8 @@ export default function Dashboard() {
     };
 
     const handleAccountsUpdate = (event: CustomEvent) => {
-      const { accounts: updatedAccounts, source, newAccount } = event.detail;
+      const eventDetail = event.detail || {};
+      const { accounts: updatedAccounts, source, newAccount } = eventDetail;
       
       console.log('Dashboard received accountsUpdate:', { source, newAccount, accountsCount: updatedAccounts?.length });
       
@@ -214,15 +215,13 @@ export default function Dashboard() {
 
   return (
     <div className={`page-container h-screen bg-white overflow-hidden flex flex-col ios-safe-bottom relative page-fade-slide-in ${isNavigating ? 'dashboard-exit' : ''}`} style={{ maxHeight: '100vh' }}>
+      {/* Ambient spending visualization background */}
+      <SpendingVisualization />
+      
       {/* Blue header bar */}
-      <div className="bg-[#0d5e73] flex items-end justify-between px-4 pb-3 flex-shrink-0" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px) + 12px, 56px)' }}>
+      <div className="bg-[#126987] flex items-end justify-between px-4 pb-3 flex-shrink-0" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px) + 12px, 56px)' }}>
         <div className="flex items-center">
-          <span className="text-white text-lg font-medium">Bank of Ireland</span>
-          <div className="ml-2 flex space-x-1">
-            <div className="w-1 h-1 bg-white rounded-full"></div>
-            <div className="w-1 h-1 bg-white rounded-full"></div>
-            <div className="w-1 h-1 bg-white rounded-full"></div>
-          </div>
+          <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-6 filter brightness-0 invert" />
         </div>
         <div className="flex items-center">
           <button 
@@ -235,50 +234,60 @@ export default function Dashboard() {
       </div>
       
       {/* Header with scenic background */}
-      <div className="text-white relative flex-shrink-0 h-32">
-        {/* Blue gradient background with subtle overlay */}
+      <div className="text-white relative flex-shrink-0 h-36">
+        {/* Full scenic background image */}
         <div 
-          className="absolute inset-0 bg-gradient-to-br from-[#0d5e73] via-[#1a7a92] to-[#2596be]"
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage: `url('/background.jpg')`
+          }}
         />
         
         <div className="relative z-10 h-full flex flex-col justify-center px-4">
-          <h1 className="text-2xl font-light mb-1">Welcome</h1>
-          <p className="text-white/80 text-sm font-light">
+          <h1 className="text-2xl font-light mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>Welcome</h1>
+          <p className="text-white/90 text-sm font-light" style={{ fontFamily: 'OpenSans, sans-serif' }}>
             Last login: {UserDataManager.getLastLoginTime()}
           </p>
         </div>
       </div>
 
-      {/* Main content area - clean white background */}
+      {/* Main content area - white card with rounded top corners */}
       <div 
         ref={scrollContainerRef}
-        className="main-scroll-container flex-1 bg-gray-50 overflow-auto" 
-        style={{ maxHeight: 'calc(100vh - 176px)' }}
+        className="main-scroll-container flex-1 px-0 -mt-8 overflow-y-auto ios-scroll" 
+        style={{ maxHeight: 'calc(100vh - 200px)' }}
         data-scroll-container
         data-scroll-route="/dashboard"
       >
-        <div className="px-0 pb-32">
-          {accounts.map((account, index) => (
-            <button 
-              key={account.id}
-              className={`w-full bg-white flex items-center justify-between border-b border-gray-100 hover:bg-gray-50 touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-98 ${isNavigating ? 'opacity-50 pointer-events-none' : ''}`}
-              onClick={() => navigateWithAnimation(`/transactions/${account.id}`, 'slide-right')}
-              style={{ animationDelay: `${index * 0.1}s` }}
-            >
-              <div className="flex items-center justify-between w-full px-4 py-5">
-                <div className="text-left">
-                  <p className="font-medium text-[15px] text-gray-900 mb-1">{account.displayName.toUpperCase()}</p>
-                  <p className="text-[13px] text-gray-500">{account.accountNumber}</p>
+        <div className="bg-white rounded-t-3xl shadow-lg min-h-full">
+          <div className="pt-6 pb-32" style={{ overscrollBehavior: 'contain', minHeight: 'calc(100vh - 100px)' }}>
+            {accounts.map((account, index) => (
+              <button 
+                key={account.id}
+                className={`w-full flex items-center justify-between border-b border-gray-100 hover:bg-gray-50 touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-98 haptic-feedback relative stagger-item card-interactive ${isNavigating ? 'opacity-50 pointer-events-none' : ''}`}
+                onClick={() => navigateWithAnimation(`/transactions/${account.id}`, 'slide-right')}
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                {/* Colored side bar */}
+                <div className={`absolute left-0 top-0 bottom-0 w-1 ${getAccountColor(account.accountType)}`}></div>
+                
+                <div className="flex items-center justify-between w-full px-6 py-4">
+                  <div className="text-left">
+                    <p className="font-medium text-sm text-gray-800 boi-regular-font">{account.displayName.toUpperCase()}</p>
+                    <p className="text-xs text-gray-500 mt-0.5 boi-regular-font">{account.accountNumber}</p>
+                  </div>
+                  <div className="flex items-center">
+                    <p className="text-lg font-semibold text-[#126987] boi-semibold-font">€{parseFloat(account.balance).toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                    <ChevronRight className="h-4 w-4 ml-3 text-gray-400" />
+                  </div>
                 </div>
-                <div className="flex items-center">
-                  <p className="text-[18px] font-medium text-[#0d5e73]">€{parseFloat(account.balance).toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-                  <ChevronRight className="h-5 w-5 ml-3 text-gray-400" />
-                </div>
-              </div>
-            </button>
-          ))}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
+
+
     </div>
   );
 }
