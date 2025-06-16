@@ -859,7 +859,7 @@ export default function Profile() {
       {/* Profile Content */}
       <div className={`bg-white ${!isSigningOut ? 'rounded-t-3xl' : ''} absolute inset-x-0 ${!isSigningOut ? 'top-32' : 'top-0'} bottom-0 overflow-y-auto overscroll-behavior-y-contain`} 
            style={{ WebkitOverflowScrolling: 'touch' }}>
-        <div className="p-6 pb-32 min-h-full">
+        <div className="p-6 pb-48 min-h-full">
           {isLoadingProfile ? (
             <div className="flex flex-col items-center justify-center h-64">
               <div className="w-16 h-16 border-4 border-gray-200 border-t-[#126987] rounded-full animate-spin mb-4"></div>
