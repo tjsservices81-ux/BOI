@@ -249,8 +249,21 @@ export default function InternalTransfer() {
   }
 
   if (step === 'confirm' && formData) {
+    console.log('Confirmation screen debug:', {
+      formData,
+      accounts,
+      accountIds: accounts.map(a => ({ id: a.id, name: a.displayName }))
+    });
+    
     const confirmFromAccount = accounts.find(acc => acc.id === formData.fromAccount);
     const confirmToAccount = accounts.find(acc => acc.id === formData.toAccount);
+    
+    console.log('Account lookup results:', {
+      confirmFromAccount,
+      confirmToAccount,
+      fromAccountId: formData.fromAccount,
+      toAccountId: formData.toAccount
+    });
     
     return (
       <div className="h-screen flex flex-col bg-white page-slide-in-right">
