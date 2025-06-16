@@ -657,19 +657,12 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   const handleEndChatConfirm = () => {
     setShowEndChatConfirm(false);
     setIsEndingChat(true);
-    setEndChatCountdown(60);
+    setEndChatCountdown(0); // Set to 0 to show "Chat Ended" immediately
     
-    // Start the 60-second countdown
-    endChatTimerRef.current = setInterval(() => {
-      setEndChatCountdown(prev => {
-        if (prev <= 1) {
-          // Complete chat end process
-          handleEndChat();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+    // Show "Chat Ended" message briefly then close
+    setTimeout(() => {
+      handleEndChat();
+    }, 2000); // Show for 2 seconds then close
   };
 
   const handleEndChatCancel = () => {
@@ -976,24 +969,9 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
           </div>
         )}
 
-        {/* End Chat Countdown Overlay */}
-        {isEndingChat && endChatCountdown > 0 && (
-          <div className="absolute inset-0 bg-[#126987] flex items-center justify-center z-50">
-            <div className="text-center text-white px-6">
-              <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-              <h3 className="text-2xl font-bold mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Chat will close in {endChatCountdown} seconds...
-              </h3>
-              <p className="text-white/80" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Thank you for contacting Bank of Ireland support
-              </p>
-            </div>
-          </div>
-        )}
-
         {/* Chat Ended Message */}
-        {isEndingChat && endChatCountdown === 0 && (
-          <div className="absolute inset-0 bg-[#126987] flex items-center justify-center z-50">
+        {isEndingChat && (
+          <div className="absolute inset-0 bg-[#126987] rounded-3xl flex items-center justify-center z-50">
             <div className="text-center text-white px-6">
               <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
