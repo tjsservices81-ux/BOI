@@ -444,12 +444,19 @@ export default function Profile() {
       id: newId,
       displayName: newAccountData.displayName,
       accountNumber: `****${generateAccountNumber()}`,
-      balance: newAccountData.balance,
+      balance: parseFloat(newAccountData.balance),
       accountType: newAccountData.accountType
     };
 
     const updatedAccounts = [...storedAccounts, newAccount];
+    
+    // Update data in UserDataManager
     UserDataManager.setUserData('bankAccounts', updatedAccounts);
+    
+    // Clear cache to force fresh data loading
+    UserDataManager.clearCache('bankAccounts');
+    
+    // Update local state
     setAccounts(updatedAccounts);
 
     // Reset form
@@ -462,8 +469,31 @@ export default function Profile() {
     setShowAddAccount(false);
     alert(`Added new ${newAccountData.accountType} account: ${newAccountData.displayName}`);
 
-    // Dispatch events to notify other components
-    window.dispatchEvent(new CustomEvent('balanceUpdate'));
+    // Dispatch comprehensive events to notify all components with the updated account data
+    window.dispatchEvent(new CustomEvent('balanceUpdate', {
+      detail: { 
+        accounts: updatedAccounts,
+        newAccount: newAccount,
+        action: 'accountAdded'
+      }
+    }));
+    
+    // Specific event for admin profile updates
+    window.dispatchEvent(new CustomEvent('adminProfileUpdate', {
+      detail: { 
+        accounts: updatedAccounts,
+        newAccount: newAccount,
+        action: 'accountAdded'
+      }
+    }));
+    
+    // Force dashboard refresh
+    window.dispatchEvent(new CustomEvent('accountsUpdate', {
+      detail: { 
+        accounts: updatedAccounts,
+        source: 'adminPanel'
+      }
+    }));
   };
 
   const sampleTransactions = [

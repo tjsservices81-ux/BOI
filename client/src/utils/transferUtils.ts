@@ -24,6 +24,9 @@ export interface Transaction {
 }
 
 export const getAccounts = (): Account[] => {
+  // Clear cache to ensure we get the most recent data
+  UserDataManager.clearCache('bankAccounts');
+  
   // Get current balances using UserDataManager
   const storedAccounts = UserDataManager.getUserData('bankAccounts', []);
   const defaultAccounts = [

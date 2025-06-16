@@ -135,16 +135,33 @@ export default function Dashboard() {
       }
     };
 
+    const handleAccountsUpdate = (event: CustomEvent) => {
+      const { accounts: updatedAccounts, source, newAccount } = event.detail;
+      
+      console.log('Dashboard received accountsUpdate:', { source, newAccount, accountsCount: updatedAccounts?.length });
+      
+      if (updatedAccounts) {
+        // Clear cache and force fresh data
+        UserDataManager.clearCache('bankAccounts');
+        setAccounts(updatedAccounts);
+        
+        // Also update localStorage for immediate access by other components
+        localStorage.setItem('bankAccounts', JSON.stringify(updatedAccounts));
+      }
+    };
+
     window.addEventListener('balanceUpdate', handleBalanceUpdate as EventListener);
     window.addEventListener('adminProfileUpdate', handleProfileUpdate as EventListener);
     window.addEventListener('userProfileUpdate', handleProfileUpdate as EventListener);
     window.addEventListener('accountsReset', handleAccountsReset as EventListener);
+    window.addEventListener('accountsUpdate', handleAccountsUpdate as EventListener);
     
     return () => {
       window.removeEventListener('balanceUpdate', handleBalanceUpdate as EventListener);
       window.removeEventListener('adminProfileUpdate', handleProfileUpdate as EventListener);
       window.removeEventListener('userProfileUpdate', handleProfileUpdate as EventListener);
       window.removeEventListener('accountsReset', handleAccountsReset as EventListener);
+      window.removeEventListener('accountsUpdate', handleAccountsUpdate as EventListener);
     };
   }, [accounts]);
 

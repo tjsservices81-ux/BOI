@@ -46,11 +46,24 @@ export default function IbanTransfer() {
 
   useEffect(() => {
     const loadAccounts = () => {
+      UserDataManager.clearCache('bankAccounts');
       const userAccounts = UserDataManager.getUserData('bankAccounts', []);
       setAccounts(userAccounts);
     };
     
     loadAccounts();
+    
+    // Listen for account updates from admin panel
+    const handleAccountsUpdate = (event: CustomEvent) => {
+      const { accounts: updatedAccounts } = event.detail;
+      if (updatedAccounts) {
+        setAccounts(updatedAccounts);
+      }
+    };
+
+    window.addEventListener('accountsUpdate', handleAccountsUpdate as EventListener);
+    window.addEventListener('balanceUpdate', handleAccountsUpdate as EventListener);
+    window.addEventListener('adminProfileUpdate', handleAccountsUpdate as EventListener);
     
     // Check for selected payee from Recent Payees
     const selectedPayeeData = sessionStorage.getItem('selectedPayee');
@@ -71,7 +84,11 @@ export default function IbanTransfer() {
       }
     }
     
-    return () => {};
+    return () => {
+      window.removeEventListener('accountsUpdate', handleAccountsUpdate as EventListener);
+      window.removeEventListener('balanceUpdate', handleAccountsUpdate as EventListener);
+      window.removeEventListener('adminProfileUpdate', handleAccountsUpdate as EventListener);
+    };
   }, [form]);
 
   const onSubmit = (data: IbanTransferData) => {
