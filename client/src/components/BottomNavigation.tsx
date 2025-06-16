@@ -137,9 +137,7 @@ export default function BottomNavigation() {
             >
               {item.label}
             </span>
-            {item.isActive && (
-              <div className="absolute -bottom-2 left-1/2 w-12 h-1 bg-[#126987] rounded-full asset-instant" style={{ marginLeft: '-24px' }}></div>
-            )}
+
           </button>
         ))}
       </div>

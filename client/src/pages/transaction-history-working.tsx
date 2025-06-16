@@ -220,16 +220,15 @@ export default function TransactionHistoryWorking() {
   return (
     <div className="page-container h-screen bg-gray-50 flex flex-col overflow-hidden page-slide-in-right"
       style={{ backgroundColor: '#f9fafb', height: '100vh', maxHeight: '100vh' }}>
-      <div className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0">
-        <button onClick={() => navigateWithAnimation('/dashboard', 'slide-left')} className="flex items-center text-white">
-          <ChevronLeft className="w-5 h-5 mr-2" />
-          <span className="font-semibold text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-            {accountInfo?.displayName || 'Account'}
-          </span>
-        </button>
-      </div>
-
       <div className="bg-[#126987] text-white p-6 flex-shrink-0">
+        <div className="flex items-center justify-between mb-4">
+          <button onClick={() => navigateWithAnimation('/dashboard', 'slide-left')} className="flex items-center text-white">
+            <ChevronLeft className="w-5 h-5 mr-2" />
+            <span className="font-semibold text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              {accountInfo?.displayName || 'Account'}
+            </span>
+          </button>
+        </div>
         <div className="flex justify-between items-center">
           <div>
             <p className="text-sm opacity-90" style={{ fontFamily: 'OpenSans, sans-serif' }}>
