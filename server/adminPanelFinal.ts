@@ -2,10 +2,10 @@ import express from 'express';
 
 const router = express.Router();
 
-// Admin authentication middleware
+// Simple admin authentication using query parameter
 function adminAuth(req: express.Request, res: express.Response, next: express.NextFunction) {
-  const isAuthenticated = req.session && (req.session as any).adminAuth === true;
-  if (!isAuthenticated) {
+  const authToken = req.query.auth || req.headers['x-admin-auth'];
+  if (authToken !== 'BOI_ADMIN_SESSION_VERIFIED') {
     return res.redirect('/admin/login');
   }
   next();
@@ -468,9 +468,7 @@ router.post('/login', (req, res) => {
   const { adminKey } = req.body;
   
   if (adminKey === 'BOI_ADMIN_2025_SECURE') {
-    // Set server-side session
-    (req.session as any).adminAuth = true;
-    res.json({ success: true, redirect: '/admin/dashboard' });
+    res.json({ success: true, redirect: '/admin/dashboard?auth=BOI_ADMIN_SESSION_VERIFIED' });
   } else {
     res.status(401).json({ success: false, message: 'Invalid admin key' });
   }
