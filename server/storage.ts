@@ -6,8 +6,6 @@ import {
   type InsertUser, type InsertAccount, type InsertTransaction, type InsertPayee,
   type InsertChatMessage, type InsertChatResponse, type InsertChatSession
 } from "@shared/schema";
-import { db } from "./db";
-import { eq } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
@@ -57,342 +55,55 @@ export interface IStorage {
   disableUser(userId: number): Promise<void>;
   enableUser(userId: number): Promise<void>;
   getUsersWithDisabledStatus(): Promise<any[]>;
-}
-
-export class DatabaseStorage implements IStorage {
-  async getUserByCredentials(customerNumber: string, pin: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.customerNumber, customerNumber));
-    if (user && user.pin === pin) {
-      return user;
-    }
-    return undefined;
-  }
-
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await db.insert(users).values(insertUser).returning();
-    return user;
-  }
-
-  async getUserByCustomerNumber(customerNumber: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.customerNumber, customerNumber));
-    return user;
-  }
-
-  async updateUserProfile(customerNumber: string, updates: Partial<User>): Promise<User | undefined> {
-    try {
-      console.log('Updating user profile:', customerNumber, updates);
-      
-      // Filter out undefined values and id field
-      const cleanUpdates = Object.fromEntries(
-        Object.entries(updates).filter(([key, value]) => value !== undefined && key !== 'id')
-      );
-      
-      console.log('Clean updates:', cleanUpdates);
-      
-      const [user] = await db.update(users)
-        .set(cleanUpdates)
-        .where(eq(users.customerNumber, customerNumber))
-        .returning();
-      
-      console.log('Updated user:', user);
-      return user;
-    } catch (error) {
-      console.error('Error updating user profile:', error);
-      throw error;
-    }
-  }
-
-  async getAllUsers(): Promise<User[]> {
-    return await db.select().from(users);
-  }
-
-  async getAccountsByUserId(userId: number): Promise<Account[]> {
-    return await db.select().from(accounts).where(eq(accounts.userId, userId));
-  }
-
-  async getAccountById(accountId: number): Promise<Account | undefined> {
-    const [account] = await db.select().from(accounts).where(eq(accounts.id, accountId));
-    return account;
-  }
-
-  async createAccount(insertAccount: InsertAccount): Promise<Account> {
-    const [account] = await db.insert(accounts).values(insertAccount).returning();
-    return account;
-  }
-
-  async updateAccountBalance(accountId: number, newBalance: string): Promise<void> {
-    await db.update(accounts).set({ balance: newBalance }).where(eq(accounts.id, accountId));
-  }
-
-  async getTransactionsByAccountId(accountId: number): Promise<Transaction[]> {
-    return await db.select().from(transactions).where(eq(transactions.accountId, accountId));
-  }
-
-  async createTransaction(transaction: InsertTransaction): Promise<Transaction> {
-    const [newTransaction] = await db.insert(transactions).values(transaction).returning();
-    return newTransaction;
-  }
-
-  async getPayeesByUserId(userId: number): Promise<Payee[]> {
-    return await db.select().from(payees).where(eq(payees.userId, userId));
-  }
-
-  async createPayee(payee: InsertPayee): Promise<Payee> {
-    const [newPayee] = await db.insert(payees).values(payee).returning();
-    return newPayee;
-  }
-
-  async getScheduledPaymentsByUserId(userId: number): Promise<ScheduledPayment[]> {
-    return await db.select().from(scheduledPayments).where(eq(scheduledPayments.userId, userId));
-  }
-
-  async getStatementsByAccountId(accountId: number): Promise<Statement[]> {
-    return await db.select().from(statements).where(eq(statements.accountId, accountId));
-  }
-
-  // Chat operations
-  async getChatMessagesBySessionId(sessionId: string): Promise<ChatMessage[]> {
-    return await db.select().from(chatMessages).where(eq(chatMessages.sessionId, sessionId));
-  }
-
-  async createChatMessage(message: InsertChatMessage): Promise<ChatMessage> {
-    const [newMessage] = await db.insert(chatMessages).values(message).returning();
-    return newMessage;
-  }
-
-  async getChatSession(sessionId: string): Promise<ChatSession | undefined> {
-    const [session] = await db.select().from(chatSessions).where(eq(chatSessions.sessionId, sessionId));
-    return session;
-  }
-
-  async createChatSession(session: InsertChatSession): Promise<ChatSession> {
-    const [newSession] = await db.insert(chatSessions).values(session).returning();
-    return newSession;
-  }
-
-  async endChatSession(sessionId: string): Promise<void> {
-    await db.update(chatSessions)
-      .set({ isActive: false, endedAt: new Date() })
-      .where(eq(chatSessions.sessionId, sessionId));
-  }
-
-  async getChatResponses(): Promise<ChatResponse[]> {
-    return await db.select().from(chatResponses).where(eq(chatResponses.isActive, true));
-  }
-
-  async createChatResponse(response: InsertChatResponse): Promise<ChatResponse> {
-    const [newResponse] = await db.insert(chatResponses).values(response).returning();
-    return newResponse;
-  }
-
-  async updateChatResponse(id: number, updates: Partial<ChatResponse>): Promise<ChatResponse | undefined> {
-    const [updated] = await db.update(chatResponses)
-      .set({ ...updates, updatedAt: new Date() })
-      .where(eq(chatResponses.id, id))
-      .returning();
-    return updated;
-  }
-
-  async deleteChatResponse(id: number): Promise<void> {
-    await db.update(chatResponses)
-      .set({ isActive: false })
-      .where(eq(chatResponses.id, id));
-  }
-
-  // Admin operations
-  async getAllDeviceSessions(): Promise<any[]> {
-    const { getAllDeviceSessions } = await import('./deviceSessions');
-    const sessions = getAllDeviceSessions();
-    
-    // Enrich sessions with user account information
-    const enrichedSessions = await Promise.all(sessions.map(async (session) => {
-      const user = await this.getUserByCustomerNumber(session.customerNumber || '');
-      return {
-        ...session,
-        accountName: user?.name || `Customer ${session.customerNumber}`,
-        accountEmail: user?.email || `${session.customerNumber}@example.com`
-      };
-    }));
-    
-    return enrichedSessions;
-  }
-
-  async blockDeviceSession(sessionId: string): Promise<void> {
-    const { blockDevice } = await import('./deviceSessions');
-    blockDevice(sessionId);
-  }
-
-  async unblockDeviceSession(sessionId: string): Promise<void> {
-    const { unblockDevice } = await import('./deviceSessions');
-    unblockDevice(sessionId);
-  }
-
-  async enableDevicePanicMode(sessionId: string): Promise<void> {
-    const { activateDevicePanicMode } = await import('./deviceSessions');
-    activateDevicePanicMode(sessionId);
-  }
-
-  async disableDevicePanicMode(sessionId: string): Promise<void> {
-    const { deactivateDevicePanicMode } = await import('./deviceSessions');
-    deactivateDevicePanicMode(sessionId);
-  }
-
-  async disableUser(userId: number): Promise<void> {
-    const userDisableManager = await import('./userDisableManager');
-    userDisableManager.setUserDisabled(userId, true);
-  }
-
-  async enableUser(userId: number): Promise<void> {
-    const userDisableManager = await import('./userDisableManager');
-    userDisableManager.setUserDisabled(userId, false);
-  }
-
-  async getUsersWithDisabledStatus(): Promise<any[]> {
-    const users = await this.getAllUsers();
-    const userDisableManager = await import('./userDisableManager');
-    return users.map(user => ({
-      ...user,
-      isDisabled: userDisableManager.isUserDisabled(user.id)
-    }));
-  }
-
-  // Initialize sample data for first-time setup
-  async initializeSampleData(): Promise<void> {
-    // Check if data already exists
-    const existingUsers = await db.select().from(users).limit(1);
-    if (existingUsers.length > 0) return;
-
-    // Create default user structure
-    const [user] = await db.insert(users).values({
-      customerNumber: "12345678",
-      pin: "1234", 
-      name: "",
-      email: "",
-      phone: "",
-      address: "",
-      dateOfBirth: "",
-      joinDate: ""
-    }).returning();
-
-    // Create default accounts with zero balances
-    const defaultAccounts = [
-      {
-        userId: user.id,
-        accountType: "current",
-        accountNumber: "****2091", 
-        balance: "0.00",
-        displayName: "Current Account"
-      },
-      {
-        userId: user.id,
-        accountType: "credit",
-        accountNumber: "****1820",
-        balance: "0.00",
-        displayName: "Credit Card"
-      },
-      {
-        userId: user.id,
-        accountType: "savings",
-        accountNumber: "****0978",
-        balance: "0.00", 
-        displayName: "Savings Account"
-      }
-    ];
-
-    const createdAccounts = await db.insert(accounts).values(defaultAccounts).returning();
-
-    // Initialize with no transactions
-    // Accounts are ready for real transaction data
-  }
-}
-
-export class MemStorage implements IStorage {
-  private users: Map<number, User> = new Map();
-  private accounts: Map<number, Account> = new Map();
-  private transactions: Map<number, Transaction> = new Map();
-  private payees: Map<number, Payee> = new Map();
-  private scheduledPayments: Map<number, ScheduledPayment> = new Map();
-  private statements: Map<number, Statement> = new Map();
   
-  private currentUserId = 1;
-  private currentAccountId = 1;
-  private currentTransactionId = 1;
-  private currentPayeeId = 1;
-  private currentScheduledPaymentId = 1;
-  private currentStatementId = 1;
+  // Initialize sample data
+  initializeSampleData(): Promise<void>;
+}
+
+// In-memory storage implementation
+class MemStorage implements IStorage {
+  private users = new Map<number, User>();
+  private accounts = new Map<number, Account>();
+  private transactions = new Map<number, Transaction>();
+  private payees = new Map<number, Payee>();
+  private scheduledPayments = new Map<number, ScheduledPayment>();
+  private statements = new Map<number, Statement>();
+  private chatMessages = new Map<number, ChatMessage>();
+  private chatResponses = new Map<number, ChatResponse>();
+  private chatSessions = new Map<string, ChatSession>();
+  
+  private currentUserId: number = 1;
+  private currentAccountId: number = 1;
+  private currentTransactionId: number = 1;
+  private currentPayeeId: number = 1;
+  private currentScheduledPaymentId: number = 1;
+  private currentStatementId: number = 1;
+  private currentChatMessageId: number = 1;
+  private currentChatResponseId: number = 1;
 
   constructor() {
     this.initializeSampleData();
   }
 
-  private initializeSampleData() {
-    // Create default user structure
-    const user: User = {
-      id: this.currentUserId++,
-      customerNumber: "12345678",
-      pin: "1234",
-      name: "",
-      email: "",
-      phone: "",
-      address: "",
-      dateOfBirth: "",
-      joinDate: "",
-      dateCreated: new Date()
-    };
-    this.users.set(user.id, user);
-
-    // Create default accounts with zero balances
-    const currentAccount: Account = {
-      id: this.currentAccountId++,
-      userId: user.id,
-      accountType: "current",
-      accountNumber: "****2091",
-      balance: "0.00",
-      displayName: "Current Account"
-    };
-    this.accounts.set(currentAccount.id, currentAccount);
-
-    const creditCardAccount: Account = {
-      id: this.currentAccountId++,
-      userId: user.id,
-      accountType: "credit",
-      accountNumber: "****1820",
-      balance: "0.00",
-      displayName: "Credit Card"
-    };
-    this.accounts.set(creditCardAccount.id, creditCardAccount);
-
-    const savingsAccount: Account = {
-      id: this.currentAccountId++,
-      userId: user.id,
-      accountType: "savings",
-      accountNumber: "****0978",
-      balance: "0.00",
-      displayName: "Savings Account"
-    };
-    this.accounts.set(savingsAccount.id, savingsAccount);
-
-    // Initialize with empty data structures - ready for real data
-    // No sample transactions, payees, or scheduled payments
-
-
-  }
-
   async getUserByCredentials(customerNumber: string, pin: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      user => user.customerNumber === customerNumber && user.pin === pin
+    return Array.from(this.users.values()).find(user => 
+      user.customerNumber === customerNumber && user.pin === pin
     );
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const user: User = {
       id: this.currentUserId++,
-      ...insertUser,
+      customerNumber: insertUser.customerNumber,
+      pin: insertUser.pin,
+      name: insertUser.name || null,
+      email: insertUser.email || null,
       phone: insertUser.phone || null,
       address: insertUser.address || null,
       dateOfBirth: insertUser.dateOfBirth || null,
       joinDate: insertUser.joinDate || "Member since 2018",
-      dateCreated: insertUser.dateCreated || new Date()
+      dateCreated: insertUser.dateCreated || new Date(),
+      isDisabled: false
     };
     this.users.set(user.id, user);
     return user;
@@ -442,25 +153,13 @@ export class MemStorage implements IStorage {
   }
 
   async getTransactionsByAccountId(accountId: number): Promise<Transaction[]> {
-    return Array.from(this.transactions.values())
-      .filter(transaction => transaction.accountId === accountId)
-      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+    return Array.from(this.transactions.values()).filter(transaction => transaction.accountId === accountId);
   }
 
   async createTransaction(insertTransaction: InsertTransaction): Promise<Transaction> {
     const transaction: Transaction = {
       id: this.currentTransactionId++,
-      ...insertTransaction,
-      reference: insertTransaction.reference ?? null,
-      recipientName: insertTransaction.recipientName ?? null,
-      iban: insertTransaction.iban ?? null,
-      bicCode: insertTransaction.bicCode ?? null,
-      exchangeRate: insertTransaction.exchangeRate ?? null,
-      convertedAmount: insertTransaction.convertedAmount ?? null,
-      convertedCurrency: insertTransaction.convertedCurrency ?? null,
-      recipientAccountNumber: insertTransaction.recipientAccountNumber || null,
-      recipientSortCode: insertTransaction.recipientSortCode ?? null,
-      recipientIban: insertTransaction.recipientIban || null
+      ...insertTransaction
     };
     this.transactions.set(transaction.id, transaction);
     return transaction;
@@ -473,9 +172,7 @@ export class MemStorage implements IStorage {
   async createPayee(insertPayee: InsertPayee): Promise<Payee> {
     const payee: Payee = {
       id: this.currentPayeeId++,
-      ...insertPayee,
-      iban: insertPayee.iban || null,
-      lastAmount: insertPayee.lastAmount || null
+      ...insertPayee
     };
     this.payees.set(payee.id, payee);
     return payee;
@@ -489,88 +186,67 @@ export class MemStorage implements IStorage {
     return Array.from(this.statements.values()).filter(statement => statement.accountId === accountId);
   }
 
-  // Chat operations - in-memory implementation
-  private chatMessages: Map<number, ChatMessage> = new Map();
-  private chatSessions: Map<number, ChatSession> = new Map();
-  private chatResponses: Map<number, ChatResponse> = new Map();
-  private currentChatMessageId = 1;
-  private currentChatSessionId = 1;
-  private currentChatResponseId = 1;
-
   async getChatMessagesBySessionId(sessionId: string): Promise<ChatMessage[]> {
-    return Array.from(this.chatMessages.values()).filter(msg => msg.sessionId === sessionId);
+    return Array.from(this.chatMessages.values()).filter(message => message.sessionId === sessionId);
   }
 
-  async createChatMessage(message: InsertChatMessage): Promise<ChatMessage> {
-    const chatMessage: ChatMessage = {
+  async createChatMessage(insertMessage: InsertChatMessage): Promise<ChatMessage> {
+    const message: ChatMessage = {
       id: this.currentChatMessageId++,
-      ...message,
-      userId: message.userId || null,
-      agentName: message.agentName || null,
-      timestamp: message.timestamp || new Date()
+      ...insertMessage,
+      timestamp: insertMessage.timestamp || new Date()
     };
-    this.chatMessages.set(chatMessage.id, chatMessage);
-    return chatMessage;
+    this.chatMessages.set(message.id, message);
+    return message;
   }
 
   async getChatSession(sessionId: string): Promise<ChatSession | undefined> {
-    return Array.from(this.chatSessions.values()).find(session => session.sessionId === sessionId);
+    return this.chatSessions.get(sessionId);
   }
 
-  async createChatSession(session: InsertChatSession): Promise<ChatSession> {
-    const chatSession: ChatSession = {
-      id: this.currentChatSessionId++,
-      ...session,
-      userId: session.userId || null,
-      endedAt: session.endedAt || null,
-      startedAt: session.startedAt || new Date(),
-      isActive: session.isActive !== undefined ? session.isActive : true
+  async createChatSession(insertSession: InsertChatSession): Promise<ChatSession> {
+    const session: ChatSession = {
+      ...insertSession,
+      startedAt: insertSession.startedAt || new Date()
     };
-    this.chatSessions.set(chatSession.id, chatSession);
-    return chatSession;
+    this.chatSessions.set(session.sessionId, session);
+    return session;
   }
 
   async endChatSession(sessionId: string): Promise<void> {
-    const session = await this.getChatSession(sessionId);
+    const session = this.chatSessions.get(sessionId);
     if (session) {
       session.isActive = false;
       session.endedAt = new Date();
-      this.chatSessions.set(session.id, session);
+      this.chatSessions.set(sessionId, session);
     }
   }
 
   async getChatResponses(): Promise<ChatResponse[]> {
-    return Array.from(this.chatResponses.values()).filter(response => response.isActive);
+    return Array.from(this.chatResponses.values());
   }
 
-  async createChatResponse(response: InsertChatResponse): Promise<ChatResponse> {
-    const chatResponse: ChatResponse = {
+  async createChatResponse(insertResponse: InsertChatResponse): Promise<ChatResponse> {
+    const response: ChatResponse = {
       id: this.currentChatResponseId++,
-      ...response,
-      createdAt: response.createdAt || new Date(),
-      updatedAt: response.updatedAt || new Date(),
-      isActive: response.isActive !== undefined ? response.isActive : true
+      ...insertResponse
     };
-    this.chatResponses.set(chatResponse.id, chatResponse);
-    return chatResponse;
+    this.chatResponses.set(response.id, response);
+    return response;
   }
 
   async updateChatResponse(id: number, updates: Partial<ChatResponse>): Promise<ChatResponse | undefined> {
     const response = this.chatResponses.get(id);
     if (response) {
-      const updated = { ...response, ...updates, updatedAt: new Date() };
-      this.chatResponses.set(id, updated);
-      return updated;
+      const updatedResponse = { ...response, ...updates };
+      this.chatResponses.set(id, updatedResponse);
+      return updatedResponse;
     }
     return undefined;
   }
 
   async deleteChatResponse(id: number): Promise<void> {
-    const response = this.chatResponses.get(id);
-    if (response) {
-      response.isActive = false;
-      this.chatResponses.set(id, response);
-    }
+    this.chatResponses.delete(id);
   }
 
   // Admin operations
@@ -612,23 +288,240 @@ export class MemStorage implements IStorage {
   }
 
   async disableUser(userId: number): Promise<void> {
-    const { setUserDisabled } = await import('./userDisableManager');
-    setUserDisabled(userId, true);
+    const user = this.users.get(userId);
+    if (user) {
+      user.isDisabled = true;
+      this.users.set(userId, user);
+    }
   }
 
   async enableUser(userId: number): Promise<void> {
-    const { setUserDisabled } = await import('./userDisableManager');
-    setUserDisabled(userId, false);
+    const user = this.users.get(userId);
+    if (user) {
+      user.isDisabled = false;
+      this.users.set(userId, user);
+    }
   }
 
   async getUsersWithDisabledStatus(): Promise<any[]> {
-    const { isUserDisabled } = await import('./userDisableManager');
-    const allUsers = Array.from(this.users.values());
-    return allUsers.map(user => ({
-      ...user,
-      isDisabled: isUserDisabled(user.id)
-    }));
+    return await this.getAllUsers();
+  }
+
+  // Initialize sample data for first-time setup
+  async initializeSampleData(): Promise<void> {
+    // Check if data already exists
+    if (this.users.size > 0) {
+      return; // Data already exists
+    }
+
+    console.log("Initializing sample data...");
+
+    // Create sample users with the existing test accounts
+    const sampleUsers = [
+      {
+        customerNumber: "12345678",
+        pin: "1234",
+        name: "Shahah",
+        email: "shsjhs@gmail.com",
+        phone: "+353 1 234",
+        address: "Hello shehsjs",
+        dateOfBirth: "2025-06-01",
+        joinDate: "Member since 2022"
+      },
+      {
+        customerNumber: "BOI050171232",
+        pin: "000000",
+        name: "James Morrison",
+        email: "james.morrison@email.com",
+        phone: "+353 87 123 4567",
+        address: "15 Grafton Street, Dublin 2, Ireland",
+        dateOfBirth: "1985-03-15",
+        joinDate: "Member since 2020",
+        isDisabled: true
+      },
+      {
+        customerNumber: "BOI911163841",
+        pin: "000000",
+        name: "Harry",
+        email: "ppatstshshs@gmail.com",
+        phone: "65353584545",
+        address: "Dhhsjaus",
+        dateOfBirth: "2015-02-01",
+        joinDate: "Member since 2024"
+      },
+      {
+        customerNumber: "BOI738185556",
+        pin: "000000",
+        name: "James",
+        email: "hello@gmail.com",
+        phone: "+353 1 234 5678",
+        address: "Hello",
+        dateOfBirth: "2025-06-08",
+        joinDate: "Member since 2018"
+      },
+      {
+        customerNumber: "BOI070974442",
+        pin: "000000",
+        name: "James",
+        email: "hello@gmail.com",
+        phone: "+353 1 234 5678",
+        address: "Hello",
+        dateOfBirth: "2025-06-08",
+        joinDate: "Member since 2018"
+      },
+      {
+        customerNumber: "BOI424898838",
+        pin: "000000",
+        name: "Kevin",
+        email: "kevinm@gmail.com",
+        phone: "+447428064718",
+        address: "maugh",
+        dateOfBirth: "2009-10-01",
+        joinDate: "2022"
+      },
+      {
+        customerNumber: "BOI705915608",
+        pin: "000000",
+        name: "Mathew",
+        email: "dhhssksksj@gmail.com",
+        phone: "434664343434",
+        address: "2a",
+        dateOfBirth: "2007-06-14",
+        joinDate: "Member Since 2022"
+      },
+      {
+        customerNumber: "BOI514951178",
+        pin: "000000",
+        name: "Harry Flek",
+        email: "harryflek@gmail.com",
+        phone: "07428064718",
+        address: "",
+        dateOfBirth: "",
+        joinDate: "Member Since 2022"
+      },
+      {
+        customerNumber: "BOI794439650",
+        pin: "000000",
+        name: "James Wilson",
+        email: "jameswilson202@gmail.com",
+        phone: "3454545467577",
+        address: "",
+        dateOfBirth: "",
+        joinDate: "2025-06-15T15:33:27.627Z"
+      },
+      {
+        customerNumber: "BOI744505351",
+        pin: "000000",
+        name: "James willoughby",
+        email: "jameswilloughby57@gmail.com",
+        phone: "07769911123",
+        address: "31 Ashfield Road Dublin 6 D06 WD50 Ireland",
+        dateOfBirth: "1999-08-14",
+        joinDate: "Member since 2021"
+      },
+      {
+        customerNumber: "BOI461732937",
+        pin: "000000",
+        name: "James Papa",
+        email: "hahahaha@gmail.com",
+        phone: "07428064718",
+        address: "",
+        dateOfBirth: "2001-06-01",
+        joinDate: "2025-06-"
+      },
+      {
+        customerNumber: "BOI634374772",
+        pin: "000000",
+        name: "James",
+        email: "haha@gmail.com",
+        phone: "07428064718",
+        address: "",
+        dateOfBirth: "",
+        joinDate: "2025-06-16T12:02:59.685Z"
+      }
+    ];
+
+    for (const userData of sampleUsers) {
+      const user = await this.createUser(userData);
+      console.log(`Created user: ${user.name} (${user.customerNumber})`);
+
+      // Create sample accounts for each user
+      const sampleAccounts = [
+        {
+          userId: user.id,
+          type: "Current Account" as const,
+          accountNumber: `IE12BOFI90000${user.id}12345678`,
+          balance: "2500.00",
+          currency: "EUR" as const,
+          isActive: true
+        },
+        {
+          userId: user.id,
+          type: "Savings Account" as const,
+          accountNumber: `IE12BOFI90000${user.id}87654321`,
+          balance: "15000.00",
+          currency: "EUR" as const,
+          isActive: true
+        }
+      ];
+
+      for (const accountData of sampleAccounts) {
+        const account = await this.createAccount(accountData);
+
+        // Create sample transactions
+        const sampleTransactions = [
+          {
+            accountId: account.id,
+            type: "credit" as const,
+            amount: "500.00",
+            currency: "EUR" as const,
+            description: "Salary deposit",
+            reference: "SAL001",
+            date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+            balance: account.balance
+          },
+          {
+            accountId: account.id,
+            type: "debit" as const,
+            amount: "125.50",
+            currency: "EUR" as const,
+            description: "Grocery shopping",
+            reference: "POS001",
+            date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+            balance: (parseFloat(account.balance) - 125.50).toString()
+          }
+        ];
+
+        for (const transactionData of sampleTransactions) {
+          await this.createTransaction(transactionData);
+        }
+      }
+
+      // Create sample payees
+      const samplePayees = [
+        {
+          userId: user.id,
+          name: "Electric Ireland",
+          accountNumber: "IE29AIBK93115212345678",
+          sortCode: "931152",
+          type: "Utility" as const
+        },
+        {
+          userId: user.id,
+          name: "John Smith",
+          accountNumber: "IE64BOFI90017412345678",
+          sortCode: "900174",
+          type: "Personal" as const
+        }
+      ];
+
+      for (const payeeData of samplePayees) {
+        await this.createPayee(payeeData);
+      }
+    }
+
+    console.log("Sample data initialization complete");
   }
 }
 
-export const storage = new DatabaseStorage();
+export const storage = new MemStorage();

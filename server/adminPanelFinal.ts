@@ -886,7 +886,7 @@ router.get('/dashboard', adminAuth, (req, res) => {
               const data = await response.json();
               
               if (data.success) {
-                loadUserAccounts(); // Reload to show updated status
+                loadUserDeviceControl(); // Reload to show updated status
               } else {
                 alert('Failed to ' + action + ' user');
               }
@@ -904,13 +904,11 @@ router.get('/dashboard', adminAuth, (req, res) => {
         
         // Load data on page load
         window.addEventListener('load', () => {
-          loadUserAccounts();
-          loadDeviceSessions();
+          loadUserDeviceControl();
           
           // Refresh data every 30 seconds
           setInterval(() => {
-            loadUserAccounts();
-            loadDeviceSessions();
+            loadUserDeviceControl();
           }, 30000);
         });
       </script>
