@@ -147,8 +147,7 @@ export default function Dashboard() {
     };
 
     const handleAccountsUpdate = (event: CustomEvent) => {
-      const eventDetail = event.detail || {};
-      const { accounts: updatedAccounts, source, newAccount } = eventDetail;
+      const { accounts: updatedAccounts, source, newAccount } = event.detail;
       
       console.log('Dashboard received accountsUpdate:', { source, newAccount, accountsCount: updatedAccounts?.length });
       
@@ -254,7 +253,7 @@ export default function Dashboard() {
       {/* Main content area - white card with rounded top corners */}
       <div 
         ref={scrollContainerRef}
-        className="main-scroll-container flex-1 px-0 -mt-8 overflow-y-auto ios-scroll" 
+        className="main-scroll-container flex-1 px-0 -mt-8 overflow-hidden" 
         style={{ maxHeight: 'calc(100vh - 200px)' }}
         data-scroll-container
         data-scroll-route="/dashboard"

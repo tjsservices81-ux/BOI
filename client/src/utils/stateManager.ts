@@ -116,17 +116,6 @@ export class StateManager {
     }
   }
 
-  // Clear session data for app restart
-  static clearSessionData() {
-    try {
-      localStorage.removeItem(this.STATE_KEY);
-      localStorage.removeItem(this.SCROLL_POSITIONS_KEY);
-      localStorage.removeItem(this.FORM_DATA_KEY);
-    } catch (error) {
-      console.error('Failed to clear session data:', error);
-    }
-  }
-
   // Handle page visibility change
   static handleVisibilityChange(currentRoute: string, user: any) {
     if (document.visibilityState === 'hidden') {

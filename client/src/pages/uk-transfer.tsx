@@ -89,8 +89,7 @@ export default function UkTransfer() {
     
     // Listen for account updates from admin panel
     const handleAccountsUpdate = (event: CustomEvent) => {
-      const eventDetail = event.detail || {};
-      const { accounts: updatedAccounts } = eventDetail;
+      const { accounts: updatedAccounts } = event.detail;
       if (updatedAccounts) {
         setAccounts(updatedAccounts);
       }
@@ -163,7 +162,6 @@ export default function UkTransfer() {
     console.log('Form submitted with data:', data);
     setFormData(data);
     const ref = generateReference();
-    console.log('Generated transfer reference:', ref);
     setTransferReference(ref);
     
     // Fetch exchange rate
@@ -174,12 +172,7 @@ export default function UkTransfer() {
   };
 
   const executeTransfer = async () => {
-    if (!formData) {
-      console.error('No form data available for transfer');
-      return;
-    }
-    
-    console.log('Starting transfer execution with:', { formData, transferReference });
+    if (!formData) return;
     
     // Start processing animation
     setStep('success');
@@ -211,8 +204,6 @@ export default function UkTransfer() {
         if (newProgress >= 100) {
           clearInterval(interval);
           
-          console.log('Transfer animation complete, processing transfer...');
-          
           // Process the transfer
           const transferSuccess = processConfirmedTransfer(
             `UK_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -228,11 +219,7 @@ export default function UkTransfer() {
             }
           );
           
-          console.log('Transfer processing result:', transferSuccess);
-          
           if (transferSuccess) {
-            console.log('Transfer successful, adding payee and dispatching events');
-            
             // Add successful payee to recent payees
             const payee = {
               name: formData.recipientName,
@@ -246,15 +233,7 @@ export default function UkTransfer() {
             window.dispatchEvent(new CustomEvent('transactionUpdate'));
             window.dispatchEvent(new CustomEvent('balanceUpdate'));
             
-            console.log('Events dispatched, showing reference in 500ms');
-            
-            // Show reference immediately after completion
-            setTimeout(() => {
-              console.log('Setting showReference to true');
-              setShowReference(true);
-            }, 500);
-          } else {
-            console.error('Transfer failed during processing');
+            setShowReference(true);
           }
           
           return 100;
