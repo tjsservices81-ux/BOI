@@ -13,7 +13,7 @@ interface ProductTile {
 
 export default function Apply() {
   const locationHook = useLocation();
-  const navigate = locationHook ? locationHook[1] : (() => {});
+  const [, navigate] = locationHook || [null, () => {}];
 
   const products: ProductTile[] = [
     {

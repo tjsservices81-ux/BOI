@@ -12,8 +12,7 @@ interface Transaction {
 
 export default function Transactions() {
   const locationHook = useLocation();
-  const location = locationHook ? locationHook[0] : '/';
-  const setLocation = locationHook ? locationHook[1] : (() => {});
+  const [location, setLocation] = locationHook || ['/', () => {}];
   
   // Parse URL parameters from window.location to get actual query params
   const urlParams = new URLSearchParams(window.location.search);

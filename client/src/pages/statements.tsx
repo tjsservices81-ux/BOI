@@ -18,7 +18,7 @@ export default function Statements() {
   const user = authHook?.user || null;
   
   const locationHook = useLocation();
-  const navigate = locationHook ? locationHook[1] : (() => {});
+  const [, navigate] = locationHook || [null, () => {}];
 
   const { data: accounts = [] } = useQuery<Account[]>({
     queryKey: ["/api/accounts", user?.id],

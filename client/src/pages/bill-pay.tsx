@@ -19,7 +19,7 @@ export default function BillPay() {
   const user = authHook?.user || null;
   
   const locationHook = useLocation();
-  const navigate = locationHook ? locationHook[1] : (() => {});
+  const [, navigate] = locationHook || [null, () => {}];
 
   const { data: payees = [] } = useQuery<Payee[]>({
     queryKey: ["/api/payees", user?.id],

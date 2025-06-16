@@ -19,7 +19,7 @@ export default function Transfer() {
   const user = authHook?.user || null;
   
   const locationHook = useLocation();
-  const navigate = locationHook ? locationHook[1] : (() => {});
+  const [, navigate] = locationHook || [null, () => {}];
   
   const toastHook = useToast();
   const toast = toastHook?.toast || (() => {});

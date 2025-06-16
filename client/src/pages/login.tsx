@@ -47,7 +47,7 @@ export default function Login() {
   const isLoading = authHook?.isLoading || false;
   
   const locationHook = useLocation();
-  const navigate = locationHook ? locationHook[1] : (() => {});
+  const [, navigate] = locationHook || [null, () => {}];
   
   const toastHook = useToast();
   const toast = toastHook?.toast || (() => {});

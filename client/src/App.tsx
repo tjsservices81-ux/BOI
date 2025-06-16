@@ -57,8 +57,7 @@ function AppRoutes() {
   const login = authHook?.login || (() => {});
   
   const locationHook = useLocation();
-  const location = locationHook ? locationHook[0] : '/';
-  const navigate = locationHook ? locationHook[1] : (() => {});
+  const [location, navigate] = locationHook || ['/', () => {}];
   const [splashShown, setSplashShown] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [splashTransitioning, setSplashTransitioning] = useState(false);
