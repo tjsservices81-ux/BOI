@@ -347,7 +347,7 @@ export default function TransactionHistoryWorking() {
 
             {/* Scrollable content area */}
             <div className="flex-1 overflow-y-auto" style={{ maxHeight: 'calc(90vh - 120px)' }}>
-              <div className="p-6 pt-4 pb-12">
+              <div className="p-6 pt-4 pb-24">
                 <div className="space-y-6">
               {/* Transaction Status */}
               <div className="flex items-center justify-center py-4 bg-green-50 rounded-xl">
