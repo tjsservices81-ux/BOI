@@ -76,7 +76,7 @@ export default function InternalTransfer() {
     }
 
     // Check if source account has sufficient balance
-    const sourceAccountCheck = accounts.find(acc => acc.id === data.fromAccount);
+    const sourceAccountCheck = accounts.find(acc => acc.id.toString() === data.fromAccount);
     const transferAmount = parseFloat(data.amount);
     
     if (sourceAccountCheck) {
@@ -91,8 +91,8 @@ export default function InternalTransfer() {
     }
 
     // Set selected accounts based on form data
-    const sourceAccount = accounts.find(acc => acc.id === data.fromAccount);
-    const destinationAccount = accounts.find(acc => acc.id === data.toAccount);
+    const sourceAccount = accounts.find(acc => acc.id.toString() === data.fromAccount);
+    const destinationAccount = accounts.find(acc => acc.id.toString() === data.toAccount);
     
     setSelectedFromAccount(sourceAccount);
     setSelectedToAccount(destinationAccount);
@@ -114,8 +114,8 @@ export default function InternalTransfer() {
     }
     
     // Find accounts from form data
-    const fromAccount = accounts.find(acc => acc.id === formData.fromAccount);
-    const toAccount = accounts.find(acc => acc.id === formData.toAccount);
+    const fromAccount = accounts.find(acc => acc.id.toString() === formData.fromAccount);
+    const toAccount = accounts.find(acc => acc.id.toString() === formData.toAccount);
     
     if (!fromAccount) {
       console.log('Could not find source account with ID:', formData.fromAccount);
@@ -172,11 +172,11 @@ export default function InternalTransfer() {
     // Update account balances
     const currentAccounts = UserDataManager.getUserData('bankAccounts', []);
     const updatedAccounts = currentAccounts.map((acc: any) => {
-      if (acc.id === fromAccount.id) {
+      if (acc.id.toString() === fromAccount.id.toString()) {
         const currentBalance = typeof acc.balance === 'string' ? parseFloat(acc.balance) : acc.balance;
         return { ...acc, balance: (currentBalance - transferAmount).toFixed(2) };
       }
-      if (acc.id === toAccount.id) {
+      if (acc.id.toString() === toAccount.id.toString()) {
         const currentBalance = typeof acc.balance === 'string' ? parseFloat(acc.balance) : acc.balance;
         return { ...acc, balance: (currentBalance + transferAmount).toFixed(2) };
       }
@@ -255,8 +255,8 @@ export default function InternalTransfer() {
       accountIds: accounts.map(a => ({ id: a.id, name: a.displayName }))
     });
     
-    const confirmFromAccount = accounts.find(acc => acc.id === formData.fromAccount);
-    const confirmToAccount = accounts.find(acc => acc.id === formData.toAccount);
+    const confirmFromAccount = accounts.find(acc => acc.id.toString() === formData.fromAccount);
+    const confirmToAccount = accounts.find(acc => acc.id.toString() === formData.toAccount);
     
     console.log('Account lookup results:', {
       confirmFromAccount,
