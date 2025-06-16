@@ -963,6 +963,59 @@ img {
   --status-bar-color: #000DFF;
 }
 
+/* Force splash screen to cover everything including status bars */
+[data-splash-active] {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  z-index: 99999 !important;
+  background-color: #000DFF !important;
+  overflow: hidden !important;
+}
+
+/* Hide any navigation or status elements when splash is active */
+body:has([data-splash-active]) .bottom-navigation,
+body:has([data-splash-active]) .status-bar,
+body:has([data-splash-active]) .teal-bar,
+body:has([data-splash-active]) nav,
+body:has([data-splash-active]) header {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
+/* Force pure background during splash */
+body:has([data-splash-active]) {
+  background-color: #000DFF !important;
+  overflow: hidden !important;
+}
+
+html:has([data-splash-active]) {
+  background-color: #000DFF !important;
+  overflow: hidden !important;
+}
+
+/* Fallback for browsers without :has() support */
+.splash-active-body {
+  background-color: #000DFF !important;
+  overflow: hidden !important;
+}
+
+.splash-active-body .bottom-navigation,
+.splash-active-body .status-bar,
+.splash-active-body .teal-bar,
+.splash-active-body nav,
+.splash-active-body header {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+}
+
 /* iOS Safari status bar integration for splash */
 @supports (-webkit-appearance: none) {
   .splash-fullscreen {
