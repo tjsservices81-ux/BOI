@@ -176,97 +176,32 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     }
   }, [chatState, currentUser]);
 
-  // Handle app lifecycle events to end chat sessions
+  // Only handle genuine app close events (preserve chat during navigation)
   useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        // App is backgrounded or closed - clear chat state immediately
-        if (queueTimerRef.current) {
-          clearInterval(queueTimerRef.current);
-          queueTimerRef.current = null;
-        }
-        
-        // Clear all chat-related localStorage for fresh start
-        if (currentUser) {
-          const userChatKey = `liveChatState_${currentUser}`;
-          localStorage.removeItem(userChatKey);
-          
-          // Clear any other user-specific chat storage
-          Object.keys(localStorage).forEach(key => {
-            if (key.includes(`_${currentUser}_`) && (key.includes('chat') || key.includes('liveChat'))) {
-              localStorage.removeItem(key);
-            }
-          });
-        }
-      }
-    };
-
     const handleBeforeUnload = () => {
-      // App is being closed - clear all chat state
+      // Only clear timers when app is actually closing, not during navigation
       if (queueTimerRef.current) {
         clearInterval(queueTimerRef.current);
         queueTimerRef.current = null;
       }
-      
-      // Force clear all chat storage
-      Object.keys(localStorage).forEach(key => {
-        if (key.includes('chat') || key.includes('liveChat')) {
-          localStorage.removeItem(key);
-        }
-      });
+      if (endChatTimerRef.current) {
+        clearInterval(endChatTimerRef.current);
+        endChatTimerRef.current = null;
+      }
+      // Note: We don't clear localStorage here to preserve chat during page refreshes
     };
 
-    const handlePageHide = () => {
-      // Page is being hidden (mobile swipe away) - clear state
-      if (queueTimerRef.current) {
-        clearInterval(queueTimerRef.current);
-        queueTimerRef.current = null;
-      }
-      
-      // Clear chat storage for cold restart
-      if (currentUser) {
-        Object.keys(localStorage).forEach(key => {
-          if (key.includes('chat') || key.includes('liveChat')) {
-            localStorage.removeItem(key);
-          }
-        });
-      }
-    };
-
-    // Listen for various app lifecycle events
-    document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('beforeunload', handleBeforeUnload);
-    window.addEventListener('pagehide', handlePageHide);
 
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      window.removeEventListener('pagehide', handlePageHide);
     };
-  }, [currentUser]);
+  }, []);
 
-  // Clear session when app starts fresh
+  // Initialize navigation tracking without clearing chat state
   useEffect(() => {
-    // Check if this is a fresh app load (not navigation)
-    const isAppFreshLoad = !sessionStorage.getItem('app_navigation_active');
-    
-    if (isAppFreshLoad) {
-      // Clear any stored chat state for fresh start
-      if (currentUser) {
-        const userChatKey = `liveChatState_${currentUser}`;
-        localStorage.removeItem(userChatKey);
-      }
-      
-      // Reset chat state completely
-      setChatState(prev => ({
-        ...prev,
-        messages: [],
-        sessionId: `session_${Date.now()}`,
-        isActive: false,
-        queueStatus: 'ended'
-      }));
-      
-      // Mark that navigation is now active
+    if (currentUser) {
+      // Simply mark that navigation is active without clearing chat
       sessionStorage.setItem('app_navigation_active', 'true');
     }
   }, [currentUser]);
