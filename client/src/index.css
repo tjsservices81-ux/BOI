@@ -536,11 +536,17 @@ h1, h2, h3, h4, h5, h6, p, span, div, button, input, label {
 /* Prevent navigation flash during auth state changes */
 .bottom-navigation {
   transition: opacity 0.15s ease-in-out;
+  background-color: white !important;
 }
 
 .bottom-navigation.hidden {
   opacity: 0;
   pointer-events: none;
+}
+
+/* Force bottom navigation to have white background */
+[data-bottom-nav] {
+  background-color: white !important;
 }
 
 /* Z-index hierarchy - centralized management */
