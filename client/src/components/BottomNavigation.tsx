@@ -4,8 +4,7 @@ import { useEffect, useState } from "react";
 
 export default function BottomNavigation() {
   const locationHook = useLocation();
-  const location = locationHook ? locationHook[0] : '/';
-  const setLocation = locationHook ? locationHook[1] : (() => {});
+  const [location, setLocation] = locationHook || ['/', () => {}];
   
   const authHook = useAuth();
   const user = authHook?.user || null;
