@@ -259,7 +259,7 @@ export default function Dashboard() {
         data-scroll-route="/dashboard"
       >
         <div className="bg-white rounded-t-3xl shadow-lg min-h-full">
-          <div className="pt-6 pb-20" style={{ overscrollBehavior: 'contain' }}>
+          <div className="pt-6 pb-32" style={{ overscrollBehavior: 'contain', minHeight: 'calc(100vh - 100px)' }}>
             {(accounts && Array.isArray(accounts)) && accounts.map((account, index) => (
               <button 
                 key={account.id}
