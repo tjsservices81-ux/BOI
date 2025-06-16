@@ -839,6 +839,71 @@ No transfers found yet on your account.`;
     }
   });
 
+  // Admin API endpoints
+  app.get("/api/admin/users", async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      res.json({ success: true, users });
+    } catch (error) {
+      console.error('Failed to get users:', error);
+      res.status(500).json({ success: false, message: "Failed to load users" });
+    }
+  });
+
+  app.get("/api/admin/device-sessions", async (req, res) => {
+    try {
+      const sessions = await storage.getAllDeviceSessions();
+      res.json({ success: true, sessions });
+    } catch (error) {
+      console.error('Failed to get device sessions:', error);
+      res.status(500).json({ success: false, message: "Failed to load device sessions" });
+    }
+  });
+
+  app.post("/api/admin/device-sessions/:sessionId/block", async (req, res) => {
+    try {
+      const { sessionId } = req.params;
+      await storage.blockDeviceSession(sessionId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Failed to block device:', error);
+      res.status(500).json({ success: false, message: "Failed to block device" });
+    }
+  });
+
+  app.post("/api/admin/device-sessions/:sessionId/unblock", async (req, res) => {
+    try {
+      const { sessionId } = req.params;
+      await storage.unblockDeviceSession(sessionId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Failed to unblock device:', error);
+      res.status(500).json({ success: false, message: "Failed to unblock device" });
+    }
+  });
+
+  app.post("/api/admin/device-sessions/:sessionId/panic-enable", async (req, res) => {
+    try {
+      const { sessionId } = req.params;
+      await storage.enableDevicePanicMode(sessionId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Failed to enable panic mode:', error);
+      res.status(500).json({ success: false, message: "Failed to enable panic mode" });
+    }
+  });
+
+  app.post("/api/admin/device-sessions/:sessionId/panic-disable", async (req, res) => {
+    try {
+      const { sessionId } = req.params;
+      await storage.disableDevicePanicMode(sessionId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Failed to disable panic mode:', error);
+      res.status(500).json({ success: false, message: "Failed to disable panic mode" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

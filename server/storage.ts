@@ -47,6 +47,13 @@ export interface IStorage {
   createChatResponse(response: InsertChatResponse): Promise<ChatResponse>;
   updateChatResponse(id: number, updates: Partial<ChatResponse>): Promise<ChatResponse | undefined>;
   deleteChatResponse(id: number): Promise<void>;
+  
+  // Admin operations
+  getAllDeviceSessions(): Promise<any[]>;
+  blockDeviceSession(sessionId: string): Promise<void>;
+  unblockDeviceSession(sessionId: string): Promise<void>;
+  enableDevicePanicMode(sessionId: string): Promise<void>;
+  disableDevicePanicMode(sessionId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -504,6 +511,32 @@ export class MemStorage implements IStorage {
       response.isActive = false;
       this.chatResponses.set(id, response);
     }
+  }
+
+  // Admin operations
+  async getAllDeviceSessions(): Promise<any[]> {
+    const { getAllDeviceSessions } = await import('./deviceSessions');
+    return getAllDeviceSessions();
+  }
+
+  async blockDeviceSession(sessionId: string): Promise<void> {
+    const { blockDevice } = await import('./deviceSessions');
+    blockDevice(sessionId);
+  }
+
+  async unblockDeviceSession(sessionId: string): Promise<void> {
+    const { unblockDevice } = await import('./deviceSessions');
+    unblockDevice(sessionId);
+  }
+
+  async enableDevicePanicMode(sessionId: string): Promise<void> {
+    const { activateDevicePanicMode } = await import('./deviceSessions');
+    activateDevicePanicMode(sessionId);
+  }
+
+  async disableDevicePanicMode(sessionId: string): Promise<void> {
+    const { deactivateDevicePanicMode } = await import('./deviceSessions');
+    deactivateDevicePanicMode(sessionId);
   }
 }
 
