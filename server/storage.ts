@@ -387,10 +387,13 @@ export class MemStorage implements IStorage {
       reference: insertTransaction.reference ?? null,
       recipientName: insertTransaction.recipientName ?? null,
       iban: insertTransaction.iban ?? null,
-      bicCode: insertTransaction.bicCode || null,
-      exchangeRate: insertTransaction.exchangeRate || null,
-      convertedAmount: insertTransaction.convertedAmount || null,
-      convertedCurrency: insertTransaction.convertedCurrency || null
+      bicCode: insertTransaction.bicCode ?? null,
+      exchangeRate: insertTransaction.exchangeRate ?? null,
+      convertedAmount: insertTransaction.convertedAmount ?? null,
+      convertedCurrency: insertTransaction.convertedCurrency ?? null,
+      recipientAccountNumber: insertTransaction.recipientAccountNumber || null,
+      recipientSortCode: insertTransaction.recipientSortCode ?? null,
+      recipientIban: insertTransaction.recipientIban || null
     };
     this.transactions.set(transaction.id, transaction);
     return transaction;
