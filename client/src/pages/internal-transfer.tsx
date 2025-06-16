@@ -101,9 +101,29 @@ export default function InternalTransfer() {
   };
 
   const confirmTransfer = () => {
-    console.log('confirmTransfer called', { formData, selectedFromAccount, selectedToAccount });
-    if (!formData || !selectedFromAccount || !selectedToAccount) {
-      console.log('Missing data for transfer');
+    console.log('confirmTransfer called', { 
+      formData, 
+      selectedFromAccount, 
+      selectedToAccount,
+      step,
+      accounts: accounts.length 
+    });
+    
+    if (!formData) {
+      console.log('Missing formData');
+      alert('Missing form data');
+      return;
+    }
+    
+    if (!selectedFromAccount) {
+      console.log('Missing selectedFromAccount');
+      alert('Missing source account');
+      return;
+    }
+    
+    if (!selectedToAccount) {
+      console.log('Missing selectedToAccount');
+      alert('Missing destination account');
       return;
     }
 
@@ -253,7 +273,12 @@ export default function InternalTransfer() {
                     {selectedFromAccount?.accountNumber}
                   </p>
                   <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Balance: €{selectedFromAccount ? (typeof selectedFromAccount.balance === 'string' ? parseFloat(selectedFromAccount.balance).toFixed(2) : selectedFromAccount.balance.toFixed(2)) : '0.00'}
+                    Balance: €{(() => {
+                      console.log('Rendering balance for selectedFromAccount:', selectedFromAccount);
+                      if (!selectedFromAccount) return '0.00';
+                      const balance = typeof selectedFromAccount.balance === 'string' ? parseFloat(selectedFromAccount.balance) : selectedFromAccount.balance;
+                      return balance.toFixed(2);
+                    })()}
                   </p>
                 </div>
               </div>
@@ -303,7 +328,10 @@ export default function InternalTransfer() {
           </div>
 
           <button
-            onClick={confirmTransfer}
+            onClick={() => {
+              console.log('Button clicked, calling confirmTransfer');
+              confirmTransfer();
+            }}
             className="w-full bg-[#126987] text-white py-4 rounded-2xl font-semibold active:scale-98 transition-transform"
             style={{ fontFamily: 'OpenSans, sans-serif' }}
           >
