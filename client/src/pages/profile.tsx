@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin, Calendar, CreditCard, X, RefreshCw, Plus, MessageCircle, Trash2 } from "lucide-react";
+import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin, Calendar, CreditCard, X, RefreshCw, Plus, MessageCircle, Trash2, PhoneCall } from "lucide-react";
 import { UserDataManager } from "@/utils/userDataManager";
 import { useAuth } from "@/lib/auth";
 import { motion, AnimatePresence } from "framer-motion";
@@ -1265,6 +1265,24 @@ export default function Profile() {
                         </p>
                       </div>
                     </button>
+
+                    {/* Bank of Ireland Voice Call - Coming Soon */}
+                    <div className="w-full flex items-center space-x-3 p-4 bg-gray-100 border border-gray-200 rounded-xl opacity-60 cursor-not-allowed">
+                      <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                        <PhoneCall className="w-5 h-5 text-gray-500" />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <p className="font-semibold text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Bank of Ireland Voice Call
+                        </p>
+                        <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Coming Soon - Direct voice support
+                        </p>
+                      </div>
+                      <div className="px-3 py-1 bg-gray-300 text-gray-600 rounded-full text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Coming Soon
+                      </div>
+                    </div>
                   </div>
                 </div>
 
