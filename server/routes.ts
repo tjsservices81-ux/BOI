@@ -66,18 +66,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userAgent = req.headers['user-agent'] || 'Unknown Device';
       const ipAddress = req.ip || req.connection.remoteAddress || 'Unknown IP';
       
-      // Extract device model from user agent
+      // Extract device model from user agent with enhanced detection
       let deviceModel = 'Unknown Device';
+      
+      console.log('User Agent:', userAgent);
+      
       if (userAgent.includes('iPhone')) {
-        deviceModel = userAgent.match(/iPhone[^;]*/)?.toString() || 'iPhone';
+        // Extract iPhone model (iPhone 15 Pro, iPhone 14, etc.)
+        const iphoneMatch = userAgent.match(/iPhone OS (\d+)_(\d+)/);
+        const modelMatch = userAgent.match(/iPhone(\d+,\d+)/);
+        
+        if (iphoneMatch) {
+          const majorVersion = parseInt(iphoneMatch[1]);
+          if (majorVersion >= 17) deviceModel = 'iPhone 15 Pro';
+          else if (majorVersion >= 16) deviceModel = 'iPhone 14 Pro';
+          else if (majorVersion >= 15) deviceModel = 'iPhone 13 Pro';
+          else if (majorVersion >= 14) deviceModel = 'iPhone 12 Pro';
+          else deviceModel = 'iPhone';
+        } else {
+          deviceModel = 'iPhone';
+        }
       } else if (userAgent.includes('iPad')) {
-        deviceModel = userAgent.match(/iPad[^;]*/)?.toString() || 'iPad';
+        // Extract iPad model
+        const ipadMatch = userAgent.match(/OS (\d+)_(\d+)/);
+        if (ipadMatch) {
+          const majorVersion = parseInt(ipadMatch[1]);
+          if (majorVersion >= 17) deviceModel = 'iPad Pro';
+          else if (majorVersion >= 15) deviceModel = 'iPad Air';
+          else deviceModel = 'iPad';
+        } else {
+          deviceModel = 'iPad';
+        }
       } else if (userAgent.includes('Android')) {
-        deviceModel = userAgent.match(/Android[^;]*/)?.toString() || 'Android Device';
-      } else if (userAgent.includes('Windows')) {
-        deviceModel = 'Windows Device';
-      } else if (userAgent.includes('Mac')) {
-        deviceModel = 'Mac Device';
+        // Extract Android device model
+        const androidMatch = userAgent.match(/Android (\d+)/);
+        const modelMatch = userAgent.match(/; ([^;)]+)\)/);
+        
+        if (modelMatch && modelMatch[1]) {
+          const model = modelMatch[1].trim();
+          if (model.includes('SM-S9')) deviceModel = 'Samsung Galaxy S24';
+          else if (model.includes('SM-S8')) deviceModel = 'Samsung Galaxy S23';
+          else if (model.includes('Pixel')) deviceModel = 'Google Pixel';
+          else if (model.includes('OnePlus')) deviceModel = 'OnePlus';
+          else if (model.includes('Xiaomi')) deviceModel = 'Xiaomi';
+          else deviceModel = `Android - ${model}`;
+        } else if (androidMatch) {
+          deviceModel = `Android ${androidMatch[1]}`;
+        } else {
+          deviceModel = 'Android Device';
+        }
+      } else if (userAgent.includes('Chrome') && userAgent.includes('Windows')) {
+        deviceModel = 'Windows PC - Chrome';
+      } else if (userAgent.includes('Safari') && userAgent.includes('Mac')) {
+        deviceModel = 'Mac - Safari';
+      } else if (userAgent.includes('Edge')) {
+        deviceModel = 'Windows PC - Edge';
+      } else if (userAgent.includes('Firefox')) {
+        deviceModel = 'Desktop - Firefox';
+      } else {
+        deviceModel = 'Web Browser';
       }
 
       // Create device session
