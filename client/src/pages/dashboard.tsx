@@ -16,6 +16,7 @@ interface Account {
 
 export default function Dashboard() {
   const [, setLocation] = useLocation();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   // Local state for account balances that can be updated by transfers
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -180,6 +181,25 @@ export default function Dashboard() {
     localStorage.setItem('bankAccounts', JSON.stringify(accounts));
   }, [accounts]);
 
+  // Handle scroll position persistence
+  useEffect(() => {
+    // Restore scroll position after component mounts
+    StateManager.restoreScrollPosition('/dashboard', '.main-scroll-container');
+    
+    // Save scroll position on scroll
+    const handleScroll = () => {
+      if (scrollContainerRef.current) {
+        StateManager.saveScrollPosition('/dashboard', scrollContainerRef.current.scrollTop);
+      }
+    };
+
+    const scrollContainer = scrollContainerRef.current;
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+      return () => scrollContainer.removeEventListener('scroll', handleScroll);
+    }
+  }, []);
+
   // Get color for account type
   const getAccountColor = (accountType: string) => {
     switch (accountType) {
@@ -231,7 +251,13 @@ export default function Dashboard() {
       </div>
 
       {/* Main content area - white card with rounded top corners */}
-      <div className="flex-1 px-0 -mt-8 overflow-y-auto ios-scroll" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+      <div 
+        ref={scrollContainerRef}
+        className="main-scroll-container flex-1 px-0 -mt-8 overflow-y-auto ios-scroll" 
+        style={{ maxHeight: 'calc(100vh - 200px)' }}
+        data-scroll-container
+        data-scroll-route="/dashboard"
+      >
         <div className="bg-white rounded-t-3xl shadow-lg min-h-full">
           <div className="pt-6 pb-32" style={{ overscrollBehavior: 'contain' }}>
             {accounts.map((account, index) => (

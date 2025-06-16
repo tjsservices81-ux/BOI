@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation, useRoute } from "wouter";
 import { ChevronLeft, ArrowUpRight, CreditCard, Building2, Zap, Check, Clock, MapPin, Globe } from "lucide-react";
 import MiniSpendingChart from "../components/MiniSpendingChart";
 import { UserDataManager } from "../utils/userDataManager.ts";
+import { StateManager } from "../utils/stateManager";
 
 export default function TransactionHistoryWorking() {
   const [, setLocation] = useLocation();
@@ -13,6 +14,7 @@ export default function TransactionHistoryWorking() {
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   const accountId = params?.accountId ? parseInt(params.accountId) : 1;
 
@@ -179,6 +181,27 @@ export default function TransactionHistoryWorking() {
     };
   }, []);
 
+  // Handle scroll position persistence
+  useEffect(() => {
+    const currentRoute = `/transactions/${accountId}`;
+    
+    // Restore scroll position after component mounts
+    StateManager.restoreScrollPosition(currentRoute, '.transaction-scroll-container');
+    
+    // Save scroll position on scroll
+    const handleScroll = () => {
+      if (scrollContainerRef.current) {
+        StateManager.saveScrollPosition(currentRoute, scrollContainerRef.current.scrollTop);
+      }
+    };
+
+    const scrollContainer = scrollContainerRef.current;
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+      return () => scrollContainer.removeEventListener('scroll', handleScroll);
+    }
+  }, [accountId]);
+
   const getIcon = (description: string) => {
     if (description.includes('Transfer')) return ArrowUpRight;
     if (description.includes('ATM')) return CreditCard;
@@ -222,12 +245,17 @@ export default function TransactionHistoryWorking() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 transaction-scroll-container"
+      <div 
+        ref={scrollContainerRef}
+        className="transaction-scroll-container flex-1 overflow-y-auto p-4"
         style={{ 
           minHeight: 0,
           maxHeight: 'calc(100vh - 200px)',
           paddingBottom: '100px'
-        }}>
+        }}
+        data-scroll-container
+        data-scroll-route={`/transactions/${accountId}`}
+      >
         {/* Mini spending chart for visual insights */}
         <MiniSpendingChart accountId={accountId} />
         
