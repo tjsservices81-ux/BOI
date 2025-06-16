@@ -15,7 +15,7 @@ export default function Splash() {
     });
     
     // Add splash-specific full screen class for iOS PWA
-    document.body.classList.add('splash-fullscreen', 'splash-active-body');
+    document.body.classList.add('splash-fullscreen');
     document.documentElement.style.setProperty('--status-bar-color', '#000DFF');
     
     // Comprehensive theme color update for splash screen
@@ -65,7 +65,7 @@ export default function Splash() {
     // Cleanup timer and remove splash class
     return () => {
       clearTimeout(finalTimer);
-      document.body.classList.remove('splash-fullscreen', 'splash-active-body');
+      document.body.classList.remove('splash-fullscreen');
       // Restore theme color to #126987 for other screens
       const themeColorMeta = document.querySelector('meta[name="theme-color"]');
       if (themeColorMeta) {
@@ -95,15 +95,7 @@ export default function Splash() {
         pointerEvents: 'none',
         opacity: 1,
         visibility: 'visible',
-        backgroundColor: '#000DFF',
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        width: '100vw',
-        height: '100vh',
-        zIndex: 99999
+        backgroundColor: '#000DFF'
       }}
       onClick={handleInteraction}
       onTouchStart={handleInteraction}
