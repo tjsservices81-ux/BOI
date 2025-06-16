@@ -1342,13 +1342,25 @@ router.post('/revoke-ip', adminAuth, async (req, res) => {
   }
 });
 
+router.post('/approve-ip', adminAuth, async (req, res) => {
+  try {
+    const { ip } = req.body;
+    approveIP(ip);
+    console.log(`✅ IP APPROVED: ${ip} by admin`);
+    res.json({ message: `Access approved for ${ip}` });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to approve IP' });
+  }
+});
+
 // Device session management endpoints
 router.get('/device-sessions', adminAuth, async (req, res) => {
   try {
     const sessions = getAllDeviceSessions();
     res.json({ sessions });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to get device sessions' });
+    console.error('Device sessions error:', error);
+    res.status(500).json({ error: 'Failed to get device sessions: ' + error.message });
   }
 });
 

@@ -1,3 +1,5 @@
+import { getAllApprovedIPs } from './ipControl';
+
 interface DeviceSession {
   sessionId: string;
   deviceModel: string;
@@ -58,9 +60,9 @@ export function getAllDeviceSessions(): DeviceSession[] {
   }));
 }
 
+import { getAllApprovedIPs } from './ipControl';
+
 function isIPApproved(ip: string): boolean {
-  // Import the IP approval check
-  const { getAllApprovedIPs } = require('./ipControl');
   const approvedIPs = getAllApprovedIPs();
   return approvedIPs.includes(ip);
 }
