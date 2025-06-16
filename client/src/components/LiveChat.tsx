@@ -272,48 +272,196 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
                 `Good to have you here — this is Emma from Bank of Ireland support, what can I do for you?`,
                 `Hi, this is Emma here from Bank of Ireland — what can I help you with?`,
                 `Hello, welcome to Bank of Ireland support. Emma speaking — how's your day going?`,
-                `You've reached the Bank of Ireland team, Emma here — what brings you to chat today?`,
-                `Hi there! Emma from Bank of Ireland support — what can I sort out for you?`,
-                `Good day! This is Emma with Bank of Ireland — what's on your mind?`,
-                `Hello there, Bank of Ireland support here — Emma speaking, how can I help?`,
-                `Hi, Emma here from the Bank of Ireland team — what can I do for you today?`,
-                `Hey! You're through to Bank of Ireland support, Emma speaking — how can I help?`
+                `You've reached the Bank of Ireland team, Emma here — what brings you to chat today?`
               ],
               'James': [
                 `Hey there, you're through to the Bank of Ireland team — I'm James, how can I help you today?`,
                 `Good to have you here — this is James from Bank of Ireland transfers, what can I do for you?`,
                 `Hi, this is James here from Bank of Ireland — what can I help you with?`,
                 `Hello, welcome to Bank of Ireland support. James speaking — how's your day going?`,
-                `You've reached the Bank of Ireland team, James here — what brings you to chat today?`,
-                `Hi there! James from Bank of Ireland transfers — what can I sort out for you?`,
-                `Good day! This is James with Bank of Ireland — what's on your mind?`,
-                `Hello there, Bank of Ireland support here — James speaking, how can I help?`,
-                `Hi, James here from the Bank of Ireland team — what can I do for you today?`,
-                `Hey! You're through to Bank of Ireland support, James speaking — how can I help?`
+                `You've reached the Bank of Ireland team, James here — what brings you to chat today?`
               ],
               'Sarah': [
                 `Hey there, you're through to the Bank of Ireland team — I'm Sarah, how can I help you today?`,
                 `Good to have you here — this is Sarah from Bank of Ireland security, what can I do for you?`,
                 `Hi, this is Sarah here from Bank of Ireland — what can I help you with?`,
                 `Hello, welcome to Bank of Ireland support. Sarah speaking — how's your day going?`,
-                `You've reached the Bank of Ireland team, Sarah here — what brings you to chat today?`,
-                `Hi there! Sarah from Bank of Ireland security — what can I sort out for you?`,
-                `Good day! This is Sarah with Bank of Ireland — what's on your mind?`,
-                `Hello there, Bank of Ireland support here — Sarah speaking, how can I help?`,
-                `Hi, Sarah here from the Bank of Ireland team — what can I do for you today?`,
-                `Hey! You're through to Bank of Ireland support, Sarah speaking — how can I help?`
+                `You've reached the Bank of Ireland team, Sarah here — what brings you to chat today?`
               ],
               'Michael': [
                 `Hey there, you're through to the Bank of Ireland team — I'm Michael, how can I help you today?`,
                 `Good to have you here — this is Michael from Bank of Ireland tech support, what can I do for you?`,
                 `Hi, this is Michael here from Bank of Ireland — what can I help you with?`,
                 `Hello, welcome to Bank of Ireland support. Michael speaking — how's your day going?`,
-                `You've reached the Bank of Ireland team, Michael here — what brings you to chat today?`,
-                `Hi there! Michael from Bank of Ireland tech support — what can I sort out for you?`,
-                `Good day! This is Michael with Bank of Ireland — what's on your mind?`,
-                `Hello there, Bank of Ireland support here — Michael speaking, how can I help?`,
-                `Hi, Michael here from the Bank of Ireland team — what can I do for you today?`,
-                `Hey! You're through to Bank of Ireland support, Michael speaking — how can I help?`
+                `You've reached the Bank of Ireland team, Michael here — what brings you to chat today?`
+              ],
+              'Aoife': [
+                `Hello there, you're through to Bank of Ireland — I'm Aoife, how can I help?`,
+                `Hi, this is Aoife from Bank of Ireland support — what can I do for you today?`,
+                `Good day, Aoife here from Bank of Ireland — what brings you to chat?`,
+                `Welcome to Bank of Ireland support, Aoife speaking — how's everything going?`,
+                `You've reached Bank of Ireland, this is Aoife — how can I assist you?`
+              ],
+              'Liam': [
+                `Hello, you're through to Bank of Ireland cards team — Liam here, how can I help?`,
+                `Hi there, this is Liam from Bank of Ireland payments — what can I sort out for you?`,
+                `Good day, Liam speaking from Bank of Ireland cards support — what's up?`,
+                `Welcome to Bank of Ireland, I'm Liam from the cards team — how can I assist?`,
+                `You've reached Bank of Ireland payments, Liam here — what can I help with?`
+              ],
+              'Rachel': [
+                `Hello, you're through to Bank of Ireland account services — Rachel here!`,
+                `Hi there, this is Rachel from Bank of Ireland — how can I help today?`,
+                `Good day, Rachel speaking from Bank of Ireland account services — what's on your mind?`,
+                `Welcome to Bank of Ireland, I'm Rachel — what can I do for you?`,
+                `You've reached Bank of Ireland, this is Rachel from account services — how can I assist?`
+              ],
+              'Connor': [
+                `Hello, you're through to Bank of Ireland digital banking — Connor here!`,
+                `Hi there, this is Connor from Bank of Ireland digital team — how can I help?`,
+                `Good day, Connor speaking from Bank of Ireland digital banking — what's up?`,
+                `Welcome to Bank of Ireland, I'm Connor from digital support — what can I do?`,
+                `You've reached Bank of Ireland digital banking, Connor here — how can I assist?`
+              ],
+              'Sophie': [
+                `Hello, you're through to Bank of Ireland customer care — Sophie here!`,
+                `Hi there, this is Sophie from Bank of Ireland care team — how can I help?`,
+                `Good day, Sophie speaking from Bank of Ireland customer care — what's on your mind?`,
+                `Welcome to Bank of Ireland, I'm Sophie — what can I do for you today?`,
+                `You've reached Bank of Ireland customer care, Sophie here — how can I assist?`
+              ],
+              'David': [
+                `Hello, you're through to Bank of Ireland international banking — David here!`,
+                `Hi there, this is David from Bank of Ireland international team — how can I help?`,
+                `Good day, David speaking from Bank of Ireland international banking — what's up?`,
+                `Welcome to Bank of Ireland, I'm David from international services — what can I do?`,
+                `You've reached Bank of Ireland international banking, David here — how can I assist?`
+              ],
+              'Claire': [
+                `Hello, you're through to Bank of Ireland loan services — Claire here!`,
+                `Hi there, this is Claire from Bank of Ireland loans team — how can I help?`,
+                `Good day, Claire speaking from Bank of Ireland loan services — what's on your mind?`,
+                `Welcome to Bank of Ireland, I'm Claire from loans — what can I do for you?`,
+                `You've reached Bank of Ireland loan services, Claire here — how can I assist?`
+              ],
+              'Ryan': [
+                `Hello, you're through to Bank of Ireland business banking — Ryan here!`,
+                `Hi there, this is Ryan from Bank of Ireland business team — how can I help?`,
+                `Good day, Ryan speaking from Bank of Ireland business banking — what's up?`,
+                `Welcome to Bank of Ireland, I'm Ryan from business services — what can I do?`,
+                `You've reached Bank of Ireland business banking, Ryan here — how can I assist?`
+              ],
+              'Rebecca': [
+                `Hello, you're through to Bank of Ireland mobile banking — Rebecca here!`,
+                `Hi there, this is Rebecca from Bank of Ireland mobile team — how can I help?`,
+                `Good day, Rebecca speaking from Bank of Ireland mobile banking — what's on your mind?`,
+                `Welcome to Bank of Ireland, I'm Rebecca from mobile support — what can I do?`,
+                `You've reached Bank of Ireland mobile banking, Rebecca here — how can I assist?`
+              ],
+              'Sean': [
+                `Hello, you're through to Bank of Ireland transfers — Sean here!`,
+                `Hi there, this is Sean from Bank of Ireland transfer team — how can I help?`,
+                `Good day, Sean speaking from Bank of Ireland transfers — what's up?`,
+                `Welcome to Bank of Ireland, I'm Sean from transfer support — what can I do?`,
+                `You've reached Bank of Ireland transfers, Sean here — how can I assist?`
+              ],
+              'Katie': [
+                `Hello, you're through to Bank of Ireland security — Katie here!`,
+                `Hi there, this is Katie from Bank of Ireland security team — how can I help?`,
+                `Good day, Katie speaking from Bank of Ireland security — what's on your mind?`,
+                `Welcome to Bank of Ireland, I'm Katie from security support — what can I do?`,
+                `You've reached Bank of Ireland security, Katie here — how can I assist?`
+              ],
+              'Adam': [
+                `Hello, you're through to Bank of Ireland tech support — Adam here!`,
+                `Hi there, this is Adam from Bank of Ireland technical team — how can I help?`,
+                `Good day, Adam speaking from Bank of Ireland tech support — what's up?`,
+                `Welcome to Bank of Ireland, I'm Adam from technical support — what can I do?`,
+                `You've reached Bank of Ireland tech support, Adam here — how can I assist?`
+              ],
+              'Niamh': [
+                `Hello, you're through to Bank of Ireland — Niamh here, how can I help?`,
+                `Hi there, this is Niamh from Bank of Ireland support — what can I do for you?`,
+                `Good day, Niamh speaking from Bank of Ireland — what brings you to chat?`,
+                `Welcome to Bank of Ireland, I'm Niamh — what's on your mind today?`,
+                `You've reached Bank of Ireland, this is Niamh — how can I assist you?`
+              ],
+              'Daniel': [
+                `Hello, you're through to Bank of Ireland cards team — Daniel here!`,
+                `Hi there, this is Daniel from Bank of Ireland payments — how can I help?`,
+                `Good day, Daniel speaking from Bank of Ireland cards support — what's up?`,
+                `Welcome to Bank of Ireland, I'm Daniel from the payments team — what can I do?`,
+                `You've reached Bank of Ireland cards, Daniel here — how can I assist?`
+              ],
+              'Amy': [
+                `Hello, you're through to Bank of Ireland customer care — Amy here!`,
+                `Hi there, this is Amy from Bank of Ireland care team — how can I help?`,
+                `Good day, Amy speaking from Bank of Ireland customer care — what's on your mind?`,
+                `Welcome to Bank of Ireland, I'm Amy from customer care — what can I do?`,
+                `You've reached Bank of Ireland customer care, Amy here — how can I assist?`
+              ],
+              'Jack': [
+                `Hello, you're through to Bank of Ireland digital banking — Jack here!`,
+                `Hi there, this is Jack from Bank of Ireland digital team — how can I help?`,
+                `Good day, Jack speaking from Bank of Ireland digital banking — what's up?`,
+                `Welcome to Bank of Ireland, I'm Jack from digital support — what can I do?`,
+                `You've reached Bank of Ireland digital banking, Jack here — how can I assist?`
+              ],
+              'Laura': [
+                `Hello, you're through to Bank of Ireland account services — Laura here!`,
+                `Hi there, this is Laura from Bank of Ireland accounts team — how can I help?`,
+                `Good day, Laura speaking from Bank of Ireland account services — what's on your mind?`,
+                `Welcome to Bank of Ireland, I'm Laura from account services — what can I do?`,
+                `You've reached Bank of Ireland account services, Laura here — how can I assist?`
+              ],
+              'Thomas': [
+                `Hello, you're through to Bank of Ireland international banking — Thomas here!`,
+                `Hi there, this is Thomas from Bank of Ireland international team — how can I help?`,
+                `Good day, Thomas speaking from Bank of Ireland international banking — what's up?`,
+                `Welcome to Bank of Ireland, I'm Thomas from international services — what can I do?`,
+                `You've reached Bank of Ireland international banking, Thomas here — how can I assist?`
+              ],
+              'Hannah': [
+                `Hello, you're through to Bank of Ireland mobile banking — Hannah here!`,
+                `Hi there, this is Hannah from Bank of Ireland mobile team — how can I help?`,
+                `Good day, Hannah speaking from Bank of Ireland mobile banking — what's on your mind?`,
+                `Welcome to Bank of Ireland, I'm Hannah from mobile support — what can I do?`,
+                `You've reached Bank of Ireland mobile banking, Hannah here — how can I assist?`
+              ],
+              'Mark': [
+                `Hello, you're through to Bank of Ireland business banking — Mark here!`,
+                `Hi there, this is Mark from Bank of Ireland business team — how can I help?`,
+                `Good day, Mark speaking from Bank of Ireland business banking — what's up?`,
+                `Welcome to Bank of Ireland, I'm Mark from business services — what can I do?`,
+                `You've reached Bank of Ireland business banking, Mark here — how can I assist?`
+              ],
+              'Grace': [
+                `Hello, you're through to Bank of Ireland loan services — Grace here!`,
+                `Hi there, this is Grace from Bank of Ireland loans team — how can I help?`,
+                `Good day, Grace speaking from Bank of Ireland loan services — what's on your mind?`,
+                `Welcome to Bank of Ireland, I'm Grace from loan services — what can I do?`,
+                `You've reached Bank of Ireland loan services, Grace here — how can I assist?`
+              ],
+              'Matthew': [
+                `Hello, you're through to Bank of Ireland transfers — Matthew here!`,
+                `Hi there, this is Matthew from Bank of Ireland transfer team — how can I help?`,
+                `Good day, Matthew speaking from Bank of Ireland transfers — what's up?`,
+                `Welcome to Bank of Ireland, I'm Matthew from transfer support — what can I do?`,
+                `You've reached Bank of Ireland transfers, Matthew here — how can I assist?`
+              ],
+              'Ella': [
+                `Hello, you're through to Bank of Ireland security — Ella here!`,
+                `Hi there, this is Ella from Bank of Ireland security team — how can I help?`,
+                `Good day, Ella speaking from Bank of Ireland security — what's on your mind?`,
+                `Welcome to Bank of Ireland, I'm Ella from security support — what can I do?`,
+                `You've reached Bank of Ireland security, Ella here — how can I assist?`
+              ],
+              'Luke': [
+                `Hello, you're through to Bank of Ireland tech support — Luke here!`,
+                `Hi there, this is Luke from Bank of Ireland technical team — how can I help?`,
+                `Good day, Luke speaking from Bank of Ireland tech support — what's up?`,
+                `Welcome to Bank of Ireland, I'm Luke from technical support — what can I do?`,
+                `You've reached Bank of Ireland tech support, Luke here — how can I assist?`
               ]
             };
             
