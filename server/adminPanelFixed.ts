@@ -2,7 +2,7 @@ import express from 'express';
 import { activatePanicMode, deactivatePanicMode, isPanicModeActive } from './panicMode';
 import { getAllApprovedIPs, revokeIP, approveIP } from './ipControl';
 import { getPendingAttempts, removeAttempt } from './accessMonitor';
-import { getAllDeviceSessions, blockDevice, unblockDevice, isDeviceBlocked } from './deviceSessions';
+import { getAllDeviceSessions, blockDevice, unblockDevice, isDeviceBlocked, activateDevicePanicMode, deactivateDevicePanicMode } from './deviceSessions';
 import { getAllUserDeviceSessions, forceLogoutUser } from './deviceExclusiveAuth';
 import { storage } from './storage';
 
@@ -1512,6 +1512,38 @@ router.post('/unblock-device', adminAuth, async (req, res) => {
     }
   } catch (error) {
     res.status(500).json({ error: 'Failed to unblock device' });
+  }
+});
+
+router.post('/device-panic-activate', adminAuth, async (req, res) => {
+  try {
+    const { sessionId } = req.body;
+    const activated = activateDevicePanicMode(sessionId);
+    
+    if (activated) {
+      res.json({ success: true, message: 'Device panic mode activated' });
+    } else {
+      res.status(404).json({ error: 'Device session not found' });
+    }
+  } catch (error) {
+    console.error('Activate device panic mode error:', error);
+    res.status(500).json({ error: 'Failed to activate device panic mode: ' + (error as Error).message });
+  }
+});
+
+router.post('/device-panic-deactivate', adminAuth, async (req, res) => {
+  try {
+    const { sessionId } = req.body;
+    const deactivated = deactivateDevicePanicMode(sessionId);
+    
+    if (deactivated) {
+      res.json({ success: true, message: 'Device panic mode deactivated' });
+    } else {
+      res.status(404).json({ error: 'Device session not found' });
+    }
+  } catch (error) {
+    console.error('Deactivate device panic mode error:', error);
+    res.status(500).json({ error: 'Failed to deactivate device panic mode: ' + (error as Error).message });
   }
 });
 

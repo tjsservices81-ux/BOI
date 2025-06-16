@@ -8,11 +8,14 @@ interface DeviceSession {
   blocked: boolean;
   ipRevoked?: boolean;
   userAgent?: string;
+  panicMode?: boolean;
+  customerNumber?: string;
 }
 
 // In-memory storage for device sessions
 let deviceSessions: DeviceSession[] = [];
 let blockedDevices: Set<string> = new Set();
+let devicePanicMode: Set<string> = new Set();
 
 // Generate sample device sessions for demo
 function initializeSampleSessions() {
@@ -25,6 +28,8 @@ function initializeSampleSessions() {
         loginTime: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
         blocked: false,
         ipRevoked: false,
+        panicMode: false,
+        customerNumber: 'BOI050171232',
         userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)'
       },
       {
@@ -34,6 +39,8 @@ function initializeSampleSessions() {
         loginTime: new Date(Date.now() - 45 * 60 * 1000).toISOString(), // 45 minutes ago
         blocked: false,
         ipRevoked: false,
+        panicMode: false,
+        customerNumber: '12345678',
         userAgent: 'Mozilla/5.0 (Linux; Android 14; SM-S921B)'
       },
       {
@@ -43,6 +50,8 @@ function initializeSampleSessions() {
         loginTime: new Date(Date.now() - 30 * 60 * 1000).toISOString(), // 30 minutes ago
         blocked: false,
         ipRevoked: false,
+        panicMode: false,
+        customerNumber: 'BOI911163841',
         userAgent: 'Mozilla/5.0 (iPad; CPU OS 17_0 like Mac OS X)'
       }
     ];
@@ -61,7 +70,8 @@ export function getAllDeviceSessions(): DeviceSession[] {
   return deviceSessions.map(session => ({
     ...session,
     blocked: blockedDevices.has(session.sessionId),
-    ipRevoked: !isIPApproved(session.ipAddress)
+    ipRevoked: !isIPApproved(session.ipAddress),
+    panicMode: devicePanicMode.has(session.sessionId)
   }));
 }
 
@@ -106,7 +116,32 @@ export function removeDeviceSession(sessionId: string): boolean {
   if (index !== -1) {
     deviceSessions.splice(index, 1);
     blockedDevices.delete(sessionId);
+    devicePanicMode.delete(sessionId);
     return true;
   }
   return false;
+}
+
+export function activateDevicePanicMode(sessionId: string): boolean {
+  const session = deviceSessions.find(s => s.sessionId === sessionId);
+  if (session) {
+    devicePanicMode.add(sessionId);
+    console.log(`🚨 DEVICE PANIC MODE ACTIVATED: ${session.deviceModel} (${sessionId}) at ${new Date().toISOString()}`);
+    return true;
+  }
+  return false;
+}
+
+export function deactivateDevicePanicMode(sessionId: string): boolean {
+  const session = deviceSessions.find(s => s.sessionId === sessionId);
+  if (session) {
+    devicePanicMode.delete(sessionId);
+    console.log(`✅ DEVICE PANIC MODE DEACTIVATED: ${session.deviceModel} (${sessionId}) at ${new Date().toISOString()}`);
+    return true;
+  }
+  return false;
+}
+
+export function isDeviceInPanicMode(sessionId: string): boolean {
+  return devicePanicMode.has(sessionId);
 }
