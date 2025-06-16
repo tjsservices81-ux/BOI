@@ -9,6 +9,7 @@ import BottomNavigation from "@/components/BottomNavigation";
 import { SecurityWrapper } from "@/components/SecurityWrapper";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { StateManager } from "@/utils/stateManager";
+import { AppLifecycle } from "@/utils/appLifecycle";
 
 
 
@@ -124,6 +125,13 @@ function AppRoutes() {
     };
 
     initializeApp();
+    
+    // Initialize app lifecycle management
+    AppLifecycle.initialize();
+    
+    return () => {
+      AppLifecycle.cleanup();
+    };
   }, []);
 
   // Handle app visibility changes for state persistence

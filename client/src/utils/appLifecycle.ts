@@ -106,11 +106,12 @@ export class AppLifecycle {
         // Restore scroll positions after a brief delay
         setTimeout(() => {
           Object.entries(savedState.scrollPositions).forEach(([route, position]) => {
+            const scrollPosition = typeof position === 'number' ? position : 0;
             const container = document.querySelector(`[data-scroll-route="${route}"]`) as HTMLElement;
-            if (container && position > 0) {
-              container.scrollTo({ top: position, behavior: 'instant' });
-            } else if (route === window.location.pathname && position > 0) {
-              window.scrollTo({ top: position, behavior: 'instant' });
+            if (container && scrollPosition > 0) {
+              container.scrollTo({ top: scrollPosition, behavior: 'instant' });
+            } else if (route === window.location.pathname && scrollPosition > 0) {
+              window.scrollTo({ top: scrollPosition, behavior: 'instant' });
             }
           });
         }, 100);
