@@ -5,9 +5,15 @@ export class AppLifecycle {
   private static isInitialized = false;
   private static lastActiveTime = Date.now();
   private static visibilityTimeout: NodeJS.Timeout | null = null;
+  private static isAppTerminated = false;
+  private static backgroundTime = 0;
+  private static SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
 
   static initialize() {
     if (this.isInitialized) return;
+
+    // Check if this is a fresh app start vs. restoration
+    AppLifecycle.checkAppTermination();
 
     // Handle page visibility changes
     document.addEventListener('visibilitychange', this.handleVisibilityChange.bind(this));
@@ -24,33 +30,81 @@ export class AppLifecycle {
     this.isInitialized = true;
   }
 
+  static checkAppTermination() {
+    const sessionData = localStorage.getItem('app_session_state');
+    const lastBackgroundTime = localStorage.getItem('app_background_time');
+    
+    if (!sessionData || !lastBackgroundTime) {
+      // No previous session or background time - fresh start
+      this.isAppTerminated = true;
+      this.clearAppState();
+      return;
+    }
+    
+    const backgroundDuration = Date.now() - parseInt(lastBackgroundTime);
+    
+    // If backgrounded for more than session timeout, treat as terminated
+    if (backgroundDuration > this.SESSION_TIMEOUT) {
+      this.isAppTerminated = true;
+      this.clearAppState();
+      return;
+    }
+    
+    // Check if page was unloaded/refreshed (indicates force close or refresh)
+    if (!sessionStorage.getItem('app_active_session')) {
+      this.isAppTerminated = true;
+      this.clearAppState();
+      return;
+    }
+    
+    this.isAppTerminated = false;
+  }
+
   static handleVisibilityChange() {
     if (document.hidden) {
-      // App going to background
+      // App going to background - save state and timestamp
+      this.backgroundTime = Date.now();
+      localStorage.setItem('app_background_time', this.backgroundTime.toString());
       this.saveCurrentState();
     } else {
       // App returning to foreground
-      this.restoreStateIfNeeded();
+      const backgroundDuration = Date.now() - this.backgroundTime;
+      
+      // If backgrounded for too long, treat as fresh start
+      if (backgroundDuration > this.SESSION_TIMEOUT) {
+        this.isAppTerminated = true;
+        this.clearAppState();
+        window.location.reload();
+      } else if (!this.isAppTerminated) {
+        this.restoreStateIfNeeded();
+      }
     }
   }
 
   static handleBeforeUnload() {
+    // Clear session marker to detect force close
+    sessionStorage.removeItem('app_active_session');
     this.saveCurrentState();
   }
 
   static handlePageHide() {
+    sessionStorage.removeItem('app_active_session');
     this.saveCurrentState();
   }
 
   static handlePageShow(event: PageTransitionEvent) {
-    if (event.persisted) {
-      // Page was restored from cache
+    // Set session marker to indicate active session
+    sessionStorage.setItem('app_active_session', 'true');
+    
+    if (event.persisted && !this.isAppTerminated) {
+      // Page was restored from cache and not terminated
       this.restoreStateIfNeeded();
     }
   }
 
   static handleFocus() {
     this.lastActiveTime = Date.now();
+    sessionStorage.setItem('app_active_session', 'true');
   }
 
   static handleBlur() {
@@ -62,6 +116,13 @@ export class AppLifecycle {
     this.visibilityTimeout = setTimeout(() => {
       this.saveCurrentState();
     }, 100);
+  }
+
+  static clearAppState() {
+    localStorage.removeItem('app_session_state');
+    localStorage.removeItem('app_background_time');
+    sessionStorage.removeItem('app_active_session');
+    StateManager.clearAppState();
   }
 
   static saveCurrentState() {

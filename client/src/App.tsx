@@ -75,42 +75,55 @@ function AppRoutes() {
   // Initialize app state with persistence support
   useEffect(() => {
     const initializeApp = async () => {
-      // Check if this is a forced cold start (only after real app closure)
-      const forceColdStart = localStorage.getItem('force_cold_start') === 'true';
+      // Check if sessionStorage was cleared (indicates fresh app start)
+      const wasAppActive = sessionStorage.getItem('app_was_active');
+      const lastBackgroundTime = localStorage.getItem('app_background_time');
       
-      if (forceColdStart) {
-        // This is a cold restart after app was actually closed
-        localStorage.removeItem('force_cold_start');
-        localStorage.removeItem('bankingUser');
-        sessionStorage.clear();
-        // Clear state persistence for true cold start
-        StateManager.clearExpiredState();
-        sessionStorage.setItem('app_cold_start', 'true');
+      if (!wasAppActive) {
+        // Fresh app start - show splash and clear state
         setSplashShown(false);
-      } else {
-        // Try to restore previous app state for background return
-        try {
-          const savedState = StateManager.restoreAppState();
-          
-          if (savedState && savedState.user && !user) {
-            // Restore user session silently
-            login(savedState.user);
+        StateManager.clearAppState();
+        localStorage.removeItem('app_background_time');
+        sessionStorage.setItem('app_was_active', 'true');
+      } else if (lastBackgroundTime) {
+        // App was backgrounded - check if too much time passed
+        const backgroundDuration = Date.now() - parseInt(lastBackgroundTime);
+        const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
+        
+        if (backgroundDuration > SESSION_TIMEOUT) {
+          // Too long in background - treat as fresh start
+          setSplashShown(false);
+          StateManager.clearAppState();
+          localStorage.removeItem('app_background_time');
+        } else {
+          // Quick return from background - restore state
+          try {
+            const savedState = StateManager.restoreAppState();
             
-            // Restore route if different from current
-            if (savedState.currentRoute !== location && savedState.currentRoute !== '/login') {
-              navigate(savedState.currentRoute);
+            if (savedState && savedState.user && !user) {
+              // Restore user session silently
+              login(savedState.user);
+              
+              // Restore route if different from current
+              if (savedState.currentRoute !== location && savedState.currentRoute !== '/login') {
+                navigate(savedState.currentRoute);
+              }
+              
+              // Skip splash if restoring state
+              setSplashShown(true);
+            } else {
+              // No valid saved state, show splash
+              setSplashShown(false);
             }
-            
-            // Skip splash if restoring state
-            setSplashShown(true);
-          } else {
-            // No valid saved state, show splash
+          } catch (error) {
+            console.error('Failed to restore app state:', error);
             setSplashShown(false);
           }
-        } catch (error) {
-          console.error('Failed to restore app state:', error);
-          setSplashShown(false);
         }
+        localStorage.removeItem('app_background_time');
+      } else {
+        // No background time recorded - show splash
+        setSplashShown(false);
       }
       
       // Clear temporary state for cold launch behavior
@@ -133,23 +146,27 @@ function AppRoutes() {
 
     initializeApp();
     
-    // Initialize app lifecycle management
-    AppLifecycle.initialize();
-    
-    return () => {
-      AppLifecycle.cleanup();
-    };
-  }, []);
-
-  // Handle app visibility changes for state persistence
-  useEffect(() => {
+    // Handle app lifecycle events directly
     const handleVisibilityChange = () => {
+      if (document.hidden) {
+        // App going to background - save state and timestamp
+        localStorage.setItem('app_background_time', Date.now().toString());
+        if (user) {
+          StateManager.handleVisibilityChange(location, user);
+        }
+      }
+    };
+
+    const handleBeforeUnload = () => {
+      // Clear session marker to detect force close
+      sessionStorage.removeItem('app_was_active');
       if (user) {
         StateManager.handleVisibilityChange(location, user);
       }
     };
 
-    const handleBeforeUnload = () => {
+    const handlePageHide = () => {
+      sessionStorage.removeItem('app_was_active');
       if (user) {
         StateManager.handleVisibilityChange(location, user);
       }
@@ -157,14 +174,16 @@ function AppRoutes() {
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('beforeunload', handleBeforeUnload);
-    window.addEventListener('pagehide', handleBeforeUnload);
-
+    window.addEventListener('pagehide', handlePageHide);
+    
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      window.removeEventListener('pagehide', handleBeforeUnload);
+      window.removeEventListener('pagehide', handlePageHide);
     };
-  }, [location, user]);
+  }, []);
+
+
 
   // Handle app visibility changes for proper lifecycle management
   useEffect(() => {
