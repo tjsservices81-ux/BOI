@@ -20,8 +20,8 @@ export function isAccountActiveOnOtherDevice(userId: number, currentDeviceSessio
     return false; // No existing session for this user
   }
   
-  // If no current device session provided, just check if any session exists
-  if (!currentDeviceSessionId || currentDeviceSessionId === 'temp') {
+  // If no current device session provided, account is already active
+  if (!currentDeviceSessionId) {
     return true; // Account is active on another device
   }
   

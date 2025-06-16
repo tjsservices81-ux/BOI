@@ -9,7 +9,7 @@ import { otcService } from "./otcService";
 import { transferSecurityService } from "./security/transferSecurity";
 import { generateChatResponse } from "./openai";
 import { isDeviceBlocked, addDeviceSession } from "./deviceSessions";
-import { isAccountActiveOnOtherDevice, setUserDeviceSession, removeUserDeviceSession } from "./deviceExclusiveAuth";
+import { isAccountActiveOnOtherDevice, setUserDeviceSession, removeUserDeviceSession, getUserDeviceSession } from "./deviceExclusiveAuth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize database and sample data
@@ -129,8 +129,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Check if this account is already active on another device BEFORE creating session
-      if (isAccountActiveOnOtherDevice(user.id, 'temp')) {
-        console.log(`🚫 ACCOUNT ALREADY ACTIVE: User ${user.id} attempted login from ${deviceModel}, but account is active on another device`);
+      if (isAccountActiveOnOtherDevice(user.id)) {
+        const existingSession = getUserDeviceSession(user.id);
+        console.log(`🚫 ACCOUNT ALREADY ACTIVE: User ${user.id} attempted login from ${deviceModel}, but account is active on ${existingSession?.deviceModel}`);
         return res.status(403).json({ 
           message: "This account is already active on another device." 
         });
