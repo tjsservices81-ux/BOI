@@ -13,7 +13,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { panicModeMiddleware } from "./panicMode";
-import adminRoutes from "./adminPanelComplete";
+import adminRoutes from "./adminPanelFinal";
 
 const app = express();
 
