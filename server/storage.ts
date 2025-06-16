@@ -56,6 +56,7 @@ export interface IStorage {
   disableDevicePanicMode(sessionId: string): Promise<void>;
   disableUser(userId: number): Promise<void>;
   enableUser(userId: number): Promise<void>;
+  getUsersWithDisabledStatus(): Promise<any[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -237,15 +238,22 @@ export class DatabaseStorage implements IStorage {
   }
 
   async disableUser(userId: number): Promise<void> {
-    // Store disabled users in memory for now
-    const { setUserDisabled } = await import('./userDisableManager');
-    setUserDisabled(userId, true);
+    const userDisableManager = await import('./userDisableManager');
+    userDisableManager.setUserDisabled(userId, true);
   }
 
   async enableUser(userId: number): Promise<void> {
-    // Store disabled users in memory for now
-    const { setUserDisabled } = await import('./userDisableManager');
-    setUserDisabled(userId, false);
+    const userDisableManager = await import('./userDisableManager');
+    userDisableManager.setUserDisabled(userId, false);
+  }
+
+  async getUsersWithDisabledStatus(): Promise<any[]> {
+    const users = await this.getAllUsers();
+    const userDisableManager = await import('./userDisableManager');
+    return users.map(user => ({
+      ...user,
+      isDisabled: userDisableManager.isUserDisabled(user.id)
+    }));
   }
 
   // Initialize sample data for first-time setup
@@ -329,8 +337,7 @@ export class MemStorage implements IStorage {
       address: "",
       dateOfBirth: "",
       joinDate: "",
-      dateCreated: new Date(),
-      isDisabled: false
+      dateCreated: new Date()
     };
     this.users.set(user.id, user);
 
@@ -605,19 +612,22 @@ export class MemStorage implements IStorage {
   }
 
   async disableUser(userId: number): Promise<void> {
-    const user = this.users.get(userId);
-    if (user) {
-      user.isDisabled = true;
-      this.users.set(userId, user);
-    }
+    const { setUserDisabled } = await import('./userDisableManager');
+    setUserDisabled(userId, true);
   }
 
   async enableUser(userId: number): Promise<void> {
-    const user = this.users.get(userId);
-    if (user) {
-      user.isDisabled = false;
-      this.users.set(userId, user);
-    }
+    const { setUserDisabled } = await import('./userDisableManager');
+    setUserDisabled(userId, false);
+  }
+
+  async getUsersWithDisabledStatus(): Promise<any[]> {
+    const { isUserDisabled } = await import('./userDisableManager');
+    const allUsers = Array.from(this.users.values());
+    return allUsers.map(user => ({
+      ...user,
+      isDisabled: isUserDisabled(user.id)
+    }));
   }
 }
 

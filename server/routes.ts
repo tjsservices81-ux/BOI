@@ -904,6 +904,30 @@ No transfers found yet on your account.`;
     }
   });
 
+  app.post("/api/admin/users/:userId/disable", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { setUserDisabled } = await import('./userDisableManager');
+      setUserDisabled(parseInt(userId), true);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Failed to disable user:', error);
+      res.status(500).json({ success: false, message: "Failed to disable user" });
+    }
+  });
+
+  app.post("/api/admin/users/:userId/enable", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { setUserDisabled } = await import('./userDisableManager');
+      setUserDisabled(parseInt(userId), false);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Failed to enable user:', error);
+      res.status(500).json({ success: false, message: "Failed to enable user" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

@@ -789,11 +789,14 @@ router.get('/dashboard', adminAuth, (req, res) => {
               session.customerNumber === user.customerNumber
             );
             
+            // Check if user is disabled (will be updated when we implement status checking)
+            const isDisabled = user.isDisabled || false;
+            
             html += \`
-              <div class="device-card">
+              <div class="device-card \${isDisabled ? 'disabled-user' : ''}">
                 <div class="device-header">
                   <div>
-                    <div class="device-name">\${user.name || 'Anonymous User'}</div>
+                    <div class="device-name">\${user.name || 'Anonymous User'} \${isDisabled ? '(DISABLED)' : ''}</div>
                     <div class="device-info">
                       Email: \${user.email || 'N/A'}<br>
                       Customer #: \${user.customerNumber || 'N/A'}<br>
@@ -804,7 +807,10 @@ router.get('/dashboard', adminAuth, (req, res) => {
                 </div>
                 <div class="device-buttons">
                   <button class="btn btn-primary" onclick="viewUserDetails('\${user.id}')">View Details</button>
-                  <button class="btn btn-danger" onclick="disableUser('\${user.id}')">Disable</button>
+                  <button class="btn \${isDisabled ? 'btn-success' : 'btn-danger'}" 
+                          onclick="toggleUserStatus('\${user.id}', \${isDisabled})">
+                    \${isDisabled ? 'Enable' : 'Disable'}
+                  </button>
                 </div>
               </div>
             \`;
@@ -930,16 +936,35 @@ router.get('/dashboard', adminAuth, (req, res) => {
           }
         }
         
+        // Toggle user status (disable/enable)
+        async function toggleUserStatus(userId, currentDisabled) {
+          const action = currentDisabled ? 'enable' : 'disable';
+          const confirmMessage = currentDisabled ? 
+            'Are you sure you want to enable this user?' : 
+            'Are you sure you want to disable this user? This will prevent them from accessing their banking account.';
+            
+          if (confirm(confirmMessage)) {
+            try {
+              const response = await fetch(\`/api/admin/users/\${userId}/\${action}\`, {
+                method: 'POST'
+              });
+              const data = await response.json();
+              
+              if (data.success) {
+                loadUserAccounts(); // Reload to show updated status
+              } else {
+                alert('Failed to ' + action + ' user');
+              }
+            } catch (error) {
+              console.error('Error toggling user status:', error);
+              alert('Failed to ' + action + ' user');
+            }
+          }
+        }
+        
         // View user details
         function viewUserDetails(userId) {
           alert('User details view not implemented yet');
-        }
-        
-        // Disable user
-        async function disableUser(userId) {
-          if (confirm('Are you sure you want to disable this user?')) {
-            alert('User disable functionality not implemented yet');
-          }
         }
         
         // Load data on page load
