@@ -147,7 +147,8 @@ export default function Dashboard() {
     };
 
     const handleAccountsUpdate = (event: CustomEvent) => {
-      const { accounts: updatedAccounts, source, newAccount } = event.detail;
+      const eventDetail = event.detail || {};
+      const { accounts: updatedAccounts, source, newAccount } = eventDetail;
       
       console.log('Dashboard received accountsUpdate:', { source, newAccount, accountsCount: updatedAccounts?.length });
       
