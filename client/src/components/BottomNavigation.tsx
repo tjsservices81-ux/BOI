@@ -3,7 +3,7 @@ import { useAuth } from "@/lib/auth";
 import { useEffect, useState } from "react";
 
 export default function BottomNavigation() {
-  const [location, setLocation] = useLocation();
+  const [location, setLocation] = useLocation() || ['/', () => {}];
   const { user } = useAuth();
   const [isSplashActive, setIsSplashActive] = useState(true);
 

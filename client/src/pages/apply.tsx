@@ -12,7 +12,7 @@ interface ProductTile {
 }
 
 export default function Apply() {
-  const [, navigate] = useLocation();
+  const [, navigate] = useLocation() || ['/', () => {}];
 
   const products: ProductTile[] = [
     {
