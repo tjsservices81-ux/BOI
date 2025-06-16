@@ -10,7 +10,7 @@ import { SecurityWrapper } from "@/components/SecurityWrapper";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { StateManager } from "@/utils/stateManager";
 import { AppLifecycle } from "@/utils/appLifecycle";
-import LiveChat from "@/components/LiveChat";
+import LiveChat from "@/components/LiveChatFixed";
 
 
 
