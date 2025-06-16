@@ -462,8 +462,30 @@ router.get('/dashboard', adminAuth, (req, res) => {
           font-size: 16px;
           overflow-x: hidden;
         }
+        @font-face {
+          font-family: 'OpenSans';
+          src: url('/OpenSans-Regular-webfont.woff2') format('woff2'),
+               url('/OpenSans-Regular-webfont.woff') format('woff');
+          font-weight: 400;
+          font-style: normal;
+        }
+        @font-face {
+          font-family: 'OpenSans';
+          src: url('/OpenSans-Semibold-webfont.woff2') format('woff2'),
+               url('/OpenSans-Semibold-webfont.woff') format('woff');
+          font-weight: 600;
+          font-style: normal;
+        }
+        @font-face {
+          font-family: 'OpenSans';
+          src: url('/OpenSans-Bold-webfont.woff2') format('woff2'),
+               url('/OpenSans-Bold-webfont.woff') format('woff');
+          font-weight: 700;
+          font-style: normal;
+        }
+        
         body { 
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+          font-family: 'OpenSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
           background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
           line-height: 1.6; 
           overflow-x: hidden;
@@ -474,20 +496,37 @@ router.get('/dashboard', adminAuth, (req, res) => {
           touch-action: manipulation;
         }
         .header { 
-          background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+          background: #0050AA;
           color: white; 
-          padding: 2rem 0; 
+          padding: 1.5rem 0; 
           text-align: center; 
-          box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+          box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+        .header-logo {
+          width: 80px;
+          height: 26px;
+          background: white;
+          border-radius: 4px;
+          margin-bottom: 1rem;
+          background-image: url('/boi_logo.svg');
+          background-size: contain;
+          background-repeat: no-repeat;
+          background-position: center;
+          padding: 4px;
         }
         .header h1 {
-          font-size: 2.5rem;
-          font-weight: 300;
-          margin-bottom: 0.5rem;
+          font-size: 1.4rem;
+          font-weight: 600;
+          margin-bottom: 0.25rem;
+          font-family: 'OpenSans', sans-serif;
         }
         .header p {
-          font-size: 1.1rem;
+          font-size: 0.9rem;
           opacity: 0.9;
+          font-weight: 400;
         }
         .container { 
           max-width: 1400px; 
@@ -651,7 +690,8 @@ router.get('/dashboard', adminAuth, (req, res) => {
     </head>
     <body>
       <div class="header">
-        <h1>🏦 BOI Admin Dashboard</h1>
+        <div class="header-logo"></div>
+        <h1>Admin Dashboard</h1>
         <p>Banking Administration & Security Control</p>
       </div>
       
