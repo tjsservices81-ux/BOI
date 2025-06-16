@@ -62,7 +62,7 @@ export default function IbanTransfer() {
     
     // Listen for account updates from admin panel
     const handleAccountsUpdate = (event: CustomEvent) => {
-      const { accounts: updatedAccounts } = event.detail;
+      const { accounts: updatedAccounts } = event.detail || {};
       if (updatedAccounts) {
         setAccounts(updatedAccounts);
       }

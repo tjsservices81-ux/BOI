@@ -90,7 +90,7 @@ export default function Dashboard() {
   // Listen for balance updates from transfers and admin profile updates
   useEffect(() => {
     const handleBalanceUpdate = (event: CustomEvent) => {
-      const { accountId, newBalance, accounts: updatedAccounts } = event.detail;
+      const { accountId, newBalance, accounts: updatedAccounts } = event.detail || {};
       
       // If updated accounts are provided in the event, use them
       if (updatedAccounts) {
@@ -147,7 +147,7 @@ export default function Dashboard() {
     };
 
     const handleAccountsUpdate = (event: CustomEvent) => {
-      const { accounts: updatedAccounts, source, newAccount } = event.detail;
+      const { accounts: updatedAccounts, source, newAccount } = event.detail || {};
       
       console.log('Dashboard received accountsUpdate:', { source, newAccount, accountsCount: updatedAccounts?.length });
       
