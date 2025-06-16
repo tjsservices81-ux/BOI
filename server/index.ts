@@ -64,6 +64,9 @@ app.use((req, res, next) => {
 // Serve static assets from root directory
 app.use(express.static('.'));
 
+// Add admin routes before main app routes
+app.use('/admin', adminRoutes);
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -95,9 +98,6 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Add admin routes for IP management
-  app.use('/admin', adminRoutes);
-  
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

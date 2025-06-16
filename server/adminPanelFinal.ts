@@ -369,26 +369,46 @@ router.get('/login', (req, res) => {
       </div>
       
       <script>
-        function login(event) {
+        async function login(event) {
           event.preventDefault();
           
           const adminKey = document.getElementById('adminKey').value;
           const errorDiv = document.getElementById('error');
+          const loginButton = document.querySelector('.login-button');
           
           if (!adminKey) {
             showError('Please enter your admin access key');
             return;
           }
           
-          // Validate admin key
-          if (adminKey === 'BOI_ADMIN_2025_SECURE') {
-            // Store authentication and redirect
-            sessionStorage.setItem('adminAuth', 'true');
-            window.location.href = '/admin/dashboard';
-          } else {
-            showError('Invalid access key. Please check your credentials and try again.');
-            // Clear the input for security
-            document.getElementById('adminKey').value = '';
+          // Show loading state
+          loginButton.textContent = 'Authenticating...';
+          loginButton.disabled = true;
+          
+          try {
+            const response = await fetch('/admin/login', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ adminKey })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+              window.location.href = data.redirect;
+            } else {
+              showError(data.message || 'Invalid access key. Please check your credentials and try again.');
+              document.getElementById('adminKey').value = '';
+            }
+          } catch (error) {
+            showError('Network error. Please try again.');
+            console.error('Login error:', error);
+          } finally {
+            // Reset button state
+            loginButton.textContent = 'Access Admin Panel';
+            loginButton.disabled = false;
           }
         }
         
@@ -441,6 +461,19 @@ router.get('/login', (req, res) => {
   `;
   
   res.send(loginPage);
+});
+
+// Handle admin login POST
+router.post('/login', (req, res) => {
+  const { adminKey } = req.body;
+  
+  if (adminKey === 'BOI_ADMIN_2025_SECURE') {
+    // Set server-side session
+    (req.session as any).adminAuth = true;
+    res.json({ success: true, redirect: '/admin/dashboard' });
+  } else {
+    res.status(401).json({ success: false, message: 'Invalid admin key' });
+  }
 });
 
 // Admin dashboard
