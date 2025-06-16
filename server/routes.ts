@@ -8,7 +8,7 @@ import connectPg from "connect-pg-simple";
 import { otcService } from "./otcService";
 import { transferSecurityService } from "./security/transferSecurity";
 import { generateChatResponse } from "./openai";
-import { isDeviceBlocked, addDeviceSession, isDeviceInPanicMode } from "./deviceSessions";
+import { isDeviceBlocked, addDeviceSession, isDeviceInPanicMode, isCustomerInPanicMode } from "./deviceSessions";
 import { isAccountActiveOnOtherDevice, setUserDeviceSession, removeUserDeviceSession, getUserDeviceSession, isCurrentDeviceAuthorized } from "./deviceExclusiveAuth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -68,6 +68,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (!user) {
         return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      // Check if this customer has any devices in panic mode
+      if (isCustomerInPanicMode(user.customerNumber)) {
+        console.log(`🚨 PANIC MODE LOGIN BLOCKED: Customer ${user.customerNumber} attempted login but their device is in panic mode`);
+        return res.status(503).json({ 
+          message: "System temporarily unavailable. Please try again later." 
+        });
       }
 
       // Get device information from request headers

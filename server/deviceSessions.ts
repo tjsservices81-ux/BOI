@@ -16,6 +16,7 @@ interface DeviceSession {
 let deviceSessions: DeviceSession[] = [];
 let blockedDevices: Set<string> = new Set();
 let devicePanicMode: Set<string> = new Set();
+let customerPanicMode: Set<string> = new Set();
 
 // Generate sample device sessions for demo
 function initializeSampleSessions() {
@@ -126,7 +127,10 @@ export function activateDevicePanicMode(sessionId: string): boolean {
   const session = deviceSessions.find(s => s.sessionId === sessionId);
   if (session) {
     devicePanicMode.add(sessionId);
-    console.log(`🚨 DEVICE PANIC MODE ACTIVATED: ${session.deviceModel} (${sessionId}) at ${new Date().toISOString()}`);
+    if (session.customerNumber) {
+      customerPanicMode.add(session.customerNumber);
+    }
+    console.log(`🚨 DEVICE PANIC MODE ACTIVATED: ${session.deviceModel} (${sessionId}) for customer ${session.customerNumber} at ${new Date().toISOString()}`);
     return true;
   }
   return false;
@@ -136,7 +140,10 @@ export function deactivateDevicePanicMode(sessionId: string): boolean {
   const session = deviceSessions.find(s => s.sessionId === sessionId);
   if (session) {
     devicePanicMode.delete(sessionId);
-    console.log(`✅ DEVICE PANIC MODE DEACTIVATED: ${session.deviceModel} (${sessionId}) at ${new Date().toISOString()}`);
+    if (session.customerNumber) {
+      customerPanicMode.delete(session.customerNumber);
+    }
+    console.log(`✅ DEVICE PANIC MODE DEACTIVATED: ${session.deviceModel} (${sessionId}) for customer ${session.customerNumber} at ${new Date().toISOString()}`);
     return true;
   }
   return false;
@@ -147,7 +154,5 @@ export function isDeviceInPanicMode(sessionId: string): boolean {
 }
 
 export function isCustomerInPanicMode(customerNumber: string): boolean {
-  // Check if any device session for this customer is in panic mode
-  const customerSessions = deviceSessions.filter(session => session.customerNumber === customerNumber);
-  return customerSessions.some(session => devicePanicMode.has(session.sessionId));
+  return customerPanicMode.has(customerNumber);
 }
