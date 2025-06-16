@@ -3,8 +3,12 @@ import { useAuth } from "@/lib/auth";
 import { useEffect, useState } from "react";
 
 export default function BottomNavigation() {
-  const [location, setLocation] = useLocation() || ['/', () => {}];
-  const { user } = useAuth() || { user: null };
+  const locationHook = useLocation();
+  const location = locationHook ? locationHook[0] : '/';
+  const setLocation = locationHook ? locationHook[1] : (() => {});
+  
+  const authHook = useAuth();
+  const user = authHook?.user || null;
   const [isSplashActive, setIsSplashActive] = useState(true);
 
   // Monitor splash screen state
