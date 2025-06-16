@@ -14,7 +14,7 @@ export default function TransactionHistoryWorking() {
   const [balance, setBalance] = useState<string>('0.00');
   const [accountInfo, setAccountInfo] = useState<any>(null);
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
   const [isNavigating, setIsNavigating] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   
@@ -44,47 +44,7 @@ export default function TransactionHistoryWorking() {
     }, 200);
   };
 
-  const handleDeleteTransaction = () => {
-    if (!selectedTransaction) return;
-    
-    // Get all transactions using UserDataManager
-    const storedTransactions = UserDataManager.getUserData('bankTransactions', []);
-    
-    // Filter out the selected transaction
-    const updatedTransactions = storedTransactions.filter((tx: any) => tx.id !== selectedTransaction.id);
-    
-    // Add exchange rate data to existing UK transfers that don't have it
-    const enhancedTransactions = updatedTransactions.map((tx: any) => {
-      if (tx.paymentMethod === 'UK Transfer' && !tx.exchangeRate) {
-        const amount = parseFloat(tx.amount.replace('-', ''));
-        const sampleRate = 0.8456; // Sample EUR to GBP rate
-        return {
-          ...tx,
-          exchangeRate: sampleRate,
-          convertedAmount: (amount * sampleRate).toFixed(2),
-          convertedCurrency: 'GBP'
-        };
-      }
-      return tx;
-    });
-    
-    // Update data using UserDataManager
-    UserDataManager.setUserData('bankTransactions', enhancedTransactions);
-    
-    // Update local state immediately with filtered account transactions
-    const accountTransactions = enhancedTransactions.filter((tx: any) => tx.accountId === accountId);
-    setTransactions(accountTransactions);
-    
-    // Close modals
-    setSelectedTransaction(null);
-    setShowDeleteConfirm(false);
-    
-    // Dispatch events to update other components
-    window.dispatchEvent(new CustomEvent('transactionDeleted', {
-      detail: { transactionId: selectedTransaction?.id }
-    }));
-    window.dispatchEvent(new CustomEvent('transactionUpdate'));
-  };
+
 
 
 
