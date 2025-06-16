@@ -1109,25 +1109,41 @@ router.get('/dashboard', (req, res) => {
                     const isIPRevoked = session.ipRevoked;
                     const overallStatus = isDeviceBlocked || isIPRevoked ? 'BLOCKED' : 'ACTIVE';
                     
+                    const isPanicMode = session.panicMode;
+                    
                     sessionsHtml += 
-                      '<div style="margin-left: 2rem; padding: 1rem; background: rgba(255,255,255,0.8); border-radius: 8px; margin-bottom: 0.5rem; border-left: 3px solid ' + (overallStatus === 'BLOCKED' ? '#e74c3c' : '#27ae60') + ';">' +
-                        '<div style="display: flex; justify-content: space-between; align-items: center;">' +
-                          '<div>' +
-                            '<strong style="color: #2c3e50;">📱 ' + session.deviceModel + '</strong><br>' +
-                            '<span style="color: #7f8c8d; font-size: 0.9rem;">🌐 IP: ' + session.ipAddress + '</span>' +
+                      '<div style="margin: 1rem 0; padding: 1.5rem; background: rgba(255,255,255,0.9); border-radius: 12px; border-left: 4px solid ' + (isPanicMode ? '#e74c3c' : '#3498db') + '; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">' +
+                        '<div style="display: flex; flex-direction: column; gap: 0.8rem;">' +
+                          '<div style="border-bottom: 1px solid #eee; padding-bottom: 0.5rem;">' +
+                            '<strong style="color: #1e3c72; font-size: 1.1rem;">Account Details</strong>' +
                           '</div>' +
-                          '<div style="text-align: right;">' +
-                            '<span class="status-badge ' + (overallStatus === 'BLOCKED' ? 'status-blocked' : 'status-active') + '">' + overallStatus + '</span><br>' +
-                            '<div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">' +
-                              '<button class="' + (isDeviceBlocked ? 'btn-unblock' : 'btn-block') + '" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;" onclick="' + 
-                                (isDeviceBlocked ? 'unblockDevice' : 'blockDevice') + '(&quot;' + session.sessionId + '&quot;, &quot;' + session.deviceModel + '&quot;)">' +
-                                (isDeviceBlocked ? 'Unblock' : 'Block') +
-                              '</button>' +
-                              '<button class="' + (isIPRevoked ? 'btn-unblock' : 'btn-block') + '" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;" onclick="' + 
-                                (isIPRevoked ? 'approveIP' : 'revokeIP') + '(&quot;' + session.ipAddress + '&quot;)">' +
-                                (isIPRevoked ? 'Approve IP' : 'Revoke IP') +
+                          '<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 0.5rem; align-items: center;">' +
+                            '<span style="color: #666; font-weight: 500;">IP:</span>' +
+                            '<span style="color: #2c3e50; font-family: monospace;">' + session.ipAddress + '</span>' +
+                          '</div>' +
+                          '<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 0.5rem; align-items: center;">' +
+                            '<span style="color: #666; font-weight: 500;">Device:</span>' +
+                            '<span style="color: #2c3e50; font-weight: 600;">' + session.deviceModel + '</span>' +
+                          '</div>' +
+                          '<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 0.5rem; align-items: center;">' +
+                            '<span style="color: #666; font-weight: 500;">Panic Mode:</span>' +
+                            '<div style="display: flex; align-items: center; gap: 1rem;">' +
+                              '<span style="color: ' + (isPanicMode ? '#e74c3c' : '#27ae60') + '; font-weight: bold;">' + (isPanicMode ? 'ACTIVE' : 'INACTIVE') + '</span>' +
+                              '<button class="' + (isPanicMode ? 'btn-success' : 'btn-danger') + '" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;" onclick="' + 
+                                (isPanicMode ? 'deactivateDevicePanicMode' : 'activateDevicePanicMode') + '(&quot;' + session.sessionId + '&quot;, &quot;' + session.deviceModel + '&quot;)">' +
+                                (isPanicMode ? 'Deactivate' : 'Activate') +
                               '</button>' +
                             '</div>' +
+                          '</div>' +
+                          '<div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #eee;">' +
+                            '<button class="' + (isDeviceBlocked ? 'btn-unblock' : 'btn-block') + '" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;" onclick="' + 
+                              (isDeviceBlocked ? 'unblockDevice' : 'blockDevice') + '(&quot;' + session.sessionId + '&quot;, &quot;' + session.deviceModel + '&quot;)">' +
+                              (isDeviceBlocked ? 'Unblock Device' : 'Block Device') +
+                            '</button>' +
+                            '<button class="' + (isIPRevoked ? 'btn-unblock' : 'btn-block') + '" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;" onclick="' + 
+                              (isIPRevoked ? 'approveIP' : 'revokeIP') + '(&quot;' + session.ipAddress + '&quot;)">' +
+                              (isIPRevoked ? 'Approve IP' : 'Revoke IP') +
+                            '</button>' +
                           '</div>' +
                         '</div>' +
                       '</div>';
@@ -1260,6 +1276,62 @@ router.get('/dashboard', (req, res) => {
               loadDeviceSessions();
             } else {
               showMessage(result.error || 'Failed to revoke IP', 'error');
+            }
+          } catch (error) {
+            showMessage('Network error: ' + error.message, 'error');
+          }
+        }
+
+        async function activateDevicePanicMode(sessionId, deviceModel) {
+          if (!confirm('Are you sure you want to activate PANIC MODE for device: ' + deviceModel + '?')) {
+            return;
+          }
+          
+          try {
+            const response = await fetch('/admin/device-panic-activate', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Admin-Key': ADMIN_KEY
+              },
+              body: JSON.stringify({ sessionId: sessionId })
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok) {
+              showMessage('Device panic mode activated for ' + deviceModel, 'success');
+              loadDeviceSessions();
+            } else {
+              showMessage(result.error || 'Failed to activate device panic mode', 'error');
+            }
+          } catch (error) {
+            showMessage('Network error: ' + error.message, 'error');
+          }
+        }
+
+        async function deactivateDevicePanicMode(sessionId, deviceModel) {
+          if (!confirm('Are you sure you want to deactivate PANIC MODE for device: ' + deviceModel + '?')) {
+            return;
+          }
+          
+          try {
+            const response = await fetch('/admin/device-panic-deactivate', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Admin-Key': ADMIN_KEY
+              },
+              body: JSON.stringify({ sessionId: sessionId })
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok) {
+              showMessage('Device panic mode deactivated for ' + deviceModel, 'success');
+              loadDeviceSessions();
+            } else {
+              showMessage(result.error || 'Failed to deactivate device panic mode', 'error');
             }
           } catch (error) {
             showMessage('Network error: ' + error.message, 'error');
