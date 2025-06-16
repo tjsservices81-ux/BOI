@@ -93,12 +93,21 @@ export default function IbanTransfer() {
   }, [form]);
 
   const onSubmit = (data: IbanTransferData) => {
+    console.log('IBAN form submitted with data:', data);
     setFormData(data);
+    const ref = generateReference();
+    console.log('Generated IBAN transfer reference:', ref);
+    setTransferReference(ref);
     setStep('confirm');
   };
 
   const executeTransfer = async () => {
-    if (!formData) return;
+    if (!formData) {
+      console.error('No form data available for IBAN transfer');
+      return;
+    }
+    
+    console.log('Starting IBAN transfer execution with:', { formData, transferReference });
     
     // Start processing animation
     setStep('success');
