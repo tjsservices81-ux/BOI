@@ -752,6 +752,12 @@ router.get('/dashboard', (req, res) => {
           <h2>📱 Device & Session Monitor</h2>
           <div id="deviceSessions"></div>
         </div>
+
+        <!-- User Accounts -->
+        <div class="section">
+          <h2>👥 User Accounts</h2>
+          <div id="userAccounts"></div>
+        </div>
       </div>
 
       <script>
@@ -1218,11 +1224,58 @@ router.get('/dashboard', (req, res) => {
           }
         }
         
+        async function loadUserAccounts() {
+          try {
+            const response = await fetch('/admin/user-accounts', {
+              headers: {
+                'X-Admin-Key': ADMIN_KEY
+              }
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok) {
+              const accountsList = document.getElementById('userAccounts');
+              accountsList.innerHTML = '';
+              
+              if (result.accounts && result.accounts.length > 0) {
+                result.accounts.forEach(function(account) {
+                  const accountDiv = document.createElement('div');
+                  accountDiv.className = 'ip-item';
+                  accountDiv.innerHTML = 
+                    '<div style="display: flex; flex-direction: column; gap: 0.5rem;">' +
+                      '<div style="display: flex; justify-content: space-between; align-items: center;">' +
+                        '<strong>' + (account.fullName || 'Unknown User') + '</strong>' +
+                        '<span style="font-size: 0.9rem; color: #666;">ID: ' + account.id + '</span>' +
+                      '</div>' +
+                      '<div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: #555;">' +
+                        '<span>📧 ' + (account.email || 'No email') + '</span>' +
+                        '<span>🔢 ' + (account.customerNumber || 'No customer number') + '</span>' +
+                      '</div>' +
+                      '<div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: #777;">' +
+                        '<span>📅 Created: ' + (account.accountCreationDate ? new Date(account.accountCreationDate).toLocaleDateString() : 'Unknown') + '</span>' +
+                        '<span>👤 ' + (account.joinDate || 'Member since unknown') + '</span>' +
+                      '</div>' +
+                    '</div>';
+                  accountsList.appendChild(accountDiv);
+                });
+              } else {
+                accountsList.innerHTML = '<div class="ip-item">No user accounts found</div>';
+              }
+            } else {
+              showMessage(result.error || 'Failed to load user accounts', 'error');
+            }
+          } catch (error) {
+            showMessage('Network error: ' + error.message, 'error');
+          }
+        }
+
         // Auto-refresh every 5 seconds
         setInterval(function() {
           loadPendingRequests();
           loadPanicModeStatus();
           loadDeviceSessions();
+          loadUserAccounts();
         }, 5000);
         
         // Load data on page load
@@ -1230,6 +1283,7 @@ router.get('/dashboard', (req, res) => {
         loadPendingRequests();
         loadPanicModeStatus();
         loadDeviceSessions();
+        loadUserAccounts();
       </script>
     </body>
     </html>
@@ -1359,7 +1413,7 @@ router.post('/approve-ip', adminAuth, async (req, res) => {
 router.get('/user-accounts', adminAuth, async (req, res) => {
   try {
     const users = await storage.getAllUsers();
-    const userAccounts = users.map(user => ({
+    const userAccounts = users.map((user: any) => ({
       id: user.id,
       fullName: user.name,
       email: user.email,
