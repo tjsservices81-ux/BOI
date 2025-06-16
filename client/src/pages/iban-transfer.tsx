@@ -322,6 +322,11 @@ export default function IbanTransfer() {
                         <strong>SEPA Transfer:</strong> International transfers typically take 1-3 business days to reach the recipient depending on the destination country.
                       </p>
                     </div>
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-3 mt-3">
+                      <p className="text-sm text-red-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <strong>Important:</strong> This payment cannot be cancelled once sent.
+                      </p>
+                    </div>
                   </div>
                 </div>
 
