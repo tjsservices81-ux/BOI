@@ -102,9 +102,10 @@ export default function InternalTransfer() {
 
     // Create debit transaction for source account
     const debitTransaction = {
-      id: `TXN${Date.now()}D`,
+      id: Date.now(),
+      accountId: selectedFromAccount.id,
       amount: `-${transferAmount.toFixed(2)}`,
-      description: `Transfer to ${selectedToAccount.displayName}`,
+      description: `Internal Transfer to ${selectedToAccount.displayName}`,
       timestamp,
       category: 'transfer',
       type: 'debit',
@@ -118,9 +119,10 @@ export default function InternalTransfer() {
 
     // Create credit transaction for destination account
     const creditTransaction = {
-      id: `TXN${Date.now()}C`,
+      id: Date.now() + 1,
+      accountId: selectedToAccount.id,
       amount: `+${transferAmount.toFixed(2)}`,
-      description: `Transfer from ${selectedFromAccount.displayName}`,
+      description: `Internal Transfer from ${selectedFromAccount.displayName}`,
       timestamp,
       category: 'transfer',
       type: 'credit',
@@ -150,9 +152,14 @@ export default function InternalTransfer() {
     const updatedTransactions = [...currentTransactions, debitTransaction, creditTransaction];
     UserDataManager.setUserData('bankTransactions', updatedTransactions);
 
-    // Dispatch update events
+    // Dispatch update events with updated data
     window.dispatchEvent(new CustomEvent('transactionUpdate'));
-    window.dispatchEvent(new CustomEvent('accountUpdate'));
+    window.dispatchEvent(new CustomEvent('balanceUpdate', {
+      detail: { accounts: updatedAccounts }
+    }));
+    window.dispatchEvent(new CustomEvent('accountsUpdate', {
+      detail: { accounts: updatedAccounts, source: 'internal-transfer' }
+    }));
 
     setStep('success');
   };
