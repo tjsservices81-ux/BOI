@@ -428,10 +428,41 @@ export default function TransactionHistoryWorking() {
                   </span>
                 </div>
 
-                {/* UK Transfer Recipient Details */}
-                {selectedTransaction.paymentMethod === 'UK Transfer' && (selectedTransaction.recipientAccountNumber || selectedTransaction.recipientSortCode) && (
+                {/* Recipient Information for all transfer types */}
+                {(selectedTransaction.paymentMethod === 'UK Transfer' || selectedTransaction.paymentMethod === 'IBAN Transfer' || selectedTransaction.iban || selectedTransaction.recipientAccountNumber) && (
                   <>
-                    {selectedTransaction.recipientSortCode && (
+                    {/* Recipient Name */}
+                    {selectedTransaction.recipientName && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Recipient:</span>
+                        <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          {selectedTransaction.recipientName}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* IBAN for International Transfers */}
+                    {selectedTransaction.iban && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>IBAN:</span>
+                        <span className="font-semibold text-gray-900 font-mono text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          {selectedTransaction.iban}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* BIC Code for International Transfers */}
+                    {selectedTransaction.bicCode && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>BIC Code:</span>
+                        <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          {selectedTransaction.bicCode}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* UK Transfer Details */}
+                    {selectedTransaction.paymentMethod === 'UK Transfer' && selectedTransaction.recipientSortCode && (
                       <div className="flex justify-between">
                         <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Sort Code:</span>
                         <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -440,11 +471,21 @@ export default function TransactionHistoryWorking() {
                       </div>
                     )}
                     
-                    {selectedTransaction.recipientAccountNumber && (
+                    {selectedTransaction.paymentMethod === 'UK Transfer' && selectedTransaction.recipientAccountNumber && (
                       <div className="flex justify-between">
                         <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Account Number:</span>
                         <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                           {selectedTransaction.recipientAccountNumber}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Payment Reference */}
+                    {selectedTransaction.reference && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Reference:</span>
+                        <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          {selectedTransaction.reference}
                         </span>
                       </div>
                     )}
@@ -508,74 +549,13 @@ export default function TransactionHistoryWorking() {
                 >
                   Close
                 </button>
-                <div className="flex space-x-3">
-                  <button 
-                    className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold active:scale-98 transition-transform"
-                    style={{ fontFamily: 'OpenSans, sans-serif' }}
-                  >
-                    Export Details
-                  </button>
-                  <button 
-                    onClick={() => setShowDeleteConfirm(true)}
-                    className="flex-1 bg-red-500 text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform"
-                    style={{ fontFamily: 'OpenSans, sans-serif' }}
-                  >
-                    Delete
-                  </button>
-                </div>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && (
-        <div style={{ 
-          position: 'fixed', 
-          top: 0, 
-          left: 0, 
-          right: 0, 
-          bottom: 0, 
-          background: 'rgba(0, 0, 0, 0.6)',
-          zIndex: 1001,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '1rem'
-        }}>
-          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl">
-            <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-red-600 text-2xl">⚠️</span>
-              </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Delete Transaction
-              </h3>
-              <p className="text-gray-600 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Are you sure you want to delete this transaction? This action cannot be undone.
-              </p>
-            </div>
 
-            <div className="space-y-3">
-              <button 
-                onClick={handleDeleteTransaction}
-                className="w-full bg-red-500 text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform"
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
-              >
-                Yes, Delete Transaction
-              </button>
-              <button 
-                onClick={() => setShowDeleteConfirm(false)}
-                className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold active:scale-98 transition-transform"
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
