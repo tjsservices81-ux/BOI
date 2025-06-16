@@ -15,6 +15,11 @@ const ibanTransferSchema = z.object({
     // Basic IBAN format: 2 letters (country) + 2 digits (check) + up to 30 alphanumeric characters
     return /^[A-Z]{2}[0-9]{2}[A-Z0-9]{1,30}$/.test(cleanIban) && cleanIban.length >= 15 && cleanIban.length <= 34;
   }, "Invalid IBAN format"),
+  bicCode: z.string().min(8, "Valid BIC code required").refine((val) => {
+    // BIC format: 8 or 11 characters (letters and numbers)
+    const cleanBic = val.replace(/\s/g, '').toUpperCase();
+    return /^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/.test(cleanBic);
+  }, "Invalid BIC format"),
   amount: z.string().min(1, "Amount is required"),
   reference: z.string().min(1, "Reference is required"),
   fromAccount: z.string().min(1, "Please select an account")
@@ -36,6 +41,7 @@ export default function IbanTransfer() {
     defaultValues: {
       recipientName: '',
       iban: '',
+      bicCode: '',
       amount: '',
       reference: '',
       fromAccount: ''
@@ -454,7 +460,7 @@ export default function IbanTransfer() {
               </label>
               <select
                 {...form.register('fromAccount')}
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent text-sm bg-white shadow-sm"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
                 style={{ fontFamily: 'OpenSans, sans-serif' }}
               >
                 <option value="">Select account</option>
@@ -477,7 +483,7 @@ export default function IbanTransfer() {
                 {...form.register('recipientName')}
                 type="text"
                 placeholder="Enter recipient's full name"
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent text-sm bg-white shadow-sm"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
                 style={{ fontFamily: 'OpenSans, sans-serif' }}
               />
               {form.formState.errors.recipientName && (
@@ -493,7 +499,7 @@ export default function IbanTransfer() {
                 {...form.register('iban')}
                 type="text"
                 placeholder="GB29 NWBK 6016 1331 9268 19"
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent text-sm bg-white shadow-sm"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
                 style={{ fontFamily: 'OpenSans, sans-serif' }}
                 onChange={(e) => {
                   // Format IBAN with spaces for better readability
@@ -510,13 +516,35 @@ export default function IbanTransfer() {
 
             <div className="bg-gray-50 rounded-lg p-4">
               <label className="block text-sm font-semibold text-gray-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                BIC Code
+              </label>
+              <input
+                {...form.register('bicCode')}
+                type="text"
+                placeholder="NWBKGB2L"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+                onChange={(e) => {
+                  // Format BIC code to uppercase
+                  const value = e.target.value.replace(/\s/g, '').toUpperCase();
+                  e.target.value = value;
+                  form.setValue('bicCode', value);
+                }}
+              />
+              {form.formState.errors.bicCode && (
+                <p className="text-red-500 text-xs mt-2 font-medium">{form.formState.errors.bicCode.message}</p>
+              )}
+            </div>
+
+            <div className="bg-gray-50 rounded-lg p-4">
+              <label className="block text-sm font-semibold text-gray-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                 Amount (EUR)
               </label>
               <input
                 {...form.register('amount')}
                 type="text"
                 placeholder="0.00"
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent text-sm bg-white shadow-sm"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
                 style={{ fontFamily: 'OpenSans, sans-serif' }}
               />
               {form.formState.errors.amount && (
