@@ -35,6 +35,7 @@ interface ChatMessage {
   isUser: boolean;
   timestamp: Date;
   agentName?: string;
+  isAutomated?: boolean;
 }
 
 interface ChatResponse {
@@ -274,7 +275,8 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
             text: queueMessages[0],
             isUser: false,
             timestamp: new Date(),
-            agentName: 'Support System'
+            agentName: 'Support System',
+            isAutomated: true
           }]
         }));
         
@@ -287,7 +289,8 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
               text: queueMessages[1],
               isUser: false,
               timestamp: new Date(),
-              agentName: 'Support System'
+              agentName: 'Support System',
+              isAutomated: true
             }]
           }));
         }, 2000);
@@ -301,7 +304,8 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
               text: queueMessages[2],
               isUser: false,
               timestamp: new Date(),
-              agentName: 'Support System'
+              agentName: 'Support System',
+              isAutomated: true
             }]
           }));
         }, waitTime - 8000); // 8 seconds before connection
@@ -355,7 +359,8 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
                   text: welcomeText,
                   isUser: false,
                   timestamp: new Date(),
-                  agentName: chatState.agentName
+                  agentName: chatState.agentName,
+                  isAutomated: false
                 };
                 
                 setChatState(prev => ({
@@ -650,7 +655,8 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
             text: responseData.text,
             isUser: false,
             timestamp: new Date(),
-            agentName: chatState.agentName
+            agentName: chatState.agentName,
+            isAutomated: false
           };
 
           setChatState(prev => ({
@@ -928,6 +934,8 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
               }`}>
                 {message.isUser ? (
                   <User className="w-5 h-5 text-white" />
+                ) : message.isAutomated ? (
+                  <Bot className="w-5 h-5 text-gray-600" />
                 ) : (
                   <User className="w-5 h-5 text-gray-600" />
                 )}
