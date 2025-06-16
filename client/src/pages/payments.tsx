@@ -100,9 +100,19 @@ export default function Payments() {
 
   const confirmDeletePayee = () => {
     if (deleteConfirm) {
-      UserDataManager.removeRecentPayee(deleteConfirm.name, deleteConfirm.accountInfo);
-      setRecentPayees(UserDataManager.getRecentPayees());
+      // Remove from UserDataManager
+      const updatedPayees = UserDataManager.removeRecentPayee(deleteConfirm.name, deleteConfirm.accountInfo);
+      
+      // Update local state immediately for instant UI refresh
+      setRecentPayees(updatedPayees);
+      
+      // Close confirmation modal
       setDeleteConfirm(null);
+      
+      // Force re-fetch to ensure consistency
+      setTimeout(() => {
+        setRecentPayees(UserDataManager.getRecentPayees());
+      }, 100);
     }
   };
 
@@ -305,7 +315,11 @@ export default function Payments() {
                         </div>
                       </button>
                       <button
-                        onClick={() => handleDeletePayee(payee)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleDeletePayee(payee);
+                        }}
                         className="ml-3 p-2 text-gray-400 hover:text-red-500 transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
