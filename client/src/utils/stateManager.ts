@@ -162,4 +162,16 @@ export class StateManager {
       }
     }, 100);
   }
+
+  // Clear session data (fix for missing method)
+  static clearSessionData() {
+    try {
+      sessionStorage.clear();
+      localStorage.removeItem(this.STATE_KEY);
+      localStorage.removeItem(this.SCROLL_POSITIONS_KEY);
+      localStorage.removeItem(this.FORM_DATA_KEY);
+    } catch (error) {
+      console.error('Failed to clear session data:', error);
+    }
+  }
 }
