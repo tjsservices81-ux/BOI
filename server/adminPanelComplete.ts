@@ -34,8 +34,30 @@ router.get('/login', (req, res) => {
           font-size: 16px;
           height: 100%;
         }
+        @font-face {
+          font-family: 'OpenSans';
+          src: url('/OpenSans-Regular-webfont.woff2') format('woff2'),
+               url('/OpenSans-Regular-webfont.woff') format('woff');
+          font-weight: 400;
+          font-style: normal;
+        }
+        @font-face {
+          font-family: 'OpenSans';
+          src: url('/OpenSans-Semibold-webfont.woff2') format('woff2'),
+               url('/OpenSans-Semibold-webfont.woff') format('woff');
+          font-weight: 600;
+          font-style: normal;
+        }
+        @font-face {
+          font-family: 'OpenSans';
+          src: url('/OpenSans-Bold-webfont.woff2') format('woff2'),
+               url('/OpenSans-Bold-webfont.woff') format('woff');
+          font-weight: 700;
+          font-style: normal;
+        }
+        
         body { 
-          font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
+          font-family: 'OpenSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
           background: #0050AA;
           margin: 0; 
           padding: 0; 
@@ -66,18 +88,19 @@ router.get('/login', (req, res) => {
         }
         
         .boi-logo {
-          width: 120px;
-          height: 40px;
+          width: 140px;
+          height: 45px;
           background: white;
           border-radius: 4px;
           margin: 0 auto 1.5rem auto;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-weight: 700;
-          font-size: 14px;
-          color: #0050AA;
-          letter-spacing: 1px;
+          padding: 8px;
+          background-image: url('/boi_logo.svg');
+          background-size: contain;
+          background-repeat: no-repeat;
+          background-position: center;
         }
         
         .header-title {
@@ -302,7 +325,7 @@ router.get('/login', (req, res) => {
     <body>
       <div class="ios-safe-area">
         <div class="header-section">
-          <div class="boi-logo">BANK OF IRELAND</div>
+          <div class="boi-logo"></div>
           <h1 class="header-title">Admin Access</h1>
           <p class="header-subtitle">Secure Banking Administration</p>
         </div>
