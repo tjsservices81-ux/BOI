@@ -752,14 +752,19 @@ router.get('/dashboard', adminAuth, (req, res) => {
       </div>
       
       <script>
-        // Load user accounts
+        // Load user accounts with device session data
         async function loadUserAccounts() {
           try {
-            const response = await fetch('/api/admin/users');
-            const data = await response.json();
+            const [usersResponse, sessionsResponse] = await Promise.all([
+              fetch('/api/admin/users'),
+              fetch('/api/admin/device-sessions')
+            ]);
             
-            if (data.success) {
-              displayUserAccounts(data.users);
+            const usersData = await usersResponse.json();
+            const sessionsData = await sessionsResponse.json();
+            
+            if (usersData.success && sessionsData.success) {
+              displayUserAccounts(usersData.users, sessionsData.sessions);
             } else {
               document.getElementById('userAccounts').innerHTML = '<p>Error loading user accounts</p>';
             }
@@ -768,8 +773,8 @@ router.get('/dashboard', adminAuth, (req, res) => {
           }
         }
         
-        // Display user accounts
-        function displayUserAccounts(users) {
+        // Display user accounts with device information
+        function displayUserAccounts(users, sessions) {
           const container = document.getElementById('userAccounts');
           
           if (users.length === 0) {
@@ -779,6 +784,11 @@ router.get('/dashboard', adminAuth, (req, res) => {
           
           let html = '';
           users.forEach(user => {
+            // Find matching device session for this user
+            const userSession = sessions.find(session => 
+              session.customerNumber === user.customerNumber
+            );
+            
             html += \`
               <div class="device-card">
                 <div class="device-header">
@@ -786,9 +796,9 @@ router.get('/dashboard', adminAuth, (req, res) => {
                     <div class="device-name">\${user.name || 'Anonymous User'}</div>
                     <div class="device-info">
                       Email: \${user.email || 'N/A'}<br>
-                      Customer #: \${user.customerId || 'N/A'}<br>
-                      Device: \${user.deviceInfo || 'Unknown'}<br>
-                      IP: \${user.lastLoginIp || 'N/A'}
+                      Customer #: \${user.customerNumber || 'N/A'}<br>
+                      Device: \${userSession?.deviceModel || 'No Active Session'}<br>
+                      IP: \${userSession?.ipAddress || 'N/A'}
                     </div>
                   </div>
                 </div>
