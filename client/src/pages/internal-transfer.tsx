@@ -103,8 +103,6 @@ export default function InternalTransfer() {
   const confirmTransfer = () => {
     console.log('confirmTransfer called', { 
       formData, 
-      selectedFromAccount, 
-      selectedToAccount,
       step,
       accounts: accounts.length 
     });
@@ -115,15 +113,19 @@ export default function InternalTransfer() {
       return;
     }
     
-    if (!selectedFromAccount) {
-      console.log('Missing selectedFromAccount');
-      alert('Missing source account');
+    // Find accounts from form data
+    const fromAccount = accounts.find(acc => acc.id === formData.fromAccount);
+    const toAccount = accounts.find(acc => acc.id === formData.toAccount);
+    
+    if (!fromAccount) {
+      console.log('Could not find source account with ID:', formData.fromAccount);
+      alert('Could not find source account');
       return;
     }
     
-    if (!selectedToAccount) {
-      console.log('Missing selectedToAccount');
-      alert('Missing destination account');
+    if (!toAccount) {
+      console.log('Could not find destination account with ID:', formData.toAccount);
+      alert('Could not find destination account');
       return;
     }
 
@@ -136,45 +138,45 @@ export default function InternalTransfer() {
     // Create debit transaction for source account
     const debitTransaction = {
       id: Date.now(),
-      accountId: selectedFromAccount.id,
+      accountId: fromAccount.id,
       amount: `-${transferAmount.toFixed(2)}`,
-      description: `Internal Transfer to ${selectedToAccount.displayName}`,
+      description: `Internal Transfer to ${toAccount.displayName}`,
       timestamp,
       category: 'transfer',
       type: 'debit',
       paymentMethod: 'Internal Transfer',
       reference,
-      recipientName: selectedToAccount.displayName,
-      recipientAccount: selectedToAccount.accountNumber,
-      fromAccountId: selectedFromAccount.id,
-      toAccountId: selectedToAccount.id
+      recipientName: toAccount.displayName,
+      recipientAccount: toAccount.accountNumber,
+      fromAccountId: fromAccount.id,
+      toAccountId: toAccount.id
     };
 
     // Create credit transaction for destination account
     const creditTransaction = {
       id: Date.now() + 1,
-      accountId: selectedToAccount.id,
+      accountId: toAccount.id,
       amount: `+${transferAmount.toFixed(2)}`,
-      description: `Internal Transfer from ${selectedFromAccount.displayName}`,
+      description: `Internal Transfer from ${fromAccount.displayName}`,
       timestamp,
       category: 'transfer',
       type: 'credit',
       paymentMethod: 'Internal Transfer',
       reference,
-      recipientName: selectedFromAccount.displayName,
-      recipientAccount: selectedFromAccount.accountNumber,
-      fromAccountId: selectedFromAccount.id,
-      toAccountId: selectedToAccount.id
+      recipientName: fromAccount.displayName,
+      recipientAccount: fromAccount.accountNumber,
+      fromAccountId: fromAccount.id,
+      toAccountId: toAccount.id
     };
 
     // Update account balances
     const currentAccounts = UserDataManager.getUserData('bankAccounts', []);
     const updatedAccounts = currentAccounts.map((acc: any) => {
-      if (acc.id === selectedFromAccount.id) {
+      if (acc.id === fromAccount.id) {
         const currentBalance = typeof acc.balance === 'string' ? parseFloat(acc.balance) : acc.balance;
         return { ...acc, balance: (currentBalance - transferAmount).toFixed(2) };
       }
-      if (acc.id === selectedToAccount.id) {
+      if (acc.id === toAccount.id) {
         const currentBalance = typeof acc.balance === 'string' ? parseFloat(acc.balance) : acc.balance;
         return { ...acc, balance: (currentBalance + transferAmount).toFixed(2) };
       }
@@ -246,7 +248,10 @@ export default function InternalTransfer() {
     );
   }
 
-  if (step === 'confirm') {
+  if (step === 'confirm' && formData) {
+    const confirmFromAccount = accounts.find(acc => acc.id === formData.fromAccount);
+    const confirmToAccount = accounts.find(acc => acc.id === formData.toAccount);
+    
     return (
       <div className="h-screen flex flex-col bg-white page-slide-in-right">
         <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
@@ -267,16 +272,15 @@ export default function InternalTransfer() {
                 <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>From:</span>
                 <div className="text-right">
                   <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {selectedFromAccount?.displayName}
+                    {confirmFromAccount?.displayName || 'Unknown Account'}
                   </p>
                   <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {selectedFromAccount?.accountNumber}
+                    {confirmFromAccount?.accountNumber}
                   </p>
                   <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     Balance: €{(() => {
-                      console.log('Rendering balance for selectedFromAccount:', selectedFromAccount);
-                      if (!selectedFromAccount) return '0.00';
-                      const balance = typeof selectedFromAccount.balance === 'string' ? parseFloat(selectedFromAccount.balance) : selectedFromAccount.balance;
+                      if (!confirmFromAccount) return '0.00';
+                      const balance = typeof confirmFromAccount.balance === 'string' ? parseFloat(confirmFromAccount.balance) : confirmFromAccount.balance;
                       return balance.toFixed(2);
                     })()}
                   </p>
@@ -287,10 +291,10 @@ export default function InternalTransfer() {
                 <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>To:</span>
                 <div className="text-right">
                   <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {selectedToAccount?.displayName}
+                    {confirmToAccount?.displayName || 'Unknown Account'}
                   </p>
                   <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {selectedToAccount?.accountNumber}
+                    {confirmToAccount?.accountNumber}
                   </p>
                 </div>
               </div>
