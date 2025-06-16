@@ -196,6 +196,44 @@ export class DatabaseStorage implements IStorage {
       .where(eq(chatResponses.id, id));
   }
 
+  // Admin operations
+  async getAllDeviceSessions(): Promise<any[]> {
+    const { getAllDeviceSessions } = await import('./deviceSessions');
+    const sessions = getAllDeviceSessions();
+    
+    // Enrich sessions with user account information
+    const enrichedSessions = await Promise.all(sessions.map(async (session) => {
+      const user = await this.getUserByCustomerNumber(session.customerNumber || '');
+      return {
+        ...session,
+        accountName: user?.name || `Customer ${session.customerNumber}`,
+        accountEmail: user?.email || `${session.customerNumber}@example.com`
+      };
+    }));
+    
+    return enrichedSessions;
+  }
+
+  async blockDeviceSession(sessionId: string): Promise<void> {
+    const { blockDevice } = await import('./deviceSessions');
+    blockDevice(sessionId);
+  }
+
+  async unblockDeviceSession(sessionId: string): Promise<void> {
+    const { unblockDevice } = await import('./deviceSessions');
+    unblockDevice(sessionId);
+  }
+
+  async enableDevicePanicMode(sessionId: string): Promise<void> {
+    const { activateDevicePanicMode } = await import('./deviceSessions');
+    activateDevicePanicMode(sessionId);
+  }
+
+  async disableDevicePanicMode(sessionId: string): Promise<void> {
+    const { deactivateDevicePanicMode } = await import('./deviceSessions');
+    deactivateDevicePanicMode(sessionId);
+  }
+
   // Initialize sample data for first-time setup
   async initializeSampleData(): Promise<void> {
     // Check if data already exists
