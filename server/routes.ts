@@ -781,8 +781,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           let accountDetails = '';
           if (lastTransfer.paymentMethod === 'UK Transfer') {
             accountDetails = `
-Account Number: ${lastTransfer.accountNumber || 'Not available'}
-Sort Code: ${lastTransfer.sortCode || 'Not available'}`;
+Account Number: ${lastTransfer.recipientAccountNumber || 'Not available'}
+Sort Code: ${lastTransfer.recipientSortCode || 'Not available'}`;
           } else if (lastTransfer.paymentMethod === 'IBAN Transfer') {
             accountDetails = `
 IBAN: ${lastTransfer.iban || 'Not available'}
