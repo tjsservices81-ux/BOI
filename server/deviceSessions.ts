@@ -4,6 +4,7 @@ interface DeviceSession {
   ipAddress: string;
   loginTime: string;
   blocked: boolean;
+  ipRevoked?: boolean;
   userAgent?: string;
 }
 
@@ -21,6 +22,7 @@ function initializeSampleSessions() {
         ipAddress: '192.168.1.100',
         loginTime: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
         blocked: false,
+        ipRevoked: false,
         userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)'
       },
       {
@@ -29,6 +31,7 @@ function initializeSampleSessions() {
         ipAddress: '192.168.1.101',
         loginTime: new Date(Date.now() - 45 * 60 * 1000).toISOString(), // 45 minutes ago
         blocked: false,
+        ipRevoked: false,
         userAgent: 'Mozilla/5.0 (Linux; Android 14; SM-S921B)'
       },
       {
@@ -37,6 +40,7 @@ function initializeSampleSessions() {
         ipAddress: '192.168.1.102',
         loginTime: new Date(Date.now() - 30 * 60 * 1000).toISOString(), // 30 minutes ago
         blocked: false,
+        ipRevoked: false,
         userAgent: 'Mozilla/5.0 (iPad; CPU OS 17_0 like Mac OS X)'
       }
     ];
@@ -49,8 +53,16 @@ export function getAllDeviceSessions(): DeviceSession[] {
   initializeSampleSessions();
   return deviceSessions.map(session => ({
     ...session,
-    blocked: blockedDevices.has(session.sessionId)
+    blocked: blockedDevices.has(session.sessionId),
+    ipRevoked: !isIPApproved(session.ipAddress)
   }));
+}
+
+function isIPApproved(ip: string): boolean {
+  // Import the IP approval check
+  const { getAllApprovedIPs } = require('./ipControl');
+  const approvedIPs = getAllApprovedIPs();
+  return approvedIPs.includes(ip);
 }
 
 export function blockDevice(sessionId: string): boolean {
@@ -75,13 +87,14 @@ export function isDeviceBlocked(sessionId: string): boolean {
   return blockedDevices.has(sessionId);
 }
 
-export function addDeviceSession(session: Omit<DeviceSession, 'sessionId' | 'loginTime' | 'blocked'>): string {
+export function addDeviceSession(session: Omit<DeviceSession, 'sessionId' | 'loginTime' | 'blocked' | 'ipRevoked'>): string {
   const sessionId = 'sess_' + Math.random().toString(36).substring(2, 15);
   const newSession: DeviceSession = {
     ...session,
     sessionId,
     loginTime: new Date().toISOString(),
-    blocked: false
+    blocked: false,
+    ipRevoked: false
   };
   
   deviceSessions.push(newSession);

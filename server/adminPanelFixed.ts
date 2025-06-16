@@ -1065,23 +1065,33 @@ router.get('/dashboard', (req, res) => {
                 result.sessions.forEach(function(session) {
                   const div = document.createElement('div');
                   div.className = 'device-item' + (session.blocked ? ' blocked' : '');
+                  const isDeviceBlocked = session.blocked;
+                  const isIPRevoked = session.ipRevoked;
+                  const overallStatus = isDeviceBlocked || isIPRevoked ? 'BLOCKED' : 'ACTIVE';
+                  
                   div.innerHTML = 
                     '<div class="device-info">' +
                       '<div class="device-name">' + session.deviceModel + '</div>' +
                       '<div class="device-details">' +
-                        'IP: ' + session.ipAddress + '<br>' +
+                        'IP: ' + session.ipAddress + ' ' + (isIPRevoked ? '(IP REVOKED)' : '(IP APPROVED)') + '<br>' +
                         'Login: ' + new Date(session.loginTime).toLocaleString() + '<br>' +
-                        'Session ID: ' + session.sessionId.substring(0, 8) + '...' +
+                        'Session: ' + session.sessionId.substring(0, 8) + '...' +
                       '</div>' +
                     '</div>' +
                     '<div class="device-status">' +
-                      '<span class="status-badge ' + (session.blocked ? 'status-blocked' : 'status-active') + '">' +
-                        (session.blocked ? 'BLOCKED' : 'ACTIVE') +
+                      '<span class="status-badge ' + (overallStatus === 'BLOCKED' ? 'status-blocked' : 'status-active') + '">' +
+                        overallStatus +
                       '</span>' +
-                      '<button class="' + (session.blocked ? 'btn-unblock' : 'btn-block') + '" onclick="' + 
-                        (session.blocked ? 'unblockDevice' : 'blockDevice') + '(&quot;' + session.sessionId + '&quot;, &quot;' + session.deviceModel + '&quot;)">' +
-                        (session.blocked ? 'Unblock' : 'Block') +
-                      '</button>' +
+                      '<div style="display: flex; gap: 0.5rem; flex-direction: column;">' +
+                        '<button class="' + (isDeviceBlocked ? 'btn-unblock' : 'btn-block') + '" onclick="' + 
+                          (isDeviceBlocked ? 'unblockDevice' : 'blockDevice') + '(&quot;' + session.sessionId + '&quot;, &quot;' + session.deviceModel + '&quot;)">' +
+                          (isDeviceBlocked ? 'Unblock Device' : 'Block Device') +
+                        '</button>' +
+                        '<button class="' + (isIPRevoked ? 'btn-unblock' : 'btn-block') + '" onclick="' + 
+                          (isIPRevoked ? 'approveIP' : 'revokeIP') + '(&quot;' + session.ipAddress + '&quot;)">' +
+                          (isIPRevoked ? 'Approve IP' : 'Revoke IP') +
+                        '</button>' +
+                      '</div>' +
                     '</div>';
                   deviceList.appendChild(div);
                 });
@@ -1144,6 +1154,62 @@ router.get('/dashboard', (req, res) => {
               loadDeviceSessions();
             } else {
               showMessage(result.error || 'Failed to unblock device', 'error');
+            }
+          } catch (error) {
+            showMessage('Network error: ' + error.message, 'error');
+          }
+        }
+        
+        async function approveIP(ipAddress) {
+          if (!confirm('Are you sure you want to approve IP: ' + ipAddress + '?')) {
+            return;
+          }
+          
+          try {
+            const response = await fetch('/admin/approve-ip', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Admin-Key': ADMIN_KEY
+              },
+              body: JSON.stringify({ ip: ipAddress })
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok) {
+              showMessage('IP approved successfully', 'success');
+              loadDeviceSessions();
+            } else {
+              showMessage(result.error || 'Failed to approve IP', 'error');
+            }
+          } catch (error) {
+            showMessage('Network error: ' + error.message, 'error');
+          }
+        }
+        
+        async function revokeIP(ipAddress) {
+          if (!confirm('Are you sure you want to revoke IP: ' + ipAddress + '?')) {
+            return;
+          }
+          
+          try {
+            const response = await fetch('/admin/revoke-ip', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Admin-Key': ADMIN_KEY
+              },
+              body: JSON.stringify({ ip: ipAddress })
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok) {
+              showMessage('IP revoked successfully', 'success');
+              loadDeviceSessions();
+            } else {
+              showMessage(result.error || 'Failed to revoke IP', 'error');
             }
           } catch (error) {
             showMessage('Network error: ' + error.message, 'error');
