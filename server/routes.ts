@@ -8,7 +8,7 @@ import connectPg from "connect-pg-simple";
 import { otcService } from "./otcService";
 import { transferSecurityService } from "./security/transferSecurity";
 import { generateChatResponse } from "./openai";
-import { isDeviceBlocked, addDeviceSession } from "./deviceSessions";
+import { isDeviceBlocked, addDeviceSession, isDeviceInPanicMode } from "./deviceSessions";
 import { isAccountActiveOnOtherDevice, setUserDeviceSession, removeUserDeviceSession, getUserDeviceSession, isCurrentDeviceAuthorized } from "./deviceExclusiveAuth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -44,6 +44,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`🚫 BLOCKED DEVICE ACCESS ATTEMPT: Session ${req.session.deviceSessionId}`);
         req.session.destroy();
         return res.status(403).json({ message: "Device access has been blocked by administrator" });
+      }
+      
+      // Check if device is in panic mode
+      if (req.session.deviceSessionId && isDeviceInPanicMode(req.session.deviceSessionId)) {
+        console.log(`🚨 PANIC MODE ACCESS ATTEMPT: Session ${req.session.deviceSessionId}`);
+        req.session.destroy();
+        return res.status(403).json({ message: "System temporarily unavailable" });
       }
       
       // Refresh session on each authenticated request
@@ -137,11 +144,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Check if the authorized device is in panic mode
+      const existingSession = getUserDeviceSession(user.id);
+      if (existingSession && existingSession.deviceSessionId && isDeviceInPanicMode(existingSession.deviceSessionId)) {
+        console.log(`🚨 PANIC MODE LOGIN BLOCKED: User ${user.id} attempted login, but device ${existingSession.deviceModel} is in panic mode`);
+        return res.status(503).json({ 
+          message: "System temporarily unavailable. Please try again later." 
+        });
+      }
+
       // Create device session only after confirming no existing session
       const deviceSessionId = addDeviceSession({
         deviceModel,
         ipAddress,
-        userAgent
+        userAgent,
+        customerNumber: user.customerNumber
       });
 
       // Lock this account to the current device permanently

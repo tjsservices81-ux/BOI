@@ -145,3 +145,9 @@ export function deactivateDevicePanicMode(sessionId: string): boolean {
 export function isDeviceInPanicMode(sessionId: string): boolean {
   return devicePanicMode.has(sessionId);
 }
+
+export function isCustomerInPanicMode(customerNumber: string): boolean {
+  // Check if any device session for this customer is in panic mode
+  const customerSessions = deviceSessions.filter(session => session.customerNumber === customerNumber);
+  return customerSessions.some(session => devicePanicMode.has(session.sessionId));
+}
