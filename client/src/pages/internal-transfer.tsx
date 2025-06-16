@@ -79,12 +79,15 @@ export default function InternalTransfer() {
     const fromAccount = accounts.find(acc => acc.id === data.fromAccount);
     const transferAmount = parseFloat(data.amount);
     
-    if (fromAccount && fromAccount.balance < transferAmount) {
-      form.setError('amount', { 
-        type: 'manual', 
-        message: 'Insufficient funds in source account' 
-      });
-      return;
+    if (fromAccount) {
+      const currentBalance = typeof fromAccount.balance === 'string' ? parseFloat(fromAccount.balance) : fromAccount.balance;
+      if (currentBalance < transferAmount) {
+        form.setError('amount', { 
+          type: 'manual', 
+          message: 'Insufficient funds in source account' 
+        });
+        return;
+      }
     }
 
     setFormData(data);
@@ -138,10 +141,12 @@ export default function InternalTransfer() {
     const currentAccounts = UserDataManager.getUserData('bankAccounts', []);
     const updatedAccounts = currentAccounts.map((acc: any) => {
       if (acc.id === selectedFromAccount.id) {
-        return { ...acc, balance: parseFloat(acc.balance) - transferAmount };
+        const currentBalance = typeof acc.balance === 'string' ? parseFloat(acc.balance) : acc.balance;
+        return { ...acc, balance: (currentBalance - transferAmount).toFixed(2) };
       }
       if (acc.id === selectedToAccount.id) {
-        return { ...acc, balance: parseFloat(acc.balance) + transferAmount };
+        const currentBalance = typeof acc.balance === 'string' ? parseFloat(acc.balance) : acc.balance;
+        return { ...acc, balance: (currentBalance + transferAmount).toFixed(2) };
       }
       return acc;
     });
@@ -238,7 +243,7 @@ export default function InternalTransfer() {
                     {selectedFromAccount?.accountNumber}
                   </p>
                   <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Balance: €{selectedFromAccount?.balance.toFixed(2)}
+                    Balance: €{selectedFromAccount ? (typeof selectedFromAccount.balance === 'string' ? parseFloat(selectedFromAccount.balance).toFixed(2) : selectedFromAccount.balance.toFixed(2)) : '0.00'}
                   </p>
                 </div>
               </div>
@@ -337,7 +342,7 @@ export default function InternalTransfer() {
                 <option value="">Select source account</option>
                 {accounts.map((account) => (
                   <option key={account.id} value={account.id}>
-                    {account.displayName} - €{account.balance.toFixed(2)}
+                    {account.displayName} - €{typeof account.balance === 'string' ? parseFloat(account.balance).toFixed(2) : account.balance.toFixed(2)}
                   </option>
                 ))}
               </select>
