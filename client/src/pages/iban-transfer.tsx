@@ -55,8 +55,7 @@ export default function IbanTransfer() {
     
     // Listen for account updates from admin panel
     const handleAccountsUpdate = (event: CustomEvent) => {
-      const eventDetail = event.detail || {};
-      const { accounts: updatedAccounts } = eventDetail;
+      const { accounts: updatedAccounts } = event.detail;
       if (updatedAccounts) {
         setAccounts(updatedAccounts);
       }
@@ -93,21 +92,12 @@ export default function IbanTransfer() {
   }, [form]);
 
   const onSubmit = (data: IbanTransferData) => {
-    console.log('IBAN form submitted with data:', data);
     setFormData(data);
-    const ref = generateReference();
-    console.log('Generated IBAN transfer reference:', ref);
-    setTransferReference(ref);
     setStep('confirm');
   };
 
   const executeTransfer = async () => {
-    if (!formData) {
-      console.error('No form data available for IBAN transfer');
-      return;
-    }
-    
-    console.log('Starting IBAN transfer execution with:', { formData, transferReference });
+    if (!formData) return;
     
     // Start processing animation
     setStep('success');
@@ -167,10 +157,7 @@ export default function IbanTransfer() {
             window.dispatchEvent(new CustomEvent('transactionUpdate'));
             window.dispatchEvent(new CustomEvent('balanceUpdate'));
             
-            // Show reference immediately after completion
-            setTimeout(() => {
-              setShowReference(true);
-            }, 500);
+            setShowReference(true);
           }
           
           return 100;
