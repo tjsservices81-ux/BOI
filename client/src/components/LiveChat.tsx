@@ -58,6 +58,8 @@ interface ChatState {
   queueStatus: 'waiting' | 'connected' | 'ended' | 'closed';
   queueStartTime?: Date | null;
   estimatedWaitTime?: number;
+  queuePosition?: number;
+  isInQueue?: boolean;
 }
 
 export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
@@ -109,7 +111,8 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       { name: 'Luke', specialty: 'Technical Support' }
     ];
     const randomAgent = agentProfiles[Math.floor(Math.random() * agentProfiles.length)].name;
-    const waitTime = Math.floor(Math.random() * 30000) + 30000; // 30-60 seconds (max 1 minute)
+    const waitTime = Math.floor(Math.random() * 90000) + 30000; // 30 seconds to 2 minutes
+    const queuePosition = Math.floor(Math.random() * 3); // 0 to 2 people ahead
     
     return {
       messages: [],
@@ -119,7 +122,9 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       lastResponseIndex: {},
       queueStatus: 'waiting' as const,
       queueStartTime: new Date(),
-      estimatedWaitTime: waitTime
+      estimatedWaitTime: waitTime,
+      queuePosition: queuePosition,
+      isInQueue: true
     };
   };
   
@@ -242,11 +247,65 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     };
   }, []);
 
-  // Queue timer effect
+  // Queue system with realistic progression
   useEffect(() => {
-    if (chatState.queueStatus === 'waiting' && chatState.estimatedWaitTime && chatState.queueStartTime) {
+    if (chatState.queueStatus === 'waiting' && chatState.estimatedWaitTime && chatState.queueStartTime && chatState.isInQueue) {
       const startTime = chatState.queueStartTime.getTime();
       const waitTime = chatState.estimatedWaitTime;
+      const queuePosition = chatState.queuePosition || 0;
+      
+      // Show initial queue message
+      if (chatState.messages.length === 0) {
+        const queueMessages = [
+          "Thanks for contacting Bank of Ireland! We'll connect you with our next available agent.",
+          queuePosition === 0 
+            ? "You're next in line. A support agent will be with you shortly…"
+            : queuePosition === 1 
+            ? "There's 1 person ahead of you. Thanks for waiting."
+            : `There are ${queuePosition} people ahead of you. Thanks for your patience.`,
+          "Connecting you now to an available agent…"
+        ];
+        
+        // Add initial queue message
+        setChatState(prev => ({
+          ...prev,
+          messages: [{
+            id: `queue_${Date.now()}`,
+            text: queueMessages[0],
+            isUser: false,
+            timestamp: new Date(),
+            agentName: 'Support System'
+          }]
+        }));
+        
+        // Add queue position message after short delay
+        setTimeout(() => {
+          setChatState(prev => ({
+            ...prev,
+            messages: [...prev.messages, {
+              id: `queue_pos_${Date.now()}`,
+              text: queueMessages[1],
+              isUser: false,
+              timestamp: new Date(),
+              agentName: 'Support System'
+            }]
+          }));
+        }, 2000);
+        
+        // Add connecting message near the end
+        setTimeout(() => {
+          setChatState(prev => ({
+            ...prev,
+            messages: [...prev.messages, {
+              id: `queue_connect_${Date.now()}`,
+              text: queueMessages[2],
+              isUser: false,
+              timestamp: new Date(),
+              agentName: 'Support System'
+            }]
+          }));
+        }, waitTime - 8000); // 8 seconds before connection
+      }
       
       // Update remaining time every second
       const updateTimer = () => {
@@ -257,18 +316,25 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
         setQueueTimeRemaining(remaining);
         
         if (remaining <= 0) {
-          // Connect to agent
-          setChatState(prev => ({
-            ...prev,
-            queueStatus: 'connected'
-          }));
+          // Show typing indicator before agent connects
+          setIsTyping(true);
+          setTypingText(`${chatState.agentName} is typing...`);
           
-          // Add welcome message from agent with realistic typing delay
+          // Connect to agent after typing delay
           setTimeout(() => {
-            // Natural, varied welcome messages that sound like real Bank of Ireland support staff
-            const welcomeMessages: { [key: string]: string[] } = {
-              'Emma': [
-                `Hey there, you're through to the Bank of Ireland team — I'm Emma, how can I help you today?`,
+            setIsTyping(false);
+            setChatState(prev => ({
+              ...prev,
+              queueStatus: 'connected',
+              isInQueue: false
+            }));
+            
+            // Add welcome message from agent with natural delay
+            setTimeout(() => {
+              // Natural, varied welcome messages that sound like real Bank of Ireland support staff
+              const welcomeMessages: { [key: string]: string[] } = {
+                'Emma': [
+                  `Hey there, you're through to the Bank of Ireland team — I'm Emma, how can I help you today?`,
                 `Good to have you here — this is Emma from Bank of Ireland support, what can I do for you?`,
                 `Hi, this is Emma here from Bank of Ireland — what can I help you with?`,
                 `Hello, welcome to Bank of Ireland support. Emma speaking — how's your day going?`,
@@ -487,13 +553,13 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
               
               setChatState(prev => ({
                 ...prev,
-                messages: [welcomeMessage]
+                messages: [...prev.messages, welcomeMessage]
               }));
               
               setIsTyping(false);
               setTypingText("");
             }, finalDelay);
-          }, 500);
+          }, 500); // typing indicator delay
         }
       };
       
@@ -507,7 +573,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
         }
       };
     }
-  }, [chatState.queueStatus, chatState.estimatedWaitTime, chatState.queueStartTime, chatState.agentName]);
+  }, [chatState.queueStatus, chatState.estimatedWaitTime, chatState.queueStartTime, chatState.agentName, chatState.isInQueue]);
 
   // Cleanup timer on unmount
   useEffect(() => {
