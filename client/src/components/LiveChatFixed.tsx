@@ -389,7 +389,16 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 z-40 backdrop-animate-in" style={{ bottom: '88px' }}>
+    <div 
+      className="fixed bg-black bg-opacity-60 z-40 backdrop-animate-in" 
+      style={{ 
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: '88px',
+        height: 'calc(100vh - 88px)'
+      }}
+    >
       <div 
         className={`bg-white w-full chat-container shadow-2xl absolute ${
           isAnimating ? 'chat-animate-out' : 'chat-animate-in'
