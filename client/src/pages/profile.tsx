@@ -856,12 +856,10 @@ export default function Profile() {
 
   // Load transactions for selected user
   const loadUserTransactions = (customerNumber: string) => {
-    const prevUser = UserDataManager.getCurrentUser();
+    const prevUser = UserDataManager.getCurrentUser() || '';
     UserDataManager.setCurrentUser(customerNumber);
     const transactions = UserDataManager.getUserData('bankTransactions', []);
-    if (prevUser) {
-      UserDataManager.setCurrentUser(prevUser);
-    }
+    UserDataManager.setCurrentUser(prevUser);
     setUserTransactions(transactions);
   };
 
@@ -870,7 +868,7 @@ export default function Profile() {
     if (!selectedTransaction || !selectedUser) return;
 
     // Get current user to restore later
-    const prevUser = UserDataManager.getCurrentUser();
+    const prevUser = UserDataManager.getCurrentUser() || '';
     
     // Switch to selected user context
     UserDataManager.setCurrentUser(selectedUser);
