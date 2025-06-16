@@ -161,11 +161,42 @@ export default function Dashboard() {
       }
     };
 
+    const handleTransactionDeleted = (event: CustomEvent) => {
+      const { accountId, transactions, accounts: updatedAccounts } = event.detail || {};
+      
+      // Clear cache to ensure fresh data
+      UserDataManager.clearCache('bankAccounts');
+      UserDataManager.clearCache('bankTransactions');
+      
+      // Update accounts if provided
+      if (updatedAccounts) {
+        setAccounts(updatedAccounts);
+      } else {
+        // Refresh accounts from storage
+        const freshAccounts = UserDataManager.getUserData('bankAccounts', []);
+        if (Array.isArray(freshAccounts) && freshAccounts.length > 0) {
+          setAccounts(freshAccounts);
+        }
+      }
+    };
+
+    const handleForceRefresh = () => {
+      // Force complete refresh of all data
+      UserDataManager.clearCache();
+      const freshAccounts = UserDataManager.getUserData('bankAccounts', []);
+      if (Array.isArray(freshAccounts) && freshAccounts.length > 0) {
+        setAccounts(freshAccounts);
+      }
+    };
+
     window.addEventListener('balanceUpdate', handleBalanceUpdate as EventListener);
     window.addEventListener('adminProfileUpdate', handleProfileUpdate as EventListener);
     window.addEventListener('userProfileUpdate', handleProfileUpdate as EventListener);
     window.addEventListener('accountsReset', handleAccountsReset as EventListener);
     window.addEventListener('accountsUpdate', handleAccountsUpdate as EventListener);
+    window.addEventListener('transactionDeleted', handleTransactionDeleted as EventListener);
+    window.addEventListener('transactionUpdate', handleTransactionDeleted as EventListener);
+    window.addEventListener('forceRefresh', handleForceRefresh as EventListener);
     
     return () => {
       window.removeEventListener('balanceUpdate', handleBalanceUpdate as EventListener);
@@ -173,6 +204,9 @@ export default function Dashboard() {
       window.removeEventListener('userProfileUpdate', handleProfileUpdate as EventListener);
       window.removeEventListener('accountsReset', handleAccountsReset as EventListener);
       window.removeEventListener('accountsUpdate', handleAccountsUpdate as EventListener);
+      window.removeEventListener('transactionDeleted', handleTransactionDeleted as EventListener);
+      window.removeEventListener('transactionUpdate', handleTransactionDeleted as EventListener);
+      window.removeEventListener('forceRefresh', handleForceRefresh as EventListener);
     };
   }, [accounts]);
 

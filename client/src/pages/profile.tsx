@@ -850,7 +850,7 @@ export default function Profile() {
     setAccountTransactions(accountSpecificTransactions);
   };
 
-  // Handle transaction deletion
+  // Handle transaction deletion - Single action with instant updates
   const handleDeleteTransaction = () => {
     if (!selectedTransaction || !selectedAccountId) return;
 
@@ -860,13 +860,14 @@ export default function Profile() {
     // Filter out the selected transaction
     const updatedTransactions = storedTransactions.filter((tx: any) => tx.id !== selectedTransaction.id);
     
-    // Update transactions
+    // Update transactions in storage
     UserDataManager.setUserData('bankTransactions', updatedTransactions);
     
     // Get user accounts to update balance
     const userAccounts = UserDataManager.getUserData('bankAccounts', []);
     const affectedAccount = userAccounts.find((acc: any) => acc.id === selectedTransaction.accountId);
     
+    let updatedAccounts = userAccounts;
     if (affectedAccount) {
       // Calculate balance adjustment
       const transactionAmount = parseFloat(selectedTransaction.amount.replace('-', ''));
@@ -883,34 +884,64 @@ export default function Profile() {
       }
       
       // Update account balance
-      const updatedAccounts = userAccounts.map((acc: any) => 
+      updatedAccounts = userAccounts.map((acc: any) => 
         acc.id === selectedTransaction.accountId 
           ? { ...acc, balance: currentBalance.toFixed(2) }
           : acc
       );
       
+      // Save updated accounts to storage
       UserDataManager.setUserData('bankAccounts', updatedAccounts);
       
-      // Update local accounts state
+      // Instantly update local accounts state in admin panel
       setAccounts(updatedAccounts);
       
-      // Dispatch balance update event
+      // Clear cache to ensure fresh data everywhere
+      UserDataManager.clearCache('bankAccounts');
+      UserDataManager.clearCache('bankTransactions');
+      
+      // Dispatch comprehensive balance update events for all components
       window.dispatchEvent(new CustomEvent('balanceUpdate', {
-        detail: { accountId: selectedTransaction.accountId, newBalance: currentBalance.toFixed(2) }
+        detail: { 
+          accountId: selectedTransaction.accountId, 
+          newBalance: currentBalance.toFixed(2),
+          accounts: updatedAccounts
+        }
+      }));
+      
+      // Dispatch account update for dashboard and other components
+      window.dispatchEvent(new CustomEvent('accountsUpdated', {
+        detail: { accounts: updatedAccounts }
       }));
     }
     
-    // Update local state
+    // Instantly update local transaction list in admin panel
     const accountSpecificTransactions = updatedTransactions.filter((tx: any) => tx.accountId === parseInt(selectedAccountId));
     setAccountTransactions(accountSpecificTransactions);
+    
+    // Reset modal state
     setSelectedTransaction(null);
     setShowDeleteConfirm(false);
+    setShowDeleteTransaction(false);
     
-    // Dispatch transaction update events
+    // Dispatch comprehensive transaction update events
     window.dispatchEvent(new CustomEvent('transactionDeleted', {
-      detail: { transactionId: selectedTransaction.id }
+      detail: { 
+        transactionId: selectedTransaction.id,
+        accountId: selectedTransaction.accountId,
+        transactions: updatedTransactions
+      }
     }));
-    window.dispatchEvent(new CustomEvent('transactionUpdate'));
+    
+    window.dispatchEvent(new CustomEvent('transactionUpdate', {
+      detail: { 
+        transactions: updatedTransactions,
+        accounts: updatedAccounts
+      }
+    }));
+    
+    // Force dashboard refresh
+    window.dispatchEvent(new CustomEvent('forceRefresh'));
     
     alert('Transaction deleted successfully.');
   };
