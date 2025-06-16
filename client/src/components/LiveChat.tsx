@@ -889,7 +889,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
                 {message.isUser ? (
                   <User className="w-5 h-5 text-white" />
                 ) : (
-                  <Bot className="w-5 h-5 text-gray-600" />
+                  <User className="w-5 h-5 text-gray-600" />
                 )}
               </div>
             </div>
