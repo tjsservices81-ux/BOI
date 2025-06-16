@@ -15,6 +15,7 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   getUserByCustomerNumber(customerNumber: string): Promise<User | undefined>;
   updateUserProfile(customerNumber: string, updates: Partial<User>): Promise<User | undefined>;
+  getAllUsers(): Promise<User[]>;
   
   // Account operations
   getAccountsByUserId(userId: number): Promise<Account[]>;
@@ -89,6 +90,10 @@ export class DatabaseStorage implements IStorage {
       console.error('Error updating user profile:', error);
       throw error;
     }
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users);
   }
 
   async getAccountsByUserId(userId: number): Promise<Account[]> {
@@ -340,6 +345,10 @@ export class MemStorage implements IStorage {
     return undefined;
   }
 
+  async getAllUsers(): Promise<User[]> {
+    return Array.from(this.users.values());
+  }
+
   async getAccountsByUserId(userId: number): Promise<Account[]> {
     return Array.from(this.accounts.values()).filter(account => account.userId === userId);
   }
@@ -375,7 +384,14 @@ export class MemStorage implements IStorage {
     const transaction: Transaction = {
       id: this.currentTransactionId++,
       ...insertTransaction,
-      reference: insertTransaction.reference || null
+      reference: insertTransaction.reference ?? null,
+      recipientName: insertTransaction.recipientName ?? null,
+      iban: insertTransaction.iban ?? null,
+      sortCode: insertTransaction.sortCode ?? null,
+      accountNumber: insertTransaction.accountNumber ?? null,
+      swiftCode: insertTransaction.swiftCode ?? null,
+      bankName: insertTransaction.bankName ?? null,
+      country: insertTransaction.country ?? null
     };
     this.transactions.set(transaction.id, transaction);
     return transaction;

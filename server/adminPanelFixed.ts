@@ -4,6 +4,7 @@ import { getAllApprovedIPs, revokeIP, approveIP } from './ipControl';
 import { getPendingAttempts, removeAttempt } from './accessMonitor';
 import { getAllDeviceSessions, blockDevice, unblockDevice, isDeviceBlocked } from './deviceSessions';
 import { getAllUserDeviceSessions, forceLogoutUser } from './deviceExclusiveAuth';
+import { storage } from './storage';
 
 const router = express.Router();
 
@@ -1351,6 +1352,27 @@ router.post('/approve-ip', adminAuth, async (req, res) => {
     res.json({ message: `Access approved for ${ip}` });
   } catch (error) {
     res.status(500).json({ error: 'Failed to approve IP' });
+  }
+});
+
+// User accounts management endpoint
+router.get('/user-accounts', adminAuth, async (req, res) => {
+  try {
+    const users = await storage.getAllUsers();
+    const userAccounts = users.map(user => ({
+      id: user.id,
+      fullName: user.name,
+      email: user.email,
+      customerNumber: user.customerNumber,
+      accountCreationDate: user.dateCreated,
+      joinDate: user.joinDate,
+      lastLoginTime: null // Will be populated from device sessions if available
+    }));
+    
+    res.json({ accounts: userAccounts });
+  } catch (error) {
+    console.error('User accounts error:', error);
+    res.status(500).json({ error: 'Failed to get user accounts' });
   }
 });
 
