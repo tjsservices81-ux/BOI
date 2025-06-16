@@ -141,12 +141,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get account transactions
-  app.get("/api/transactions/:accountId", async (req, res) => {
+  app.get("/api/transactions/:accountId", requireAuth, async (req, res) => {
     try {
       const accountId = parseInt(req.params.accountId);
+      console.log('Getting transactions for account ID:', accountId);
       const transactions = await storage.getTransactionsByAccountId(accountId);
+      console.log('Found transactions:', transactions.length);
       res.json(transactions);
     } catch (error) {
+      console.error('Transaction error:', error);
       res.status(500).json({ message: "Internal server error" });
     }
   });
