@@ -763,9 +763,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // The client will pass transaction data in the request body
       const requestedTransactionData = req.body.transactionData;
       if (requestedTransactionData && requestedTransactionData.length > 0) {
-        // Find the most recent transfer transaction
+        // Find the most recent external transfer transaction (exclude internal BOI transfers)
         const transferTransactions = requestedTransactionData
-          .filter((tx: any) => tx.category === 'transfer' || tx.paymentMethod?.includes('Transfer'))
+          .filter((tx: any) => {
+            // Only include external transfers (UK Transfer or IBAN Transfer)
+            return tx.paymentMethod === 'UK Transfer' || tx.paymentMethod === 'IBAN Transfer';
+          })
           .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
         
         if (transferTransactions.length > 0) {
