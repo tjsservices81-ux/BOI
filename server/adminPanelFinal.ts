@@ -678,6 +678,15 @@ router.get('/dashboard', adminAuth, (req, res) => {
           color: #2e7d32;
         }
         
+        .disabled-user {
+          opacity: 0.7;
+          border-left: 4px solid #dc3545;
+        }
+        
+        .disabled-user .device-name {
+          color: #dc3545 !important;
+        }
+        
         /* iOS optimized responsive design */
         @media screen and (max-width: 480px) {
           body {

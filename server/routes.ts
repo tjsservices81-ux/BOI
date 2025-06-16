@@ -843,7 +843,15 @@ No transfers found yet on your account.`;
   app.get("/api/admin/users", async (req, res) => {
     try {
       const users = await storage.getAllUsers();
-      res.json({ success: true, users });
+      const { isUserDisabled } = await import('./userDisableManager');
+      
+      // Add disabled status to each user
+      const usersWithStatus = users.map(user => ({
+        ...user,
+        isDisabled: isUserDisabled(user.id)
+      }));
+      
+      res.json({ success: true, users: usersWithStatus });
     } catch (error) {
       console.error('Failed to get users:', error);
       res.status(500).json({ success: false, message: "Failed to load users" });
