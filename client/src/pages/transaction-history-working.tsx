@@ -540,16 +540,7 @@ export default function TransactionHistoryWorking() {
                 )}
               </div>
 
-                {/* Action Buttons */}
-                <div className="pt-4 space-y-3">
-                  <button 
-                    onClick={() => setSelectedTransaction(null)}
-                    className="w-full bg-[#126987] text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform"
-                    style={{ fontFamily: 'OpenSans, sans-serif' }}
-                  >
-                    Close
-                  </button>
-                </div>
+
                 </div>
               </div>
             </div>
