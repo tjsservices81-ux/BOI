@@ -750,19 +750,14 @@ router.get('/dashboard', adminAuth, (req, res) => {
       
       <div class="container">
         <div class="section">
-          <h2>📊 User Accounts Overview</h2>
-          <div id="userAccounts">Loading user accounts...</div>
-        </div>
-        
-        <div class="section">
-          <h2>📱 Device & Session Monitor</h2>
-          <div id="deviceSessions">Loading device sessions...</div>
+          <h2>👥 User & Device Control Panel</h2>
+          <div id="userDeviceControl">Loading users and devices...</div>
         </div>
       </div>
       
       <script>
-        // Load user accounts with device session data
-        async function loadUserAccounts() {
+        // Load and display unified user and device control panel
+        async function loadUserDeviceControl() {
           try {
             const [usersResponse, sessionsResponse] = await Promise.all([
               fetch('/api/admin/users'),
@@ -773,21 +768,21 @@ router.get('/dashboard', adminAuth, (req, res) => {
             const sessionsData = await sessionsResponse.json();
             
             if (usersData.success && sessionsData.success) {
-              displayUserAccounts(usersData.users, sessionsData.sessions);
+              displayUserDeviceControl(usersData.users, sessionsData.sessions);
             } else {
-              document.getElementById('userAccounts').innerHTML = '<p>Error loading user accounts</p>';
+              document.getElementById('userDeviceControl').innerHTML = '<p>Error loading data</p>';
             }
           } catch (error) {
-            document.getElementById('userAccounts').innerHTML = '<p>Failed to load user accounts</p>';
+            document.getElementById('userDeviceControl').innerHTML = '<p>Failed to load data</p>';
           }
         }
         
-        // Display user accounts with device information
-        function displayUserAccounts(users, sessions) {
-          const container = document.getElementById('userAccounts');
+        // Display unified user and device control panel
+        function displayUserDeviceControl(users, sessions) {
+          const container = document.getElementById('userDeviceControl');
           
           if (users.length === 0) {
-            container.innerHTML = '<p>No user accounts found</p>';
+            container.innerHTML = '<p>No users found</p>';
             return;
           }
           
@@ -798,28 +793,40 @@ router.get('/dashboard', adminAuth, (req, res) => {
               session.customerNumber === user.customerNumber
             );
             
-            // Check if user is disabled (will be updated when we implement status checking)
             const isDisabled = user.isDisabled || false;
+            const isPanicMode = userSession?.panicMode || false;
             
             html += \`
-              <div class="device-card \${isDisabled ? 'disabled-user' : ''}">
+              <div class="device-card \${isDisabled ? 'disabled-user' : ''} \${isPanicMode ? 'panic' : ''}">
                 <div class="device-header">
                   <div>
-                    <div class="device-name">\${user.name || 'Anonymous User'} \${isDisabled ? '(DISABLED)' : ''}</div>
+                    <div class="device-name">
+                      \${user.name || 'Anonymous User'} 
+                      \${isDisabled ? '(DISABLED)' : ''}
+                      \${isPanicMode ? '(PANIC MODE)' : ''}
+                    </div>
                     <div class="device-info">
                       Email: \${user.email || 'N/A'}<br>
                       Customer #: \${user.customerNumber || 'N/A'}<br>
                       Device: \${userSession?.deviceModel || 'No Active Session'}<br>
-                      IP: \${userSession?.ipAddress || 'N/A'}
+                      IP: \${userSession?.ipAddress || 'N/A'}<br>
+                      Status: <span class="panic-status \${isPanicMode ? 'panic-active' : 'panic-normal'}">
+                        \${isPanicMode ? 'PANIC ACTIVE' : 'NORMAL'}
+                      </span>
                     </div>
                   </div>
                 </div>
                 <div class="device-buttons">
-                  <button class="btn btn-primary" onclick="viewUserDetails('\${user.id}')">View Details</button>
                   <button class="btn \${isDisabled ? 'btn-success' : 'btn-danger'}" 
                           onclick="toggleUserStatus('\${user.id}', \${isDisabled})">
-                    \${isDisabled ? 'Enable' : 'Disable'}
+                    \${isDisabled ? 'Enable User' : 'Disable User'}
                   </button>
+                  \${userSession ? \`
+                    <button class="btn \${isPanicMode ? 'btn-success' : 'btn-danger'}" 
+                            onclick="togglePanic('\${userSession.sessionId}', \${isPanicMode})">
+                      \${isPanicMode ? 'Disable Panic' : 'Panic Mode'}
+                    </button>
+                  \` : ''}
                 </div>
               </div>
             \`;
@@ -828,88 +835,7 @@ router.get('/dashboard', adminAuth, (req, res) => {
           container.innerHTML = html;
         }
         
-        // Load device sessions
-        async function loadDeviceSessions() {
-          try {
-            const response = await fetch('/api/admin/device-sessions');
-            const data = await response.json();
-            
-            if (data.success) {
-              displayDeviceSessions(data.sessions);
-            } else {
-              document.getElementById('deviceSessions').innerHTML = '<p>Error loading device sessions</p>';
-            }
-          } catch (error) {
-            document.getElementById('deviceSessions').innerHTML = '<p>Failed to load device sessions</p>';
-          }
-        }
-        
-        // Display device sessions grouped by account
-        function displayDeviceSessions(sessions) {
-          const container = document.getElementById('deviceSessions');
-          
-          if (sessions.length === 0) {
-            container.innerHTML = '<p>No active device sessions</p>';
-            return;
-          }
-          
-          // Group sessions by account
-          const groupedSessions = {};
-          sessions.forEach(session => {
-            const accountKey = session.accountName || 'Unknown Account';
-            if (!groupedSessions[accountKey]) {
-              groupedSessions[accountKey] = [];
-            }
-            groupedSessions[accountKey].push(session);
-          });
-          
-          let html = '';
-          Object.keys(groupedSessions).forEach(accountName => {
-            const accountSessions = groupedSessions[accountName];
-            const firstSession = accountSessions[0];
-            
-            html += \`
-              <div style="margin-bottom: 1rem;">
-                <div style="font-size: 0.75rem; font-weight: 600; color: #1e3c72; margin-bottom: 0.5rem;">
-                  \${accountName}
-                  \${firstSession.accountEmail ? \` (\${firstSession.accountEmail})\` : ''}
-                </div>
-            \`;
-            
-            accountSessions.forEach(session => {
-              const isPanic = session.panicMode === true;
-              html += \`
-                <div class="device-card \${isPanic ? 'panic' : ''}">
-                  <div class="device-header">
-                    <div>
-                      <div class="device-name">\${session.deviceModel || 'Unknown Device'}</div>
-                      <div class="device-info">
-                        IP: \${session.ipAddress || 'N/A'}<br>
-                        Status: <span class="panic-status \${isPanic ? 'panic-active' : 'panic-normal'}">
-                          \${isPanic ? 'PANIC ACTIVE' : 'NORMAL'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="device-buttons">
-                    <button class="btn \${session.blocked ? 'btn-success' : 'btn-danger'}" 
-                            onclick="toggleBlock('\${session.sessionId}', \${session.blocked})">
-                      \${session.blocked ? 'Unblock' : 'Block'} Device
-                    </button>
-                    <button class="btn \${isPanic ? 'btn-success' : 'btn-danger'}" 
-                            onclick="togglePanic('\${session.sessionId}', \${isPanic})">
-                      \${isPanic ? 'Disable Panic' : 'Enable Panic'}
-                    </button>
-                  </div>
-                </div>
-              \`;
-            });
-            
-            html += '</div>';
-          });
-          
-          container.innerHTML = html;
-        }
+
         
         // Toggle device block status
         async function toggleBlock(sessionId, currentBlocked) {
@@ -938,7 +864,7 @@ router.get('/dashboard', adminAuth, (req, res) => {
             const data = await response.json();
             
             if (data.success) {
-              loadDeviceSessions(); // Reload to show updated status
+              loadUserDeviceControl(); // Reload to show updated status
             }
           } catch (error) {
             console.error('Error toggling panic mode:', error);
