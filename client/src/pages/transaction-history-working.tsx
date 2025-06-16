@@ -467,6 +467,16 @@ export default function TransactionHistoryWorking() {
                       </div>
                     )}
 
+                    {/* Reference for IBAN Transfers */}
+                    {selectedTransaction.paymentMethod === 'IBAN Transfer' && selectedTransaction.reference && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Reference:</span>
+                        <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          {selectedTransaction.reference}
+                        </span>
+                      </div>
+                    )}
+
                     {/* UK Transfer Details */}
                     {selectedTransaction.paymentMethod === 'UK Transfer' && selectedTransaction.recipientSortCode && (
                       <div className="flex justify-between">
@@ -540,6 +550,17 @@ export default function TransactionHistoryWorking() {
                     <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
                       <p className="text-sm text-yellow-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                         <strong>Note:</strong> Exchange rate information not available for this historical transfer. New UK transfers will include live conversion rates.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Show processing time message for IBAN transfers */}
+                {selectedTransaction.paymentMethod === 'IBAN Transfer' && (
+                  <div className="border-t border-gray-200 pt-4 mt-4">
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                      <p className="text-sm text-blue-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <strong>IBAN Transfer:</strong> International transfers typically take 1-2 business days to reach the recipient, depending on the destination country and receiving bank.
                       </p>
                     </div>
                   </div>
