@@ -6,6 +6,7 @@ export class AppLifecycle {
   private static lastActiveTime = Date.now();
   private static visibilityTimeout: NodeJS.Timeout | null = null;
   private static sessionId = Date.now().toString();
+  private static heartbeatInterval: NodeJS.Timeout | null = null;
 
   static initialize() {
     if (this.isInitialized) return;
@@ -25,7 +26,31 @@ export class AppLifecycle {
     window.addEventListener('focus', this.handleFocus.bind(this));
     window.addEventListener('blur', this.handleBlur.bind(this));
 
+    // Start heartbeat to track app activity
+    this.startHeartbeat();
+
     this.isInitialized = true;
+  }
+
+  static startHeartbeat() {
+    // Clear any existing heartbeat
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+    }
+
+    // Update activity timestamp every 10 seconds while app is active
+    this.heartbeatInterval = setInterval(() => {
+      if (!document.hidden) {
+        localStorage.setItem('bankingAppLastActive', Date.now().toString());
+      }
+    }, 10000);
+  }
+
+  static stopHeartbeat() {
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+      this.heartbeatInterval = null;
+    }
   }
 
   static checkForAppRestart() {
@@ -33,36 +58,43 @@ export class AppLifecycle {
     const currentTime = Date.now();
     const lastActiveTime = parseInt(localStorage.getItem('bankingAppLastActive') || '0');
     
-    // If no previous session or more than 30 seconds since last activity, treat as fresh start
-    const isAppRestart = !lastSessionId || (currentTime - lastActiveTime > 30000);
+    // Check if app was properly closed (more than 2 minutes inactive or no session)
+    const timeSinceLastActive = currentTime - lastActiveTime;
+    const isAppRestart = !lastSessionId || timeSinceLastActive > 120000; // 2 minutes
     
     if (isAppRestart) {
       console.log('App restart detected, clearing session state');
       // Clear all session data on app restart
       this.clearSessionState();
-      // Force redirect to login if no persistent login
-      const persistentLogin = localStorage.getItem('bankingPersistentLogin');
-      if (!persistentLogin) {
-        localStorage.removeItem('bankingUser');
-        // Trigger app restart by reloading
-        setTimeout(() => {
-          window.location.href = '/login';
-        }, 100);
-      }
+      
+      // Always clear user session on app restart (simulate fresh app launch)
+      localStorage.removeItem('bankingUser');
+      
+      // Mark as cold start to trigger login flow
+      localStorage.setItem('force_cold_start', 'true');
+      
+      // Trigger immediate redirect to login
+      setTimeout(() => {
+        window.location.replace('/login');
+      }, 50);
+      
+      return; // Exit early to prevent further initialization
     }
     
-    // Set new session ID and activity time
+    // Set new session ID and activity time for continued session
     localStorage.setItem('bankingAppSessionId', this.sessionId);
     localStorage.setItem('bankingAppLastActive', currentTime.toString());
   }
 
   static clearSessionState() {
     // Clear temporary state but keep persistent data
-    StateManager.clearSessionData();
     sessionStorage.clear();
     
     // Remove temporary state from localStorage
     const keysToRemove = [
+      'bank_app_state',
+      'bank_app_scroll_positions', 
+      'bank_app_form_data',
       'bankingAppState',
       'bankingFormData',
       'bankingScrollPositions'
@@ -102,9 +134,14 @@ export class AppLifecycle {
 
   static handleFocus() {
     this.lastActiveTime = Date.now();
+    localStorage.setItem('bankingAppLastActive', this.lastActiveTime.toString());
   }
 
   static handleBlur() {
+    // Update last active time immediately when app loses focus
+    this.lastActiveTime = Date.now();
+    localStorage.setItem('bankingAppLastActive', this.lastActiveTime.toString());
+    
     // Delay saving state to avoid excessive saves
     if (this.visibilityTimeout) {
       clearTimeout(this.visibilityTimeout);
@@ -185,6 +222,9 @@ export class AppLifecycle {
     if (this.visibilityTimeout) {
       clearTimeout(this.visibilityTimeout);
     }
+
+    // Stop heartbeat
+    this.stopHeartbeat();
 
     this.isInitialized = false;
   }
