@@ -16,11 +16,17 @@ export interface Transaction {
   category: string;
   type: 'debit' | 'credit';
   paymentMethod: string;
-  reference: string;
-  timestamp: string;
+  reference?: string;
+  recipientName?: string;
+  iban?: string;
+  bicCode?: string;
+  recipientAccountNumber?: string;
+  recipientSortCode?: string;
+  recipientIban?: string;
   exchangeRate?: number;
   convertedAmount?: string;
   convertedCurrency?: string;
+  timestamp: string;
 }
 
 export const getAccounts = (): Account[] => {
@@ -176,6 +182,7 @@ export const processTransfer = (
       recipientAccountNumber: recipientDetails.accountNumber,
       recipientSortCode: recipientDetails.sortCode,
       iban: recipientDetails.iban,
+      bicCode: recipientDetails.bicCode,
       recipientIban: recipientDetails.iban
     })
   };
