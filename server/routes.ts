@@ -8,6 +8,7 @@ import connectPg from "connect-pg-simple";
 import { otcService } from "./otcService";
 import { transferSecurityService } from "./security/transferSecurity";
 import { generateChatResponse } from "./openai";
+import { isDeviceBlocked, addDeviceSession } from "./deviceSessions";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize database and sample data
@@ -37,6 +38,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log('Auth check - Full session:', req.session);
     
     if (req.session && req.session.userId) {
+      // Check if device session is blocked
+      if (req.session.deviceSessionId && isDeviceBlocked(req.session.deviceSessionId)) {
+        console.log(`🚫 BLOCKED DEVICE ACCESS ATTEMPT: Session ${req.session.deviceSessionId}`);
+        req.session.destroy();
+        return res.status(403).json({ message: "Device access has been blocked by administrator" });
+      }
+      
       // Refresh session on each authenticated request
       req.session.touch();
       return next();

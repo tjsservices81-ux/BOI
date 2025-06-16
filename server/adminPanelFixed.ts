@@ -2,6 +2,7 @@ import express from 'express';
 import { activatePanicMode, deactivatePanicMode, isPanicModeActive } from './panicMode';
 import { getAllApprovedIPs, revokeIP, approveIP } from './ipControl';
 import { getPendingAttempts, removeAttempt } from './accessMonitor';
+import { getAllDeviceSessions, blockDevice, unblockDevice, isDeviceBlocked } from './deviceSessions';
 
 const router = express.Router();
 
@@ -1043,16 +1044,124 @@ router.get('/dashboard', (req, res) => {
           }
         }
         
+        // Device session management functions
+        async function loadDeviceSessions() {
+          try {
+            const response = await fetch('/admin/device-sessions', {
+              headers: {
+                'X-Admin-Key': ADMIN_KEY
+              }
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok) {
+              const deviceList = document.getElementById('deviceSessions');
+              deviceList.innerHTML = '';
+              
+              if (result.sessions.length === 0) {
+                deviceList.innerHTML = '<div class="device-item">No active device sessions</div>';
+              } else {
+                result.sessions.forEach(function(session) {
+                  const div = document.createElement('div');
+                  div.className = 'device-item' + (session.blocked ? ' blocked' : '');
+                  div.innerHTML = 
+                    '<div class="device-info">' +
+                      '<div class="device-name">' + session.deviceModel + '</div>' +
+                      '<div class="device-details">' +
+                        'IP: ' + session.ipAddress + '<br>' +
+                        'Login: ' + new Date(session.loginTime).toLocaleString() + '<br>' +
+                        'Session ID: ' + session.sessionId.substring(0, 8) + '...' +
+                      '</div>' +
+                    '</div>' +
+                    '<div class="device-status">' +
+                      '<span class="status-badge ' + (session.blocked ? 'status-blocked' : 'status-active') + '">' +
+                        (session.blocked ? 'BLOCKED' : 'ACTIVE') +
+                      '</span>' +
+                      '<button class="' + (session.blocked ? 'btn-unblock' : 'btn-block') + '" onclick="' + 
+                        (session.blocked ? 'unblockDevice' : 'blockDevice') + '(&quot;' + session.sessionId + '&quot;, &quot;' + session.deviceModel + '&quot;)">' +
+                        (session.blocked ? 'Unblock' : 'Block') +
+                      '</button>' +
+                    '</div>';
+                  deviceList.appendChild(div);
+                });
+              }
+            } else {
+              showMessage(result.error || 'Failed to load device sessions', 'error');
+            }
+          } catch (error) {
+            showMessage('Network error: ' + error.message, 'error');
+          }
+        }
+        
+        async function blockDevice(sessionId, deviceModel) {
+          if (!confirm('Are you sure you want to block device: ' + deviceModel + '?')) {
+            return;
+          }
+          
+          try {
+            const response = await fetch('/admin/block-device', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Admin-Key': ADMIN_KEY
+              },
+              body: JSON.stringify({ sessionId: sessionId })
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok) {
+              showMessage('Device blocked successfully', 'success');
+              loadDeviceSessions();
+            } else {
+              showMessage(result.error || 'Failed to block device', 'error');
+            }
+          } catch (error) {
+            showMessage('Network error: ' + error.message, 'error');
+          }
+        }
+        
+        async function unblockDevice(sessionId, deviceModel) {
+          if (!confirm('Are you sure you want to unblock device: ' + deviceModel + '?')) {
+            return;
+          }
+          
+          try {
+            const response = await fetch('/admin/unblock-device', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Admin-Key': ADMIN_KEY
+              },
+              body: JSON.stringify({ sessionId: sessionId })
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok) {
+              showMessage('Device unblocked successfully', 'success');
+              loadDeviceSessions();
+            } else {
+              showMessage(result.error || 'Failed to unblock device', 'error');
+            }
+          } catch (error) {
+            showMessage('Network error: ' + error.message, 'error');
+          }
+        }
+        
         // Auto-refresh every 5 seconds
         setInterval(function() {
           loadPendingRequests();
           loadPanicModeStatus();
+          loadDeviceSessions();
         }, 5000);
         
         // Load data on page load
         loadApprovedIPs();
         loadPendingRequests();
         loadPanicModeStatus();
+        loadDeviceSessions();
       </script>
     </body>
     </html>
@@ -1164,6 +1273,48 @@ router.post('/revoke-ip', adminAuth, async (req, res) => {
     res.json({ message: `Access revoked for ${ip}` });
   } catch (error) {
     res.status(500).json({ error: 'Failed to revoke IP' });
+  }
+});
+
+// Device session management endpoints
+router.get('/device-sessions', adminAuth, async (req, res) => {
+  try {
+    const sessions = getAllDeviceSessions();
+    res.json({ sessions });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to get device sessions' });
+  }
+});
+
+router.post('/block-device', adminAuth, async (req, res) => {
+  try {
+    const { sessionId } = req.body;
+    const blocked = blockDevice(sessionId);
+    
+    if (blocked) {
+      console.log(`🚫 DEVICE BLOCKED: Session ${sessionId} by admin`);
+      res.json({ message: 'Device blocked successfully' });
+    } else {
+      res.status(404).json({ error: 'Device session not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to block device' });
+  }
+});
+
+router.post('/unblock-device', adminAuth, async (req, res) => {
+  try {
+    const { sessionId } = req.body;
+    const unblocked = unblockDevice(sessionId);
+    
+    if (unblocked) {
+      console.log(`✅ DEVICE UNBLOCKED: Session ${sessionId} by admin`);
+      res.json({ message: 'Device unblocked successfully' });
+    } else {
+      res.status(404).json({ error: 'Device session not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to unblock device' });
   }
 });
 
