@@ -76,11 +76,11 @@ export default function InternalTransfer() {
     }
 
     // Check if source account has sufficient balance
-    const fromAccount = accounts.find(acc => acc.id === data.fromAccount);
+    const sourceAccountCheck = accounts.find(acc => acc.id === data.fromAccount);
     const transferAmount = parseFloat(data.amount);
     
-    if (fromAccount) {
-      const currentBalance = typeof fromAccount.balance === 'string' ? parseFloat(fromAccount.balance) : fromAccount.balance;
+    if (sourceAccountCheck) {
+      const currentBalance = typeof sourceAccountCheck.balance === 'string' ? parseFloat(sourceAccountCheck.balance) : sourceAccountCheck.balance;
       if (currentBalance < transferAmount) {
         form.setError('amount', { 
           type: 'manual', 
@@ -90,12 +90,22 @@ export default function InternalTransfer() {
       }
     }
 
+    // Set selected accounts based on form data
+    const sourceAccount = accounts.find(acc => acc.id === data.fromAccount);
+    const destinationAccount = accounts.find(acc => acc.id === data.toAccount);
+    
+    setSelectedFromAccount(sourceAccount);
+    setSelectedToAccount(destinationAccount);
     setFormData(data);
     setStep('confirm');
   };
 
   const confirmTransfer = () => {
-    if (!formData || !selectedFromAccount || !selectedToAccount) return;
+    console.log('confirmTransfer called', { formData, selectedFromAccount, selectedToAccount });
+    if (!formData || !selectedFromAccount || !selectedToAccount) {
+      console.log('Missing data for transfer');
+      return;
+    }
 
     const reference = generateReference();
     setTransferReference(reference);
