@@ -144,8 +144,12 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   const [typingText, setTypingText] = useState("");
   const [queueTimeRemaining, setQueueTimeRemaining] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [showEndChatConfirm, setShowEndChatConfirm] = useState(false);
+  const [isEndingChat, setIsEndingChat] = useState(false);
+  const [endChatCountdown, setEndChatCountdown] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queueTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const endChatTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const scrollToBottom = () => {
     // Use a small delay to ensure DOM is updated
@@ -267,11 +271,14 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     }
   }, [currentUser]);
 
-  // Cleanup timer on component unmount to prevent memory leaks
+  // Cleanup timers on component unmount to prevent memory leaks
   useEffect(() => {
     return () => {
       if (queueTimerRef.current) {
         clearInterval(queueTimerRef.current);
+      }
+      if (endChatTimerRef.current) {
+        clearInterval(endChatTimerRef.current);
       }
     };
   }, []);
@@ -708,6 +715,32 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     }
   };
 
+  const handleEndChatRequest = () => {
+    setShowEndChatConfirm(true);
+  };
+
+  const handleEndChatConfirm = () => {
+    setShowEndChatConfirm(false);
+    setIsEndingChat(true);
+    setEndChatCountdown(60);
+    
+    // Start the 60-second countdown
+    endChatTimerRef.current = setInterval(() => {
+      setEndChatCountdown(prev => {
+        if (prev <= 1) {
+          // Complete chat end process
+          handleEndChat();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const handleEndChatCancel = () => {
+    setShowEndChatConfirm(false);
+  };
+
   const handleEndChat = () => {
     if (!currentUser) return;
     
@@ -715,6 +748,11 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     if (queueTimerRef.current) {
       clearInterval(queueTimerRef.current);
       queueTimerRef.current = null;
+    }
+    
+    if (endChatTimerRef.current) {
+      clearInterval(endChatTimerRef.current);
+      endChatTimerRef.current = null;
     }
     
     // Clear only the current user's chat data from localStorage
@@ -745,13 +783,16 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     setIsTyping(false);
     setTypingText('');
     setQueueTimeRemaining(0);
+    setIsEndingChat(false);
+    setEndChatCountdown(0);
+    setShowEndChatConfirm(false);
     
     // Close the chat completely
     onClose();
   };
 
   const handleCloseChat = () => {
-    // Animate out then close
+    // For persistent chat, just minimize/hide the chat instead of ending it
     setIsAnimating(true);
     setTimeout(() => {
       onClose();
@@ -813,10 +854,11 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
             </div>
           </div>
           <button
-            onClick={handleCloseChat}
-            className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors"
+            onClick={handleEndChatRequest}
+            className="bg-white/20 hover:bg-white/30 transition-colors px-4 py-2 rounded-lg text-white text-sm font-medium"
+            style={{ fontFamily: 'OpenSans, sans-serif' }}
           >
-            <X className="w-6 h-6 text-white" />
+            End Chat
           </button>
         </div>
 
@@ -972,6 +1014,70 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
             </>
           )}
         </div>
+
+        {/* End Chat Confirmation Dialog */}
+        {showEndChatConfirm && (
+          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-2xl p-6 mx-4 max-w-sm w-full">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                End Chat Session?
+              </h3>
+              <p className="text-gray-600 mb-6" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Are you sure you want to end the chat? This will close the current conversation.
+              </p>
+              <div className="flex space-x-3">
+                <button
+                  onClick={handleEndChatCancel}
+                  className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleEndChatConfirm}
+                  className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 transition-colors"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  End Chat
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* End Chat Countdown Overlay */}
+        {isEndingChat && endChatCountdown > 0 && (
+          <div className="absolute inset-0 bg-[#126987] flex items-center justify-center z-50">
+            <div className="text-center text-white px-6">
+              <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+              <h3 className="text-2xl font-bold mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Chat will close in {endChatCountdown} seconds...
+              </h3>
+              <p className="text-white/80" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Thank you for contacting Bank of Ireland support
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Chat Ended Message */}
+        {isEndingChat && endChatCountdown === 0 && (
+          <div className="absolute inset-0 bg-[#126987] flex items-center justify-center z-50">
+            <div className="text-center text-white px-6">
+              <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Chat Ended
+              </h3>
+              <p className="text-white/80" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Thank you for contacting support.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
