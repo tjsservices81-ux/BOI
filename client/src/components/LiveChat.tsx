@@ -680,7 +680,8 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
             text: "I'm experiencing some technical difficulties at the moment. Please bear with me while I resolve this, or feel free to try your question again.",
             isUser: false,
             timestamp: new Date(),
-            agentName: chatState.agentName
+            agentName: chatState.agentName,
+            isAutomated: false
           };
 
           setChatState(prev => ({
