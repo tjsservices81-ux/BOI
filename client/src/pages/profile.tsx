@@ -791,6 +791,7 @@ export default function Profile() {
     UserDataManager.setUserAccounts(defaultAccounts);
     UserDataManager.setUserData('bankTransactions', []);
     UserDataManager.setUserData('savedPayees', []);
+    UserDataManager.setUserData('recentPayees', []);
     
     // Force clear any legacy localStorage entries that might exist
     const currentUser = UserDataManager.getCurrentUser();
@@ -798,9 +799,11 @@ export default function Profile() {
       localStorage.removeItem(`user_${currentUser}_bankAccounts`);
       localStorage.removeItem(`user_${currentUser}_bankTransactions`);
       localStorage.removeItem(`user_${currentUser}_savedPayees`);
+      localStorage.removeItem(`user_${currentUser}_recentPayees`);
     }
     localStorage.removeItem('bankTransactions');
     localStorage.removeItem('savedPayees');
+    localStorage.removeItem('recentPayees');
     localStorage.removeItem('bankAccounts');
     
     // Update local state immediately
