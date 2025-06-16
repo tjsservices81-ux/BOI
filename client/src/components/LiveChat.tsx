@@ -777,13 +777,22 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
               )}
             </div>
           </div>
-          <button
-            onClick={handleEndChatRequest}
-            className="bg-white/20 hover:bg-white/30 transition-colors px-4 py-2 rounded-lg text-white text-sm font-medium"
-            style={{ fontFamily: 'OpenSans, sans-serif' }}
-          >
-            End Chat
-          </button>
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={handleCloseChat}
+              className="w-8 h-8 bg-white/20 hover:bg-white/30 transition-colors rounded-full flex items-center justify-center text-white"
+              title="Close chat (keeps session active)"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            <button
+              onClick={handleEndChatRequest}
+              className="bg-white/20 hover:bg-white/30 transition-colors px-4 py-2 rounded-lg text-white text-sm font-medium"
+              style={{ fontFamily: 'OpenSans, sans-serif' }}
+            >
+              End Chat
+            </button>
+          </div>
         </div>
 
         {/* Messages Container */}
