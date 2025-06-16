@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/toast"
 
 export function Toaster() {
-  const { toasts } = useToast()
+  const { toasts } = useToast() || { toasts: [] }
 
   return (
     <ToastProvider>

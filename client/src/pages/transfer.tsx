@@ -15,9 +15,9 @@ import { useToast } from "@/hooks/use-toast";
 import type { Account, TransferRequest } from "@shared/schema";
 
 export default function Transfer() {
-  const { user } = useAuth();
-  const [, navigate] = useLocation();
-  const { toast } = useToast();
+  const { user } = useAuth() || { user: null };
+  const [, navigate] = useLocation() || ['/', () => {}];
+  const { toast } = useToast() || { toast: () => {} };
   const queryClient = useQueryClient();
 
   const [selectedAccountId, setSelectedAccountId] = useState<string>("");

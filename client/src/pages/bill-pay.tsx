@@ -15,8 +15,8 @@ import {
 import type { Payee, ScheduledPayment } from "@shared/schema";
 
 export default function BillPay() {
-  const { user } = useAuth();
-  const [, navigate] = useLocation();
+  const { user } = useAuth() || { user: null };
+  const [, navigate] = useLocation() || ['/', () => {}];
 
   const { data: payees = [] } = useQuery<Payee[]>({
     queryKey: ["/api/payees", user?.id],

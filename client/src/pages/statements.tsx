@@ -14,8 +14,8 @@ import {
 import type { Account, Statement } from "@shared/schema";
 
 export default function Statements() {
-  const { user } = useAuth();
-  const [, navigate] = useLocation();
+  const { user } = useAuth() || { user: null };
+  const [, navigate] = useLocation() || ['/', () => {}];
 
   const { data: accounts = [] } = useQuery<Account[]>({
     queryKey: ["/api/accounts", user?.id],

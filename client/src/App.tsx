@@ -33,7 +33,7 @@ import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
 
 function ProtectedRoute({ children, fallback }: { children: React.ReactNode; fallback?: React.ReactNode }) {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading } = useAuth() || { user: null, isLoading: false };
   
   // Prevent any flash by immediately redirecting if no user
   if (!user && !isLoading) {
@@ -49,7 +49,7 @@ function ProtectedRoute({ children, fallback }: { children: React.ReactNode; fal
 }
 
 function AppRoutes() {
-  const { user, isLoading, login } = useAuth();
+  const { user, isLoading, login } = useAuth() || { user: null, isLoading: false, login: () => {} };
   const [location, navigate] = useLocation() || ['/', () => {}];
   const [splashShown, setSplashShown] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
