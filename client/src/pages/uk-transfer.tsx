@@ -84,6 +84,11 @@ export default function UkTransfer() {
       UserDataManager.clearCache('bankAccounts');
       const userAccounts = UserDataManager.getUserData('bankAccounts', []);
       setAccounts(userAccounts);
+      
+      // Set default account selection if not already set
+      if (userAccounts.length > 0 && !form.getValues('fromAccount')) {
+        form.setValue('fromAccount', userAccounts[0].id.toString());
+      }
     };
     
     loadAccounts();
@@ -284,8 +289,12 @@ export default function UkTransfer() {
               <div className="flex justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>From:</span>
                 <div className="text-right">
-                  <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{selectedAccount?.displayName}</p>
-                  <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>{selectedAccount?.accountNumber}</p>
+                  <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {selectedAccount?.displayName || 'Current Account'}
+                  </p>
+                  <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {selectedAccount?.accountNumber || 'Account ending in ****'}
+                  </p>
                 </div>
               </div>
               
