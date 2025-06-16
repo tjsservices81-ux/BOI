@@ -6,8 +6,11 @@ import { useAuth } from "@/lib/auth";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Profile() {
-  const [, navigate] = useLocation() || ['/', () => {}];
-  const { logout } = useAuth() || { logout: () => {} };
+  const locationHook = useLocation();
+  const navigate = locationHook ? locationHook[1] : (() => {});
+  
+  const authHook = useAuth();
+  const logout = authHook?.logout || (() => {});
   const [tapCount, setTapCount] = useState(0);
   const [lastTapTime, setLastTapTime] = useState(0);
   const [showAdminPanel, setShowAdminPanel] = useState(false);

@@ -15,9 +15,14 @@ import { useToast } from "@/hooks/use-toast";
 import type { Account, TransferRequest } from "@shared/schema";
 
 export default function Transfer() {
-  const { user } = useAuth() || { user: null };
-  const [, navigate] = useLocation() || ['/', () => {}];
-  const { toast } = useToast() || { toast: () => {} };
+  const authHook = useAuth();
+  const user = authHook?.user || null;
+  
+  const locationHook = useLocation();
+  const navigate = locationHook ? locationHook[1] : (() => {});
+  
+  const toastHook = useToast();
+  const toast = toastHook?.toast || (() => {});
   const queryClient = useQueryClient();
 
   const [selectedAccountId, setSelectedAccountId] = useState<string>("");
