@@ -731,7 +731,8 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 z-50 backdrop-animate-in">
+    <div className="fixed inset-0 z-40 backdrop-animate-in" style={{ bottom: '88px' }}>
+      <div className="absolute inset-0 bg-black bg-opacity-60"></div>
       <div 
         className={`bg-white w-full chat-container shadow-2xl absolute ${
           isAnimating ? 'chat-animate-out' : 'chat-animate-in'
@@ -740,9 +741,9 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
           top: 0,
           left: 0,
           right: 0,
-          bottom: '88px', // Leave space for bottom navigation
-          height: 'calc(100vh - 88px)',
-          maxHeight: 'calc(100vh - 88px)'
+          bottom: 0,
+          height: '100%',
+          maxHeight: '100%'
         }}
       >
         {/* Header */}
