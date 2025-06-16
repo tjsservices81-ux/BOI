@@ -51,6 +51,11 @@ function initializeSampleSessions() {
   }
 }
 
+function isIPApproved(ip: string): boolean {
+  const approvedIPs = getAllApprovedIPs();
+  return approvedIPs.includes(ip);
+}
+
 export function getAllDeviceSessions(): DeviceSession[] {
   initializeSampleSessions();
   return deviceSessions.map(session => ({
@@ -58,13 +63,6 @@ export function getAllDeviceSessions(): DeviceSession[] {
     blocked: blockedDevices.has(session.sessionId),
     ipRevoked: !isIPApproved(session.ipAddress)
   }));
-}
-
-import { getAllApprovedIPs } from './ipControl';
-
-function isIPApproved(ip: string): boolean {
-  const approvedIPs = getAllApprovedIPs();
-  return approvedIPs.includes(ip);
 }
 
 export function blockDevice(sessionId: string): boolean {

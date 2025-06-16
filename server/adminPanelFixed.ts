@@ -1360,7 +1360,7 @@ router.get('/device-sessions', adminAuth, async (req, res) => {
     res.json({ sessions });
   } catch (error) {
     console.error('Device sessions error:', error);
-    res.status(500).json({ error: 'Failed to get device sessions: ' + error.message });
+    res.status(500).json({ error: 'Failed to get device sessions: ' + (error as Error).message });
   }
 });
 
