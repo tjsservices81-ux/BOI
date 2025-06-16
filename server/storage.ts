@@ -54,6 +54,8 @@ export interface IStorage {
   unblockDeviceSession(sessionId: string): Promise<void>;
   enableDevicePanicMode(sessionId: string): Promise<void>;
   disableDevicePanicMode(sessionId: string): Promise<void>;
+  disableUser(userId: number): Promise<void>;
+  enableUser(userId: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -234,6 +236,18 @@ export class DatabaseStorage implements IStorage {
     deactivateDevicePanicMode(sessionId);
   }
 
+  async disableUser(userId: number): Promise<void> {
+    // Store disabled users in memory for now
+    const { setUserDisabled } = await import('./userDisableManager');
+    setUserDisabled(userId, true);
+  }
+
+  async enableUser(userId: number): Promise<void> {
+    // Store disabled users in memory for now
+    const { setUserDisabled } = await import('./userDisableManager');
+    setUserDisabled(userId, false);
+  }
+
   // Initialize sample data for first-time setup
   async initializeSampleData(): Promise<void> {
     // Check if data already exists
@@ -315,7 +329,8 @@ export class MemStorage implements IStorage {
       address: "",
       dateOfBirth: "",
       joinDate: "",
-      dateCreated: new Date()
+      dateCreated: new Date(),
+      isDisabled: false
     };
     this.users.set(user.id, user);
 
@@ -587,6 +602,22 @@ export class MemStorage implements IStorage {
   async disableDevicePanicMode(sessionId: string): Promise<void> {
     const { deactivateDevicePanicMode } = await import('./deviceSessions');
     deactivateDevicePanicMode(sessionId);
+  }
+
+  async disableUser(userId: number): Promise<void> {
+    const user = this.users.get(userId);
+    if (user) {
+      user.isDisabled = true;
+      this.users.set(userId, user);
+    }
+  }
+
+  async enableUser(userId: number): Promise<void> {
+    const user = this.users.get(userId);
+    if (user) {
+      user.isDisabled = false;
+      this.users.set(userId, user);
+    }
   }
 }
 
