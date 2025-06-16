@@ -5,9 +5,13 @@ export class AppLifecycle {
   private static isInitialized = false;
   private static lastActiveTime = Date.now();
   private static visibilityTimeout: NodeJS.Timeout | null = null;
+  private static sessionId = Date.now().toString();
 
   static initialize() {
     if (this.isInitialized) return;
+
+    // Check if this is a fresh app start
+    this.checkForAppRestart();
 
     // Handle page visibility changes
     document.addEventListener('visibilitychange', this.handleVisibilityChange.bind(this));
@@ -24,13 +28,60 @@ export class AppLifecycle {
     this.isInitialized = true;
   }
 
+  static checkForAppRestart() {
+    const lastSessionId = localStorage.getItem('bankingAppSessionId');
+    const currentTime = Date.now();
+    const lastActiveTime = parseInt(localStorage.getItem('bankingAppLastActive') || '0');
+    
+    // If no previous session or more than 30 seconds since last activity, treat as fresh start
+    const isAppRestart = !lastSessionId || (currentTime - lastActiveTime > 30000);
+    
+    if (isAppRestart) {
+      console.log('App restart detected, clearing session state');
+      // Clear all session data on app restart
+      this.clearSessionState();
+      // Force redirect to login if no persistent login
+      const persistentLogin = localStorage.getItem('bankingPersistentLogin');
+      if (!persistentLogin) {
+        localStorage.removeItem('bankingUser');
+        // Trigger app restart by reloading
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 100);
+      }
+    }
+    
+    // Set new session ID and activity time
+    localStorage.setItem('bankingAppSessionId', this.sessionId);
+    localStorage.setItem('bankingAppLastActive', currentTime.toString());
+  }
+
+  static clearSessionState() {
+    // Clear temporary state but keep persistent data
+    StateManager.clearSessionData();
+    sessionStorage.clear();
+    
+    // Remove temporary state from localStorage
+    const keysToRemove = [
+      'bankingAppState',
+      'bankingFormData',
+      'bankingScrollPositions'
+    ];
+    
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+  }
+
   static handleVisibilityChange() {
     if (document.hidden) {
       // App going to background
       this.saveCurrentState();
+      // Update last active time
+      localStorage.setItem('bankingAppLastActive', Date.now().toString());
     } else {
       // App returning to foreground
       this.restoreStateIfNeeded();
+      // Update last active time
+      localStorage.setItem('bankingAppLastActive', Date.now().toString());
     }
   }
 
