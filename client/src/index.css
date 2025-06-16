@@ -547,6 +547,15 @@ h1, h2, h3, h4, h5, h6, p, span, div, button, input, label {
 /* Force bottom navigation to have white background */
 [data-bottom-nav] {
   background-color: white !important;
+  background: white !important;
+}
+
+/* Additional specificity for bottom navigation white background */
+.bottom-nav-container,
+.bottom-navigation,
+div[data-bottom-nav] {
+  background-color: white !important;
+  background: white !important;
 }
 
 /* Z-index hierarchy - centralized management */
