@@ -13,11 +13,16 @@ interface UserDeviceSession {
 // In-memory storage for user-device mappings
 let userDeviceSessions: Map<number, UserDeviceSession> = new Map();
 
-export function isAccountActiveOnOtherDevice(userId: number, currentDeviceSessionId: string): boolean {
+export function isAccountActiveOnOtherDevice(userId: number, currentDeviceSessionId?: string): boolean {
   const existingSession = userDeviceSessions.get(userId);
   
   if (!existingSession) {
     return false; // No existing session for this user
+  }
+  
+  // If no current device session provided, just check if any session exists
+  if (!currentDeviceSessionId || currentDeviceSessionId === 'temp') {
+    return true; // Account is active on another device
   }
   
   // Check if the existing session is different from current device

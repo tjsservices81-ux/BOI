@@ -3,6 +3,7 @@ import { activatePanicMode, deactivatePanicMode, isPanicModeActive } from './pan
 import { getAllApprovedIPs, revokeIP, approveIP } from './ipControl';
 import { getPendingAttempts, removeAttempt } from './accessMonitor';
 import { getAllDeviceSessions, blockDevice, unblockDevice, isDeviceBlocked } from './deviceSessions';
+import { getAllUserDeviceSessions, forceLogoutUser } from './deviceExclusiveAuth';
 
 const router = express.Router();
 

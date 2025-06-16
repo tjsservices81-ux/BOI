@@ -128,20 +128,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         deviceModel = 'Web Browser';
       }
 
-      // Create device session
-      const deviceSessionId = addDeviceSession({
-        deviceModel,
-        ipAddress,
-        userAgent
-      });
-
-      // Check if this account is already active on another device
-      if (isAccountActiveOnOtherDevice(user.id, deviceSessionId)) {
+      // Check if this account is already active on another device BEFORE creating session
+      if (isAccountActiveOnOtherDevice(user.id, 'temp')) {
         console.log(`🚫 ACCOUNT ALREADY ACTIVE: User ${user.id} attempted login from ${deviceModel}, but account is active on another device`);
         return res.status(403).json({ 
           message: "This account is already active on another device." 
         });
       }
+
+      // Create device session only after confirming no existing session
+      const deviceSessionId = addDeviceSession({
+        deviceModel,
+        ipAddress,
+        userAgent
+      });
 
       // Lock this account to the current device
       setUserDeviceSession({
@@ -188,6 +188,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Logout
   app.post("/api/auth/logout", (req, res) => {
+    const userId = (req as any).session?.userId;
+    const deviceSessionId = (req as any).session?.deviceSessionId;
+    
+    // Release device lock when user logs out
+    if (userId) {
+      removeUserDeviceSession(userId);
+      console.log(`🔓 USER LOGOUT: User ${userId} logged out and device lock released`);
+    }
+    
     (req as any).session.destroy((err: any) => {
       if (err) {
         return res.status(500).json({ message: "Could not log out" });
