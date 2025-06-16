@@ -62,9 +62,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
-      // Store user in session
+      // Get device information from request headers
+      const userAgent = req.headers['user-agent'] || 'Unknown Device';
+      const ipAddress = req.ip || req.connection.remoteAddress || 'Unknown IP';
+      
+      // Extract device model from user agent
+      let deviceModel = 'Unknown Device';
+      if (userAgent.includes('iPhone')) {
+        deviceModel = userAgent.match(/iPhone[^;]*/)?.toString() || 'iPhone';
+      } else if (userAgent.includes('iPad')) {
+        deviceModel = userAgent.match(/iPad[^;]*/)?.toString() || 'iPad';
+      } else if (userAgent.includes('Android')) {
+        deviceModel = userAgent.match(/Android[^;]*/)?.toString() || 'Android Device';
+      } else if (userAgent.includes('Windows')) {
+        deviceModel = 'Windows Device';
+      } else if (userAgent.includes('Mac')) {
+        deviceModel = 'Mac Device';
+      }
+
+      // Create device session
+      const deviceSessionId = addDeviceSession({
+        deviceModel,
+        ipAddress,
+        userAgent
+      });
+
+      // Store user and device session in session
       (req as any).session.userId = user.id;
       (req as any).session.user = { id: user.id, name: user.name, email: user.email };
+      (req as any).session.deviceSessionId = deviceSessionId;
+
+      console.log(`📱 NEW DEVICE SESSION: ${deviceModel} (${ipAddress}) - Session: ${deviceSessionId}`);
 
       res.json({ user: { id: user.id, name: user.name, email: user.email } });
     } catch (error) {
