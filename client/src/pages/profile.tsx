@@ -47,6 +47,14 @@ export default function Profile() {
     responses: '',
     category: ''
   });
+
+  // Delete transaction states
+  const [showDeleteTransaction, setShowDeleteTransaction] = useState(false);
+  const [selectedUser, setSelectedUser] = useState('');
+  const [userTransactions, setUserTransactions] = useState<any[]>([]);
+  const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [allUsers, setAllUsers] = useState<any[]>([]);
   const [profileData, setProfileData] = useState(() => {
     const currentCustomerNumber = UserDataManager.getCurrentUser();
     // Try to get cached data first to prevent flash
@@ -836,6 +844,97 @@ export default function Profile() {
     alert('Data reset to defaults successfully - all balances set to €0.00, transactions cleared');
   };
 
+  // Load all users for delete transaction feature
+  const loadAllUsers = () => {
+    const storedUsers = JSON.parse(localStorage.getItem('bankUsers') || '{}');
+    const userList = Object.keys(storedUsers).map(customerNumber => ({
+      customerNumber,
+      name: storedUsers[customerNumber].name || 'Unknown User'
+    }));
+    setAllUsers(userList);
+  };
+
+  // Load transactions for selected user
+  const loadUserTransactions = (customerNumber: string) => {
+    const prevUser = UserDataManager.getCurrentUser();
+    UserDataManager.setCurrentUser(customerNumber);
+    const transactions = UserDataManager.getUserData('bankTransactions', []);
+    if (prevUser) {
+      UserDataManager.setCurrentUser(prevUser);
+    }
+    setUserTransactions(transactions);
+  };
+
+  // Handle transaction deletion
+  const handleDeleteTransaction = () => {
+    if (!selectedTransaction || !selectedUser) return;
+
+    // Get current user to restore later
+    const prevUser = UserDataManager.getCurrentUser();
+    
+    // Switch to selected user context
+    UserDataManager.setCurrentUser(selectedUser);
+    
+    // Get all transactions for this user
+    const storedTransactions = UserDataManager.getUserData('bankTransactions', []);
+    
+    // Filter out the selected transaction
+    const updatedTransactions = storedTransactions.filter((tx: any) => tx.id !== selectedTransaction.id);
+    
+    // Update transactions
+    UserDataManager.setUserData('bankTransactions', updatedTransactions);
+    
+    // Get user accounts to update balance
+    const userAccounts = UserDataManager.getUserData('bankAccounts', []);
+    const affectedAccount = userAccounts.find((acc: any) => acc.id === selectedTransaction.accountId);
+    
+    if (affectedAccount) {
+      // Calculate balance adjustment
+      const transactionAmount = parseFloat(selectedTransaction.amount.replace('-', ''));
+      const isDebit = selectedTransaction.amount.startsWith('-');
+      
+      // Reverse the transaction effect on balance
+      let currentBalance = parseFloat(affectedAccount.balance);
+      if (isDebit) {
+        // If it was a debit, add the amount back
+        currentBalance += transactionAmount;
+      } else {
+        // If it was a credit, subtract the amount
+        currentBalance -= transactionAmount;
+      }
+      
+      // Update account balance
+      const updatedAccounts = userAccounts.map((acc: any) => 
+        acc.id === selectedTransaction.accountId 
+          ? { ...acc, balance: currentBalance.toFixed(2) }
+          : acc
+      );
+      
+      UserDataManager.setUserData('bankAccounts', updatedAccounts);
+      
+      // Dispatch balance update event
+      window.dispatchEvent(new CustomEvent('balanceUpdate', {
+        detail: { accountId: selectedTransaction.accountId, newBalance: currentBalance.toFixed(2) }
+      }));
+    }
+    
+    // Restore previous user context
+    UserDataManager.setCurrentUser(prevUser);
+    
+    // Update local state
+    setUserTransactions(updatedTransactions);
+    setSelectedTransaction(null);
+    setShowDeleteConfirm(false);
+    
+    // Dispatch transaction update events
+    window.dispatchEvent(new CustomEvent('transactionDeleted', {
+      detail: { transactionId: selectedTransaction.id }
+    }));
+    window.dispatchEvent(new CustomEvent('transactionUpdate'));
+    
+    alert('Transaction deleted successfully.');
+  };
+
   return (
     <div className="h-screen bg-gradient-to-b from-[#126987] to-[#0d4e63] page-slide-up relative overflow-hidden">
       {/* Header - Hidden during sign out */}
@@ -1059,6 +1158,27 @@ export default function Profile() {
                         </p>
                         <p className="text-sm text-blue-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                           Add test transactions to any account
+                        </p>
+                      </div>
+                    </button>
+
+                    {/* Delete Transaction */}
+                    <button 
+                      onClick={() => {
+                        loadAllUsers();
+                        setShowDeleteTransaction(true);
+                      }}
+                      className="w-full flex items-center space-x-3 p-4 bg-red-50 border border-red-200 rounded-xl active:scale-98 transition-transform"
+                    >
+                      <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                        <Trash2 className="w-5 h-5 text-red-600" />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <p className="font-semibold text-red-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Delete Transaction
+                        </p>
+                        <p className="text-sm text-red-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Remove specific transactions from any user
                         </p>
                       </div>
                     </button>
@@ -1825,6 +1945,189 @@ export default function Profile() {
                     )}
                   </div>
                 ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Transaction Modal */}
+      {showDeleteTransaction && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10001] p-4">
+          <div className="bg-white rounded-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Delete Transaction
+                </h2>
+                <button
+                  onClick={() => {
+                    setShowDeleteTransaction(false);
+                    setSelectedUser('');
+                    setUserTransactions([]);
+                    setSelectedTransaction(null);
+                  }}
+                  className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+                >
+                  <X className="w-4 h-4 text-gray-600" />
+                </button>
+              </div>
+
+              {/* Step 1: Select User */}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    1. Select User Account
+                  </label>
+                  <select
+                    value={selectedUser}
+                    onChange={(e) => {
+                      setSelectedUser(e.target.value);
+                      if (e.target.value) {
+                        loadUserTransactions(e.target.value);
+                      } else {
+                        setUserTransactions([]);
+                      }
+                      setSelectedTransaction(null);
+                    }}
+                    className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  >
+                    <option value="">Choose a user...</option>
+                    {allUsers.map((user) => (
+                      <option key={user.customerNumber} value={user.customerNumber}>
+                        {user.name} ({user.customerNumber})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Step 2: Show User Transactions */}
+                {selectedUser && userTransactions.length > 0 && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      2. Select Transaction to Delete ({userTransactions.length} transactions)
+                    </label>
+                    <div className="max-h-96 overflow-y-auto border border-gray-200 rounded-xl">
+                      {userTransactions.map((transaction, index) => (
+                        <div
+                          key={transaction.id}
+                          className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors ${
+                            selectedTransaction?.id === transaction.id ? 'bg-blue-50 border-blue-200' : ''
+                          }`}
+                          onClick={() => setSelectedTransaction(transaction)}
+                        >
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <div className="flex items-center space-x-2 mb-1">
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                  transaction.paymentMethod === 'UK Transfer' ? 'bg-blue-100 text-blue-800' :
+                                  transaction.paymentMethod === 'IBAN Transfer' ? 'bg-green-100 text-green-800' :
+                                  transaction.paymentMethod === 'BOI Transfer' ? 'bg-purple-100 text-purple-800' :
+                                  'bg-gray-100 text-gray-800'
+                                }`}>
+                                  {transaction.paymentMethod || 'Other'}
+                                </span>
+                                <span className="text-xs text-gray-500">
+                                  {new Date(transaction.timestamp).toLocaleDateString()} {new Date(transaction.timestamp).toLocaleTimeString()}
+                                </span>
+                              </div>
+                              <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                                {transaction.description}
+                              </p>
+                              {transaction.reference && (
+                                <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                                  Ref: {transaction.reference}
+                                </p>
+                              )}
+                              {transaction.recipientName && (
+                                <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                                  To: {transaction.recipientName}
+                                </p>
+                              )}
+                            </div>
+                            <div className="text-right">
+                              <p className={`font-bold text-lg ${
+                                transaction.amount.startsWith('-') ? 'text-red-600' : 'text-green-600'
+                              }`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                                €{Math.abs(parseFloat(transaction.amount)).toFixed(2)}
+                              </p>
+                              <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                                {transaction.amount.startsWith('-') ? 'Debit' : 'Credit'}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {selectedUser && userTransactions.length === 0 && (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      No transactions found for this user.
+                    </p>
+                  </div>
+                )}
+
+                {/* Step 3: Delete Button */}
+                {selectedTransaction && (
+                  <div className="pt-4 border-t border-gray-200">
+                    <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
+                      <h4 className="font-semibold text-red-900 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Selected Transaction Details:
+                      </h4>
+                      <div className="space-y-1 text-sm text-red-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <p><strong>Type:</strong> {selectedTransaction.paymentMethod}</p>
+                        <p><strong>Amount:</strong> €{Math.abs(parseFloat(selectedTransaction.amount)).toFixed(2)} ({selectedTransaction.amount.startsWith('-') ? 'Debit' : 'Credit'})</p>
+                        <p><strong>Description:</strong> {selectedTransaction.description}</p>
+                        <p><strong>Date:</strong> {new Date(selectedTransaction.timestamp).toLocaleDateString()} {new Date(selectedTransaction.timestamp).toLocaleTimeString()}</p>
+                        {selectedTransaction.reference && <p><strong>Reference:</strong> {selectedTransaction.reference}</p>}
+                      </div>
+                    </div>
+                    
+                    <button
+                      onClick={() => setShowDeleteConfirm(true)}
+                      className="w-full py-3 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition-colors"
+                      style={{ fontFamily: 'OpenSans, sans-serif' }}
+                    >
+                      Delete This Transaction
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && selectedTransaction && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[10002] p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md mx-4">
+            <div className="p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Confirm Transaction Deletion
+              </h3>
+              <p className="text-gray-600 mb-6" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Are you sure you want to delete this transaction? This action cannot be undone and will update the account balance accordingly.
+              </p>
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="flex-1 px-4 py-3 bg-gray-200 text-gray-800 rounded-xl font-medium hover:bg-gray-300 transition-colors"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteTransaction}
+                  className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 transition-colors"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  Delete Transaction
+                </button>
               </div>
             </div>
           </div>
