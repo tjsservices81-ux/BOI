@@ -111,6 +111,10 @@ export default function IbanTransfer() {
   const executeTransfer = async () => {
     if (!formData) return;
     
+    // Generate unique reference number
+    const ref = generateReference();
+    setTransferReference(ref);
+    
     // Start processing animation
     setStep('success');
     setShowReference(false);
