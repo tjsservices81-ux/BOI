@@ -6,7 +6,7 @@ import { useAuth } from "@/lib/auth";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Profile() {
-  const [, navigate] = useLocation();
+  const [, navigate] = useLocation() || ['/', () => {}];
   const { logout } = useAuth();
   const [tapCount, setTapCount] = useState(0);
   const [lastTapTime, setLastTapTime] = useState(0);

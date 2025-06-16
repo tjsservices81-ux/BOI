@@ -50,7 +50,7 @@ function ProtectedRoute({ children, fallback }: { children: React.ReactNode; fal
 
 function AppRoutes() {
   const { user, isLoading, login } = useAuth();
-  const [location, navigate] = useLocation();
+  const [location, navigate] = useLocation() || ['/', () => {}];
   const [splashShown, setSplashShown] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [splashTransitioning, setSplashTransitioning] = useState(false);

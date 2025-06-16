@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight, User, ArrowUpDown, Globe, MapPin, Clock, Use
 import { UserDataManager } from "../utils/userDataManager";
 
 export default function Payments() {
-  const [, navigate] = useLocation();
+  const [, navigate] = useLocation() || ['/', () => {}];
   const [selectedPaymentType, setSelectedPaymentType] = useState<string | null>(null);
   const [recentPayments, setRecentPayments] = useState<any[]>([]);
   const [showRecentPayees, setShowRecentPayees] = useState(false);

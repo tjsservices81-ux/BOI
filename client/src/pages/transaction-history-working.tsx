@@ -7,7 +7,7 @@ import { StateManager } from "../utils/stateManager";
 
 export default function TransactionHistoryWorking() {
   const [, setLocation] = useLocation();
-  const [match, params] = useRoute("/transactions/:accountId");
+  const [match, params] = useRoute("/transactions/:accountId") || [false, {}];
   const [transactions, setTransactions] = useState<any[]>([]);
   const [balance, setBalance] = useState<string>('0.00');
   const [accountInfo, setAccountInfo] = useState<any>(null);
