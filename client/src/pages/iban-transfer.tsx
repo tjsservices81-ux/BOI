@@ -87,6 +87,11 @@ export default function IbanTransfer() {
           form.setValue('recipientName', payee.name);
           form.setValue('iban', payee.accountInfo);
           
+          // Pre-fill BIC code if available
+          if (payee.bicCode) {
+            form.setValue('bicCode', payee.bicCode);
+          }
+          
           // Clear the session storage after using
           sessionStorage.removeItem('selectedPayee');
         }
@@ -165,6 +170,7 @@ export default function IbanTransfer() {
             const payee = {
               name: formData.recipientName,
               accountInfo: formData.iban,
+              bicCode: formData.bicCode,
               transferType: 'IBAN Transfer',
               timestamp: new Date().toISOString()
             };
