@@ -21,7 +21,7 @@ type UkTransferData = z.infer<typeof ukTransferSchema>;
 
 export default function UkTransfer() {
   const locationHook = useLocation();
-  const navigate = locationHook ? locationHook[1] : (() => {});
+  const [, navigate] = locationHook || [null, () => {}];
   const [step, setStep] = useState<'form' | 'confirm' | 'success' | 'cancelled'>('form');
   const [transferReference, setTransferReference] = useState<string>('');
   const [identifiedBank, setIdentifiedBank] = useState<string>('');

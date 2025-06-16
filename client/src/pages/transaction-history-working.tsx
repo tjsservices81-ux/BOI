@@ -6,8 +6,10 @@ import { UserDataManager } from "../utils/userDataManager.ts";
 import { StateManager } from "../utils/stateManager";
 
 export default function TransactionHistoryWorking() {
-  const [, setLocation] = useLocation() || ['/', () => {}];
-  const [match, params] = useRoute("/transactions/:accountId") || [false, {}];
+  const locationHook = useLocation();
+  const [, setLocation] = locationHook || [null, () => {}];
+  const routeHook = useRoute("/transactions/:accountId");
+  const [match, params] = routeHook || [false, {}];
   const [transactions, setTransactions] = useState<any[]>([]);
   const [balance, setBalance] = useState<string>('0.00');
   const [accountInfo, setAccountInfo] = useState<any>(null);

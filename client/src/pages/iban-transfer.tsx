@@ -29,7 +29,7 @@ type IbanTransferData = z.infer<typeof ibanTransferSchema>;
 
 export default function IbanTransfer() {
   const locationHook = useLocation();
-  const navigate = locationHook ? locationHook[1] : (() => {});
+  const [, navigate] = locationHook || [null, () => {}];
   const [step, setStep] = useState<'form' | 'confirm' | 'security' | 'success'>('form');
   const [transferReference, setTransferReference] = useState<string>('');
   const [showReference, setShowReference] = useState<boolean>(false);

@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export default function Profile() {
   const locationHook = useLocation();
-  const navigate = locationHook ? locationHook[1] : (() => {});
+  const [, navigate] = locationHook || [null, () => {}];
   
   const authHook = useAuth();
   const logout = authHook?.logout || (() => {});
