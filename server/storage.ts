@@ -336,8 +336,7 @@ class MemStorage implements IStorage {
         phone: "+353 87 123 4567",
         address: "15 Grafton Street, Dublin 2, Ireland",
         dateOfBirth: "1985-03-15",
-        joinDate: "Member since 2020",
-        isDisabled: true
+        joinDate: "Member since 2020"
       },
       {
         customerNumber: "BOI911163841",
