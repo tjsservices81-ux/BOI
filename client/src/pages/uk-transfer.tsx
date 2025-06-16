@@ -507,7 +507,7 @@ export default function UkTransfer() {
   }
 
   return (
-    <div className="page-container page-fade-in" style={{ 
+    <div className="page-container page-slide-in-right" style={{ 
       position: 'fixed', 
       top: 0, 
       left: 0, 

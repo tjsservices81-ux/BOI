@@ -330,7 +330,7 @@ export default function IbanTransfer() {
     const selectedAccount = accounts.find(acc => acc.id === formData.fromAccount);
 
     return (
-      <div className="page-container page-fade-in" style={{ 
+      <div className="page-container page-slide-in-right" style={{ 
         position: 'fixed', 
         top: 0, 
         left: 0, 
@@ -412,7 +412,7 @@ export default function IbanTransfer() {
   }
 
   return (
-    <div className="page-container page-fade-in" style={{ 
+    <div className="page-container page-slide-in-right" style={{ 
       position: 'fixed', 
       top: 0, 
       left: 0, 

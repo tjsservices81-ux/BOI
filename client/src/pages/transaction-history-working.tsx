@@ -268,7 +268,7 @@ export default function TransactionHistoryWorking() {
 
         <div className="flex space-x-4 mt-8">
           <button 
-            onClick={() => navigate('/uk-transfer')}
+            onClick={() => navigateWithAnimation('/uk-transfer', 'slide-right')}
             className="flex-1 bg-[#126987] text-white py-3 rounded-lg font-semibold text-sm"
             style={{ fontFamily: 'OpenSans, sans-serif' }}
           >
