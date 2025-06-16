@@ -150,6 +150,12 @@ export default function UkTransfer() {
         sessionStorage.removeItem('selectedPayee');
       }
     }
+    
+    return () => {
+      window.removeEventListener('accountsUpdate', handleAccountsUpdate as EventListener);
+      window.removeEventListener('balanceUpdate', handleAccountsUpdate as EventListener);
+      window.removeEventListener('adminProfileUpdate', handleAccountsUpdate as EventListener);
+    };
   }, []); // Only run once on mount
 
   const onSubmit = async (data: UkTransferData) => {
