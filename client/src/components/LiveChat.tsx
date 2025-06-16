@@ -731,18 +731,22 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed bottom-0 right-0 z-50 p-4" style={{ bottom: '100px' }}>
+    <div className="fixed inset-0 bg-black bg-opacity-60 z-50 backdrop-animate-in">
       <div 
-        className={`bg-white w-[380px] h-[600px] rounded-3xl chat-container shadow-2xl ${
+        className={`bg-white w-full md:w-[90vw] md:h-[90vh] md:rounded-3xl md:max-w-4xl md:max-h-[800px] chat-container shadow-2xl absolute ${
           isAnimating ? 'chat-animate-out' : 'chat-animate-in'
         }`}
         style={{ 
-          maxWidth: 'calc(100vw - 32px)',
-          maxHeight: 'calc(100vh - 140px)'
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: '88px', // Leave space for bottom navigation
+          height: 'calc(100vh - 88px)',
+          maxHeight: 'calc(100vh - 88px)'
         }}
       >
         {/* Header */}
-        <div className="bg-[#126987] rounded-t-3xl px-6 py-6 flex items-center justify-between">
+        <div className="bg-[#126987] px-6 py-6 flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
               <MessageCircle className="w-6 h-6 text-white" />
