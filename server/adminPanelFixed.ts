@@ -1061,51 +1061,93 @@ router.get('/dashboard', (req, res) => {
               }
             });
             
-            const result = await response.json();
+            const usersResponse = await fetch('/admin/user-accounts', {
+              headers: {
+                'X-Admin-Key': ADMIN_KEY
+              }
+            });
             
-            if (response.ok) {
+            const deviceResult = await response.json();
+            const usersResult = await usersResponse.json();
+            
+            if (response.ok && usersResponse.ok) {
               const deviceList = document.getElementById('deviceSessions');
               deviceList.innerHTML = '';
               
-              if (result.sessions.length === 0) {
+              if (deviceResult.sessions.length === 0) {
                 deviceList.innerHTML = '<div class="device-item">No active device sessions</div>';
               } else {
-                result.sessions.forEach(function(session) {
-                  const div = document.createElement('div');
-                  div.className = 'device-item' + (session.blocked ? ' blocked' : '');
-                  const isDeviceBlocked = session.blocked;
-                  const isIPRevoked = session.ipRevoked;
-                  const overallStatus = isDeviceBlocked || isIPRevoked ? 'BLOCKED' : 'ACTIVE';
+                // Create a map of customer numbers to user data
+                const userMap = {};
+                usersResult.accounts.forEach(function(user) {
+                  userMap[user.customerNumber] = user;
+                });
+                
+                // Group sessions by customer number
+                const groupedSessions = {};
+                deviceResult.sessions.forEach(function(session) {
+                  if (!groupedSessions[session.customerNumber]) {
+                    groupedSessions[session.customerNumber] = [];
+                  }
+                  groupedSessions[session.customerNumber].push(session);
+                });
+                
+                // Display grouped sessions
+                Object.keys(groupedSessions).forEach(function(customerNumber) {
+                  const user = userMap[customerNumber] || { fullName: 'Unknown User', email: 'No email' };
+                  const sessions = groupedSessions[customerNumber];
                   
-                  div.innerHTML = 
-                    '<div class="device-info">' +
-                      '<div class="device-name">' + session.deviceModel + '</div>' +
-                      '<div class="device-details">' +
-                        'IP: ' + session.ipAddress + ' ' + (isIPRevoked ? '(IP REVOKED)' : '(IP APPROVED)') + '<br>' +
-                        'Login: ' + new Date(session.loginTime).toLocaleString() + '<br>' +
-                        'Session: ' + session.sessionId.substring(0, 8) + '...' +
+                  const accountDiv = document.createElement('div');
+                  accountDiv.className = 'device-item';
+                  accountDiv.style.background = 'rgba(240, 248, 255, 0.9)';
+                  accountDiv.style.borderLeft = '4px solid #3498db';
+                  accountDiv.style.marginBottom = '1.5rem';
+                  
+                  let sessionsHtml = '';
+                  sessions.forEach(function(session) {
+                    const isDeviceBlocked = session.blocked;
+                    const isIPRevoked = session.ipRevoked;
+                    const overallStatus = isDeviceBlocked || isIPRevoked ? 'BLOCKED' : 'ACTIVE';
+                    
+                    sessionsHtml += 
+                      '<div style="margin-left: 2rem; padding: 1rem; background: rgba(255,255,255,0.8); border-radius: 8px; margin-bottom: 0.5rem; border-left: 3px solid ' + (overallStatus === 'BLOCKED' ? '#e74c3c' : '#27ae60') + ';">' +
+                        '<div style="display: flex; justify-content: space-between; align-items: center;">' +
+                          '<div>' +
+                            '<strong style="color: #2c3e50;">📱 ' + session.deviceModel + '</strong><br>' +
+                            '<span style="color: #7f8c8d; font-size: 0.9rem;">🌐 IP: ' + session.ipAddress + '</span>' +
+                          '</div>' +
+                          '<div style="text-align: right;">' +
+                            '<span class="status-badge ' + (overallStatus === 'BLOCKED' ? 'status-blocked' : 'status-active') + '">' + overallStatus + '</span><br>' +
+                            '<div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">' +
+                              '<button class="' + (isDeviceBlocked ? 'btn-unblock' : 'btn-block') + '" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;" onclick="' + 
+                                (isDeviceBlocked ? 'unblockDevice' : 'blockDevice') + '(&quot;' + session.sessionId + '&quot;, &quot;' + session.deviceModel + '&quot;)">' +
+                                (isDeviceBlocked ? 'Unblock' : 'Block') +
+                              '</button>' +
+                              '<button class="' + (isIPRevoked ? 'btn-unblock' : 'btn-block') + '" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;" onclick="' + 
+                                (isIPRevoked ? 'approveIP' : 'revokeIP') + '(&quot;' + session.ipAddress + '&quot;)">' +
+                                (isIPRevoked ? 'Approve IP' : 'Revoke IP') +
+                              '</button>' +
+                            '</div>' +
+                          '</div>' +
+                        '</div>' +
+                      '</div>';
+                  });
+                  
+                  accountDiv.innerHTML = 
+                    '<div style="margin-bottom: 1rem;">' +
+                      '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">' +
+                        '<strong style="color: #1e3c72; font-size: 1.1rem;">👤 ' + user.fullName + '</strong>' +
+                        '<span style="color: #7f8c8d; font-size: 0.9rem;">' + customerNumber + '</span>' +
                       '</div>' +
+                      '<div style="color: #7f8c8d; font-size: 0.9rem; margin-bottom: 1rem;">📧 ' + user.email + '</div>' +
                     '</div>' +
-                    '<div class="device-status">' +
-                      '<span class="status-badge ' + (overallStatus === 'BLOCKED' ? 'status-blocked' : 'status-active') + '">' +
-                        overallStatus +
-                      '</span>' +
-                      '<div style="display: flex; gap: 0.5rem; flex-direction: column;">' +
-                        '<button class="' + (isDeviceBlocked ? 'btn-unblock' : 'btn-block') + '" onclick="' + 
-                          (isDeviceBlocked ? 'unblockDevice' : 'blockDevice') + '(&quot;' + session.sessionId + '&quot;, &quot;' + session.deviceModel + '&quot;)">' +
-                          (isDeviceBlocked ? 'Unblock Device' : 'Block Device') +
-                        '</button>' +
-                        '<button class="' + (isIPRevoked ? 'btn-unblock' : 'btn-block') + '" onclick="' + 
-                          (isIPRevoked ? 'approveIP' : 'revokeIP') + '(&quot;' + session.ipAddress + '&quot;)">' +
-                          (isIPRevoked ? 'Approve IP' : 'Revoke IP') +
-                        '</button>' +
-                      '</div>' +
-                    '</div>';
-                  deviceList.appendChild(div);
+                    sessionsHtml;
+                  
+                  deviceList.appendChild(accountDiv);
                 });
               }
             } else {
-              showMessage(result.error || 'Failed to load device sessions', 'error');
+              showMessage((deviceResult.error || usersResult.error) || 'Failed to load device sessions', 'error');
             }
           } catch (error) {
             showMessage('Network error: ' + error.message, 'error');
