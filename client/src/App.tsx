@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from "@/lib/auth";
 import BottomNavigation from "@/components/BottomNavigation";
 import { SecurityWrapper } from "@/components/SecurityWrapper";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { StateManager } from "@/utils/stateManager";
 
 
 
@@ -47,11 +48,12 @@ function ProtectedRoute({ children, fallback }: { children: React.ReactNode; fal
 }
 
 function AppRoutes() {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, login } = useAuth();
   const [location, navigate] = useLocation();
   const [splashShown, setSplashShown] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [splashTransitioning, setSplashTransitioning] = useState(false);
+  const [isRestoringState, setIsRestoringState] = useState(true);
 
   // Centralized theme color management
   const updateThemeColor = (color: string) => {
@@ -62,39 +64,92 @@ function AppRoutes() {
   };
 
   
-  // Initialize app state and theme - always start fresh
+  // Initialize app state with persistence support
   useEffect(() => {
-    // Clear temporary state for cold launch behavior
-    const keys = Object.keys(localStorage);
-    keys.forEach(key => {
-      if (key.includes('chat') || key.includes('liveChat') || key.includes('tempState') || key.includes('session_')) {
-        localStorage.removeItem(key);
+    const initializeApp = async () => {
+      // Check if this is a forced cold start (only after real app closure)
+      const forceColdStart = localStorage.getItem('force_cold_start') === 'true';
+      
+      if (forceColdStart) {
+        // This is a cold restart after app was actually closed
+        localStorage.removeItem('force_cold_start');
+        localStorage.removeItem('bankingUser');
+        sessionStorage.clear();
+        // Clear state persistence for true cold start
+        StateManager.clearExpiredState();
+        sessionStorage.setItem('app_cold_start', 'true');
+        setSplashShown(false);
+      } else {
+        // Try to restore previous app state for background return
+        try {
+          const savedState = StateManager.restoreAppState();
+          
+          if (savedState && savedState.user && !user) {
+            // Restore user session silently
+            login(savedState.user);
+            
+            // Restore route if different from current
+            if (savedState.currentRoute !== location && savedState.currentRoute !== '/login') {
+              navigate(savedState.currentRoute);
+            }
+            
+            // Skip splash if restoring state
+            setSplashShown(true);
+          } else {
+            // No valid saved state, show splash
+            setSplashShown(false);
+          }
+        } catch (error) {
+          console.error('Failed to restore app state:', error);
+          setSplashShown(false);
+        }
       }
-    });
-    
-    // Check if this is a forced cold start (only after real app closure)
-    const forceColdStart = localStorage.getItem('force_cold_start') === 'true';
-    
-    if (forceColdStart) {
-      // This is a cold restart after app was actually closed
-      localStorage.removeItem('force_cold_start');
-      localStorage.removeItem('bankingUser');
-      sessionStorage.clear();
-      // Mark this as a cold start for auth provider
-      sessionStorage.setItem('app_cold_start', 'true');
-    }
-    
-    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-    if (themeColorMeta) {
-      themeColorMeta.setAttribute('content', '#000DFF');
-    }
-    
-    // Always start with splash screen for cold launch
-    setSplashShown(false);
-    
-    // Mark as initialized after a tick to prevent flash
-    setTimeout(() => setIsInitialized(true), 0);
+      
+      // Clear temporary state for cold launch behavior
+      const keys = Object.keys(localStorage);
+      keys.forEach(key => {
+        if (key.includes('chat') || key.includes('liveChat') || key.includes('tempState') || key.includes('session_')) {
+          localStorage.removeItem(key);
+        }
+      });
+      
+      const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+      if (themeColorMeta) {
+        themeColorMeta.setAttribute('content', '#000DFF');
+      }
+      
+      setIsRestoringState(false);
+      // Mark as initialized after a tick to prevent flash
+      setTimeout(() => setIsInitialized(true), 0);
+    };
+
+    initializeApp();
   }, []);
+
+  // Handle app visibility changes for state persistence
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (user) {
+        StateManager.handleVisibilityChange(location, user);
+      }
+    };
+
+    const handleBeforeUnload = () => {
+      if (user) {
+        StateManager.handleVisibilityChange(location, user);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('pagehide', handleBeforeUnload);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('pagehide', handleBeforeUnload);
+    };
+  }, [location, user]);
 
   // Handle app visibility changes for proper lifecycle management
   useEffect(() => {

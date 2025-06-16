@@ -1,9 +1,10 @@
 import { ChevronRight, User } from "lucide-react";
 import { useLocation } from "wouter";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import SpendingVisualization from "../components/SpendingVisualization";
 import SpendingInsights from "../components/SpendingInsights";
 import { UserDataManager } from "../utils/userDataManager";
+import { StateManager } from "../utils/stateManager";
 
 interface Account {
   id: number;
