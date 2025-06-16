@@ -635,12 +635,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const recipientMatch = lastTransfer.description.match(/Transfer to (.+)/);
           const recipientName = recipientMatch ? recipientMatch[1] : 'recipient';
           
+          // Build account details based on transfer type
+          let accountDetails = '';
+          if (lastTransfer.paymentMethod === 'UK Transfer') {
+            accountDetails = `
+Account Number: ${lastTransfer.accountNumber || 'Not available'}
+Sort Code: ${lastTransfer.sortCode || 'Not available'}`;
+          } else if (lastTransfer.paymentMethod === 'IBAN Transfer') {
+            accountDetails = `
+IBAN: ${lastTransfer.iban || 'Not available'}
+BIC Code: ${lastTransfer.bicCode || 'Not available'}`;
+          }
+          
           transferContext = `\n\nCUSTOMER'S RECENT TRANSFER CONTEXT:
 Last transfer: €${transferAmount.toFixed(2)} to ${recipientName} on ${transferDate}
 Reference: ${lastTransfer.reference || 'Not specified'}
 Transaction ID: ${lastTransfer.id}
-Status: Confirmed and processed
-Use this exact information when customer asks about their recent transfer, transaction ID, reference, or confirmation status.`;
+Status: Confirmed and processed${accountDetails}
+
+IMPORTANT: When customer asks for payment confirmation or transfer details, include ALL the above information including the account details (Account Number/Sort Code for UK transfers, IBAN/BIC for IBAN transfers).`;
         } else {
           transferContext = `\n\nCUSTOMER'S RECENT TRANSFER CONTEXT:
 No transfers found yet on your account.`;
