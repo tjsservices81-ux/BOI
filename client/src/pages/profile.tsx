@@ -833,26 +833,17 @@ export default function Profile() {
             <>
               {/* Profile Header */}
               <div className="flex flex-col items-center text-center mb-8">
-                <div className="relative">
-                  <button 
-                    onClick={handleProfilePictureTap}
-                    onTouchStart={(e) => e.preventDefault()}
-                    className={`w-24 h-24 rounded-full flex items-center justify-center mb-4 active:scale-95 transition-all duration-200 touch-manipulation ${
-                      tapCount > 0 ? 'bg-blue-100 border-2 border-blue-300' : 'bg-gray-200'
-                    }`}
-                    style={{
-                      WebkitTapHighlightColor: 'transparent',
-                      touchAction: 'manipulation'
-                    }}
-                  >
-                    <User className={`w-12 h-12 transition-colors ${tapCount > 0 ? 'text-blue-600' : 'text-gray-600'}`} />
-                  </button>
-                  {tapCount > 0 && (
-                    <div className="absolute -top-1 -right-1 w-6 h-6 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center font-bold z-10">
-                      {tapCount}
-                    </div>
-                  )}
-                </div>
+                <button 
+                  onClick={handleProfilePictureTap}
+                  onTouchStart={(e) => e.preventDefault()}
+                  className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mb-4 active:scale-95 transition-all duration-200 touch-manipulation"
+                  style={{
+                    WebkitTapHighlightColor: 'transparent',
+                    touchAction: 'manipulation'
+                  }}
+                >
+                  <User className="w-12 h-12 text-gray-600" />
+                </button>
                 <h2 className="text-2xl font-bold text-gray-900 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                   {userDetails.name || "User"}
                 </h2>
