@@ -597,6 +597,99 @@ router.get('/dashboard', (req, res) => {
           }
         }
         
+        /* Device session styling */
+        .device-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 1rem 1.5rem;
+          background: rgba(255,255,255,0.9);
+          border-radius: 8px;
+          margin-bottom: 1rem;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          border-left: 4px solid #667eea;
+          transition: all 0.3s ease;
+        }
+        .device-item:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+        .device-item.blocked {
+          border-left-color: #d32f2f;
+          background: rgba(255,235,238,0.9);
+        }
+        .device-info {
+          flex: 1;
+        }
+        .device-name {
+          font-weight: 600;
+          color: #1e3c72;
+          margin-bottom: 0.25rem;
+          font-size: 1.1rem;
+        }
+        .device-details {
+          color: #666;
+          font-size: 0.9rem;
+          line-height: 1.4;
+        }
+        .device-status {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+        }
+        .status-badge {
+          padding: 0.25rem 0.75rem;
+          border-radius: 12px;
+          font-size: 0.8rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        .status-active {
+          background: #e8f5e8;
+          color: #2e7d32;
+        }
+        .status-blocked {
+          background: #ffebee;
+          color: #d32f2f;
+        }
+        .btn-block {
+          background: linear-gradient(135deg, #ff5722, #d32f2f);
+          color: white;
+          border: none;
+          padding: 0.5rem 1rem;
+          border-radius: 6px;
+          cursor: pointer;
+          font-size: 0.9rem;
+          font-weight: 500;
+          transition: all 0.3s ease;
+        }
+        .btn-block:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(255,87,34,0.3);
+        }
+        .btn-block:disabled {
+          background: #ccc;
+          cursor: not-allowed;
+          transform: none;
+          box-shadow: none;
+        }
+        .btn-unblock {
+          background: linear-gradient(135deg, #4caf50, #2e7d32);
+          color: white;
+          border: none;
+          padding: 0.5rem 1rem;
+          border-radius: 6px;
+          cursor: pointer;
+          font-size: 0.9rem;
+          font-weight: 500;
+          transition: all 0.3s ease;
+        }
+        .btn-unblock:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(76,175,80,0.3);
+        }
+        
         /* Prevent zoom and scroll issues */
         @media screen and (max-width: 768px) {
           body {
@@ -649,6 +742,12 @@ router.get('/dashboard', (req, res) => {
             <input type="text" id="ipInput" placeholder="Enter IP address" style="flex: 1; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
             <button class="btn btn-primary" onclick="checkIPStatus()">Check IP Status</button>
           </div>
+        </div>
+
+        <!-- Device & Session Monitor -->
+        <div class="section">
+          <h2>📱 Device & Session Monitor</h2>
+          <div id="deviceSessions"></div>
         </div>
       </div>
 
