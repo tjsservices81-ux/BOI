@@ -516,7 +516,19 @@ export class MemStorage implements IStorage {
   // Admin operations
   async getAllDeviceSessions(): Promise<any[]> {
     const { getAllDeviceSessions } = await import('./deviceSessions');
-    return getAllDeviceSessions();
+    const sessions = getAllDeviceSessions();
+    
+    // Enrich sessions with user account information
+    const enrichedSessions = await Promise.all(sessions.map(async (session) => {
+      const user = await this.getUserByCustomerNumber(session.customerNumber || '');
+      return {
+        ...session,
+        accountName: user?.name || `Customer ${session.customerNumber}`,
+        accountEmail: user?.email || `${session.customerNumber}@example.com`
+      };
+    }));
+    
+    return enrichedSessions;
   }
 
   async blockDeviceSession(sessionId: string): Promise<void> {
