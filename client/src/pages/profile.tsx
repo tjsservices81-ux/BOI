@@ -50,11 +50,10 @@ export default function Profile() {
 
   // Delete transaction states
   const [showDeleteTransaction, setShowDeleteTransaction] = useState(false);
-  const [selectedUser, setSelectedUser] = useState('');
-  const [userTransactions, setUserTransactions] = useState<any[]>([]);
+  const [selectedAccountId, setSelectedAccountId] = useState('');
+  const [accountTransactions, setAccountTransactions] = useState<any[]>([]);
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [allUsers, setAllUsers] = useState<any[]>([]);
   const [profileData, setProfileData] = useState(() => {
     const currentCustomerNumber = UserDataManager.getCurrentUser();
     // Try to get cached data first to prevent flash
@@ -844,36 +843,18 @@ export default function Profile() {
     alert('Data reset to defaults successfully - all balances set to €0.00, transactions cleared');
   };
 
-  // Load all users for delete transaction feature
-  const loadAllUsers = () => {
-    const storedUsers = JSON.parse(localStorage.getItem('bankUsers') || '{}');
-    const userList = Object.keys(storedUsers).map(customerNumber => ({
-      customerNumber,
-      name: storedUsers[customerNumber].name || 'Unknown User'
-    }));
-    setAllUsers(userList);
-  };
-
-  // Load transactions for selected user
-  const loadUserTransactions = (customerNumber: string) => {
-    const prevUser = UserDataManager.getCurrentUser() || '';
-    UserDataManager.setCurrentUser(customerNumber);
-    const transactions = UserDataManager.getUserData('bankTransactions', []);
-    UserDataManager.setCurrentUser(prevUser);
-    setUserTransactions(transactions);
+  // Load transactions for selected account
+  const loadAccountTransactions = (accountId: string) => {
+    const allTransactions = UserDataManager.getUserData('bankTransactions', []);
+    const accountSpecificTransactions = allTransactions.filter((tx: any) => tx.accountId === parseInt(accountId));
+    setAccountTransactions(accountSpecificTransactions);
   };
 
   // Handle transaction deletion
   const handleDeleteTransaction = () => {
-    if (!selectedTransaction || !selectedUser) return;
+    if (!selectedTransaction || !selectedAccountId) return;
 
-    // Get current user to restore later
-    const prevUser = UserDataManager.getCurrentUser() || '';
-    
-    // Switch to selected user context
-    UserDataManager.setCurrentUser(selectedUser);
-    
-    // Get all transactions for this user
+    // Get all transactions for current user
     const storedTransactions = UserDataManager.getUserData('bankTransactions', []);
     
     // Filter out the selected transaction
@@ -910,17 +891,18 @@ export default function Profile() {
       
       UserDataManager.setUserData('bankAccounts', updatedAccounts);
       
+      // Update local accounts state
+      setAccounts(updatedAccounts);
+      
       // Dispatch balance update event
       window.dispatchEvent(new CustomEvent('balanceUpdate', {
         detail: { accountId: selectedTransaction.accountId, newBalance: currentBalance.toFixed(2) }
       }));
     }
     
-    // Restore previous user context
-    UserDataManager.setCurrentUser(prevUser);
-    
     // Update local state
-    setUserTransactions(updatedTransactions);
+    const accountSpecificTransactions = updatedTransactions.filter((tx: any) => tx.accountId === parseInt(selectedAccountId));
+    setAccountTransactions(accountSpecificTransactions);
     setSelectedTransaction(null);
     setShowDeleteConfirm(false);
     
@@ -1163,7 +1145,6 @@ export default function Profile() {
                     {/* Delete Transaction */}
                     <button 
                       onClick={() => {
-                        loadAllUsers();
                         setShowDeleteTransaction(true);
                       }}
                       className="w-full flex items-center space-x-3 p-4 bg-red-50 border border-red-200 rounded-xl active:scale-98 transition-transform"
@@ -1979,8 +1960,8 @@ export default function Profile() {
                 <button
                   onClick={() => {
                     setShowDeleteTransaction(false);
-                    setSelectedUser('');
-                    setUserTransactions([]);
+                    setSelectedAccountId('');
+                    setAccountTransactions([]);
                     setSelectedTransaction(null);
                   }}
                   className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
@@ -1989,43 +1970,43 @@ export default function Profile() {
                 </button>
               </div>
 
-              {/* Step 1: Select User */}
+              {/* Step 1: Select Account */}
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    1. Select User Account
+                    1. Select Account Type
                   </label>
                   <select
-                    value={selectedUser}
+                    value={selectedAccountId}
                     onChange={(e) => {
-                      setSelectedUser(e.target.value);
+                      setSelectedAccountId(e.target.value);
                       if (e.target.value) {
-                        loadUserTransactions(e.target.value);
+                        loadAccountTransactions(e.target.value);
                       } else {
-                        setUserTransactions([]);
+                        setAccountTransactions([]);
                       }
                       setSelectedTransaction(null);
                     }}
                     className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     style={{ fontFamily: 'OpenSans, sans-serif' }}
                   >
-                    <option value="">Choose a user...</option>
-                    {allUsers.map((user) => (
-                      <option key={user.customerNumber} value={user.customerNumber}>
-                        {user.name} ({user.customerNumber})
+                    <option value="">Choose an account...</option>
+                    {accounts.map((account) => (
+                      <option key={account.id} value={account.id.toString()}>
+                        {account.accountType} - €{account.balance}
                       </option>
                     ))}
                   </select>
                 </div>
 
-                {/* Step 2: Show User Transactions */}
-                {selectedUser && userTransactions.length > 0 && (
+                {/* Step 2: Show Account Transactions */}
+                {selectedAccountId && accountTransactions.length > 0 && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      2. Select Transaction to Delete ({userTransactions.length} transactions)
+                      2. Select Transaction to Delete ({accountTransactions.length} transactions)
                     </label>
                     <div className="max-h-96 overflow-y-auto border border-gray-200 rounded-xl">
-                      {userTransactions.map((transaction, index) => (
+                      {accountTransactions.map((transaction, index) => (
                         <div
                           key={transaction.id}
                           className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors ${
@@ -2079,10 +2060,10 @@ export default function Profile() {
                   </div>
                 )}
 
-                {selectedUser && userTransactions.length === 0 && (
+                {selectedAccountId && accountTransactions.length === 0 && (
                   <div className="text-center py-8">
                     <p className="text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      No transactions found for this user.
+                      No transactions found for this account.
                     </p>
                   </div>
                 )}
