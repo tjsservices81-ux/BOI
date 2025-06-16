@@ -145,14 +145,14 @@ export default function IbanTransfer() {
         if (newProgress >= 100) {
           clearInterval(interval);
           
-          // Process the transfer
+          // Process the transfer using the generated reference
           const transferSuccess = processConfirmedTransfer(
             `IBAN_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             formData.fromAccount,
             parseFloat(formData.amount),
             formData.recipientName,
             'IBAN',
-            transferReference,
+            ref, // Use the generated reference directly
             undefined, // No exchange rate for IBAN transfers
             {
               iban: formData.iban,
