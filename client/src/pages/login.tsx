@@ -42,9 +42,9 @@ export default function Login() {
   const [locationError, setLocationError] = useState<string | null>(null);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [nearbyATMs, setNearbyATMs] = useState<any[]>([]);
-  const { login, isLoading } = useAuth();
+  const { login, isLoading } = useAuth() || { login: () => {}, isLoading: false };
   const [, navigate] = useLocation() || ['/', () => {}];
-  const { toast } = useToast();
+  const { toast } = useToast() || { toast: () => {} };
 
   // Assets are always loaded - no delays
   useEffect(() => {

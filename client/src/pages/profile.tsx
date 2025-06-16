@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export default function Profile() {
   const [, navigate] = useLocation() || ['/', () => {}];
-  const { logout } = useAuth();
+  const { logout } = useAuth() || { logout: () => {} };
   const [tapCount, setTapCount] = useState(0);
   const [lastTapTime, setLastTapTime] = useState(0);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
