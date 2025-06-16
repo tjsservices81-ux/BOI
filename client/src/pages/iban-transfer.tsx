@@ -443,7 +443,7 @@ export default function IbanTransfer() {
       }}>
         <div style={{ backgroundColor: 'white', borderRadius: '0.75rem', padding: '1.5rem', marginBottom: '2rem' }}>
           <div className="flex items-center mb-6">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center mr-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-[#126987] to-[#5a7b85] rounded-xl flex items-center justify-center mr-4">
               <Globe className="w-6 h-6 text-white" />
             </div>
             <div>
@@ -560,7 +560,7 @@ export default function IbanTransfer() {
                 {...form.register('reference')}
                 type="text"
                 placeholder="Payment description"
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent text-sm bg-white shadow-sm"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
                 style={{ fontFamily: 'OpenSans, sans-serif' }}
               />
               {form.formState.errors.reference && (
