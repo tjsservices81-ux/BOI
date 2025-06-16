@@ -10,6 +10,7 @@ import { SecurityWrapper } from "@/components/SecurityWrapper";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { StateManager } from "@/utils/stateManager";
 import { AppLifecycle } from "@/utils/appLifecycle";
+import LiveChat from "@/components/LiveChat";
 
 
 
@@ -62,6 +63,19 @@ function AppRoutes() {
   const [isInitialized, setIsInitialized] = useState(false);
   const [splashTransitioning, setSplashTransitioning] = useState(false);
   const [isRestoringState, setIsRestoringState] = useState(true);
+  
+  // Global Live Chat state - persistent across all navigation
+  const [showLiveChat, setShowLiveChat] = useState(false);
+
+  // Listen for global live chat open events
+  useEffect(() => {
+    const handleOpenLiveChat = () => {
+      setShowLiveChat(true);
+    };
+
+    window.addEventListener('openLiveChat', handleOpenLiveChat);
+    return () => window.removeEventListener('openLiveChat', handleOpenLiveChat);
+  }, []);
 
   // Centralized theme color management
   const updateThemeColor = (color: string) => {
@@ -407,6 +421,9 @@ function AppRoutes() {
           <Route component={NotFound} />
         </Switch>
         <BottomNavigation />
+
+        {/* Global Persistent Live Chat - stays active across all navigation */}
+        <LiveChat isOpen={showLiveChat} onClose={() => setShowLiveChat(false)} />
 
         </div>
       </ErrorBoundary>

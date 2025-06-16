@@ -1,12 +1,10 @@
 import { useLocation } from "wouter";
 import { ChevronLeft, User, HelpCircle, Info, Settings, Shield, Building2, MessageCircle } from "lucide-react";
 import { useState } from "react";
-import LiveChat from "../components/LiveChat";
 
 export default function More() {
   const [, setLocation] = useLocation();
   const [isNavigating, setIsNavigating] = useState(false);
-  const [showLiveChat, setShowLiveChat] = useState(false);
   const [isLoadingChat, setIsLoadingChat] = useState(false);
 
   const handleNavigation = (path: string) => {
@@ -21,7 +19,8 @@ export default function More() {
     // Simulate loading time for a realistic experience
     setTimeout(() => {
       setIsLoadingChat(false);
-      setShowLiveChat(true);
+      // Dispatch global event to open persistent live chat
+      window.dispatchEvent(new CustomEvent('openLiveChat'));
     }, 1200); // 1.2 seconds loading
   };
 
@@ -167,8 +166,6 @@ export default function More() {
         </div>
       </div>
 
-      {/* Live Chat Component */}
-      <LiveChat isOpen={showLiveChat} onClose={() => setShowLiveChat(false)} />
     </div>
   );
 }
