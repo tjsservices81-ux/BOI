@@ -345,17 +345,17 @@ router.get('/dashboard', (req, res) => {
         .container { 
           max-width: 1400px; 
           margin: -1rem auto 2rem auto; 
-          padding: 0 2rem; 
+          padding: 0 1rem; 
           position: relative;
           z-index: 2;
         }
         .section { 
           background: rgba(255, 255, 255, 0.95);
           backdrop-filter: blur(10px);
-          margin-bottom: 2rem; 
-          padding: 2rem; 
-          border-radius: 16px; 
-          box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+          margin-bottom: 1rem; 
+          padding: 1rem; 
+          border-radius: 12px; 
+          box-shadow: 0 4px 16px rgba(0,0,0,0.08);
           border: 1px solid rgba(255,255,255,0.2);
           transition: all 0.3s ease;
         }
@@ -365,12 +365,12 @@ router.get('/dashboard', (req, res) => {
         }
         .section h2 { 
           color: #1e3c72; 
-          margin-bottom: 1.5rem; 
-          font-size: 1.5rem;
+          margin-bottom: 1rem; 
+          font-size: 1.1rem;
           font-weight: 600;
           display: flex;
           align-items: center;
-          gap: 0.75rem;
+          gap: 0.5rem;
         }
         .section h2::before {
           content: '';
@@ -1099,11 +1099,12 @@ router.get('/dashboard', (req, res) => {
                   
                   const accountDiv = document.createElement('div');
                   accountDiv.className = 'device-item';
-                  accountDiv.style.background = 'rgba(248, 250, 252, 0.95)';
-                  accountDiv.style.border = '1px solid #e2e8f0';
-                  accountDiv.style.borderRadius = '8px';
-                  accountDiv.style.padding = '1rem';
-                  accountDiv.style.marginBottom = '1rem';
+                  accountDiv.style.background = 'rgba(255, 255, 255, 0.98)';
+                  accountDiv.style.border = '1px solid #e5e7eb';
+                  accountDiv.style.borderRadius = '12px';
+                  accountDiv.style.padding = '0.75rem';
+                  accountDiv.style.marginBottom = '0.75rem';
+                  accountDiv.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
                   
                   let sessionsHtml = '';
                   sessions.forEach(function(session) {
@@ -1112,33 +1113,34 @@ router.get('/dashboard', (req, res) => {
                     const isPanicMode = session.panicMode;
                     
                     sessionsHtml += 
-                      '<div style="display: flex; align-items: center; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid #f1f5f9; min-height: 2rem;">' +
-                        '<div style="display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 0;">' +
-                          '<span style="color: #475569; font-size: 0.8rem;">📱</span>' +
-                          '<span style="color: #334155; font-size: 0.8rem; font-weight: 600; max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">' + session.deviceModel + '</span>' +
-                          '<span style="color: #64748b; font-size: 0.7rem;">🌐</span>' +
-                          '<span style="color: #475569; font-size: 0.75rem; font-family: monospace;">' + session.ipAddress + '</span>' +
+                      '<div style="background: #f8fafc; border-radius: 8px; padding: 0.5rem; margin-bottom: 0.5rem; border-left: 3px solid ' + (isPanicMode ? '#ef4444' : '#3b82f6') + ';">' +
+                        '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">' +
+                          '<span style="color: #1f2937; font-size: 0.75rem; font-weight: 600;">📱 ' + session.deviceModel + '</span>' +
                         '</div>' +
-                        '<div style="display: flex; gap: 0.4rem; align-items: center; flex-shrink: 0;">' +
-                          '<button class="' + (isDeviceBlocked ? 'btn-success' : 'btn-danger') + '" style="font-size: 0.65rem; padding: 0.2rem 0.4rem; border-radius: 3px; white-space: nowrap; min-width: 50px;" onclick="' + 
+                        '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">' +
+                          '<span style="color: #6b7280; font-size: 0.7rem;">IP: ' + session.ipAddress + '</span>' +
+                          '<span style="color: ' + (isPanicMode ? '#ef4444' : '#10b981') + '; font-size: 0.65rem; font-weight: 600;">' + (isPanicMode ? 'PANIC ACTIVE' : 'NORMAL') + '</span>' +
+                        '</div>' +
+                        '<div style="display: flex; gap: 0.25rem;">' +
+                          '<button style="font-size: 0.6rem; padding: 0.25rem 0.5rem; border: none; border-radius: 4px; background: ' + (isDeviceBlocked ? '#10b981' : '#ef4444') + '; color: white; cursor: pointer; flex: 1;" onclick="' + 
                             (isDeviceBlocked ? 'unblockDevice' : 'blockDevice') + '(&quot;' + session.sessionId + '&quot;, &quot;' + session.deviceModel + '&quot;)">' +
                             (isDeviceBlocked ? 'Unblock' : 'Block') +
                           '</button>' +
-                          '<button style="font-size: 0.65rem; padding: 0.2rem 0.4rem; border-radius: 3px; white-space: nowrap; min-width: 60px; border: none; color: white; cursor: pointer; background: ' + (isPanicMode ? '#dc2626' : '#f59e0b') + ';" onclick="' + 
+                          '<button style="font-size: 0.6rem; padding: 0.25rem 0.5rem; border: none; border-radius: 4px; background: ' + (isPanicMode ? '#ef4444' : '#f59e0b') + '; color: white; cursor: pointer; flex: 1;" onclick="' + 
                             (isPanicMode ? 'deactivateDevicePanicMode' : 'activateDevicePanicMode') + '(&quot;' + session.sessionId + '&quot;, &quot;' + session.deviceModel + '&quot;)">' +
-                            (isPanicMode ? 'Exit Panic' : 'Panic Mode') +
+                            (isPanicMode ? 'Exit Panic' : 'Panic') +
                           '</button>' +
                         '</div>' +
                       '</div>';
                   });
                   
                   accountDiv.innerHTML = 
-                    '<div style="margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 2px solid #e2e8f0;">' +
-                      '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">' +
-                        '<span style="color: #1e293b; font-size: 0.9rem; font-weight: 700;">👤 ' + user.fullName + '</span>' +
-                        '<span style="color: #64748b; font-size: 0.75rem; font-family: monospace;">(' + customerNumber + ')</span>' +
+                    '<div style="margin-bottom: 0.5rem; padding-bottom: 0.4rem; border-bottom: 1px solid #e5e7eb;">' +
+                      '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.15rem;">' +
+                        '<span style="color: #111827; font-size: 0.75rem; font-weight: 700;">👤 ' + user.fullName + '</span>' +
+                        '<span style="color: #9ca3af; font-size: 0.65rem; font-family: monospace;">(' + customerNumber + ')</span>' +
                       '</div>' +
-                      '<div style="color: #64748b; font-size: 0.8rem;">📧 ' + user.email + '</div>' +
+                      '<div style="color: #6b7280; font-size: 0.65rem;">📧 ' + user.email + '</div>' +
                     '</div>' +
                     '<div>' + sessionsHtml + '</div>';
                   
