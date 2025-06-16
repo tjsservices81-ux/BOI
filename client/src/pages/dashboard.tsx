@@ -260,7 +260,7 @@ export default function Dashboard() {
       >
         <div className="bg-white rounded-t-3xl shadow-lg min-h-full">
           <div className="pt-6 pb-32" style={{ overscrollBehavior: 'contain', minHeight: 'calc(100vh - 100px)' }}>
-            {accounts.map((account, index) => (
+            {(accounts && Array.isArray(accounts)) && accounts.map((account, index) => (
               <button 
                 key={account.id}
                 className={`w-full flex items-center justify-between border-b border-gray-100 hover:bg-gray-50 touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-98 haptic-feedback relative stagger-item card-interactive ${isNavigating ? 'opacity-50 pointer-events-none' : ''}`}
