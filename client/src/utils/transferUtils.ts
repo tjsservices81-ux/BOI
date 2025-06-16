@@ -108,7 +108,7 @@ export const processTransfer = (
   transferType: 'UK' | 'IBAN',
   reference: string,
   exchangeRate?: number,
-  recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string }
+  recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string; bicCode?: string }
 ): boolean => {
   console.log('Processing transfer:', { fromAccountId, amount, recipientName, transferType, reference });
   
@@ -165,6 +165,7 @@ export const processTransfer = (
     type: 'debit',
     paymentMethod: `${transferType} Transfer`,
     reference,
+    recipientName,
     timestamp: new Date().toISOString(),
     ...(transferType === 'UK' && exchangeRate && {
       exchangeRate,
@@ -174,6 +175,7 @@ export const processTransfer = (
     ...(recipientDetails && {
       recipientAccountNumber: recipientDetails.accountNumber,
       recipientSortCode: recipientDetails.sortCode,
+      iban: recipientDetails.iban,
       recipientIban: recipientDetails.iban
     })
   };
@@ -216,7 +218,7 @@ export const processConfirmedTransfer = (
   transferType: 'UK' | 'IBAN',
   reference: string,
   exchangeRate?: number,
-  recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string }
+  recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string; bicCode?: string }
 ): boolean => {
   console.log('Processing confirmed transfer:', { transferId, fromAccountId, amount, recipientName, transferType, reference });
   

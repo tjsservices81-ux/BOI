@@ -145,7 +145,8 @@ export default function IbanTransfer() {
             transferReference,
             undefined, // No exchange rate for IBAN transfers
             {
-              iban: formData.iban
+              iban: formData.iban,
+              bicCode: formData.bicCode
             }
           );
           

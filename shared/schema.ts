@@ -33,6 +33,15 @@ export const transactions = pgTable("transactions", {
   type: text("type").notNull(), // 'debit', 'credit'
   paymentMethod: text("payment_method").notNull(),
   reference: text("reference"),
+  recipientName: text("recipient_name"),
+  iban: text("iban"),
+  bicCode: text("bic_code"),
+  recipientAccountNumber: text("recipient_account_number"),
+  recipientSortCode: text("recipient_sort_code"),
+  recipientIban: text("recipient_iban"),
+  exchangeRate: decimal("exchange_rate", { precision: 10, scale: 4 }),
+  convertedAmount: decimal("converted_amount", { precision: 10, scale: 2 }),
+  convertedCurrency: text("converted_currency"),
   timestamp: timestamp("timestamp").notNull(),
 });
 
