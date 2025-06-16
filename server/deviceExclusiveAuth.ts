@@ -1,5 +1,5 @@
 // Device-exclusive authentication system
-// Ensures each account can only be active on one device at a time
+// Permanently locks each account to the first device they log in from
 
 interface UserDeviceSession {
   userId: number;
@@ -8,6 +8,7 @@ interface UserDeviceSession {
   ipAddress: string;
   loginTime: string;
   userAgent: string;
+  permanentLock: boolean; // Account is permanently locked to this device
 }
 
 // In-memory storage for user-device mappings
@@ -20,26 +21,30 @@ export function isAccountActiveOnOtherDevice(userId: number, currentDeviceSessio
     return false; // No existing session for this user
   }
   
-  // If no current device session provided, account is already active
-  if (!currentDeviceSessionId) {
-    return true; // Account is active on another device
+  // Account is permanently locked to first device - ALWAYS block other devices
+  return true;
+}
+
+export function isCurrentDeviceAuthorized(userId: number, currentUserAgent: string): boolean {
+  const existingSession = userDeviceSessions.get(userId);
+  
+  if (!existingSession) {
+    return true; // First time login - allow and lock to this device
   }
   
-  // Check if the existing session is different from current device
-  return existingSession.deviceSessionId !== currentDeviceSessionId;
+  // Check if this is the same device by comparing user agent
+  return existingSession.userAgent === currentUserAgent;
 }
 
 export function setUserDeviceSession(userSession: UserDeviceSession): void {
   userDeviceSessions.set(userSession.userId, userSession);
-  console.log(`🔒 USER DEVICE LOCKED: User ${userSession.userId} locked to device ${userSession.deviceModel} (${userSession.deviceSessionId})`);
+  console.log(`🔒 PERMANENT DEVICE LOCK: User ${userSession.userId} permanently locked to device ${userSession.deviceModel} (${userSession.deviceSessionId})`);
 }
 
 export function removeUserDeviceSession(userId: number): void {
-  if (userDeviceSessions.has(userId)) {
-    const session = userDeviceSessions.get(userId);
-    userDeviceSessions.delete(userId);
-    console.log(`🔓 USER DEVICE UNLOCKED: User ${userId} unlocked from device ${session?.deviceModel}`);
-  }
+  // Permanent device locks cannot be removed
+  // This function is disabled to prevent device unlocking
+  console.log(`🚫 PERMANENT LOCK: Cannot unlock User ${userId} - device lock is permanent`);
 }
 
 export function getUserDeviceSession(userId: number): UserDeviceSession | undefined {
