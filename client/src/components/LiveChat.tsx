@@ -731,22 +731,18 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 z-40 backdrop-animate-in" style={{ bottom: '88px' }}>
+    <div className="fixed bottom-0 right-0 z-50 p-4" style={{ bottom: '100px' }}>
       <div 
-        className={`bg-white w-full chat-container shadow-2xl absolute ${
+        className={`bg-white w-[380px] h-[600px] rounded-3xl chat-container shadow-2xl ${
           isAnimating ? 'chat-animate-out' : 'chat-animate-in'
         }`}
         style={{ 
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          height: '100%',
-          maxHeight: '100%'
+          maxWidth: 'calc(100vw - 32px)',
+          maxHeight: 'calc(100vh - 140px)'
         }}
       >
         {/* Header */}
-        <div className="bg-[#126987] px-6 py-6 flex items-center justify-between">
+        <div className="bg-[#126987] rounded-t-3xl px-6 py-6 flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
               <MessageCircle className="w-6 h-6 text-white" />
@@ -975,7 +971,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
 
         {/* Chat Ended Message */}
         {isEndingChat && (
-          <div className="absolute inset-0 bg-[#126987] flex items-center justify-center z-50">
+          <div className="absolute inset-0 bg-[#126987] rounded-3xl flex items-center justify-center z-50">
             <div className="text-center text-white px-6">
               <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
