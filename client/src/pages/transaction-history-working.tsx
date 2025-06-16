@@ -330,17 +330,11 @@ export default function TransactionHistoryWorking() {
           <div 
             onClick={(e) => e.stopPropagation()}
             className="bg-white rounded-2xl max-w-md w-full max-h-[85vh] overflow-hidden shadow-xl flex flex-col">
-            {/* Fixed header with close button */}
-            <div className="flex items-center justify-between p-6 pb-4 border-b border-gray-200 flex-shrink-0">
+            {/* Fixed header */}
+            <div className="p-6 pb-4 border-b border-gray-200 flex-shrink-0">
               <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                 Transaction Details
               </h2>
-              <button 
-                onClick={() => setSelectedTransaction(null)}
-                className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center active:scale-95 transition-transform"
-              >
-                <span className="text-gray-600 text-lg">×</span>
-              </button>
             </div>
 
             {/* Scrollable content area */}
