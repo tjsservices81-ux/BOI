@@ -157,7 +157,10 @@ export default function IbanTransfer() {
             window.dispatchEvent(new CustomEvent('transactionUpdate'));
             window.dispatchEvent(new CustomEvent('balanceUpdate'));
             
-            setShowReference(true);
+            // Show reference immediately after completion
+            setTimeout(() => {
+              setShowReference(true);
+            }, 500);
           }
           
           return 100;
