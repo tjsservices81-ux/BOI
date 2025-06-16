@@ -347,14 +347,104 @@ button img, a img, [role="button"] img {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Hide URL in address bar for PWA mode */
+/* PWA Display Mode Optimizations */
 @media (display-mode: standalone) {
   :root {
     --safe-area-inset-top: env(safe-area-inset-top);
+    --safe-area-inset-bottom: env(safe-area-inset-bottom);
+    --safe-area-inset-left: env(safe-area-inset-left);
+    --safe-area-inset-right: env(safe-area-inset-right);
   }
   
   body {
-    /* Remove padding-top for splash screen - handled by splash-specific rules */
+    padding-top: var(--safe-area-inset-top);
+    padding-bottom: var(--safe-area-inset-bottom);
+    padding-left: var(--safe-area-inset-left);
+    padding-right: var(--safe-area-inset-right);
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Ensure full height in PWA mode */
+  html, body, #root {
+    height: 100vh;
+    height: -webkit-fill-available;
+    height: stretch;
+  }
+
+  /* Fix viewport height for mobile browsers in PWA */
+  .min-h-screen {
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    min-height: stretch;
+  }
+
+  /* Mobile PWA optimizations */
+  html {
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+  }
+  
+  body {
+    -webkit-overflow-scrolling: touch;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  #root {
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    min-height: stretch;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Fix for iOS PWA safe areas */
+  .ios-safe-area-top {
+    padding-top: var(--safe-area-inset-top);
+  }
+
+  .ios-safe-area-bottom {
+    padding-bottom: var(--safe-area-inset-bottom);
+  }
+}
+
+/* General mobile optimizations for better PWA display */
+@media screen and (max-width: 768px) {
+  /* Ensure proper mobile viewport handling */
+  html, body {
+    width: 100%;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Fix mobile layout issues */
+  .container, .max-w-md, .mx-auto {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    max-width: 100%;
+  }
+
+  /* Improve touch targets */
+  button, .btn, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Fix form elements for mobile */
+  input, select, textarea {
+    font-size: 16px; /* Prevents zoom on iOS */
+    -webkit-appearance: none;
+    border-radius: 0;
+  }
+
+  /* Mobile navigation fixes */
+  .bottom-navigation {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
   }
 }
 
