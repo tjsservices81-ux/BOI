@@ -265,6 +265,14 @@ router.get('/panel', adminAuth, async (req, res) => {
         .user-item:last-child {
           border-bottom: none;
         }
+        .user-item.not-logged-in {
+          background: #fef7f7;
+          border-left: 4px solid #dc2626;
+        }
+        .user-item.logged-in {
+          background: #f0fdf4;
+          border-left: 4px solid #16a34a;
+        }
         .user-header {
           display: flex;
           justify-content: space-between;
@@ -451,15 +459,15 @@ router.get('/panel', adminAuth, async (req, res) => {
         <div class="stats">
           <div class="stat-card">
             <div class="stat-number">${userSessions.length}</div>
-            <div class="stat-label">Active Users</div>
+            <div class="stat-label">Total Accounts</div>
           </div>
           <div class="stat-card">
-            <div class="stat-number">${userSessions.filter((s: any) => s.deviceInfo).length}</div>
-            <div class="stat-label">Registered Devices</div>
+            <div class="stat-number">${userSessions.filter((s: any) => s.isLoggedIn).length}</div>
+            <div class="stat-label">Logged In</div>
           </div>
           <div class="stat-card">
-            <div class="stat-number">${new Set(userSessions.map((s: any) => s.ipAddress)).size}</div>
-            <div class="stat-label">Unique IPs</div>
+            <div class="stat-number">${userSessions.filter((s: any) => !s.isLoggedIn).length}</div>
+            <div class="stat-label">Never Logged In</div>
           </div>
         </div>
         
@@ -475,10 +483,10 @@ router.get('/panel', adminAuth, async (req, res) => {
                 <div>No active user sessions found</div>
               </div>
             ` : userSessions.map((session: any) => `
-              <div class="user-item" id="user-${session.sessionId}">
+              <div class="user-item ${session.isLoggedIn ? 'logged-in' : 'not-logged-in'}" id="user-${session.sessionId}">
                 <div class="user-header">
                   <div class="user-info">
-                    <div class="user-name">${session.username || 'Unknown User'}</div>
+                    <div class="user-name">${session.username || 'Unknown User'} ${session.isLoggedIn ? '🟢' : '🔴'}</div>
                     <div class="user-email">${session.email || 'No email provided'}</div>
                     
                     <div class="user-details">

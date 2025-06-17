@@ -171,20 +171,43 @@ export async function getUserSessions() {
     // Get all users from the storage system
     const allUsers = await storage.getAllUsers();
     
-    // Combine device sessions with user data from storage
-    return deviceSessions.map(session => {
-      const user = allUsers.find(u => u.customerNumber === session.customerNumber);
-      return {
-        sessionId: session.sessionId,
-        username: user?.name || session.customerNumber || 'Unknown User',
-        email: user?.email || 'No email provided',
-        dateOfBirth: user?.dateOfBirth || 'Not provided',
-        deviceInfo: session.deviceModel || 'Unknown Device',
-        ipAddress: session.ipAddress || 'Unknown',
-        loginTime: session.loginTime || new Date().toISOString(),
-        customerNumber: session.customerNumber
-      };
+    // Create a map of all users with their session info (if any)
+    const userSessionsMap = new Map();
+    
+    // First, add all users from the database
+    allUsers.forEach(user => {
+      userSessionsMap.set(user.customerNumber, {
+        sessionId: `user_${user.id}`, // Use user ID as fallback session ID
+        username: user.name || user.customerNumber,
+        email: user.email || 'No email provided',
+        dateOfBirth: user.dateOfBirth || 'Not provided',
+        deviceInfo: 'Not logged in',
+        ipAddress: 'N/A',
+        loginTime: 'Never logged in',
+        customerNumber: user.customerNumber,
+        isLoggedIn: false
+      });
     });
+    
+    // Then update with actual device session data for logged-in users
+    deviceSessions.forEach(session => {
+      if (session.customerNumber && userSessionsMap.has(session.customerNumber)) {
+        const user = allUsers.find(u => u.customerNumber === session.customerNumber);
+        userSessionsMap.set(session.customerNumber, {
+          sessionId: session.sessionId,
+          username: user?.name || session.customerNumber || 'Unknown User',
+          email: user?.email || 'No email provided',
+          dateOfBirth: user?.dateOfBirth || 'Not provided',
+          deviceInfo: session.deviceModel || 'Unknown Device',
+          ipAddress: session.ipAddress || 'Unknown',
+          loginTime: session.loginTime || new Date().toISOString(),
+          customerNumber: session.customerNumber,
+          isLoggedIn: true
+        });
+      }
+    });
+    
+    return Array.from(userSessionsMap.values());
   } catch (error) {
     console.error('Error accessing user data from storage:', error);
     // Fallback to device session data only
@@ -196,21 +219,36 @@ export async function getUserSessions() {
       deviceInfo: session.deviceModel || 'Unknown Device',
       ipAddress: session.ipAddress || 'Unknown',
       loginTime: session.loginTime || new Date().toISOString(),
-      customerNumber: session.customerNumber
+      customerNumber: session.customerNumber,
+      isLoggedIn: true
     }));
   }
 }
 
 export async function deleteUserSession(sessionId: string): Promise<boolean> {
-  const session = deviceSessions.find(s => s.sessionId === sessionId);
-  if (session && session.customerNumber) {
-    const customerNumber = session.customerNumber;
+  try {
+    // Import storage and session manager
+    const { storage } = await import('./storage');
+    const { invalidateAllUserSessions } = await import('./sessionManager');
     
-    try {
-      // Import storage and session manager
-      const { storage } = await import('./storage');
-      const { invalidateAllUserSessions } = await import('./sessionManager');
-      
+    let customerNumber: string | undefined;
+    
+    // Check if this is a real device session
+    const session = deviceSessions.find(s => s.sessionId === sessionId);
+    if (session && session.customerNumber) {
+      customerNumber = session.customerNumber;
+    } else if (sessionId.startsWith('user_')) {
+      // Handle fallback user session IDs (user_123 format)
+      const userId = parseInt(sessionId.replace('user_', ''));
+      const user = await storage.getUserByCredentials('', ''); // We need to get user by ID
+      const allUsers = await storage.getAllUsers();
+      const targetUser = allUsers.find(u => u.id === userId);
+      if (targetUser) {
+        customerNumber = targetUser.customerNumber;
+      }
+    }
+    
+    if (customerNumber) {
       // Delete the complete user account from database
       const userDeleted = await storage.deleteUser(customerNumber);
       
@@ -234,9 +272,9 @@ export async function deleteUserSession(sessionId: string): Promise<boolean> {
         console.log(`Removed ${customerSessions.length} device sessions`);
         return true;
       }
-    } catch (error) {
-      console.error('Error deleting user account:', error);
     }
+  } catch (error) {
+    console.error('Error deleting user account:', error);
   }
   return false;
 }
