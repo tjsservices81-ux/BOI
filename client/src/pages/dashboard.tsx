@@ -297,7 +297,7 @@ export default function Dashboard() {
             {(accounts && Array.isArray(accounts)) && accounts.map((account, index) => (
               <button 
                 key={account.id}
-                className={`w-full flex items-center justify-between border-b border-gray-100 hover:bg-gray-50 touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-98 haptic-feedback relative stagger-item card-interactive ${isNavigating ? 'opacity-50 pointer-events-none' : ''}`}
+                className={`w-full flex items-center justify-between border-b border-gray-100 hover:bg-gray-50 touch-manipulation transform-gpu transition-all duration-150 ease-out relative stagger-item card-interactive ${isNavigating ? 'opacity-50 pointer-events-none' : ''}`}
                 onClick={() => navigateWithAnimation(`/transactions/${account.id}`, 'slide-right')}
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
