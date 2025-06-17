@@ -48,9 +48,35 @@ export default function Login() {
   
   const locationHook = useLocation();
   const [, navigate] = locationHook || [null, () => {}];
+  const [validatedUsers, setValidatedUsers] = useState<any>({});
   
   const toastHook = useToast();
   const toast = toastHook?.toast || (() => {});
+
+  // Validate users against server and clean up deleted ones
+  const validateAndCleanUsers = async () => {
+    const cachedUsers = UserDataManager.getAllUsers();
+    const validUsers: any = {};
+    
+    for (const [customerNumber, userData] of Object.entries(cachedUsers)) {
+      try {
+        // Check if user still exists on server
+        const response = await fetch(`/api/profile/${customerNumber}`);
+        if (response.ok) {
+          validUsers[customerNumber] = userData;
+        } else if (response.status === 404) {
+          // User was deleted by admin - remove from frontend cache
+          console.log(`Removing deleted user ${customerNumber} from cache`);
+          UserDataManager.adminDeleteUser(customerNumber);
+        }
+      } catch (error) {
+        // Keep user on network error to avoid false removal
+        validUsers[customerNumber] = userData;
+      }
+    }
+    
+    setValidatedUsers(validUsers);
+  };
 
   // Assets are always loaded - no delays
   useEffect(() => {
@@ -1325,7 +1351,7 @@ export default function Login() {
               
               {/* Account List */}
               <div className="max-h-60 overflow-y-auto space-y-2">
-                {Object.entries(UserDataManager.getAllUsers()).map(([customerNumber, userData]) => (
+                {Object.entries(validatedUsers).map(([customerNumber, userData]) => (
                   <div
                     key={customerNumber}
                     className="bg-gray-50 rounded-xl p-3 border"
@@ -1387,7 +1413,7 @@ export default function Login() {
                   </div>
                 ))}
                 
-                {Object.keys(UserDataManager.getAllUsers()).length === 0 && (
+                {Object.keys(validatedUsers).length === 0 && (
                   <div className="text-center py-8 text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     No accounts registered yet
                   </div>
