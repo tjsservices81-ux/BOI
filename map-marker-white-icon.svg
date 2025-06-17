@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="11px" height="15px" viewBox="0 0 11 15" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 54.1 (76490) - https://sketchapp.com -->
+    <title>map-marker-alt-solid</title>
+    <desc>Created with Sketch.</desc>
+    <g id="mobile-" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="mobile-userid-pre-sca" transform="translate(-90.000000, -705.000000)" fill="#FFFFFF" fill-rule="nonzero">
+            <g id="Group-2" transform="translate(0.000000, 694.000000)">
+                <g id="map-marker-alt-solid" transform="translate(90.000000, 11.000000)">
+                    <path d="M4.93476042,14.6973597 C0.772578125,8.52629675 0,7.89295706 0,5.62499863 C0,2.51838806 2.46242448,0 5.5,0 C8.53757552,0 11,2.51838806 11,5.62499863 C11,7.89295706 10.2274219,8.52629675 6.06523958,14.6973597 C5.79210156,15.1008948 5.20786979,15.1008655 4.93476042,14.6973597 Z M5.5,7.96874805 C6.76565885,7.96874805 7.79166667,6.91942214 7.79166667,5.62499863 C7.79166667,4.33057511 6.76565885,3.2812492 5.5,3.2812492 C4.23434115,3.2812492 3.20833333,4.33057511 3.20833333,5.62499863 C3.20833333,6.91942214 4.23434115,7.96874805 5.5,7.96874805 Z" id="Shape"></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

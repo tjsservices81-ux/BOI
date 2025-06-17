@@ -123,8 +123,10 @@ export default function Profile() {
             }
           }
         } else {
+          console.error('Failed to load profile data:', response.status);
         }
       } catch (error) {
+        console.error('Failed to load profile data:', error);
       } finally {
         setIsLoadingProfile(false);
       }
@@ -175,9 +177,11 @@ export default function Profile() {
     setTapCount(newTapCount);
     setLastTapTime(currentTime);
     
+    console.log(`Admin access tap: ${newTapCount}/5`);
     
     // Open admin panel immediately when 5 taps are reached
     if (newTapCount >= 5) {
+      console.log('Opening admin panel...');
       
       // Force the admin panel to open with multiple fallbacks
       setShowAdminPanel(true);
@@ -187,6 +191,7 @@ export default function Profile() {
       // Additional fallback: Force re-render if panel doesn't appear
       setTimeout(() => {
         if (!document.querySelector('.admin-panel')) {
+          console.log('Admin panel not found, forcing re-render...');
           setShowAdminPanel(false);
           setTimeout(() => setShowAdminPanel(true), 50);
         }
@@ -201,6 +206,7 @@ export default function Profile() {
       setAccounts(storedAccounts);
       loadChatResponses();
     } catch (error) {
+      console.error('Error initializing admin panel:', error);
       // Set default empty accounts if there's an error
       setAccounts([]);
       setChatResponses([]);
@@ -256,6 +262,7 @@ export default function Profile() {
       const stored = UserDataManager.getUserData('chatResponses', null);
       setChatResponses(stored || getDefaultChatResponses());
     } catch (error) {
+      console.error('Error loading chat responses:', error);
       setChatResponses(getDefaultChatResponses());
     }
   };
@@ -368,6 +375,7 @@ export default function Profile() {
         joinDate: editProfileData.joinDate?.trim() || ''
       };
       
+      console.log('Sending profile update:', updateData);
       
       // Update local state immediately to prevent flickering
       const updatedProfileData = {
@@ -390,6 +398,7 @@ export default function Profile() {
 
       if (response.ok) {
         const updatedData = await response.json();
+        console.log('Profile update successful:', updatedData);
         
         // Update UserDataManager with confirmed data from API
         UserDataManager.updateUserProfile({
@@ -406,6 +415,7 @@ export default function Profile() {
       } else {
         // If API fails, revert the changes
         const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+        console.error('Profile update failed:', errorData);
         
         // Revert to original data
         setProfileData(profileData);
@@ -413,6 +423,7 @@ export default function Profile() {
         alert(`Failed to update profile: ${errorData.message || 'Unknown error'}`);
       }
     } catch (error) {
+      console.error('Error updating profile:', error);
       
       // Revert changes on network error
       setProfileData(profileData);
@@ -714,6 +725,14 @@ export default function Profile() {
     
     // Clear cache again after updates
     UserDataManager.clearCache();
+
+    console.log('Sample Transaction Details:', {
+      account: targetAccount.type,
+      previousBalance: currentBalance.toFixed(2),
+      transactionAmount: transactionAmount.toFixed(2),
+      newBalance: newBalance.toFixed(2),
+      description: randomTransaction.description
+    });
 
     // Notify all components of the changes
     window.dispatchEvent(new CustomEvent('transactionUpdate'));

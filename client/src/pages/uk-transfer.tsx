@@ -108,6 +108,7 @@ export default function UkTransfer() {
     try {
       const apiKey = import.meta.env.VITE_EXCHANGERATE_API_KEY;
       if (!apiKey) {
+        console.log('No API key provided, using default rate');
         return;
       }
       
@@ -126,6 +127,7 @@ export default function UkTransfer() {
         }
       }
     } catch (error) {
+      console.log('Exchange rate fetch failed, using default rate');
       // Keep default rate of 0.85
     }
   };
@@ -204,6 +206,7 @@ export default function UkTransfer() {
           sessionStorage.removeItem('selectedPayee');
         }
       } catch (error) {
+        console.error('Error parsing selected payee data:', error);
         sessionStorage.removeItem('selectedPayee');
       }
     }
@@ -216,6 +219,7 @@ export default function UkTransfer() {
   }, []); // Only run once on mount
 
   const onSubmit = async (data: UkTransferData) => {
+    console.log('Form submitted with data:', data);
     setFormData(data);
     const ref = generateReference();
     setTransferReference(ref);

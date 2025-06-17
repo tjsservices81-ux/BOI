@@ -98,7 +98,15 @@ export default function InternalTransfer() {
   };
 
   const confirmTransfer = () => {
+    console.log('confirmTransfer called', { 
+      formData, 
+      step,
+      accounts: accounts.length 
+    });
+    
     if (!formData) {
+      console.log('Missing formData');
+      alert('Missing form data');
       return;
     }
     
@@ -106,7 +114,15 @@ export default function InternalTransfer() {
     const fromAccount = accounts.find(acc => acc.id.toString() === formData.fromAccount);
     const toAccount = accounts.find(acc => acc.id.toString() === formData.toAccount);
     
-    if (!fromAccount || !toAccount) {
+    if (!fromAccount) {
+      console.log('Could not find source account with ID:', formData.fromAccount);
+      alert('Could not find source account');
+      return;
+    }
+    
+    if (!toAccount) {
+      console.log('Could not find destination account with ID:', formData.toAccount);
+      alert('Could not find destination account');
       return;
     }
 
@@ -230,8 +246,21 @@ export default function InternalTransfer() {
   }
 
   if (step === 'confirm' && formData) {
+    console.log('Confirmation screen debug:', {
+      formData,
+      accounts,
+      accountIds: accounts.map(a => ({ id: a.id, name: a.displayName }))
+    });
+    
     const confirmFromAccount = accounts.find(acc => acc.id.toString() === formData.fromAccount);
     const confirmToAccount = accounts.find(acc => acc.id.toString() === formData.toAccount);
+    
+    console.log('Account lookup results:', {
+      confirmFromAccount,
+      confirmToAccount,
+      fromAccountId: formData.fromAccount,
+      toAccountId: formData.toAccount
+    });
     
     return (
       <div className="h-screen flex flex-col bg-white page-slide-in-right">
@@ -313,7 +342,10 @@ export default function InternalTransfer() {
           </div>
 
           <button
-            onClick={confirmTransfer}
+            onClick={() => {
+              console.log('Button clicked, calling confirmTransfer');
+              confirmTransfer();
+            }}
             className="w-full bg-[#126987] text-white py-4 rounded-2xl font-semibold active:scale-98 transition-transform"
             style={{ fontFamily: 'OpenSans, sans-serif' }}
           >

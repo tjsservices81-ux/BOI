@@ -44,7 +44,7 @@ export default function SpendingVisualization() {
       const storedTransactions = JSON.parse(localStorage.getItem('bankTransactions') || '[]');
       
       // Limit patterns to improve performance - only show recent transactions
-      const recentTransactions = storedTransactions.slice(-10);
+      const recentTransactions = storedTransactions.slice(-20);
       
       // Convert transactions to visual patterns
       const newPatterns: SpendingPattern[] = recentTransactions.map((tx: Transaction) => {
@@ -67,7 +67,7 @@ export default function SpendingVisualization() {
       });
 
       // Reduced ambient particles for better performance
-      const ambientParticles: SpendingPattern[] = Array.from({ length: 4 }, () => ({
+      const ambientParticles: SpendingPattern[] = Array.from({ length: 8 }, () => ({
         x: Math.random() * dimensions.width,
         y: Math.random() * dimensions.height,
         size: Math.random() * 2 + 1,

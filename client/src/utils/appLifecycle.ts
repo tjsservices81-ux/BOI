@@ -124,6 +124,7 @@ export class AppLifecycle {
         });
       }
     } catch (error) {
+      console.error('Failed to save app state:', error);
     }
   }
 
@@ -145,6 +146,7 @@ export class AppLifecycle {
         }, 100);
       }
     } catch (error) {
+      console.error('Failed to restore state:', error);
     }
   }
 

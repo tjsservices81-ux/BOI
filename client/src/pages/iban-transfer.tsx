@@ -96,6 +96,7 @@ export default function IbanTransfer() {
           sessionStorage.removeItem('selectedPayee');
         }
       } catch (error) {
+        console.error('Error parsing selected payee data:', error);
         sessionStorage.removeItem('selectedPayee');
       }
     }

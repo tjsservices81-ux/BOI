@@ -118,6 +118,7 @@ export default function TransactionHistoryWorking() {
       }
       
       const accountTransactions = updatedTransactions.filter((tx: any) => tx.accountId === accountId);
+      console.log('Loaded transactions for account', accountId, ':', accountTransactions);
       
       // Don't set transactions here - wait for sorting
       

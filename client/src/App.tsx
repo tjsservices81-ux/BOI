@@ -131,6 +131,7 @@ function AppRoutes() {
               setSplashShown(false);
             }
           } catch (error) {
+            console.error('Failed to restore app state:', error);
             setSplashShown(false);
           }
         }
