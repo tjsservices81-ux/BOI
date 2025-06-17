@@ -447,7 +447,7 @@ export default function TransactionHistoryWorking() {
                       </div>
                     )}
 
-                    {/* IBAN for International Transfers */}
+                    {/* IBAN for SEPA Transfers */}
                     {selectedTransaction.iban && (
                       <div className="flex justify-between">
                         <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>IBAN:</span>
@@ -457,7 +457,7 @@ export default function TransactionHistoryWorking() {
                       </div>
                     )}
 
-                    {/* BIC Code for International Transfers */}
+                    {/* BIC Code for SEPA Transfers */}
                     {selectedTransaction.bicCode && (
                       <div className="flex justify-between">
                         <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>BIC Code:</span>

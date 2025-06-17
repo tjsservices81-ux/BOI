@@ -88,7 +88,7 @@ export default function Payments() {
     
     if (payee.transferType === 'UK Transfer') {
       navigate('/uk-transfer');
-    } else if (payee.transferType === 'IBAN Transfer') {
+    } else if (payee.transferType === 'SEPA Transfer') {
       navigate('/iban-transfer');
     }
     setShowRecentPayees(false);
@@ -232,7 +232,7 @@ export default function Payments() {
               {recentPayments.map((payment, index) => {
                 const isDebit = payment.type === 'debit' || payment.amount.startsWith('-');
                 const displayAmount = isDebit ? payment.amount : `+${payment.amount}`;
-                const recipientName = payment.description.replace(/^(UK Transfer to |IBAN Transfer to |International Transfer to )/, '');
+                const recipientName = payment.description.replace(/^(UK Transfer to |SEPA Transfer to |International Transfer to |IBAN Transfer to )/, '');
                 
                 return (
                   <button key={payment.id || index} className="w-full flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0 active:bg-gray-50 transition-colors">
