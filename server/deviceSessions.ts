@@ -201,30 +201,36 @@ export async function getUserSessions() {
   }
 }
 
-export function deleteUserSession(sessionId: string): boolean {
+export async function deleteUserSession(sessionId: string): Promise<boolean> {
   const session = deviceSessions.find(s => s.sessionId === sessionId);
-  if (session) {
-    // Remove the device session
-    const removed = removeDeviceSession(sessionId);
+  if (session && session.customerNumber) {
+    const customerNumber = session.customerNumber;
     
-    // Also clean up any user data files if needed
     try {
-      const userDataPath = path.join(process.cwd(), 'userData.json');
+      // Import storage to access user deletion functionality
+      const { storage } = await import('./storage');
       
-      if (fs.existsSync(userDataPath)) {
-        const fileContent = fs.readFileSync(userDataPath, 'utf8');
-        let userData = JSON.parse(fileContent);
+      // Delete the complete user account from database
+      const userDeleted = await storage.deleteUser(customerNumber);
+      
+      if (userDeleted) {
+        // Remove ALL device sessions for this customer
+        const customerSessions = deviceSessions.filter(s => s.customerNumber === customerNumber);
+        customerSessions.forEach(s => {
+          removeDeviceSession(s.sessionId);
+          // Also remove from panic mode if active
+          devicePanicMode.delete(s.sessionId);
+        });
         
-        // Remove user data associated with this session
-        userData = userData.filter((u: any) => u.customerNumber !== session.customerNumber);
+        // Remove customer from panic mode
+        customerPanicMode.delete(customerNumber);
         
-        fs.writeFileSync(userDataPath, JSON.stringify(userData, null, 2));
+        console.log(`Successfully deleted user account and all sessions for customer: ${customerNumber}`);
+        return true;
       }
     } catch (error) {
-      console.error('Error cleaning up user data:', error);
+      console.error('Error deleting user account:', error);
     }
-    
-    return removed;
   }
   return false;
 }

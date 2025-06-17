@@ -14,12 +14,14 @@ export interface IStorage {
   getUserByCustomerNumber(customerNumber: string): Promise<User | undefined>;
   updateUserProfile(customerNumber: string, updates: Partial<User>): Promise<User | undefined>;
   getAllUsers(): Promise<User[]>;
+  deleteUser(customerNumber: string): Promise<boolean>;
   
   // Account operations
   getAccountsByUserId(userId: number): Promise<Account[]>;
   getAccountById(accountId: number): Promise<Account | undefined>;
   createAccount(account: InsertAccount): Promise<Account>;
   updateAccountBalance(accountId: number, newBalance: string): Promise<void>;
+  deleteAccountsByUserId(userId: number): Promise<boolean>;
   
   // Transaction operations
   getTransactionsByAccountId(accountId: number): Promise<Transaction[]>;
@@ -127,6 +129,37 @@ class MemStorage implements IStorage {
     return Array.from(this.users.values());
   }
 
+  async deleteUser(customerNumber: string): Promise<boolean> {
+    const user = await this.getUserByCustomerNumber(customerNumber);
+    if (user) {
+      // Delete all user's accounts first
+      const userAccounts = await this.getAccountsByUserId(user.id);
+      for (const account of userAccounts) {
+        // Delete all transactions for this account
+        const accountTransactions = await this.getTransactionsByAccountId(account.id);
+        accountTransactions.forEach(transaction => this.transactions.delete(transaction.id));
+        // Delete the account
+        this.accounts.delete(account.id);
+      }
+      
+      // Delete all user's payees
+      const payees = await this.getPayeesByUserId(user.id);
+      payees.forEach(payee => this.payees.delete(payee.id));
+      
+      // Delete all user's chat messages and sessions
+      const userChatMessages = Array.from(this.chatMessages.values()).filter(msg => msg.userId === user.id);
+      userChatMessages.forEach(msg => this.chatMessages.delete(msg.id));
+      
+      const userChatSessions = Array.from(this.chatSessions.values()).filter(session => session.userId === user.id);
+      userChatSessions.forEach(session => this.chatSessions.delete(session.id));
+      
+      // Finally delete the user
+      this.users.delete(user.id);
+      return true;
+    }
+    return false;
+  }
+
   async getAccountsByUserId(userId: number): Promise<Account[]> {
     return Array.from(this.accounts.values()).filter(account => account.userId === userId);
   }
@@ -150,6 +183,23 @@ class MemStorage implements IStorage {
       account.balance = newBalance;
       this.accounts.set(accountId, account);
     }
+  }
+
+  async deleteAccountsByUserId(userId: number): Promise<boolean> {
+    const userAccounts = await this.getAccountsByUserId(userId);
+    let deleted = false;
+    
+    for (const account of userAccounts) {
+      // Delete all transactions for this account
+      const accountTransactions = await this.getTransactionsByAccountId(account.id);
+      accountTransactions.forEach(transaction => this.transactions.delete(transaction.id));
+      
+      // Delete the account
+      this.accounts.delete(account.id);
+      deleted = true;
+    }
+    
+    return deleted;
   }
 
   async getTransactionsByAccountId(accountId: number): Promise<Transaction[]> {
