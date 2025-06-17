@@ -1,5 +1,22 @@
 {
-  "users": [],
+  "users": [
+    [
+      22,
+      {
+        "id": 22,
+        "customerNumber": "BOI800819676",
+        "pin": "000000",
+        "name": "Shahshhshe",
+        "email": "ahahja@gmail.com",
+        "phone": "448455454",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-06-17T02:22:03.427Z",
+        "dateCreated": "2025-06-17T02:22:03.427Z",
+        "isDisabled": false
+      }
+    ]
+  ],
   "accounts": [],
   "transactions": [],
   "payees": [],
@@ -9,7 +26,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 22,
+    "currentUserId": 23,
     "currentAccountId": 31,
     "currentTransactionId": 49,
     "currentPayeeId": 25,

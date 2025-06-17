@@ -1228,28 +1228,34 @@ export default function Profile() {
                   </h3>
                   
                   <div className="space-y-3 mb-4">
-                    {accounts.map((account) => (
-                      <div key={account.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
-                        <div>
-                          <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                            {account.displayName}
-                          </p>
-                          <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                            {account.accountNumber}
-                          </p>
+                    {accounts && Array.isArray(accounts) ? (
+                      accounts.map((account) => (
+                        <div key={account.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
+                          <div>
+                            <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                              {account.displayName}
+                            </p>
+                            <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                              {account.accountNumber}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => {
+                              setEditingAccount(account);
+                              setNewBalance(account.balance);
+                            }}
+                            className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-semibold hover:bg-blue-200 transition-colors"
+                            style={{ fontFamily: 'OpenSans, sans-serif' }}
+                          >
+                            €{account.balance}
+                          </button>
                         </div>
-                        <button
-                          onClick={() => {
-                            setEditingAccount(account);
-                            setNewBalance(account.balance);
-                          }}
-                          className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-semibold hover:bg-blue-200 transition-colors"
-                          style={{ fontFamily: 'OpenSans, sans-serif' }}
-                        >
-                          €{account.balance}
-                        </button>
+                      ))
+                    ) : (
+                      <div className="text-center py-8 text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        No account data found
                       </div>
-                    ))}
+                    )}
                   </div>
                 </div>
 
@@ -1629,7 +1635,7 @@ export default function Profile() {
               </p>
 
               <div className="space-y-3">
-                {accounts.map((account) => (
+                {accounts && Array.isArray(accounts) ? accounts.map((account) => (
                   <button
                     key={account.id}
                     onClick={() => addSampleTransaction(account.id)}
