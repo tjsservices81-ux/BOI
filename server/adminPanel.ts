@@ -1,5 +1,5 @@
 import express from 'express';
-import { getUserSessions, deleteUserSession } from './deviceSessions';
+import { getUserSessions, deleteUserSession, deleteAllUserSessions } from './deviceSessions';
 
 const router = express.Router();
 
@@ -615,6 +615,9 @@ router.post('/delete-user', adminAuth, async (req, res) => {
   }
   
   try {
+    // Import storage dynamically to avoid circular dependencies
+    const { storage } = await import('./storage');
+    
     // Delete user from database
     const deleted = await storage.deleteUser(customerNumber);
     
