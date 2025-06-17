@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,6 +42,12 @@ export default function Login() {
   const [locationError, setLocationError] = useState<string | null>(null);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [nearbyATMs, setNearbyATMs] = useState<any[]>([]);
+  
+  // Input refs for proper focus management in PWA
+  const nameInputRef = useRef<HTMLInputElement>(null);
+  const emailInputRef = useRef<HTMLInputElement>(null);
+  const phoneInputRef = useRef<HTMLInputElement>(null);
+  
   const authHook = useAuth();
   const login = authHook?.login || (() => {});
   const isLoading = authHook?.isLoading || false;
@@ -76,6 +82,36 @@ export default function Login() {
     }
     
     setValidatedUsers(validUsers);
+  };
+
+  // PWA Focus Management - Ensures keyboard shows on input tap
+  const handleInputFocus = (inputRef: React.RefObject<HTMLInputElement>) => {
+    // Force focus after a brief delay to ensure DOM is ready
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+        // Trigger touch events for PWA keyboard
+        inputRef.current.click();
+      }
+    }, 100);
+  };
+
+  // Reset form state when modal opens to ensure clean mounting
+  const resetSignUpForm = () => {
+    setNewUserData({
+      name: '',
+      email: '',
+      phone: '',
+      customerNumber: ''
+    });
+    // Clear any stale focus states
+    setTimeout(() => {
+      [nameInputRef, emailInputRef, phoneInputRef].forEach(ref => {
+        if (ref.current) {
+          ref.current.blur();
+        }
+      });
+    }, 50);
   };
 
   // Assets are always loaded - no delays
@@ -1262,12 +1298,21 @@ export default function Login() {
                   Full Name *
                 </label>
                 <input
+                  ref={nameInputRef}
                   type="text"
                   value={newUserData.name}
                   onChange={(e) => setNewUserData({...newUserData, name: e.target.value})}
-                  className="w-full p-3 border border-gray-300 rounded-xl"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  onFocus={() => handleInputFocus(nameInputRef)}
+                  className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  style={{ 
+                    fontFamily: 'OpenSans, sans-serif',
+                    touchAction: 'manipulation',
+                    WebkitUserSelect: 'text',
+                    userSelect: 'text'
+                  }}
                   placeholder="Enter your full name"
+                  autoComplete="name"
+                  inputMode="text"
                   required
                 />
               </div>
@@ -1277,12 +1322,21 @@ export default function Login() {
                   Email Address *
                 </label>
                 <input
+                  ref={emailInputRef}
                   type="email"
                   value={newUserData.email}
                   onChange={(e) => setNewUserData({...newUserData, email: e.target.value})}
-                  className="w-full p-3 border border-gray-300 rounded-xl"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  onFocus={() => handleInputFocus(emailInputRef)}
+                  className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  style={{ 
+                    fontFamily: 'OpenSans, sans-serif',
+                    touchAction: 'manipulation',
+                    WebkitUserSelect: 'text',
+                    userSelect: 'text'
+                  }}
                   placeholder="Enter your email address"
+                  autoComplete="email"
+                  inputMode="email"
                   required
                 />
               </div>
@@ -1292,12 +1346,21 @@ export default function Login() {
                   Phone Number *
                 </label>
                 <input
+                  ref={phoneInputRef}
                   type="tel"
                   value={newUserData.phone}
                   onChange={(e) => setNewUserData({...newUserData, phone: e.target.value})}
-                  className="w-full p-3 border border-gray-300 rounded-xl"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  onFocus={() => handleInputFocus(phoneInputRef)}
+                  className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  style={{ 
+                    fontFamily: 'OpenSans, sans-serif',
+                    touchAction: 'manipulation',
+                    WebkitUserSelect: 'text',
+                    userSelect: 'text'
+                  }}
                   placeholder="+353 XX XXX XXXX"
+                  autoComplete="tel"
+                  inputMode="tel"
                   required
                 />
               </div>
