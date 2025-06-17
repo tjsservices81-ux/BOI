@@ -6,6 +6,7 @@ import {
   type InsertUser, type InsertAccount, type InsertTransaction, type InsertPayee,
   type InsertChatMessage, type InsertChatResponse, type InsertChatSession
 } from "@shared/schema";
+import { PersistentDataManager } from "./persistentStorage";
 
 export interface IStorage {
   // User operations
@@ -62,7 +63,7 @@ export interface IStorage {
   initializeSampleData(): Promise<void>;
 }
 
-// In-memory storage implementation
+// Persistent storage implementation
 class MemStorage implements IStorage {
   private users = new Map<number, User>();
   private accounts = new Map<number, Account>();
@@ -83,8 +84,75 @@ class MemStorage implements IStorage {
   private currentChatMessageId: number = 1;
   private currentChatResponseId: number = 1;
 
+  private persistentManager: PersistentDataManager;
+
+  private initializationPromise: Promise<void>;
+
   constructor() {
-    // Data will be initialized only when explicitly called
+    this.persistentManager = new PersistentDataManager();
+    this.initializationPromise = this.loadPersistedData();
+  }
+
+  async waitForInitialization(): Promise<void> {
+    return this.initializationPromise;
+  }
+
+  private async loadPersistedData(): Promise<void> {
+    try {
+      const data = await this.persistentManager.loadData();
+      if (data) {
+        this.users = data.users;
+        this.accounts = data.accounts;
+        this.transactions = data.transactions;
+        this.payees = data.payees;
+        this.scheduledPayments = data.scheduledPayments;
+        this.statements = data.statements;
+        this.chatMessages = data.chatMessages;
+        this.chatResponses = data.chatResponses;
+        this.chatSessions = data.chatSessions;
+        this.currentUserId = data.counters.currentUserId;
+        this.currentAccountId = data.counters.currentAccountId;
+        this.currentTransactionId = data.counters.currentTransactionId;
+        this.currentPayeeId = data.counters.currentPayeeId;
+        this.currentScheduledPaymentId = data.counters.currentScheduledPaymentId;
+        this.currentStatementId = data.counters.currentStatementId;
+        this.currentChatMessageId = data.counters.currentChatMessageId;
+        this.currentChatResponseId = data.counters.currentChatResponseId;
+        console.log(`Loaded persisted data: ${this.users.size} users, ${this.accounts.size} accounts`);
+      } else {
+        console.log("No persisted data found, starting with empty state");
+      }
+    } catch (error) {
+      console.error('Error loading persisted data:', error);
+    }
+  }
+
+  private async saveData(): Promise<void> {
+    try {
+      await this.persistentManager.saveData({
+        users: this.users,
+        accounts: this.accounts,
+        transactions: this.transactions,
+        payees: this.payees,
+        scheduledPayments: this.scheduledPayments,
+        statements: this.statements,
+        chatMessages: this.chatMessages,
+        chatResponses: this.chatResponses,
+        chatSessions: this.chatSessions,
+        counters: {
+          currentUserId: this.currentUserId,
+          currentAccountId: this.currentAccountId,
+          currentTransactionId: this.currentTransactionId,
+          currentPayeeId: this.currentPayeeId,
+          currentScheduledPaymentId: this.currentScheduledPaymentId,
+          currentStatementId: this.currentStatementId,
+          currentChatMessageId: this.currentChatMessageId,
+          currentChatResponseId: this.currentChatResponseId,
+        }
+      });
+    } catch (error) {
+      console.error('Error saving data:', error);
+    }
   }
 
   async getUserByCredentials(customerNumber: string, pin: string): Promise<User | undefined> {
@@ -108,6 +176,7 @@ class MemStorage implements IStorage {
       isDisabled: false
     };
     this.users.set(user.id, user);
+    await this.saveData(); // Persist data immediately
     return user;
   }
 
@@ -155,6 +224,7 @@ class MemStorage implements IStorage {
       
       // Finally delete the user
       this.users.delete(user.id);
+      await this.saveData(); // Persist data immediately
       return true;
     }
     return false;
@@ -357,30 +427,15 @@ class MemStorage implements IStorage {
     return await this.getAllUsers();
   }
 
-  // Initialize sample data for first-time setup
+  // Initialize sample data for first-time setup ONLY
   async initializeSampleData(): Promise<void> {
-    // Always clear existing data first to prevent duplicates
-    this.users.clear();
-    this.accounts.clear();
-    this.transactions.clear();
-    this.payees.clear();
-    this.scheduledPayments.clear();
-    this.statements.clear();
-    this.chatMessages.clear();
-    this.chatResponses.clear();
-    this.chatSessions.clear();
-    
-    // Reset counters
-    this.currentUserId = 1;
-    this.currentAccountId = 1;
-    this.currentTransactionId = 1;
-    this.currentPayeeId = 1;
-    this.currentScheduledPaymentId = 1;
-    this.currentStatementId = 1;
-    this.currentChatMessageId = 1;
-    this.currentChatResponseId = 1;
+    // Only initialize if no persistent data exists AND no users in memory
+    if (this.persistentManager.hasPersistedData() || this.users.size > 0) {
+      console.log("Data already exists, skipping sample data initialization");
+      return;
+    }
 
-    console.log("Initializing sample data...");
+    console.log("Initializing sample data for first-time setup...");
 
     // Create sample users with the existing test accounts
     const sampleUsers = [

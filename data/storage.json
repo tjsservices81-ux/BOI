@@ -1,0 +1,1339 @@
+{
+  "users": [
+    [
+      1,
+      {
+        "id": 1,
+        "customerNumber": "12345678",
+        "pin": "1234",
+        "name": "Shahah",
+        "email": "shsjhs@gmail.com",
+        "phone": "+353 1 234",
+        "address": "Hello shehsjs",
+        "dateOfBirth": "2025-06-01",
+        "joinDate": "Member since 2022",
+        "dateCreated": "2025-06-17T01:36:18.129Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      2,
+      {
+        "id": 2,
+        "customerNumber": "BOI050171232",
+        "pin": "000000",
+        "name": "James Morrison",
+        "email": "james.morrison@email.com",
+        "phone": "+353 87 123 4567",
+        "address": "15 Grafton Street, Dublin 2, Ireland",
+        "dateOfBirth": "1985-03-15",
+        "joinDate": "Member since 2020",
+        "dateCreated": "2025-06-17T01:36:18.131Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      3,
+      {
+        "id": 3,
+        "customerNumber": "BOI911163841",
+        "pin": "000000",
+        "name": "Harry",
+        "email": "ppatstshshs@gmail.com",
+        "phone": "65353584545",
+        "address": "Dhhsjaus",
+        "dateOfBirth": "2015-02-01",
+        "joinDate": "Member since 2024",
+        "dateCreated": "2025-06-17T01:36:18.131Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      4,
+      {
+        "id": 4,
+        "customerNumber": "BOI738185556",
+        "pin": "000000",
+        "name": "James",
+        "email": "hello@gmail.com",
+        "phone": "+353 1 234 5678",
+        "address": "Hello",
+        "dateOfBirth": "2025-06-08",
+        "joinDate": "Member since 2018",
+        "dateCreated": "2025-06-17T01:36:18.134Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      5,
+      {
+        "id": 5,
+        "customerNumber": "BOI070974442",
+        "pin": "000000",
+        "name": "James",
+        "email": "hello@gmail.com",
+        "phone": "+353 1 234 5678",
+        "address": "Hello",
+        "dateOfBirth": "2025-06-08",
+        "joinDate": "Member since 2018",
+        "dateCreated": "2025-06-17T01:36:18.140Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      6,
+      {
+        "id": 6,
+        "customerNumber": "BOI424898838",
+        "pin": "000000",
+        "name": "Kevin",
+        "email": "kevinm@gmail.com",
+        "phone": "+447428064718",
+        "address": "maugh",
+        "dateOfBirth": "2009-10-01",
+        "joinDate": "2022",
+        "dateCreated": "2025-06-17T01:36:18.144Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      7,
+      {
+        "id": 7,
+        "customerNumber": "BOI705915608",
+        "pin": "000000",
+        "name": "Mathew",
+        "email": "dhhssksksj@gmail.com",
+        "phone": "434664343434",
+        "address": "2a",
+        "dateOfBirth": "2007-06-14",
+        "joinDate": "Member Since 2022",
+        "dateCreated": "2025-06-17T01:36:18.145Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      8,
+      {
+        "id": 8,
+        "customerNumber": "BOI514951178",
+        "pin": "000000",
+        "name": "Harry Flek",
+        "email": "harryflek@gmail.com",
+        "phone": "07428064718",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member Since 2022",
+        "dateCreated": "2025-06-17T01:36:18.148Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      9,
+      {
+        "id": 9,
+        "customerNumber": "BOI794439650",
+        "pin": "000000",
+        "name": "James Wilson",
+        "email": "jameswilson202@gmail.com",
+        "phone": "3454545467577",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-06-15T15:33:27.627Z",
+        "dateCreated": "2025-06-17T01:36:18.148Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      10,
+      {
+        "id": 10,
+        "customerNumber": "BOI744505351",
+        "pin": "000000",
+        "name": "James willoughby",
+        "email": "jameswilloughby57@gmail.com",
+        "phone": "07769911123",
+        "address": "31 Ashfield Road Dublin 6 D06 WD50 Ireland",
+        "dateOfBirth": "1999-08-14",
+        "joinDate": "Member since 2021",
+        "dateCreated": "2025-06-17T01:36:18.150Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      11,
+      {
+        "id": 11,
+        "customerNumber": "BOI461732937",
+        "pin": "000000",
+        "name": "James Papa",
+        "email": "hahahaha@gmail.com",
+        "phone": "07428064718",
+        "address": null,
+        "dateOfBirth": "2001-06-01",
+        "joinDate": "2025-06-",
+        "dateCreated": "2025-06-17T01:36:18.151Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      12,
+      {
+        "id": 12,
+        "customerNumber": "BOI634374772",
+        "pin": "000000",
+        "name": "James",
+        "email": "haha@gmail.com",
+        "phone": "07428064718",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-06-16T12:02:59.685Z",
+        "dateCreated": "2025-06-17T01:36:18.157Z",
+        "isDisabled": false
+      }
+    ]
+  ],
+  "accounts": [
+    [
+      1,
+      {
+        "id": 1,
+        "userId": 1,
+        "type": "Current Account",
+        "accountNumber": "IE12BOFI90000112345678",
+        "balance": "2500.00",
+        "currency": "EUR",
+        "isActive": true
+      }
+    ],
+    [
+      2,
+      {
+        "id": 2,
+        "userId": 1,
+        "type": "Savings Account",
+        "accountNumber": "IE12BOFI90000187654321",
+        "balance": "15000.00",
+        "currency": "EUR",
+        "isActive": true
+      }
+    ],
+    [
+      3,
+      {
+        "id": 3,
+        "userId": 2,
+        "type": "Current Account",
+        "accountNumber": "IE12BOFI90000212345678",
+        "balance": "2500.00",
+        "currency": "EUR",
+        "isActive": true
+      }
+    ],
+    [
+      4,
+      {
+        "id": 4,
+        "userId": 2,
+        "type": "Savings Account",
+        "accountNumber": "IE12BOFI90000287654321",
+        "balance": "15000.00",
+        "currency": "EUR",
+        "isActive": true
+      }
+    ],
+    [
+      5,
+      {
+        "id": 5,
+        "userId": 3,
+        "type": "Current Account",
+        "accountNumber": "IE12BOFI90000312345678",
+        "balance": "2500.00",
+        "currency": "EUR",
+        "isActive": true
+      }
+    ],
+    [
+      6,
+      {
+        "id": 6,
+        "userId": 3,
+        "type": "Savings Account",
+        "accountNumber": "IE12BOFI90000387654321",
+        "balance": "15000.00",
+        "currency": "EUR",
+        "isActive": true
+      }
+    ],
+    [
+      7,
+      {
+        "id": 7,
+        "userId": 4,
+        "type": "Current Account",
+        "accountNumber": "IE12BOFI90000412345678",
+        "balance": "2500.00",
+        "currency": "EUR",
+        "isActive": true
+      }
+    ],
+    [
+      8,
+      {
+        "id": 8,
+        "userId": 4,
+        "type": "Savings Account",
+        "accountNumber": "IE12BOFI90000487654321",
+        "balance": "15000.00",
+        "currency": "EUR",
+        "isActive": true
+      }
+    ],
+    [
+      9,
+      {
+        "id": 9,
+        "userId": 5,
+        "type": "Current Account",
+        "accountNumber": "IE12BOFI90000512345678",
+        "balance": "2500.00",
+        "currency": "EUR",
+        "isActive": true
+      }
+    ],
+    [
+      10,
+      {
+        "id": 10,
+        "userId": 5,
+        "type": "Savings Account",
+        "accountNumber": "IE12BOFI90000587654321",
+        "balance": "15000.00",
+        "currency": "EUR",
+        "isActive": true
+      }
+    ],
+    [
+      11,
+      {
+        "id": 11,
+        "userId": 6,
+        "type": "Current Account",
+        "accountNumber": "IE12BOFI90000612345678",
+        "balance": "2500.00",
+        "currency": "EUR",
+        "isActive": true
+      }
+    ],
+    [
+      12,
+      {
+        "id": 12,
+        "userId": 6,
+        "type": "Savings Account",
+        "accountNumber": "IE12BOFI90000687654321",
+        "balance": "15000.00",
+        "currency": "EUR",
+        "isActive": true
+      }
+    ],
+    [
+      13,
+      {
+        "id": 13,
+        "userId": 7,
+        "type": "Current Account",
+        "accountNumber": "IE12BOFI90000712345678",
+        "balance": "2500.00",
+        "currency": "EUR",
+        "isActive": true
+      }
+    ],
+    [
+      14,
+      {
+        "id": 14,
+        "userId": 7,
+        "type": "Savings Account",
+        "accountNumber": "IE12BOFI90000787654321",
+        "balance": "15000.00",
+        "currency": "EUR",
+        "isActive": true
+      }
+    ],
+    [
+      15,
+      {
+        "id": 15,
+        "userId": 8,
+        "type": "Current Account",
+        "accountNumber": "IE12BOFI90000812345678",
+        "balance": "2500.00",
+        "currency": "EUR",
+        "isActive": true
+      }
+    ],
+    [
+      16,
+      {
+        "id": 16,
+        "userId": 8,
+        "type": "Savings Account",
+        "accountNumber": "IE12BOFI90000887654321",
+        "balance": "15000.00",
+        "currency": "EUR",
+        "isActive": true
+      }
+    ],
+    [
+      17,
+      {
+        "id": 17,
+        "userId": 9,
+        "type": "Current Account",
+        "accountNumber": "IE12BOFI90000912345678",
+        "balance": "2500.00",
+        "currency": "EUR",
+        "isActive": true
+      }
+    ],
+    [
+      18,
+      {
+        "id": 18,
+        "userId": 9,
+        "type": "Savings Account",
+        "accountNumber": "IE12BOFI90000987654321",
+        "balance": "15000.00",
+        "currency": "EUR",
+        "isActive": true
+      }
+    ],
+    [
+      19,
+      {
+        "id": 19,
+        "userId": 10,
+        "type": "Current Account",
+        "accountNumber": "IE12BOFI900001012345678",
+        "balance": "2500.00",
+        "currency": "EUR",
+        "isActive": true
+      }
+    ],
+    [
+      20,
+      {
+        "id": 20,
+        "userId": 10,
+        "type": "Savings Account",
+        "accountNumber": "IE12BOFI900001087654321",
+        "balance": "15000.00",
+        "currency": "EUR",
+        "isActive": true
+      }
+    ],
+    [
+      21,
+      {
+        "id": 21,
+        "userId": 11,
+        "type": "Current Account",
+        "accountNumber": "IE12BOFI900001112345678",
+        "balance": "2500.00",
+        "currency": "EUR",
+        "isActive": true
+      }
+    ],
+    [
+      22,
+      {
+        "id": 22,
+        "userId": 11,
+        "type": "Savings Account",
+        "accountNumber": "IE12BOFI900001187654321",
+        "balance": "15000.00",
+        "currency": "EUR",
+        "isActive": true
+      }
+    ]
+  ],
+  "transactions": [
+    [
+      1,
+      {
+        "id": 1,
+        "accountId": 1,
+        "type": "credit",
+        "amount": "500.00",
+        "currency": "EUR",
+        "description": "Salary deposit",
+        "reference": "SAL001",
+        "date": "2025-06-10T01:36:18.130Z",
+        "balance": "2500.00"
+      }
+    ],
+    [
+      2,
+      {
+        "id": 2,
+        "accountId": 1,
+        "type": "debit",
+        "amount": "125.50",
+        "currency": "EUR",
+        "description": "Grocery shopping",
+        "reference": "POS001",
+        "date": "2025-06-14T01:36:18.130Z",
+        "balance": "2374.5"
+      }
+    ],
+    [
+      3,
+      {
+        "id": 3,
+        "accountId": 2,
+        "type": "credit",
+        "amount": "500.00",
+        "currency": "EUR",
+        "description": "Salary deposit",
+        "reference": "SAL001",
+        "date": "2025-06-10T01:36:18.131Z",
+        "balance": "15000.00"
+      }
+    ],
+    [
+      4,
+      {
+        "id": 4,
+        "accountId": 2,
+        "type": "debit",
+        "amount": "125.50",
+        "currency": "EUR",
+        "description": "Grocery shopping",
+        "reference": "POS001",
+        "date": "2025-06-14T01:36:18.131Z",
+        "balance": "14874.5"
+      }
+    ],
+    [
+      5,
+      {
+        "id": 5,
+        "accountId": 3,
+        "type": "credit",
+        "amount": "500.00",
+        "currency": "EUR",
+        "description": "Salary deposit",
+        "reference": "SAL001",
+        "date": "2025-06-10T01:36:18.131Z",
+        "balance": "2500.00"
+      }
+    ],
+    [
+      6,
+      {
+        "id": 6,
+        "accountId": 3,
+        "type": "debit",
+        "amount": "125.50",
+        "currency": "EUR",
+        "description": "Grocery shopping",
+        "reference": "POS001",
+        "date": "2025-06-14T01:36:18.131Z",
+        "balance": "2374.5"
+      }
+    ],
+    [
+      7,
+      {
+        "id": 7,
+        "accountId": 4,
+        "type": "credit",
+        "amount": "500.00",
+        "currency": "EUR",
+        "description": "Salary deposit",
+        "reference": "SAL001",
+        "date": "2025-06-10T01:36:18.131Z",
+        "balance": "15000.00"
+      }
+    ],
+    [
+      8,
+      {
+        "id": 8,
+        "accountId": 4,
+        "type": "debit",
+        "amount": "125.50",
+        "currency": "EUR",
+        "description": "Grocery shopping",
+        "reference": "POS001",
+        "date": "2025-06-14T01:36:18.131Z",
+        "balance": "14874.5"
+      }
+    ],
+    [
+      9,
+      {
+        "id": 9,
+        "accountId": 5,
+        "type": "credit",
+        "amount": "500.00",
+        "currency": "EUR",
+        "description": "Salary deposit",
+        "reference": "SAL001",
+        "date": "2025-06-10T01:36:18.134Z",
+        "balance": "2500.00"
+      }
+    ],
+    [
+      10,
+      {
+        "id": 10,
+        "accountId": 5,
+        "type": "debit",
+        "amount": "125.50",
+        "currency": "EUR",
+        "description": "Grocery shopping",
+        "reference": "POS001",
+        "date": "2025-06-14T01:36:18.134Z",
+        "balance": "2374.5"
+      }
+    ],
+    [
+      11,
+      {
+        "id": 11,
+        "accountId": 6,
+        "type": "credit",
+        "amount": "500.00",
+        "currency": "EUR",
+        "description": "Salary deposit",
+        "reference": "SAL001",
+        "date": "2025-06-10T01:36:18.134Z",
+        "balance": "15000.00"
+      }
+    ],
+    [
+      12,
+      {
+        "id": 12,
+        "accountId": 6,
+        "type": "debit",
+        "amount": "125.50",
+        "currency": "EUR",
+        "description": "Grocery shopping",
+        "reference": "POS001",
+        "date": "2025-06-14T01:36:18.134Z",
+        "balance": "14874.5"
+      }
+    ],
+    [
+      13,
+      {
+        "id": 13,
+        "accountId": 7,
+        "type": "credit",
+        "amount": "500.00",
+        "currency": "EUR",
+        "description": "Salary deposit",
+        "reference": "SAL001",
+        "date": "2025-06-10T01:36:18.140Z",
+        "balance": "2500.00"
+      }
+    ],
+    [
+      14,
+      {
+        "id": 14,
+        "accountId": 7,
+        "type": "debit",
+        "amount": "125.50",
+        "currency": "EUR",
+        "description": "Grocery shopping",
+        "reference": "POS001",
+        "date": "2025-06-14T01:36:18.140Z",
+        "balance": "2374.5"
+      }
+    ],
+    [
+      15,
+      {
+        "id": 15,
+        "accountId": 8,
+        "type": "credit",
+        "amount": "500.00",
+        "currency": "EUR",
+        "description": "Salary deposit",
+        "reference": "SAL001",
+        "date": "2025-06-10T01:36:18.140Z",
+        "balance": "15000.00"
+      }
+    ],
+    [
+      16,
+      {
+        "id": 16,
+        "accountId": 8,
+        "type": "debit",
+        "amount": "125.50",
+        "currency": "EUR",
+        "description": "Grocery shopping",
+        "reference": "POS001",
+        "date": "2025-06-14T01:36:18.140Z",
+        "balance": "14874.5"
+      }
+    ],
+    [
+      17,
+      {
+        "id": 17,
+        "accountId": 9,
+        "type": "credit",
+        "amount": "500.00",
+        "currency": "EUR",
+        "description": "Salary deposit",
+        "reference": "SAL001",
+        "date": "2025-06-10T01:36:18.144Z",
+        "balance": "2500.00"
+      }
+    ],
+    [
+      18,
+      {
+        "id": 18,
+        "accountId": 9,
+        "type": "debit",
+        "amount": "125.50",
+        "currency": "EUR",
+        "description": "Grocery shopping",
+        "reference": "POS001",
+        "date": "2025-06-14T01:36:18.144Z",
+        "balance": "2374.5"
+      }
+    ],
+    [
+      19,
+      {
+        "id": 19,
+        "accountId": 10,
+        "type": "credit",
+        "amount": "500.00",
+        "currency": "EUR",
+        "description": "Salary deposit",
+        "reference": "SAL001",
+        "date": "2025-06-10T01:36:18.144Z",
+        "balance": "15000.00"
+      }
+    ],
+    [
+      20,
+      {
+        "id": 20,
+        "accountId": 10,
+        "type": "debit",
+        "amount": "125.50",
+        "currency": "EUR",
+        "description": "Grocery shopping",
+        "reference": "POS001",
+        "date": "2025-06-14T01:36:18.144Z",
+        "balance": "14874.5"
+      }
+    ],
+    [
+      21,
+      {
+        "id": 21,
+        "accountId": 11,
+        "type": "credit",
+        "amount": "500.00",
+        "currency": "EUR",
+        "description": "Salary deposit",
+        "reference": "SAL001",
+        "date": "2025-06-10T01:36:18.145Z",
+        "balance": "2500.00"
+      }
+    ],
+    [
+      22,
+      {
+        "id": 22,
+        "accountId": 11,
+        "type": "debit",
+        "amount": "125.50",
+        "currency": "EUR",
+        "description": "Grocery shopping",
+        "reference": "POS001",
+        "date": "2025-06-14T01:36:18.145Z",
+        "balance": "2374.5"
+      }
+    ],
+    [
+      23,
+      {
+        "id": 23,
+        "accountId": 12,
+        "type": "credit",
+        "amount": "500.00",
+        "currency": "EUR",
+        "description": "Salary deposit",
+        "reference": "SAL001",
+        "date": "2025-06-10T01:36:18.145Z",
+        "balance": "15000.00"
+      }
+    ],
+    [
+      24,
+      {
+        "id": 24,
+        "accountId": 12,
+        "type": "debit",
+        "amount": "125.50",
+        "currency": "EUR",
+        "description": "Grocery shopping",
+        "reference": "POS001",
+        "date": "2025-06-14T01:36:18.145Z",
+        "balance": "14874.5"
+      }
+    ],
+    [
+      25,
+      {
+        "id": 25,
+        "accountId": 13,
+        "type": "credit",
+        "amount": "500.00",
+        "currency": "EUR",
+        "description": "Salary deposit",
+        "reference": "SAL001",
+        "date": "2025-06-10T01:36:18.147Z",
+        "balance": "2500.00"
+      }
+    ],
+    [
+      26,
+      {
+        "id": 26,
+        "accountId": 13,
+        "type": "debit",
+        "amount": "125.50",
+        "currency": "EUR",
+        "description": "Grocery shopping",
+        "reference": "POS001",
+        "date": "2025-06-14T01:36:18.147Z",
+        "balance": "2374.5"
+      }
+    ],
+    [
+      27,
+      {
+        "id": 27,
+        "accountId": 14,
+        "type": "credit",
+        "amount": "500.00",
+        "currency": "EUR",
+        "description": "Salary deposit",
+        "reference": "SAL001",
+        "date": "2025-06-10T01:36:18.148Z",
+        "balance": "15000.00"
+      }
+    ],
+    [
+      28,
+      {
+        "id": 28,
+        "accountId": 14,
+        "type": "debit",
+        "amount": "125.50",
+        "currency": "EUR",
+        "description": "Grocery shopping",
+        "reference": "POS001",
+        "date": "2025-06-14T01:36:18.148Z",
+        "balance": "14874.5"
+      }
+    ],
+    [
+      29,
+      {
+        "id": 29,
+        "accountId": 15,
+        "type": "credit",
+        "amount": "500.00",
+        "currency": "EUR",
+        "description": "Salary deposit",
+        "reference": "SAL001",
+        "date": "2025-06-10T01:36:18.148Z",
+        "balance": "2500.00"
+      }
+    ],
+    [
+      30,
+      {
+        "id": 30,
+        "accountId": 15,
+        "type": "debit",
+        "amount": "125.50",
+        "currency": "EUR",
+        "description": "Grocery shopping",
+        "reference": "POS001",
+        "date": "2025-06-14T01:36:18.148Z",
+        "balance": "2374.5"
+      }
+    ],
+    [
+      31,
+      {
+        "id": 31,
+        "accountId": 16,
+        "type": "credit",
+        "amount": "500.00",
+        "currency": "EUR",
+        "description": "Salary deposit",
+        "reference": "SAL001",
+        "date": "2025-06-10T01:36:18.148Z",
+        "balance": "15000.00"
+      }
+    ],
+    [
+      32,
+      {
+        "id": 32,
+        "accountId": 16,
+        "type": "debit",
+        "amount": "125.50",
+        "currency": "EUR",
+        "description": "Grocery shopping",
+        "reference": "POS001",
+        "date": "2025-06-14T01:36:18.148Z",
+        "balance": "14874.5"
+      }
+    ],
+    [
+      33,
+      {
+        "id": 33,
+        "accountId": 17,
+        "type": "credit",
+        "amount": "500.00",
+        "currency": "EUR",
+        "description": "Salary deposit",
+        "reference": "SAL001",
+        "date": "2025-06-10T01:36:18.150Z",
+        "balance": "2500.00"
+      }
+    ],
+    [
+      34,
+      {
+        "id": 34,
+        "accountId": 17,
+        "type": "debit",
+        "amount": "125.50",
+        "currency": "EUR",
+        "description": "Grocery shopping",
+        "reference": "POS001",
+        "date": "2025-06-14T01:36:18.150Z",
+        "balance": "2374.5"
+      }
+    ],
+    [
+      35,
+      {
+        "id": 35,
+        "accountId": 18,
+        "type": "credit",
+        "amount": "500.00",
+        "currency": "EUR",
+        "description": "Salary deposit",
+        "reference": "SAL001",
+        "date": "2025-06-10T01:36:18.150Z",
+        "balance": "15000.00"
+      }
+    ],
+    [
+      36,
+      {
+        "id": 36,
+        "accountId": 18,
+        "type": "debit",
+        "amount": "125.50",
+        "currency": "EUR",
+        "description": "Grocery shopping",
+        "reference": "POS001",
+        "date": "2025-06-14T01:36:18.150Z",
+        "balance": "14874.5"
+      }
+    ],
+    [
+      37,
+      {
+        "id": 37,
+        "accountId": 19,
+        "type": "credit",
+        "amount": "500.00",
+        "currency": "EUR",
+        "description": "Salary deposit",
+        "reference": "SAL001",
+        "date": "2025-06-10T01:36:18.151Z",
+        "balance": "2500.00"
+      }
+    ],
+    [
+      38,
+      {
+        "id": 38,
+        "accountId": 19,
+        "type": "debit",
+        "amount": "125.50",
+        "currency": "EUR",
+        "description": "Grocery shopping",
+        "reference": "POS001",
+        "date": "2025-06-14T01:36:18.151Z",
+        "balance": "2374.5"
+      }
+    ],
+    [
+      39,
+      {
+        "id": 39,
+        "accountId": 20,
+        "type": "credit",
+        "amount": "500.00",
+        "currency": "EUR",
+        "description": "Salary deposit",
+        "reference": "SAL001",
+        "date": "2025-06-10T01:36:18.151Z",
+        "balance": "15000.00"
+      }
+    ],
+    [
+      40,
+      {
+        "id": 40,
+        "accountId": 20,
+        "type": "debit",
+        "amount": "125.50",
+        "currency": "EUR",
+        "description": "Grocery shopping",
+        "reference": "POS001",
+        "date": "2025-06-14T01:36:18.151Z",
+        "balance": "14874.5"
+      }
+    ],
+    [
+      41,
+      {
+        "id": 41,
+        "accountId": 21,
+        "type": "credit",
+        "amount": "500.00",
+        "currency": "EUR",
+        "description": "Salary deposit",
+        "reference": "SAL001",
+        "date": "2025-06-10T01:36:18.157Z",
+        "balance": "2500.00"
+      }
+    ],
+    [
+      42,
+      {
+        "id": 42,
+        "accountId": 21,
+        "type": "debit",
+        "amount": "125.50",
+        "currency": "EUR",
+        "description": "Grocery shopping",
+        "reference": "POS001",
+        "date": "2025-06-14T01:36:18.157Z",
+        "balance": "2374.5"
+      }
+    ],
+    [
+      43,
+      {
+        "id": 43,
+        "accountId": 22,
+        "type": "credit",
+        "amount": "500.00",
+        "currency": "EUR",
+        "description": "Salary deposit",
+        "reference": "SAL001",
+        "date": "2025-06-10T01:36:18.157Z",
+        "balance": "15000.00"
+      }
+    ],
+    [
+      44,
+      {
+        "id": 44,
+        "accountId": 22,
+        "type": "debit",
+        "amount": "125.50",
+        "currency": "EUR",
+        "description": "Grocery shopping",
+        "reference": "POS001",
+        "date": "2025-06-14T01:36:18.157Z",
+        "balance": "14874.5"
+      }
+    ]
+  ],
+  "payees": [
+    [
+      1,
+      {
+        "id": 1,
+        "userId": 1,
+        "name": "Electric Ireland",
+        "accountNumber": "IE29AIBK93115212345678",
+        "sortCode": "931152",
+        "type": "Utility"
+      }
+    ],
+    [
+      2,
+      {
+        "id": 2,
+        "userId": 1,
+        "name": "John Smith",
+        "accountNumber": "IE64BOFI90017412345678",
+        "sortCode": "900174",
+        "type": "Personal"
+      }
+    ],
+    [
+      3,
+      {
+        "id": 3,
+        "userId": 2,
+        "name": "Electric Ireland",
+        "accountNumber": "IE29AIBK93115212345678",
+        "sortCode": "931152",
+        "type": "Utility"
+      }
+    ],
+    [
+      4,
+      {
+        "id": 4,
+        "userId": 2,
+        "name": "John Smith",
+        "accountNumber": "IE64BOFI90017412345678",
+        "sortCode": "900174",
+        "type": "Personal"
+      }
+    ],
+    [
+      5,
+      {
+        "id": 5,
+        "userId": 3,
+        "name": "Electric Ireland",
+        "accountNumber": "IE29AIBK93115212345678",
+        "sortCode": "931152",
+        "type": "Utility"
+      }
+    ],
+    [
+      6,
+      {
+        "id": 6,
+        "userId": 3,
+        "name": "John Smith",
+        "accountNumber": "IE64BOFI90017412345678",
+        "sortCode": "900174",
+        "type": "Personal"
+      }
+    ],
+    [
+      7,
+      {
+        "id": 7,
+        "userId": 4,
+        "name": "Electric Ireland",
+        "accountNumber": "IE29AIBK93115212345678",
+        "sortCode": "931152",
+        "type": "Utility"
+      }
+    ],
+    [
+      8,
+      {
+        "id": 8,
+        "userId": 4,
+        "name": "John Smith",
+        "accountNumber": "IE64BOFI90017412345678",
+        "sortCode": "900174",
+        "type": "Personal"
+      }
+    ],
+    [
+      9,
+      {
+        "id": 9,
+        "userId": 5,
+        "name": "Electric Ireland",
+        "accountNumber": "IE29AIBK93115212345678",
+        "sortCode": "931152",
+        "type": "Utility"
+      }
+    ],
+    [
+      10,
+      {
+        "id": 10,
+        "userId": 5,
+        "name": "John Smith",
+        "accountNumber": "IE64BOFI90017412345678",
+        "sortCode": "900174",
+        "type": "Personal"
+      }
+    ],
+    [
+      11,
+      {
+        "id": 11,
+        "userId": 6,
+        "name": "Electric Ireland",
+        "accountNumber": "IE29AIBK93115212345678",
+        "sortCode": "931152",
+        "type": "Utility"
+      }
+    ],
+    [
+      12,
+      {
+        "id": 12,
+        "userId": 6,
+        "name": "John Smith",
+        "accountNumber": "IE64BOFI90017412345678",
+        "sortCode": "900174",
+        "type": "Personal"
+      }
+    ],
+    [
+      13,
+      {
+        "id": 13,
+        "userId": 7,
+        "name": "Electric Ireland",
+        "accountNumber": "IE29AIBK93115212345678",
+        "sortCode": "931152",
+        "type": "Utility"
+      }
+    ],
+    [
+      14,
+      {
+        "id": 14,
+        "userId": 7,
+        "name": "John Smith",
+        "accountNumber": "IE64BOFI90017412345678",
+        "sortCode": "900174",
+        "type": "Personal"
+      }
+    ],
+    [
+      15,
+      {
+        "id": 15,
+        "userId": 8,
+        "name": "Electric Ireland",
+        "accountNumber": "IE29AIBK93115212345678",
+        "sortCode": "931152",
+        "type": "Utility"
+      }
+    ],
+    [
+      16,
+      {
+        "id": 16,
+        "userId": 8,
+        "name": "John Smith",
+        "accountNumber": "IE64BOFI90017412345678",
+        "sortCode": "900174",
+        "type": "Personal"
+      }
+    ],
+    [
+      17,
+      {
+        "id": 17,
+        "userId": 9,
+        "name": "Electric Ireland",
+        "accountNumber": "IE29AIBK93115212345678",
+        "sortCode": "931152",
+        "type": "Utility"
+      }
+    ],
+    [
+      18,
+      {
+        "id": 18,
+        "userId": 9,
+        "name": "John Smith",
+        "accountNumber": "IE64BOFI90017412345678",
+        "sortCode": "900174",
+        "type": "Personal"
+      }
+    ],
+    [
+      19,
+      {
+        "id": 19,
+        "userId": 10,
+        "name": "Electric Ireland",
+        "accountNumber": "IE29AIBK93115212345678",
+        "sortCode": "931152",
+        "type": "Utility"
+      }
+    ],
+    [
+      20,
+      {
+        "id": 20,
+        "userId": 10,
+        "name": "John Smith",
+        "accountNumber": "IE64BOFI90017412345678",
+        "sortCode": "900174",
+        "type": "Personal"
+      }
+    ],
+    [
+      21,
+      {
+        "id": 21,
+        "userId": 11,
+        "name": "Electric Ireland",
+        "accountNumber": "IE29AIBK93115212345678",
+        "sortCode": "931152",
+        "type": "Utility"
+      }
+    ],
+    [
+      22,
+      {
+        "id": 22,
+        "userId": 11,
+        "name": "John Smith",
+        "accountNumber": "IE64BOFI90017412345678",
+        "sortCode": "900174",
+        "type": "Personal"
+      }
+    ]
+  ],
+  "scheduledPayments": [],
+  "statements": [],
+  "chatMessages": [],
+  "chatResponses": [],
+  "chatSessions": [],
+  "counters": {
+    "currentUserId": 13,
+    "currentAccountId": 23,
+    "currentTransactionId": 45,
+    "currentPayeeId": 23,
+    "currentScheduledPaymentId": 1,
+    "currentStatementId": 1,
+    "currentChatMessageId": 1,
+    "currentChatResponseId": 1
+  }
+}

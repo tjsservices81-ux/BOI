@@ -13,7 +13,10 @@ import { isAccountActiveOnOtherDevice, setUserDeviceSession, removeUserDeviceSes
 import { addUserSession, removeUserSession, sessionTrackingMiddleware, isSessionValid } from "./sessionManager";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Initialize sample data only if no users exist (first run)
+  // Wait for storage to initialize from persistent data first
+  await new Promise(resolve => setTimeout(resolve, 100));
+  
+  // Only initialize sample data if truly no users exist and no persistent data
   const existingUsers = await storage.getAllUsers();
   if (existingUsers.length === 0) {
     console.log("No existing users found, initializing sample data...");
