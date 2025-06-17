@@ -93,29 +93,7 @@ export default function IbanTransfer() {
             form.setValue('bicCode', payee.bicCode);
           }
           
-          // Force update the form fields after a brief delay
-          setTimeout(() => {
-            // Update IBAN input field display
-            const ibanInput = document.querySelector('input[placeholder*="IBAN"]') as HTMLInputElement;
-            if (ibanInput && payee.accountInfo) {
-              ibanInput.value = payee.accountInfo;
-              ibanInput.dispatchEvent(new Event('input', { bubbles: true }));
-            }
-            
-            // Update BIC input field display
-            const bicInput = document.querySelector('input[placeholder*="BIC"]') as HTMLInputElement;
-            if (bicInput && payee.bicCode) {
-              bicInput.value = payee.bicCode;
-              bicInput.dispatchEvent(new Event('input', { bubbles: true }));
-            }
-            
-            // Update recipient name input field display
-            const nameInput = document.querySelector('input[placeholder*="name"]') as HTMLInputElement;
-            if (nameInput && payee.name) {
-              nameInput.value = payee.name;
-              nameInput.dispatchEvent(new Event('input', { bubbles: true }));
-            }
-          }, 100);
+
           
           // Clear the session storage after using
           sessionStorage.removeItem('selectedPayee');
@@ -621,12 +599,23 @@ export default function IbanTransfer() {
                 placeholder="GB29 NWBK 6016 1331 9268 19"
                 className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
                 style={{ fontFamily: 'OpenSans, sans-serif' }}
-                onChange={(e) => {
-                  // Format IBAN with spaces for better readability
-                  const value = e.target.value.replace(/\s/g, '').toUpperCase();
+                onInput={(e) => {
+                  // Format IBAN with spaces for better readability - use onInput instead of onChange
+                  const target = e.target as HTMLInputElement;
+                  const cursorPosition = target.selectionStart || 0;
+                  const value = target.value.replace(/\s/g, '').toUpperCase();
                   const formatted = value.replace(/(.{4})/g, '$1 ').trim();
-                  e.target.value = formatted;
+                  
+                  // Calculate new cursor position after formatting
+                  const newCursorPosition = cursorPosition + (formatted.length - target.value.length);
+                  
+                  target.value = formatted;
                   form.setValue('iban', value);
+                  
+                  // Restore cursor position
+                  setTimeout(() => {
+                    target.setSelectionRange(newCursorPosition, newCursorPosition);
+                  }, 0);
                 }}
               />
               {form.formState.errors.iban && (
@@ -644,11 +633,19 @@ export default function IbanTransfer() {
                 placeholder="NWBKGB2L"
                 className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
                 style={{ fontFamily: 'OpenSans, sans-serif' }}
-                onChange={(e) => {
-                  // Format BIC code to uppercase
-                  const value = e.target.value.replace(/\s/g, '').toUpperCase();
-                  e.target.value = value;
+                onInput={(e) => {
+                  // Format BIC code to uppercase - use onInput instead of onChange
+                  const target = e.target as HTMLInputElement;
+                  const cursorPosition = target.selectionStart || 0;
+                  const value = target.value.replace(/\s/g, '').toUpperCase();
+                  
+                  target.value = value;
                   form.setValue('bicCode', value);
+                  
+                  // Restore cursor position
+                  setTimeout(() => {
+                    target.setSelectionRange(cursorPosition, cursorPosition);
+                  }, 0);
                 }}
               />
               {form.formState.errors.bicCode && (
