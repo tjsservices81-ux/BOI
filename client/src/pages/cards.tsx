@@ -89,12 +89,23 @@ export default function Cards() {
       loadCardholderName();
     };
 
+    // Listen for currency updates from admin panel
+    const handleCurrencyUpdate = (event: CustomEvent) => {
+      const { customerNumber, currency } = event.detail || {};
+      const currentUser = UserDataManager.getCurrentUser();
+      
+      if (customerNumber === currentUser && currency) {
+        setUserCurrency(currency);
+      }
+    };
+
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('cardUnblocked', handleCardUnblocked);
     window.addEventListener('profileUpdated', handleProfileUpdate);
     window.addEventListener('adminProfileUpdate', handleProfileUpdate);
     window.addEventListener('userProfileUpdate', handleProfileUpdate);
     window.addEventListener('cardNameUpdate', handleCardNameUpdate);
+    window.addEventListener('currencyUpdate', handleCurrencyUpdate as EventListener);
     
     return () => {
       window.removeEventListener('storage', handleStorageChange);
@@ -103,6 +114,7 @@ export default function Cards() {
       window.removeEventListener('adminProfileUpdate', handleProfileUpdate);
       window.removeEventListener('userProfileUpdate', handleProfileUpdate);
       window.removeEventListener('cardNameUpdate', handleCardNameUpdate);
+      window.removeEventListener('currencyUpdate', handleCurrencyUpdate as EventListener);
     };
   }, []);
 

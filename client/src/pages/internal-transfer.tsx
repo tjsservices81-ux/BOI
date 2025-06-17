@@ -6,6 +6,7 @@ import { useLocation } from "wouter";
 import { ChevronLeft, ArrowUpDown, Check, AlertCircle, X } from "lucide-react";
 import { UserDataManager } from "../utils/userDataManager";
 import { generateReference } from "../utils/transferUtils";
+import { formatAmount } from "../utils/currency";
 
 const internalTransferSchema = z.object({
   fromAccount: z.string().min(1, "Please select a source account"),
@@ -34,6 +35,7 @@ export default function InternalTransfer() {
   const [accounts, setAccounts] = useState<any[]>([]);
   const [selectedFromAccount, setSelectedFromAccount] = useState<any>(null);
   const [selectedToAccount, setSelectedToAccount] = useState<any>(null);
+  const [userCurrency, setUserCurrency] = useState('GBP');
 
   const form = useForm<InternalTransferData>({
     resolver: zodResolver(internalTransferSchema),
@@ -48,6 +50,29 @@ export default function InternalTransfer() {
   useEffect(() => {
     const userAccounts = UserDataManager.getUserData('bankAccounts', []);
     setAccounts(userAccounts);
+    
+    // Load user currency
+    const currentUser = UserDataManager.getCurrentUser();
+    if (currentUser) {
+      const currency = UserDataManager.getUserCurrency(currentUser);
+      setUserCurrency(currency);
+    }
+    
+    // Listen for currency updates from admin panel
+    const handleCurrencyUpdate = (event: CustomEvent) => {
+      const { customerNumber, currency } = event.detail || {};
+      const currentUser = UserDataManager.getCurrentUser();
+      
+      if (customerNumber === currentUser && currency) {
+        setUserCurrency(currency);
+      }
+    };
+    
+    window.addEventListener('currencyUpdate', handleCurrencyUpdate as EventListener);
+    
+    return () => {
+      window.removeEventListener('currencyUpdate', handleCurrencyUpdate as EventListener);
+    };
   }, []);
 
   useEffect(() => {
