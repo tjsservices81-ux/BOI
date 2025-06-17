@@ -164,7 +164,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
             }
           }
         } catch (error) {
-          console.error('Error parsing chat state:', error);
+          // Silently handle invalid chat state
         }
       }
       

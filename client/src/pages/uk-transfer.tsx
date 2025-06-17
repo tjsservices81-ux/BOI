@@ -219,7 +219,6 @@ export default function UkTransfer() {
   }, []); // Only run once on mount
 
   const onSubmit = async (data: UkTransferData) => {
-    console.log('Form submitted with data:', data);
     setFormData(data);
     const ref = generateReference();
     setTransferReference(ref);

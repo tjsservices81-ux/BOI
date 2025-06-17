@@ -1,5 +1,5 @@
 import { useLocation } from "wouter";
-import { ChevronLeft, User, HelpCircle, Info, Settings, Shield, Building2, MessageCircle } from "lucide-react";
+import { ChevronLeft, User, HelpCircle, MessageCircle } from "lucide-react";
 import { useState } from "react";
 
 export default function More() {
@@ -120,46 +120,6 @@ export default function More() {
                 </p>
               </div>
               {!isLoadingChat && <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />}
-            </button>
-
-            {/* App Information */}
-            <button 
-              className="w-full bg-white border border-gray-100 rounded-2xl p-5 flex items-center space-x-4 hover:bg-gray-50 shadow-lg transition-all duration-200 active:scale-98 stagger-item" 
-              style={{ animationDelay: '0.3s' }}
-              disabled={isNavigating}
-            >
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-md">
-                <Info className="w-6 h-6 text-white" />
-              </div>
-              <div className="flex-1 text-left">
-                <h3 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  App Information
-                </h3>
-                <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Version, terms and privacy policy
-                </p>
-              </div>
-              <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />
-            </button>
-
-            {/* Settings */}
-            <button 
-              className="w-full bg-white border border-gray-100 rounded-2xl p-5 flex items-center space-x-4 hover:bg-gray-50 shadow-lg transition-all duration-200 active:scale-98 stagger-item" 
-              style={{ animationDelay: '0.4s' }}
-              disabled={isNavigating}
-            >
-              <div className="w-12 h-12 bg-gradient-to-br from-gray-600 to-gray-700 rounded-2xl flex items-center justify-center shadow-md">
-                <Settings className="w-6 h-6 text-white" />
-              </div>
-              <div className="flex-1 text-left">
-                <h3 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Settings
-                </h3>
-                <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Notifications and preferences
-                </p>
-              </div>
-              <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />
             </button>
             
           </div>

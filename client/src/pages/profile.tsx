@@ -262,7 +262,6 @@ export default function Profile() {
       const stored = UserDataManager.getUserData('chatResponses', null);
       setChatResponses(stored || getDefaultChatResponses());
     } catch (error) {
-      console.error('Error loading chat responses:', error);
       setChatResponses(getDefaultChatResponses());
     }
   };
