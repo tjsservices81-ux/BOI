@@ -168,8 +168,13 @@ export async function getUserSessions() {
   const { storage } = await import('./storage');
   
   try {
+    // Ensure storage is fully initialized before accessing data
+    await storage.waitForInitialization();
+    
     // Get all users from the storage system
     const allUsers = await storage.getAllUsers();
+    
+    console.log(`getUserSessions: Found ${allUsers.length} users in database`);
     
     // Create a map of all users with their session info (if any)
     const userSessionsMap = new Map();
