@@ -82,7 +82,7 @@ export default function IbanTransfer() {
     if (selectedPayeeData) {
       try {
         const payee = JSON.parse(selectedPayeeData);
-        if (payee.transferType === 'IBAN Transfer' && payee.accountInfo) {
+        if (payee.transferType === 'SEPA Transfer' && payee.accountInfo) {
           // Pre-fill form with payee data
           form.setValue('recipientName', payee.name);
           form.setValue('iban', payee.accountInfo);
