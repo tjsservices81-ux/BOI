@@ -124,6 +124,26 @@ export default function Login() {
     }
   }, [showAdminLogin]);
 
+  // Auto-focus first input when signup modal opens
+  useEffect(() => {
+    if (showSignUp && nameInputRef.current) {
+      // Use setTimeout to ensure modal is fully rendered
+      setTimeout(() => {
+        nameInputRef.current?.focus();
+        // Force keyboard on mobile devices
+        nameInputRef.current?.click();
+      }, 150);
+    }
+  }, [showSignUp]);
+
+  // Clean up modal state when component unmounts or modal closes
+  useEffect(() => {
+    if (!showSignUp) {
+      // Clear any potential focus or input issues
+      document.activeElement?.blur();
+    }
+  }, [showSignUp]);
+
   const handleNavigation = (path: string) => {
     setIsNavigating(true);
     setTimeout(() => {
@@ -1258,7 +1278,10 @@ export default function Login() {
                 Create New Account
               </h2>
               <button 
-                onClick={() => setShowSignUp(false)}
+                onClick={() => {
+                  setShowSignUp(false);
+                  resetSignUpForm(); // Reset form when closing
+                }}
                 className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center active:scale-95 transition-transform"
               >
                 <span className="text-gray-600 text-lg">×</span>
@@ -1277,12 +1300,16 @@ export default function Login() {
                   Full Name *
                 </label>
                 <input
+                  ref={nameInputRef}
                   type="text"
                   value={newUserData.name}
                   onChange={(e) => setNewUserData({...newUserData, name: e.target.value})}
-                  className="w-full p-3 border border-gray-300 rounded-xl"
+                  className="w-full p-3 border border-gray-300 rounded-xl focus:border-[#126987] focus:ring-1 focus:ring-[#126987] focus:outline-none"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                   placeholder="Enter your full name"
+                  autoComplete="name"
+                  autoCapitalize="words"
+                  spellCheck="false"
                   required
                 />
               </div>
@@ -1292,12 +1319,17 @@ export default function Login() {
                   Email Address *
                 </label>
                 <input
+                  ref={emailInputRef}
                   type="email"
                   value={newUserData.email}
                   onChange={(e) => setNewUserData({...newUserData, email: e.target.value})}
-                  className="w-full p-3 border border-gray-300 rounded-xl"
+                  className="w-full p-3 border border-gray-300 rounded-xl focus:border-[#126987] focus:ring-1 focus:ring-[#126987] focus:outline-none"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                   placeholder="Enter your email address"
+                  autoComplete="email"
+                  autoCapitalize="none"
+                  spellCheck="false"
+                  inputMode="email"
                   required
                 />
               </div>
@@ -1307,12 +1339,17 @@ export default function Login() {
                   Phone Number *
                 </label>
                 <input
+                  ref={phoneInputRef}
                   type="tel"
                   value={newUserData.phone}
                   onChange={(e) => setNewUserData({...newUserData, phone: e.target.value})}
-                  className="w-full p-3 border border-gray-300 rounded-xl"
+                  className="w-full p-3 border border-gray-300 rounded-xl focus:border-[#126987] focus:ring-1 focus:ring-[#126987] focus:outline-none"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                   placeholder="+353 XX XXX XXXX"
+                  autoComplete="tel"
+                  autoCapitalize="none"
+                  spellCheck="false"
+                  inputMode="tel"
                   required
                 />
               </div>
@@ -1326,7 +1363,10 @@ export default function Login() {
               <div className="flex space-x-3 pt-4">
                 <button
                   type="button"
-                  onClick={() => setShowSignUp(false)}
+                  onClick={() => {
+                    setShowSignUp(false);
+                    resetSignUpForm(); // Reset form when canceling
+                  }}
                   className="flex-1 p-3 bg-gray-100 text-gray-700 rounded-xl font-semibold active:scale-98 transition-transform"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                 >
