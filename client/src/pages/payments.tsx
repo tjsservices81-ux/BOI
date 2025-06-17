@@ -14,10 +14,10 @@ export default function Payments() {
   const paymentOptions = [
     {
       id: 'iban',
-      title: 'European Transfer',
-      subtitle: 'IBAN transfer to any European bank',
+      title: 'SEPA Transfer',
+      subtitle: 'Transfer within the SEPA zone',
       icon: <Globe className="w-6 h-6 text-[#126987]" />,
-      description: 'Send money to Europe using IBAN',
+      description: 'Send money within the SEPA zone using IBAN',
       popular: true
     },
     {

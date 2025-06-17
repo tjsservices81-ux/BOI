@@ -181,7 +181,7 @@ export default function IbanTransfer() {
               name: formData.recipientName,
               accountInfo: formData.iban,
               bicCode: formData.bicCode,
-              transferType: 'IBAN Transfer',
+              transferType: 'SEPA Transfer',
               timestamp: new Date().toISOString()
             };
             UserDataManager.addRecentPayee(payee);
@@ -224,7 +224,7 @@ export default function IbanTransfer() {
                 </h1>
                 
                 <p className="text-gray-600 mb-4 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Your international transfer has been processed successfully
+                  Your SEPA transfer has been processed successfully
                 </p>
               </>
             )}
@@ -492,10 +492,10 @@ export default function IbanTransfer() {
             <Info className="w-5 h-5 text-blue-600 mt-0.5" />
             <div>
               <p className="text-sm font-medium text-blue-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                International Transfer
+                SEPA Transfer
               </p>
               <p className="text-xs text-blue-700 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                This transfer will be processed through SWIFT network and may take 1-3 business days.
+                Transfers within the SEPA zone typically take 1-2 business days depending on the recipient's country and bank.
               </p>
             </div>
           </div>
@@ -526,7 +526,7 @@ export default function IbanTransfer() {
       <div className="bg-[#126987] px-4 py-3 flex items-center justify-between" style={{ flexShrink: 0 }}>
         <button onClick={() => navigate('/payments')} className="flex items-center text-white">
           <ChevronLeft className="w-5 h-5 mr-2" />
-          <span className="font-semibold text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>International Transfer</span>
+          <span className="font-semibold text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>SEPA Transfer</span>
         </button>
       </div>
 
@@ -542,8 +542,8 @@ export default function IbanTransfer() {
               <Globe className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h2 className="font-bold text-gray-900 text-lg" style={{ fontFamily: 'OpenSans, sans-serif' }}>International Transfer</h2>
-              <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>SEPA and international payments</p>
+              <h2 className="font-bold text-gray-900 text-lg" style={{ fontFamily: 'OpenSans, sans-serif' }}>SEPA Transfer</h2>
+              <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Send money within the SEPA zone</p>
             </div>
           </div>
 
