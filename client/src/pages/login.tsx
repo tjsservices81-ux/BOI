@@ -127,12 +127,25 @@ export default function Login() {
   // Auto-focus first input when signup modal opens
   useEffect(() => {
     if (showSignUp && nameInputRef.current) {
-      // Use setTimeout to ensure modal is fully rendered
+      // Force a complete re-render cycle
       setTimeout(() => {
-        nameInputRef.current?.focus();
-        // Force keyboard on mobile devices
-        nameInputRef.current?.click();
-      }, 150);
+        // Clear any existing focus
+        (document.activeElement as HTMLElement)?.blur();
+        
+        // Force focus with multiple attempts
+        setTimeout(() => {
+          nameInputRef.current?.focus();
+          nameInputRef.current?.click();
+          
+          // Additional fallback for stubborn cases
+          setTimeout(() => {
+            if (document.activeElement !== nameInputRef.current) {
+              nameInputRef.current?.focus();
+              nameInputRef.current?.select();
+            }
+          }, 50);
+        }, 50);
+      }, 200);
     }
   }, [showSignUp]);
 
@@ -140,7 +153,13 @@ export default function Login() {
   useEffect(() => {
     if (!showSignUp) {
       // Clear any potential focus or input issues
-      document.activeElement?.blur();
+      if (document.activeElement && 'blur' in document.activeElement) {
+        (document.activeElement as HTMLElement).blur();
+      }
+      // Force a complete state reset
+      setTimeout(() => {
+        resetSignUpForm();
+      }, 100);
     }
   }, [showSignUp]);
 
@@ -1304,12 +1323,25 @@ export default function Login() {
                   type="text"
                   value={newUserData.name}
                   onChange={(e) => setNewUserData({...newUserData, name: e.target.value})}
+                  onTouchStart={(e) => {
+                    // Force focus on touch
+                    e.currentTarget.focus();
+                  }}
+                  onMouseDown={(e) => {
+                    // Force focus on mouse down
+                    e.currentTarget.focus();
+                  }}
                   className="w-full p-3 border border-gray-300 rounded-xl focus:border-[#126987] focus:ring-1 focus:ring-[#126987] focus:outline-none"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  style={{ 
+                    fontFamily: 'OpenSans, sans-serif',
+                    userSelect: 'text',
+                    WebkitUserSelect: 'text'
+                  }}
                   placeholder="Enter your full name"
                   autoComplete="name"
                   autoCapitalize="words"
                   spellCheck="false"
+                  tabIndex={0}
                   required
                 />
               </div>
@@ -1323,13 +1355,26 @@ export default function Login() {
                   type="email"
                   value={newUserData.email}
                   onChange={(e) => setNewUserData({...newUserData, email: e.target.value})}
+                  onTouchStart={(e) => {
+                    // Force focus on touch
+                    e.currentTarget.focus();
+                  }}
+                  onMouseDown={(e) => {
+                    // Force focus on mouse down
+                    e.currentTarget.focus();
+                  }}
                   className="w-full p-3 border border-gray-300 rounded-xl focus:border-[#126987] focus:ring-1 focus:ring-[#126987] focus:outline-none"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  style={{ 
+                    fontFamily: 'OpenSans, sans-serif',
+                    userSelect: 'text',
+                    WebkitUserSelect: 'text'
+                  }}
                   placeholder="Enter your email address"
                   autoComplete="email"
                   autoCapitalize="none"
                   spellCheck="false"
                   inputMode="email"
+                  tabIndex={0}
                   required
                 />
               </div>
@@ -1343,13 +1388,26 @@ export default function Login() {
                   type="tel"
                   value={newUserData.phone}
                   onChange={(e) => setNewUserData({...newUserData, phone: e.target.value})}
+                  onTouchStart={(e) => {
+                    // Force focus on touch
+                    e.currentTarget.focus();
+                  }}
+                  onMouseDown={(e) => {
+                    // Force focus on mouse down
+                    e.currentTarget.focus();
+                  }}
                   className="w-full p-3 border border-gray-300 rounded-xl focus:border-[#126987] focus:ring-1 focus:ring-[#126987] focus:outline-none"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  style={{ 
+                    fontFamily: 'OpenSans, sans-serif',
+                    userSelect: 'text',
+                    WebkitUserSelect: 'text'
+                  }}
                   placeholder="+353 XX XXX XXXX"
                   autoComplete="tel"
                   autoCapitalize="none"
                   spellCheck="false"
                   inputMode="tel"
+                  tabIndex={0}
                   required
                 />
               </div>
