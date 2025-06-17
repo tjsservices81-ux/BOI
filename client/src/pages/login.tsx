@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,6 +31,21 @@ export default function Login() {
     phone: '',
     customerNumber: ''
   });
+  
+  // Reset form when modal opens
+  const resetSignUpForm = () => {
+    setNewUserData({
+      name: '',
+      email: '',
+      phone: '',
+      customerNumber: ''
+    });
+  };
+  
+  // Create refs for input focus management
+  const nameInputRef = useRef<HTMLInputElement>(null);
+  const emailInputRef = useRef<HTMLInputElement>(null);
+  const phoneInputRef = useRef<HTMLInputElement>(null);
   const [logoTapCount, setLogoTapCount] = useState(0);
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [showOtcVerification, setShowOtcVerification] = useState(false);
@@ -1432,6 +1447,7 @@ export default function Login() {
                 <button
                   onClick={() => {
                     setShowAdminLogin(false);
+                    resetSignUpForm(); // Reset form data before opening
                     setShowSignUp(true);
                   }}
                   className="w-full p-3 bg-green-50 text-green-600 rounded-xl font-medium active:scale-98 transition-transform"
