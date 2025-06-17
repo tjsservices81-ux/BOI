@@ -33,6 +33,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     rolling: true, // Refresh session on each request
   }));
 
+  // Add session tracking middleware
+  app.use(sessionTrackingMiddleware);
+
   // Authentication middleware
   const requireAuth = (req: any, res: any, next: any) => {
     console.log('Auth check - Session ID:', req.sessionID);
@@ -186,6 +189,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       (req as any).session.user = { id: user.id, name: user.name, email: user.email };
       (req as any).session.deviceSessionId = deviceSessionId;
 
+      // Register session for tracking and invalidation
+      addUserSession(req.sessionID, user.customerNumber, user.id);
+
       console.log(`📱 NEW DEVICE SESSION: ${deviceModel} (${ipAddress}) - Session: ${deviceSessionId}`);
       console.log(`🔒 ACCOUNT LOCKED TO DEVICE: User ${user.id} locked to ${deviceModel}`);
 
@@ -218,6 +224,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/logout", (req, res) => {
     const userId = (req as any).session?.userId;
     const deviceSessionId = (req as any).session?.deviceSessionId;
+    
+    // Remove session from tracking
+    if (req.sessionID) {
+      removeUserSession(req.sessionID);
+    }
     
     // Release device lock when user logs out
     if (userId) {
