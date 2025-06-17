@@ -207,13 +207,17 @@ export async function deleteUserSession(sessionId: string): Promise<boolean> {
     const customerNumber = session.customerNumber;
     
     try {
-      // Import storage to access user deletion functionality
+      // Import storage and session manager
       const { storage } = await import('./storage');
+      const { invalidateAllUserSessions } = await import('./sessionManager');
       
       // Delete the complete user account from database
       const userDeleted = await storage.deleteUser(customerNumber);
       
       if (userDeleted) {
+        // Invalidate all active express sessions for this user
+        const invalidatedSessions = invalidateAllUserSessions(customerNumber);
+        
         // Remove ALL device sessions for this customer
         const customerSessions = deviceSessions.filter(s => s.customerNumber === customerNumber);
         customerSessions.forEach(s => {
@@ -225,7 +229,9 @@ export async function deleteUserSession(sessionId: string): Promise<boolean> {
         // Remove customer from panic mode
         customerPanicMode.delete(customerNumber);
         
-        console.log(`Successfully deleted user account and all sessions for customer: ${customerNumber}`);
+        console.log(`Successfully deleted user account for customer: ${customerNumber}`);
+        console.log(`Invalidated ${invalidatedSessions.length} active sessions`);
+        console.log(`Removed ${customerSessions.length} device sessions`);
         return true;
       }
     } catch (error) {

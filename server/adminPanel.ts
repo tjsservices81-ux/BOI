@@ -602,7 +602,7 @@ router.get('/panel', adminAuth, async (req, res) => {
 });
 
 // Delete user endpoint
-router.post('/delete-user', adminAuth, (req, res) => {
+router.post('/delete-user', adminAuth, async (req, res) => {
   const { sessionId } = req.body;
   
   if (!sessionId) {
@@ -610,8 +610,12 @@ router.post('/delete-user', adminAuth, (req, res) => {
   }
   
   try {
-    deleteUserSession(sessionId);
-    res.json({ success: true });
+    const deleted = await deleteUserSession(sessionId);
+    if (deleted) {
+      res.json({ success: true, message: 'User account permanently deleted and logged out from all devices' });
+    } else {
+      res.status(400).json({ error: 'Failed to delete user account' });
+    }
   } catch (error) {
     console.error('Error deleting user session:', error);
     res.status(500).json({ error: 'Failed to delete user' });

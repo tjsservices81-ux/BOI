@@ -10,6 +10,7 @@ import { transferSecurityService } from "./security/transferSecurity";
 import { generateChatResponse } from "./openai";
 import { isDeviceBlocked, addDeviceSession, isDeviceInPanicMode, isCustomerInPanicMode } from "./deviceSessions";
 import { isAccountActiveOnOtherDevice, setUserDeviceSession, removeUserDeviceSession, getUserDeviceSession, isCurrentDeviceAuthorized } from "./deviceExclusiveAuth";
+import { addUserSession, removeUserSession, sessionTrackingMiddleware, isSessionValid } from "./sessionManager";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize database and sample data
