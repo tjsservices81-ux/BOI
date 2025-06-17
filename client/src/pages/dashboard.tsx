@@ -198,6 +198,16 @@ export default function Dashboard() {
     window.addEventListener('transactionUpdate', handleTransactionDeleted as EventListener);
     window.addEventListener('forceRefresh', handleForceRefresh as EventListener);
     
+    // Listen for account creation events to ensure immediate sync
+    const handleAccountCreated = (event: CustomEvent) => {
+      const { accounts: newAccounts } = event.detail || {};
+      if (newAccounts) {
+        setAccounts(newAccounts);
+        UserDataManager.clearCache('bankAccounts');
+      }
+    };
+    window.addEventListener('accountCreated', handleAccountCreated as EventListener);
+    
     return () => {
       window.removeEventListener('balanceUpdate', handleBalanceUpdate as EventListener);
       window.removeEventListener('adminProfileUpdate', handleProfileUpdate as EventListener);
@@ -207,6 +217,7 @@ export default function Dashboard() {
       window.removeEventListener('transactionDeleted', handleTransactionDeleted as EventListener);
       window.removeEventListener('transactionUpdate', handleTransactionDeleted as EventListener);
       window.removeEventListener('forceRefresh', handleForceRefresh as EventListener);
+      window.removeEventListener('accountCreated', handleAccountCreated as EventListener);
     };
   }, [accounts]);
 

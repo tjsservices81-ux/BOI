@@ -101,34 +101,37 @@ export default function Login() {
     setLogoTapCount(0);
     setShowAdminLogin(false);
 
-    // Listen for admin deletion events to immediately clear biometric sessions
-    const handleAdminDeletion = (event: CustomEvent) => {
-      const { customerNumber: deletedCustomer } = event.detail || {};
-      
-      // If current user was deleted, immediately clear everything
-      if (deletedCustomer === UserDataManager.getCurrentUser()) {
-        UserDataManager.clearCurrentUser();
-        setCustomerNumber('');
-        setBiometricVerified(false);
-        setPinVerified(false);
-        setIsScanning(false);
-        setShowPinLogin(false);
+    // Monitor for admin deletions through localStorage changes
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'adminDeletedUser' && e.newValue) {
+        const deletedCustomer = e.newValue;
         
-        toast({
-          title: "Account Removed",
-          description: "Your account has been removed by an administrator.",
-          variant: "destructive",
-        });
+        // If current user was deleted, immediately clear everything
+        if (deletedCustomer === UserDataManager.getCurrentUser()) {
+          UserDataManager.clearCurrentUser();
+          setCustomerNumber('');
+          setBiometricVerified(false);
+          setPinVerified(false);
+          setIsScanning(false);
+          setShowPinLogin(false);
+          
+          toast({
+            title: "Account Removed",
+            description: "Your account has been removed by an administrator.",
+            variant: "destructive",
+          });
+        }
+        
+        // Clean up cached data and remove the signal
+        UserDataManager.adminDeleteUser(deletedCustomer);
+        localStorage.removeItem('adminDeletedUser');
       }
-      
-      // Clean up any cached data for deleted user
-      UserDataManager.adminDeleteUser(deletedCustomer);
     };
 
-    window.addEventListener('adminUserDeleted', handleAdminDeletion as EventListener);
+    window.addEventListener('storage', handleStorageChange);
     
     return () => {
-      window.removeEventListener('adminUserDeleted', handleAdminDeletion as EventListener);
+      window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
 
@@ -263,6 +266,23 @@ export default function Login() {
         // OTC is valid, create the account
         UserDataManager.registerUser(pendingAccountData);
         UserDataManager.initializeFreshAccount(pendingAccountData.customerNumber);
+
+        // Force complete synchronization - ensure all data is immediately available
+        const accounts = UserDataManager.getUserAccounts();
+        const transactions = UserDataManager.getUserData('bankTransactions', []);
+        
+        // Dispatch multiple events to ensure all components receive the data
+        window.dispatchEvent(new CustomEvent('accountCreated', {
+          detail: { 
+            customerNumber: pendingAccountData.customerNumber,
+            accounts: accounts,
+            transactions: transactions
+          }
+        }));
+        
+        window.dispatchEvent(new CustomEvent('forceRefresh', {
+          detail: { source: 'accountCreation' }
+        }));
 
         toast({
           title: "Account Created Successfully",
