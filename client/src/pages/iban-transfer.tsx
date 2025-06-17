@@ -180,7 +180,10 @@ export default function IbanTransfer() {
             window.dispatchEvent(new CustomEvent('transactionUpdate'));
             window.dispatchEvent(new CustomEvent('balanceUpdate'));
             
-            setShowReference(true);
+            // Fix: Use setTimeout to ensure state update happens outside interval context
+            setTimeout(() => {
+              setShowReference(true);
+            }, 100);
           }
           
           return 100;
