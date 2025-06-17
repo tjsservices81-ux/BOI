@@ -521,6 +521,23 @@ export default function InternalTransfer() {
                   {form.formState.errors.amount.message}
                 </p>
               )}
+              
+              {/* Currency conversion info - only show for non-GBP currencies */}
+              {userCurrency !== 'GBP' && form.watch('amount') && (
+                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-blue-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Converted to GBP:
+                    </span>
+                    <span className="text-sm font-semibold text-blue-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      £{(parseFloat(form.watch('amount') || '0') * 0.85).toFixed(2)}
+                    </span>
+                  </div>
+                  <p className="text-xs text-blue-600 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Exchange rate: 1 {userCurrency} = 0.85 GBP (indicative)
+                  </p>
+                </div>
+              )}
             </div>
 
             <div>
