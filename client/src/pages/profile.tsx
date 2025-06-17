@@ -715,13 +715,6 @@ export default function Profile() {
     // Clear cache again after updates
     UserDataManager.clearCache();
 
-      account: targetAccount.type,
-      previousBalance: currentBalance.toFixed(2),
-      transactionAmount: transactionAmount.toFixed(2),
-      newBalance: newBalance.toFixed(2),
-      description: randomTransaction.description
-    });
-
     // Notify all components of the changes
     window.dispatchEvent(new CustomEvent('transactionUpdate'));
     window.dispatchEvent(new CustomEvent('transactionAdded', {
