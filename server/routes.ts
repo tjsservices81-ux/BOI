@@ -61,8 +61,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "System temporarily unavailable" });
       }
       
-      // Refresh session on each authenticated request
-      req.session.touch();
+      // Session persists indefinitely - no refresh needed
       return next();
     }
     return res.status(401).json({ message: "Not authenticated" });
