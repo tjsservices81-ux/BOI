@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,21 +31,6 @@ export default function Login() {
     phone: '',
     customerNumber: ''
   });
-  
-  // Reset form when modal opens
-  const resetSignUpForm = () => {
-    setNewUserData({
-      name: '',
-      email: '',
-      phone: '',
-      customerNumber: ''
-    });
-  };
-  
-  // Create refs for input focus management
-  const nameInputRef = useRef<HTMLInputElement>(null);
-  const emailInputRef = useRef<HTMLInputElement>(null);
-  const phoneInputRef = useRef<HTMLInputElement>(null);
   const [logoTapCount, setLogoTapCount] = useState(0);
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [showOtcVerification, setShowOtcVerification] = useState(false);
@@ -123,45 +108,6 @@ export default function Login() {
       validateAndCleanUsers();
     }
   }, [showAdminLogin]);
-
-  // Auto-focus first input when signup modal opens
-  useEffect(() => {
-    if (showSignUp && nameInputRef.current) {
-      // Force a complete re-render cycle
-      setTimeout(() => {
-        // Clear any existing focus
-        (document.activeElement as HTMLElement)?.blur();
-        
-        // Force focus with multiple attempts
-        setTimeout(() => {
-          nameInputRef.current?.focus();
-          nameInputRef.current?.click();
-          
-          // Additional fallback for stubborn cases
-          setTimeout(() => {
-            if (document.activeElement !== nameInputRef.current) {
-              nameInputRef.current?.focus();
-              nameInputRef.current?.select();
-            }
-          }, 50);
-        }, 50);
-      }, 200);
-    }
-  }, [showSignUp]);
-
-  // Clean up modal state when component unmounts or modal closes
-  useEffect(() => {
-    if (!showSignUp) {
-      // Clear any potential focus or input issues
-      if (document.activeElement && 'blur' in document.activeElement) {
-        (document.activeElement as HTMLElement).blur();
-      }
-      // Force a complete state reset
-      setTimeout(() => {
-        resetSignUpForm();
-      }, 100);
-    }
-  }, [showSignUp]);
 
   const handleNavigation = (path: string) => {
     setIsNavigating(true);
@@ -1297,10 +1243,7 @@ export default function Login() {
                 Create New Account
               </h2>
               <button 
-                onClick={() => {
-                  setShowSignUp(false);
-                  resetSignUpForm(); // Reset form when closing
-                }}
+                onClick={() => setShowSignUp(false)}
                 className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center active:scale-95 transition-transform"
               >
                 <span className="text-gray-600 text-lg">×</span>
@@ -1319,29 +1262,12 @@ export default function Login() {
                   Full Name *
                 </label>
                 <input
-                  ref={nameInputRef}
                   type="text"
                   value={newUserData.name}
                   onChange={(e) => setNewUserData({...newUserData, name: e.target.value})}
-                  onTouchStart={(e) => {
-                    // Force focus on touch
-                    e.currentTarget.focus();
-                  }}
-                  onMouseDown={(e) => {
-                    // Force focus on mouse down
-                    e.currentTarget.focus();
-                  }}
-                  className="w-full p-3 border border-gray-300 rounded-xl focus:border-[#126987] focus:ring-1 focus:ring-[#126987] focus:outline-none"
-                  style={{ 
-                    fontFamily: 'OpenSans, sans-serif',
-                    userSelect: 'text',
-                    WebkitUserSelect: 'text'
-                  }}
+                  className="w-full p-3 border border-gray-300 rounded-xl"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
                   placeholder="Enter your full name"
-                  autoComplete="name"
-                  autoCapitalize="words"
-                  spellCheck="false"
-                  tabIndex={0}
                   required
                 />
               </div>
@@ -1351,30 +1277,12 @@ export default function Login() {
                   Email Address *
                 </label>
                 <input
-                  ref={emailInputRef}
                   type="email"
                   value={newUserData.email}
                   onChange={(e) => setNewUserData({...newUserData, email: e.target.value})}
-                  onTouchStart={(e) => {
-                    // Force focus on touch
-                    e.currentTarget.focus();
-                  }}
-                  onMouseDown={(e) => {
-                    // Force focus on mouse down
-                    e.currentTarget.focus();
-                  }}
-                  className="w-full p-3 border border-gray-300 rounded-xl focus:border-[#126987] focus:ring-1 focus:ring-[#126987] focus:outline-none"
-                  style={{ 
-                    fontFamily: 'OpenSans, sans-serif',
-                    userSelect: 'text',
-                    WebkitUserSelect: 'text'
-                  }}
+                  className="w-full p-3 border border-gray-300 rounded-xl"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
                   placeholder="Enter your email address"
-                  autoComplete="email"
-                  autoCapitalize="none"
-                  spellCheck="false"
-                  inputMode="email"
-                  tabIndex={0}
                   required
                 />
               </div>
@@ -1384,30 +1292,12 @@ export default function Login() {
                   Phone Number *
                 </label>
                 <input
-                  ref={phoneInputRef}
                   type="tel"
                   value={newUserData.phone}
                   onChange={(e) => setNewUserData({...newUserData, phone: e.target.value})}
-                  onTouchStart={(e) => {
-                    // Force focus on touch
-                    e.currentTarget.focus();
-                  }}
-                  onMouseDown={(e) => {
-                    // Force focus on mouse down
-                    e.currentTarget.focus();
-                  }}
-                  className="w-full p-3 border border-gray-300 rounded-xl focus:border-[#126987] focus:ring-1 focus:ring-[#126987] focus:outline-none"
-                  style={{ 
-                    fontFamily: 'OpenSans, sans-serif',
-                    userSelect: 'text',
-                    WebkitUserSelect: 'text'
-                  }}
+                  className="w-full p-3 border border-gray-300 rounded-xl"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
                   placeholder="+353 XX XXX XXXX"
-                  autoComplete="tel"
-                  autoCapitalize="none"
-                  spellCheck="false"
-                  inputMode="tel"
-                  tabIndex={0}
                   required
                 />
               </div>
@@ -1421,10 +1311,7 @@ export default function Login() {
               <div className="flex space-x-3 pt-4">
                 <button
                   type="button"
-                  onClick={() => {
-                    setShowSignUp(false);
-                    resetSignUpForm(); // Reset form when canceling
-                  }}
+                  onClick={() => setShowSignUp(false)}
                   className="flex-1 p-3 bg-gray-100 text-gray-700 rounded-xl font-semibold active:scale-98 transition-transform"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                 >
@@ -1545,7 +1432,6 @@ export default function Login() {
                 <button
                   onClick={() => {
                     setShowAdminLogin(false);
-                    resetSignUpForm(); // Reset form data before opening
                     setShowSignUp(true);
                   }}
                   className="w-full p-3 bg-green-50 text-green-600 rounded-xl font-medium active:scale-98 transition-transform"
