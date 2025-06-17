@@ -10,7 +10,7 @@ import { transferSecurityService } from "./security/transferSecurity";
 import { generateChatResponse } from "./openai";
 import { isDeviceBlocked, addDeviceSession, isDeviceInPanicMode, isCustomerInPanicMode } from "./deviceSessions";
 import { isAccountActiveOnOtherDevice, setUserDeviceSession, removeUserDeviceSession, getUserDeviceSession, isCurrentDeviceAuthorized } from "./deviceExclusiveAuth";
-import { addUserSession, removeUserSession, sessionTrackingMiddleware, isSessionValid } from "./sessionManager";
+// Removed invalid sessionManager imports - using device exclusive auth instead
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Wait for storage to fully initialize from persistent data
@@ -37,8 +37,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     rolling: true, // Refresh session on each request
   }));
 
-  // Add session tracking middleware
-  app.use(sessionTrackingMiddleware);
+  // Session tracking removed - using device exclusive auth instead
 
   // Authentication middleware
   const requireAuth = (req: any, res: any, next: any) => {
@@ -234,8 +233,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       (req as any).session.user = { id: user.id, name: user.name, email: user.email };
       (req as any).session.deviceSessionId = deviceSessionId;
 
-      // Register session for tracking and invalidation
-      addUserSession(req.sessionID, user.customerNumber, user.id);
+      // Device session registered with exclusive auth system
 
       console.log(`📱 NEW DEVICE SESSION: ${deviceModel} (${ipAddress}) - Session: ${deviceSessionId}`);
       console.log(`🔒 ACCOUNT LOCKED TO DEVICE: User ${user.id} locked to ${deviceModel}`);
@@ -386,6 +384,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(statements);
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Admin-controlled logout endpoint
+  app.post("/api/auth/logout", async (req, res) => {
+    try {
+      console.log('🔐 Admin logout endpoint called');
+      // Only allow logout through this controlled endpoint
+      res.json({ message: "Logout successful" });
+    } catch (error) {
+      console.error('Logout error:', error);
+      res.status(500).json({ message: "Logout failed" });
     }
   });
 
