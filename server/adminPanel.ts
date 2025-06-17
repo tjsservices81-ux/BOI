@@ -1,5 +1,6 @@
 import express from 'express';
 import { getUserSessions, deleteUserSession, deleteAllUserSessions } from './deviceSessions';
+import { SessionManager } from './sessionManager';
 
 const router = express.Router();
 
@@ -151,7 +152,8 @@ router.post('/login', (req, res) => {
 // Admin panel main page
 router.get('/panel', adminAuth, async (req, res) => {
   try {
-    const userSessions = await getUserSessions();
+    // Get real user sessions from SessionManager
+    const userSessions = await SessionManager.getAllUserSessions();
     
     const panelPage = `<!DOCTYPE html>
     <html lang="en">
@@ -314,6 +316,27 @@ router.get('/panel', adminAuth, async (req, res) => {
           font-size: 14px;
           color: #374151;
           font-weight: 500;
+        }
+        .user-actions {
+          display: flex;
+          gap: 10px;
+          flex-wrap: wrap;
+        }
+        .logout-user-btn {
+          background: #fd7e14;
+          color: white;
+          border: none;
+          padding: 12px 20px;
+          border-radius: 8px;
+          cursor: pointer;
+          font-size: 14px;
+          font-weight: 500;
+          transition: background 0.2s;
+          white-space: nowrap;
+          min-width: 120px;
+        }
+        .logout-user-btn:hover {
+          background: #e8590c;
         }
         .delete-btn {
           background: #ef4444;
@@ -483,20 +506,24 @@ router.get('/panel', adminAuth, async (req, res) => {
                 <div>No active user sessions found</div>
               </div>
             ` : userSessions.map((session: any) => `
-              <div class="user-item ${session.isLoggedIn ? 'logged-in' : 'not-logged-in'}" id="user-${session.sessionId}">
+              <div class="user-item ${session.isLoggedIn ? 'logged-in' : 'not-logged-in'}" id="user-${session.customerNumber}">
                 <div class="user-header">
                   <div class="user-info">
-                    <div class="user-name">${session.username || 'Unknown User'} ${session.isLoggedIn ? '🟢' : '🔴'}</div>
+                    <div class="user-name">${session.name || 'Unknown User'} ${session.isLoggedIn ? '🟢' : '🔴'}</div>
                     <div class="user-email">${session.email || 'No email provided'}</div>
                     
                     <div class="user-details">
                       <div class="detail-item">
-                        <div class="detail-label">Date of Birth</div>
-                        <div class="detail-value">${session.dateOfBirth || 'Not provided'}</div>
+                        <div class="detail-label">Customer Number</div>
+                        <div class="detail-value">${session.customerNumber}</div>
                       </div>
                       <div class="detail-item">
-                        <div class="detail-label">Device Model</div>
-                        <div class="detail-value">${session.deviceInfo || 'Unknown Device'}</div>
+                        <div class="detail-label">Phone</div>
+                        <div class="detail-value">${session.phone || 'Not provided'}</div>
+                      </div>
+                      <div class="detail-item">
+                        <div class="detail-label">Device Info</div>
+                        <div class="detail-value">${session.deviceInfo || 'Not logged in'}</div>
                       </div>
                       <div class="detail-item">
                         <div class="detail-label">IP Address</div>
@@ -508,9 +535,16 @@ router.get('/panel', adminAuth, async (req, res) => {
                       </div>
                     </div>
                   </div>
-                  <button class="delete-btn" onclick="confirmDelete('${session.customerNumber}', '${session.username || 'Unknown User'}')">
-                    Delete Account
-                  </button>
+                  <div class="user-actions">
+                    ${session.isLoggedIn ? `
+                      <button class="logout-user-btn" onclick="logoutUser('${session.customerNumber}', '${session.name || 'Unknown User'}')">
+                        Remote Logout
+                      </button>
+                    ` : ''}
+                    <button class="delete-btn" onclick="confirmDelete('${session.customerNumber}', '${session.name || 'Unknown User'}')">
+                      Delete Account
+                    </button>
+                  </div>
                 </div>
               </div>
             `).join('')}
