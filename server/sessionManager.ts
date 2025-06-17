@@ -30,7 +30,7 @@ export class SessionManager {
         customerNumber,
         name: user.name,
         email: user.email,
-        phone: user.phone,
+        phone: user.phone || '',
         isLoggedIn: true,
         lastLoginTime: new Date().toISOString(),
         deviceInfo,
@@ -76,14 +76,14 @@ export class SessionManager {
           // Update existing session with latest user data
           existingSession.name = user.name;
           existingSession.email = user.email;
-          existingSession.phone = user.phone;
+          existingSession.phone = user.phone || '';
         } else {
           // Create session entry for users who haven't logged in yet
           const newSession: UserSession = {
             customerNumber: user.customerNumber,
             name: user.name,
             email: user.email,
-            phone: user.phone,
+            phone: user.phone || '',
             isLoggedIn: false,
             lastLoginTime: null,
             deviceInfo: 'Not logged in',

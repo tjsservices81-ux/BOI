@@ -263,27 +263,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Logout
+  // CONTROLLED LOGOUT - Only through admin panel (5 logo taps)
   app.post("/api/auth/logout", (req, res) => {
     const userId = (req as any).session?.userId;
-    const deviceSessionId = (req as any).session?.deviceSessionId;
     
-    // Remove session from tracking
-    if (req.sessionID) {
-      removeUserSession(req.sessionID);
-    }
+    console.log('🔐 Admin-controlled logout initiated');
     
-    // Release device lock when user logs out
+    // Release device lock when admin logs out user
     if (userId) {
       removeUserDeviceSession(userId);
-      console.log(`🔓 USER LOGOUT: User ${userId} logged out and device lock released`);
+      console.log(`👮 ADMIN LOGOUT: User ${userId} logged out via admin panel and device lock released`);
     }
     
     (req as any).session.destroy((err: any) => {
       if (err) {
-        return res.status(500).json({ message: "Could not log out" });
+        return res.status(500).json({ message: "Admin logout failed" });
       }
-      res.json({ message: "Logged out successfully" });
+      res.json({ message: "Admin logout successful" });
     });
   });
 
@@ -387,17 +383,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin-controlled logout endpoint
-  app.post("/api/auth/logout", async (req, res) => {
-    try {
-      console.log('🔐 Admin logout endpoint called');
-      // Only allow logout through this controlled endpoint
-      res.json({ message: "Logout successful" });
-    } catch (error) {
-      console.error('Logout error:', error);
-      res.status(500).json({ message: "Logout failed" });
-    }
-  });
+
 
   // Get user profile
   app.get("/api/profile/:customerNumber", async (req, res) => {
