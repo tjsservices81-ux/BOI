@@ -508,14 +508,9 @@ router.get('/panel', adminAuth, async (req, res) => {
                       </div>
                     </div>
                   </div>
-                  <div class="user-actions">
-                    <button class="logout-btn-user" onclick="logoutUser('${session.customerNumber}', '${session.username || 'Unknown User'}')">
-                      Force Logout
-                    </button>
-                    <button class="delete-btn" onclick="confirmDelete('${session.customerNumber}', '${session.username || 'Unknown User'}')">
-                      Delete Account
-                    </button>
-                  </div>
+                  <button class="delete-btn" onclick="confirmDelete('${session.customerNumber}', '${session.username || 'Unknown User'}')">
+                    Delete Account
+                  </button>
                 </div>
               </div>
             `).join('')}
@@ -542,7 +537,7 @@ router.get('/panel', adminAuth, async (req, res) => {
         function confirmDelete(customerNumber, username) {
           currentCustomerNumber = customerNumber;
           document.getElementById('deleteText').textContent = 
-            'Are you sure you want to delete ' + username + "'s account? This will log the user out on all devices.";
+            \`Are you sure you want to delete \${username}'s account? This will log the user out on all devices.\`;
           document.getElementById('deleteModal').classList.add('show');
         }
         
@@ -620,40 +615,6 @@ router.get('/panel', adminAuth, async (req, res) => {
           setTimeout(() => {
             window.location.reload();
           }, 1000);
-        }
-        
-        async function logoutUser(customerNumber, username) {
-          if (!confirm('Force logout ' + username + '? This will invalidate their persistent session and disable biometric access until they re-authenticate.')) {
-            return;
-          }
-          
-          try {
-            const response = await fetch('/api/admin/logout-user', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({ customerNumber })
-            });
-            
-            const result = await response.json();
-            
-            if (result.success) {
-              // Broadcast session invalidation to user's browser via localStorage event
-              localStorage.setItem('admin_logout_' + customerNumber, Date.now().toString());
-              setTimeout(() => {
-                localStorage.removeItem('admin_logout_' + customerNumber);
-              }, 5000);
-              
-              alert(username + ' has been logged out from all devices. Their persistent session has been invalidated.');
-              updateStats();
-            } else {
-              alert('Failed to logout user: ' + result.message);
-            }
-          } catch (error) {
-            console.error('Error logging out user:', error);
-            alert('Error logging out user');
-          }
         }
         
         function logout() {

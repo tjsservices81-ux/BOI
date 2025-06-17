@@ -82,8 +82,18 @@ export default function Login() {
   useEffect(() => {
     setAssetsLoaded(true);
     
-    // Never clear authentication data automatically - sessions persist
-    // Only clear form fields for fresh UI state
+    // For cold starts, clear all auth state and require fresh login
+    const wasColdStart = sessionStorage.getItem('app_cold_start') === 'true' || 
+                        !sessionStorage.getItem('splashShown');
+    
+    if (wasColdStart) {
+      // Cold start - clear all authentication data
+      UserDataManager.clearCurrentUser();
+      localStorage.removeItem('bankingUser');
+      localStorage.removeItem('lastActiveUser');
+    }
+    
+    // Clear form fields regardless
     setCustomerNumber('');
     setPin('');
     setBiometricVerified(false);
@@ -291,7 +301,7 @@ export default function Login() {
     }
   };
 
-  const handleBiometricHoldStart = async () => {
+  const handleBiometricHoldStart = () => {
     if (biometricVerified) return;
     
     // Check if any users exist first
@@ -303,43 +313,6 @@ export default function Login() {
         variant: "destructive",
       });
       return;
-    }
-
-    // Determine target user for session validation
-    let targetUser = null;
-    if (customerNumber && UserDataManager.userExists(customerNumber)) {
-      targetUser = customerNumber;
-    } else if (!customerNumber) {
-      // Use last active user if no customer number entered
-      const lastActiveUser = UserDataManager.getLastActiveUser();
-      if (lastActiveUser && UserDataManager.userExists(lastActiveUser)) {
-        targetUser = lastActiveUser;
-      }
-    }
-
-    // Session validation for biometric authentication - only check if explicitly invalidated by admin
-    if (targetUser) {
-      const isSessionValid = UserDataManager.isSessionValid(targetUser);
-      if (!isSessionValid) {
-        // Check if this was an admin-initiated logout vs. a technical issue
-        const isAdminLogout = localStorage.getItem(`admin_logout_${targetUser}`);
-        if (isAdminLogout) {
-          toast({
-            title: "Session Expired",
-            description: "Your session has been terminated by an administrator. Please log in again using your customer number and PIN.",
-            variant: "destructive",
-          });
-          // Clear any stored authentication state
-          setBiometricVerified(false);
-          setPinVerified(false);
-          setCustomerNumber('');
-          return;
-        } else {
-          // Session invalid but not from admin - restore it for persistent sessions
-          console.log(`🔄 Restoring persistent session for user ${targetUser}`);
-          UserDataManager.setSessionValid(targetUser, true);
-        }
-      }
     }
 
     // If customer number is entered, validate it exists

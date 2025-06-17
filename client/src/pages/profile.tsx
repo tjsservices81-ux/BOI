@@ -202,7 +202,7 @@ export default function Profile() {
   // Admin panel functions
   useEffect(() => {
     try {
-      const storedAccounts = UserDataManager.getUserData('bankAccounts', []);
+      const storedAccounts = UserDataManager.getUserAccounts();
       setAccounts(storedAccounts);
       loadChatResponses();
     } catch (error) {

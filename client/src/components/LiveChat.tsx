@@ -147,16 +147,21 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
           // Restore any active chat state (waiting, connected) but not ended
           if (parsedState && parsedState.isActive && parsedState.queueStatus !== 'ended') {
             // Check if session is still valid (within 24 hours)
-            // Always restore chat state - no session timeout
-          setChatState({
-            ...parsedState,
-            messages: parsedState.messages.map((msg: any) => ({
-              ...msg,
-              timestamp: new Date(msg.timestamp)
-            })),
-            queueStartTime: parsedState.queueStartTime ? new Date(parsedState.queueStartTime) : undefined
-          });
-          return;
+            const lastActivity = parsedState.lastActivity || 0;
+            const now = Date.now();
+            const sessionTimeout = 24 * 60 * 60 * 1000; // 24 hours
+            
+            if (now - lastActivity < sessionTimeout) {
+              setChatState({
+                ...parsedState,
+                messages: parsedState.messages.map((msg: any) => ({
+                  ...msg,
+                  timestamp: new Date(msg.timestamp)
+                })),
+                queueStartTime: parsedState.queueStartTime ? new Date(parsedState.queueStartTime) : undefined
+              });
+              return;
+            }
           }
         } catch (error) {
           console.error('Error parsing chat state:', error);
