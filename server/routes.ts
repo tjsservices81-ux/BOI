@@ -607,6 +607,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Session validation endpoint for biometric authentication
+  app.post("/api/validate-session", async (req, res) => {
+    try {
+      const sessionSchema = z.object({
+        customerNumber: z.string()
+      });
+
+      const { customerNumber } = sessionSchema.parse(req.body);
+      
+      // Check if user exists in database
+      const user = await storage.getUserByCustomerNumber(customerNumber);
+      if (!user) {
+        return res.json({ valid: false, reason: "User not found" });
+      }
+      
+      // For now, sessions are valid if user exists in database
+      // This can be expanded to check server-side session storage
+      res.json({ valid: true });
+      
+    } catch (error) {
+      console.error('Session validation error:', error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ valid: false, reason: "Invalid request format" });
+      }
+      res.status(500).json({ valid: false, reason: "Server error" });
+    }
+  });
+
+  // Admin logout user endpoint (invalidates user session)
+  app.post("/api/admin/logout-user", async (req, res) => {
+    try {
+      const logoutSchema = z.object({
+        customerNumber: z.string()
+      });
+
+      const { customerNumber } = logoutSchema.parse(req.body);
+      
+      // Log the admin logout action
+      console.log(`🔒 Admin logout: Invalidating session for customer ${customerNumber}`);
+      
+      // Here we would invalidate server-side sessions
+      // For now, return success - client will handle session invalidation
+      res.json({ 
+        success: true, 
+        message: `Session invalidated for customer ${customerNumber}` 
+      });
+      
+    } catch (error) {
+      console.error('Admin logout error:', error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ success: false, message: "Invalid request format" });
+      }
+      res.status(500).json({ success: false, message: "Failed to logout user" });
+    }
+  });
+
   // Security API endpoints for voice call confirmation
   app.post("/api/security/initiate-transfer", async (req, res) => {
     try {

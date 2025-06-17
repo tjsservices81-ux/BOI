@@ -301,7 +301,7 @@ export default function Login() {
     }
   };
 
-  const handleBiometricHoldStart = () => {
+  const handleBiometricHoldStart = async () => {
     if (biometricVerified) return;
     
     // Check if any users exist first
@@ -313,6 +313,36 @@ export default function Login() {
         variant: "destructive",
       });
       return;
+    }
+
+    // Determine target user for session validation
+    let targetUser = null;
+    if (customerNumber && UserDataManager.userExists(customerNumber)) {
+      targetUser = customerNumber;
+    } else if (!customerNumber) {
+      // Use last active user if no customer number entered
+      const lastActiveUser = UserDataManager.getLastActiveUser();
+      if (lastActiveUser && UserDataManager.userExists(lastActiveUser)) {
+        targetUser = lastActiveUser;
+      }
+    }
+
+    // Session validation for biometric authentication
+    if (targetUser) {
+      const isSessionValid = UserDataManager.isSessionValid(targetUser);
+      if (!isSessionValid) {
+        toast({
+          title: "Session Expired",
+          description: "Your session has been terminated. Please log in again using your customer number and PIN.",
+          variant: "destructive",
+        });
+        // Clear any stored authentication state
+        setBiometricVerified(false);
+        setPinVerified(false);
+        setCustomerNumber('');
+        UserDataManager.clearCurrentUser();
+        return;
+      }
     }
 
     // If customer number is entered, validate it exists
