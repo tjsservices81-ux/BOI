@@ -555,12 +555,12 @@ export default function TransactionHistoryWorking() {
                   </div>
                 )}
 
-                {/* Show processing time message for IBAN transfers */}
-                {selectedTransaction.paymentMethod === 'IBAN Transfer' && (
+                {/* Show processing time message for SEPA transfers */}
+                {selectedTransaction.paymentMethod === 'SEPA Transfer' && (
                   <div className="border-t border-gray-200 pt-4 mt-4">
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                       <p className="text-sm text-blue-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        <strong>IBAN Transfer:</strong> International transfers typically take 1-2 business days to reach the recipient, depending on the destination country and receiving bank.
+                        <strong>SEPA Transfer:</strong> Transfers within the SEPA zone typically take 1–2 business days depending on the recipient's country and bank.
                       </p>
                     </div>
                   </div>

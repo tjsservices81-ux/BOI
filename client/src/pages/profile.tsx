@@ -2050,7 +2050,7 @@ export default function Profile() {
                               <div className="flex items-center space-x-2 mb-1">
                                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                                   transaction.paymentMethod === 'UK Transfer' ? 'bg-blue-100 text-blue-800' :
-                                  transaction.paymentMethod === 'IBAN Transfer' ? 'bg-green-100 text-green-800' :
+                                  transaction.paymentMethod === 'SEPA Transfer' ? 'bg-green-100 text-green-800' :
                                   transaction.paymentMethod === 'BOI Transfer' ? 'bg-purple-100 text-purple-800' :
                                   'bg-gray-100 text-gray-800'
                                 }`}>

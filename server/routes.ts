@@ -766,8 +766,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Find the most recent external transfer transaction (exclude internal BOI transfers)
         const transferTransactions = requestedTransactionData
           .filter((tx: any) => {
-            // Only include external transfers (UK Transfer or IBAN Transfer)
-            return tx.paymentMethod === 'UK Transfer' || tx.paymentMethod === 'IBAN Transfer';
+            // Only include external transfers (UK Transfer or SEPA Transfer)
+            return tx.paymentMethod === 'UK Transfer' || tx.paymentMethod === 'SEPA Transfer';
           })
           .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
         
@@ -786,7 +786,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             accountDetails = `
 Account Number: ${lastTransfer.recipientAccountNumber || 'Not available'}
 Sort Code: ${lastTransfer.recipientSortCode || 'Not available'}`;
-          } else if (lastTransfer.paymentMethod === 'IBAN Transfer') {
+          } else if (lastTransfer.paymentMethod === 'SEPA Transfer') {
             accountDetails = `
 IBAN: ${lastTransfer.iban || 'Not available'}
 BIC Code: ${lastTransfer.bicCode || 'Not available'}`;
