@@ -73,7 +73,7 @@ CRITICAL TRANSFER RESPONSE PROTOCOL:
 BANK OF IRELAND SERVICES YOU CAN HELP WITH:
 - Account balances and statements (direct customers to main app dashboard)
 - Bank of Ireland to UK transfers (currency conversion required, 1 full business day)
-- International transfers via IBAN (1-3 working days, £2-15 fees)
+- SEPA transfers within the SEPA zone (1-2 working days, £2-15 fees)
 - Card issues (lost/stolen cards, PIN problems, blocked cards)
 - ATM problems (£300 daily limit, free at BOI ATMs)
 - Direct debits and standing orders

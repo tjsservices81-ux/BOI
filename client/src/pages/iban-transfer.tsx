@@ -285,7 +285,7 @@ export default function IbanTransfer() {
                       </span>
                     </div>
                     <p className="text-xs text-gray-500 leading-relaxed" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Your international transfer is being processed through Bank of Ireland's secure SWIFT network with end-to-end encryption
+                      Your SEPA transfer is being processed through Bank of Ireland's secure SWIFT network with end-to-end encryption
                     </p>
                   </div>
                 </div>
