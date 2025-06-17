@@ -380,7 +380,9 @@ export class UserDataManager {
     const targetUser = customerNumber || this.getCurrentUser();
     if (!targetUser) return 'GBP';
     
-    const userData = this.getUserProfile();
+    // Get user data from the users registry
+    const allUsers = this.getAllUsers();
+    const userData = allUsers[targetUser];
     return userData?.currency || 'GBP';
   }
 

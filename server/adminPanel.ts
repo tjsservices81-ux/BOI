@@ -394,6 +394,25 @@ router.get('/panel', adminAuth, async (req, res) => {
         .modal-btn.confirm:hover {
           background: #dc2626;
         }
+        .currency-select {
+          width: 100%;
+          padding: 8px 12px;
+          border: 1px solid #d1d5db;
+          border-radius: 6px;
+          background: white;
+          font-size: 13px;
+          color: #374151;
+          cursor: pointer;
+          transition: border-color 0.2s;
+        }
+        .currency-select:hover {
+          border-color: #9ca3af;
+        }
+        .currency-select:focus {
+          outline: none;
+          border-color: #126987;
+          box-shadow: 0 0 0 3px rgba(18, 105, 135, 0.1);
+        }
         .success-message {
           background: #10b981;
           color: white;
@@ -506,6 +525,36 @@ router.get('/panel', adminAuth, async (req, res) => {
                         <div class="detail-label">Login Time</div>
                         <div class="detail-value">${session.loginTime ? new Date(session.loginTime).toLocaleString() : 'Unknown'}</div>
                       </div>
+                      <div class="detail-item">
+                        <div class="detail-label">Currency</div>
+                        <select class="currency-select" onchange="updateCurrency('${session.customerNumber}', this.value)" data-customer="${session.customerNumber}">
+                          <option value="GBP" ${(!session.currency || session.currency === 'GBP') ? 'selected' : ''}>GBP - British Pound (£)</option>
+                          <option value="EUR" ${(session.currency === 'EUR') ? 'selected' : ''}>EUR - Euro (€)</option>
+                          <option value="USD" ${(session.currency === 'USD') ? 'selected' : ''}>USD - US Dollar ($)</option>
+                          <option value="CAD" ${(session.currency === 'CAD') ? 'selected' : ''}>CAD - Canadian Dollar (C$)</option>
+                          <option value="AUD" ${(session.currency === 'AUD') ? 'selected' : ''}>AUD - Australian Dollar (A$)</option>
+                          <option value="JPY" ${(session.currency === 'JPY') ? 'selected' : ''}>JPY - Japanese Yen (¥)</option>
+                          <option value="CHF" ${(session.currency === 'CHF') ? 'selected' : ''}>CHF - Swiss Franc</option>
+                          <option value="CNY" ${(session.currency === 'CNY') ? 'selected' : ''}>CNY - Chinese Yuan (¥)</option>
+                          <option value="INR" ${(session.currency === 'INR') ? 'selected' : ''}>INR - Indian Rupee (₹)</option>
+                          <option value="SGD" ${(session.currency === 'SGD') ? 'selected' : ''}>SGD - Singapore Dollar (S$)</option>
+                          <option value="HKD" ${(session.currency === 'HKD') ? 'selected' : ''}>HKD - Hong Kong Dollar (HK$)</option>
+                          <option value="NZD" ${(session.currency === 'NZD') ? 'selected' : ''}>NZD - New Zealand Dollar (NZ$)</option>
+                          <option value="SEK" ${(session.currency === 'SEK') ? 'selected' : ''}>SEK - Swedish Krona (kr)</option>
+                          <option value="NOK" ${(session.currency === 'NOK') ? 'selected' : ''}>NOK - Norwegian Krone (kr)</option>
+                          <option value="DKK" ${(session.currency === 'DKK') ? 'selected' : ''}>DKK - Danish Krone (kr)</option>
+                          <option value="ZAR" ${(session.currency === 'ZAR') ? 'selected' : ''}>ZAR - South African Rand (R)</option>
+                          <option value="AED" ${(session.currency === 'AED') ? 'selected' : ''}>AED - UAE Dirham (د.إ)</option>
+                          <option value="SAR" ${(session.currency === 'SAR') ? 'selected' : ''}>SAR - Saudi Riyal (﷼)</option>
+                          <option value="TRY" ${(session.currency === 'TRY') ? 'selected' : ''}>TRY - Turkish Lira (₺)</option>
+                          <option value="RUB" ${(session.currency === 'RUB') ? 'selected' : ''}>RUB - Russian Ruble (₽)</option>
+                          <option value="KRW" ${(session.currency === 'KRW') ? 'selected' : ''}>KRW - South Korean Won (₩)</option>
+                          <option value="THB" ${(session.currency === 'THB') ? 'selected' : ''}>THB - Thai Baht (฿)</option>
+                          <option value="MYR" ${(session.currency === 'MYR') ? 'selected' : ''}>MYR - Malaysian Ringgit (RM)</option>
+                          <option value="BRL" ${(session.currency === 'BRL') ? 'selected' : ''}>BRL - Brazilian Real (R$)</option>
+                          <option value="MXN" ${(session.currency === 'MXN') ? 'selected' : ''}>MXN - Mexican Peso ($)</option>
+                        </select>
+                      </div>
                     </div>
                   </div>
                   <button class="delete-btn" onclick="confirmDelete('${session.customerNumber}', '${session.username || 'Unknown User'}')">
@@ -544,6 +593,51 @@ router.get('/panel', adminAuth, async (req, res) => {
         function closeModal() {
           document.getElementById('deleteModal').classList.remove('show');
           currentCustomerNumber = null;
+        }
+
+        async function updateCurrency(customerNumber, currency) {
+          try {
+            const response = await fetch('/admin/update-currency', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                customerNumber: customerNumber,
+                currency: currency
+              })
+            });
+
+            if (response.ok) {
+              const result = await response.json();
+              console.log('Currency updated successfully:', result);
+              
+              // Show brief success feedback
+              const select = document.querySelector(\`select[data-customer="\${customerNumber}"]\`);
+              if (select) {
+                const originalBorder = select.style.borderColor;
+                select.style.borderColor = '#10b981';
+                select.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.2)';
+                
+                setTimeout(() => {
+                  select.style.borderColor = originalBorder;
+                  select.style.boxShadow = '';
+                }, 1000);
+              }
+            } else {
+              console.error('Failed to update currency');
+              // Reset dropdown to previous value on error
+              const select = document.querySelector(\`select[data-customer="\${customerNumber}"]\`);
+              if (select) {
+                select.style.borderColor = '#ef4444';
+                setTimeout(() => {
+                  select.style.borderColor = '';
+                }, 2000);
+              }
+            }
+          } catch (error) {
+            console.error('Error updating currency:', error);
+          }
         }
         
         async function deleteAccount() {
@@ -689,6 +783,46 @@ router.post('/delete-user', adminAuth, async (req, res) => {
   } catch (error) {
     console.error('Error deleting user account:', error);
     res.status(500).json({ error: 'Failed to delete user', details: error instanceof Error ? error.message : String(error) });
+  }
+});
+
+// Update user currency
+router.post('/update-currency', adminAuth, async (req, res) => {
+  try {
+    const { customerNumber, currency } = req.body;
+    
+    if (!customerNumber || !currency) {
+      return res.status(400).json({ error: 'Customer number and currency are required' });
+    }
+
+    // Validate currency code
+    const validCurrencies = ['GBP', 'EUR', 'USD', 'CAD', 'AUD', 'JPY', 'CHF', 'CNY', 'INR', 'SGD', 'HKD', 'NZD', 'SEK', 'NOK', 'DKK', 'ZAR', 'AED', 'SAR', 'TRY', 'RUB', 'KRW', 'THB', 'MYR', 'BRL', 'MXN'];
+    if (!validCurrencies.includes(currency)) {
+      return res.status(400).json({ error: 'Invalid currency code' });
+    }
+
+    // Get current user sessions to find the target user
+    const userSessions = await getUserSessions();
+    const targetSession = userSessions.find((session: any) => session.customerNumber === customerNumber);
+    
+    if (!targetSession) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Update currency in session data
+    targetSession.currency = currency;
+    
+    console.log(`Admin updated currency for ${customerNumber} to ${currency}`);
+    
+    res.json({ 
+      success: true, 
+      message: `Currency updated to ${currency} for customer ${customerNumber}`,
+      customerNumber,
+      currency
+    });
+  } catch (error) {
+    console.error('Error updating currency:', error instanceof Error ? error.message : String(error));
+    res.status(500).json({ error: 'Failed to update currency' });
   }
 });
 
