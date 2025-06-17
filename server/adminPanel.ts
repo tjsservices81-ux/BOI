@@ -454,11 +454,11 @@ router.get('/panel', adminAuth, (req, res) => {
             <div class="stat-label">Active Users</div>
           </div>
           <div class="stat-card">
-            <div class="stat-number">${userSessions.filter(s => s.deviceInfo).length}</div>
+            <div class="stat-number">${userSessions.filter((s: any) => s.deviceInfo).length}</div>
             <div class="stat-label">Registered Devices</div>
           </div>
           <div class="stat-card">
-            <div class="stat-number">${new Set(userSessions.map(s => s.ipAddress)).size}</div>
+            <div class="stat-number">${new Set(userSessions.map((s: any) => s.ipAddress)).size}</div>
             <div class="stat-label">Unique IPs</div>
           </div>
         </div>
@@ -474,7 +474,7 @@ router.get('/panel', adminAuth, (req, res) => {
                 <div class="empty-icon">👥</div>
                 <div>No active user sessions found</div>
               </div>
-            ` : userSessions.map(session => `
+            ` : userSessions.map((session: any) => `
               <div class="user-item" id="user-${session.sessionId}">
                 <div class="user-header">
                   <div class="user-info">
@@ -617,7 +617,7 @@ router.post('/delete-user', adminAuth, (req, res) => {
 
 // Admin logout
 router.get('/logout', (req, res) => {
-  req.session.adminAuth = false;
+  (req.session as any).adminAuth = false;
   res.redirect('/admin/login');
 });
 
