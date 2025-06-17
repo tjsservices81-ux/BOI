@@ -77,12 +77,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Serve static assets from root directory
-app.use(express.static('.'));
-
-// Add admin routes before main app routes
-app.use('/admin', adminRoutes);
-
+// Add request logging middleware
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -114,7 +109,14 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Register API routes first
   const server = await registerRoutes(app);
+
+  // Add admin routes
+  app.use('/admin', adminRoutes);
+
+  // Serve static assets last to avoid conflicts with API routes
+  app.use(express.static('.'));
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;

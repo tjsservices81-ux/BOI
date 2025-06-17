@@ -90,10 +90,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         name: `${userData.firstName} ${userData.lastName}`,
         email: userData.email,
         pin: userData.pin,
-        dateOfBirth: userData.dateOfBirth,
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        dateOfBirth: userData.dateOfBirth
       });
 
       console.log(`✅ USER REGISTERED: ${newUser.name} (${newUser.customerNumber})`);
