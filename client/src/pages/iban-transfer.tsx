@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { getAccounts, processTransfer, processSecureTransfer, checkTransferConfirmation, processConfirmedTransfer, generateReference } from "../utils/transferUtils";
 import { UserDataManager } from "../utils/userDataManager";
+import { formatAmount } from "../utils/currency";
 
 const ibanTransferSchema = z.object({
   recipientName: z.string().min(2, "Recipient name is required"),
@@ -36,6 +37,7 @@ export default function IbanTransfer() {
   const [animationProgress, setAnimationProgress] = useState<number>(0);
   const [processingStage, setProcessingStage] = useState<string>('Verifying transfer details...');
   const [formData, setFormData] = useState<IbanTransferData | null>(null);
+  const [userCurrency, setUserCurrency] = useState('GBP');
 
   const form = useForm<IbanTransferData>({
     resolver: zodResolver(ibanTransferSchema),
@@ -65,6 +67,13 @@ export default function IbanTransfer() {
     
     loadAccounts();
     
+    // Load user currency
+    const currentUser = UserDataManager.getCurrentUser();
+    if (currentUser) {
+      const currency = UserDataManager.getUserCurrency(currentUser);
+      setUserCurrency(currency);
+    }
+    
     // Listen for account updates from admin panel
     const handleAccountsUpdate = (event: CustomEvent) => {
       const { accounts: updatedAccounts } = event.detail || {};
@@ -76,6 +85,18 @@ export default function IbanTransfer() {
     window.addEventListener('accountsUpdate', handleAccountsUpdate as EventListener);
     window.addEventListener('balanceUpdate', handleAccountsUpdate as EventListener);
     window.addEventListener('adminProfileUpdate', handleAccountsUpdate as EventListener);
+    
+    // Listen for currency updates from admin panel
+    const handleCurrencyUpdate = (event: CustomEvent) => {
+      const { customerNumber, currency } = event.detail || {};
+      const currentUser = UserDataManager.getCurrentUser();
+      
+      if (customerNumber === currentUser && currency) {
+        setUserCurrency(currency);
+      }
+    };
+    
+    window.addEventListener('currencyUpdate', handleCurrencyUpdate as EventListener);
     
     // Check for selected payee from Recent Payees
     const selectedPayeeData = sessionStorage.getItem('selectedPayee');
