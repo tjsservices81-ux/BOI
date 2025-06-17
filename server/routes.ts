@@ -68,6 +68,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return res.status(401).json({ message: "Not authenticated" });
   };
 
+  // User registration endpoint
+  app.post("/api/auth/register", async (req, res) => {
+    try {
+      const registerSchema = z.object({
+        firstName: z.string().min(1, "First name is required"),
+        lastName: z.string().min(1, "Last name is required"),
+        email: z.string().email("Invalid email format"),
+        dateOfBirth: z.string().min(1, "Date of birth is required"),
+        pin: z.string().length(4, "PIN must be 4 digits")
+      });
+
+      const userData = registerSchema.parse(req.body);
+      
+      // Generate customer number (8 digits starting with 2)
+      const customerNumber = '2' + Math.floor(Math.random() * 10000000).toString().padStart(7, '0');
+      
+      // Create user with proper data structure
+      const newUser = await storage.createUser({
+        customerNumber,
+        name: `${userData.firstName} ${userData.lastName}`,
+        email: userData.email,
+        pin: userData.pin,
+        dateOfBirth: userData.dateOfBirth,
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
+
+      console.log(`✅ USER REGISTERED: ${newUser.name} (${newUser.customerNumber})`);
+      
+      res.status(201).json({ 
+        success: true, 
+        customerNumber: newUser.customerNumber,
+        message: "Registration successful" 
+      });
+    } catch (error) {
+      console.error('Registration error:', error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors[0].message });
+      }
+      res.status(500).json({ message: "Registration failed" });
+    }
+  });
+
   // Authentication endpoints
   app.post("/api/auth/login", async (req, res) => {
     try {
