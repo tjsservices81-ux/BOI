@@ -293,10 +293,7 @@ export default function UkTransfer() {
             window.dispatchEvent(new CustomEvent('transactionUpdate'));
             window.dispatchEvent(new CustomEvent('balanceUpdate'));
             
-            // Fix: Use setTimeout to ensure state update happens outside interval context
-            setTimeout(() => {
-              setShowReference(true);
-            }, 100);
+            setShowReference(true);
           }
           
           return 100;
