@@ -6,7 +6,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { getAccounts, processTransfer, processSecureTransfer, checkTransferConfirmation, processConfirmedTransfer, generateReference } from "../utils/transferUtils";
 import { UserDataManager } from "../utils/userDataManager";
-import { formatAmount } from "../utils/currency";
 
 const ibanTransferSchema = z.object({
   recipientName: z.string().min(2, "Recipient name is required"),
@@ -37,7 +36,6 @@ export default function IbanTransfer() {
   const [animationProgress, setAnimationProgress] = useState<number>(0);
   const [processingStage, setProcessingStage] = useState<string>('Verifying transfer details...');
   const [formData, setFormData] = useState<IbanTransferData | null>(null);
-  const [userCurrency, setUserCurrency] = useState('GBP');
 
   const form = useForm<IbanTransferData>({
     resolver: zodResolver(ibanTransferSchema),
@@ -67,13 +65,6 @@ export default function IbanTransfer() {
     
     loadAccounts();
     
-    // Load user currency
-    const currentUser = UserDataManager.getCurrentUser();
-    if (currentUser) {
-      const currency = UserDataManager.getUserCurrency(currentUser);
-      setUserCurrency(currency);
-    }
-    
     // Listen for account updates from admin panel
     const handleAccountsUpdate = (event: CustomEvent) => {
       const { accounts: updatedAccounts } = event.detail || {};
@@ -85,18 +76,6 @@ export default function IbanTransfer() {
     window.addEventListener('accountsUpdate', handleAccountsUpdate as EventListener);
     window.addEventListener('balanceUpdate', handleAccountsUpdate as EventListener);
     window.addEventListener('adminProfileUpdate', handleAccountsUpdate as EventListener);
-    
-    // Listen for currency updates from admin panel
-    const handleCurrencyUpdate = (event: CustomEvent) => {
-      const { customerNumber, currency } = event.detail || {};
-      const currentUser = UserDataManager.getCurrentUser();
-      
-      if (customerNumber === currentUser && currency) {
-        setUserCurrency(currency);
-      }
-    };
-    
-    window.addEventListener('currencyUpdate', handleCurrencyUpdate as EventListener);
     
     // Check for selected payee from Recent Payees
     const selectedPayeeData = sessionStorage.getItem('selectedPayee');
@@ -126,7 +105,6 @@ export default function IbanTransfer() {
       window.removeEventListener('accountsUpdate', handleAccountsUpdate as EventListener);
       window.removeEventListener('balanceUpdate', handleAccountsUpdate as EventListener);
       window.removeEventListener('adminProfileUpdate', handleAccountsUpdate as EventListener);
-      window.removeEventListener('currencyUpdate', handleCurrencyUpdate as EventListener);
     };
   }, [form]);
 
@@ -500,14 +478,7 @@ export default function IbanTransfer() {
               
               <div className="flex justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Amount:</span>
-                <div className="text-right">
-                  <span className="font-semibold text-[#126987] text-xl" style={{ fontFamily: 'OpenSans, sans-serif' }}>{formatAmount(parseFloat(formData?.amount || '0'), userCurrency)}</span>
-                  {userCurrency !== 'GBP' && (
-                    <p className="text-sm text-green-700 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      ≈ £{formData?.amount ? (parseFloat(formData.amount) * 0.85).toFixed(2) : '0.00'} GBP
-                    </p>
-                  )}
-                </div>
+                <span className="font-semibold text-[#126987] text-xl" style={{ fontFamily: 'OpenSans, sans-serif' }}>€{formData?.amount}</span>
               </div>
               
               <div className="flex justify-between py-2">
@@ -590,7 +561,7 @@ export default function IbanTransfer() {
                 <option value="">Select account</option>
                 {accounts.map(account => (
                   <option key={account.id} value={account.id}>
-                    {account.displayName} {account.accountNumber} - {formatAmount(typeof account.balance === 'string' ? parseFloat(account.balance) : account.balance, userCurrency)}
+                    {account.displayName} {account.accountNumber} - €{account.balance}
                   </option>
                 ))}
               </select>
@@ -662,7 +633,7 @@ export default function IbanTransfer() {
 
             <div className="bg-gray-50 rounded-lg p-4">
               <label className="block text-sm font-semibold text-gray-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Amount ({userCurrency})
+                Amount (EUR)
               </label>
               <input
                 {...form.register('amount')}
@@ -673,23 +644,6 @@ export default function IbanTransfer() {
               />
               {form.formState.errors.amount && (
                 <p className="text-red-500 text-xs mt-2 font-medium">{form.formState.errors.amount.message}</p>
-              )}
-              
-              {/* Currency conversion info - only show for non-GBP currencies */}
-              {userCurrency !== 'GBP' && form.watch('amount') && (
-                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-blue-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Converted to GBP:
-                    </span>
-                    <span className="text-sm font-semibold text-blue-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      £{(parseFloat(form.watch('amount') || '0') * 0.85).toFixed(2)}
-                    </span>
-                  </div>
-                  <p className="text-xs text-blue-600 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Exchange rate: 1 {userCurrency} = 0.85 GBP (indicative)
-                  </p>
-                </div>
               )}
             </div>
 

@@ -6,7 +6,6 @@ import { useLocation } from "wouter";
 import { ChevronLeft, ArrowUpDown, Check, AlertCircle, X } from "lucide-react";
 import { UserDataManager } from "../utils/userDataManager";
 import { generateReference } from "../utils/transferUtils";
-import { formatAmount as formatCurrency } from "../utils/currency";
 
 const internalTransferSchema = z.object({
   fromAccount: z.string().min(1, "Please select a source account"),
@@ -20,7 +19,7 @@ const internalTransferSchema = z.object({
     .refine((val) => {
       const num = parseFloat(val);
       return num <= 50000;
-    }, "Maximum transfer amount is 50,000"),
+    }, "Maximum transfer amount is €50,000"),
   reference: z.string().max(140, "Reference cannot exceed 140 characters").optional()
 });
 
@@ -35,13 +34,6 @@ export default function InternalTransfer() {
   const [accounts, setAccounts] = useState<any[]>([]);
   const [selectedFromAccount, setSelectedFromAccount] = useState<any>(null);
   const [selectedToAccount, setSelectedToAccount] = useState<any>(null);
-  const [userCurrency, setUserCurrency] = useState('GBP');
-
-  // Local formatting function for simple amount display
-  const formatAmount = (amount: string | number) => {
-    const num = typeof amount === 'string' ? parseFloat(amount) : amount;
-    return isNaN(num) ? '0.00' : num.toFixed(2);
-  };
 
   const form = useForm<InternalTransferData>({
     resolver: zodResolver(internalTransferSchema),
@@ -56,29 +48,6 @@ export default function InternalTransfer() {
   useEffect(() => {
     const userAccounts = UserDataManager.getUserData('bankAccounts', []);
     setAccounts(userAccounts);
-    
-    // Load user currency
-    const currentUser = UserDataManager.getCurrentUser();
-    if (currentUser) {
-      const currency = UserDataManager.getUserCurrency(currentUser);
-      setUserCurrency(currency);
-    }
-    
-    // Listen for currency updates from admin panel
-    const handleCurrencyUpdate = (event: CustomEvent) => {
-      const { customerNumber, currency } = event.detail || {};
-      const currentUser = UserDataManager.getCurrentUser();
-      
-      if (customerNumber === currentUser && currency) {
-        setUserCurrency(currency);
-      }
-    };
-    
-    window.addEventListener('currencyUpdate', handleCurrencyUpdate as EventListener);
-    
-    return () => {
-      window.removeEventListener('currencyUpdate', handleCurrencyUpdate as EventListener);
-    };
   }, []);
 
   useEffect(() => {
@@ -229,7 +198,10 @@ export default function InternalTransfer() {
     setStep('success');
   };
 
-
+  const formatAmount = (amount: string) => {
+    const num = parseFloat(amount);
+    return isNaN(num) ? '0.00' : num.toFixed(2);
+  };
 
   if (step === 'success') {
     return (
@@ -250,7 +222,7 @@ export default function InternalTransfer() {
               Transfer Successful
             </h2>
             <p className="text-gray-600 mb-6" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              {formatCurrency(parseFloat(formData?.amount || '0'), userCurrency)} has been transferred from {selectedFromAccount?.displayName} to {selectedToAccount?.displayName}
+              €{formatAmount(formData?.amount || '0')} has been transferred from {selectedFromAccount?.displayName} to {selectedToAccount?.displayName}
             </p>
             <div className="bg-gray-50 rounded-2xl p-4 mb-6">
               <p className="text-sm text-gray-600 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -316,10 +288,10 @@ export default function InternalTransfer() {
                     {confirmFromAccount?.accountNumber}
                   </p>
                   <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Balance: {(() => {
-                      if (!confirmFromAccount) return formatCurrency(0, userCurrency);
+                    Balance: €{(() => {
+                      if (!confirmFromAccount) return '0.00';
                       const balance = typeof confirmFromAccount.balance === 'string' ? parseFloat(confirmFromAccount.balance) : confirmFromAccount.balance;
-                      return formatCurrency(balance, userCurrency);
+                      return balance.toFixed(2);
                     })()}
                   </p>
                 </div>
@@ -340,7 +312,7 @@ export default function InternalTransfer() {
               <div className="flex justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Amount:</span>
                 <span className="font-bold text-xl text-[#126987]" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  {formatCurrency(formData?.amount || '0', userCurrency)}
+                  €{formatAmount(formData?.amount || '0')}
                 </span>
               </div>
               
@@ -468,7 +440,7 @@ export default function InternalTransfer() {
                 <option value="">Select source account</option>
                 {accounts.map((account) => (
                   <option key={account.id} value={account.id}>
-                    {account.displayName} - {formatCurrency(typeof account.balance === 'string' ? parseFloat(account.balance) : account.balance, userCurrency)}
+                    {account.displayName} - €{typeof account.balance === 'string' ? parseFloat(account.balance).toFixed(2) : account.balance.toFixed(2)}
                   </option>
                 ))}
               </select>
@@ -504,7 +476,7 @@ export default function InternalTransfer() {
 
             <div>
               <label className="block text-sm font-semibold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Amount ({userCurrency})
+                Amount (EUR)
               </label>
               <input
                 type="number"
@@ -520,23 +492,6 @@ export default function InternalTransfer() {
                 <p className="mt-2 text-sm text-red-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                   {form.formState.errors.amount.message}
                 </p>
-              )}
-              
-              {/* Currency conversion info - only show for non-GBP currencies */}
-              {userCurrency !== 'GBP' && form.watch('amount') && (
-                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-blue-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Converted to GBP:
-                    </span>
-                    <span className="text-sm font-semibold text-blue-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      £{(parseFloat(form.watch('amount') || '0') * 0.85).toFixed(2)}
-                    </span>
-                  </div>
-                  <p className="text-xs text-blue-600 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Exchange rate: 1 {userCurrency} = 0.85 GBP (indicative)
-                  </p>
-                </div>
               )}
             </div>
 

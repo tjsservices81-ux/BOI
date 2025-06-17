@@ -14,7 +14,6 @@ export const users = pgTable("users", {
   joinDate: text("join_date").notNull().default("Member since 2018"),
   dateCreated: timestamp("date_created").notNull().defaultNow(),
   isDisabled: boolean("is_disabled").notNull().default(false),
-  currency: text("currency").notNull().default("GBP"),
 });
 
 export const accounts = pgTable("accounts", {

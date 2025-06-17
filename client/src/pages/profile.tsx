@@ -1111,124 +1111,23 @@ export default function Profile() {
                     Profile Management
                   </h3>
                   
-                  <div className="space-y-3">
-                    {/* Edit Profile */}
-                    <button 
-                      onClick={startEditingProfile}
-                      className="w-full flex items-center space-x-3 p-4 bg-blue-50 border border-blue-200 rounded-xl active:scale-98 transition-transform"
-                    >
-                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                        <Edit3 className="w-5 h-5 text-blue-600" />
-                      </div>
-                      <div className="flex-1 text-left">
-                        <p className="font-semibold text-blue-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          Edit Profile
-                        </p>
-                        <p className="text-sm text-blue-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          Update profile information
-                        </p>
-                      </div>
-                    </button>
-
-                    {/* Currency Selection */}
-                    <div className="w-full flex items-center space-x-3 p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
-                      <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
-                        <Settings className="w-5 h-5 text-yellow-600" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-semibold text-yellow-900 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          Set User Currency
-                        </p>
-                        <select
-                          value={(() => {
-                            const currentUser = UserDataManager.getCurrentUser();
-                            return currentUser ? UserDataManager.getUserCurrency(currentUser) : 'GBP';
-                          })()}
-                          onChange={(e) => {
-                            const newCurrency = e.target.value;
-                            const currentUser = UserDataManager.getCurrentUser();
-                            
-                            if (!currentUser) return;
-                            
-                            // Update currency for current user
-                            UserDataManager.setUserCurrency(currentUser, newCurrency);
-                            
-                            // Clear cache to ensure fresh data
-                            UserDataManager.clearCache();
-                            
-                            // Dispatch comprehensive currency update events
-                            window.dispatchEvent(new CustomEvent('currencyUpdate', {
-                              detail: { 
-                                customerNumber: currentUser,
-                                currency: newCurrency 
-                              }
-                            }));
-                            
-                            // Force refresh all components
-                            window.dispatchEvent(new CustomEvent('forceRefresh'));
-                            
-                            // Additional event for immediate UI updates
-                            window.dispatchEvent(new CustomEvent('adminProfileUpdate', {
-                              detail: { currency: newCurrency }
-                            }));
-                            
-                            alert(`Currency updated to ${newCurrency}`);
-                          }}
-                          className="w-full p-2 border border-yellow-300 rounded-lg bg-white text-sm"
-                          style={{ fontFamily: 'OpenSans, sans-serif' }}
-                        >
-                          <option value="GBP">🇬🇧 British Pound (GBP)</option>
-                          <option value="EUR">🇪🇺 Euro (EUR)</option>
-                          <option value="USD">🇺🇸 US Dollar (USD)</option>
-                          <option value="CAD">🇨🇦 Canadian Dollar (CAD)</option>
-                          <option value="AUD">🇦🇺 Australian Dollar (AUD)</option>
-                          <option value="JPY">🇯🇵 Japanese Yen (JPY)</option>
-                          <option value="CHF">🇨🇭 Swiss Franc (CHF)</option>
-                          <option value="SEK">🇸🇪 Swedish Krona (SEK)</option>
-                          <option value="NOK">🇳🇴 Norwegian Krone (NOK)</option>
-                          <option value="DKK">🇩🇰 Danish Krone (DKK)</option>
-                          <option value="PLN">🇵🇱 Polish Złoty (PLN)</option>
-                          <option value="CZK">🇨🇿 Czech Koruna (CZK)</option>
-                          <option value="HUF">🇭🇺 Hungarian Forint (HUF)</option>
-                          <option value="SGD">🇸🇬 Singapore Dollar (SGD)</option>
-                          <option value="HKD">🇭🇰 Hong Kong Dollar (HKD)</option>
-                          <option value="CNY">🇨🇳 Chinese Yuan (CNY)</option>
-                          <option value="INR">🇮🇳 Indian Rupee (INR)</option>
-                          <option value="KRW">🇰🇷 South Korean Won (KRW)</option>
-                          <option value="THB">🇹🇭 Thai Baht (THB)</option>
-                          <option value="MYR">🇲🇾 Malaysian Ringgit (MYR)</option>
-                          <option value="PHP">🇵🇭 Philippine Peso (PHP)</option>
-                          <option value="IDR">🇮🇩 Indonesian Rupiah (IDR)</option>
-                          <option value="VND">🇻🇳 Vietnamese Dong (VND)</option>
-                          <option value="TRY">🇹🇷 Turkish Lira (TRY)</option>
-                          <option value="RUB">🇷🇺 Russian Ruble (RUB)</option>
-                          <option value="BRL">🇧🇷 Brazilian Real (BRL)</option>
-                          <option value="MXN">🇲🇽 Mexican Peso (MXN)</option>
-                          <option value="ARS">🇦🇷 Argentine Peso (ARS)</option>
-                          <option value="CLP">🇨🇱 Chilean Peso (CLP)</option>
-                          <option value="ZAR">🇿🇦 South African Rand (ZAR)</option>
-                          <option value="AED">🇦🇪 UAE Dirham (AED)</option>
-                          <option value="SAR">🇸🇦 Saudi Riyal (SAR)</option>
-                          <option value="QAR">🇶🇦 Qatari Riyal (QAR)</option>
-                          <option value="KWD">🇰🇼 Kuwaiti Dinar (KWD)</option>
-                          <option value="BHD">🇧🇭 Bahraini Dinar (BHD)</option>
-                          <option value="OMR">🇴🇲 Omani Rial (OMR)</option>
-                          <option value="JOD">🇯🇴 Jordanian Dinar (JOD)</option>
-                          <option value="LBP">🇱🇧 Lebanese Pound (LBP)</option>
-                          <option value="EGP">🇪🇬 Egyptian Pound (EGP)</option>
-                          <option value="ILS">🇮🇱 Israeli Shekel (ILS)</option>
-                          <option value="NGN">🇳🇬 Nigerian Naira (NGN)</option>
-                          <option value="KES">🇰🇪 Kenyan Shilling (KES)</option>
-                          <option value="GHS">🇬🇭 Ghanaian Cedi (GHS)</option>
-                          <option value="MAD">🇲🇦 Moroccan Dirham (MAD)</option>
-                          <option value="TND">🇹🇳 Tunisian Dinar (TND)</option>
-                          <option value="DZD">🇩🇿 Algerian Dinar (DZD)</option>
-                          <option value="XOF">🌍 West African CFA Franc (XOF)</option>
-                          <option value="XAF">🌍 Central African CFA Franc (XAF)</option>
-                        </select>
-                      </div>
+                  {/* Edit Profile */}
+                  <button 
+                    onClick={startEditingProfile}
+                    className="w-full flex items-center space-x-3 p-4 bg-blue-50 border border-blue-200 rounded-xl active:scale-98 transition-transform"
+                  >
+                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                      <Edit3 className="w-5 h-5 text-blue-600" />
                     </div>
-                  </div>
+                    <div className="flex-1 text-left">
+                      <p className="font-semibold text-blue-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Edit Profile
+                      </p>
+                      <p className="text-sm text-blue-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Update profile information
+                      </p>
+                    </div>
+                  </button>
                 </div>
 
                 {/* Account Management Section */}

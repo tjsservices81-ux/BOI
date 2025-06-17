@@ -7,7 +7,6 @@ import { z } from "zod";
 import { validateUKSortCode, formatSortCode, validateUKAccountNumber } from "../utils/bankValidation";
 import { getAccounts, processTransfer, processSecureTransfer, checkTransferConfirmation, processConfirmedTransfer, generateReference } from "../utils/transferUtils";
 import { UserDataManager } from "../utils/userDataManager";
-import { formatAmount } from "../utils/currency";
 
 // Known sort codes for bank identification
 const knownSortCodes: Record<string, string> = {
@@ -89,7 +88,6 @@ export default function UkTransfer() {
   const [exchangeRate, setExchangeRate] = useState<number>(0.85); // EUR to GBP rate
   const [gbpAmount, setGbpAmount] = useState<string>('0.00');
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('left');
-  const [userCurrency, setUserCurrency] = useState('GBP');
 
   const form = useForm<UkTransferData>({
     resolver: zodResolver(ukTransferSchema),
@@ -149,13 +147,6 @@ export default function UkTransfer() {
     
     loadAccounts();
     
-    // Load user currency
-    const currentUser = UserDataManager.getCurrentUser();
-    if (currentUser) {
-      const currency = UserDataManager.getUserCurrency(currentUser);
-      setUserCurrency(currency);
-    }
-    
     // Listen for account updates from admin panel
     const handleAccountsUpdate = (event: CustomEvent) => {
       const { accounts: updatedAccounts } = event.detail || {};
@@ -167,18 +158,6 @@ export default function UkTransfer() {
     window.addEventListener('accountsUpdate', handleAccountsUpdate as EventListener);
     window.addEventListener('balanceUpdate', handleAccountsUpdate as EventListener);
     window.addEventListener('adminProfileUpdate', handleAccountsUpdate as EventListener);
-    
-    // Listen for currency updates from admin panel
-    const handleCurrencyUpdate = (event: CustomEvent) => {
-      const { customerNumber, currency } = event.detail || {};
-      const currentUser = UserDataManager.getCurrentUser();
-      
-      if (customerNumber === currentUser && currency) {
-        setUserCurrency(currency);
-      }
-    };
-    
-    window.addEventListener('currencyUpdate', handleCurrencyUpdate as EventListener);
     
     // Check for selected payee from Recent Payees
     const selectedPayeeData = sessionStorage.getItem('selectedPayee');
@@ -236,7 +215,6 @@ export default function UkTransfer() {
       window.removeEventListener('accountsUpdate', handleAccountsUpdate as EventListener);
       window.removeEventListener('balanceUpdate', handleAccountsUpdate as EventListener);
       window.removeEventListener('adminProfileUpdate', handleAccountsUpdate as EventListener);
-      window.removeEventListener('currencyUpdate', handleCurrencyUpdate as EventListener);
     };
   }, []); // Only run once on mount
 
@@ -395,12 +373,10 @@ export default function UkTransfer() {
               <div className="flex justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Amount:</span>
                 <div className="text-right">
-                  <span className="font-semibold text-[#126987] text-xl" style={{ fontFamily: 'OpenSans, sans-serif' }}>{formatAmount(parseFloat(formData?.amount || '0'), userCurrency)}</span>
-                  {userCurrency !== 'GBP' && (
-                    <p className="text-sm text-green-700 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      ≈ £{formData?.amount ? (parseFloat(formData.amount) * exchangeRate).toFixed(2) : '0.00'} GBP
-                    </p>
-                  )}
+                  <span className="font-semibold text-[#126987] text-xl" style={{ fontFamily: 'OpenSans, sans-serif' }}>€{formData?.amount}</span>
+                  <p className="text-sm text-green-700 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    ≈ £{formData?.amount ? (parseFloat(formData.amount) * exchangeRate).toFixed(2) : '0.00'} GBP
+                  </p>
                 </div>
               </div>
               
@@ -845,7 +821,7 @@ export default function UkTransfer() {
 
             <div className="bg-gray-50 rounded-lg p-4">
               <label className="block text-sm font-semibold text-gray-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Amount ({userCurrency})
+                Amount (EUR)
               </label>
               <input
                 type="text"

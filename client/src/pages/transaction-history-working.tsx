@@ -4,7 +4,6 @@ import { ChevronLeft, ArrowUpRight, CreditCard, Building2, Zap, Check, Clock, Ma
 import MiniSpendingChart from "../components/MiniSpendingChart";
 import { UserDataManager } from "../utils/userDataManager.ts";
 import { StateManager } from "../utils/stateManager";
-import { formatAmount } from "../utils/currency";
 
 export default function TransactionHistoryWorking() {
   const locationHook = useLocation();
@@ -17,7 +16,6 @@ export default function TransactionHistoryWorking() {
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
-  const [userCurrency, setUserCurrency] = useState('GBP');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   const accountId = params?.accountId ? parseInt(params.accountId) : 1;
@@ -166,40 +164,21 @@ export default function TransactionHistoryWorking() {
     };
     
     loadData();
-    
-    // Load user currency
-    const currentUser = UserDataManager.getCurrentUser();
-    if (currentUser) {
-      const currency = UserDataManager.getUserCurrency(currentUser);
-      setUserCurrency(currency);
-    }
 
     // Listen for transaction events
     const handleTransactionUpdate = () => {
       loadData();
     };
-    
-    // Listen for currency updates from admin panel
-    const handleCurrencyUpdate = (event: CustomEvent) => {
-      const { customerNumber, currency } = event.detail || {};
-      const currentUser = UserDataManager.getCurrentUser();
-      
-      if (customerNumber === currentUser && currency) {
-        setUserCurrency(currency);
-      }
-    };
 
     window.addEventListener('transactionUpdate', handleTransactionUpdate);
     window.addEventListener('transactionDeleted', handleTransactionUpdate);
     window.addEventListener('transactionAdded', handleTransactionUpdate);
-    window.addEventListener('currencyUpdate', handleCurrencyUpdate as EventListener);
     window.addEventListener('balanceUpdate', handleTransactionUpdate);
     
     return () => {
       window.removeEventListener('transactionUpdate', handleTransactionUpdate);
       window.removeEventListener('transactionDeleted', handleTransactionUpdate);
       window.removeEventListener('transactionAdded', handleTransactionUpdate);
-      window.removeEventListener('currencyUpdate', handleCurrencyUpdate as EventListener);
       window.removeEventListener('balanceUpdate', handleTransactionUpdate);
     };
   }, []);
@@ -261,7 +240,7 @@ export default function TransactionHistoryWorking() {
           </div>
           <div className="text-right">
             <p className="text-3xl font-bold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              {formatAmount(balance, userCurrency)}
+              €{parseFloat(balance).toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </p>
           </div>
         </div>
@@ -308,7 +287,7 @@ export default function TransactionHistoryWorking() {
                 </div>
                 <div className="text-right">
                   <p className={`font-semibold text-sm ${isDebit ? 'text-gray-900' : 'text-green-600'}`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {transaction.amount.startsWith('-') ? '-' : ''}{formatAmount(parseFloat(transaction.amount.replace(/[+-]/g, '')), userCurrency)}
+                    €{transaction.amount}
                   </p>
                 </div>
               </button>
@@ -546,10 +525,10 @@ export default function TransactionHistoryWorking() {
                     </div>
 
                     <div className="flex justify-between">
-                      <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Converted Amount:</span>
+                      <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>GBP Equivalent:</span>
                       <div className="text-right">
                         <span className="font-semibold text-green-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          {formatAmount(selectedTransaction.convertedAmount, selectedTransaction.convertedCurrency || userCurrency)}
+                          £{selectedTransaction.convertedAmount}
                         </span>
                         <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                           Live rate at time of transfer
