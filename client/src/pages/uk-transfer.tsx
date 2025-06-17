@@ -8,6 +8,27 @@ import { validateUKSortCode, formatSortCode, validateUKAccountNumber } from "../
 import { getAccounts, processTransfer, processSecureTransfer, checkTransferConfirmation, processConfirmedTransfer, generateReference } from "../utils/transferUtils";
 import { UserDataManager } from "../utils/userDataManager";
 
+// Known sort codes for bank identification
+const knownSortCodes: Record<string, string> = {
+  "20": "Barclays",
+  "30": "Lloyds Bank",
+  "11": "Halifax",
+  "40": "HSBC",
+  "60": "NatWest",
+  "50": "NatWest (older)",
+  "09": "Santander",
+  "07": "Nationwide",
+  "83": "Royal Bank of Scotland",
+  "04-00-03": "Monzo",
+  "04-00-04": "Monzo",
+  "04-00-75": "Revolut (via Modulr)",
+  "04-12-06": "Pockit (via PPS)",
+  "04-06-05": "Tide",
+  "60-83-71": "Starling Bank",
+  "08-71-99": "Cashplus",
+  "23-14-70": "Wise"
+};
+
 const ukTransferSchema = z.object({
   recipientName: z.string().min(2, "Recipient name is required"),
   accountNumber: z.string().regex(/^[0-9]{8}$/, "Account number must be 8 digits"),
@@ -18,6 +39,39 @@ const ukTransferSchema = z.object({
 });
 
 type UkTransferData = z.infer<typeof ukTransferSchema>;
+
+// Function to identify bank from sort code
+const identifyBankFromSortCode = (sortCode: string): string => {
+  if (!sortCode) return '';
+  
+  // Format sort code to remove dashes and spaces
+  const cleanSortCode = sortCode.replace(/[-\s]/g, '');
+  
+  // Check exact matches first (for specific sort codes like Monzo, Revolut)
+  const formattedSortCode = cleanSortCode.length === 6 
+    ? `${cleanSortCode.slice(0, 2)}-${cleanSortCode.slice(2, 4)}-${cleanSortCode.slice(4, 6)}`
+    : cleanSortCode;
+  
+  if (formattedSortCode in knownSortCodes) {
+    return knownSortCodes[formattedSortCode];
+  }
+  
+  // Check for partial matches (first 2 digits, then first 5 characters for patterns like "04-00")
+  const firstTwo = cleanSortCode.slice(0, 2);
+  if (firstTwo in knownSortCodes) {
+    return knownSortCodes[firstTwo];
+  }
+  
+  // Check for 5-character patterns like "04-00", "04-12"
+  if (cleanSortCode.length >= 4) {
+    const firstFour = `${cleanSortCode.slice(0, 2)}-${cleanSortCode.slice(2, 4)}`;
+    if (firstFour in knownSortCodes) {
+      return knownSortCodes[firstFour];
+    }
+  }
+  
+  return '';
+};
 
 export default function UkTransfer() {
   const locationHook = useLocation();
@@ -618,10 +672,19 @@ export default function UkTransfer() {
                       form.clearErrors('sortCode');
                     }
                     
-                    // Identify bank when sort code is complete (6 digits)
-                    if (cleanValue.length >= 6) {
-                      const bank = validateUKSortCode(cleanValue);
-                      setIdentifiedBank(bank || '');
+                    // Identify bank when sort code is complete (6 digits) or partial matches
+                    if (cleanValue.length >= 2) {
+                      // Try predefined list first
+                      const bank = identifyBankFromSortCode(cleanValue);
+                      if (bank) {
+                        setIdentifiedBank(bank);
+                      } else if (cleanValue.length >= 6) {
+                        // Fall back to existing EISCD validation for complete sort codes
+                        const fallbackBank = validateUKSortCode(cleanValue);
+                        setIdentifiedBank(fallbackBank || '');
+                      } else {
+                        setIdentifiedBank('');
+                      }
                     } else {
                       setIdentifiedBank('');
                     }
@@ -642,9 +705,18 @@ export default function UkTransfer() {
                           input.value = newFormattedValue;
                           form.setValue('sortCode', newCleanValue, { shouldValidate: true });
                           
-                          if (newCleanValue.length >= 6) {
-                            const bank = validateUKSortCode(newCleanValue);
-                            setIdentifiedBank(bank || '');
+                          if (newCleanValue.length >= 2) {
+                            // Try predefined list first
+                            const bank = identifyBankFromSortCode(newCleanValue);
+                            if (bank) {
+                              setIdentifiedBank(bank);
+                            } else if (newCleanValue.length >= 6) {
+                              // Fall back to existing EISCD validation for complete sort codes
+                              const fallbackBank = validateUKSortCode(newCleanValue);
+                              setIdentifiedBank(fallbackBank || '');
+                            } else {
+                              setIdentifiedBank('');
+                            }
                           } else {
                             setIdentifiedBank('');
                           }
