@@ -37,6 +37,12 @@ export default function InternalTransfer() {
   const [selectedToAccount, setSelectedToAccount] = useState<any>(null);
   const [userCurrency, setUserCurrency] = useState('GBP');
 
+  // Local formatting function for simple amount display
+  const formatAmount = (amount: string | number) => {
+    const num = typeof amount === 'string' ? parseFloat(amount) : amount;
+    return isNaN(num) ? '0.00' : num.toFixed(2);
+  };
+
   const form = useForm<InternalTransferData>({
     resolver: zodResolver(internalTransferSchema),
     defaultValues: {
@@ -311,9 +317,9 @@ export default function InternalTransfer() {
                   </p>
                   <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     Balance: {(() => {
-                      if (!confirmFromAccount) return formatAmount(0, userCurrency);
+                      if (!confirmFromAccount) return formatCurrency(0, userCurrency);
                       const balance = typeof confirmFromAccount.balance === 'string' ? parseFloat(confirmFromAccount.balance) : confirmFromAccount.balance;
-                      return formatAmount(balance, userCurrency);
+                      return formatCurrency(balance, userCurrency);
                     })()}
                   </p>
                 </div>
@@ -334,7 +340,7 @@ export default function InternalTransfer() {
               <div className="flex justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Amount:</span>
                 <span className="font-bold text-xl text-[#126987]" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  {formatAmount(formData?.amount || '0', userCurrency)}
+                  {formatCurrency(formData?.amount || '0', userCurrency)}
                 </span>
               </div>
               
@@ -462,7 +468,7 @@ export default function InternalTransfer() {
                 <option value="">Select source account</option>
                 {accounts.map((account) => (
                   <option key={account.id} value={account.id}>
-                    {account.displayName} - €{typeof account.balance === 'string' ? parseFloat(account.balance).toFixed(2) : account.balance.toFixed(2)}
+                    {account.displayName} - {formatCurrency(typeof account.balance === 'string' ? parseFloat(account.balance) : account.balance, userCurrency)}
                   </option>
                 ))}
               </select>
