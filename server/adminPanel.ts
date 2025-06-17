@@ -812,13 +812,33 @@ router.post('/update-currency', adminAuth, async (req, res) => {
     // Update currency in session data
     targetSession.currency = currency;
     
+    // Also update in client-side user data through JavaScript injection
+    // This ensures immediate synchronization across all client components
+    const updateScript = `
+      <script>
+        if (typeof window !== 'undefined' && window.UserDataManager) {
+          window.UserDataManager.setUserCurrency('${customerNumber}', '${currency}');
+        }
+        
+        // Dispatch storage event for immediate client-side updates
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem('adminCurrencyUpdate', JSON.stringify({
+            customerNumber: '${customerNumber}',
+            currency: '${currency}',
+            timestamp: Date.now()
+          }));
+        }
+      </script>
+    `;
+    
     console.log(`Admin updated currency for ${customerNumber} to ${currency}`);
     
     res.json({ 
       success: true, 
       message: `Currency updated to ${currency} for customer ${customerNumber}`,
       customerNumber,
-      currency
+      currency,
+      updateScript
     });
   } catch (error) {
     console.error('Error updating currency:', error instanceof Error ? error.message : String(error));
