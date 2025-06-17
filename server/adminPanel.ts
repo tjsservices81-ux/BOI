@@ -508,7 +508,7 @@ router.get('/panel', adminAuth, async (req, res) => {
                       </div>
                     </div>
                   </div>
-                  <button class="delete-btn" onclick="confirmDelete('${session.sessionId}', '${session.username || 'Unknown User'}')">
+                  <button class="delete-btn" onclick="confirmDelete('${session.customerNumber}', '${session.username || 'Unknown User'}')">
                     Delete Account
                   </button>
                 </div>
@@ -532,10 +532,10 @@ router.get('/panel', adminAuth, async (req, res) => {
       </div>
       
       <script>
-        let currentSessionId = null;
+        let currentCustomerNumber = null;
         
-        function confirmDelete(sessionId, username) {
-          currentSessionId = sessionId;
+        function confirmDelete(customerNumber, username) {
+          currentCustomerNumber = customerNumber;
           document.getElementById('deleteText').textContent = 
             \`Are you sure you want to delete \${username}'s account? This will log the user out on all devices.\`;
           document.getElementById('deleteModal').classList.add('show');
@@ -543,11 +543,11 @@ router.get('/panel', adminAuth, async (req, res) => {
         
         function closeModal() {
           document.getElementById('deleteModal').classList.remove('show');
-          currentSessionId = null;
+          currentCustomerNumber = null;
         }
         
         async function deleteAccount() {
-          if (!currentSessionId) return;
+          if (!currentCustomerNumber) return;
           
           try {
             const response = await fetch('/admin/delete-user', {
@@ -555,24 +555,18 @@ router.get('/panel', adminAuth, async (req, res) => {
               headers: {
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify({ sessionId: currentSessionId })
+              body: JSON.stringify({ customerNumber: currentCustomerNumber })
             });
             
             const result = await response.json();
             if (response.ok) {
-              // Remove user from UI
-              const userElement = document.getElementById(\`user-\${currentSessionId}\`);
-              if (userElement) {
-                userElement.remove();
-              }
-              
               // Show success message
               document.getElementById('successMessage').classList.add('show');
               setTimeout(() => {
                 document.getElementById('successMessage').classList.remove('show');
               }, 3000);
               
-              // Update stats
+              // Update stats and reload to reflect changes
               updateStats();
             } else {
               console.error('Error deleting user:', result);
@@ -614,21 +608,27 @@ router.get('/panel', adminAuth, async (req, res) => {
 
 // Delete user endpoint
 router.post('/delete-user', adminAuth, async (req, res) => {
-  const { sessionId } = req.body;
+  const { customerNumber } = req.body;
   
-  if (!sessionId) {
-    return res.status(400).json({ error: 'Session ID required' });
+  if (!customerNumber) {
+    return res.status(400).json({ error: 'Customer number required' });
   }
   
   try {
-    const deleted = await deleteUserSession(sessionId);
+    // Delete user from database
+    const deleted = await storage.deleteUser(customerNumber);
+    
     if (deleted) {
+      // Also invalidate all device sessions for this user
+      await deleteAllUserSessions(customerNumber);
+      
+      console.log(`Admin deleted user account: ${customerNumber}`);
       res.json({ success: true, message: 'User account permanently deleted and logged out from all devices' });
     } else {
-      res.status(400).json({ error: 'Failed to delete user account' });
+      res.status(400).json({ error: 'Failed to delete user account - user not found' });
     }
   } catch (error) {
-    console.error('Error deleting user session:', error);
+    console.error('Error deleting user account:', error);
     res.status(500).json({ error: 'Failed to delete user' });
   }
 });

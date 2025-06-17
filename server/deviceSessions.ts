@@ -225,6 +225,34 @@ export async function getUserSessions() {
   }
 }
 
+export async function deleteAllUserSessions(customerNumber: string): Promise<boolean> {
+  try {
+    // Import session manager
+    const { invalidateAllUserSessions } = await import('./sessionManager');
+    
+    // Invalidate all active express sessions for this user
+    const invalidatedSessions = invalidateAllUserSessions(customerNumber);
+    
+    // Remove ALL device sessions for this customer
+    const customerSessions = deviceSessions.filter(s => s.customerNumber === customerNumber);
+    customerSessions.forEach(s => {
+      removeDeviceSession(s.sessionId);
+      // Also remove from panic mode if active
+      devicePanicMode.delete(s.sessionId);
+    });
+    
+    // Remove customer from panic mode
+    customerPanicMode.delete(customerNumber);
+    
+    console.log(`Invalidated ${invalidatedSessions.length} active sessions for customer: ${customerNumber}`);
+    console.log(`Removed ${customerSessions.length} device sessions`);
+    return true;
+  } catch (error) {
+    console.error('Error deleting all user sessions:', error);
+    return false;
+  }
+}
+
 export async function deleteUserSession(sessionId: string): Promise<boolean> {
   try {
     // Import storage and session manager
