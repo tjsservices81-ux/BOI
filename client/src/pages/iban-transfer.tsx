@@ -82,15 +82,46 @@ export default function IbanTransfer() {
     if (selectedPayeeData) {
       try {
         const payee = JSON.parse(selectedPayeeData);
-        if (payee.transferType === 'IBAN Transfer' && payee.accountInfo) {
+        
+        if (payee.transferType === 'SEPA Transfer' && payee.accountInfo) {
+          // IBAN is stored in accountInfo field
+          const iban = payee.accountInfo.trim();
+          
+          // BIC is stored in separate bicCode field
+          const bic = payee.bicCode || '';
+          
           // Pre-fill form with payee data
           form.setValue('recipientName', payee.name);
-          form.setValue('iban', payee.accountInfo);
+          form.setValue('iban', iban);
           
           // Pre-fill BIC code if available
-          if (payee.bicCode) {
-            form.setValue('bicCode', payee.bicCode);
+          if (bic) {
+            form.setValue('bicCode', bic);
           }
+          
+          // Force update the form fields after a brief delay
+          setTimeout(() => {
+            // Update IBAN input field display
+            const ibanInput = document.querySelector('input[placeholder="Enter IBAN"]') as HTMLInputElement;
+            if (ibanInput) {
+              ibanInput.value = iban;
+              ibanInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+            
+            // Update BIC input field display
+            const bicInput = document.querySelector('input[placeholder="Enter BIC Code"]') as HTMLInputElement;
+            if (bicInput && bic) {
+              bicInput.value = bic;
+              bicInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+            
+            // Update recipient name input field display
+            const nameInput = document.querySelector('input[placeholder="Enter recipient name"]') as HTMLInputElement;
+            if (nameInput) {
+              nameInput.value = payee.name;
+              nameInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+          }, 100);
           
           // Clear the session storage after using
           sessionStorage.removeItem('selectedPayee');
