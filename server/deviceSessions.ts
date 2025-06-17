@@ -22,6 +22,7 @@ let customerPanicMode: Set<string> = new Set();
 
 // Generate sample device sessions for demo
 function initializeSampleSessions() {
+  // Always initialize sample sessions for admin panel demonstration
   if (deviceSessions.length === 0) {
     const sampleSessions: DeviceSession[] = [
       {
@@ -159,22 +160,20 @@ export function isCustomerInPanicMode(customerNumber: string): boolean {
   return customerPanicMode.has(customerNumber);
 }
 
-export function getUserSessions() {
-  // Add user data from storage for admin panel
+export async function getUserSessions() {
+  // Initialize sample sessions if needed
+  initializeSampleSessions();
+  
+  // Import storage to access user data
+  const { storage } = await import('./storage');
   
   try {
-    // Try to read user data from file storage
-    const userDataPath = path.join(process.cwd(), 'userData.json');
-    let userData = [];
+    // Get all users from the storage system
+    const allUsers = await storage.getAllUsers();
     
-    if (fs.existsSync(userDataPath)) {
-      const fileContent = fs.readFileSync(userDataPath, 'utf8');
-      userData = JSON.parse(fileContent);
-    }
-    
-    // Combine device sessions with user data
+    // Combine device sessions with user data from storage
     return deviceSessions.map(session => {
-      const user = userData.find((u: any) => u.customerNumber === session.customerNumber);
+      const user = allUsers.find(u => u.customerNumber === session.customerNumber);
       return {
         sessionId: session.sessionId,
         username: user?.name || session.customerNumber || 'Unknown User',
@@ -187,7 +186,8 @@ export function getUserSessions() {
       };
     });
   } catch (error) {
-    console.error('Error reading user data:', error);
+    console.error('Error accessing user data from storage:', error);
+    // Fallback to device session data only
     return deviceSessions.map(session => ({
       sessionId: session.sessionId,
       username: session.customerNumber || 'Unknown User',

@@ -149,10 +149,11 @@ router.post('/login', (req, res) => {
 });
 
 // Admin panel main page
-router.get('/panel', adminAuth, (req, res) => {
-  const userSessions = getUserSessions();
-  
-  const panelPage = `
+router.get('/panel', adminAuth, async (req, res) => {
+  try {
+    const userSessions = await getUserSessions();
+    
+    const panelPage = `
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -595,7 +596,11 @@ router.get('/panel', adminAuth, (req, res) => {
     </html>
   `;
   
-  res.send(panelPage);
+    res.send(panelPage);
+  } catch (error) {
+    console.error('Error loading admin panel:', error);
+    res.status(500).send('<h1>Error loading admin panel</h1><p>Please check server logs.</p>');
+  }
 });
 
 // Delete user endpoint
