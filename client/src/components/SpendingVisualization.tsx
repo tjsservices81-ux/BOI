@@ -67,7 +67,7 @@ export default function SpendingVisualization() {
       });
 
       // Reduced ambient particles for better performance
-      const ambientParticles: SpendingPattern[] = Array.from({ length: 8 }, () => ({
+      const ambientParticles: SpendingPattern[] = Array.from({ length: 4 }, () => ({
         x: Math.random() * dimensions.width,
         y: Math.random() * dimensions.height,
         size: Math.random() * 2 + 1,

@@ -238,15 +238,6 @@ input[type="text"], input[type="email"], input[type="password"], textarea {
   }
 }
 
-/* Enhanced iOS standalone mode detection */
-@supports (-webkit-touch-callout: none) {
-  .ios-app-mode {
-    /* iOS-specific optimizations */
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
-  }
-}
-
 /* Critical performance optimizations + Security */
 * {
   -webkit-tap-highlight-color: transparent;
@@ -571,11 +562,6 @@ html {
 body {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: none;
-}
-
-/* Prevent layout shifts during interactions */
-.smooth-interaction {
-  /* Removed hardware acceleration properties that cause jiggling */
 }
 
 /* Optimized transitions for form elements - instant response */

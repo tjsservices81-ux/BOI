@@ -623,7 +623,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         customerNumber: customerNumber
       });
     } catch (error) {
-      console.error('User validation error:', error);
       res.status(500).json({ exists: false, message: "Validation failed" });
     }
   });

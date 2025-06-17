@@ -723,7 +723,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
         category: 'ai-generated'
       };
     } catch (error) {
-      console.error('Error getting AI response:', error);
+      // Silent error handling
       // Fallback to a natural error message
       return {
         text: "I'm experiencing some technical difficulties at the moment. Please bear with me while I resolve this, or feel free to try your question again.",
@@ -802,7 +802,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
         }, typingDelay);
         
       } catch (error) {
-        console.error('Error in AI response handling:', error);
+        // Silent error handling
         // Show typing indicator even for error
         setIsTyping(true);
         setTypingText(`${chatState.agentName} is typing...`);
