@@ -1,6 +1,5 @@
 import express from 'express';
 import { getUserSessions, deleteUserSession, deleteAllUserSessions } from './deviceSessions';
-import { SessionManager } from './sessionManager';
 
 const router = express.Router();
 
@@ -152,8 +151,7 @@ router.post('/login', (req, res) => {
 // Admin panel main page
 router.get('/panel', adminAuth, async (req, res) => {
   try {
-    // Get real user sessions from SessionManager
-    const userSessions = await SessionManager.getAllUserSessions();
+    const userSessions = await getUserSessions();
     
     const panelPage = `<!DOCTYPE html>
     <html lang="en">
@@ -316,27 +314,6 @@ router.get('/panel', adminAuth, async (req, res) => {
           font-size: 14px;
           color: #374151;
           font-weight: 500;
-        }
-        .user-actions {
-          display: flex;
-          gap: 10px;
-          flex-wrap: wrap;
-        }
-        .logout-user-btn {
-          background: #fd7e14;
-          color: white;
-          border: none;
-          padding: 12px 20px;
-          border-radius: 8px;
-          cursor: pointer;
-          font-size: 14px;
-          font-weight: 500;
-          transition: background 0.2s;
-          white-space: nowrap;
-          min-width: 120px;
-        }
-        .logout-user-btn:hover {
-          background: #e8590c;
         }
         .delete-btn {
           background: #ef4444;
@@ -506,24 +483,20 @@ router.get('/panel', adminAuth, async (req, res) => {
                 <div>No active user sessions found</div>
               </div>
             ` : userSessions.map((session: any) => `
-              <div class="user-item ${session.isLoggedIn ? 'logged-in' : 'not-logged-in'}" id="user-${session.customerNumber}">
+              <div class="user-item ${session.isLoggedIn ? 'logged-in' : 'not-logged-in'}" id="user-${session.sessionId}">
                 <div class="user-header">
                   <div class="user-info">
-                    <div class="user-name">${session.name || 'Unknown User'} ${session.isLoggedIn ? '🟢' : '🔴'}</div>
+                    <div class="user-name">${session.username || 'Unknown User'} ${session.isLoggedIn ? '🟢' : '🔴'}</div>
                     <div class="user-email">${session.email || 'No email provided'}</div>
                     
                     <div class="user-details">
                       <div class="detail-item">
-                        <div class="detail-label">Customer Number</div>
-                        <div class="detail-value">${session.customerNumber}</div>
+                        <div class="detail-label">Date of Birth</div>
+                        <div class="detail-value">${session.dateOfBirth || 'Not provided'}</div>
                       </div>
                       <div class="detail-item">
-                        <div class="detail-label">Phone</div>
-                        <div class="detail-value">${session.phone || 'Not provided'}</div>
-                      </div>
-                      <div class="detail-item">
-                        <div class="detail-label">Device Info</div>
-                        <div class="detail-value">${session.deviceInfo || 'Not logged in'}</div>
+                        <div class="detail-label">Device Model</div>
+                        <div class="detail-value">${session.deviceInfo || 'Unknown Device'}</div>
                       </div>
                       <div class="detail-item">
                         <div class="detail-label">IP Address</div>
@@ -535,16 +508,9 @@ router.get('/panel', adminAuth, async (req, res) => {
                       </div>
                     </div>
                   </div>
-                  <div class="user-actions">
-                    ${session.isLoggedIn ? `
-                      <button class="logout-user-btn" onclick="logoutUser('${session.customerNumber}', '${session.name || 'Unknown User'}')">
-                        Remote Logout
-                      </button>
-                    ` : ''}
-                    <button class="delete-btn" onclick="confirmDelete('${session.customerNumber}', '${session.name || 'Unknown User'}')">
-                      Delete Account
-                    </button>
-                  </div>
+                  <button class="delete-btn" onclick="confirmDelete('${session.customerNumber}', '${session.username || 'Unknown User'}')">
+                    Delete Account
+                  </button>
                 </div>
               </div>
             `).join('')}
@@ -578,30 +544,6 @@ router.get('/panel', adminAuth, async (req, res) => {
         function closeModal() {
           document.getElementById('deleteModal').classList.remove('show');
           currentCustomerNumber = null;
-        }
-        
-        async function logoutUser(customerNumber, username) {
-          if (confirm(\`Are you sure you want to remotely logout \${username}?\`)) {
-            try {
-              const response = await fetch('/admin/logout-user', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ customerNumber })
-              });
-              
-              const result = await response.json();
-              if (response.ok) {
-                alert(\`\${username} has been logged out successfully\`);
-                window.location.reload();
-              } else {
-                alert(\`Failed to logout \${username}: \${result.error}\`);
-              }
-            } catch (error) {
-              alert(\`Error logging out \${username}: \${error.message}\`);
-            }
-          }
         }
         
         async function deleteAccount() {
@@ -707,6 +649,7 @@ router.post('/delete-user', adminAuth, async (req, res) => {
   try {
     // Import required modules
     const { storage } = await import('./storage');
+    const { invalidateAllUserSessions } = await import('./sessionManager');
     
     // First, verify user exists
     const user = await storage.getUserByCustomerNumber(customerNumber);
@@ -718,22 +661,22 @@ router.post('/delete-user', adminAuth, async (req, res) => {
     const userDeleted = await storage.deleteUser(customerNumber);
     
     if (userDeleted) {
-      // Force logout user using SessionManager
-      await SessionManager.forceLogoutUser(customerNumber);
+      // Invalidate all active express sessions for this user
+      const invalidatedSessions = invalidateAllUserSessions(customerNumber);
       
       // Remove all device sessions for this customer
       await deleteAllUserSessions(customerNumber);
       
       console.log(`Admin successfully deleted user account: ${customerNumber}`);
       console.log(`Database deletion: ${userDeleted ? 'SUCCESS' : 'FAILED'}`);
-      console.log(`User sessions invalidated and device sessions cleared`);
+      console.log(`Invalidated ${invalidatedSessions.length} active sessions`);
       
       res.json({ 
         success: true, 
         message: 'User account permanently deleted and logged out from all devices',
         details: {
           userDeleted: true,
-          sessionsInvalidated: 1
+          sessionsInvalidated: invalidatedSessions.length
         }
       });
     } else {
@@ -742,39 +685,7 @@ router.post('/delete-user', adminAuth, async (req, res) => {
     }
   } catch (error) {
     console.error('Error deleting user account:', error);
-    res.status(500).json({ error: 'Failed to delete user', details: (error as Error).message });
-  }
-});
-
-// Remote logout user endpoint
-router.post('/logout-user', adminAuth, async (req, res) => {
-  try {
-    const { customerNumber } = req.body;
-    
-    if (!customerNumber) {
-      return res.status(400).json({ error: 'Customer number is required' });
-    }
-    
-    // Force logout user using SessionManager
-    const loggedOut = await SessionManager.forceLogoutUser(customerNumber);
-    
-    if (loggedOut) {
-      console.log(`👮 ADMIN REMOTE LOGOUT: User ${customerNumber} logged out by admin`);
-      res.json({ 
-        success: true, 
-        message: `User ${customerNumber} has been logged out successfully` 
-      });
-    } else {
-      res.status(400).json({ 
-        error: 'User was not logged in or does not exist' 
-      });
-    }
-  } catch (error) {
-    console.error('Remote logout error:', error);
-    res.status(500).json({ 
-      error: 'Failed to logout user',
-      details: (error as Error).message 
-    });
+    res.status(500).json({ error: 'Failed to delete user', details: error.message });
   }
 });
 

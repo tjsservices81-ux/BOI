@@ -82,8 +82,7 @@ export default function IbanTransfer() {
     if (selectedPayeeData) {
       try {
         const payee = JSON.parse(selectedPayeeData);
-        
-        if (payee.transferType === 'SEPA Transfer' && payee.accountInfo) {
+        if (payee.transferType === 'IBAN Transfer' && payee.accountInfo) {
           // Pre-fill form with payee data
           form.setValue('recipientName', payee.name);
           form.setValue('iban', payee.accountInfo);
@@ -92,8 +91,6 @@ export default function IbanTransfer() {
           if (payee.bicCode) {
             form.setValue('bicCode', payee.bicCode);
           }
-          
-
           
           // Clear the session storage after using
           sessionStorage.removeItem('selectedPayee');
@@ -599,23 +596,12 @@ export default function IbanTransfer() {
                 placeholder="GB29 NWBK 6016 1331 9268 19"
                 className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
                 style={{ fontFamily: 'OpenSans, sans-serif' }}
-                onInput={(e) => {
-                  // Format IBAN with spaces for better readability - use onInput instead of onChange
-                  const target = e.target as HTMLInputElement;
-                  const cursorPosition = target.selectionStart || 0;
-                  const value = target.value.replace(/\s/g, '').toUpperCase();
+                onChange={(e) => {
+                  // Format IBAN with spaces for better readability
+                  const value = e.target.value.replace(/\s/g, '').toUpperCase();
                   const formatted = value.replace(/(.{4})/g, '$1 ').trim();
-                  
-                  // Calculate new cursor position after formatting
-                  const newCursorPosition = cursorPosition + (formatted.length - target.value.length);
-                  
-                  target.value = formatted;
+                  e.target.value = formatted;
                   form.setValue('iban', value);
-                  
-                  // Restore cursor position
-                  setTimeout(() => {
-                    target.setSelectionRange(newCursorPosition, newCursorPosition);
-                  }, 0);
                 }}
               />
               {form.formState.errors.iban && (
@@ -633,19 +619,11 @@ export default function IbanTransfer() {
                 placeholder="NWBKGB2L"
                 className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
                 style={{ fontFamily: 'OpenSans, sans-serif' }}
-                onInput={(e) => {
-                  // Format BIC code to uppercase - use onInput instead of onChange
-                  const target = e.target as HTMLInputElement;
-                  const cursorPosition = target.selectionStart || 0;
-                  const value = target.value.replace(/\s/g, '').toUpperCase();
-                  
-                  target.value = value;
+                onChange={(e) => {
+                  // Format BIC code to uppercase
+                  const value = e.target.value.replace(/\s/g, '').toUpperCase();
+                  e.target.value = value;
                   form.setValue('bicCode', value);
-                  
-                  // Restore cursor position
-                  setTimeout(() => {
-                    target.setSelectionRange(cursorPosition, cursorPosition);
-                  }, 0);
                 }}
               />
               {form.formState.errors.bicCode && (

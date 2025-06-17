@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,12 +42,6 @@ export default function Login() {
   const [locationError, setLocationError] = useState<string | null>(null);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [nearbyATMs, setNearbyATMs] = useState<any[]>([]);
-  
-  // Input refs for proper focus management in PWA
-  const nameInputRef = useRef<HTMLInputElement>(null);
-  const emailInputRef = useRef<HTMLInputElement>(null);
-  const phoneInputRef = useRef<HTMLInputElement>(null);
-  
   const authHook = useAuth();
   const login = authHook?.login || (() => {});
   const isLoading = authHook?.isLoading || false;
@@ -83,62 +77,6 @@ export default function Login() {
     
     setValidatedUsers(validUsers);
   };
-
-  // PWA Focus Management - Ensures keyboard shows on input tap
-  const handleInputFocus = (inputRef: React.RefObject<HTMLInputElement>) => {
-    if (inputRef.current) {
-      // Simple focus without viewport manipulation
-      inputRef.current.focus();
-    }
-  };
-
-  // Simplified input touch handler for PWA
-  const handleInputTouch = (inputRef: React.RefObject<HTMLInputElement>) => {
-    return (e: React.TouchEvent) => {
-      // Allow natural touch behavior without interference
-      if (inputRef.current && !inputRef.current.matches(':focus')) {
-        inputRef.current.focus();
-      }
-    };
-  };
-
-  // Reset form state when modal opens to ensure clean mounting
-  const resetSignUpForm = () => {
-    setNewUserData({
-      name: '',
-      email: '',
-      phone: '',
-      customerNumber: ''
-    });
-    // Clear any stale focus states
-    setTimeout(() => {
-      [nameInputRef, emailInputRef, phoneInputRef].forEach(ref => {
-        if (ref.current) {
-          ref.current.blur();
-        }
-      });
-    }, 50);
-  };
-
-  // PWA Modal Focus Management - Ensures proper input mounting
-  useEffect(() => {
-    if (showSignUp) {
-      // Force DOM reflow and ensure inputs are properly mounted
-      setTimeout(() => {
-        const inputs = [nameInputRef, emailInputRef, phoneInputRef];
-        inputs.forEach(ref => {
-          if (ref.current) {
-            // Remove any readonly or disabled states
-            ref.current.removeAttribute('readonly');
-            ref.current.removeAttribute('disabled');
-            // Ensure proper touch handling
-            ref.current.style.pointerEvents = 'auto';
-            ref.current.style.touchAction = 'manipulation';
-          }
-        });
-      }, 200);
-    }
-  }, [showSignUp]);
 
   // Assets are always loaded - no delays
   useEffect(() => {
@@ -1298,24 +1236,8 @@ export default function Login() {
 
       {/* Sign Up Modal */}
       {showSignUp && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
-          style={{ 
-            touchAction: 'manipulation',
-            WebkitTouchCallout: 'none',
-            WebkitUserSelect: 'none',
-            userSelect: 'none'
-          }}
-        >
-          <div 
-            className="bg-white rounded-2xl w-full max-w-md p-6 max-h-[80vh] overflow-y-auto"
-            style={{
-              touchAction: 'auto',
-              WebkitUserSelect: 'text',
-              userSelect: 'text',
-              pointerEvents: 'auto'
-            }}
-          >
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 max-h-[80vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                 Create New Account
@@ -1340,23 +1262,12 @@ export default function Login() {
                   Full Name *
                 </label>
                 <input
-                  ref={nameInputRef}
                   type="text"
                   value={newUserData.name}
                   onChange={(e) => setNewUserData({...newUserData, name: e.target.value})}
-                  onFocus={() => handleInputFocus(nameInputRef)}
-                  onTouchStart={handleInputTouch(nameInputRef)}
-                  className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  style={{ 
-                    fontFamily: 'OpenSans, sans-serif',
-                    touchAction: 'manipulation',
-                    WebkitUserSelect: 'text',
-                    userSelect: 'text',
-                    pointerEvents: 'auto'
-                  }}
+                  className="w-full p-3 border border-gray-300 rounded-xl"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
                   placeholder="Enter your full name"
-                  autoComplete="name"
-                  inputMode="text"
                   required
                 />
               </div>
@@ -1366,23 +1277,12 @@ export default function Login() {
                   Email Address *
                 </label>
                 <input
-                  ref={emailInputRef}
                   type="email"
                   value={newUserData.email}
                   onChange={(e) => setNewUserData({...newUserData, email: e.target.value})}
-                  onFocus={() => handleInputFocus(emailInputRef)}
-                  onTouchStart={handleInputTouch(emailInputRef)}
-                  className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  style={{ 
-                    fontFamily: 'OpenSans, sans-serif',
-                    touchAction: 'manipulation',
-                    WebkitUserSelect: 'text',
-                    userSelect: 'text',
-                    pointerEvents: 'auto'
-                  }}
+                  className="w-full p-3 border border-gray-300 rounded-xl"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
                   placeholder="Enter your email address"
-                  autoComplete="email"
-                  inputMode="email"
                   required
                 />
               </div>
@@ -1392,23 +1292,12 @@ export default function Login() {
                   Phone Number *
                 </label>
                 <input
-                  ref={phoneInputRef}
                   type="tel"
                   value={newUserData.phone}
                   onChange={(e) => setNewUserData({...newUserData, phone: e.target.value})}
-                  onFocus={() => handleInputFocus(phoneInputRef)}
-                  onTouchStart={handleInputTouch(phoneInputRef)}
-                  className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  style={{ 
-                    fontFamily: 'OpenSans, sans-serif',
-                    touchAction: 'manipulation',
-                    WebkitUserSelect: 'text',
-                    userSelect: 'text',
-                    pointerEvents: 'auto'
-                  }}
+                  className="w-full p-3 border border-gray-300 rounded-xl"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
                   placeholder="+353 XX XXX XXXX"
-                  autoComplete="tel"
-                  inputMode="tel"
                   required
                 />
               </div>
@@ -1543,7 +1432,6 @@ export default function Login() {
                 <button
                   onClick={() => {
                     setShowAdminLogin(false);
-                    resetSignUpForm();
                     setShowSignUp(true);
                   }}
                   className="w-full p-3 bg-green-50 text-green-600 rounded-xl font-medium active:scale-98 transition-transform"
@@ -1552,11 +1440,31 @@ export default function Login() {
                   Create New Account
                 </button>
                 
-                {/* LOGOUT REMOVED - Only allowed through Profile > Admin Panel (5 logo taps) */}
-                <div className="w-full p-3 bg-gray-50 text-gray-400 rounded-xl font-medium opacity-50 cursor-not-allowed text-center"
-                     style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Logout from Profile → Tap logo 5 times
-                </div>
+                <button
+                  onClick={() => {
+                    // Clear current user session completely
+                    UserDataManager.clearCurrentUser();
+                    setShowAdminLogin(false);
+                    setCustomerNumber('');
+                    setPin('');
+                    setBiometricVerified(false);
+                    setPinVerified(false);
+                    setIsScanning(false);
+                    setShowPinLogin(false);
+                    
+                    // Force refresh of the component state
+                    window.location.reload();
+                    
+                    toast({
+                      title: "Session Cleared",
+                      description: "All active sessions have been terminated.",
+                    });
+                  }}
+                  className="w-full p-3 bg-red-50 text-red-600 rounded-xl font-medium active:scale-98 transition-transform"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  Sign Out & Clear Session
+                </button>
               </div>
             </div>
           </div>

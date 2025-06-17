@@ -10,7 +10,7 @@ import { transferSecurityService } from "./security/transferSecurity";
 import { generateChatResponse } from "./openai";
 import { isDeviceBlocked, addDeviceSession, isDeviceInPanicMode, isCustomerInPanicMode } from "./deviceSessions";
 import { isAccountActiveOnOtherDevice, setUserDeviceSession, removeUserDeviceSession, getUserDeviceSession, isCurrentDeviceAuthorized } from "./deviceExclusiveAuth";
-// Removed invalid sessionManager imports - using device exclusive auth instead
+import { addUserSession, removeUserSession, sessionTrackingMiddleware, isSessionValid } from "./sessionManager";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Wait for storage to fully initialize from persistent data
@@ -37,7 +37,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     rolling: true, // Refresh session on each request
   }));
 
-  // Session tracking removed - using device exclusive auth instead
+  // Add session tracking middleware
+  app.use(sessionTrackingMiddleware);
 
   // Authentication middleware
   const requireAuth = (req: any, res: any, next: any) => {
@@ -233,7 +234,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       (req as any).session.user = { id: user.id, name: user.name, email: user.email };
       (req as any).session.deviceSessionId = deviceSessionId;
 
-      // Device session registered with exclusive auth system
+      // Register session for tracking and invalidation
+      addUserSession(req.sessionID, user.customerNumber, user.id);
 
       console.log(`📱 NEW DEVICE SESSION: ${deviceModel} (${ipAddress}) - Session: ${deviceSessionId}`);
       console.log(`🔒 ACCOUNT LOCKED TO DEVICE: User ${user.id} locked to ${deviceModel}`);
@@ -263,23 +265,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // CONTROLLED LOGOUT - Only through admin panel (5 logo taps)
+  // Logout
   app.post("/api/auth/logout", (req, res) => {
     const userId = (req as any).session?.userId;
+    const deviceSessionId = (req as any).session?.deviceSessionId;
     
-    console.log('🔐 Admin-controlled logout initiated');
+    // Remove session from tracking
+    if (req.sessionID) {
+      removeUserSession(req.sessionID);
+    }
     
-    // Release device lock when admin logs out user
+    // Release device lock when user logs out
     if (userId) {
       removeUserDeviceSession(userId);
-      console.log(`👮 ADMIN LOGOUT: User ${userId} logged out via admin panel and device lock released`);
+      console.log(`🔓 USER LOGOUT: User ${userId} logged out and device lock released`);
     }
     
     (req as any).session.destroy((err: any) => {
       if (err) {
-        return res.status(500).json({ message: "Admin logout failed" });
+        return res.status(500).json({ message: "Could not log out" });
       }
-      res.json({ message: "Admin logout successful" });
+      res.json({ message: "Logged out successfully" });
     });
   });
 
@@ -382,8 +388,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Internal server error" });
     }
   });
-
-
 
   // Get user profile
   app.get("/api/profile/:customerNumber", async (req, res) => {

@@ -1,142 +1,109 @@
-import { storage } from './storage';
+// Global session management for user account deletion and logout
+import { Request } from 'express';
 
 interface UserSession {
+  sessionId: string;
   customerNumber: string;
-  name: string;
-  email: string;
-  phone: string | null;
-  isLoggedIn: boolean;
-  lastLoginTime: string | null;
-  deviceInfo: string;
-  ipAddress: string;
-  sessionStartTime: string | null;
+  userId: number;
+  loginTime: Date;
+  lastActivity: Date;
 }
 
-// In-memory session tracking
-let userSessions: Map<string, UserSession> = new Map();
+// Track all active user sessions
+const activeSessions = new Map<string, UserSession>();
+const userSessionMap = new Map<string, Set<string>>(); // customerNumber -> Set of sessionIds
 
-export class SessionManager {
-  // Initialize session for a user (login)
-  static async loginUser(customerNumber: string, deviceInfo: string, ipAddress: string): Promise<void> {
-    try {
-      // Get user data from database
-      const user = await storage.getUserByCustomerNumber(customerNumber);
-      if (!user) {
-        console.warn(`Session login failed: User ${customerNumber} not found`);
-        return;
+export function addUserSession(sessionId: string, customerNumber: string, userId: number): void {
+  const session: UserSession = {
+    sessionId,
+    customerNumber,
+    userId,
+    loginTime: new Date(),
+    lastActivity: new Date()
+  };
+  
+  activeSessions.set(sessionId, session);
+  
+  // Add to user's session set
+  if (!userSessionMap.has(customerNumber)) {
+    userSessionMap.set(customerNumber, new Set());
+  }
+  userSessionMap.get(customerNumber)!.add(sessionId);
+  
+  console.log(`Session added for customer ${customerNumber}: ${sessionId}`);
+}
+
+export function removeUserSession(sessionId: string): void {
+  const session = activeSessions.get(sessionId);
+  if (session) {
+    const customerNumber = session.customerNumber;
+    activeSessions.delete(sessionId);
+    
+    // Remove from user's session set
+    const userSessions = userSessionMap.get(customerNumber);
+    if (userSessions) {
+      userSessions.delete(sessionId);
+      if (userSessions.size === 0) {
+        userSessionMap.delete(customerNumber);
       }
-
-      const session: UserSession = {
-        customerNumber,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        isLoggedIn: true,
-        lastLoginTime: new Date().toISOString(),
-        deviceInfo,
-        ipAddress,
-        sessionStartTime: new Date().toISOString()
-      };
-
-      userSessions.set(customerNumber, session);
-      console.log(`✅ Session created for user ${customerNumber} (${user.name})`);
-    } catch (error) {
-      console.error('Session login error:', error);
     }
-  }
-
-  // End session for a user (logout)
-  static async logoutUser(customerNumber: string): Promise<void> {
-    const session = userSessions.get(customerNumber);
-    if (session) {
-      session.isLoggedIn = false;
-      session.sessionStartTime = null;
-      userSessions.set(customerNumber, session);
-      console.log(`🔐 Session ended for user ${customerNumber} (${session.name})`);
-    }
-  }
-
-  // Check if user is currently logged in
-  static isUserLoggedIn(customerNumber: string): boolean {
-    const session = userSessions.get(customerNumber);
-    return session ? session.isLoggedIn : false;
-  }
-
-  // Get all user sessions for admin panel
-  static async getAllUserSessions(): Promise<UserSession[]> {
-    try {
-      // Get all users from database
-      const allUsers = await storage.getAllUsers();
-      
-      // Update sessions with latest user data
-      for (const user of allUsers) {
-        const existingSession = userSessions.get(user.customerNumber);
-        
-        if (existingSession) {
-          // Update existing session with latest user data
-          existingSession.name = user.name;
-          existingSession.email = user.email;
-          existingSession.phone = user.phone;
-        } else {
-          // Create session entry for users who haven't logged in yet
-          const newSession: UserSession = {
-            customerNumber: user.customerNumber,
-            name: user.name,
-            email: user.email,
-            phone: user.phone,
-            isLoggedIn: false,
-            lastLoginTime: null,
-            deviceInfo: 'Not logged in',
-            ipAddress: 'N/A',
-            sessionStartTime: null
-          };
-          userSessions.set(user.customerNumber, newSession);
-        }
-      }
-
-      return Array.from(userSessions.values());
-    } catch (error) {
-      console.error('Error getting user sessions:', error);
-      return [];
-    }
-  }
-
-  // Get session info for specific user
-  static getUserSession(customerNumber: string): UserSession | null {
-    return userSessions.get(customerNumber) || null;
-  }
-
-  // Force logout user (admin action)
-  static async forceLogoutUser(customerNumber: string): Promise<boolean> {
-    const session = userSessions.get(customerNumber);
-    if (session && session.isLoggedIn) {
-      await this.logoutUser(customerNumber);
-      console.log(`👮 ADMIN FORCE LOGOUT: User ${customerNumber} (${session.name}) forcibly logged out`);
-      return true;
-    }
-    return false;
-  }
-
-  // Get login statistics
-  static getLoginStats(): { totalUsers: number; loggedIn: number; neverLoggedIn: number } {
-    const sessions = Array.from(userSessions.values());
-    const totalUsers = sessions.length;
-    const loggedIn = sessions.filter(s => s.isLoggedIn).length;
-    const neverLoggedIn = sessions.filter(s => !s.lastLoginTime).length;
-
-    return { totalUsers, loggedIn, neverLoggedIn };
-  }
-
-  // Initialize sessions for existing users
-  static async initializeSessions(): Promise<void> {
-    try {
-      await this.getAllUserSessions(); // This will populate sessions for all users
-      console.log('Session manager initialized');
-    } catch (error) {
-      console.error('Session manager initialization error:', error);
-    }
+    
+    console.log(`Session removed for customer ${customerNumber}: ${sessionId}`);
   }
 }
 
-// Export the session manager instance
-export const sessionManager = SessionManager;
+export function updateSessionActivity(sessionId: string): void {
+  const session = activeSessions.get(sessionId);
+  if (session) {
+    session.lastActivity = new Date();
+  }
+}
+
+export function invalidateAllUserSessions(customerNumber: string): string[] {
+  const userSessions = userSessionMap.get(customerNumber);
+  const invalidatedSessions: string[] = [];
+  
+  if (userSessions) {
+    Array.from(userSessions).forEach(sessionId => {
+      activeSessions.delete(sessionId);
+      invalidatedSessions.push(sessionId);
+    });
+    userSessionMap.delete(customerNumber);
+    console.log(`Invalidated ${invalidatedSessions.length} sessions for customer ${customerNumber}`);
+  }
+  
+  return invalidatedSessions;
+}
+
+export function isSessionValid(sessionId: string, customerNumber: string): boolean {
+  const session = activeSessions.get(sessionId);
+  return session !== undefined && session.customerNumber === customerNumber;
+}
+
+export function getUserActiveSessions(customerNumber: string): UserSession[] {
+  const userSessions = userSessionMap.get(customerNumber);
+  const sessions: UserSession[] = [];
+  
+  if (userSessions) {
+    Array.from(userSessions).forEach(sessionId => {
+      const session = activeSessions.get(sessionId);
+      if (session) {
+        sessions.push(session);
+      }
+    });
+  }
+  
+  return sessions;
+}
+
+export function getAllActiveSessions(): UserSession[] {
+  return Array.from(activeSessions.values());
+}
+
+// Express middleware to track session activity
+export function sessionTrackingMiddleware(req: Request & { session?: any }, res: any, next: any): void {
+  if (req.session && req.session.userId && req.sessionID) {
+    updateSessionActivity(req.sessionID);
+  }
+  next();
+}
