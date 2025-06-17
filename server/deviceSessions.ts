@@ -209,8 +209,6 @@ export function deleteUserSession(sessionId: string): boolean {
     
     // Also clean up any user data files if needed
     try {
-      const fs = require('fs');
-      const path = require('path');
       const userDataPath = path.join(process.cwd(), 'userData.json');
       
       if (fs.existsSync(userDataPath)) {
