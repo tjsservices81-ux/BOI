@@ -606,6 +606,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User validation endpoint for biometric login
+  app.post("/api/validate-user", async (req, res) => {
+    try {
+      const { customerNumber } = req.body;
+      
+      if (!customerNumber) {
+        return res.status(400).json({ exists: false, message: "Customer number required" });
+      }
+      
+      // Check if user exists in database
+      const user = await storage.getUserByCustomerNumber(customerNumber);
+      
+      res.json({ 
+        exists: !!user,
+        customerNumber: customerNumber
+      });
+    } catch (error) {
+      console.error('User validation error:', error);
+      res.status(500).json({ exists: false, message: "Validation failed" });
+    }
+  });
+
   // Security API endpoints for voice call confirmation
   app.post("/api/security/initiate-transfer", async (req, res) => {
     try {

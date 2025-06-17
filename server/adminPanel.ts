@@ -671,6 +671,9 @@ router.post('/delete-user', adminAuth, async (req, res) => {
       console.log(`Database deletion: ${userDeleted ? 'SUCCESS' : 'FAILED'}`);
       console.log(`Invalidated ${invalidatedSessions.length} active sessions`);
       
+      // Broadcast deletion event to all connected clients
+      req.app.locals.io?.emit('adminUserDeleted', { customerNumber });
+      
       res.json({ 
         success: true, 
         message: 'User account permanently deleted and logged out from all devices',

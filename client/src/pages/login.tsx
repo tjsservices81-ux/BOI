@@ -100,6 +100,36 @@ export default function Login() {
     setPinVerified(false);
     setLogoTapCount(0);
     setShowAdminLogin(false);
+
+    // Listen for admin deletion events to immediately clear biometric sessions
+    const handleAdminDeletion = (event: CustomEvent) => {
+      const { customerNumber: deletedCustomer } = event.detail || {};
+      
+      // If current user was deleted, immediately clear everything
+      if (deletedCustomer === UserDataManager.getCurrentUser()) {
+        UserDataManager.clearCurrentUser();
+        setCustomerNumber('');
+        setBiometricVerified(false);
+        setPinVerified(false);
+        setIsScanning(false);
+        setShowPinLogin(false);
+        
+        toast({
+          title: "Account Removed",
+          description: "Your account has been removed by an administrator.",
+          variant: "destructive",
+        });
+      }
+      
+      // Clean up any cached data for deleted user
+      UserDataManager.adminDeleteUser(deletedCustomer);
+    };
+
+    window.addEventListener('adminUserDeleted', handleAdminDeletion as EventListener);
+    
+    return () => {
+      window.removeEventListener('adminUserDeleted', handleAdminDeletion as EventListener);
+    };
   }, []);
 
   // Validate users when Admin Access dialog opens
@@ -301,7 +331,7 @@ export default function Login() {
     }
   };
 
-  const handleBiometricHoldStart = () => {
+  const handleBiometricHoldStart = async () => {
     if (biometricVerified) return;
     
     // Check if any users exist first
@@ -313,6 +343,62 @@ export default function Login() {
         variant: "destructive",
       });
       return;
+    }
+
+    // Validate account exists on server before proceeding
+    let targetUser = null;
+    if (customerNumber && customerNumber.trim()) {
+      targetUser = customerNumber;
+    } else {
+      const lastActiveUser = UserDataManager.getLastActiveUser();
+      if (lastActiveUser) {
+        targetUser = lastActiveUser;
+      } else {
+        const userKeys = Object.keys(allUsers);
+        if (userKeys.length > 0) {
+          targetUser = userKeys[0];
+        }
+      }
+    }
+
+    if (targetUser) {
+      try {
+        const response = await fetch('/api/validate-user', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ customerNumber: targetUser }),
+        });
+
+        if (!response.ok || !(await response.json()).exists) {
+          // Account deleted on server - remove from local storage
+          UserDataManager.removeUser(targetUser);
+          if (UserDataManager.getCurrentUser() === targetUser) {
+            UserDataManager.clearCurrentUser();
+          }
+          
+          toast({
+            title: "Account Not Found",
+            description: "This account has been removed. Please contact support if you believe this is an error.",
+            variant: "destructive",
+          });
+          
+          // Clear form and reset state
+          setCustomerNumber('');
+          setBiometricVerified(false);
+          setPinVerified(false);
+          return;
+        }
+      } catch (error) {
+        console.error('Account validation failed:', error);
+        toast({
+          title: "Connection Error",
+          description: "Unable to verify account. Please check your connection and try again.",
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     // If customer number is entered, validate it exists
