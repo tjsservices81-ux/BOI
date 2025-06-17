@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { ChevronLeft, Info, Check, CreditCard, Globe } from "lucide-react";
+import { ChevronLeft, Info, Check, CreditCard, Globe, X } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -30,7 +30,7 @@ type IbanTransferData = z.infer<typeof ibanTransferSchema>;
 export default function IbanTransfer() {
   const locationHook = useLocation();
   const [, navigate] = locationHook || [null, () => {}];
-  const [step, setStep] = useState<'form' | 'confirm' | 'security' | 'success'>('form');
+  const [step, setStep] = useState<'form' | 'confirm' | 'security' | 'success' | 'cancelled'>('form');
   const [transferReference, setTransferReference] = useState<string>('');
   const [showReference, setShowReference] = useState<boolean>(false);
   const [animationProgress, setAnimationProgress] = useState<number>(0);
@@ -115,6 +115,16 @@ export default function IbanTransfer() {
 
   const executeTransfer = async () => {
     if (!formData) return;
+    
+    // Check if user has sufficient funds before processing
+    const selectedAccount = accounts.find(acc => acc.id.toString() === formData.fromAccount);
+    const transferAmount = parseFloat(formData.amount);
+    
+    if (!selectedAccount || selectedAccount.balance < transferAmount) {
+      // Show insufficient funds error immediately
+      setStep('cancelled');
+      return;
+    }
     
     // Generate unique reference number
     const ref = generateReference();
@@ -352,6 +362,61 @@ export default function IbanTransfer() {
                 </div>
               </>
             )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (step === 'cancelled') {
+    return (
+      <div className="page-container page-fade-in" style={{ 
+        position: 'fixed', 
+        top: 0, 
+        left: 0, 
+        right: 0, 
+        bottom: 0, 
+        display: 'flex', 
+        flexDirection: 'column',
+        backgroundColor: '#f9fafb'
+      }}>
+        <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
+          <button onClick={() => setStep('form')} className="flex items-center text-white">
+            <ChevronLeft className="w-6 h-6 mr-2" />
+            <span className="font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Transfer Failed</span>
+          </button>
+        </div>
+
+        <div className="px-4 py-6 flex-1 flex items-center justify-center">
+          <div className="text-center max-w-sm mx-auto">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <X className="w-8 h-8 text-red-600" />
+            </div>
+            
+            <h1 className="text-xl font-semibold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              Not enough balance to complete this transfer.
+            </h1>
+            
+            <p className="text-gray-600 mb-6 text-sm leading-relaxed" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              Please check your account balance and try again.
+            </p>
+
+            <div className="flex space-x-3">
+              <button 
+                onClick={() => navigate('/dashboard')}
+                className="flex-1 bg-[#126987] text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform text-sm"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              >
+                Back to Dashboard
+              </button>
+              <button 
+                onClick={() => setStep('form')}
+                className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold active:scale-98 transition-transform text-sm"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              >
+                Try Again
+              </button>
+            </div>
           </div>
         </div>
       </div>
