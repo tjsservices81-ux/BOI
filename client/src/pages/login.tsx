@@ -82,18 +82,8 @@ export default function Login() {
   useEffect(() => {
     setAssetsLoaded(true);
     
-    // For cold starts, clear all auth state and require fresh login
-    const wasColdStart = sessionStorage.getItem('app_cold_start') === 'true' || 
-                        !sessionStorage.getItem('splashShown');
-    
-    if (wasColdStart) {
-      // Cold start - clear all authentication data
-      UserDataManager.clearCurrentUser();
-      localStorage.removeItem('bankingUser');
-      localStorage.removeItem('lastActiveUser');
-    }
-    
-    // Clear form fields regardless
+    // Never clear authentication data automatically - sessions persist
+    // Only clear form fields for fresh UI state
     setCustomerNumber('');
     setPin('');
     setBiometricVerified(false);

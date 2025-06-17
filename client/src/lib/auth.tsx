@@ -21,44 +21,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Initialize auth state on mount - check for valid session
+  // Initialize auth state on mount - always restore session if available
   useEffect(() => {
     let isMounted = true;
     
     const initializeAuth = async () => {
       try {
-        // Check if this is a cold start (app was closed and reopened)
-        const wasColdStart = sessionStorage.getItem('app_cold_start') === 'true';
-        
-        if (wasColdStart) {
-          // Cold start - clear all auth state and require fresh login
-          localStorage.removeItem('bankingUser');
-          if (isMounted) {
-            setUser(null);
-            setIsLoading(false);
-            setIsInitialized(true);
+        // Always check for cached user - no cold start clearing
+        const cachedUser = localStorage.getItem('bankingUser');
+        if (cachedUser && isMounted) {
+          try {
+            const parsedUser = JSON.parse(cachedUser);
+            setUser(parsedUser);
+          } catch (error) {
+            console.error('Error parsing cached user:', error);
+            // Don't clear on error - keep session data
           }
-          sessionStorage.removeItem('app_cold_start');
-        } else {
-          // Normal navigation - check for cached user
-          const cachedUser = localStorage.getItem('bankingUser');
-          if (cachedUser && isMounted) {
-            try {
-              const parsedUser = JSON.parse(cachedUser);
-              setUser(parsedUser);
-            } catch (error) {
-              localStorage.removeItem('bankingUser');
-              setUser(null);
-            }
-          }
-          if (isMounted) {
-            setIsLoading(false);
-            setIsInitialized(true);
-          }
+        }
+        if (isMounted) {
+          setIsLoading(false);
+          setIsInitialized(true);
         }
       } catch (error) {
         if (isMounted) {
-          setUser(null);
           setIsLoading(false);
           setIsInitialized(true);
         }

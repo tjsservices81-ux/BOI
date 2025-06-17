@@ -31,32 +31,8 @@ export class AppLifecycle {
   }
 
   static checkAppTermination() {
-    const sessionData = localStorage.getItem('app_session_state');
-    const lastBackgroundTime = localStorage.getItem('app_background_time');
-    
-    if (!sessionData || !lastBackgroundTime) {
-      // No previous session or background time - fresh start
-      this.isAppTerminated = true;
-      this.clearAppState();
-      return;
-    }
-    
-    const backgroundDuration = Date.now() - parseInt(lastBackgroundTime);
-    
-    // If backgrounded for more than session timeout, treat as terminated
-    if (backgroundDuration > this.SESSION_TIMEOUT) {
-      this.isAppTerminated = true;
-      this.clearAppState();
-      return;
-    }
-    
-    // Check if page was unloaded/refreshed (indicates force close or refresh)
-    if (!sessionStorage.getItem('app_active_session')) {
-      this.isAppTerminated = true;
-      this.clearAppState();
-      return;
-    }
-    
+    // Never auto-terminate sessions - only terminate if manually cleared
+    // Sessions persist across app restarts, backgrounding, and refreshes
     this.isAppTerminated = false;
   }
 
@@ -67,15 +43,8 @@ export class AppLifecycle {
       localStorage.setItem('app_background_time', this.backgroundTime.toString());
       this.saveCurrentState();
     } else {
-      // App returning to foreground
-      const backgroundDuration = Date.now() - this.backgroundTime;
-      
-      // If backgrounded for too long, treat as fresh start
-      if (backgroundDuration > this.SESSION_TIMEOUT) {
-        this.isAppTerminated = true;
-        this.clearAppState();
-        window.location.reload();
-      } else if (!this.isAppTerminated) {
+      // App returning to foreground - always restore state, no timeout check
+      if (!this.isAppTerminated) {
         this.restoreStateIfNeeded();
       }
     }

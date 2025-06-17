@@ -56,40 +56,28 @@ export class UserDataManager {
     return localStorage.getItem('lastActiveUser');
   }
 
-  // Session validation for biometric authentication
+  // Session validation for biometric authentication - persistent sessions
   static setSessionValid(customerNumber: string, isValid: boolean) {
     const sessionKey = `session_valid_${customerNumber}`;
     if (isValid) {
       localStorage.setItem(sessionKey, 'true');
-      localStorage.setItem(`session_timestamp_${customerNumber}`, Date.now().toString());
+      // Store creation time for audit purposes only - no expiry enforcement
+      localStorage.setItem(`session_created_${customerNumber}`, Date.now().toString());
     } else {
       localStorage.removeItem(sessionKey);
-      localStorage.removeItem(`session_timestamp_${customerNumber}`);
+      localStorage.removeItem(`session_created_${customerNumber}`);
     }
   }
 
   // Check if session is valid for biometric authentication
   static isSessionValid(customerNumber: string): boolean {
     const sessionKey = `session_valid_${customerNumber}`;
-    const timestampKey = `session_timestamp_${customerNumber}`;
     
+    // Session is valid if it exists in localStorage
+    // No expiry check - sessions persist until manually invalidated
     const isValid = localStorage.getItem(sessionKey) === 'true';
-    const timestamp = localStorage.getItem(timestampKey);
     
-    if (!isValid || !timestamp) {
-      return false;
-    }
-    
-    // Check if session is not older than 24 hours
-    const sessionAge = Date.now() - parseInt(timestamp);
-    const maxAge = 24 * 60 * 60 * 1000; // 24 hours
-    
-    if (sessionAge > maxAge) {
-      this.setSessionValid(customerNumber, false);
-      return false;
-    }
-    
-    return true;
+    return isValid;
   }
 
   // Invalidate session (called when admin logs out user)
