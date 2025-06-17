@@ -1414,6 +1414,18 @@ export default function Login() {
                 </p>
               </div>
 
+              {/* Terms & Conditions Message */}
+              <div style={{ paddingTop: '10px' }}>
+                <p style={{ 
+                  fontSize: '13px', 
+                  color: '#666',
+                  fontFamily: 'OpenSans, sans-serif',
+                  lineHeight: '1.4'
+                }}>
+                  ⚠️ Terms & Conditions: If you want to change your phone or you lose your phone, you'll get 1 free replacement account. After that, you'll need to pay for a new one.
+                </p>
+              </div>
+
               <div className="flex space-x-3 pt-4">
                 <button
                   type="button"
