@@ -1635,27 +1635,33 @@ export default function Profile() {
               </p>
 
               <div className="space-y-3">
-                {accounts && Array.isArray(accounts) ? accounts.map((account) => (
-                  <button
-                    key={account.id}
-                    onClick={() => addSampleTransaction(account.id)}
-                    className="w-full flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
-                  >
-                    <div className="text-left">
-                      <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        {account.displayName}
-                      </p>
-                      <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        {account.accountNumber}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-lg font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        €{account.balance}
-                      </p>
-                    </div>
-                  </button>
-                ))}
+                {accounts && Array.isArray(accounts) ? (
+                  accounts.map((account) => (
+                    <button
+                      key={account.id}
+                      onClick={() => addSampleTransaction(account.id)}
+                      className="w-full flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+                    >
+                      <div className="text-left">
+                        <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          {account.displayName}
+                        </p>
+                        <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          {account.accountNumber}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-lg font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          €{account.balance}
+                        </p>
+                      </div>
+                    </button>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    No account data found
+                  </div>
+                )}
               </div>
 
               <div className="mt-6">
@@ -2028,11 +2034,13 @@ export default function Profile() {
                     style={{ fontFamily: 'OpenSans, sans-serif' }}
                   >
                     <option value="">Choose an account...</option>
-                    {accounts.map((account) => (
+                    {accounts && Array.isArray(accounts) ? accounts.map((account) => (
                       <option key={account.id} value={account.id.toString()}>
                         {account.accountType} - €{account.balance}
                       </option>
-                    ))}
+                    )) : (
+                      <option value="" disabled>No accounts available</option>
+                    )}
                   </select>
                 </div>
 
