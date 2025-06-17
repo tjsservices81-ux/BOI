@@ -508,9 +508,14 @@ router.get('/panel', adminAuth, async (req, res) => {
                       </div>
                     </div>
                   </div>
-                  <button class="delete-btn" onclick="confirmDelete('${session.customerNumber}', '${session.username || 'Unknown User'}')">
-                    Delete Account
-                  </button>
+                  <div class="user-actions">
+                    <button class="logout-btn-user" onclick="logoutUser('${session.customerNumber}', '${session.username || 'Unknown User'}')">
+                      Force Logout
+                    </button>
+                    <button class="delete-btn" onclick="confirmDelete('${session.customerNumber}', '${session.username || 'Unknown User'}')">
+                      Delete Account
+                    </button>
+                  </div>
                 </div>
               </div>
             `).join('')}
@@ -537,7 +542,7 @@ router.get('/panel', adminAuth, async (req, res) => {
         function confirmDelete(customerNumber, username) {
           currentCustomerNumber = customerNumber;
           document.getElementById('deleteText').textContent = 
-            \`Are you sure you want to delete \${username}'s account? This will log the user out on all devices.\`;
+            'Are you sure you want to delete ' + username + "'s account? This will log the user out on all devices.";
           document.getElementById('deleteModal').classList.add('show');
         }
         
@@ -615,6 +620,34 @@ router.get('/panel', adminAuth, async (req, res) => {
           setTimeout(() => {
             window.location.reload();
           }, 1000);
+        }
+        
+        async function logoutUser(customerNumber, username) {
+          if (!confirm('Force logout ' + username + '? This will invalidate their session and disable biometric access.')) {
+            return;
+          }
+          
+          try {
+            const response = await fetch('/api/admin/logout-user', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ customerNumber })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+              alert(username + ' has been logged out from all devices. Biometric access revoked.');
+              updateStats();
+            } else {
+              alert('Failed to logout user: ' + result.message);
+            }
+          } catch (error) {
+            console.error('Error logging out user:', error);
+            alert('Error logging out user');
+          }
         }
         
         function logout() {
