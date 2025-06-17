@@ -317,21 +317,28 @@ export default function Login() {
       }
     }
 
-    // Session validation for biometric authentication
+    // Session validation for biometric authentication - only check if explicitly invalidated by admin
     if (targetUser) {
       const isSessionValid = UserDataManager.isSessionValid(targetUser);
       if (!isSessionValid) {
-        toast({
-          title: "Session Expired",
-          description: "Your session has been terminated. Please log in again using your customer number and PIN.",
-          variant: "destructive",
-        });
-        // Clear any stored authentication state
-        setBiometricVerified(false);
-        setPinVerified(false);
-        setCustomerNumber('');
-        UserDataManager.clearCurrentUser();
-        return;
+        // Check if this was an admin-initiated logout vs. a technical issue
+        const isAdminLogout = localStorage.getItem(`admin_logout_${targetUser}`);
+        if (isAdminLogout) {
+          toast({
+            title: "Session Expired",
+            description: "Your session has been terminated by an administrator. Please log in again using your customer number and PIN.",
+            variant: "destructive",
+          });
+          // Clear any stored authentication state
+          setBiometricVerified(false);
+          setPinVerified(false);
+          setCustomerNumber('');
+          return;
+        } else {
+          // Session invalid but not from admin - restore it for persistent sessions
+          console.log(`🔄 Restoring persistent session for user ${targetUser}`);
+          UserDataManager.setSessionValid(targetUser, true);
+        }
       }
     }
 
