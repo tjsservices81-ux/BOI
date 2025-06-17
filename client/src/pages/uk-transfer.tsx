@@ -7,6 +7,7 @@ import { z } from "zod";
 import { validateUKSortCode, formatSortCode, validateUKAccountNumber } from "../utils/bankValidation";
 import { getAccounts, processTransfer, processSecureTransfer, checkTransferConfirmation, processConfirmedTransfer, generateReference } from "../utils/transferUtils";
 import { UserDataManager } from "../utils/userDataManager";
+import { formatAmount } from "../utils/currency";
 
 // Known sort codes for bank identification
 const knownSortCodes: Record<string, string> = {
@@ -88,6 +89,7 @@ export default function UkTransfer() {
   const [exchangeRate, setExchangeRate] = useState<number>(0.85); // EUR to GBP rate
   const [gbpAmount, setGbpAmount] = useState<string>('0.00');
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('left');
+  const [userCurrency, setUserCurrency] = useState('GBP');
 
   const form = useForm<UkTransferData>({
     resolver: zodResolver(ukTransferSchema),
@@ -146,6 +148,10 @@ export default function UkTransfer() {
     };
     
     loadAccounts();
+    
+    // Load user currency
+    const currency = UserDataManager.getUserCurrency();
+    setUserCurrency(currency);
     
     // Listen for account updates from admin panel
     const handleAccountsUpdate = (event: CustomEvent) => {

@@ -531,10 +531,10 @@ export default function TransactionHistoryWorking() {
                     </div>
 
                     <div className="flex justify-between">
-                      <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>GBP Equivalent:</span>
+                      <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Converted Amount:</span>
                       <div className="text-right">
                         <span className="font-semibold text-green-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          £{selectedTransaction.convertedAmount}
+                          {formatAmount(selectedTransaction.convertedAmount, selectedTransaction.convertedCurrency || userCurrency)}
                         </span>
                         <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                           Live rate at time of transfer
