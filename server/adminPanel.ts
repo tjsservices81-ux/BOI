@@ -615,27 +615,45 @@ router.post('/delete-user', adminAuth, async (req, res) => {
   }
   
   try {
-    // Use the session-based deletion which handles complete user account removal
-    // Find a session for this customer to use with deleteUserSession
-    const allSessions = await getUserSessions();
-    const userSession = allSessions.find(session => session.customerNumber === customerNumber);
+    // Import required modules
+    const { storage } = await import('./storage');
+    const { invalidateAllUserSessions } = await import('./sessionManager');
     
-    if (userSession) {
-      // Use existing deleteUserSession which properly deletes from database and invalidates sessions
-      const deleted = await deleteUserSession(userSession.sessionId);
+    // First, verify user exists
+    const user = await storage.getUserByCustomerNumber(customerNumber);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    // Delete user from database (this includes all accounts, transactions, payees, etc.)
+    const userDeleted = await storage.deleteUser(customerNumber);
+    
+    if (userDeleted) {
+      // Invalidate all active express sessions for this user
+      const invalidatedSessions = invalidateAllUserSessions(customerNumber);
       
-      if (deleted) {
-        console.log(`Admin deleted user account: ${customerNumber}`);
-        res.json({ success: true, message: 'User account permanently deleted and logged out from all devices' });
-      } else {
-        res.status(400).json({ error: 'Failed to delete user account' });
-      }
+      // Remove all device sessions for this customer
+      await deleteAllUserSessions(customerNumber);
+      
+      console.log(`Admin successfully deleted user account: ${customerNumber}`);
+      console.log(`Database deletion: ${userDeleted ? 'SUCCESS' : 'FAILED'}`);
+      console.log(`Invalidated ${invalidatedSessions.length} active sessions`);
+      
+      res.json({ 
+        success: true, 
+        message: 'User account permanently deleted and logged out from all devices',
+        details: {
+          userDeleted: true,
+          sessionsInvalidated: invalidatedSessions.length
+        }
+      });
     } else {
-      res.status(404).json({ error: 'User session not found for deletion' });
+      console.error(`Failed to delete user from database: ${customerNumber}`);
+      res.status(500).json({ error: 'Failed to delete user from database' });
     }
   } catch (error) {
     console.error('Error deleting user account:', error);
-    res.status(500).json({ error: 'Failed to delete user' });
+    res.status(500).json({ error: 'Failed to delete user', details: error.message });
   }
 });
 
