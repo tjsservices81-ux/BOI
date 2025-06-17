@@ -87,33 +87,17 @@ export default function Login() {
   // PWA Focus Management - Ensures keyboard shows on input tap
   const handleInputFocus = (inputRef: React.RefObject<HTMLInputElement>) => {
     if (inputRef.current) {
-      // Force focus and trigger virtual keyboard
+      // Simple focus without viewport manipulation
       inputRef.current.focus();
-      
-      // PWA-specific keyboard triggering
-      setTimeout(() => {
-        if (inputRef.current) {
-          // Simulate user interaction to trigger virtual keyboard
-          const event = new Event('touchstart', { bubbles: true, cancelable: true });
-          inputRef.current.dispatchEvent(event);
-          inputRef.current.focus();
-        }
-      }, 50);
     }
   };
 
-  // Enhanced input touch handler for PWA
+  // Simplified input touch handler for PWA
   const handleInputTouch = (inputRef: React.RefObject<HTMLInputElement>) => {
     return (e: React.TouchEvent) => {
-      e.stopPropagation();
-      if (inputRef.current) {
+      // Allow natural touch behavior without interference
+      if (inputRef.current && !inputRef.current.matches(':focus')) {
         inputRef.current.focus();
-        // Force virtual keyboard to show
-        setTimeout(() => {
-          if (inputRef.current) {
-            inputRef.current.click();
-          }
-        }, 10);
       }
     };
   };
@@ -1571,7 +1555,7 @@ export default function Login() {
                 {/* LOGOUT REMOVED - Only allowed through Profile > Admin Panel (5 logo taps) */}
                 <div className="w-full p-3 bg-gray-50 text-gray-400 rounded-xl font-medium opacity-50 cursor-not-allowed text-center"
                      style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Logout disabled - Use Profile admin panel
+                  Logout from Profile → Tap logo 5 times
                 </div>
               </div>
             </div>
