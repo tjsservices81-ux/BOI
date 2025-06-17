@@ -1,5 +1,22 @@
 {
-  "users": [],
+  "users": [
+    [
+      24,
+      {
+        "id": 24,
+        "customerNumber": "BOI295437042",
+        "pin": "000000",
+        "name": "Jacob Hanfeild",
+        "email": "jacbobh19@gmail.com",
+        "phone": "07684321915",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-06-17T02:58:08.986Z",
+        "dateCreated": "2025-06-17T02:58:08.986Z",
+        "isDisabled": false
+      }
+    ]
+  ],
   "accounts": [],
   "transactions": [],
   "payees": [],
@@ -9,7 +26,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 24,
+    "currentUserId": 25,
     "currentAccountId": 34,
     "currentTransactionId": 49,
     "currentPayeeId": 25,
