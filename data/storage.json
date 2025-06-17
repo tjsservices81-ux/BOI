@@ -1,5 +1,22 @@
 {
-  "users": [],
+  "users": [
+    [
+      27,
+      {
+        "id": 27,
+        "customerNumber": "BOI949849328",
+        "pin": "000000",
+        "name": "Hahajajs",
+        "email": "shsjsj@gmaill.com",
+        "phone": "48946464",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-06-17T22:28:44.137Z",
+        "dateCreated": "2025-06-17T22:28:44.137Z",
+        "isDisabled": false
+      }
+    ]
+  ],
   "accounts": [],
   "transactions": [],
   "payees": [],
@@ -9,7 +26,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 27,
+    "currentUserId": 28,
     "currentAccountId": 40,
     "currentTransactionId": 49,
     "currentPayeeId": 25,
