@@ -1,4 +1,6 @@
 import { getAllApprovedIPs } from './ipControl';
+import fs from 'fs';
+import path from 'path';
 
 interface DeviceSession {
   sessionId: string;
@@ -159,8 +161,6 @@ export function isCustomerInPanicMode(customerNumber: string): boolean {
 
 export function getUserSessions() {
   // Add user data from storage for admin panel
-  const fs = require('fs');
-  const path = require('path');
   
   try {
     // Try to read user data from file storage

@@ -14,6 +14,7 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { panicModeMiddleware } from "./panicMode";
 import adminRoutes from "./adminPanel";
+import session from "express-session";
 
 const app = express();
 
@@ -22,6 +23,21 @@ app.use(panicModeMiddleware);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Configure session middleware before admin routes
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'banking-app-secret-key-for-dev',
+  store: new session.MemoryStore(),
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: false,
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000,
+    sameSite: 'lax'
+  },
+  rolling: true
+}));
 
 // Security headers to prevent sharing and protect content
 app.use((req, res, next) => {
