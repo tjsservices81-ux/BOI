@@ -191,6 +191,22 @@
         "dateCreated": "2025-06-17T01:36:18.157Z",
         "isDisabled": false
       }
+    ],
+    [
+      13,
+      {
+        "id": 13,
+        "customerNumber": "BOI451152240",
+        "pin": "000000",
+        "name": "aaaaaaaaaa",
+        "email": "test@example.com",
+        "phone": "555-0123",
+        "address": "123 Test Street",
+        "dateOfBirth": "1990-01-01",
+        "joinDate": "2025-06-17T01:37:22.282Z",
+        "dateCreated": "2025-06-17T01:37:22.282Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [
@@ -453,6 +469,30 @@
         "userId": 11,
         "type": "Savings Account",
         "accountNumber": "IE12BOFI900001187654321",
+        "balance": "15000.00",
+        "currency": "EUR",
+        "isActive": true
+      }
+    ],
+    [
+      23,
+      {
+        "id": 23,
+        "userId": 12,
+        "type": "Current Account",
+        "accountNumber": "IE12BOFI900001212345678",
+        "balance": "2500.00",
+        "currency": "EUR",
+        "isActive": true
+      }
+    ],
+    [
+      24,
+      {
+        "id": 24,
+        "userId": 12,
+        "type": "Savings Account",
+        "accountNumber": "IE12BOFI900001287654321",
         "balance": "15000.00",
         "currency": "EUR",
         "isActive": true
@@ -1075,6 +1115,62 @@
         "date": "2025-06-14T01:36:18.157Z",
         "balance": "14874.5"
       }
+    ],
+    [
+      45,
+      {
+        "id": 45,
+        "accountId": 23,
+        "type": "credit",
+        "amount": "500.00",
+        "currency": "EUR",
+        "description": "Salary deposit",
+        "reference": "SAL001",
+        "date": "2025-06-10T01:36:18.158Z",
+        "balance": "2500.00"
+      }
+    ],
+    [
+      46,
+      {
+        "id": 46,
+        "accountId": 23,
+        "type": "debit",
+        "amount": "125.50",
+        "currency": "EUR",
+        "description": "Grocery shopping",
+        "reference": "POS001",
+        "date": "2025-06-14T01:36:18.158Z",
+        "balance": "2374.5"
+      }
+    ],
+    [
+      47,
+      {
+        "id": 47,
+        "accountId": 24,
+        "type": "credit",
+        "amount": "500.00",
+        "currency": "EUR",
+        "description": "Salary deposit",
+        "reference": "SAL001",
+        "date": "2025-06-10T01:36:18.158Z",
+        "balance": "15000.00"
+      }
+    ],
+    [
+      48,
+      {
+        "id": 48,
+        "accountId": 24,
+        "type": "debit",
+        "amount": "125.50",
+        "currency": "EUR",
+        "description": "Grocery shopping",
+        "reference": "POS001",
+        "date": "2025-06-14T01:36:18.158Z",
+        "balance": "14874.5"
+      }
     ]
   ],
   "payees": [
@@ -1319,6 +1415,28 @@
         "sortCode": "900174",
         "type": "Personal"
       }
+    ],
+    [
+      23,
+      {
+        "id": 23,
+        "userId": 12,
+        "name": "Electric Ireland",
+        "accountNumber": "IE29AIBK93115212345678",
+        "sortCode": "931152",
+        "type": "Utility"
+      }
+    ],
+    [
+      24,
+      {
+        "id": 24,
+        "userId": 12,
+        "name": "John Smith",
+        "accountNumber": "IE64BOFI90017412345678",
+        "sortCode": "900174",
+        "type": "Personal"
+      }
     ]
   ],
   "scheduledPayments": [],
@@ -1327,10 +1445,10 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 13,
-    "currentAccountId": 23,
-    "currentTransactionId": 45,
-    "currentPayeeId": 23,
+    "currentUserId": 14,
+    "currentAccountId": 25,
+    "currentTransactionId": 49,
+    "currentPayeeId": 25,
     "currentScheduledPaymentId": 1,
     "currentStatementId": 1,
     "currentChatMessageId": 1,
