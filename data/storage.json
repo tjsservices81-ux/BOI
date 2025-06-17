@@ -15,6 +15,22 @@
         "dateCreated": "2025-06-17T02:58:08.986Z",
         "isDisabled": false
       }
+    ],
+    [
+      25,
+      {
+        "id": 25,
+        "customerNumber": "BOI912812590",
+        "pin": "000000",
+        "name": "James",
+        "email": "ahahsjwj@gmail.com",
+        "phone": "454564466464",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-06-17T16:02:50.981Z",
+        "dateCreated": "2025-06-17T16:02:50.981Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [],
@@ -26,7 +42,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 25,
+    "currentUserId": 26,
     "currentAccountId": 34,
     "currentTransactionId": 49,
     "currentPayeeId": 25,

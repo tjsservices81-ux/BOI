@@ -439,4 +439,21 @@ export class UserDataManager {
     this.setUserData('recentPayees', limited);
     this.clearCache('recentPayees');
   }
+
+  // Get recent payees
+  static getRecentPayees() {
+    return this.getUserData('recentPayees', []);
+  }
+
+  // Remove recent payee
+  static removeRecentPayee(name: string, accountInfo: string) {
+    const recentPayees = this.getUserData('recentPayees', []);
+    const filtered = recentPayees.filter((p: any) => 
+      !(p.name === name && p.accountInfo === accountInfo)
+    );
+    
+    this.setUserData('recentPayees', filtered);
+    this.clearCache('recentPayees');
+    return filtered;
+  }
 }
