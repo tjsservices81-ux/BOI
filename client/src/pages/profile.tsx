@@ -1301,23 +1301,72 @@ export default function Profile() {
                     System Management
                   </h3>
                   
-                  {/* Reset to Defaults */}
-                  <button 
-                    onClick={resetToDefaults}
-                    className="w-full flex items-center space-x-3 p-4 bg-red-50 border border-red-200 rounded-xl active:scale-98 transition-transform"
-                  >
-                    <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                      <RefreshCw className="w-5 h-5 text-red-600" />
-                    </div>
-                    <div className="flex-1 text-left">
-                      <p className="font-semibold text-red-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        Reset to Defaults
-                      </p>
-                      <p className="text-sm text-red-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        Clear all data and reset balances
-                      </p>
-                    </div>
-                  </button>
+                  <div className="space-y-3">
+                    {/* Sign Out and Clear Sessions - ONLY AUTHORIZED LOGOUT METHOD */}
+                    <button 
+                      onClick={async () => {
+                        try {
+                          console.log('🔐 Admin-controlled logout initiated');
+                          setIsSigningOut(true);
+                          
+                          // Clear user state immediately
+                          if (authHook?.adminLogout) {
+                            await authHook.adminLogout();
+                          }
+                          
+                          // Clear current user session completely
+                          UserDataManager.clearCurrentUser();
+                          setShowAdminPanel(false);
+                          
+                          // Navigate to login screen after animation
+                          setTimeout(() => {
+                            navigate("/login");
+                            setIsSigningOut(false);
+                          }, 2500);
+                          
+                          console.log('✅ Admin logout completed');
+                        } catch (error) {
+                          console.error('Admin logout error:', error);
+                          // Even if backend fails, ensure local state is cleared
+                          UserDataManager.clearCurrentUser();
+                          setShowAdminPanel(false);
+                          navigate("/login");
+                          setIsSigningOut(false);
+                        }
+                      }}
+                      className="w-full flex items-center space-x-3 p-4 bg-[#126987] text-white rounded-xl active:scale-98 transition-transform"
+                    >
+                      <div className="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                        <LogOut className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <p className="font-semibold text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Sign Out and Clear Sessions
+                        </p>
+                        <p className="text-sm text-blue-100" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Logout and clear all user sessions
+                        </p>
+                      </div>
+                    </button>
+
+                    {/* Reset to Defaults */}
+                    <button 
+                      onClick={resetToDefaults}
+                      className="w-full flex items-center space-x-3 p-4 bg-red-50 border border-red-200 rounded-xl active:scale-98 transition-transform"
+                    >
+                      <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                        <RefreshCw className="w-5 h-5 text-red-600" />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <p className="font-semibold text-red-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Reset to Defaults
+                        </p>
+                        <p className="text-sm text-red-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Clear all data and reset balances
+                        </p>
+                      </div>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

@@ -1568,36 +1568,11 @@ export default function Login() {
                   Create New Account
                 </button>
                 
-                <button
-                  onClick={async () => {
-                    // Admin-controlled logout - only authorized logout method
-                    if (authHook?.adminLogout) {
-                      await authHook.adminLogout();
-                    }
-                    
-                    // Clear current user session completely
-                    UserDataManager.clearCurrentUser();
-                    setShowAdminLogin(false);
-                    setCustomerNumber('');
-                    setPin('');
-                    setBiometricVerified(false);
-                    setPinVerified(false);
-                    setIsScanning(false);
-                    setShowPinLogin(false);
-                    
-                    // Navigate to login screen
-                    navigate("/login");
-                    
-                    toast({
-                      title: "Session Cleared",
-                      description: "User has been logged out via admin panel.",
-                    });
-                  }}
-                  className="w-full p-3 bg-red-50 text-red-600 rounded-xl font-medium active:scale-98 transition-transform"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                >
-                  Sign Out & Clear Session
-                </button>
+                {/* LOGOUT REMOVED - Only allowed through Profile > Admin Panel (5 logo taps) */}
+                <div className="w-full p-3 bg-gray-50 text-gray-400 rounded-xl font-medium opacity-50 cursor-not-allowed text-center"
+                     style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Logout disabled - Use Profile admin panel
+                </div>
               </div>
             </div>
           </div>
