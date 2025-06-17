@@ -152,7 +152,6 @@ router.post('/login', (req, res) => {
 router.get('/panel', adminAuth, async (req, res) => {
   try {
     const userSessions = await getUserSessions();
-    console.log('Admin Panel - User sessions:', userSessions);
     
     const panelPage = `<!DOCTYPE html>
     <html lang="en">
