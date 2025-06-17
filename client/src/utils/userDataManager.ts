@@ -316,7 +316,6 @@ export class UserDataManager {
       }
     }));
     
-    console.log(`Account fully initialized for ${customerNumber}:`, freshAccounts);
   }
 
   // Clear current user's data (transactions, payees) but preserve accounts
@@ -414,6 +413,5 @@ export class UserDataManager {
       }
     }
     
-    console.log(`Admin cleanup: All data for customer ${customerNumber} removed from browser storage`);
   }
 }

@@ -134,7 +134,6 @@ export default function Dashboard() {
             setAccounts(updatedAccounts);
           }
         } catch (error) {
-          console.error('Failed to refresh profile data:', error);
         }
       }
     };
@@ -149,7 +148,6 @@ export default function Dashboard() {
     const handleAccountsUpdate = (event: CustomEvent) => {
       const { accounts: updatedAccounts, source, newAccount } = event.detail || {};
       
-      console.log('Dashboard received accountsUpdate:', { source, newAccount, accountsCount: updatedAccounts?.length });
       
       if (updatedAccounts) {
         // Clear cache and force fresh data

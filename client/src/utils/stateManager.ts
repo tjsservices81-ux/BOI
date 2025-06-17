@@ -15,7 +15,6 @@ export class StateManager {
     try {
       localStorage.setItem(this.STATE_KEY, JSON.stringify(state));
     } catch (error) {
-      console.error('Failed to save app state:', error);
     }
   }
 
@@ -31,7 +30,6 @@ export class StateManager {
         }
       }
     } catch (error) {
-      console.error('Failed to restore app state:', error);
     }
     return null;
   }
@@ -43,7 +41,6 @@ export class StateManager {
       positions[route] = position;
       localStorage.setItem(this.SCROLL_POSITIONS_KEY, JSON.stringify(positions));
     } catch (error) {
-      console.error('Failed to save scroll position:', error);
     }
   }
 
@@ -53,7 +50,6 @@ export class StateManager {
       const positions = this.getScrollPositions();
       return positions[route] || 0;
     } catch (error) {
-      console.error('Failed to get scroll position:', error);
       return 0;
     }
   }
@@ -64,7 +60,6 @@ export class StateManager {
       const saved = localStorage.getItem(this.SCROLL_POSITIONS_KEY);
       return saved ? JSON.parse(saved) : {};
     } catch (error) {
-      console.error('Failed to get scroll positions:', error);
       return {};
     }
   }
@@ -76,7 +71,6 @@ export class StateManager {
       formData[formId] = data;
       localStorage.setItem(this.FORM_DATA_KEY, JSON.stringify(formData));
     } catch (error) {
-      console.error('Failed to save form data:', error);
     }
   }
 
@@ -86,7 +80,6 @@ export class StateManager {
       const formData = this.getAllFormData();
       return formData[formId] || null;
     } catch (error) {
-      console.error('Failed to get form data:', error);
       return null;
     }
   }
@@ -97,7 +90,6 @@ export class StateManager {
       const saved = localStorage.getItem(this.FORM_DATA_KEY);
       return saved ? JSON.parse(saved) : {};
     } catch (error) {
-      console.error('Failed to get all form data:', error);
       return {};
     }
   }
@@ -112,7 +104,6 @@ export class StateManager {
         localStorage.removeItem(this.FORM_DATA_KEY);
       }
     } catch (error) {
-      console.error('Failed to clear expired state:', error);
     }
   }
 
@@ -123,7 +114,6 @@ export class StateManager {
       localStorage.removeItem(this.SCROLL_POSITIONS_KEY);
       localStorage.removeItem(this.FORM_DATA_KEY);
     } catch (error) {
-      console.error('Failed to clear app state:', error);
     }
   }
 

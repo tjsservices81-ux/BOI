@@ -61,7 +61,6 @@ export const processSecureTransfer = async (
   exchangeRate?: number,
   recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string }
 ): Promise<{ success: boolean; transferId?: string; error?: string; requiresConfirmation?: boolean }> => {
-  console.log('Initiating secure transfer:', { fromAccountId, amount, recipientName, transferType, reference });
 
   // Get user phone number for security call
   const userProfile = UserDataManager.getUserProfile();
@@ -92,7 +91,6 @@ export const processSecureTransfer = async (
       return { success: false, error: securityResult.error || 'Security verification failed' };
     }
 
-    console.log(`Security call initiated for transfer ${transferId}`);
     
     // Return pending status - actual transfer will be processed after voice confirmation
     return { 
@@ -102,7 +100,6 @@ export const processSecureTransfer = async (
     };
 
   } catch (error) {
-    console.error('Failed to initiate secure transfer:', error);
     return { success: false, error: 'Failed to initiate security verification' };
   }
 };
@@ -116,40 +113,31 @@ export const processTransfer = (
   exchangeRate?: number,
   recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string; bicCode?: string }
 ): boolean => {
-  console.log('Processing transfer:', { fromAccountId, amount, recipientName, transferType, reference });
   
   // Get stored accounts using UserDataManager
   const accounts = UserDataManager.getUserData('bankAccounts', []);
   
-  console.log('Found accounts:', accounts);
   
   // Ensure accounts is an array and not null
   if (!Array.isArray(accounts) || accounts.length === 0) {
-    console.error('No accounts available for transfer');
     return false;
   }
   
   const selectedAccount = accounts.find((acc: any) => acc && acc.id && acc.id.toString() === fromAccountId);
-  console.log('Selected account:', selectedAccount);
   
   if (!selectedAccount) {
-    console.error('Account not found');
     return false;
   }
   
   const currentBalance = parseFloat(selectedAccount.balance);
-  console.log('Current balance:', currentBalance, 'Transfer amount:', amount);
   
   if (amount > currentBalance) {
-    console.error('Insufficient funds');
-    console.error('Transfer failed');
     return false;
   }
   
   // Update balance in the account
   const newBalance = (currentBalance - amount).toFixed(2);
   selectedAccount.balance = newBalance;
-  console.log('New balance:', newBalance);
   
   // Update the accounts array
   const updatedAccounts = accounts.map((acc: any) => 
@@ -158,7 +146,6 @@ export const processTransfer = (
   
   // Store updated accounts using UserDataManager
   UserDataManager.setUserData('bankAccounts', updatedAccounts);
-  console.log('Updated accounts stored');
   
   // Store transaction using UserDataManager
   const transactions = UserDataManager.getUserData('bankTransactions', []);
@@ -189,7 +176,6 @@ export const processTransfer = (
   
   transactions.push(newTransaction);
   UserDataManager.setUserData('bankTransactions', transactions);
-  console.log('Transaction stored:', newTransaction);
   
   // Dispatch balance update event
   window.dispatchEvent(new CustomEvent('balanceUpdate', {
@@ -201,7 +187,6 @@ export const processTransfer = (
     detail: { accountId: parseInt(fromAccountId), transaction: newTransaction }
   }));
   
-  console.log('Balance update and transaction events dispatched');
   
   return true;
 };
@@ -212,7 +197,6 @@ export const checkTransferConfirmation = async (transferId: string): Promise<{ c
     const result = await response.json();
     return { confirmed: result.confirmed, status: result.status };
   } catch (error) {
-    console.error('Failed to check transfer confirmation:', error);
     return { confirmed: false, status: null };
   }
 };
@@ -227,15 +211,12 @@ export const processConfirmedTransfer = (
   exchangeRate?: number,
   recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string; bicCode?: string }
 ): boolean => {
-  console.log('Processing confirmed transfer:', { transferId, fromAccountId, amount, recipientName, transferType, reference });
   
   // Execute the actual transfer logic that was previously in processTransfer
   const success = processTransfer(fromAccountId, amount, recipientName, transferType, reference, exchangeRate, recipientDetails);
   
   if (success) {
-    console.log(`Transfer ${transferId} completed successfully`);
   } else {
-    console.error(`Transfer ${transferId} failed during processing`);
   }
   
   return success;

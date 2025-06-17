@@ -66,7 +66,6 @@ export default function Login() {
           validUsers[customerNumber] = userData;
         } else if (response.status === 404) {
           // User was deleted by admin - remove from frontend cache
-          console.log(`Removing deleted user ${customerNumber} from cache`);
           UserDataManager.adminDeleteUser(customerNumber);
         }
       } catch (error) {
@@ -411,7 +410,6 @@ export default function Login() {
           return;
         }
       } catch (error) {
-        console.error('Account validation failed:', error);
         toast({
           title: "Connection Error",
           description: "Unable to verify account. Please check your connection and try again.",
@@ -793,7 +791,6 @@ export default function Login() {
         await fetchBackupATMs(lat, lng);
       }
     } catch (error) {
-      console.error('Error fetching ATMs:', error);
       // Try backup search on error
       await fetchBackupATMs(lat, lng);
     }
@@ -852,7 +849,6 @@ export default function Login() {
         }
       }
     } catch (backupError) {
-      console.error('Backup search failed:', backupError);
       toast({
         title: "Search Complete",
         description: "No ATMs or bank branches found within 10 miles of your location.",
@@ -1155,7 +1151,6 @@ export default function Login() {
               <button 
                 className="w-full bg-gray-50 border border-gray-200 ios-card p-3 flex items-center space-x-3 hover:bg-gray-100 active:scale-98 transition-all duration-150"
                 onClick={() => {
-                  console.log("PIN button clicked, current showPinLogin:", showPinLogin);
                   setShowPinLogin(!showPinLogin);
                 }}
               >

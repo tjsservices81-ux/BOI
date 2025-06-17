@@ -101,7 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         credentials: 'include',
       });
     } catch (error) {
-      console.error('Logout error:', error);
+      // Silent error handling
       // Even if backend fails, ensure local state is cleared
       setUser(null);
       localStorage.removeItem('bankingUser');
