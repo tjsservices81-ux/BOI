@@ -16,14 +16,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Wait for storage to fully initialize from persistent data
   await storage.waitForInitialization();
   
-  // Only initialize sample data if truly no users exist
+  // Check for existing users
   const existingUsers = await storage.getAllUsers();
-  if (existingUsers.length === 0) {
-    console.log("No existing users found, initializing sample data...");
-    await storage.initializeSampleData();
-  } else {
-    console.log(`Found ${existingUsers.length} existing users, skipping sample data initialization`);
-  }
+  console.log(`Found ${existingUsers.length} existing users in database`);
 
   // Configure session middleware with simple in-memory storage
   const sessionStore = new session.MemoryStore();

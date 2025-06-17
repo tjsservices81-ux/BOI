@@ -435,7 +435,8 @@ class MemStorage implements IStorage {
       return;
     }
 
-    console.log("Initializing sample data for first-time setup...");
+    console.log("No existing users found, skipping sample data initialization to prevent data override");
+    return;
 
     // Create sample users with the existing test accounts
     const sampleUsers = [
