@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
 import { ChevronLeft, User, Snowflake, Shield, Lock, CreditCard, AlertTriangle, X } from "lucide-react";
 import { UserDataManager } from "../utils/userDataManager";
+import { formatAmount } from "../utils/currency";
 
 export default function Cards() {
   const [, navigate] = useLocation();
@@ -10,6 +11,7 @@ export default function Cards() {
   const [cardHolderName, setCardHolderName] = useState("JOHN MURPHY");
   const [showBlockModal, setShowBlockModal] = useState(false);
   const [isCardBlocked, setIsCardBlocked] = useState(false);
+  const [userCurrency, setUserCurrency] = useState('GBP');
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const cards = [

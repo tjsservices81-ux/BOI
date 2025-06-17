@@ -22,6 +22,7 @@ export default function Dashboard() {
   // Local state for account balances that can be updated by transfers
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [isNavigating, setIsNavigating] = useState(false);
+  const [userCurrency, setUserCurrency] = useState('GBP');
 
   // Enhanced navigation with smooth animations
   const navigateWithAnimation = (path: string, animationType: 'slide-right' | 'slide-left' | 'slide-up' = 'slide-right') => {
@@ -86,6 +87,10 @@ export default function Dashboard() {
     }
     
     setAccounts(storedAccounts);
+    
+    // Load user currency
+    const currency = UserDataManager.getUserCurrency();
+    setUserCurrency(currency);
   }, []);
 
   // Listen for balance updates from transfers and admin profile updates
@@ -207,7 +212,19 @@ export default function Dashboard() {
         UserDataManager.clearCache('bankAccounts');
       }
     };
+    
+    // Listen for currency updates from admin panel
+    const handleCurrencyUpdate = (event: CustomEvent) => {
+      const { customerNumber, currency } = event.detail || {};
+      const currentUser = UserDataManager.getCurrentUser();
+      
+      if (customerNumber === currentUser && currency) {
+        setUserCurrency(currency);
+      }
+    };
+    
     window.addEventListener('accountCreated', handleAccountCreated as EventListener);
+    window.addEventListener('currencyUpdate', handleCurrencyUpdate as EventListener);
     
     return () => {
       window.removeEventListener('balanceUpdate', handleBalanceUpdate as EventListener);
@@ -219,6 +236,7 @@ export default function Dashboard() {
       window.removeEventListener('transactionUpdate', handleTransactionDeleted as EventListener);
       window.removeEventListener('forceRefresh', handleForceRefresh as EventListener);
       window.removeEventListener('accountCreated', handleAccountCreated as EventListener);
+      window.removeEventListener('currencyUpdate', handleCurrencyUpdate as EventListener);
     };
   }, [accounts]);
 
@@ -322,7 +340,7 @@ export default function Dashboard() {
                     <p className="text-xs text-gray-500 mt-0.5 boi-regular-font">{account.accountNumber}</p>
                   </div>
                   <div className="flex items-center">
-                    <p className="text-lg font-semibold text-[#126987] boi-semibold-font">€{parseFloat(account.balance).toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                    <p className="text-lg font-semibold text-[#126987] boi-semibold-font">{formatAmount(account.balance, userCurrency)}</p>
                     <ChevronRight className="h-4 w-4 ml-3 text-gray-400" />
                   </div>
                 </div>
