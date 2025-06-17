@@ -20,7 +20,7 @@ const internalTransferSchema = z.object({
     .refine((val) => {
       const num = parseFloat(val);
       return num <= 50000;
-    }, "Maximum transfer amount is €50,000"),
+    }, "Maximum transfer amount is 50,000"),
   reference: z.string().max(140, "Reference cannot exceed 140 characters").optional()
 });
 
@@ -247,7 +247,7 @@ export default function InternalTransfer() {
               Transfer Successful
             </h2>
             <p className="text-gray-600 mb-6" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              €{formatAmount(formData?.amount || '0')} has been transferred from {selectedFromAccount?.displayName} to {selectedToAccount?.displayName}
+              {formatAmount(parseFloat(formData?.amount || '0'), userCurrency)} has been transferred from {selectedFromAccount?.displayName} to {selectedToAccount?.displayName}
             </p>
             <div className="bg-gray-50 rounded-2xl p-4 mb-6">
               <p className="text-sm text-gray-600 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -313,10 +313,10 @@ export default function InternalTransfer() {
                     {confirmFromAccount?.accountNumber}
                   </p>
                   <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Balance: €{(() => {
-                      if (!confirmFromAccount) return '0.00';
+                    Balance: {(() => {
+                      if (!confirmFromAccount) return formatAmount(0, userCurrency);
                       const balance = typeof confirmFromAccount.balance === 'string' ? parseFloat(confirmFromAccount.balance) : confirmFromAccount.balance;
-                      return balance.toFixed(2);
+                      return formatAmount(balance, userCurrency);
                     })()}
                   </p>
                 </div>
@@ -501,7 +501,7 @@ export default function InternalTransfer() {
 
             <div>
               <label className="block text-sm font-semibold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Amount (EUR)
+                Amount ({userCurrency})
               </label>
               <input
                 type="number"

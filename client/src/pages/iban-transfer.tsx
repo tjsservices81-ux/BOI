@@ -126,6 +126,7 @@ export default function IbanTransfer() {
       window.removeEventListener('accountsUpdate', handleAccountsUpdate as EventListener);
       window.removeEventListener('balanceUpdate', handleAccountsUpdate as EventListener);
       window.removeEventListener('adminProfileUpdate', handleAccountsUpdate as EventListener);
+      window.removeEventListener('currencyUpdate', handleCurrencyUpdate as EventListener);
     };
   }, [form]);
 
@@ -654,7 +655,7 @@ export default function IbanTransfer() {
 
             <div className="bg-gray-50 rounded-lg p-4">
               <label className="block text-sm font-semibold text-gray-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Amount (EUR)
+                Amount ({userCurrency})
               </label>
               <input
                 {...form.register('amount')}
