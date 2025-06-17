@@ -400,6 +400,9 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
                 
                 setIsTyping(false);
                 setTypingText("");
+                
+                // Start inactivity timer when agent connects
+                startInactivityTimer();
               }, finalDelay);
             }, 500); // typing indicator delay
           }, 500);
