@@ -102,6 +102,13 @@ export default function Login() {
     setShowAdminLogin(false);
   }, []);
 
+  // Validate users when Admin Access dialog opens
+  useEffect(() => {
+    if (showAdminLogin) {
+      validateAndCleanUsers();
+    }
+  }, [showAdminLogin]);
+
   const handleNavigation = (path: string) => {
     setIsNavigating(true);
     setTimeout(() => {
@@ -1351,7 +1358,7 @@ export default function Login() {
               
               {/* Account List */}
               <div className="max-h-60 overflow-y-auto space-y-2">
-                {Object.entries(validatedUsers).map(([customerNumber, userData]) => (
+                {Object.entries(validatedUsers).map(([customerNumber, userData]: [string, any]) => (
                   <div
                     key={customerNumber}
                     className="bg-gray-50 rounded-xl p-3 border"
