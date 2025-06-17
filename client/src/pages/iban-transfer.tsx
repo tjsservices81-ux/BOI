@@ -82,15 +82,8 @@ export default function IbanTransfer() {
     if (selectedPayeeData) {
       try {
         const payee = JSON.parse(selectedPayeeData);
-        console.log('SEPA Auto-fill Debug - Payee data:', payee);
         
         if (payee.transferType === 'SEPA Transfer' && payee.accountInfo) {
-          console.log('SEPA Auto-fill Debug - Filling form with:', {
-            name: payee.name,
-            iban: payee.accountInfo,
-            bic: payee.bicCode
-          });
-          
           // Pre-fill form with payee data
           form.setValue('recipientName', payee.name);
           form.setValue('iban', payee.accountInfo);
@@ -100,39 +93,37 @@ export default function IbanTransfer() {
             form.setValue('bicCode', payee.bicCode);
           }
           
-          // Force form re-render to show the filled values
+          // Force update the form fields after a brief delay
           setTimeout(() => {
-            console.log('SEPA Auto-fill Debug - Triggering form re-render');
+            // Update IBAN input field display
+            const ibanInput = document.querySelector('input[placeholder*="IBAN"]') as HTMLInputElement;
+            if (ibanInput && payee.accountInfo) {
+              ibanInput.value = payee.accountInfo;
+              ibanInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
             
-            // Trigger form validation and re-render to show filled values
-            form.trigger(['recipientName', 'iban', 'bicCode']);
+            // Update BIC input field display
+            const bicInput = document.querySelector('input[placeholder*="BIC"]') as HTMLInputElement;
+            if (bicInput && payee.bicCode) {
+              bicInput.value = payee.bicCode;
+              bicInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
             
-            // Force update display values by resetting form with filled data
-            const currentValues = form.getValues();
-            form.reset({
-              ...currentValues,
-              recipientName: payee.name,
-              iban: payee.accountInfo,
-              bicCode: payee.bicCode || currentValues.bicCode
-            });
-            
-            console.log('SEPA Auto-fill Debug - Form values after reset:', form.getValues());
-          }, 50);
+            // Update recipient name input field display
+            const nameInput = document.querySelector('input[placeholder*="name"]') as HTMLInputElement;
+            if (nameInput && payee.name) {
+              nameInput.value = payee.name;
+              nameInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+          }, 100);
           
           // Clear the session storage after using
           sessionStorage.removeItem('selectedPayee');
-        } else {
-          console.log('SEPA Auto-fill Debug - No match or missing data:', {
-            transferType: payee.transferType,
-            hasAccountInfo: !!payee.accountInfo
-          });
         }
       } catch (error) {
         console.error('Error parsing selected payee data:', error);
         sessionStorage.removeItem('selectedPayee');
       }
-    } else {
-      console.log('SEPA Auto-fill Debug - No selected payee data found');
     }
     
     return () => {
