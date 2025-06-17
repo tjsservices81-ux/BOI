@@ -349,4 +349,47 @@ export class UserDataManager {
     // Reset current user
     this.currentUser = null;
   }
+
+  // Admin-triggered cleanup - removes all traces of a deleted user
+  static adminDeleteUser(customerNumber: string) {
+    // Remove user from the users registry
+    const allUsers = this.getAllUsers();
+    if (allUsers[customerNumber]) {
+      delete allUsers[customerNumber];
+      localStorage.setItem('bankUsers', JSON.stringify(allUsers));
+    }
+    
+    // Remove from current user if this was the active user
+    if (this.currentUser === customerNumber) {
+      this.currentUser = null;
+      localStorage.removeItem('currentUser');
+    }
+    
+    // Remove from last active user
+    if (this.getLastActiveUser() === customerNumber) {
+      localStorage.removeItem('lastActiveUser');
+    }
+    
+    // Clear any cached data for this user
+    this.dataCache.delete(customerNumber);
+    this.cacheTimestamps.delete(customerNumber);
+    
+    // Clear all user-specific localStorage entries
+    const allKeys = Object.keys(localStorage);
+    for (const key of allKeys) {
+      if (key.includes(customerNumber) || key.startsWith(`user_${customerNumber}_`)) {
+        localStorage.removeItem(key);
+      }
+    }
+    
+    // Clear sessionStorage entries
+    const sessionKeys = Object.keys(sessionStorage);
+    for (const key of sessionKeys) {
+      if (key.includes(customerNumber)) {
+        sessionStorage.removeItem(key);
+      }
+    }
+    
+    console.log(`Admin cleanup: All data for customer ${customerNumber} removed from browser storage`);
+  }
 }

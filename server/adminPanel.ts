@@ -560,6 +560,38 @@ router.get('/panel', adminAuth, async (req, res) => {
             
             const result = await response.json();
             if (response.ok) {
+              // Clear all cached data for the deleted user from browser storage
+              try {
+                // Clear localStorage entries for this customer
+                const allKeys = Object.keys(localStorage);
+                for (const key of allKeys) {
+                  if (key.includes(currentCustomerNumber)) {
+                    localStorage.removeItem(key);
+                  }
+                }
+                
+                // Clear sessionStorage entries
+                const sessionKeys = Object.keys(sessionStorage);
+                for (const key of sessionKeys) {
+                  if (key.includes(currentCustomerNumber)) {
+                    sessionStorage.removeItem(key);
+                  }
+                }
+                
+                // Clear current user if it matches deleted user
+                if (localStorage.getItem('currentUser') === currentCustomerNumber) {
+                  localStorage.removeItem('currentUser');
+                }
+                
+                if (localStorage.getItem('lastActiveUser') === currentCustomerNumber) {
+                  localStorage.removeItem('lastActiveUser');
+                }
+                
+                console.log(\`🧹 Admin cleanup: Removed all browser data for customer \${currentCustomerNumber}\`);
+              } catch (cleanupError) {
+                console.error('Error during frontend cleanup:', cleanupError);
+              }
+              
               // Show success message
               document.getElementById('successMessage').classList.add('show');
               setTimeout(() => {
