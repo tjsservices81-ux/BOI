@@ -13,8 +13,14 @@ import { isAccountActiveOnOtherDevice, setUserDeviceSession, removeUserDeviceSes
 import { addUserSession, removeUserSession, sessionTrackingMiddleware, isSessionValid } from "./sessionManager";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Initialize database and sample data
-  await storage.initializeSampleData();
+  // Initialize sample data only if no users exist (first run)
+  const existingUsers = await storage.getAllUsers();
+  if (existingUsers.length === 0) {
+    console.log("No existing users found, initializing sample data...");
+    await storage.initializeSampleData();
+  } else {
+    console.log(`Found ${existingUsers.length} existing users, skipping sample data initialization`);
+  }
 
   // Configure session middleware with simple in-memory storage
   const sessionStore = new session.MemoryStore();

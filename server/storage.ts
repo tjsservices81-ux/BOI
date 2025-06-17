@@ -84,7 +84,7 @@ class MemStorage implements IStorage {
   private currentChatResponseId: number = 1;
 
   constructor() {
-    this.initializeSampleData();
+    // Data will be initialized only when explicitly called
   }
 
   async getUserByCredentials(customerNumber: string, pin: string): Promise<User | undefined> {
@@ -98,8 +98,8 @@ class MemStorage implements IStorage {
       id: this.currentUserId++,
       customerNumber: insertUser.customerNumber,
       pin: insertUser.pin,
-      name: insertUser.name || null,
-      email: insertUser.email || null,
+      name: insertUser.name || "",
+      email: insertUser.email || "",
       phone: insertUser.phone || null,
       address: insertUser.address || null,
       dateOfBirth: insertUser.dateOfBirth || null,
@@ -359,10 +359,26 @@ class MemStorage implements IStorage {
 
   // Initialize sample data for first-time setup
   async initializeSampleData(): Promise<void> {
-    // Check if data already exists
-    if (this.users.size > 0) {
-      return; // Data already exists
-    }
+    // Always clear existing data first to prevent duplicates
+    this.users.clear();
+    this.accounts.clear();
+    this.transactions.clear();
+    this.payees.clear();
+    this.scheduledPayments.clear();
+    this.statements.clear();
+    this.chatMessages.clear();
+    this.chatResponses.clear();
+    this.chatSessions.clear();
+    
+    // Reset counters
+    this.currentUserId = 1;
+    this.currentAccountId = 1;
+    this.currentTransactionId = 1;
+    this.currentPayeeId = 1;
+    this.currentScheduledPaymentId = 1;
+    this.currentStatementId = 1;
+    this.currentChatMessageId = 1;
+    this.currentChatResponseId = 1;
 
     console.log("Initializing sample data...");
 

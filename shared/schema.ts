@@ -13,6 +13,7 @@ export const users = pgTable("users", {
   dateOfBirth: text("date_of_birth"),
   joinDate: text("join_date").notNull().default("Member since 2018"),
   dateCreated: timestamp("date_created").notNull().defaultNow(),
+  isDisabled: boolean("is_disabled").notNull().default(false),
 });
 
 export const accounts = pgTable("accounts", {
