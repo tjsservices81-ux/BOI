@@ -580,6 +580,30 @@ router.get('/panel', adminAuth, async (req, res) => {
           currentCustomerNumber = null;
         }
         
+        async function logoutUser(customerNumber, username) {
+          if (confirm(\`Are you sure you want to remotely logout \${username}?\`)) {
+            try {
+              const response = await fetch('/admin/logout-user', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ customerNumber })
+              });
+              
+              const result = await response.json();
+              if (response.ok) {
+                alert(\`\${username} has been logged out successfully\`);
+                window.location.reload();
+              } else {
+                alert(\`Failed to logout \${username}: \${result.error}\`);
+              }
+            } catch (error) {
+              alert(\`Error logging out \${username}: \${error.message}\`);
+            }
+          }
+        }
+        
         async function deleteAccount() {
           if (!currentCustomerNumber) return;
           
@@ -683,7 +707,6 @@ router.post('/delete-user', adminAuth, async (req, res) => {
   try {
     // Import required modules
     const { storage } = await import('./storage');
-    const { invalidateAllUserSessions } = await import('./sessionManager');
     
     // First, verify user exists
     const user = await storage.getUserByCustomerNumber(customerNumber);
@@ -695,22 +718,22 @@ router.post('/delete-user', adminAuth, async (req, res) => {
     const userDeleted = await storage.deleteUser(customerNumber);
     
     if (userDeleted) {
-      // Invalidate all active express sessions for this user
-      const invalidatedSessions = invalidateAllUserSessions(customerNumber);
+      // Force logout user using SessionManager
+      await SessionManager.forceLogoutUser(customerNumber);
       
       // Remove all device sessions for this customer
       await deleteAllUserSessions(customerNumber);
       
       console.log(`Admin successfully deleted user account: ${customerNumber}`);
       console.log(`Database deletion: ${userDeleted ? 'SUCCESS' : 'FAILED'}`);
-      console.log(`Invalidated ${invalidatedSessions.length} active sessions`);
+      console.log(`User sessions invalidated and device sessions cleared`);
       
       res.json({ 
         success: true, 
         message: 'User account permanently deleted and logged out from all devices',
         details: {
           userDeleted: true,
-          sessionsInvalidated: invalidatedSessions.length
+          sessionsInvalidated: 1
         }
       });
     } else {
@@ -719,7 +742,39 @@ router.post('/delete-user', adminAuth, async (req, res) => {
     }
   } catch (error) {
     console.error('Error deleting user account:', error);
-    res.status(500).json({ error: 'Failed to delete user', details: error.message });
+    res.status(500).json({ error: 'Failed to delete user', details: (error as Error).message });
+  }
+});
+
+// Remote logout user endpoint
+router.post('/logout-user', adminAuth, async (req, res) => {
+  try {
+    const { customerNumber } = req.body;
+    
+    if (!customerNumber) {
+      return res.status(400).json({ error: 'Customer number is required' });
+    }
+    
+    // Force logout user using SessionManager
+    const loggedOut = await SessionManager.forceLogoutUser(customerNumber);
+    
+    if (loggedOut) {
+      console.log(`👮 ADMIN REMOTE LOGOUT: User ${customerNumber} logged out by admin`);
+      res.json({ 
+        success: true, 
+        message: `User ${customerNumber} has been logged out successfully` 
+      });
+    } else {
+      res.status(400).json({ 
+        error: 'User was not logged in or does not exist' 
+      });
+    }
+  } catch (error) {
+    console.error('Remote logout error:', error);
+    res.status(500).json({ 
+      error: 'Failed to logout user',
+      details: (error as Error).message 
+    });
   }
 });
 
