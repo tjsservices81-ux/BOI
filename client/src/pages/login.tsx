@@ -1569,7 +1569,12 @@ export default function Login() {
                 </button>
                 
                 <button
-                  onClick={() => {
+                  onClick={async () => {
+                    // Admin-controlled logout - only authorized logout method
+                    if (authHook?.adminLogout) {
+                      await authHook.adminLogout();
+                    }
+                    
                     // Clear current user session completely
                     UserDataManager.clearCurrentUser();
                     setShowAdminLogin(false);
@@ -1580,12 +1585,12 @@ export default function Login() {
                     setIsScanning(false);
                     setShowPinLogin(false);
                     
-                    // Force refresh of the component state
-                    window.location.reload();
+                    // Navigate to login screen
+                    navigate("/login");
                     
                     toast({
                       title: "Session Cleared",
-                      description: "All active sessions have been terminated.",
+                      description: "User has been logged out via admin panel.",
                     });
                   }}
                   className="w-full p-3 bg-red-50 text-red-600 rounded-xl font-medium active:scale-98 transition-transform"

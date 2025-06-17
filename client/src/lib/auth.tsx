@@ -11,6 +11,7 @@ interface AuthContextType {
   user: User | null;
   login: (user: User) => void;
   logout: () => void;
+  adminLogout: () => void; // Controlled logout through admin panel only
   isLoading: boolean;
 }
 
@@ -21,44 +22,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Initialize auth state on mount - check for valid session
+  // Initialize auth state on mount - PERSISTENT SESSION (no auto-logout)
   useEffect(() => {
     let isMounted = true;
     
     const initializeAuth = async () => {
       try {
-        // Check if this is a cold start (app was closed and reopened)
-        const wasColdStart = sessionStorage.getItem('app_cold_start') === 'true';
+        // NEVER auto-logout - always restore cached user session
+        const cachedUser = localStorage.getItem('bankingUser');
+        if (cachedUser && isMounted) {
+          try {
+            const parsedUser = JSON.parse(cachedUser);
+            setUser(parsedUser);
+          } catch (error) {
+            console.error('Error parsing cached user:', error);
+            // Don't clear on parse error - preserve session
+          }
+        }
         
-        if (wasColdStart) {
-          // Cold start - clear all auth state and require fresh login
-          localStorage.removeItem('bankingUser');
-          if (isMounted) {
-            setUser(null);
-            setIsLoading(false);
-            setIsInitialized(true);
-          }
-          sessionStorage.removeItem('app_cold_start');
-        } else {
-          // Normal navigation - check for cached user
-          const cachedUser = localStorage.getItem('bankingUser');
-          if (cachedUser && isMounted) {
-            try {
-              const parsedUser = JSON.parse(cachedUser);
-              setUser(parsedUser);
-            } catch (error) {
-              localStorage.removeItem('bankingUser');
-              setUser(null);
-            }
-          }
-          if (isMounted) {
-            setIsLoading(false);
-            setIsInitialized(true);
-          }
+        if (isMounted) {
+          setIsLoading(false);
+          setIsInitialized(true);
         }
       } catch (error) {
         if (isMounted) {
-          setUser(null);
+          // Don't clear user on error - preserve session
           setIsLoading(false);
           setIsInitialized(true);
         }
@@ -103,19 +91,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('bankingUser', JSON.stringify(userData));
   };
 
+  // Regular logout - BLOCKED (only admin logout allowed)
   const logout = async () => {
+    console.warn('⚠️ Regular logout blocked - use admin panel to logout');
+    // Do nothing - logout only allowed through admin panel
+    return;
+  };
+
+  // Admin-controlled logout - only way to actually logout
+  const adminLogout = async () => {
     try {
+      console.log('🔐 Admin logout initiated');
+      
       // Clear user state immediately
       setUser(null);
       localStorage.removeItem('bankingUser');
+      
+      // Clear UserDataManager session
+      const { UserDataManager } = await import('@/utils/userDataManager');
+      UserDataManager.clearCurrentUser();
       
       // Call backend logout endpoint
       await fetch('/api/auth/logout', {
         method: 'POST',
         credentials: 'include',
       });
+      
+      console.log('✅ Admin logout completed');
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error('Admin logout error:', error);
       // Even if backend fails, ensure local state is cleared
       setUser(null);
       localStorage.removeItem('bankingUser');
@@ -128,6 +132,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         login,
         logout,
+        adminLogout,
         isLoading,
       }}
     >
