@@ -156,3 +156,77 @@ export function isDeviceInPanicMode(sessionId: string): boolean {
 export function isCustomerInPanicMode(customerNumber: string): boolean {
   return customerPanicMode.has(customerNumber);
 }
+
+export function getUserSessions() {
+  // Add user data from storage for admin panel
+  const fs = require('fs');
+  const path = require('path');
+  
+  try {
+    // Try to read user data from file storage
+    const userDataPath = path.join(process.cwd(), 'userData.json');
+    let userData = [];
+    
+    if (fs.existsSync(userDataPath)) {
+      const fileContent = fs.readFileSync(userDataPath, 'utf8');
+      userData = JSON.parse(fileContent);
+    }
+    
+    // Combine device sessions with user data
+    return deviceSessions.map(session => {
+      const user = userData.find((u: any) => u.customerNumber === session.customerNumber);
+      return {
+        sessionId: session.sessionId,
+        username: user?.name || session.customerNumber || 'Unknown User',
+        email: user?.email || 'No email provided',
+        dateOfBirth: user?.dateOfBirth || 'Not provided',
+        deviceInfo: session.deviceModel || 'Unknown Device',
+        ipAddress: session.ipAddress || 'Unknown',
+        loginTime: session.loginTime || new Date().toISOString(),
+        customerNumber: session.customerNumber
+      };
+    });
+  } catch (error) {
+    console.error('Error reading user data:', error);
+    return deviceSessions.map(session => ({
+      sessionId: session.sessionId,
+      username: session.customerNumber || 'Unknown User',
+      email: 'No email provided',
+      dateOfBirth: 'Not provided',
+      deviceInfo: session.deviceModel || 'Unknown Device',
+      ipAddress: session.ipAddress || 'Unknown',
+      loginTime: session.loginTime || new Date().toISOString(),
+      customerNumber: session.customerNumber
+    }));
+  }
+}
+
+export function deleteUserSession(sessionId: string): boolean {
+  const session = deviceSessions.find(s => s.sessionId === sessionId);
+  if (session) {
+    // Remove the device session
+    const removed = removeDeviceSession(sessionId);
+    
+    // Also clean up any user data files if needed
+    try {
+      const fs = require('fs');
+      const path = require('path');
+      const userDataPath = path.join(process.cwd(), 'userData.json');
+      
+      if (fs.existsSync(userDataPath)) {
+        const fileContent = fs.readFileSync(userDataPath, 'utf8');
+        let userData = JSON.parse(fileContent);
+        
+        // Remove user data associated with this session
+        userData = userData.filter((u: any) => u.customerNumber !== session.customerNumber);
+        
+        fs.writeFileSync(userDataPath, JSON.stringify(userData, null, 2));
+      }
+    } catch (error) {
+      console.error('Error cleaning up user data:', error);
+    }
+    
+    return removed;
+  }
+  return false;
+}
