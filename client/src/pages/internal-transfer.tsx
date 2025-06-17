@@ -6,7 +6,7 @@ import { useLocation } from "wouter";
 import { ChevronLeft, ArrowUpDown, Check, AlertCircle, X } from "lucide-react";
 import { UserDataManager } from "../utils/userDataManager";
 import { generateReference } from "../utils/transferUtils";
-import { formatAmount } from "../utils/currency";
+import { formatAmount as formatCurrency } from "../utils/currency";
 
 const internalTransferSchema = z.object({
   fromAccount: z.string().min(1, "Please select a source account"),
@@ -223,10 +223,7 @@ export default function InternalTransfer() {
     setStep('success');
   };
 
-  const formatAmount = (amount: string) => {
-    const num = parseFloat(amount);
-    return isNaN(num) ? '0.00' : num.toFixed(2);
-  };
+
 
   if (step === 'success') {
     return (
@@ -247,7 +244,7 @@ export default function InternalTransfer() {
               Transfer Successful
             </h2>
             <p className="text-gray-600 mb-6" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              {formatAmount(parseFloat(formData?.amount || '0'), userCurrency)} has been transferred from {selectedFromAccount?.displayName} to {selectedToAccount?.displayName}
+              {formatCurrency(parseFloat(formData?.amount || '0'), userCurrency)} has been transferred from {selectedFromAccount?.displayName} to {selectedToAccount?.displayName}
             </p>
             <div className="bg-gray-50 rounded-2xl p-4 mb-6">
               <p className="text-sm text-gray-600 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -337,7 +334,7 @@ export default function InternalTransfer() {
               <div className="flex justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Amount:</span>
                 <span className="font-bold text-xl text-[#126987]" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  €{formatAmount(formData?.amount || '0')}
+                  {formatAmount(formData?.amount || '0', userCurrency)}
                 </span>
               </div>
               
