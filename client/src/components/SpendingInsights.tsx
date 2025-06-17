@@ -196,16 +196,16 @@ export default function SpendingInsights() {
       )}
     </div>
   );
+}
 
-  function getCategoryColor(category: string): string {
-    const colors: { [key: string]: string } = {
-      'Transfers': '#126987',
-      'Cash': '#6b7280',
-      'Bills': '#ef4444',
-      'Dining': '#f59e0b',
-      'Shopping': '#8b5cf6',
-      'Other': '#64748b'
-    };
-    return colors[category] || colors['Other'];
-  }
+function getCategoryColor(category: string): string {
+  const colors: { [key: string]: string } = {
+    'Transfers': '#126987',
+    'Cash': '#6b7280',
+    'Bills': '#ef4444',
+    'Dining': '#f59e0b',
+    'Shopping': '#8b5cf6',
+    'Other': '#64748b'
+  };
+  return colors[category] || colors['Other'];
 }
