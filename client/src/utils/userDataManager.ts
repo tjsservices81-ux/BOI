@@ -10,6 +10,7 @@ export interface UserData {
   dateOfBirth?: string;
   joinDate: string;
   dateCreated: string;
+  currency?: string;
 }
 
 export class UserDataManager {
@@ -372,6 +373,31 @@ export class UserDataManager {
     
     // Reset current user
     this.currentUser = null;
+  }
+
+  // Currency management
+  static getUserCurrency(customerNumber?: string): string {
+    const targetUser = customerNumber || this.getCurrentUser();
+    if (!targetUser) return 'GBP';
+    
+    const userData = this.getUserProfile();
+    return userData?.currency || 'GBP';
+  }
+
+  static setUserCurrency(customerNumber: string, currency: string) {
+    const allUsers = this.getAllUsers();
+    if (allUsers[customerNumber]) {
+      allUsers[customerNumber].currency = currency;
+      localStorage.setItem('bankUsers', JSON.stringify(allUsers));
+      
+      // Clear cache to force fresh data load
+      this.clearCache();
+      
+      // Dispatch currency update event
+      window.dispatchEvent(new CustomEvent('currencyUpdate', {
+        detail: { customerNumber, currency }
+      }));
+    }
   }
 
   // Admin-triggered cleanup - removes all traces of a deleted user
