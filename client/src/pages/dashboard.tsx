@@ -89,7 +89,7 @@ export default function Dashboard() {
     setAccounts(storedAccounts);
     
     // Load user currency
-    const currency = UserDataManager.getUserCurrency();
+    const currency = UserDataManager.getUserCurrency(currentUser);
     setUserCurrency(currency);
   }, []);
 

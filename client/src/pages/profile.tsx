@@ -1140,13 +1140,35 @@ export default function Profile() {
                           Set User Currency
                         </p>
                         <select
-                          value={UserDataManager.getUserCurrency()}
+                          value={(() => {
+                            const currentUser = UserDataManager.getCurrentUser();
+                            return currentUser ? UserDataManager.getUserCurrency(currentUser) : 'GBP';
+                          })()}
                           onChange={(e) => {
                             const newCurrency = e.target.value;
-                            UserDataManager.setUserCurrency(newCurrency);
+                            const currentUser = UserDataManager.getCurrentUser();
                             
-                            // Dispatch currency update event
+                            if (!currentUser) return;
+                            
+                            // Update currency for current user
+                            UserDataManager.setUserCurrency(currentUser, newCurrency);
+                            
+                            // Clear cache to ensure fresh data
+                            UserDataManager.clearCache();
+                            
+                            // Dispatch comprehensive currency update events
                             window.dispatchEvent(new CustomEvent('currencyUpdate', {
+                              detail: { 
+                                customerNumber: currentUser,
+                                currency: newCurrency 
+                              }
+                            }));
+                            
+                            // Force refresh all components
+                            window.dispatchEvent(new CustomEvent('forceRefresh'));
+                            
+                            // Additional event for immediate UI updates
+                            window.dispatchEvent(new CustomEvent('adminProfileUpdate', {
                               detail: { currency: newCurrency }
                             }));
                             
