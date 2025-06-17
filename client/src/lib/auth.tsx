@@ -11,6 +11,7 @@ interface AuthContextType {
   user: User | null;
   login: (user: User) => void;
   logout: () => void;
+  manualLogout: () => void;
   isLoading: boolean;
 }
 
@@ -21,40 +22,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Initialize auth state on mount - check for valid session
+  // Initialize auth state on mount - persistent session with no auto-logout
   useEffect(() => {
     let isMounted = true;
     
     const initializeAuth = async () => {
       try {
-        // Check if this is a cold start (app was closed and reopened)
-        const wasColdStart = sessionStorage.getItem('app_cold_start') === 'true';
-        
-        if (wasColdStart) {
-          // Cold start - clear all auth state and require fresh login
-          localStorage.removeItem('bankingUser');
-          if (isMounted) {
+        // Check for persistent user session (no expiry, no auto-logout)
+        const cachedUser = localStorage.getItem('bankingUser');
+        if (cachedUser && isMounted) {
+          try {
+            const parsedUser = JSON.parse(cachedUser);
+            setUser(parsedUser);
+          } catch (error) {
+            localStorage.removeItem('bankingUser');
             setUser(null);
-            setIsLoading(false);
-            setIsInitialized(true);
           }
-          sessionStorage.removeItem('app_cold_start');
-        } else {
-          // Normal navigation - check for cached user
-          const cachedUser = localStorage.getItem('bankingUser');
-          if (cachedUser && isMounted) {
-            try {
-              const parsedUser = JSON.parse(cachedUser);
-              setUser(parsedUser);
-            } catch (error) {
-              localStorage.removeItem('bankingUser');
-              setUser(null);
-            }
-          }
-          if (isMounted) {
-            setIsLoading(false);
-            setIsInitialized(true);
-          }
+        }
+        if (isMounted) {
+          setIsLoading(false);
+          setIsInitialized(true);
         }
       } catch (error) {
         if (isMounted) {
@@ -103,7 +90,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('bankingUser', JSON.stringify(userData));
   };
 
+  // Regular logout - disabled for normal use
   const logout = async () => {
+    // Disabled - logout only via manual methods
+    console.log('Standard logout disabled - use manual logout methods only');
+  };
+
+  // Manual logout via logo taps or admin control
+  const manualLogout = async () => {
     try {
       // Clear user state immediately
       setUser(null);
@@ -128,6 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         login,
         logout,
+        manualLogout,
         isLoading,
       }}
     >
