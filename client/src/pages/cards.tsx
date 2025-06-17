@@ -63,6 +63,13 @@ export default function Cards() {
 
     loadCardholderName();
     loadCardStatus();
+    
+    // Load user currency
+    const currentUser = UserDataManager.getCurrentUser();
+    if (currentUser) {
+      const currency = UserDataManager.getUserCurrency(currentUser);
+      setUserCurrency(currency);
+    }
 
     // Listen for profile updates and card unblock events
     const handleStorageChange = () => {

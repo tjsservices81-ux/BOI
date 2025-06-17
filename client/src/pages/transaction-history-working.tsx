@@ -168,23 +168,38 @@ export default function TransactionHistoryWorking() {
     loadData();
     
     // Load user currency
-    const currency = UserDataManager.getUserCurrency();
-    setUserCurrency(currency);
+    const currentUser = UserDataManager.getCurrentUser();
+    if (currentUser) {
+      const currency = UserDataManager.getUserCurrency(currentUser);
+      setUserCurrency(currency);
+    }
 
     // Listen for transaction events
     const handleTransactionUpdate = () => {
       loadData();
     };
+    
+    // Listen for currency updates from admin panel
+    const handleCurrencyUpdate = (event: CustomEvent) => {
+      const { customerNumber, currency } = event.detail || {};
+      const currentUser = UserDataManager.getCurrentUser();
+      
+      if (customerNumber === currentUser && currency) {
+        setUserCurrency(currency);
+      }
+    };
 
     window.addEventListener('transactionUpdate', handleTransactionUpdate);
     window.addEventListener('transactionDeleted', handleTransactionUpdate);
     window.addEventListener('transactionAdded', handleTransactionUpdate);
+    window.addEventListener('currencyUpdate', handleCurrencyUpdate as EventListener);
     window.addEventListener('balanceUpdate', handleTransactionUpdate);
     
     return () => {
       window.removeEventListener('transactionUpdate', handleTransactionUpdate);
       window.removeEventListener('transactionDeleted', handleTransactionUpdate);
       window.removeEventListener('transactionAdded', handleTransactionUpdate);
+      window.removeEventListener('currencyUpdate', handleCurrencyUpdate as EventListener);
       window.removeEventListener('balanceUpdate', handleTransactionUpdate);
     };
   }, []);

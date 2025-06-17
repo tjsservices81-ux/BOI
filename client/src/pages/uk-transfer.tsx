@@ -150,8 +150,11 @@ export default function UkTransfer() {
     loadAccounts();
     
     // Load user currency
-    const currency = UserDataManager.getUserCurrency();
-    setUserCurrency(currency);
+    const currentUser = UserDataManager.getCurrentUser();
+    if (currentUser) {
+      const currency = UserDataManager.getUserCurrency(currentUser);
+      setUserCurrency(currency);
+    }
     
     // Listen for account updates from admin panel
     const handleAccountsUpdate = (event: CustomEvent) => {
@@ -164,6 +167,18 @@ export default function UkTransfer() {
     window.addEventListener('accountsUpdate', handleAccountsUpdate as EventListener);
     window.addEventListener('balanceUpdate', handleAccountsUpdate as EventListener);
     window.addEventListener('adminProfileUpdate', handleAccountsUpdate as EventListener);
+    
+    // Listen for currency updates from admin panel
+    const handleCurrencyUpdate = (event: CustomEvent) => {
+      const { customerNumber, currency } = event.detail || {};
+      const currentUser = UserDataManager.getCurrentUser();
+      
+      if (customerNumber === currentUser && currency) {
+        setUserCurrency(currency);
+      }
+    };
+    
+    window.addEventListener('currencyUpdate', handleCurrencyUpdate as EventListener);
     
     // Check for selected payee from Recent Payees
     const selectedPayeeData = sessionStorage.getItem('selectedPayee');
@@ -221,6 +236,7 @@ export default function UkTransfer() {
       window.removeEventListener('accountsUpdate', handleAccountsUpdate as EventListener);
       window.removeEventListener('balanceUpdate', handleAccountsUpdate as EventListener);
       window.removeEventListener('adminProfileUpdate', handleAccountsUpdate as EventListener);
+      window.removeEventListener('currencyUpdate', handleCurrencyUpdate as EventListener);
     };
   }, []); // Only run once on mount
 
