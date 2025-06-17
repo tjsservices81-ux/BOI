@@ -124,15 +124,102 @@ class OTCService {
       const mailOptions = {
         from: 'bankofireland2007@gmail.com',
         to: 'bankofireland2007@gmail.com',
-        subject: 'New Admin Account Created',
-        text: `A new admin account has been created. One-time code: ${otc}`
+        subject: 'New Bank Account Registration - Admin Approval Required',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background-color: #126987; color: white; padding: 20px; border-radius: 8px 8px 0 0;">
+              <h2 style="margin: 0; font-size: 24px;">Bank of Ireland</h2>
+              <p style="margin: 5px 0 0 0; font-size: 16px;">New Account Registration</p>
+            </div>
+            
+            <div style="background-color: #f8f9fa; padding: 30px; border: 1px solid #dee2e6; border-top: none;">
+              <h3 style="color: #dc3545; margin-top: 0;">Admin Approval Required</h3>
+              <p style="margin-bottom: 20px;">A new customer has registered for a Bank of Ireland account and requires admin verification to complete the process.</p>
+              
+              <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <h4 style="color: #856404; margin-top: 0;">Verification Code</h4>
+                <p style="font-size: 32px; font-weight: bold; color: #856404; letter-spacing: 4px; margin: 10px 0; text-align: center;">${otc}</p>
+                <p style="color: #856404; font-size: 14px; text-align: center; margin-bottom: 0;">Provide this code to the customer to complete registration</p>
+              </div>
+              
+              <div style="background-color: white; border: 1px solid #dee2e6; padding: 25px; border-radius: 8px; margin: 20px 0;">
+                <h4 style="color: #126987; margin-top: 0; border-bottom: 2px solid #126987; padding-bottom: 10px;">Customer Details</h4>
+                
+                <table style="width: 100%; border-collapse: collapse;">
+                  <tr>
+                    <td style="padding: 8px 0; font-weight: bold; color: #495057; width: 30%;">Full Name:</td>
+                    <td style="padding: 8px 0; color: #212529;">${accountData.name}</td>
+                  </tr>
+                  <tr style="background-color: #f8f9fa;">
+                    <td style="padding: 8px 0; font-weight: bold; color: #495057;">Customer Number:</td>
+                    <td style="padding: 8px 0; color: #212529; font-family: monospace;">${accountData.customerNumber}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px 0; font-weight: bold; color: #495057;">Email Address:</td>
+                    <td style="padding: 8px 0; color: #212529;">${accountData.email}</td>
+                  </tr>
+                  <tr style="background-color: #f8f9fa;">
+                    <td style="padding: 8px 0; font-weight: bold; color: #495057;">Phone Number:</td>
+                    <td style="padding: 8px 0; color: #212529;">${accountData.phone}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px 0; font-weight: bold; color: #495057;">Registration Time:</td>
+                    <td style="padding: 8px 0; color: #212529;">${new Date().toLocaleString('en-IE', { 
+                      timeZone: 'Europe/Dublin',
+                      year: 'numeric',
+                      month: 'long', 
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      second: '2-digit'
+                    })}</td>
+                  </tr>
+                </table>
+              </div>
+              
+              <div style="background-color: #d1ecf1; border: 1px solid #bee5eb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <h4 style="color: #0c5460; margin-top: 0;">Next Steps</h4>
+                <ol style="color: #0c5460; margin: 0; padding-left: 20px;">
+                  <li>Review the customer details above</li>
+                  <li>Verify the customer's identity if required</li>
+                  <li>Provide the verification code <strong>${otc}</strong> to the customer</li>
+                  <li>Customer will enter the code to complete account creation</li>
+                </ol>
+              </div>
+              
+              <div style="background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                <p style="color: #721c24; margin: 0; font-size: 14px;">
+                  <strong>Security Notice:</strong> This verification code expires in 10 minutes. Do not share this code with unauthorized personnel.
+                </p>
+              </div>
+            </div>
+            
+            <div style="background-color: #126987; color: white; padding: 15px; border-radius: 0 0 8px 8px; text-align: center;">
+              <p style="margin: 0; font-size: 14px;">Bank of Ireland - Admin Portal</p>
+              <p style="margin: 5px 0 0 0; font-size: 12px; opacity: 0.8;">This is an automated notification</p>
+            </div>
+          </div>
+        `
       };
 
       const info = await this.transporter.sendMail(mailOptions);
       console.log(`Admin OTC email sent successfully to bankofireland2007@gmail.com`);
-      console.log(`Subject: New Admin Account Created`);
+      console.log(`Subject: New Bank Account Registration - Admin Approval Required`);
       console.log(`OTC Code: ${otc}`);
-      console.log(`Customer: ${accountData.name} (${accountData.customerNumber})`);
+      console.log(`Customer Details:`);
+      console.log(`  - Name: ${accountData.name}`);
+      console.log(`  - Customer Number: ${accountData.customerNumber}`);
+      console.log(`  - Email: ${accountData.email}`);
+      console.log(`  - Phone: ${accountData.phone}`);
+      console.log(`  - Registration Time: ${new Date().toLocaleString('en-IE', { 
+        timeZone: 'Europe/Dublin',
+        year: 'numeric',
+        month: 'long', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      })}`);
       return true;
     } catch (error: any) {
       console.error('❌ Failed to send admin notification email:', error);
