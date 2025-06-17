@@ -61,6 +61,8 @@ interface ChatState {
   estimatedWaitTime?: number;
   queuePosition?: number;
   isInQueue?: boolean;
+  lastActivityTime?: Date;
+  hasCheckedIn?: boolean;
 }
 
 export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
@@ -125,7 +127,9 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       queueStartTime: new Date(),
       estimatedWaitTime: waitTime,
       queuePosition: queuePosition,
-      isInQueue: true
+      isInQueue: true,
+      lastActivityTime: new Date(),
+      hasCheckedIn: false
     };
   };
   
@@ -180,6 +184,32 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queueTimerRef = useRef<NodeJS.Timeout | null>(null);
   const endChatTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const startInactivityTimer = () => {
+    if (inactivityTimerRef.current) {
+      clearTimeout(inactivityTimerRef.current);
+    }
+
+    // Set 3-minute (180 seconds) timer for inactivity check-in
+    inactivityTimerRef.current = setTimeout(() => {
+      if (!chatState.hasCheckedIn && chatState.queueStatus === 'connected') {
+        const checkInMessage: ChatMessage = {
+          id: Date.now().toString(),
+          text: getCheckInMessage(chatState.agentName),
+          isUser: false,
+          timestamp: new Date(),
+          agentName: chatState.agentName
+        };
+
+        setChatState(prev => ({
+          ...prev,
+          messages: [...prev.messages, checkInMessage],
+          hasCheckedIn: true
+        }));
+      }
+    }, 180000); // 3 minutes
+  };
 
   const scrollToBottom = () => {
     // Use a small delay to ensure DOM is updated
@@ -563,16 +593,108 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     return stored || getDefaultResponses();
   };
 
+  // Agent-specific responses for no transactions
+  const getNoTransactionResponse = (agentName: string): string => {
+    const responses: { [key: string]: string[] } = {
+      'Emma': [
+        "There haven't been any transactions on your account recently.",
+        "Your account's looking quiet at the moment — no recent activity to report.",
+        "Nothing has gone through your account just yet.",
+        "I can see your account hasn't had any movement recently."
+      ],
+      'James': [
+        "Looks like no payments or transfers have been made yet.",
+        "Your transfer history is clear — nothing's gone out or come in recently.",
+        "No recent transactions showing up on your end.",
+        "Your account's been pretty quiet — no transfers or payments to report."
+      ],
+      'Sarah': [
+        "Your account's still quiet — no recent activity to report.",
+        "I don't see any recent transactions on your account.",
+        "Nothing has gone out or come in on your end just yet.",
+        "Your account activity is clear at the moment."
+      ],
+      'Aoife': [
+        "Sure, I've had a look and there's no recent activity on your account.",
+        "Your account's been quiet lately — no transactions to show you.",
+        "Nothing's moved through your account recently.",
+        "I can see your account hasn't had any activity just yet."
+      ],
+      'Liam': [
+        "No card transactions or payments showing up recently.",
+        "Your payment history is clear — nothing's gone through lately.",
+        "I don't see any recent card activity on your account.",
+        "Your account's been quiet on the payment front."
+      ]
+    };
+
+    const agentResponses = responses[agentName] || responses['Emma'];
+    return agentResponses[Math.floor(Math.random() * agentResponses.length)];
+  };
+
+  // Agent-specific check-in messages for inactivity
+  const getCheckInMessage = (agentName: string): string => {
+    const messages: { [key: string]: string[] } = {
+      'Emma': [
+        "Still with me? Let me know if you need anything else with your account.",
+        "Just checking in — I'm here if you need any help.",
+        "Take your time! I'm standing by if you have any questions.",
+        "Everything alright? I'm here whenever you're ready."
+      ],
+      'James': [
+        "Still there? Happy to help with any transfer questions you might have.",
+        "Just checking in — I'm here if you need help with payments or transfers.",
+        "Take your time! Let me know if you need assistance with anything.",
+        "All good? I'm standing by if you need any banking help."
+      ],
+      'Sarah': [
+        "Still with me? I'm here if you need help with your account security.",
+        "Just checking — is there anything else I can help you with?",
+        "Take your time! I'm here whenever you need assistance.",
+        "Everything okay? Let me know if you have any questions."
+      ],
+      'Aoife': [
+        "Are you still there? I'm here if you need any help at all.",
+        "Just checking in — is there anything else I can do for you?",
+        "Take all the time you need! I'm here when you're ready.",
+        "All sorted, or is there something else I can help with?"
+      ],
+      'Liam': [
+        "Still there? Happy to help with any card or payment questions.",
+        "Just checking in — I'm here if you need help with anything.",
+        "Take your time! Let me know if you need assistance.",
+        "Everything good? I'm standing by if you have any questions."
+      ]
+    };
+
+    const agentMessages = messages[agentName] || messages['Emma'];
+    return agentMessages[Math.floor(Math.random() * agentMessages.length)];
+  };
+
   const generateAIResponse = async (userMessage: string): Promise<{ text: string; category: string }> => {
     try {
+      // Check if user is asking about transactions with no results
+      const transactionKeywords = ['transaction', 'payment', 'transfer', 'recent activity', 'account activity', 'movement'];
+      const isTransactionQuery = transactionKeywords.some(keyword => 
+        userMessage.toLowerCase().includes(keyword)
+      );
+
+      // Get current user's transaction data from UserDataManager
+      const userTransactions = currentUser ? UserDataManager.getUserTransactions() : [];
+
+      // If asking about transactions and there are none, use agent-specific response
+      if (isTransactionQuery && userTransactions.length === 0) {
+        return {
+          text: getNoTransactionResponse(chatState.agentName),
+          category: 'no-transactions'
+        };
+      }
+
       // Prepare conversation history for AI context
       const conversationHistory = chatState.messages.map(msg => ({
         role: msg.isUser ? 'user' as const : 'assistant' as const,
         content: msg.text
       }));
-
-      // Get current user's transaction data from UserDataManager
-      const userTransactions = currentUser ? UserDataManager.getUserTransactions() : [];
 
       const response = await fetch('/api/chat/ai-response', {
         method: 'POST',
@@ -619,10 +741,18 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
 
     setChatState(prev => ({
       ...prev,
-      messages: [...prev.messages, userMessage]
+      messages: [...prev.messages, userMessage],
+      lastActivityTime: new Date(),
+      hasCheckedIn: false
     }));
     
     setInputText("");
+
+    // Reset inactivity timer on user message
+    if (inactivityTimerRef.current) {
+      clearTimeout(inactivityTimerRef.current);
+    }
+    startInactivityTimer();
     
     // Calculate realistic reading time for user's message
     // Average reading speed: 150-200 words per minute
