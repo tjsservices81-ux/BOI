@@ -497,27 +497,11 @@ img, svg {
 }
 
 /* Prevent icon flickering */
-.lucide, .lucide-react, [data-lucide], svg {
-  opacity: 1 !important;
-  visibility: visible !important;
-  display: inline-block !important;
-  transition: none !important;
-  animation: none !important;
-}
-
-/* Lucide React specific optimizations */
-svg[data-lucide], svg.lucide {
+svg {
   opacity: 1 !important;
   visibility: visible !important;
   display: inline-block !important;
   vertical-align: middle;
-}
-
-/* Button and interactive element icons */
-button svg, a svg, [role="button"] svg {
-  opacity: 1 !important;
-  visibility: visible !important;
-  display: inline-block !important;
   transition: none !important;
 }
 

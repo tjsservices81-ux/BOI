@@ -44,7 +44,7 @@ export default function SpendingVisualization() {
       const storedTransactions = JSON.parse(localStorage.getItem('bankTransactions') || '[]');
       
       // Limit patterns to improve performance - only show recent transactions
-      const recentTransactions = storedTransactions.slice(-20);
+      const recentTransactions = storedTransactions.slice(-10);
       
       // Convert transactions to visual patterns
       const newPatterns: SpendingPattern[] = recentTransactions.map((tx: Transaction) => {
