@@ -17,6 +17,7 @@ export class UserDataManager {
   private static dataCache: Map<string, any> = new Map();
   private static cacheTimestamps: Map<string, number> = new Map();
   private static readonly CACHE_DURATION = 30000; // 30 seconds
+  private static adminLogoutListener: ((event: StorageEvent) => void) | null = null;
 
   // Set the current active user
   static setCurrentUser(customerNumber: string) {
@@ -26,6 +27,32 @@ export class UserDataManager {
     this.setLastActiveUser(customerNumber);
     // Mark session as valid when user is set
     this.setSessionValid(customerNumber, true);
+    // Set up admin logout monitoring for this user
+    this.setupAdminLogoutMonitoring(customerNumber);
+  }
+
+  // Monitor for admin logout events via localStorage
+  static setupAdminLogoutMonitoring(customerNumber: string) {
+    // Remove existing listener if any
+    if (this.adminLogoutListener) {
+      window.removeEventListener('storage', this.adminLogoutListener);
+    }
+
+    // Create new listener for this user
+    this.adminLogoutListener = (event: StorageEvent) => {
+      if (event.key === `admin_logout_${customerNumber}` && event.newValue) {
+        console.log(`🔒 Admin logout detected for customer ${customerNumber}`);
+        // Invalidate session immediately
+        this.invalidateSession(customerNumber);
+        // Show notification to user
+        if (window.location.pathname !== '/login') {
+          alert('Your session has been terminated by an administrator. You will be redirected to login.');
+          window.location.href = '/login';
+        }
+      }
+    };
+
+    window.addEventListener('storage', this.adminLogoutListener);
   }
 
   // Get the current active user

@@ -623,7 +623,7 @@ router.get('/panel', adminAuth, async (req, res) => {
         }
         
         async function logoutUser(customerNumber, username) {
-          if (!confirm('Force logout ' + username + '? This will invalidate their session and disable biometric access.')) {
+          if (!confirm('Force logout ' + username + '? This will invalidate their persistent session and disable biometric access until they re-authenticate.')) {
             return;
           }
           
@@ -639,7 +639,13 @@ router.get('/panel', adminAuth, async (req, res) => {
             const result = await response.json();
             
             if (result.success) {
-              alert(username + ' has been logged out from all devices. Biometric access revoked.');
+              // Broadcast session invalidation to user's browser via localStorage event
+              localStorage.setItem('admin_logout_' + customerNumber, Date.now().toString());
+              setTimeout(() => {
+                localStorage.removeItem('admin_logout_' + customerNumber);
+              }, 5000);
+              
+              alert(username + ' has been logged out from all devices. Their persistent session has been invalidated.');
               updateStats();
             } else {
               alert('Failed to logout user: ' + result.message);

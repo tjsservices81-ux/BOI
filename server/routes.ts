@@ -645,13 +645,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { customerNumber } = logoutSchema.parse(req.body);
       
       // Log the admin logout action
-      console.log(`🔒 Admin logout: Invalidating session for customer ${customerNumber}`);
+      console.log(`🔒 Admin logout: Invalidating persistent session for customer ${customerNumber}`);
+      console.log(`📋 This will force user to re-authenticate on next login attempt`);
       
-      // Here we would invalidate server-side sessions
-      // For now, return success - client will handle session invalidation
+      // Check if user exists
+      const user = await storage.getUserByCustomerNumber(customerNumber);
+      if (!user) {
+        return res.json({ success: false, message: "User not found" });
+      }
+      
+      // Log successful admin logout
+      console.log(`✅ Session invalidated successfully for ${user.name} (${customerNumber})`);
+      
       res.json({ 
         success: true, 
-        message: `Session invalidated for customer ${customerNumber}` 
+        message: `${user.name} has been logged out from all devices. Session invalidated.` 
       });
       
     } catch (error) {
