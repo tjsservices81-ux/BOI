@@ -558,6 +558,7 @@ router.get('/panel', adminAuth, async (req, res) => {
               body: JSON.stringify({ sessionId: currentSessionId })
             });
             
+            const result = await response.json();
             if (response.ok) {
               // Remove user from UI
               const userElement = document.getElementById(\`user-\${currentSessionId}\`);
@@ -573,6 +574,8 @@ router.get('/panel', adminAuth, async (req, res) => {
               
               // Update stats
               updateStats();
+            } else {
+              console.error('Error deleting user:', result);
             }
           } catch (error) {
             console.error('Error deleting user:', error);
