@@ -63,30 +63,36 @@ function AppRoutes() {
     }
   };
 
-  // Initialize app state - always show splash screen on startup
+  // Initialize app state with proper splash screen logic
   useEffect(() => {
     const initializeApp = async () => {
-      // Always show splash screen for every app startup
-      setSplashShown(false);
-      sessionStorage.setItem('app_was_active', 'true');
+      // Check if app was previously active (indicates backgrounding vs fresh start)
+      const wasAppActive = sessionStorage.getItem('app_was_active');
       
-      // Clear any previous background/close timestamps
-      localStorage.removeItem('app_background_time');
-      localStorage.removeItem('app_close_time');
-      
-      // Try to restore user from localStorage during splash - no expiration checks
-      try {
-        const savedUser = localStorage.getItem('bankingUser');
-        if (savedUser && !user) {
-          try {
-            const parsedUser = JSON.parse(savedUser);
-            login(parsedUser);
-          } catch (error) {
-            console.error('Failed to restore user:', error);
+      if (!wasAppActive) {
+        // Fresh app start - show splash screen
+        setSplashShown(false);
+        sessionStorage.setItem('app_was_active', 'true');
+      } else {
+        // App was backgrounded and restored - skip splash, restore state
+        try {
+          const savedUser = localStorage.getItem('bankingUser');
+          if (savedUser && !user) {
+            try {
+              const parsedUser = JSON.parse(savedUser);
+              login(parsedUser);
+            } catch (error) {
+              console.error('Failed to restore user:', error);
+            }
           }
+          setSplashShown(true);
+          setSplashTransitioning(false);
+          setIsRestoringState(false);
+        } catch (error) {
+          console.error('Failed to restore app state:', error);
+          setSplashShown(true);
+          setIsRestoringState(false);
         }
-      } catch (error) {
-        console.error('Failed to restore app state:', error);
       }
       
       // Clear only temporary state, preserve user sessions
@@ -99,7 +105,7 @@ function AppRoutes() {
       
       const themeColorMeta = document.querySelector('meta[name="theme-color"]');
       if (themeColorMeta) {
-        themeColorMeta.setAttribute('content', '#000DFF');
+        themeColorMeta.setAttribute('content', '#003D82');
       }
       
       setIsRestoringState(false);
@@ -111,8 +117,7 @@ function AppRoutes() {
     // Handle app lifecycle events - preserve user sessions permanently
     const handleVisibilityChange = () => {
       if (document.hidden) {
-        // App going to background - save state and timestamp for force close detection
-        localStorage.setItem('app_background_time', Date.now().toString());
+        // App going to background - save user session
         if (user) {
           localStorage.setItem('bankingUser', JSON.stringify(user));
         }
@@ -120,8 +125,7 @@ function AppRoutes() {
     };
 
     const handleBeforeUnload = () => {
-      // Mark app as closing - helps detect force close vs normal background
-      localStorage.setItem('app_close_time', Date.now().toString());
+      // Clear session marker so next start shows splash
       sessionStorage.removeItem('app_was_active');
       // Save user to localStorage - no timeouts
       if (user) {
@@ -129,23 +133,12 @@ function AppRoutes() {
       }
     };
 
-    const handlePageHide = () => {
-      // Page being hidden - potential force close
-      localStorage.setItem('app_close_time', Date.now().toString());
-      sessionStorage.removeItem('app_was_active');
-      if (user) {
-        localStorage.setItem('bankingUser', JSON.stringify(user));
-      }
-    };
-
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('beforeunload', handleBeforeUnload);
-    window.addEventListener('pagehide', handlePageHide);
     
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      window.removeEventListener('pagehide', handlePageHide);
     };
   }, [user, location]);
 
