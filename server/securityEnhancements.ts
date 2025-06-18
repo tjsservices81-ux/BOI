@@ -77,26 +77,10 @@ export function geoBlockingMiddleware(req: Request, res: Response, next: NextFun
   next();
 }
 
-// Session security - DISABLED TO PREVENT UNAUTHORIZED SESSION TERMINATION
-export function sessionSecurityMiddleware(req: Request & { session?: any }, res: Response, next: NextFunction) {
-  if (req.session) {
-    console.log('Session security check bypassed - only admin panel can terminate sessions');
-    console.log('Request details:', {
-      userAgent: req.get('User-Agent'),
-      sessionId: req.sessionID,
-      timestamp: new Date().toISOString()
-    });
-    
-    // SECURITY HARDENING: Never destroy sessions automatically
-    // Only admin panel can invalidate sessions
-    
-    // Store user agent on first login (safe operation)
-    const userAgent = req.get('User-Agent') || '';
-    if (!req.session.userAgent) {
-      req.session.userAgent = userAgent;
-    }
-  }
-  
+// Session security - SIMPLIFIED TO PREVENT SESSION TERMINATION
+export function sessionSecurityMiddleware(req: Request, res: Response, next: NextFunction) {
+  // Session security checks disabled - only admin panel can terminate sessions
+  // All sessions persist unless manually deleted by admin
   next();
 }
 
@@ -105,7 +89,8 @@ setInterval(() => {
   const now = Date.now();
   const windowMs = 15 * 60 * 1000; // 15 minutes
   
-  Array.from(rateLimitStore.entries()).forEach(([ip, record]) => {
+  const entries = Array.from(rateLimitStore.entries());
+  entries.forEach(([ip, record]) => {
     if (now - record.lastAttempt > windowMs) {
       rateLimitStore.delete(ip);
     }

@@ -369,32 +369,4 @@ export class UserDataManager {
     
     console.log('🔒 SECURE: Cleared temporary state while preserving all user account data');
   }
-
-  // DISABLED: This function has been disabled to prevent auto-deletion
-  // User accounts can ONLY be deleted manually by admin via /admin/login
-  static clearAllData() {
-    console.error(`🚨 SECURITY VIOLATION: clearAllData() called but is COMPLETELY DISABLED`);
-    console.error(`🚨 User accounts can ONLY be deleted manually by admin via /admin/login`);
-    console.error(`🚨 This function would delete all user accounts and is now blocked`);
-    
-    // Log the call stack to identify where this was called from
-    console.trace('clearAllData call stack:');
-    
-    // Refuse to delete any user data - all accounts are preserved
-    return false;
-  }
-
-  // DISABLED: This function has been completely disabled to prevent any auto-deletion
-  // User accounts can ONLY be deleted manually by admin via /admin/login
-  static adminDeleteUser(customerNumber: string) {
-    console.error(`🚨 SECURITY VIOLATION: adminDeleteUser() called for ${customerNumber} but is COMPLETELY DISABLED`);
-    console.error(`🚨 User accounts can ONLY be deleted manually by admin via /admin/login`);
-    console.error(`🚨 This function call indicates a potential security breach or programming error`);
-    
-    // Log the call stack to identify where this was called from
-    console.trace('adminDeleteUser call stack:');
-    
-    // Refuse to delete any user data - all accounts are preserved
-    return false;
-  }
 }
