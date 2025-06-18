@@ -1036,6 +1036,52 @@ No transfers found yet on your account.`;
     }
   });
 
+  // User validation endpoint for login security
+  app.get("/api/auth/validate/:customerNumber", async (req, res) => {
+    try {
+      const { customerNumber } = req.params;
+      
+      // Check if user exists in database
+      const user = await storage.getUser(customerNumber);
+      if (!user) {
+        return res.status(404).json({ 
+          success: false, 
+          exists: false, 
+          message: "This account no longer exists." 
+        });
+      }
+
+      // Check if user is disabled by admin
+      const { isUserDisabled } = await import('./userDisableManager');
+      if (isUserDisabled(user.id)) {
+        return res.status(403).json({ 
+          success: false, 
+          exists: true, 
+          disabled: true,
+          message: "This account has been temporarily suspended." 
+        });
+      }
+
+      // User exists and is active
+      res.json({ 
+        success: true, 
+        exists: true, 
+        disabled: false,
+        user: {
+          id: user.id,
+          customerNumber: user.customerNumber,
+          name: user.name
+        }
+      });
+    } catch (error) {
+      console.error('Failed to validate user:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to validate account status" 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

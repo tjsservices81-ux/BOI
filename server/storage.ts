@@ -12,6 +12,7 @@ export interface IStorage {
   // User operations
   getUserByCredentials(customerNumber: string, pin: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  getUser(customerNumber: string): Promise<User | undefined>;
   getUserByCustomerNumber(customerNumber: string): Promise<User | undefined>;
   updateUserProfile(customerNumber: string, updates: Partial<User>): Promise<User | undefined>;
   getAllUsers(): Promise<User[]>;
@@ -180,6 +181,10 @@ class MemStorage implements IStorage {
     return user;
   }
 
+  async getUser(customerNumber: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(user => user.customerNumber === customerNumber);
+  }
+
   async getUserByCustomerNumber(customerNumber: string): Promise<User | undefined> {
     return Array.from(this.users.values()).find(user => user.customerNumber === customerNumber);
   }
@@ -220,7 +225,7 @@ class MemStorage implements IStorage {
       userChatMessages.forEach(msg => this.chatMessages.delete(msg.id));
       
       const userChatSessions = Array.from(this.chatSessions.values()).filter(session => session.userId === user.id);
-      userChatSessions.forEach(session => this.chatSessions.delete(session.id));
+      userChatSessions.forEach(session => this.chatSessions.delete(session.sessionId));
       
       // Finally delete the user
       this.users.delete(user.id);

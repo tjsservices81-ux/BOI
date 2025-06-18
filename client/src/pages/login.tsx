@@ -347,7 +347,7 @@ export default function Login() {
     }
   };
 
-  const handleBiometricHoldStart = () => {
+  const handleBiometricHoldStart = async () => {
     if (biometricVerified) return;
     
     // Check if any users exist first
@@ -359,6 +359,29 @@ export default function Login() {
         variant: "destructive",
       });
       return;
+    }
+
+    // Validate user existence on server before starting biometric scan
+    const targetCustomerNumber = customerNumber || UserDataManager.getLastActiveUser() || Object.keys(allUsers)[0];
+    if (targetCustomerNumber) {
+      try {
+        const response = await fetch(`/api/auth/validate/${targetCustomerNumber}`);
+        const validation = await response.json();
+        
+        if (!validation.success) {
+          // User was deleted or suspended
+          UserDataManager.adminDeleteUser(targetCustomerNumber);
+          toast({
+            title: "Account Not Available",
+            description: validation.message || "This account no longer exists.",
+            variant: "destructive",
+          });
+          return;
+        }
+      } catch (error) {
+        console.error('Failed to validate user during biometric:', error);
+        // Continue with offline validation if server is unreachable
+      }
     }
 
     // If customer number is entered, validate it exists
@@ -457,6 +480,37 @@ export default function Login() {
           return prev;
         });
       }, 100);
+
+      // Validate user existence on server during authentication stage
+      const targetCustomerNumber = customerNumber || UserDataManager.getLastActiveUser() || Object.keys(UserDataManager.getAllUsers())[0];
+      if (targetCustomerNumber) {
+        try {
+          const response = await fetch(`/api/auth/validate/${targetCustomerNumber}`);
+          const validation = await response.json();
+          
+          if (!validation.success) {
+            clearInterval(progressInterval);
+            setIsLoginAnimating(false);
+            setLoginProgress(0);
+            setLoginStage('');
+            
+            // User was deleted or suspended - clean up local data
+            UserDataManager.adminDeleteUser(targetCustomerNumber);
+            setBiometricVerified(false);
+            setPinVerified(false);
+            
+            toast({
+              title: "Account Not Available",
+              description: validation.message || "This account no longer exists.",
+              variant: "destructive",
+            });
+            return;
+          }
+        } catch (error) {
+          console.error('Failed to validate user during login:', error);
+          // Continue with offline login if server is unreachable
+        }
+      }
 
       await new Promise(resolve => setTimeout(resolve, 2000));
 
