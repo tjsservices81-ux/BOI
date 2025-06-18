@@ -1028,7 +1028,7 @@ export default function Login() {
                       WebkitTapHighlightColor: 'transparent'
                     }}
                   >
-                    {/* Circular progress indicator when scanning */}
+                    {/* Progress ring animation during hold */}
                     {isScanning && (
                       <div className="absolute inset-0 rounded-full">
                         <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
@@ -1036,24 +1036,20 @@ export default function Login() {
                             cx="50"
                             cy="50"
                             r="45"
-                            stroke="currentColor"
+                            stroke="#e5e7eb"
                             strokeWidth="4"
                             fill="transparent"
-                            className="text-blue-200"
                           />
                           <circle
                             cx="50"
                             cy="50"
                             r="45"
-                            stroke="currentColor"
+                            stroke="#3b82f6"
                             strokeWidth="4"
                             fill="transparent"
                             strokeDasharray="282.7"
-                            strokeDashoffset="282.7"
-                            className="text-blue-500 transition-all duration-[6000ms] ease-linear"
-                            style={{
-                              strokeDashoffset: isScanning ? '0' : '282.7'
-                            }}
+                            strokeDashoffset={282.7 - (282.7 * holdProgress) / 100}
+                            className="transition-all duration-75 ease-linear"
                           />
                         </svg>
                       </div>
@@ -1088,7 +1084,7 @@ export default function Login() {
                       WebkitTapHighlightColor: 'transparent'
                     }}
                   >
-                    {biometricVerified ? 'Fingerprint verified' : isScanning ? 'Scanning fingerprint...' : 'Biometric login'}
+                    {biometricVerified ? 'Fingerprint verified' : isScanning ? 'Hold to scan fingerprint...' : 'Biometric login'}
                   </p>
                 </div>
 
