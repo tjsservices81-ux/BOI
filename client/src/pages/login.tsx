@@ -62,26 +62,7 @@ export default function Login() {
   // Validate users against server and clean up deleted ones
   const validateAndCleanUsers = async () => {
     const cachedUsers = UserDataManager.getAllUsers();
-    const validUsers: any = {};
-    
-    for (const [customerNumber, userData] of Object.entries(cachedUsers)) {
-      try {
-        // Check if user still exists on server
-        const response = await fetch(`/api/profile/${customerNumber}`);
-        if (response.ok) {
-          validUsers[customerNumber] = userData;
-        } else if (response.status === 404) {
-          // User was deleted by admin - remove from frontend cache
-          console.log(`Removing deleted user ${customerNumber} from cache`);
-          UserDataManager.adminDeleteUser(customerNumber);
-        }
-      } catch (error) {
-        // Keep user on network error to avoid false removal
-        validUsers[customerNumber] = userData;
-      }
-    }
-    
-    setValidatedUsers(validUsers);
+    setValidatedUsers(cachedUsers); // Use cached users immediately, validate in background
   };
 
 
@@ -365,34 +346,26 @@ export default function Login() {
       return;
     }
 
-    // Validate user existence on server before starting biometric scan
-    const targetCustomerNumber = customerNumber || UserDataManager.getLastActiveUser() || Object.keys(allUsers)[0];
-    if (targetCustomerNumber) {
-      try {
-        const response = await fetch(`/api/auth/validate/${targetCustomerNumber}`);
-        const validation = await response.json();
-        
-        if (!validation.success) {
-          // User was deleted or suspended
-          UserDataManager.adminDeleteUser(targetCustomerNumber);
-          toast({
-            title: "Account Not Available",
-            description: validation.message || "This account no longer exists.",
-            variant: "destructive",
-          });
-          return;
+    // Determine target user before starting scan
+    let targetUser = null;
+    if (customerNumber && UserDataManager.userExists(customerNumber)) {
+      targetUser = customerNumber;
+    } else if (!customerNumber) {
+      const lastActiveUser = UserDataManager.getLastActiveUser();
+      if (lastActiveUser && UserDataManager.userExists(lastActiveUser)) {
+        targetUser = lastActiveUser;
+      } else {
+        const userNumbers = Object.keys(allUsers);
+        if (userNumbers.length > 0) {
+          targetUser = userNumbers[0]; // Use first available user
         }
-      } catch (error) {
-        console.error('Failed to validate user during biometric:', error);
-        // Continue with offline validation if server is unreachable
       }
     }
 
-    // If customer number is entered, validate it exists
-    if (customerNumber && !UserDataManager.userExists(customerNumber)) {
+    if (!targetUser) {
       toast({
         title: "Account Not Found",
-        description: "Customer number not found. Please check your credentials.",
+        description: "No valid account found. Please check your credentials.",
         variant: "destructive",
       });
       return;
@@ -403,53 +376,35 @@ export default function Login() {
     
     let progressCount = 0;
     const totalSteps = 80; // 80 steps over 4 seconds (50ms intervals)
+    let isCompleted = false;
     
     const timer = setInterval(() => {
+      if (isCompleted) {
+        clearInterval(timer);
+        return;
+      }
+      
       progressCount++;
       const newProgress = (progressCount / totalSteps) * 100;
       
       setHoldProgress(newProgress);
       
       // Only authenticate when timer completes the full 4 seconds
-      if (progressCount >= totalSteps) {
+      if (progressCount >= totalSteps && !isCompleted) {
+        isCompleted = true;
         clearInterval(timer);
         setBiometricVerified(true);
         setIsScanning(false);
         setHoldProgress(0);
         
-        // Initialize fresh account data based on entered customer number or last active user if none entered
-        let targetUser = null;
-        if (customerNumber && UserDataManager.userExists(customerNumber)) {
-          targetUser = customerNumber;
-          UserDataManager.setCurrentUser(customerNumber);
-          UserDataManager.initializeFreshAccount(customerNumber);
-        } else if (!customerNumber) {
-          // If no customer number entered, use last active user first, then fall back to most recent
-          const lastActiveUser = UserDataManager.getLastActiveUser();
-          if (lastActiveUser && UserDataManager.userExists(lastActiveUser)) {
-            targetUser = lastActiveUser;
-            UserDataManager.setCurrentUser(lastActiveUser);
-            UserDataManager.initializeFreshAccount(lastActiveUser);
-            setCustomerNumber(lastActiveUser); // Update the display
-          } else {
-            // Fall back to most recent account if no last active user
-            const allUsers = UserDataManager.getAllUsers();
-            const userNumbers = Object.keys(allUsers);
-            if (userNumbers.length > 0) {
-              const mostRecentUser = userNumbers.reduce((latest, current) => {
-                const latestDate = new Date(allUsers[latest].dateCreated);
-                const currentDate = new Date(allUsers[current].dateCreated);
-                return currentDate > latestDate ? current : latest;
-              });
-              targetUser = mostRecentUser;
-              UserDataManager.setCurrentUser(mostRecentUser);
-              UserDataManager.initializeFreshAccount(mostRecentUser);
-              setCustomerNumber(mostRecentUser); // Update the display
-            }
-          }
+        // Set user and initialize account
+        UserDataManager.setCurrentUser(targetUser);
+        UserDataManager.initializeFreshAccount(targetUser);
+        if (!customerNumber) {
+          setCustomerNumber(targetUser);
         }
       }
-    }, 50); // 50ms intervals for smooth progress animation
+    }, 50);
     
     setHoldTimer(timer);
   };
@@ -459,8 +414,8 @@ export default function Login() {
       clearInterval(holdTimer);
       setHoldTimer(null);
     }
-    // Always reset scanning state and progress when user stops holding
-    if (!biometricVerified) {
+    // Reset scanning state immediately when user releases - no authentication on release
+    if (isScanning && !biometricVerified) {
       setIsScanning(false);
       setHoldProgress(0);
     }
