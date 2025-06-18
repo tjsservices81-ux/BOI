@@ -33,9 +33,56 @@
       }
     ]
   ],
-  "accounts": [],
-  "transactions": [],
-  "payees": [],
+  "accounts": [
+    [
+      40,
+      {
+        "id": 40,
+        "userId": 28,
+        "accountType": "current",
+        "accountNumber": "12345678",
+        "balance": "1000.00",
+        "displayName": "Test Current Account"
+      }
+    ]
+  ],
+  "transactions": [
+    [
+      49,
+      {
+        "id": 49,
+        "accountId": 40,
+        "amount": "-50",
+        "description": "Transfer to Test Payee",
+        "category": "transfer",
+        "type": "debit",
+        "paymentMethod": "Online Transfer",
+        "reference": "Test transfer",
+        "timestamp": "2025-06-18T05:01:28.102Z",
+        "recipientName": null,
+        "iban": null,
+        "bicCode": null,
+        "recipientAccountNumber": null,
+        "recipientSortCode": null,
+        "recipientIban": null,
+        "exchangeRate": null,
+        "convertedAmount": null,
+        "convertedCurrency": null
+      }
+    ]
+  ],
+  "payees": [
+    [
+      25,
+      {
+        "id": 25,
+        "userId": 28,
+        "name": "Test Payee",
+        "iban": "IE29AIBK93115212345678",
+        "category": "personal"
+      }
+    ]
+  ],
   "scheduledPayments": [],
   "statements": [],
   "chatMessages": [],
@@ -43,9 +90,9 @@
   "chatSessions": [],
   "counters": {
     "currentUserId": 29,
-    "currentAccountId": 40,
-    "currentTransactionId": 49,
-    "currentPayeeId": 25,
+    "currentAccountId": 41,
+    "currentTransactionId": 50,
+    "currentPayeeId": 26,
     "currentScheduledPaymentId": 1,
     "currentStatementId": 1,
     "currentChatMessageId": 1,

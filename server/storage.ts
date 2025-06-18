@@ -304,7 +304,9 @@ class MemStorage implements IStorage {
   async createPayee(insertPayee: InsertPayee): Promise<Payee> {
     const payee: Payee = {
       id: this.currentPayeeId++,
-      ...insertPayee
+      ...insertPayee,
+      iban: insertPayee.iban || null,
+      lastAmount: insertPayee.lastAmount || null
     };
     this.payees.set(payee.id, payee);
     await this.saveData(); // Persist data immediately
