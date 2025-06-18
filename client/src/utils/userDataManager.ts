@@ -354,16 +354,37 @@ export class UserDataManager {
   // DISABLED: This function has been disabled to prevent auto-deletion
   // User accounts can ONLY be deleted by admin via /admin/login
   static removeUser(customerNumber: string) {
-    console.warn(`⚠️ SECURITY: removeUser() called for ${customerNumber} but is DISABLED to prevent auto-deletion`);
-    console.warn(`⚠️ User accounts can ONLY be deleted by admin via /admin/login`);
+    // Complete user removal when called from admin panel or security validation
+    console.log(`🗑️ COMPLETE USER REMOVAL: Deleting all data for ${customerNumber}`);
     
-    // Only clear current session if this is the current user - DO NOT DELETE ACCOUNT DATA
-    if (this.getCurrentUser() === customerNumber) {
-      this.clearCurrentUser();
-      console.log(`Session cleared for ${customerNumber} but account data preserved`);
+    const bankUsers = this.getAllUsers();
+    if (bankUsers[customerNumber]) {
+      // Remove user from stored data
+      delete bankUsers[customerNumber];
+      localStorage.setItem('bankUsers', JSON.stringify(bankUsers));
+      
+      // Clear all user-specific storage
+      Object.keys(localStorage).forEach(key => {
+        if (key.includes(customerNumber)) {
+          localStorage.removeItem(key);
+          console.log(`Cleared storage: ${key}`);
+        }
+      });
+      
+      // Clear current session if this user is active
+      if (this.getCurrentUser() === customerNumber) {
+        this.clearCurrentUser();
+      }
+      
+      // Clear last active user if it matches
+      if (localStorage.getItem('lastActiveUser') === customerNumber) {
+        localStorage.removeItem('lastActiveUser');
+      }
+      
+      console.log(`✅ User ${customerNumber} completely removed from local storage`);
+      return true;
     }
     
-    // Account data is preserved - no deletion occurs
     return false;
   }
 

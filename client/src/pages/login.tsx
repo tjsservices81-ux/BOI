@@ -425,11 +425,44 @@ export default function Login() {
       }
     }
 
-    // Verify user exists
+    // Verify user exists locally and validate against database
     if (!targetUser || !UserDataManager.userExists(targetUser)) {
       toast({
         title: "Account Not Found",
         description: "No biometric authentication data found. Please log in with your customer number first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Additional validation: Check if user still exists in database before starting biometric scan
+    try {
+      const validationResponse = await fetch('/api/validate-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ customerNumber: targetUser })
+      });
+      
+      const validationData = await validationResponse.json();
+      if (!validationData.exists) {
+        // User deleted from database - clear local data and block biometric login
+        UserDataManager.removeUser(targetUser);
+        localStorage.removeItem('currentUser');
+        localStorage.removeItem('lastActiveUser');
+        
+        toast({
+          title: "Account Deleted",
+          description: "This account has been deleted. Please contact support for assistance.",
+          variant: "destructive",
+        });
+        return;
+      }
+    } catch (error) {
+      console.error('User validation failed:', error);
+      toast({
+        title: "Validation Error",
+        description: "Unable to verify account status. Please try logging in with your customer number.",
         variant: "destructive",
       });
       return;
