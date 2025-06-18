@@ -1480,60 +1480,29 @@ export default function Login() {
                     key={customerNumber}
                     className="bg-gray-50 rounded-xl p-3 border"
                   >
-                    <div className="flex items-center justify-between">
-                      <button
-                        onClick={() => {
-                          UserDataManager.initializeFreshAccount(customerNumber);
-                          UserDataManager.recordLoginTime(customerNumber);
-                          login({
-                            id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
-                            name: userData.name,
-                            email: userData.email
-                          });
-                          setShowAdminLogin(false);
-                          setCustomerNumber(customerNumber);
-                          setBiometricVerified(true);
-                          navigate('/dashboard');
-                        }}
-                        className="flex-1 text-left hover:bg-gray-100 rounded-lg p-2 active:scale-98 transition-all"
-                      >
-                        <div className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          {userData.name}
-                        </div>
-                        <div className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          {customerNumber}
-                        </div>
-                      </button>
-                      
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // Remove this specific user using UserDataManager
-                          UserDataManager.removeUser(customerNumber);
-                          
-                          // If this was the current user, clear the session
-                          if (UserDataManager.getCurrentUser() === customerNumber) {
-                            UserDataManager.clearCurrentUser();
-                            setCustomerNumber('');
-                            setBiometricVerified(false);
-                            setPinVerified(false);
-                          }
-                          
-                          toast({
-                            title: "Account Removed",
-                            description: `${userData.name} has been signed out and removed.`,
-                          });
-                          
-                          // Force re-render by closing and reopening the panel
-                          setShowAdminLogin(false);
-                          setTimeout(() => setShowAdminLogin(true), 100);
-                        }}
-                        className="ml-2 w-8 h-8 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg flex items-center justify-center active:scale-95 transition-all"
-                        title="Sign out and remove account"
-                      >
-                        <span className="text-sm font-bold">×</span>
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => {
+                        UserDataManager.initializeFreshAccount(customerNumber);
+                        UserDataManager.recordLoginTime(customerNumber);
+                        login({
+                          id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
+                          name: userData.name,
+                          email: userData.email
+                        });
+                        setShowAdminLogin(false);
+                        setCustomerNumber(customerNumber);
+                        setBiometricVerified(true);
+                        navigate('/dashboard');
+                      }}
+                      className="w-full text-left hover:bg-gray-100 rounded-lg p-3 active:scale-98 transition-all"
+                    >
+                      <div className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        {userData.name}
+                      </div>
+                      <div className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        {customerNumber}
+                      </div>
+                    </button>
                   </div>
                 ))}
                 
