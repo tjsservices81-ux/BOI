@@ -333,6 +333,19 @@ export default function Login() {
       if (response.ok) {
         const data = await response.json();
         
+        // Register user in UserDataManager if not exists
+        if (!UserDataManager.userExists(customerNumber)) {
+          UserDataManager.registerUser({
+            customerNumber: customerNumber,
+            name: data.user.name || userProfile.name,
+            email: data.user.email || userProfile.email,
+            phone: '',
+            pin: userProfile.pin || pin || '1234',
+            joinDate: 'Member since 2018',
+            dateCreated: new Date().toISOString()
+          });
+        }
+        
         // Set current user and initialize data after successful backend auth
         UserDataManager.setCurrentUser(customerNumber);
         UserDataManager.recordLoginTime(customerNumber);
@@ -469,11 +482,12 @@ export default function Login() {
       }
       
       if (finalTargetUser) {
-        // Establish full backend session just like normal login
+        // Establish backend session for biometric login
         UserDataManager.setCurrentUser(finalTargetUser);
         const userProfile = UserDataManager.getUserProfile();
+        
         if (userProfile) {
-          // Authenticate with backend to establish proper session
+          // Authenticate with backend API to establish proper session
           fetch('/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -486,23 +500,24 @@ export default function Login() {
             if (response.ok) {
               return response.json();
             }
+            console.warn('Backend authentication failed for biometric login');
             throw new Error('Backend authentication failed');
           }).then(data => {
-            // Set current user and initialize data
-            UserDataManager.setCurrentUser(finalTargetUser);
+            console.log('Biometric login: Backend authentication successful');
+            
+            // Record login and restore user data
             UserDataManager.recordLoginTime(finalTargetUser);
             UserDataManager.initializeFreshAccount(finalTargetUser);
             
             // Login through auth context with backend user data
-            login(data.user || {
-              id: parseInt(finalTargetUser.replace(/\D/g, '')) || 1,
-              name: userProfile.name,
-              email: userProfile.email
-            });
+            login(data.user);
+            
+            // Navigate to dashboard
+            navigate('/dashboard');
           }).catch(error => {
-            console.warn('Backend auth failed, using local session:', error);
+            console.warn('Biometric login: Backend auth failed, using local session', error);
+            
             // Fallback to local authentication
-            UserDataManager.setCurrentUser(finalTargetUser);
             UserDataManager.recordLoginTime(finalTargetUser);
             UserDataManager.initializeFreshAccount(finalTargetUser);
             
@@ -511,6 +526,15 @@ export default function Login() {
               name: userProfile.name,
               email: userProfile.email
             });
+            
+            navigate('/dashboard');
+          });
+        } else {
+          console.warn('No user profile found for biometric login');
+          toast({
+            title: "Authentication Error",
+            description: "Unable to retrieve user profile for biometric authentication.",
+            variant: "destructive",
           });
         }
       }
