@@ -47,12 +47,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 localStorage.setItem('bankingUser', JSON.stringify(serverUser));
               }
             } else {
-              // Server session invalid - only clear if 401 unauthorized
-              if (response.status === 401) {
-                localStorage.removeItem('bankingUser');
-                setUser(null);
-              }
-              // For other errors (500, network), keep cached user
+              // DISABLED: Never clear user session automatically - only admin can delete accounts
+              // Keep cached user session active regardless of server response
+              console.log('Server session check failed - maintaining cached user session');
             }
           } catch (error) {
             // Network/parsing error - keep cached user, don't logout
