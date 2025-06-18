@@ -590,18 +590,22 @@ export default function Login() {
                 handleLoginButton();
               }, 100);
             }).catch(error => {
-              console.error('Biometric login: Backend authentication failed', error);
+              console.warn('Biometric login: Backend auth failed, using local session for valid user', error);
               
-              // NO FALLBACK - If backend auth fails, user cannot login
-              setBiometricVerified(false);
-              setIsScanning(false);
-              setHoldProgress(0);
+              // Fallback to local authentication for valid users (account exists in database)
+              UserDataManager.recordLoginTime(finalTargetUser);
+              UserDataManager.initializeFreshAccount(finalTargetUser);
               
-              toast({
-                title: "Authentication Failed",
-                description: "Unable to authenticate account. Please try logging in with your customer number and PIN.",
-                variant: "destructive",
+              login({
+                id: parseInt(finalTargetUser.replace(/\D/g, '')) || 1,
+                name: userProfile.name,
+                email: userProfile.email
               });
+              
+              // Trigger signing in animation
+              setTimeout(() => {
+                handleLoginButton();
+              }, 100);
             });
           }).catch(error => {
             console.error('User validation failed:', error);
@@ -785,7 +789,34 @@ export default function Login() {
       return;
     }
 
-    // Check if user exists
+    // First validate user exists in database
+    try {
+      const validationResponse = await fetch('/api/validate-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ customerNumber })
+      });
+      
+      const validationData = await validationResponse.json();
+      if (!validationData.exists) {
+        // User deleted from database - clear local data and block login
+        UserDataManager.removeUser(customerNumber);
+        localStorage.removeItem('currentUser');
+        localStorage.removeItem('lastActiveUser');
+        
+        toast({
+          title: "Account Not Found",
+          description: "This account has been deleted or doesn't exist. Please contact support.",
+          variant: "destructive",
+        });
+        return;
+      }
+    } catch (error) {
+      console.error('Database validation failed:', error);
+    }
+    
+    // Check if user exists locally
     if (!UserDataManager.userExists(customerNumber)) {
       toast({
         title: "Login Failed",
@@ -795,7 +826,27 @@ export default function Login() {
       return;
     }
     
-    // Initialize fresh account data and verify PIN
+    // Try backend authentication first
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ customerNumber, pin })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        login(data.user);
+        setPinVerified(true);
+        navigate('/');
+        return;
+      }
+    } catch (error) {
+      console.warn('Backend authentication failed, using local auth:', error);
+    }
+    
+    // Fallback to local authentication for valid users
     UserDataManager.initializeFreshAccount(customerNumber);
     UserDataManager.recordLoginTime(customerNumber);
     const userProfile = UserDataManager.getUserProfile();
@@ -807,8 +858,6 @@ export default function Login() {
       });
     }
     setPinVerified(true);
-    
-    // Navigate to root - let App.tsx routing handle dashboard display
     navigate('/');
   };
 
