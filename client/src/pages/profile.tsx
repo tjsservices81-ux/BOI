@@ -223,7 +223,7 @@ export default function Profile() {
     {
       id: '2',
       triggers: ['transfer money', 'send money', 'make transfer', 'how to transfer'],
-      response: "You can transfer money by tapping 'Payments' in the bottom menu, then selecting either 'UK Transfer' for domestic transfers or 'IBAN Transfer' for international transfers. Would you like specific help with either option?"
+      response: "You can transfer money by tapping 'Payments' in the bottom menu. Choose 'UK Transfer' (using sort code and account number, takes up to 24 hours) or 'IBAN Transfer' for SEPA transfers (using IBAN and BIC, takes 1 business day). Would you like specific help with either option?"
     },
     {
       id: '3',
@@ -249,6 +249,11 @@ export default function Profile() {
       id: '7',
       triggers: ['fees', 'charges', 'cost', 'how much'],
       response: "Transaction fees vary depending on the type of transfer and destination. UK transfers typically have lower fees than international transfers. You'll see all applicable fees before confirming any transaction."
+    },
+    {
+      id: '9',
+      triggers: ['how long', 'transfer time', 'when arrive', 'delivery time', 'processing time'],
+      response: "Transfer timing depends on the type: UK transfers (using sort code and account number) take up to 24 hours to arrive. SEPA transfers (using IBAN and BIC) take 1 business day to reach the recipient's account."
     },
     {
       id: '8',

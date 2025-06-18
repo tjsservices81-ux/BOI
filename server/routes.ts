@@ -837,25 +837,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const recipientMatch = lastTransfer.description.match(/Transfer to (.+)/);
           const recipientName = recipientMatch ? recipientMatch[1] : 'recipient';
           
-          // Build account details based on transfer type
+          // Build transfer-specific context based on transfer type
+          let transferTypeContext = '';
           let accountDetails = '';
+          
           if (lastTransfer.paymentMethod === 'UK Transfer') {
+            transferTypeContext = `
+TRANSFER TYPE: UK Transfer (sent to a UK account)
+DELIVERY TIME: Takes up to 24 hours to arrive
+CURRENCY: May include currency conversion if relevant`;
             accountDetails = `
-Account Number: ${lastTransfer.recipientAccountNumber || 'Not available'}
-Sort Code: ${lastTransfer.recipientSortCode || 'Not available'}`;
+Sort Code: ${lastTransfer.recipientSortCode || 'Not available'}
+Account Number: ${lastTransfer.recipientAccountNumber || 'Not available'}`;
           } else if (lastTransfer.paymentMethod === 'SEPA Transfer') {
+            transferTypeContext = `
+TRANSFER TYPE: SEPA Transfer (European payment)
+DELIVERY TIME: Takes 1 business day to arrive
+CURRENCY: Do NOT mention currency conversion - SEPA transfers are EUR to EUR`;
             accountDetails = `
 IBAN: ${lastTransfer.iban || 'Not available'}
-BIC Code: ${lastTransfer.bicCode || 'Not available'}`;
+BIC Code: ${lastTransfer.bicCode || 'Not available'}
+Unique Reference: ${lastTransfer.reference || 'Not specified'}`;
           }
           
           transferContext = `\n\nCUSTOMER'S RECENT TRANSFER CONTEXT:
 Last transfer: €${transferAmount.toFixed(2)} to ${recipientName} on ${transferDate}
 Reference: ${lastTransfer.reference || 'Not specified'}
 Transaction ID: ${lastTransfer.id}
-Status: Confirmed and processed${accountDetails}
+Status: Confirmed and processed${transferTypeContext}${accountDetails}
 
-IMPORTANT: When customer asks for payment confirmation or transfer details, include ALL the above information including the account details (Account Number/Sort Code for UK transfers, IBAN/BIC for IBAN transfers).`;
+RESPONSE GUIDELINES:
+- For UK Transfers: Mention it was sent to a UK account, include sort code/account number, mention up to 24 hours delivery, can mention currency conversion if relevant
+- For SEPA Transfers: Say it was a SEPA transfer, mention IBAN/BIC/unique reference, say 1 business day delivery, DO NOT mention currency conversion or UK accounts
+
+IMPORTANT: When customer asks for payment confirmation or transfer details, follow the response guidelines above and include the relevant account details.`;
         } else {
           transferContext = `\n\nCUSTOMER'S RECENT TRANSFER CONTEXT:
 No transfers found yet on your account.`;
