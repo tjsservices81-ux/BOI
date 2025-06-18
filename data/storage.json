@@ -31,6 +31,22 @@
         "dateCreated": "2025-06-18T12:29:06.499Z",
         "isDisabled": false
       }
+    ],
+    [
+      30,
+      {
+        "id": 30,
+        "customerNumber": "BOI633940368",
+        "pin": "000000",
+        "name": "Ahahhs",
+        "email": "shhshs@gmail.com",
+        "phone": "854545454",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-06-18T14:33:04.758Z",
+        "dateCreated": "2025-06-18T14:33:04.758Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [
@@ -43,6 +59,39 @@
         "accountNumber": "12345678",
         "balance": "1000.00",
         "displayName": "Test Current Account"
+      }
+    ],
+    [
+      41,
+      {
+        "id": 41,
+        "userId": 30,
+        "accountType": "current",
+        "accountNumber": "****2091",
+        "balance": "0.00",
+        "displayName": "Current Account"
+      }
+    ],
+    [
+      42,
+      {
+        "id": 42,
+        "userId": 30,
+        "accountType": "credit",
+        "accountNumber": "****1820",
+        "balance": "0.00",
+        "displayName": "Credit Card"
+      }
+    ],
+    [
+      43,
+      {
+        "id": 43,
+        "userId": 30,
+        "accountType": "savings",
+        "accountNumber": "****0978",
+        "balance": "0.00",
+        "displayName": "Savings Account"
       }
     ]
   ],
@@ -89,8 +138,8 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 30,
-    "currentAccountId": 41,
+    "currentUserId": 31,
+    "currentAccountId": 44,
     "currentTransactionId": 50,
     "currentPayeeId": 26,
     "currentScheduledPaymentId": 1,

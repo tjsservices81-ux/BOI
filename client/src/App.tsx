@@ -54,6 +54,7 @@ function AppRoutes() {
   const [location, navigate] = locationHook || ['/', () => {}];
   const [splashShown, setSplashShown] = useState(false);
   const [splashTransitioning, setSplashTransitioning] = useState(false);
+  const [splashCompleted, setSplashCompleted] = useState(false);
   
   // Global Live Chat state - persistent across all navigation
   const [showLiveChat, setShowLiveChat] = useState(false);
@@ -100,6 +101,7 @@ function AppRoutes() {
       setTimeout(() => {
         setSplashShown(true);
         setSplashTransitioning(false);
+        setSplashCompleted(true);
       }, 100);
       updateThemeColor('#126987');
     };
@@ -117,7 +119,7 @@ function AppRoutes() {
             <Route path="/login" component={Login} />
             <Route path="/more" component={More} />
             <Route path="/">
-              {!splashShown || splashTransitioning ? (
+              {!splashCompleted ? (
                 <Splash />
               ) : isLoading ? (
                 <Splash />
