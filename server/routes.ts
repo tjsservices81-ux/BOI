@@ -299,6 +299,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create account
+  app.post("/api/accounts", requireAuth, async (req, res) => {
+    try {
+      const accountData = insertAccountSchema.parse(req.body);
+      const account = await storage.createAccount(accountData);
+      res.json(account);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors[0].message });
+      }
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Get account transactions
   app.get("/api/transactions/:accountId", requireAuth, async (req, res) => {
     try {
