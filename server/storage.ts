@@ -194,6 +194,7 @@ class MemStorage implements IStorage {
     if (user) {
       const updatedUser = { ...user, ...updates };
       this.users.set(user.id, updatedUser);
+      await this.saveData(); // Persist changes to disk immediately
       return updatedUser;
     }
     return undefined;
