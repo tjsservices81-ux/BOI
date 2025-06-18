@@ -169,12 +169,16 @@ export default function Login() {
     if (newTapCount === 5) {
       setShowAdminLogin(true);
       setLogoTapCount(0);
+      return;
     }
     
-    // Reset tap count after 3 seconds of inactivity
-    setTimeout(() => {
+    // Reset tap count after 3 seconds of inactivity with cleanup
+    const timeoutId = setTimeout(() => {
       setLogoTapCount(0);
     }, 3000);
+    
+    // Store timeout ID for potential cleanup
+    return () => clearTimeout(timeoutId);
   };
 
   const generateCustomerNumber = () => {

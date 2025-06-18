@@ -37,13 +37,16 @@ export default function Dashboard() {
       currentPage.classList.add('page-slide-out-right');
     }
     
-    // Navigate after animation starts
-    setTimeout(() => {
+    // Navigate after animation starts with cleanup
+    const timeoutId = setTimeout(() => {
       setLocation(path);
       setIsNavigating(false);
       document.body.classList.remove('page-transitioning');
       currentPage.classList.remove('page-slide-out-left', 'page-slide-out-right');
     }, 200);
+    
+    // Cleanup timeout on unmount
+    return () => clearTimeout(timeoutId);
   };
 
   // Load accounts using UserDataManager on mount

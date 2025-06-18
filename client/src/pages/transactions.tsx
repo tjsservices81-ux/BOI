@@ -87,7 +87,7 @@ export default function Transactions() {
         return [
           { id: "1", date: "27 Apr 2021", description: "MONTHLY PAYMENT", amount: -150.00, balance: 2500.00, type: "debit" },
           { id: "2", date: "20 Apr 2021", description: "INTEREST CHARGE", amount: -25.80, balance: 2650.00, type: "debit" },
-          { id: "3", date: "15 Apr 2021", description: "PAYMENT RECEIVED", amount: -200.00, balance: 2675.80, type: "credit" },
+          { id: "3", date: "15 Apr 2021", description: "PAYMENT RECEIVED", amount: -200.00, balance: 2675.80, type: "debit" },
           { id: "4", date: "01 Apr 2021", description: "MONTHLY PAYMENT", amount: -150.00, balance: 2875.80, type: "debit" }
         ];
       case 'deposit':
