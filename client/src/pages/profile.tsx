@@ -953,8 +953,8 @@ export default function Profile() {
 
   return (
     <div className="h-screen bg-gradient-to-b from-[#126987] to-[#0d4e63] page-slide-up relative overflow-hidden">
-      {/* Header - Hidden during sign out */}
-      {!isSigningOut && (
+      {/* Header */}
+      {true && (
         <div className="bg-[#126987] px-4 py-6 pt-12 relative z-10">
           <div className="flex items-center justify-between">
             <button 
@@ -972,7 +972,7 @@ export default function Profile() {
       )}
 
       {/* Profile Content */}
-      <div className={`bg-white ${!isSigningOut ? 'rounded-t-3xl' : ''} absolute inset-x-0 ${!isSigningOut ? 'top-32' : 'top-0'} bottom-0 overflow-y-auto overscroll-behavior-y-contain`} 
+      <div className="bg-white rounded-t-3xl absolute inset-x-0 top-32 bottom-0 overflow-y-auto overscroll-behavior-y-contain" 
            style={{ WebkitOverflowScrolling: 'touch' }}>
         <div className="p-6 pb-48 min-h-full">
           {isLoadingProfile ? (
