@@ -389,10 +389,10 @@ export default function Login() {
       return;
     }
     
-    // Start biometric scanning - simplified instant verification
+    // Start biometric scanning with 6-second hold requirement
     setIsScanning(true);
     
-    // Quick authentication simulation - 1.5 seconds
+    // 6-second hold requirement for biometric authentication
     setTimeout(() => {
       setBiometricVerified(true);
       setIsScanning(false);
@@ -433,7 +433,7 @@ export default function Login() {
       if (finalTargetUser) {
         UserDataManager.recordLoginTime(finalTargetUser);
       }
-    }, 1500);
+    }, 6000);
   };
 
 
@@ -1009,9 +1009,35 @@ export default function Login() {
                       WebkitTapHighlightColor: 'transparent'
                     }}
                   >
-                    {/* Pulse effect when scanning */}
+                    {/* Circular progress indicator when scanning */}
                     {isScanning && (
-                      <div className="absolute inset-0 rounded-full border-2 border-blue-300 opacity-50 animate-pulse"></div>
+                      <div className="absolute inset-0 rounded-full">
+                        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="45"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                            fill="transparent"
+                            className="text-blue-200"
+                          />
+                          <circle
+                            cx="50"
+                            cy="50"
+                            r="45"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                            fill="transparent"
+                            strokeDasharray="282.7"
+                            strokeDashoffset="282.7"
+                            className="text-blue-500 transition-all duration-[6000ms] ease-linear"
+                            style={{
+                              strokeDashoffset: isScanning ? '0' : '282.7'
+                            }}
+                          />
+                        </svg>
+                      </div>
                     )}
                     
                     {/* Original Fingerprint icon with effects */}
