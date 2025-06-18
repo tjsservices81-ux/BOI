@@ -129,13 +129,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
-    // DISABLED: Only admin panel can terminate sessions or delete accounts
-    console.log('🚫 SECURITY VIOLATION: Frontend logout attempt blocked');
-    console.log('🔒 SECURITY RULE: Only admin panel can terminate sessions');
-    console.log('📋 Call Stack:', new Error().stack);
-    
-    // Return without clearing any user data or localStorage
-    // Sessions and user data persist until admin intervention
+    // Frontend logout only navigates to login screen - does NOT clear any data
+    // User data and sessions persist for immediate re-authentication
+    // Only admin panel can actually delete accounts and clear sessions
+    console.log('Frontend logout: navigating to login screen without clearing data');
   };
 
   return (

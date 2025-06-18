@@ -78,11 +78,10 @@ export function geoBlockingMiddleware(req: Request, res: Response, next: NextFun
 }
 
 // Session security - DISABLED TO PREVENT UNAUTHORIZED SESSION TERMINATION
-export function sessionSecurityMiddleware(req: Request, res: Response, next: NextFunction) {
+export function sessionSecurityMiddleware(req: Request & { session?: any }, res: Response, next: NextFunction) {
   if (req.session) {
-    console.log('🚫 SECURITY VIOLATION: Session security check attempted - action blocked');
-    console.log('🔒 SECURITY RULE: Only admin panel can terminate sessions');
-    console.log('📋 Request details:', {
+    console.log('Session security check bypassed - only admin panel can terminate sessions');
+    console.log('Request details:', {
       userAgent: req.get('User-Agent'),
       sessionId: req.sessionID,
       timestamp: new Date().toISOString()
@@ -106,9 +105,9 @@ setInterval(() => {
   const now = Date.now();
   const windowMs = 15 * 60 * 1000; // 15 minutes
   
-  for (const [ip, record] of rateLimitStore.entries()) {
+  Array.from(rateLimitStore.entries()).forEach(([ip, record]) => {
     if (now - record.lastAttempt > windowMs) {
       rateLimitStore.delete(ip);
     }
-  }
+  });
 }, 5 * 60 * 1000); // Clean every 5 minutes
