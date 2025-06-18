@@ -1508,10 +1508,41 @@ export default function Login() {
                           setShowAdminLogin(false);
                           setTimeout(() => setShowAdminLogin(true), 100);
                         }}
-                        className="ml-2 w-8 h-8 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg flex items-center justify-center active:scale-95 transition-all"
+                        className="ml-2 w-8 h-8 bg-yellow-100 hover:bg-yellow-200 text-yellow-600 rounded-lg flex items-center justify-center active:scale-95 transition-all"
                         title="Sign out current session"
                       >
-                        <span className="text-sm font-bold">×</span>
+                        <span className="text-sm font-bold">⏏</span>
+                      </button>
+                      
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (confirm(`Are you sure you want to permanently delete ${userData.name}'s account? This cannot be undone.`)) {
+                            // Permanently remove this user using UserDataManager
+                            UserDataManager.removeUser(customerNumber);
+                            
+                            // If this was the current user, clear the session
+                            if (UserDataManager.getCurrentUser() === customerNumber) {
+                              UserDataManager.clearCurrentUser();
+                              setCustomerNumber('');
+                              setBiometricVerified(false);
+                              setPinVerified(false);
+                            }
+                            
+                            toast({
+                              title: "Account Deleted",
+                              description: `${userData.name}'s account has been permanently removed.`,
+                            });
+                            
+                            // Force re-render by closing and reopening the panel
+                            setShowAdminLogin(false);
+                            setTimeout(() => setShowAdminLogin(true), 100);
+                          }
+                        }}
+                        className="ml-2 w-8 h-8 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg flex items-center justify-center active:scale-95 transition-all"
+                        title="Permanently delete account"
+                      >
+                        <span className="text-sm font-bold">🗑</span>
                       </button>
                     </div>
                   </div>
