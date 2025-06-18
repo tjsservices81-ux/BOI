@@ -560,7 +560,7 @@ router.get('/panel', adminAuth, async (req, res) => {
             
             const result = await response.json();
             if (response.ok) {
-              // Clear all cached data for the deleted user from browser storage
+              // Complete frontend cleanup - immediate biometric lockout and session clearing
               try {
                 // Clear localStorage entries for this customer
                 const allKeys = Object.keys(localStorage);
@@ -578,16 +578,38 @@ router.get('/panel', adminAuth, async (req, res) => {
                   }
                 }
                 
-                // Clear current user if it matches deleted user
+                // Clear current user and biometric authentication if it matches deleted user
                 if (localStorage.getItem('currentUser') === currentCustomerNumber) {
                   localStorage.removeItem('currentUser');
+                  localStorage.removeItem('bankingUser'); // Clear auth session
                 }
                 
                 if (localStorage.getItem('lastActiveUser') === currentCustomerNumber) {
                   localStorage.removeItem('lastActiveUser');
                 }
                 
-                console.log(\`🧹 Admin cleanup: Removed all browser data for customer \${currentCustomerNumber}\`);
+                // Clear biometric and authentication data
+                localStorage.removeItem(\`user_\${currentCustomerNumber}_biometricEnabled\`);
+                localStorage.removeItem(\`user_\${currentCustomerNumber}_lastLogin\`);
+                localStorage.removeItem(\`bankUsers\`); // Force reload of user list
+                
+                // Broadcast deletion event to all tabs/windows to force immediate logout
+                const broadcastChannel = new BroadcastChannel('bankingApp');
+                broadcastChannel.postMessage({
+                  type: 'USER_DELETED',
+                  customerNumber: currentCustomerNumber,
+                  timestamp: Date.now()
+                });
+                broadcastChannel.close();
+                
+                // Force immediate logout for any active sessions
+                window.postMessage({
+                  type: 'FORCE_LOGOUT',
+                  customerNumber: currentCustomerNumber,
+                  reason: 'ACCOUNT_DELETED'
+                }, '*');
+                
+                console.log(\`🧹 Admin cleanup: Complete data wipe for customer \${currentCustomerNumber} - biometric lockout active\`);
               } catch (cleanupError) {
                 console.error('Error during frontend cleanup:', cleanupError);
               }

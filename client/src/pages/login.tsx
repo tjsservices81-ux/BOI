@@ -1014,11 +1014,6 @@ export default function Login() {
                       <div className="absolute inset-0 rounded-full border-2 border-blue-300 opacity-50 animate-pulse"></div>
                     )}
                     
-                    {/* Simplified visual feedback */}
-                    {isScanning && (
-                      <div className="absolute inset-0 rounded-full border-2 border-blue-300 opacity-50"></div>
-                    )}
-                    
                     {/* Original Fingerprint icon with effects */}
                     <div className="relative z-10 w-10 h-10 flex items-center justify-center">
                       <img 

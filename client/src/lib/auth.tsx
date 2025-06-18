@@ -94,8 +94,63 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // Listen for admin profile updates to refresh user data immediately
+  // Listen for admin actions and forced logout events
   useEffect(() => {
+    // Handle admin deletion events - immediate logout and biometric lockout
+    const handleUserDeletion = (event: MessageEvent) => {
+      if (event.data?.type === 'FORCE_LOGOUT' && event.data?.reason === 'ACCOUNT_DELETED') {
+        const deletedCustomerNumber = event.data.customerNumber;
+        const currentUser = localStorage.getItem('currentUser');
+        
+        if (currentUser === deletedCustomerNumber) {
+          console.log('🚨 Account deleted by admin - forcing immediate logout');
+          
+          // Clear all user data immediately
+          setUser(null);
+          localStorage.removeItem('bankingUser');
+          localStorage.removeItem('currentUser');
+          localStorage.removeItem('lastActiveUser');
+          
+          // Clear all user-specific data
+          const allKeys = Object.keys(localStorage);
+          for (const key of allKeys) {
+            if (key.includes(deletedCustomerNumber)) {
+              localStorage.removeItem(key);
+            }
+          }
+          
+          // Force navigation to login
+          window.location.href = '/login';
+        }
+      }
+    };
+
+    // Listen for cross-tab deletion events
+    const handleBroadcastMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'USER_DELETED') {
+        const deletedCustomerNumber = event.data.customerNumber;
+        const currentUser = localStorage.getItem('currentUser');
+        
+        if (currentUser === deletedCustomerNumber) {
+          console.log('🚨 Account deleted in another tab - forcing logout');
+          handleUserDeletion({
+            data: {
+              type: 'FORCE_LOGOUT',
+              customerNumber: deletedCustomerNumber,
+              reason: 'ACCOUNT_DELETED'
+            }
+          } as MessageEvent);
+        }
+      }
+    };
+
+    // Set up listeners
+    window.addEventListener('message', handleUserDeletion);
+    
+    const broadcastChannel = new BroadcastChannel('bankingApp');
+    broadcastChannel.addEventListener('message', handleBroadcastMessage);
+
+    // Listen for admin profile updates to refresh user data immediately
     const handleProfileUpdate = (event: Event) => {
       const customEvent = event as CustomEvent;
       if (user && customEvent.detail) {
@@ -115,6 +170,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     window.addEventListener('userProfileUpdate', handleProfileUpdate);
     
     return () => {
+      window.removeEventListener('message', handleUserDeletion);
+      broadcastChannel.removeEventListener('message', handleBroadcastMessage);
+      broadcastChannel.close();
       window.removeEventListener('adminProfileUpdate', handleProfileUpdate);
       window.removeEventListener('userProfileUpdate', handleProfileUpdate);
     };
