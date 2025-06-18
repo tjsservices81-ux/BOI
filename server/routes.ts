@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { loginSchema, transferSchema } from "@shared/schema";
+import { loginSchema, transferSchema, insertAccountSchema, insertPayeeSchema } from "@shared/schema";
 import { z } from "zod";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
@@ -376,6 +376,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const payees = await storage.getPayeesByUserId(userId);
       res.json(payees);
     } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Create payee
+  app.post("/api/payees", requireAuth, async (req, res) => {
+    try {
+      const payeeData = insertPayeeSchema.parse(req.body);
+      const payee = await storage.createPayee(payeeData);
+      res.json(payee);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors[0].message });
+      }
       res.status(500).json({ message: "Internal server error" });
     }
   });

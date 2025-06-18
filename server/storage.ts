@@ -244,6 +244,7 @@ class MemStorage implements IStorage {
       ...insertAccount
     };
     this.accounts.set(account.id, account);
+    await this.saveData(); // Persist data immediately
     return account;
   }
 
@@ -279,9 +280,20 @@ class MemStorage implements IStorage {
   async createTransaction(insertTransaction: InsertTransaction): Promise<Transaction> {
     const transaction: Transaction = {
       id: this.currentTransactionId++,
-      ...insertTransaction
+      ...insertTransaction,
+      reference: insertTransaction.reference || null,
+      recipientName: insertTransaction.recipientName || null,
+      iban: insertTransaction.iban || null,
+      bicCode: insertTransaction.bicCode || null,
+      recipientAccountNumber: insertTransaction.recipientAccountNumber || null,
+      recipientSortCode: insertTransaction.recipientSortCode || null,
+      recipientIban: insertTransaction.recipientIban || null,
+      exchangeRate: insertTransaction.exchangeRate || null,
+      convertedAmount: insertTransaction.convertedAmount || null,
+      convertedCurrency: insertTransaction.convertedCurrency || null
     };
     this.transactions.set(transaction.id, transaction);
+    await this.saveData(); // Persist data immediately
     return transaction;
   }
 
@@ -295,6 +307,7 @@ class MemStorage implements IStorage {
       ...insertPayee
     };
     this.payees.set(payee.id, payee);
+    await this.saveData(); // Persist data immediately
     return payee;
   }
 
