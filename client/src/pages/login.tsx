@@ -358,7 +358,10 @@ export default function Login() {
           email: userProfile.email
         });
         
-        navigate("/dashboard");
+        // Trigger signing in animation
+        setTimeout(() => {
+          handleLoginButton();
+        }, 100);
       } else {
         throw new Error("Backend authentication failed");
       }
@@ -377,7 +380,11 @@ export default function Login() {
           name: userProfile.name,
           email: userProfile.email
         });
-        navigate("/dashboard");
+        
+        // Trigger signing in animation
+        setTimeout(() => {
+          handleLoginButton();
+        }, 100);
       } else {
         toast({
           title: "Login Failed",
@@ -512,8 +519,10 @@ export default function Login() {
             // Login through auth context with backend user data
             login(data.user);
             
-            // Navigate to dashboard
-            navigate('/dashboard');
+            // Trigger signing in animation
+            setTimeout(() => {
+              handleLoginButton();
+            }, 100);
           }).catch(error => {
             console.warn('Biometric login: Backend auth failed, using local session', error);
             
@@ -527,7 +536,10 @@ export default function Login() {
               email: userProfile.email
             });
             
-            navigate('/dashboard');
+            // Trigger signing in animation
+            setTimeout(() => {
+              handleLoginButton();
+            }, 100);
           });
         } else {
           console.warn('No user profile found for biometric login');
@@ -556,7 +568,8 @@ export default function Login() {
 
 
   const handleLoginButton = async () => {
-    if (!biometricVerified && !pinVerified) {
+    // Skip authentication check if already triggered by biometric/PIN login
+    if (!biometricVerified && !pinVerified && !authHook?.user) {
       toast({
         title: "Authentication Required",
         description: "Please verify with biometric or PIN first",
@@ -564,6 +577,9 @@ export default function Login() {
       });
       return;
     }
+
+    // Prevent multiple animations
+    if (isLoginAnimating) return;
 
     setIsLoginAnimating(true);
     setLoginProgress(0);
