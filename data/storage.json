@@ -1,5 +1,22 @@
 {
-  "users": [],
+  "users": [
+    [
+      27,
+      {
+        "id": 27,
+        "customerNumber": "BOI091936327",
+        "pin": "000000",
+        "name": "Ahuajs",
+        "email": "anajaj@gmail.com",
+        "phone": "484545",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-06-18T18:10:12.895Z",
+        "dateCreated": "2025-06-18T18:10:12.895Z",
+        "isDisabled": false
+      }
+    ]
+  ],
   "accounts": [],
   "transactions": [],
   "payees": [],
@@ -9,7 +26,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 27,
+    "currentUserId": 28,
     "currentAccountId": 37,
     "currentTransactionId": 49,
     "currentPayeeId": 25,

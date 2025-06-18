@@ -1425,6 +1425,14 @@ export default function Login() {
                 </p>
               </div>
 
+              {/* Terms & Conditions Warning */}
+              <div className="flex items-start space-x-2 p-3 bg-gray-50 rounded-xl border border-gray-200">
+                <span className="text-amber-600 text-sm mt-0.5">⚠️</span>
+                <p className="text-xs text-gray-600 leading-relaxed" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  <strong>Terms & Conditions Notice:</strong> If you lose your phone or want to change it, you'll get 1 free replacement. After that, you'll need to pay for a new one.
+                </p>
+              </div>
+
               <div className="flex space-x-3 pt-4">
                 <button
                   type="button"
