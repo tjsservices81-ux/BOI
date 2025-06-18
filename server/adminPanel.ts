@@ -415,126 +415,6 @@ router.get('/panel', adminAuth, async (req, res) => {
           font-size: 48px;
           margin-bottom: 15px;
         }
-        .user-accounts {
-          margin-top: 15px;
-          border-top: 1px solid #e2e8f0;
-          padding-top: 15px;
-        }
-        .accounts-header {
-          font-size: 14px;
-          font-weight: 600;
-          color: #374151;
-          margin-bottom: 10px;
-        }
-        .accounts-list {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-        }
-        .account-item {
-          display: flex;
-          align-items: center;
-          justify-content: between;
-          gap: 10px;
-          padding: 8px 12px;
-          background: #f8fafc;
-          border-radius: 8px;
-          border: 1px solid #e2e8f0;
-        }
-        .account-details {
-          flex: 1;
-        }
-        .account-name {
-          font-size: 13px;
-          font-weight: 500;
-          color: #374151;
-        }
-        .account-number {
-          font-size: 11px;
-          color: #64748b;
-        }
-        .account-balance {
-          font-size: 14px;
-          font-weight: 600;
-          color: #16a34a;
-          margin-right: 10px;
-        }
-        .balance-edit-btn {
-          background: #3b82f6;
-          color: white;
-          border: none;
-          padding: 4px 8px;
-          border-radius: 4px;
-          font-size: 11px;
-          cursor: pointer;
-          transition: background 0.2s;
-        }
-        .balance-edit-btn:hover {
-          background: #2563eb;
-        }
-        .no-accounts {
-          color: #64748b;
-          font-size: 12px;
-          font-style: italic;
-        }
-        .balance-modal {
-          display: none;
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background: rgba(0,0,0,0.5);
-          z-index: 1001;
-          align-items: center;
-          justify-content: center;
-          padding: 20px;
-        }
-        .balance-modal.show {
-          display: flex;
-        }
-        .balance-modal-content {
-          background: white;
-          border-radius: 12px;
-          padding: 20px;
-          width: 100%;
-          max-width: 400px;
-          box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-        }
-        .balance-modal h3 {
-          margin: 0 0 15px 0;
-          color: #1a202c;
-        }
-        .balance-input {
-          width: 100%;
-          padding: 10px;
-          border: 1px solid #d1d5db;
-          border-radius: 6px;
-          font-size: 14px;
-          margin-bottom: 15px;
-        }
-        .balance-actions {
-          display: flex;
-          gap: 10px;
-        }
-        .balance-cancel {
-          flex: 1;
-          padding: 10px;
-          background: #f3f4f6;
-          color: #374151;
-          border: none;
-          border-radius: 6px;
-          cursor: pointer;
-        }
-        .balance-save {
-          flex: 1;
-          padding: 10px;
-          background: #16a34a;
-          color: white;
-          border: none;
-          border-radius: 6px;
-          cursor: pointer;
-        }
         @media (max-width: 768px) {
           .header-content {
             flex-direction: column;
@@ -647,18 +527,6 @@ router.get('/panel', adminAuth, async (req, res) => {
           <div class="modal-actions">
             <button class="modal-btn cancel" onclick="closeModal()">Cancel</button>
             <button class="modal-btn confirm" onclick="deleteAccount()">Delete Account</button>
-          </div>
-        </div>
-      </div>
-
-      <div id="balanceModal" class="balance-modal">
-        <div class="balance-modal-content">
-          <h3>Edit Account Balance</h3>
-          <p id="balanceAccountInfo">Account: Current Account</p>
-          <input type="number" id="balanceInput" class="balance-input" step="0.01" min="0" placeholder="Enter new balance">
-          <div class="balance-actions">
-            <button class="balance-cancel" onclick="closeBalanceModal()">Cancel</button>
-            <button class="balance-save" onclick="saveBalance()">Update Balance</button>
           </div>
         </div>
       </div>
@@ -811,31 +679,6 @@ router.get('/panel', adminAuth, async (req, res) => {
                       <div class="detail-value">\${session.loginTime ? new Date(session.loginTime).toLocaleString() : 'Unknown'}</div>
                     </div>
                   </div>
-                  
-                  \${session.accounts && session.accounts.length > 0 ? \`
-                    <div class="user-accounts">
-                      <div class="accounts-header">Banking Accounts</div>
-                      <div class="accounts-list">
-                        \${session.accounts.map(account => \`
-                          <div class="account-item">
-                            <div class="account-details">
-                              <div class="account-name">\${account.displayName || account.accountType}</div>
-                              <div class="account-number">\${account.accountNumber}</div>
-                            </div>
-                            <div class="account-balance">€\${account.balance}</div>
-                            <button class="balance-edit-btn" onclick="editBalance('\${session.customerNumber}', '\${account.id}', '\${account.balance}', '\${account.displayName}')">
-                              Edit Balance
-                            </button>
-                          </div>
-                        \`).join('')}
-                      </div>
-                    </div>
-                  \` : \`
-                    <div class="user-accounts">
-                      <div class="accounts-header">Banking Accounts</div>
-                      <div class="no-accounts">No accounts found</div>
-                    </div>
-                  \`}
                 </div>
                 <button class="delete-btn" onclick="confirmDelete('\${session.customerNumber}', '\${session.username || 'Unknown User'}')">
                   Delete Account
@@ -843,76 +686,6 @@ router.get('/panel', adminAuth, async (req, res) => {
               </div>
             </div>
           \`).join('');
-        }
-        
-        // Balance editing variables
-        let currentEditAccountId = null;
-        let currentEditCustomerNumber = null;
-        
-        // Balance editing functions
-        function editBalance(customerNumber, accountId, currentBalance, accountName) {
-          currentEditAccountId = accountId;
-          currentEditCustomerNumber = customerNumber;
-          
-          document.getElementById('balanceAccountInfo').textContent = 'Account: ' + accountName;
-          document.getElementById('balanceInput').value = currentBalance;
-          document.getElementById('balanceModal').classList.add('show');
-        }
-        
-        function closeBalanceModal() {
-          document.getElementById('balanceModal').classList.remove('show');
-          currentEditAccountId = null;
-          currentEditCustomerNumber = null;
-        }
-        
-        async function saveBalance() {
-          if (!currentEditAccountId || !currentEditCustomerNumber) {
-            alert('Error: Invalid account information');
-            return;
-          }
-          
-          const newBalance = document.getElementById('balanceInput').value;
-          if (!newBalance || parseFloat(newBalance) < 0) {
-            alert('Please enter a valid balance amount');
-            return;
-          }
-          
-          try {
-            const response = await fetch('/admin/update-balance', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                accountId: parseInt(currentEditAccountId),
-                newBalance: newBalance,
-                customerNumber: currentEditCustomerNumber
-              }),
-            });
-
-            const result = await response.json();
-            
-            if (response.ok && result.success) {
-              // Close modal
-              closeBalanceModal();
-              
-              // Refresh data immediately to show updated balance
-              refreshUserData();
-              
-              // Show success message
-              const successMsg = document.getElementById('successMessage');
-              successMsg.textContent = 'Balance updated successfully to €' + newBalance;
-              successMsg.classList.add('show');
-              setTimeout(() => {
-                successMsg.classList.remove('show');
-              }, 3000);
-            } else {
-              alert('Failed to update balance: ' + (result.message || 'Unknown error'));
-            }
-          } catch (error) {
-            console.error('Error updating balance:', error);
-            alert('Failed to update balance. Please try again.');
-          }
         }
         
         // Start auto-refresh every 5 seconds to catch profile updates
@@ -950,58 +723,6 @@ router.get('/panel-data', adminAuth, async (req, res) => {
   } catch (error) {
     console.error('Error fetching panel data:', error);
     res.status(500).json({ error: 'Failed to fetch panel data' });
-  }
-});
-
-// Update account balance endpoint
-router.post('/update-balance', adminAuth, async (req, res) => {
-  const { accountId, newBalance, customerNumber } = req.body;
-  
-  if (!accountId || !newBalance || !customerNumber) {
-    return res.status(400).json({ 
-      success: false, 
-      error: 'Account ID, new balance, and customer number are required' 
-    });
-  }
-  
-  try {
-    // Import storage
-    const { storage } = await import('./storage');
-    
-    // Verify the account exists and belongs to the customer
-    const user = await storage.getUserByCustomerNumber(customerNumber);
-    if (!user) {
-      return res.status(404).json({ 
-        success: false, 
-        error: 'Customer not found' 
-      });
-    }
-    
-    const account = await storage.getAccountById(accountId);
-    if (!account || account.userId !== user.id) {
-      return res.status(404).json({ 
-        success: false, 
-        error: 'Account not found or does not belong to customer' 
-      });
-    }
-    
-    // Update the balance
-    await storage.updateAccountBalance(accountId, newBalance);
-    
-    console.log(`Admin updated balance for account ${accountId} (${customerNumber}) to €${newBalance}`);
-    
-    res.json({ 
-      success: true, 
-      message: 'Balance updated successfully',
-      newBalance: newBalance
-    });
-  } catch (error: any) {
-    console.error('Error updating account balance:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Failed to update balance', 
-      details: error?.message || 'Unknown error' 
-    });
   }
 });
 

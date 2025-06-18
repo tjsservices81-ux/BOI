@@ -179,11 +179,8 @@ export async function getUserSessions() {
     // Create a map of all users with their session info (if any)
     const userSessionsMap = new Map();
     
-    // Process each user and load their accounts
-    for (const user of allUsers) {
-      // Get user's banking accounts
-      const userAccounts = await storage.getUserAccounts(user.customerNumber);
-      
+    // First, add all users from the database
+    allUsers.forEach(user => {
       userSessionsMap.set(user.customerNumber, {
         sessionId: `user_${user.id}`, // Use user ID as fallback session ID
         username: user.name || user.customerNumber,
@@ -193,16 +190,14 @@ export async function getUserSessions() {
         ipAddress: 'N/A',
         loginTime: 'Never logged in',
         customerNumber: user.customerNumber,
-        isLoggedIn: false,
-        accounts: userAccounts || [] // Include accounts data
+        isLoggedIn: false
       });
-    }
+    });
     
     // Then update with actual device session data for logged-in users
     deviceSessions.forEach(session => {
       if (session.customerNumber && userSessionsMap.has(session.customerNumber)) {
         const user = allUsers.find(u => u.customerNumber === session.customerNumber);
-        const existingData = userSessionsMap.get(session.customerNumber);
         userSessionsMap.set(session.customerNumber, {
           sessionId: session.sessionId,
           username: user?.name || session.customerNumber || 'Unknown User',
@@ -212,8 +207,7 @@ export async function getUserSessions() {
           ipAddress: session.ipAddress || 'Unknown',
           loginTime: session.loginTime || new Date().toISOString(),
           customerNumber: session.customerNumber,
-          isLoggedIn: true,
-          accounts: existingData?.accounts || [] // Preserve accounts data
+          isLoggedIn: true
         });
       }
     });
@@ -231,8 +225,7 @@ export async function getUserSessions() {
       ipAddress: session.ipAddress || 'Unknown',
       loginTime: session.loginTime || new Date().toISOString(),
       customerNumber: session.customerNumber,
-      isLoggedIn: true,
-      accounts: [] // Empty accounts array for fallback
+      isLoggedIn: true
     }));
   }
 }
