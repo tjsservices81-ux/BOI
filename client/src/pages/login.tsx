@@ -128,8 +128,20 @@ export default function Login() {
     setLogoTapCount(newTapCount);
     
     if (newTapCount === 5) {
-      // Show create account form
-      setShowSignUp(true);
+      // Check if there's a current logged-in user
+      const currentUser = UserDataManager.getCurrentUser();
+      
+      if (currentUser) {
+        // Show current user info
+        const allUsers = UserDataManager.getAllUsers();
+        const userData = allUsers[currentUser];
+        if (userData) {
+          alert(`Current User: ${userData.name}\nCustomer Number: ${currentUser}`);
+        }
+      } else {
+        // No user logged in, show create account form
+        setShowSignUp(true);
+      }
       setLogoTapCount(0);
     }
     
