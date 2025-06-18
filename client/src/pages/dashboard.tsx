@@ -46,45 +46,76 @@ export default function Dashboard() {
     }, 200);
   };
 
-  // Load accounts using UserDataManager on mount
+  // Load accounts from backend API and sync with local storage
   useEffect(() => {
-    // Ensure there's a current user - if not, set a default
-    let currentUser = UserDataManager.getCurrentUser();
-    if (!currentUser) {
-      // Set a default user if none exists
-      currentUser = '12345678';
-      UserDataManager.setCurrentUser(currentUser);
-      
-      // Register default user if they don't exist
-      if (!UserDataManager.userExists(currentUser)) {
-        UserDataManager.registerUser({
-          customerNumber: currentUser,
-          name: '',
-          email: '',
-          phone: '',
-          joinDate: '',
-          dateCreated: new Date().toISOString()
+    const loadAccountData = async () => {
+      try {
+        // First check if user is authenticated with backend
+        const authResponse = await fetch('/api/auth/user', {
+          credentials: 'include'
         });
+        
+        if (authResponse.ok) {
+          const userData = await authResponse.json();
+          
+          // Fetch accounts from backend API
+          const accountsResponse = await fetch(`/api/accounts/${userData.id}`, {
+            credentials: 'include'
+          });
+          
+          if (accountsResponse.ok) {
+            const backendAccounts = await accountsResponse.json();
+            
+            if (backendAccounts.length > 0) {
+              // Use real backend data
+              setAccounts(backendAccounts);
+              
+              // Sync with local storage for offline access
+              const currentUser = UserDataManager.getCurrentUser();
+              if (currentUser) {
+                UserDataManager.setUserData('bankAccounts', backendAccounts);
+              }
+              return;
+            }
+          }
+        }
+        
+        // Fallback to local storage if backend unavailable
+        const currentUser = UserDataManager.getCurrentUser();
+        if (currentUser) {
+          let storedAccounts = UserDataManager.getUserData('bankAccounts', null);
+          
+          if (!storedAccounts || storedAccounts.length === 0) {
+            // Initialize default accounts only if no data exists
+            const defaultAccounts = [
+              { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "0.00", accountType: "current" },
+              { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "0.00", accountType: "credit" },
+              { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "0.00", accountType: "savings" },
+            ];
+            UserDataManager.setUserData('bankAccounts', defaultAccounts);
+            storedAccounts = defaultAccounts;
+            UserDataManager.setUserData('bankTransactions', []);
+          }
+          
+          setAccounts(storedAccounts);
+        }
+      } catch (error) {
+        console.warn('Failed to load account data, using local storage:', error);
+        
+        // Fallback to local storage
+        const currentUser = UserDataManager.getCurrentUser();
+        if (currentUser) {
+          const storedAccounts = UserDataManager.getUserData('bankAccounts', [
+            { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "0.00", accountType: "current" },
+            { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "0.00", accountType: "credit" },
+            { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "0.00", accountType: "savings" },
+          ]);
+          setAccounts(storedAccounts);
+        }
       }
-    }
+    };
     
-    // Load or initialize accounts with clean default data
-    let storedAccounts = UserDataManager.getUserData('bankAccounts', null);
-    if (!storedAccounts || storedAccounts.length === 0) {
-      // Initialize default accounts with zero balances
-      const defaultAccounts = [
-        { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "0.00", accountType: "current" },
-        { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "0.00", accountType: "credit" },
-        { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "0.00", accountType: "savings" },
-      ];
-      UserDataManager.setUserData('bankAccounts', defaultAccounts);
-      storedAccounts = defaultAccounts;
-      
-      // Initialize empty transactions array
-      UserDataManager.setUserData('bankTransactions', []);
-    }
-    
-    setAccounts(storedAccounts);
+    loadAccountData();
   }, []);
 
   // Listen for balance updates from transfers and admin profile updates

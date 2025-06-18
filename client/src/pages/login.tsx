@@ -302,7 +302,7 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Check if user exists
+    // Check if user exists locally
     if (!UserDataManager.userExists(customerNumber)) {
       toast({
         title: "Login Failed",
@@ -312,11 +312,51 @@ export default function Login() {
       return;
     }
 
-    // Set current user and record login time
-    UserDataManager.setCurrentUser(customerNumber);
-    UserDataManager.recordLoginTime(customerNumber);
-    
     try {
+      UserDataManager.setCurrentUser(customerNumber);
+      const userProfile = UserDataManager.getUserProfile();
+      if (!userProfile) {
+        throw new Error("User profile not found");
+      }
+
+      // Authenticate with backend to establish proper session
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          customerNumber: customerNumber,
+          pin: userProfile.pin || pin || '1234'
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Set current user and initialize data after successful backend auth
+        UserDataManager.setCurrentUser(customerNumber);
+        UserDataManager.recordLoginTime(customerNumber);
+        UserDataManager.initializeFreshAccount(customerNumber);
+        
+        // Login through auth context with backend user data
+        login(data.user || {
+          id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
+          name: userProfile.name,
+          email: userProfile.email
+        });
+        
+        navigate("/dashboard");
+      } else {
+        throw new Error("Backend authentication failed");
+      }
+    } catch (error) {
+      console.warn('Backend auth failed, using local session:', error);
+      
+      // Fallback to local authentication
+      UserDataManager.setCurrentUser(customerNumber);
+      UserDataManager.recordLoginTime(customerNumber);
+      UserDataManager.initializeFreshAccount(customerNumber);
+      
       const userProfile = UserDataManager.getUserProfile();
       if (userProfile) {
         login({
@@ -324,14 +364,14 @@ export default function Login() {
           name: userProfile.name,
           email: userProfile.email
         });
+        navigate("/dashboard");
+      } else {
+        toast({
+          title: "Login Failed",
+          description: "Invalid customer number or PIN. Please try again.",
+          variant: "destructive",
+        });
       }
-      navigate("/dashboard");
-    } catch (error) {
-      toast({
-        title: "Login Failed",
-        description: "Invalid customer number or PIN. Please try again.",
-        variant: "destructive",
-      });
     }
   };
 
@@ -404,18 +444,14 @@ export default function Login() {
       setHoldProgress(0);
       clearInterval(progressTimer);
       
-      // Initialize account data
+      // Complete biometric authentication with backend session
       let finalTargetUser = null;
       if (customerNumber && UserDataManager.userExists(customerNumber)) {
         finalTargetUser = customerNumber;
-        UserDataManager.setCurrentUser(customerNumber);
-        UserDataManager.initializeFreshAccount(customerNumber);
       } else if (!customerNumber) {
         const lastActiveUser = UserDataManager.getLastActiveUser();
         if (lastActiveUser && UserDataManager.userExists(lastActiveUser)) {
           finalTargetUser = lastActiveUser;
-          UserDataManager.setCurrentUser(lastActiveUser);
-          UserDataManager.initializeFreshAccount(lastActiveUser);
           setCustomerNumber(lastActiveUser);
         } else {
           const allUsers = UserDataManager.getAllUsers();
@@ -427,15 +463,56 @@ export default function Login() {
               return currentDate > latestDate ? current : latest;
             });
             finalTargetUser = mostRecentUser;
-            UserDataManager.setCurrentUser(mostRecentUser);
-            UserDataManager.initializeFreshAccount(mostRecentUser);
             setCustomerNumber(mostRecentUser);
           }
         }
       }
       
       if (finalTargetUser) {
-        UserDataManager.recordLoginTime(finalTargetUser);
+        // Establish full backend session just like normal login
+        UserDataManager.setCurrentUser(finalTargetUser);
+        const userProfile = UserDataManager.getUserProfile();
+        if (userProfile) {
+          // Authenticate with backend to establish proper session
+          fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+              customerNumber: finalTargetUser,
+              pin: userProfile.pin || '1234'
+            })
+          }).then(response => {
+            if (response.ok) {
+              return response.json();
+            }
+            throw new Error('Backend authentication failed');
+          }).then(data => {
+            // Set current user and initialize data
+            UserDataManager.setCurrentUser(finalTargetUser);
+            UserDataManager.recordLoginTime(finalTargetUser);
+            UserDataManager.initializeFreshAccount(finalTargetUser);
+            
+            // Login through auth context with backend user data
+            login(data.user || {
+              id: parseInt(finalTargetUser.replace(/\D/g, '')) || 1,
+              name: userProfile.name,
+              email: userProfile.email
+            });
+          }).catch(error => {
+            console.warn('Backend auth failed, using local session:', error);
+            // Fallback to local authentication
+            UserDataManager.setCurrentUser(finalTargetUser);
+            UserDataManager.recordLoginTime(finalTargetUser);
+            UserDataManager.initializeFreshAccount(finalTargetUser);
+            
+            login({
+              id: parseInt(finalTargetUser.replace(/\D/g, '')) || 1,
+              name: userProfile.name,
+              email: userProfile.email
+            });
+          });
+        }
       }
     }, 2500); // 2.5 seconds hold time
 

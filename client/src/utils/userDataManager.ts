@@ -278,14 +278,38 @@ export class UserDataManager {
     // Set current user first
     this.setCurrentUser(customerNumber);
     
-    // Always initialize fresh account data for new accounts
+    // Check if user already has data - if so, restore it instead of overwriting
+    const existingAccounts = this.getUserData('bankAccounts', null);
+    const existingTransactions = this.getUserData('bankTransactions', null);
+    
+    if (existingAccounts && existingAccounts.length > 0) {
+      // User has existing data - restore and refresh cache
+      this.clearCache();
+      
+      // Trigger refresh events to reload existing data
+      window.dispatchEvent(new CustomEvent('accountsUpdate', {
+        detail: { 
+          accounts: existingAccounts,
+          transactions: existingTransactions || [],
+          source: 'dataRestore'
+        }
+      }));
+      
+      window.dispatchEvent(new CustomEvent('forceRefresh', {
+        detail: { source: 'userDataRestore' }
+      }));
+      
+      return;
+    }
+    
+    // Only initialize fresh data for truly new accounts
     const freshAccounts = [
       { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "0.00", accountType: "current" },
       { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "0.00", accountType: "credit" },
       { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "0.00", accountType: "savings" },
     ];
     
-    // Force set fresh data immediately
+    // Set fresh data for new account
     this.setUserData('bankAccounts', freshAccounts);
     this.setUserData('bankTransactions', []);
     this.setUserData('savedPayees', []);
