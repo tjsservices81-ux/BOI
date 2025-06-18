@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 
-export default function Splash() {
+interface SplashProps {
+  transitioning?: boolean;
+}
+
+export default function Splash({ transitioning = false }: SplashProps) {
   const [, navigate] = useLocation();
   const [isVisible, setIsVisible] = useState(true);
 

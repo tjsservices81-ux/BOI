@@ -1,5 +1,8 @@
 // App lifecycle management for state preservation
-import { StateManager } from './stateManager';
+import { StateManager as InternalStateManager } from './stateManager';
+
+// Export StateManager for use in other components
+export const StateManager = InternalStateManager;
 
 export class AppLifecycle {
   private static isInitialized = false;
