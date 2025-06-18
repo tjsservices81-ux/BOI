@@ -64,15 +64,15 @@ export default function Login() {
   useEffect(() => {
     setAssetsLoaded(true);
     
-    // For cold starts, clear all auth state and require fresh login
+    // For cold starts, only clear current session - preserve registered user data
     const wasColdStart = sessionStorage.getItem('app_cold_start') === 'true' || 
                         !sessionStorage.getItem('splashShown');
     
     if (wasColdStart) {
-      // Cold start - clear all authentication data
+      // Cold start - clear only current session, preserve registration data
       UserDataManager.clearCurrentUser();
       localStorage.removeItem('bankingUser');
-      localStorage.removeItem('lastActiveUser');
+      // Keep lastActiveUser for biometric login access
     }
     
     // Clear form fields regardless
@@ -373,8 +373,8 @@ export default function Login() {
         });
 
         if (!response.ok || !(await response.json()).exists) {
-          // Account deleted on server - remove from local storage
-          UserDataManager.removeUser(targetUser);
+          // Don't delete user from localStorage - preserve local registration data
+          // Only clear current session if this user was active
           if (UserDataManager.getCurrentUser() === targetUser) {
             UserDataManager.clearCurrentUser();
           }
@@ -1490,9 +1490,7 @@ export default function Login() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          // Remove this specific user using UserDataManager
-                          UserDataManager.removeUser(customerNumber);
-                          
+                          // Only clear current session - don't delete registered account data
                           // If this was the current user, clear the session
                           if (UserDataManager.getCurrentUser() === customerNumber) {
                             UserDataManager.clearCurrentUser();
@@ -1502,8 +1500,8 @@ export default function Login() {
                           }
                           
                           toast({
-                            title: "Account Removed",
-                            description: `${userData.name} has been signed out and removed.`,
+                            title: "User Signed Out",
+                            description: `${userData.name} has been signed out of current session.`,
                           });
                           
                           // Force re-render by closing and reopening the panel
@@ -1511,7 +1509,7 @@ export default function Login() {
                           setTimeout(() => setShowAdminLogin(true), 100);
                         }}
                         className="ml-2 w-8 h-8 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg flex items-center justify-center active:scale-95 transition-all"
-                        title="Sign out and remove account"
+                        title="Sign out current session"
                       >
                         <span className="text-sm font-bold">×</span>
                       </button>
