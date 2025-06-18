@@ -86,8 +86,9 @@ function AppRoutes() {
               console.error('Failed to restore user:', error);
             }
           }
-          // Skip splash entirely for app restoration
+          // Skip splash entirely for app restoration - no animations
           setSplashShown(true);
+          setSplashTransitioning(false);
           setIsRestoringState(false);
         } catch (error) {
           console.error('Failed to restore app state:', error);
@@ -143,10 +144,11 @@ function AppRoutes() {
     };
   }, [user, location]);
 
-  // Handle splash screen timing - only for fresh app starts
+  // Handle splash screen timing - only for genuine fresh app starts
   useEffect(() => {
     const wasAppActive = sessionStorage.getItem('app_was_active');
     
+    // Only show splash animation on very first app launch
     if (!splashShown && isInitialized && !isRestoringState && !wasAppActive) {
       const timer = setTimeout(() => {
         setSplashTransitioning(true);
@@ -157,6 +159,10 @@ function AppRoutes() {
       }, 1500);
       
       return () => clearTimeout(timer);
+    } else if (wasAppActive && !splashShown) {
+      // For app restoration, skip splash immediately
+      setSplashShown(true);
+      setSplashTransitioning(false);
     }
   }, [splashShown, isInitialized, isRestoringState]);
 
