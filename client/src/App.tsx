@@ -120,11 +120,16 @@ function AppRoutes() {
             <Route path="/splash" component={Splash} />
             <Route path="/login" component={Login} />
             <Route path="/more" component={More} />
+            <Route path="/dashboard">
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            </Route>
             <Route path="/">
               {!splashCompleted || isLoading ? (
                 <Splash />
               ) : user ? (
-                <Dashboard />
+                <Redirect to="/dashboard" />
               ) : (
                 <Login />
               )}
