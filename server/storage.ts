@@ -20,6 +20,7 @@ export interface IStorage {
   
   // Account operations
   getAccountsByUserId(userId: number): Promise<Account[]>;
+  getUserAccounts(customerNumber: string): Promise<Account[]>;
   getAccountById(accountId: number): Promise<Account | undefined>;
   createAccount(account: InsertAccount): Promise<Account>;
   updateAccountBalance(accountId: number, newBalance: string): Promise<void>;
@@ -240,6 +241,14 @@ class MemStorage implements IStorage {
     return Array.from(this.accounts.values()).filter(account => account.userId === userId);
   }
 
+  async getUserAccounts(customerNumber: string): Promise<Account[]> {
+    const user = await this.getUserByCustomerNumber(customerNumber);
+    if (user) {
+      return await this.getAccountsByUserId(user.id);
+    }
+    return [];
+  }
+
   async getAccountById(accountId: number): Promise<Account | undefined> {
     return this.accounts.get(accountId);
   }
@@ -258,6 +267,7 @@ class MemStorage implements IStorage {
     if (account) {
       account.balance = newBalance;
       this.accounts.set(accountId, account);
+      await this.saveData(); // Persist changes immediately
     }
   }
 

@@ -679,6 +679,31 @@ router.get('/panel', adminAuth, async (req, res) => {
                       <div class="detail-value">\${session.loginTime ? new Date(session.loginTime).toLocaleString() : 'Unknown'}</div>
                     </div>
                   </div>
+                  
+                  \${session.accounts && session.accounts.length > 0 ? \`
+                    <div class="user-accounts">
+                      <div class="accounts-header">Banking Accounts</div>
+                      <div class="accounts-list">
+                        \${session.accounts.map(account => \`
+                          <div class="account-item">
+                            <div class="account-details">
+                              <div class="account-name">\${account.displayName || account.accountType}</div>
+                              <div class="account-number">\${account.accountNumber}</div>
+                            </div>
+                            <div class="account-balance">€\${account.balance}</div>
+                            <button class="balance-edit-btn" onclick="editBalance('\${session.customerNumber}', '\${account.id}', '\${account.balance}', '\${account.displayName}')">
+                              Edit Balance
+                            </button>
+                          </div>
+                        \`).join('')}
+                      </div>
+                    </div>
+                  \` : \`
+                    <div class="user-accounts">
+                      <div class="accounts-header">Banking Accounts</div>
+                      <div class="no-accounts">No accounts found</div>
+                    </div>
+                  \`}
                 </div>
                 <button class="delete-btn" onclick="confirmDelete('\${session.customerNumber}', '\${session.username || 'Unknown User'}')">
                   Delete Account
