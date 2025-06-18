@@ -92,54 +92,39 @@ function AppRoutes() {
     const initializeApp = async () => {
       // Check if sessionStorage was cleared (indicates fresh app start)
       const wasAppActive = sessionStorage.getItem('app_was_active');
-      const lastBackgroundTime = localStorage.getItem('app_background_time');
       
       if (!wasAppActive) {
-        // Fresh app start - show splash and clear state
+        // Fresh app start - show splash but preserve user sessions
         setSplashShown(false);
-        StateManager.clearAppState();
-        localStorage.removeItem('app_background_time');
         sessionStorage.setItem('app_was_active', 'true');
-      } else if (lastBackgroundTime) {
-        // App was backgrounded - check if too much time passed
-        const backgroundDuration = Date.now() - parseInt(lastBackgroundTime);
-        const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
-        
-        if (backgroundDuration > SESSION_TIMEOUT) {
-          // Too long in background - treat as fresh start
-          setSplashShown(false);
-          StateManager.clearAppState();
-          localStorage.removeItem('app_background_time');
-        } else {
-          // Quick return from background - restore state
-          try {
-            const savedState = StateManager.restoreAppState();
+      } else {
+        // App was backgrounded - restore state without timeout checks
+        try {
+          const savedState = StateManager.restoreAppState();
+          
+          if (savedState && savedState.user && !user) {
+            // Restore user session silently
+            login(savedState.user);
             
-            if (savedState && savedState.user && !user) {
-              // Restore user session silently
-              login(savedState.user);
-              
-              // Restore route if different from current
-              if (savedState.currentRoute !== location && savedState.currentRoute !== '/login') {
-                navigate(savedState.currentRoute);
-              }
-              
-              // Skip splash if restoring state
-              setSplashShown(true);
-            } else {
-              // No valid saved state, show splash
-              setSplashShown(false);
+            // Restore route if different from current
+            if (savedState.currentRoute !== location && savedState.currentRoute !== '/login') {
+              navigate(savedState.currentRoute);
             }
-          } catch (error) {
-            console.error('Failed to restore app state:', error);
+            
+            // Skip splash if restoring state
+            setSplashShown(true);
+          } else {
+            // No valid saved state, show splash
             setSplashShown(false);
           }
+        } catch (error) {
+          console.error('Failed to restore app state:', error);
+          setSplashShown(false);
         }
-        localStorage.removeItem('app_background_time');
-      } else {
-        // No background time recorded - show splash
-        setSplashShown(false);
       }
+      
+      // Clean up background time tracking
+      localStorage.removeItem('app_background_time');
       
       // Clear temporary state for cold launch behavior
       const keys = Object.keys(localStorage);
@@ -161,67 +146,24 @@ function AppRoutes() {
 
     initializeApp();
     
-    // Handle app lifecycle events directly
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        // App going to background - save state and timestamp
-        localStorage.setItem('app_background_time', Date.now().toString());
-        if (user) {
-          StateManager.handleVisibilityChange(location, user);
-        }
-      }
-    };
-
+    // Minimal lifecycle tracking without session interference
     const handleBeforeUnload = () => {
-      // Clear session marker to detect force close
+      // Only clear session marker on actual app close
       sessionStorage.removeItem('app_was_active');
-      if (user) {
-        StateManager.handleVisibilityChange(location, user);
-      }
     };
 
-    const handlePageHide = () => {
-      sessionStorage.removeItem('app_was_active');
-      if (user) {
-        StateManager.handleVisibilityChange(location, user);
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('beforeunload', handleBeforeUnload);
-    window.addEventListener('pagehide', handlePageHide);
     
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      window.removeEventListener('pagehide', handlePageHide);
     };
   }, []);
 
 
 
-  // Handle app visibility changes for proper lifecycle management
+  // Theme management for current route
   useEffect(() => {
-    let isAppVisible = true;
-    
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        isAppVisible = false;
-        // App is being backgrounded - just track state, don't set reload timers
-        sessionStorage.setItem('app_backgrounded', Date.now().toString());
-        sessionStorage.setItem('current_location', location);
-      } else {
-        // App is being foregrounded - restore state without any reloading
-        if (!isAppVisible) {
-          // Always restore app state when returning from background
-          restoreAppStateOnForeground();
-        }
-        isAppVisible = true;
-        sessionStorage.removeItem('app_backgrounded');
-      }
-    };
-
-    const restoreThemeForCurrentScreen = () => {
+    const updateThemeForRoute = () => {
       const themeColorMeta = document.querySelector('meta[name="theme-color"]');
       if (!themeColorMeta) return;
 
@@ -233,63 +175,8 @@ function AppRoutes() {
       }
     };
 
-    const restoreAppStateOnForeground = () => {
-      // Restore theme color
-      restoreThemeForCurrentScreen();
-      
-      // Force navigation visibility restoration if needed
-      if (user && splashShown && !['/login', '/splash'].includes(location)) {
-        const navElement = document.querySelector('[data-bottom-nav]') as HTMLElement;
-        if (navElement && navElement.classList.contains('hidden')) {
-          navElement.classList.remove('hidden');
-        }
-      }
-    };
-
-    const handlePageHide = () => {
-      // Only mark for cold restart if this is actually an app closure
-      // PageHide can trigger for various reasons, so we're more conservative
-      sessionStorage.setItem('page_hidden', 'true');
-    };
-
-    const handlePageShow = (event: PageTransitionEvent) => {
-      // Only reload if this was a true app closure (page cache was not used)
-      const forceColdStart = localStorage.getItem('force_cold_start') === 'true';
-      
-      if (forceColdStart) {
-        // This was a real app closure - force full reload for cold launch
-        localStorage.removeItem('force_cold_start');
-        sessionStorage.clear();
-        window.location.reload();
-      } else {
-        // This was just backgrounding/foregrounding - restore state
-        sessionStorage.removeItem('page_hidden');
-        restoreAppStateOnForeground();
-      }
-    };
-
-    const handleBeforeUnload = () => {
-      // Only mark for cold restart on actual app closure
-      // beforeUnload can trigger for many reasons, so we're conservative
-      if (document.visibilityState === 'hidden') {
-        localStorage.setItem('force_cold_start', 'true');
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('pagehide', handlePageHide);
-    window.addEventListener('pageshow', handlePageShow);
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('pagehide', handlePageHide);
-      window.removeEventListener('pageshow', handlePageShow);
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, []);
-
-
+    updateThemeForRoute();
+  }, [location]);
 
   // Listen for splash completion
   useEffect(() => {
@@ -300,33 +187,12 @@ function AppRoutes() {
         setSplashShown(true);
         setSplashTransitioning(false);
       }, 100);
-      const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-      if (themeColorMeta) {
-        themeColorMeta.setAttribute('content', '#126987');
-      }
+      updateThemeColor('#126987');
     };
 
     window.addEventListener('splashComplete', handleSplashComplete);
     return () => window.removeEventListener('splashComplete', handleSplashComplete);
   }, []);
-
-  // Restore app state when returning from background - MUST be before conditional return
-  useEffect(() => {
-    const handleFocusRestore = () => {
-      // Restore correct theme color
-      const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-      if (themeColorMeta) {
-        if (location === '/splash') {
-          themeColorMeta.setAttribute('content', '#000DFF');
-        } else {
-          themeColorMeta.setAttribute('content', '#126987');
-        }
-      }
-    };
-
-    window.addEventListener('focus', handleFocusRestore);
-    return () => window.removeEventListener('focus', handleFocusRestore);
-  }, [location]);
 
   // Prevent flash during initialization
   if (!isInitialized) {
