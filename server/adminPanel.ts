@@ -560,7 +560,7 @@ router.get('/panel', adminAuth, async (req, res) => {
             
             const result = await response.json();
             if (response.ok) {
-              // Complete frontend cleanup - immediate biometric lockout and session clearing
+              // Clear all cached data for the deleted user from browser storage
               try {
                 // Clear localStorage entries for this customer
                 const allKeys = Object.keys(localStorage);
@@ -578,69 +578,16 @@ router.get('/panel', adminAuth, async (req, res) => {
                   }
                 }
                 
-                // Clear current user and biometric authentication if it matches deleted user
+                // Clear current user if it matches deleted user
                 if (localStorage.getItem('currentUser') === currentCustomerNumber) {
                   localStorage.removeItem('currentUser');
-                  localStorage.removeItem('bankingUser'); // Clear auth session
                 }
                 
                 if (localStorage.getItem('lastActiveUser') === currentCustomerNumber) {
                   localStorage.removeItem('lastActiveUser');
                 }
                 
-                // Clear biometric and authentication data
-                localStorage.removeItem(\`user_\${currentCustomerNumber}_biometricEnabled\`);
-                localStorage.removeItem(\`user_\${currentCustomerNumber}_lastLogin\`);
-                localStorage.removeItem(\`bankUsers\`); // Force reload of user list
-                
-                // Force immediate logout on all devices by clearing all possible storage
-                console.log('🧹 COMPLETE CLEANUP: Clearing all user data and sessions');
-                
-                // Clear user-specific localStorage entries
-                Object.keys(localStorage).forEach(key => {
-                  if (key.includes(currentCustomerNumber) || 
-                      key === 'currentUser' || 
-                      key === 'lastActiveUser' || 
-                      key === 'bankingUser' ||
-                      key === 'bankUsers') {
-                    localStorage.removeItem(key);
-                    console.log('Cleared localStorage:', key);
-                  }
-                });
-                
-                // Clear sessionStorage
-                Object.keys(sessionStorage).forEach(key => {
-                  if (key.includes(currentCustomerNumber)) {
-                    sessionStorage.removeItem(key);
-                  }
-                });
-                
-                // Broadcast deletion event to all tabs/windows to force immediate logout
-                try {
-                  const broadcastChannel = new BroadcastChannel('bankingApp');
-                  broadcastChannel.postMessage({
-                    type: 'USER_DELETED',
-                    customerNumber: currentCustomerNumber,
-                    timestamp: Date.now()
-                  });
-                  broadcastChannel.close();
-                } catch (broadcastError) {
-                  console.warn('Broadcast channel not available:', broadcastError);
-                }
-                
-                // Force page refresh to ensure complete logout
-                setTimeout(() => {
-                  window.location.href = '/';
-                }, 1000);
-                
-                // Force immediate logout for any active sessions
-                window.postMessage({
-                  type: 'FORCE_LOGOUT',
-                  customerNumber: currentCustomerNumber,
-                  reason: 'ACCOUNT_DELETED'
-                }, '*');
-                
-                console.log(\`🧹 Admin cleanup: Complete data wipe for customer \${currentCustomerNumber} - biometric lockout active\`);
+                console.log(\`🧹 Admin cleanup: Removed all browser data for customer \${currentCustomerNumber}\`);
               } catch (cleanupError) {
                 console.error('Error during frontend cleanup:', cleanupError);
               }

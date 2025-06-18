@@ -953,7 +953,7 @@ export default function Profile() {
         <div className="bg-[#126987] px-4 py-6 pt-12 relative z-10">
           <div className="flex items-center justify-between">
             <button 
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/dashboard')}
               className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center active:scale-95 transition-transform"
             >
               <ChevronLeft className="w-6 h-6 text-white" />
@@ -1063,14 +1063,10 @@ export default function Profile() {
             <button 
               onClick={async () => {
                 setIsSigningOut(true);
-                // Mark this as a sign-out navigation to preserve session data
-                sessionStorage.setItem('user_signed_out', 'true');
-                setTimeout(() => {
-                  // NAVIGATION ONLY - NO DATA CLEARING
-                  // User remains logged in with full session and biometric access
-                  // Only admin panel can actually delete accounts and clear data
+                setTimeout(async () => {
+                  await logout();
                   navigate('/login');
-                }, 2000);
+                }, 4000);
               }}
               className="w-full flex items-center space-x-4 p-4 bg-red-50 border border-red-200 rounded-xl active:scale-98 transition-transform"
             >

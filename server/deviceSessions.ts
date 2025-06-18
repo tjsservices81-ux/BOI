@@ -259,15 +259,9 @@ export async function deleteAllUserSessions(customerNumber: string): Promise<boo
 }
 
 export async function deleteUserSession(sessionId: string): Promise<boolean> {
-  console.error(`🚨 SECURITY VIOLATION: deleteUserSession() called for ${sessionId} but USER DELETION IS COMPLETELY DISABLED`);
-  console.error(`🚨 This function was automatically deleting user accounts from the database`);
-  console.error(`🚨 User accounts can ONLY be deleted manually by admin via /admin/login`);
-  
-  // Log the call stack to identify where this was called from
-  console.trace('deleteUserSession call stack:');
-  
   try {
-    // Import session manager for session cleanup only
+    // Import storage and session manager
+    const { storage } = await import('./storage');
     const { invalidateAllUserSessions } = await import('./sessionManager');
     
     let customerNumber: string | undefined;
@@ -279,7 +273,7 @@ export async function deleteUserSession(sessionId: string): Promise<boolean> {
     } else if (sessionId.startsWith('user_')) {
       // Handle fallback user session IDs (user_123 format)
       const userId = parseInt(sessionId.replace('user_', ''));
-      const { storage } = await import('./storage');
+      const user = await storage.getUserByCredentials('', ''); // We need to get user by ID
       const allUsers = await storage.getAllUsers();
       const targetUser = allUsers.find(u => u.id === userId);
       if (targetUser) {
@@ -288,27 +282,32 @@ export async function deleteUserSession(sessionId: string): Promise<boolean> {
     }
     
     if (customerNumber) {
-      // SECURITY: Only clear sessions - NEVER delete user accounts
-      const invalidatedSessions = invalidateAllUserSessions(customerNumber);
+      // Delete the complete user account from database
+      const userDeleted = await storage.deleteUser(customerNumber);
       
-      // Remove device sessions only (not user accounts)
-      const customerSessions = deviceSessions.filter(s => s.customerNumber === customerNumber);
-      customerSessions.forEach(s => {
-        removeDeviceSession(s.sessionId);
-        // Also remove from panic mode if active
-        devicePanicMode.delete(s.sessionId);
-      });
-      
-      // Remove customer from panic mode
-      customerPanicMode.delete(customerNumber);
-      
-      console.log(`🔒 SECURE: Cleared sessions for customer ${customerNumber} but preserved account data`);
-      console.log(`Invalidated ${invalidatedSessions.length} active sessions`);
-      console.log(`Removed ${customerSessions.length} device sessions`);
-      return true;
+      if (userDeleted) {
+        // Invalidate all active express sessions for this user
+        const invalidatedSessions = invalidateAllUserSessions(customerNumber);
+        
+        // Remove ALL device sessions for this customer
+        const customerSessions = deviceSessions.filter(s => s.customerNumber === customerNumber);
+        customerSessions.forEach(s => {
+          removeDeviceSession(s.sessionId);
+          // Also remove from panic mode if active
+          devicePanicMode.delete(s.sessionId);
+        });
+        
+        // Remove customer from panic mode
+        customerPanicMode.delete(customerNumber);
+        
+        console.log(`Successfully deleted user account for customer: ${customerNumber}`);
+        console.log(`Invalidated ${invalidatedSessions.length} active sessions`);
+        console.log(`Removed ${customerSessions.length} device sessions`);
+        return true;
+      }
     }
   } catch (error) {
-    console.error('Error clearing user sessions:', error);
+    console.error('Error deleting user account:', error);
   }
   return false;
 }

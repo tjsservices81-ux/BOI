@@ -42,13 +42,9 @@ export function setUserDeviceSession(userSession: UserDeviceSession): void {
 }
 
 export function removeUserDeviceSession(userId: number): void {
-  // Only remove device session on explicit manual logout - not on session errors
-  // Device locks remain permanent but session can be cleared for manual logout
-  const session = userDeviceSessions.get(userId);
-  if (session) {
-    console.log(`🔓 MANUAL LOGOUT: User ${userId} manually logged out from ${session.deviceModel}`);
-    // Keep device lock but clear active session for clean logout
-  }
+  // Permanent device locks cannot be removed
+  // This function is disabled to prevent device unlocking
+  console.log(`🚫 PERMANENT LOCK: Cannot unlock User ${userId} - device lock is permanent`);
 }
 
 export function getUserDeviceSession(userId: number): UserDeviceSession | undefined {

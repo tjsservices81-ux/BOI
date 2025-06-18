@@ -21,82 +21,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Initialize auth state on mount - preserve session across refreshes
+  // Initialize auth state on mount - check for valid session
   useEffect(() => {
     let isMounted = true;
     
     const initializeAuth = async () => {
       try {
-        // Check for cached user first - maintain session persistence
+        // Always check for cached user - no cold start logout behavior
         const cachedUser = localStorage.getItem('bankingUser');
         if (cachedUser && isMounted) {
           try {
             const parsedUser = JSON.parse(cachedUser);
             setUser(parsedUser);
-            
-            // Verify session with server to ensure it's still valid
-            const response = await fetch('/api/auth/user', {
-              credentials: 'include'
-            });
-            
-            if (response.ok) {
-              const serverUser = await response.json();
-              // Update user data if server has newer info
-              if (serverUser) {
-                setUser(serverUser);
-                localStorage.setItem('bankingUser', JSON.stringify(serverUser));
-              }
-            } else {
-              // Check if account was deleted
-              const errorData = await response.json().catch(() => ({}));
-              if (errorData.accountDeleted) {
-                console.log('🚫 ACCOUNT DELETED: Force logout and clear all data');
-                setUser(null);
-                localStorage.removeItem('bankingUser');
-                localStorage.removeItem('currentUser');
-                localStorage.removeItem('lastActiveUser');
-                // Clear all biometric data
-                Object.keys(localStorage).forEach(key => {
-                  if (key.includes('_biometricEnabled') || key.includes('_lastLogin')) {
-                    localStorage.removeItem(key);
-                  }
-                });
-                window.location.href = '/';
-                return;
-              }
-              // For other errors, keep cached user session
-              console.log('Server session check failed - maintaining cached user session');
-            }
           } catch (error) {
-            // Network/parsing error - keep cached user, don't logout
-            console.warn('Auth initialization error, maintaining cached session:', error);
-          }
-        } else {
-          // No cached user - check server session anyway
-          try {
-            const response = await fetch('/api/auth/user', {
-              credentials: 'include'
-            });
-            
-            if (response.ok) {
-              const serverUser = await response.json();
-              if (serverUser && isMounted) {
-                setUser(serverUser);
-                localStorage.setItem('bankingUser', JSON.stringify(serverUser));
-              }
-            }
-          } catch (error) {
-            // Network error during server check - no action needed
-            console.warn('Server auth check failed:', error);
+            localStorage.removeItem('bankingUser');
+            setUser(null);
           }
         }
-        
         if (isMounted) {
           setIsLoading(false);
           setIsInitialized(true);
         }
       } catch (error) {
         if (isMounted) {
+          setUser(null);
           setIsLoading(false);
           setIsInitialized(true);
         }
@@ -110,73 +58,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // Listen for admin actions and forced logout events
+  // Listen for admin profile updates to refresh user data immediately
   useEffect(() => {
-    // Handle admin deletion events - immediate logout and biometric lockout
-    const handleUserDeletion = (event: MessageEvent) => {
-      if (event.data?.type === 'FORCE_LOGOUT' && event.data?.reason === 'ACCOUNT_DELETED') {
-        const deletedCustomerNumber = event.data.customerNumber;
-        const currentUser = localStorage.getItem('currentUser');
-        
-        if (currentUser === deletedCustomerNumber) {
-          console.log('Account deleted by admin - forcing immediate logout');
-          
-          // Clear all user data immediately
-          setUser(null);
-          localStorage.removeItem('bankingUser');
-          localStorage.removeItem('currentUser');
-          localStorage.removeItem('lastActiveUser');
-          
-          // Clear all user-specific data
-          const allKeys = Object.keys(localStorage);
-          for (const key of allKeys) {
-            if (key.includes(deletedCustomerNumber)) {
-              localStorage.removeItem(key);
-            }
-          }
-          
-          // Force navigation to login
-          window.location.href = '/';
-        }
-      }
-    };
-
-    // Listen for cross-tab deletion events
-    const broadcastChannel = new BroadcastChannel('bankingApp');
-    const handleBroadcastMessage = (event: MessageEvent) => {
-      if (event.data?.type === 'USER_DELETED') {
-        const deletedCustomerNumber = event.data.customerNumber;
-        const currentUser = localStorage.getItem('currentUser');
-        
-        if (currentUser === deletedCustomerNumber) {
-          console.log('BROADCAST: User account deleted - forcing immediate logout');
-          
-          // Clear all user data immediately
-          setUser(null);
-          localStorage.removeItem('bankingUser');
-          localStorage.removeItem('currentUser');
-          localStorage.removeItem('lastActiveUser');
-          
-          // Clear all user-specific data including biometric data
-          Object.keys(localStorage).forEach(key => {
-            if (key.includes(deletedCustomerNumber) || 
-                key.includes('_biometricEnabled') || 
-                key.includes('_lastLogin')) {
-              localStorage.removeItem(key);
-            }
-          });
-          
-          // Force navigation to login with error message
-          window.location.href = '/';
-        }
-      }
-    };
-    
-    // Set up listeners
-    window.addEventListener('message', handleUserDeletion);
-    broadcastChannel.addEventListener('message', handleBroadcastMessage);
-
-    // Listen for admin profile updates to refresh user data immediately
     const handleProfileUpdate = (event: Event) => {
       const customEvent = event as CustomEvent;
       if (user && customEvent.detail) {
@@ -196,9 +79,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     window.addEventListener('userProfileUpdate', handleProfileUpdate);
     
     return () => {
-      window.removeEventListener('message', handleUserDeletion);
-      broadcastChannel.removeEventListener('message', handleBroadcastMessage);
-      broadcastChannel.close();
       window.removeEventListener('adminProfileUpdate', handleProfileUpdate);
       window.removeEventListener('userProfileUpdate', handleProfileUpdate);
     };
@@ -210,10 +90,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
-    // Frontend logout only navigates to login screen - does NOT clear any data
-    // User data and sessions persist for immediate re-authentication
-    // Only admin panel can actually delete accounts and clear sessions
-    console.log('Frontend logout: navigating to login screen without clearing data');
+    try {
+      // Clear user state immediately
+      setUser(null);
+      localStorage.removeItem('bankingUser');
+      
+      // Call backend logout endpoint
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Even if backend fails, ensure local state is cleared
+      setUser(null);
+      localStorage.removeItem('bankingUser');
+    }
   };
 
   return (

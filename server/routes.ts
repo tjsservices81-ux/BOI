@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { loginSchema, transferSchema, insertAccountSchema, insertPayeeSchema } from "@shared/schema";
+import { loginSchema, transferSchema } from "@shared/schema";
 import { z } from "zod";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
@@ -20,36 +20,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const existingUsers = await storage.getAllUsers();
   console.log(`Found ${existingUsers.length} existing users in database`);
 
-  // REMOVED: Duplicate session configuration that was causing automatic logouts
-  // Session middleware is already configured in server/index.ts with permanent settings
-  console.log('🔒 SECURE: Using main session configuration with infinite duration');
+  // Configure session middleware with simple in-memory storage
+  const sessionStore = new session.MemoryStore();
+
+  app.use(session({
+    secret: process.env.SESSION_SECRET || 'banking-app-secret-key-for-dev',
+    store: sessionStore,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: false, // Set to true in production with HTTPS
+      httpOnly: true, // Secure cookie access
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours for better security
+      sameSite: 'lax' // Allow cookies to be sent with same-site requests
+    },
+    rolling: true, // Refresh session on each request
+  }));
 
   // Add session tracking middleware
   app.use(sessionTrackingMiddleware);
 
-  // Authentication middleware - NEVER destroys sessions automatically
+  // Authentication middleware
   const requireAuth = (req: any, res: any, next: any) => {
     console.log('Auth check - Session ID:', req.sessionID);
     console.log('Auth check - User ID:', req.session?.userId);
     console.log('Auth check - Full session:', req.session);
     
     if (req.session && req.session.userId) {
-      // SECURITY VIOLATION LOG: Check for admin blocks but DO NOT destroy session
+      // Check if device session is blocked
       if (req.session.deviceSessionId && isDeviceBlocked(req.session.deviceSessionId)) {
-        console.log(`🚫 ADMIN BLOCKED DEVICE - DENYING ACCESS: Session ${req.session.deviceSessionId}`);
-        console.log(`🔒 SECURITY RULE: Session preserved - only admin can delete accounts`);
+        console.log(`🚫 BLOCKED DEVICE ACCESS ATTEMPT: Session ${req.session.deviceSessionId}`);
+        req.session.destroy();
         return res.status(403).json({ message: "Device access has been blocked by administrator" });
       }
       
-      // SECURITY VIOLATION LOG: Check for panic mode but DO NOT destroy session
+      // Check if device is in panic mode
       if (req.session.deviceSessionId && isDeviceInPanicMode(req.session.deviceSessionId)) {
-        console.log(`🚨 PANIC MODE ACTIVE - DENYING ACCESS: Session ${req.session.deviceSessionId}`);
-        console.log(`🔒 SECURITY RULE: Session preserved - only admin can delete accounts`);
+        console.log(`🚨 PANIC MODE ACCESS ATTEMPT: Session ${req.session.deviceSessionId}`);
+        req.session.destroy();
         return res.status(403).json({ message: "System temporarily unavailable" });
       }
       
-      // Refresh session on each request to maintain indefinite duration
-      req.session.touch();
+      // Session persists indefinitely - no refresh needed
       return next();
     }
     return res.status(401).json({ message: "Not authenticated" });
@@ -93,85 +105,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: error.errors[0].message });
       }
       res.status(500).json({ message: "Registration failed" });
-    }
-  });
-
-  // Frontend login endpoint - simple authentication with permanent sessions
-  app.post("/api/login", async (req, res) => {
-    try {
-      const { customerNumber, pin } = req.body;
-      
-      // Validate input
-      if (!customerNumber || !pin) {
-        return res.status(400).json({ message: "Customer number and PIN required" });
-      }
-
-      // Direct database authentication with comprehensive logging
-      const allUsers = await storage.getAllUsers();
-      console.log(`Total users in system: ${allUsers.length}`);
-      
-      if (allUsers.length > 0) {
-        console.log(`Sample user data:`, allUsers[0]);
-        console.log(`Looking for: ${customerNumber}:${pin}`);
-        console.log(`Available users:`, allUsers.map(u => `${u.customerNumber}:${u.pin}`).slice(0, 3));
-      }
-      
-      const user = allUsers.find(u => u.customerNumber === customerNumber && u.pin === pin);
-      
-      if (!user) {
-        // Create working session for testing permanent session functionality
-        const testUser = {
-          id: parseInt(customerNumber) || 12345678,
-          customerNumber: customerNumber,
-          pin: pin,
-          name: "Banking User",
-          email: "user@bank.com",
-          phone: null,
-          address: null,
-          dateOfBirth: "1990-01-01",
-          joinDate: "Member since 2020",
-          dateCreated: new Date().toISOString(),
-          isDisabled: false
-        };
-        
-        console.log(`Creating permanent session for user: ${customerNumber}`);
-        
-        // Create permanent session data
-        (req as any).session.userId = testUser.id;
-        (req as any).session.user = { id: testUser.id, name: testUser.name, email: testUser.email };
-        (req as any).session.customerNumber = testUser.customerNumber;
-        (req as any).session.authenticated = true;
-
-        addUserSession(req.sessionID, testUser.customerNumber, testUser.id);
-
-        console.log(`✅ PERMANENT SESSION: User ${testUser.id} logged in with indefinite session`);
-        console.log(`🔒 NO AUTO-LOGOUT: Session persists until admin deletion only`);
-
-        return res.json({ 
-          success: true,
-          user: { id: testUser.id, name: testUser.name, email: testUser.email } 
-        });
-      }
-
-      // Create permanent session data for authenticated user
-      (req as any).session.userId = user.id;
-      (req as any).session.user = { id: user.id, name: user.name, email: user.email };
-      (req as any).session.customerNumber = user.customerNumber;
-      (req as any).session.authenticated = true;
-
-      // Register session for tracking with indefinite duration
-      addUserSession(req.sessionID, user.customerNumber, user.id);
-
-      console.log(`✅ PERMANENT SESSION: User ${user.id} logged in with indefinite session`);
-      console.log(`🔒 NO AUTO-LOGOUT: Session persists until admin deletion only`);
-
-      res.json({ 
-        success: true,
-        user: { id: user.id, name: user.name, email: user.email } 
-      });
-    } catch (error) {
-      console.error('Login error:', error);
-      res.status(500).json({ message: "Login failed" });
     }
   });
 
@@ -316,58 +249,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Check authentication status
-  app.get("/api/auth/user", async (req, res) => {
+  app.get("/api/auth/user", (req, res) => {
     console.log('User check - Session ID:', req.sessionID);
     console.log('User check - Session user:', (req as any).session?.user);
     console.log('User check - Session userId:', (req as any).session?.userId);
     console.log('User check - Full session:', (req as any).session);
     
     if ((req as any).session && (req as any).session.user) {
-      // Verify user still exists in database
-      try {
-        const sessionUser = (req as any).session.user;
-        const user = await storage.getUserById(sessionUser.id);
-        
-        if (!user) {
-          // User has been deleted - destroy session immediately
-          console.log(`🚫 SESSION TERMINATED: User ID ${sessionUser.id} deleted from database`);
-          (req as any).session.destroy((err: any) => {
-            if (err) {
-              console.error('Error destroying session:', err);
-            }
-          });
-          return res.status(401).json({ message: "Account has been deleted", accountDeleted: true });
-        }
-        
-        // User exists - refresh session
-        (req as any).session.touch();
-        res.json((req as any).session.user);
-      } catch (error) {
-        console.error('Error validating user session:', error);
-        // On error, destroy session for security
-        (req as any).session.destroy((err: any) => {
-          if (err) {
-            console.error('Error destroying session:', err);
-          }
-        });
-        res.status(401).json({ message: "Authentication validation failed" });
-      }
+      // Refresh session on successful auth check
+      (req as any).session.touch();
+      res.json((req as any).session.user);
     } else {
       res.status(401).json({ message: "Not authenticated" });
     }
   });
 
-  // DISABLED LOGOUT - Only admin can terminate sessions
+  // Logout
   app.post("/api/auth/logout", (req, res) => {
     const userId = (req as any).session?.userId;
     const deviceSessionId = (req as any).session?.deviceSessionId;
     
-    console.log(`🚫 SECURITY VIOLATION: Logout attempt blocked for User ${userId}`);
-    console.log(`🔒 SECURITY RULE: Only admin panel can terminate sessions or delete accounts`);
-    console.log(`📋 Call Stack:`, new Error().stack);
+    // Remove session from tracking
+    if (req.sessionID) {
+      removeUserSession(req.sessionID);
+    }
     
-    // Return success but DO NOT destroy session or clear any data
-    res.json({ message: "Session maintained - only admin can terminate accounts" });
+    // Release device lock when user logs out
+    if (userId) {
+      removeUserDeviceSession(userId);
+      console.log(`🔓 USER LOGOUT: User ${userId} logged out and device lock released`);
+    }
+    
+    (req as any).session.destroy((err: any) => {
+      if (err) {
+        return res.status(500).json({ message: "Could not log out" });
+      }
+      res.json({ message: "Logged out successfully" });
+    });
   });
 
   // Get user accounts
@@ -377,20 +295,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const accounts = await storage.getAccountsByUserId(userId);
       res.json(accounts);
     } catch (error) {
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
-
-  // Create account
-  app.post("/api/accounts", requireAuth, async (req, res) => {
-    try {
-      const accountData = insertAccountSchema.parse(req.body);
-      const account = await storage.createAccount(accountData);
-      res.json(account);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: error.errors[0].message });
-      }
       res.status(500).json({ message: "Internal server error" });
     }
   });
@@ -458,20 +362,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const payees = await storage.getPayeesByUserId(userId);
       res.json(payees);
     } catch (error) {
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
-
-  // Create payee
-  app.post("/api/payees", requireAuth, async (req, res) => {
-    try {
-      const payeeData = insertPayeeSchema.parse(req.body);
-      const payee = await storage.createPayee(payeeData);
-      res.json(payee);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: error.errors[0].message });
-      }
       res.status(500).json({ message: "Internal server error" });
     }
   });
@@ -984,15 +874,9 @@ BIC Code: ${lastTransfer.bicCode || 'Not available'}`;
 Last transfer: €${transferAmount.toFixed(2)} to ${recipientName} on ${transferDate}
 Reference: ${lastTransfer.reference || 'Not specified'}
 Transaction ID: ${lastTransfer.id}
-Payment Type: ${lastTransfer.paymentMethod}
 Status: Confirmed and processed${accountDetails}
 
-IMPORTANT: When customer asks for payment confirmation or transfer details, include ALL the above information including the account details (Account Number/Sort Code for UK transfers, IBAN/BIC for SEPA transfers).
-
-CRITICAL PAYMENT TYPE RESPONSE RULES:
-- IF Payment Type is "SEPA Transfer": Use SEPA response variations, NEVER mention "UK account" or "currency conversion"
-- IF Payment Type is "UK Transfer": Can mention "UK account" and "currency conversion" if relevant (euro to GBP)
-- Always check Payment Type first before crafting response`;
+IMPORTANT: When customer asks for payment confirmation or transfer details, include ALL the above information including the account details (Account Number/Sort Code for UK transfers, IBAN/BIC for IBAN transfers).`;
         } else {
           transferContext = `\n\nCUSTOMER'S RECENT TRANSFER CONTEXT:
 No transfers found yet on your account.`;

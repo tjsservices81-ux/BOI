@@ -6,14 +6,11 @@ import {
   type InsertUser, type InsertAccount, type InsertTransaction, type InsertPayee,
   type InsertChatMessage, type InsertChatResponse, type InsertChatSession
 } from "@shared/schema";
-import { db } from "./db";
-import { eq, desc } from "drizzle-orm";
 import { PersistentDataManager } from "./persistentStorage";
 
 export interface IStorage {
   // User operations
   getUserByCredentials(customerNumber: string, pin: string): Promise<User | undefined>;
-  getUserById(userId: number): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   getUserByCustomerNumber(customerNumber: string): Promise<User | undefined>;
   updateUserProfile(customerNumber: string, updates: Partial<User>): Promise<User | undefined>;
@@ -183,10 +180,6 @@ class MemStorage implements IStorage {
     return user;
   }
 
-  async getUserById(userId: number): Promise<User | undefined> {
-    return this.users.get(userId);
-  }
-
   async getUserByCustomerNumber(customerNumber: string): Promise<User | undefined> {
     return Array.from(this.users.values()).find(user => user.customerNumber === customerNumber);
   }
@@ -227,7 +220,7 @@ class MemStorage implements IStorage {
       userChatMessages.forEach(msg => this.chatMessages.delete(msg.id));
       
       const userChatSessions = Array.from(this.chatSessions.values()).filter(session => session.userId === user.id);
-      userChatSessions.forEach(session => this.chatSessions.delete(session.sessionId));
+      userChatSessions.forEach(session => this.chatSessions.delete(session.id));
       
       // Finally delete the user
       this.users.delete(user.id);
@@ -251,7 +244,6 @@ class MemStorage implements IStorage {
       ...insertAccount
     };
     this.accounts.set(account.id, account);
-    await this.saveData(); // Persist data immediately
     return account;
   }
 
@@ -287,20 +279,9 @@ class MemStorage implements IStorage {
   async createTransaction(insertTransaction: InsertTransaction): Promise<Transaction> {
     const transaction: Transaction = {
       id: this.currentTransactionId++,
-      ...insertTransaction,
-      reference: insertTransaction.reference || null,
-      recipientName: insertTransaction.recipientName || null,
-      iban: insertTransaction.iban || null,
-      bicCode: insertTransaction.bicCode || null,
-      recipientAccountNumber: insertTransaction.recipientAccountNumber || null,
-      recipientSortCode: insertTransaction.recipientSortCode || null,
-      recipientIban: insertTransaction.recipientIban || null,
-      exchangeRate: insertTransaction.exchangeRate || null,
-      convertedAmount: insertTransaction.convertedAmount || null,
-      convertedCurrency: insertTransaction.convertedCurrency || null
+      ...insertTransaction
     };
     this.transactions.set(transaction.id, transaction);
-    await this.saveData(); // Persist data immediately
     return transaction;
   }
 
@@ -311,12 +292,9 @@ class MemStorage implements IStorage {
   async createPayee(insertPayee: InsertPayee): Promise<Payee> {
     const payee: Payee = {
       id: this.currentPayeeId++,
-      ...insertPayee,
-      iban: insertPayee.iban || null,
-      lastAmount: insertPayee.lastAmount || null
+      ...insertPayee
     };
     this.payees.set(payee.id, payee);
-    await this.saveData(); // Persist data immediately
     return payee;
   }
 
@@ -335,15 +313,10 @@ class MemStorage implements IStorage {
   async createChatMessage(insertMessage: InsertChatMessage): Promise<ChatMessage> {
     const message: ChatMessage = {
       id: this.currentChatMessageId++,
-      userId: insertMessage.userId || null,
-      timestamp: insertMessage.timestamp || new Date(),
-      sessionId: insertMessage.sessionId,
-      text: insertMessage.text,
-      isUser: insertMessage.isUser,
-      agentName: insertMessage.agentName || null
+      ...insertMessage,
+      timestamp: insertMessage.timestamp || new Date()
     };
     this.chatMessages.set(message.id, message);
-    await this.saveData();
     return message;
   }
 
@@ -353,16 +326,10 @@ class MemStorage implements IStorage {
 
   async createChatSession(insertSession: InsertChatSession): Promise<ChatSession> {
     const session: ChatSession = {
-      id: Math.floor(Math.random() * 1000000),
-      userId: insertSession.userId || null,
-      sessionId: insertSession.sessionId,
-      agentName: insertSession.agentName,
-      isActive: insertSession.isActive ?? true,
-      startedAt: insertSession.startedAt || new Date(),
-      endedAt: insertSession.endedAt || null
+      ...insertSession,
+      startedAt: insertSession.startedAt || new Date()
     };
     this.chatSessions.set(session.sessionId, session);
-    await this.saveData();
     return session;
   }
 
@@ -382,15 +349,9 @@ class MemStorage implements IStorage {
   async createChatResponse(insertResponse: InsertChatResponse): Promise<ChatResponse> {
     const response: ChatResponse = {
       id: this.currentChatResponseId++,
-      category: insertResponse.category,
-      triggers: insertResponse.triggers,
-      responses: insertResponse.responses,
-      isActive: insertResponse.isActive ?? true,
-      createdAt: insertResponse.createdAt || new Date(),
-      updatedAt: insertResponse.updatedAt || new Date()
+      ...insertResponse
     };
     this.chatResponses.set(response.id, response);
-    await this.saveData();
     return response;
   }
 
@@ -609,17 +570,19 @@ class MemStorage implements IStorage {
       const sampleAccounts = [
         {
           userId: user.id,
-          accountType: "Current Account",
+          type: "Current Account" as const,
           accountNumber: `IE12BOFI90000${user.id}12345678`,
           balance: "2500.00",
-          displayName: "Current Account"
+          currency: "EUR" as const,
+          isActive: true
         },
         {
           userId: user.id,
-          accountType: "Savings Account",
+          type: "Savings Account" as const,
           accountNumber: `IE12BOFI90000${user.id}87654321`,
           balance: "15000.00",
-          displayName: "Savings Account"
+          currency: "EUR" as const,
+          isActive: true
         }
       ];
 
@@ -630,23 +593,23 @@ class MemStorage implements IStorage {
         const sampleTransactions = [
           {
             accountId: account.id,
-            type: "credit",
+            type: "credit" as const,
             amount: "500.00",
+            currency: "EUR" as const,
             description: "Salary deposit",
-            category: "Income",
-            paymentMethod: "Bank Transfer",
-            timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-            reference: "SAL001"
+            reference: "SAL001",
+            date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+            balance: account.balance
           },
           {
             accountId: account.id,
-            type: "debit",
+            type: "debit" as const,
             amount: "125.50",
+            currency: "EUR" as const,
             description: "Grocery shopping",
-            category: "Shopping",
-            paymentMethod: "Debit Card",
-            timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-            reference: "POS001"
+            reference: "POS001",
+            date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+            balance: (parseFloat(account.balance) - 125.50).toString()
           }
         ];
 
@@ -658,18 +621,18 @@ class MemStorage implements IStorage {
       // Create sample payees
       const samplePayees = [
         {
-          name: "Electric Ireland",
           userId: user.id,
-          category: "Utility",
-          iban: "IE29AIBK93115212345678",
-          lastAmount: "125.00"
+          name: "Electric Ireland",
+          accountNumber: "IE29AIBK93115212345678",
+          sortCode: "931152",
+          type: "Utility" as const
         },
         {
-          name: "John Smith",
           userId: user.id,
-          category: "Personal",
-          iban: "IE64BOFI90017412345678",
-          lastAmount: "50.00"
+          name: "John Smith",
+          accountNumber: "IE64BOFI90017412345678",
+          sortCode: "900174",
+          type: "Personal" as const
         }
       ];
 

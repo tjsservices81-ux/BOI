@@ -6,7 +6,6 @@ export interface UserData {
   name: string;
   email: string;
   phone: string;
-  pin?: string;
   address?: string;
   dateOfBirth?: string;
   joinDate: string;
@@ -278,38 +277,14 @@ export class UserDataManager {
     // Set current user first
     this.setCurrentUser(customerNumber);
     
-    // Check if user already has data - if so, restore it instead of overwriting
-    const existingAccounts = this.getUserData('bankAccounts', null);
-    const existingTransactions = this.getUserData('bankTransactions', null);
-    
-    if (existingAccounts && existingAccounts.length > 0) {
-      // User has existing data - restore and refresh cache
-      this.clearCache();
-      
-      // Trigger refresh events to reload existing data
-      window.dispatchEvent(new CustomEvent('accountsUpdate', {
-        detail: { 
-          accounts: existingAccounts,
-          transactions: existingTransactions || [],
-          source: 'dataRestore'
-        }
-      }));
-      
-      window.dispatchEvent(new CustomEvent('forceRefresh', {
-        detail: { source: 'userDataRestore' }
-      }));
-      
-      return;
-    }
-    
-    // Only initialize fresh data for truly new accounts
+    // Always initialize fresh account data for new accounts
     const freshAccounts = [
       { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "0.00", accountType: "current" },
       { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "0.00", accountType: "credit" },
       { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "0.00", accountType: "savings" },
     ];
     
-    // Set fresh data for new account
+    // Force set fresh data immediately
     this.setUserData('bankAccounts', freshAccounts);
     this.setUserData('bankTransactions', []);
     this.setUserData('savedPayees', []);
@@ -351,46 +326,94 @@ export class UserDataManager {
     // Keep accounts intact - don't clear them
   }
 
-  // DISABLED: This function has been disabled to prevent auto-deletion
-  // User accounts can ONLY be deleted by admin via /admin/login
+  // Remove specific user and their data
   static removeUser(customerNumber: string) {
-    // Complete user removal when called from admin panel or security validation
-    console.log(`🗑️ COMPLETE USER REMOVAL: Deleting all data for ${customerNumber}`);
+    // Remove from users list
+    const allUsers = this.getAllUsers();
+    delete allUsers[customerNumber];
+    localStorage.setItem('bankUsers', JSON.stringify(allUsers));
     
-    const bankUsers = this.getAllUsers();
-    if (bankUsers[customerNumber]) {
-      // Remove user from stored data
-      delete bankUsers[customerNumber];
-      localStorage.setItem('bankUsers', JSON.stringify(bankUsers));
-      
-      // Clear all user-specific storage
-      Object.keys(localStorage).forEach(key => {
-        if (key.includes(customerNumber)) {
-          localStorage.removeItem(key);
-          console.log(`Cleared storage: ${key}`);
-        }
-      });
-      
-      // Clear current session if this user is active
-      if (this.getCurrentUser() === customerNumber) {
-        this.clearCurrentUser();
+    // Clear user-specific data
+    const keys = Object.keys(localStorage);
+    keys.forEach(key => {
+      if (key.startsWith(`user_${customerNumber}_`)) {
+        localStorage.removeItem(key);
       }
-      
-      // Clear last active user if it matches
-      if (localStorage.getItem('lastActiveUser') === customerNumber) {
-        localStorage.removeItem('lastActiveUser');
-      }
-      
-      console.log(`✅ User ${customerNumber} completely removed from local storage`);
-      return true;
-    }
-    
-    return false;
+    });
   }
 
-  // DISABLED: Never clear any state automatically - only admin can delete accounts
+  // Clear temporary state for cold launch
   static clearTemporaryState() {
-    console.log('🔒 SECURE: State clearing disabled - only admin can delete accounts');
-    // All user data and sessions preserved indefinitely
+    // Clear cache and session-related data
+    this.dataCache.clear();
+    this.cacheTimestamps.clear();
+    
+    // Clear temporary storage items
+    const keys = Object.keys(localStorage);
+    keys.forEach(key => {
+      if (key.includes('chat') || key.includes('liveChat') || key.includes('tempState') || key.includes('session_')) {
+        localStorage.removeItem(key);
+      }
+    });
+    
+    // Clear session storage
+    sessionStorage.clear();
+  }
+
+  // Admin function to clear all data
+  static clearAllData() {
+    // Clear all localStorage data
+    const keys = Object.keys(localStorage);
+    keys.forEach(key => {
+      if (key.startsWith('user_') || key === 'bankUsers' || key === 'currentUser') {
+        localStorage.removeItem(key);
+      }
+    });
+    
+    // Reset current user
+    this.currentUser = null;
+  }
+
+  // Admin-triggered cleanup - removes all traces of a deleted user
+  static adminDeleteUser(customerNumber: string) {
+    // Remove user from the users registry
+    const allUsers = this.getAllUsers();
+    if (allUsers[customerNumber]) {
+      delete allUsers[customerNumber];
+      localStorage.setItem('bankUsers', JSON.stringify(allUsers));
+    }
+    
+    // Remove from current user if this was the active user
+    if (this.currentUser === customerNumber) {
+      this.currentUser = null;
+      localStorage.removeItem('currentUser');
+    }
+    
+    // Remove from last active user
+    if (this.getLastActiveUser() === customerNumber) {
+      localStorage.removeItem('lastActiveUser');
+    }
+    
+    // Clear any cached data for this user
+    this.dataCache.delete(customerNumber);
+    this.cacheTimestamps.delete(customerNumber);
+    
+    // Clear all user-specific localStorage entries
+    const allKeys = Object.keys(localStorage);
+    for (const key of allKeys) {
+      if (key.includes(customerNumber) || key.startsWith(`user_${customerNumber}_`)) {
+        localStorage.removeItem(key);
+      }
+    }
+    
+    // Clear sessionStorage entries
+    const sessionKeys = Object.keys(sessionStorage);
+    for (const key of sessionKeys) {
+      if (key.includes(customerNumber)) {
+        sessionStorage.removeItem(key);
+      }
+    }
+    
+    console.log(`Admin cleanup: All data for customer ${customerNumber} removed from browser storage`);
   }
 }

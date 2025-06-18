@@ -77,10 +77,26 @@ export function geoBlockingMiddleware(req: Request, res: Response, next: NextFun
   next();
 }
 
-// Session security - SIMPLIFIED TO PREVENT SESSION TERMINATION
+// Session security
 export function sessionSecurityMiddleware(req: Request, res: Response, next: NextFunction) {
-  // Session security checks disabled - only admin panel can terminate sessions
-  // All sessions persist unless manually deleted by admin
+  if (req.session) {
+    // Check for session hijacking
+    const userAgent = req.get('User-Agent') || '';
+    const storedUA = req.session.userAgent;
+    
+    if (storedUA && storedUA !== userAgent) {
+      req.session.destroy(() => {
+        res.status(401).json({ error: 'Session security violation detected' });
+      });
+      return;
+    }
+    
+    // Store user agent on first login
+    if (!storedUA) {
+      req.session.userAgent = userAgent;
+    }
+  }
+  
   next();
 }
 
@@ -89,10 +105,9 @@ setInterval(() => {
   const now = Date.now();
   const windowMs = 15 * 60 * 1000; // 15 minutes
   
-  const entries = Array.from(rateLimitStore.entries());
-  entries.forEach(([ip, record]) => {
+  for (const [ip, record] of rateLimitStore.entries()) {
     if (now - record.lastAttempt > windowMs) {
       rateLimitStore.delete(ip);
     }
-  });
+  }
 }, 5 * 60 * 1000); // Clean every 5 minutes

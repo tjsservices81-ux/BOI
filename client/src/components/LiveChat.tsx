@@ -149,9 +149,9 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
             // Check if session is still valid (within 24 hours)
             const lastActivity = parsedState.lastActivity || 0;
             const now = Date.now();
-            // DISABLED: No session timeout - users stay logged in indefinitely
+            const sessionTimeout = 24 * 60 * 60 * 1000; // 24 hours
             
-            if (true) { // Always restore chat state - no timeout
+            if (now - lastActivity < sessionTimeout) {
               setChatState({
                 ...parsedState,
                 messages: parsedState.messages.map((msg: any) => ({
@@ -187,10 +187,28 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const startInactivityTimer = () => {
-    // DISABLED: No automatic session termination - users stay logged in indefinitely
-    console.log('🔒 SECURE: Inactivity timer function disabled - sessions persist forever');
-    // All automatic logout mechanisms have been eliminated
-    // Only admin panel can delete accounts and terminate sessions
+    if (inactivityTimerRef.current) {
+      clearTimeout(inactivityTimerRef.current);
+    }
+
+    // Set 3-minute (180 seconds) timer for inactivity check-in
+    inactivityTimerRef.current = setTimeout(() => {
+      if (!chatState.hasCheckedIn && chatState.queueStatus === 'connected') {
+        const checkInMessage: ChatMessage = {
+          id: Date.now().toString(),
+          text: getCheckInMessage(chatState.agentName),
+          isUser: false,
+          timestamp: new Date(),
+          agentName: chatState.agentName
+        };
+
+        setChatState(prev => ({
+          ...prev,
+          messages: [...prev.messages, checkInMessage],
+          hasCheckedIn: true
+        }));
+      }
+    }, 180000); // 3 minutes
   };
 
   const scrollToBottom = () => {
@@ -383,8 +401,8 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
                 setIsTyping(false);
                 setTypingText("");
                 
-                // DISABLED: No inactivity timers - sessions persist indefinitely
-                console.log('🔒 SECURE: Inactivity timer disabled - sessions never expire automatically');
+                // Start inactivity timer when agent connects
+                startInactivityTimer();
               }, finalDelay);
             }, 500); // typing indicator delay
           }, 500);
@@ -431,11 +449,11 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       category: 'transfers',
       triggers: ['transfer money', 'send money', 'make transfer', 'how to transfer', 'payment', 'pending transfer', 'international transfer', 'swift code', 'iban transfer', 'uk transfer', 'transfer limit', 'transfer fee'],
       responses: [
-        "Absolutely, I'll help you with transfers. For domestic transfers, tap 'Payments' then 'UK Transfer' - these typically take up to 24 hours. For SEPA zone transfers, use 'SEPA Transfer' which usually takes up to 1 business day. What type of transfer are you looking to make?",
-        "I can definitely help with that transfer. Use the 'Payments' section at the bottom - UK Transfer for domestic payments (up to 24 hours) or SEPA Transfer for transfers within the SEPA zone (small fee applies, up to 1 business day). Are you sending money domestically or to the SEPA zone?",
-        "Right, let me walk you through the transfer options. Go to 'Payments' at the bottom of your screen. UK Transfer handles domestic payments in up to 24 hours, while SEPA Transfer covers payments within the SEPA zone. Which country are you sending to?",
-        "No worries, I'll explain the transfer process. In 'Payments', you'll see UK Transfer for domestic payments (up to 24 hours) and SEPA Transfer for transfers within the SEPA zone (£2-15 fee depending on amount, arrives within 1 business day). What's the destination for your transfer?",
-        "Let me help you sort that transfer. The 'Payments' section has two options - UK Transfer for domestic payments (allow up to 24 hours) or SEPA Transfer for transfers within the SEPA zone (typically 1 business day with a small fee). Where are you sending the money?",
+        "Absolutely, I'll help you with transfers. For UK transfers, tap 'Payments' then 'UK Transfer' - these typically take up to 24 hours. For SEPA zone transfers, use 'SEPA Transfer' which usually takes 1-2 working days. What type of transfer are you looking to make?",
+        "I can definitely help with that transfer. Use the 'Payments' section at the bottom - UK Transfer for domestic payments (up to 24 hours) or SEPA Transfer for transfers within the SEPA zone (small fee applies, 1-2 days). Are you sending money within the UK or to the SEPA zone?",
+        "Right, let me walk you through the transfer options. Go to 'Payments' at the bottom of your screen. UK Transfer handles domestic payments in up to 24 hours, while SEPA Transfer covers payments within the SEPA zone with competitive exchange rates. Which country are you sending to?",
+        "No worries, I'll explain the transfer process. In 'Payments', you'll see UK Transfer for domestic payments (up to 24 hours) and SEPA Transfer for transfers within the SEPA zone (£2-15 fee depending on amount, arrives 1-2 working days). What's the destination for your transfer?",
+        "Let me help you sort that transfer. The 'Payments' section has two options - UK Transfer for domestic payments (allow up to 24 hours) or SEPA Transfer for transfers within the SEPA zone (typically 1-2 days with a small fee). Where are you sending the money?",
         "Alright, I can guide you through the transfer process. Head to 'Payments' where you'll find UK Transfer for domestic payments (up to 24 hours processing) and SEPA Transfer for transfers within the SEPA zone. What type of payment are you making?"
       ]
     },

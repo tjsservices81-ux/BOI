@@ -1,4 +1,4 @@
-// App lifecycle management for state preservation - NO AUTOMATIC LOGOUTS
+// App lifecycle management for state preservation
 import { StateManager } from './stateManager';
 
 export class AppLifecycle {
@@ -7,30 +7,45 @@ export class AppLifecycle {
   private static visibilityTimeout: NodeJS.Timeout | null = null;
   private static isAppTerminated = false;
   private static backgroundTime = 0;
+  private static SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
 
   static initialize() {
     if (this.isInitialized) return;
 
-    // Handle page lifecycle events for state preservation only
+    // Check if this is a fresh app start vs. restoration
+    AppLifecycle.checkAppTermination();
+
+    // Handle page visibility changes
     document.addEventListener('visibilitychange', this.handleVisibilityChange.bind(this));
+    
+    // Handle page lifecycle events
     window.addEventListener('beforeunload', this.handleBeforeUnload.bind(this));
     window.addEventListener('pagehide', this.handlePageHide.bind(this));
     window.addEventListener('pageshow', this.handlePageShow.bind(this));
+    
+    // Handle focus/blur for more granular state management
     window.addEventListener('focus', this.handleFocus.bind(this));
     window.addEventListener('blur', this.handleBlur.bind(this));
 
     this.isInitialized = true;
   }
 
+  static checkAppTermination() {
+    // DISABLED: No automatic logout - users stay logged in unless admin deletes or manual logout
+    this.isAppTerminated = false;
+  }
+
   static handleVisibilityChange() {
     if (document.hidden) {
-      // App going to background - preserve all state without any session checks
+      // App going to background - save state and timestamp
       this.backgroundTime = Date.now();
       localStorage.setItem('app_background_time', this.backgroundTime.toString());
       this.saveCurrentState();
     } else {
-      // App returning to foreground - always restore state, no session validation
-      this.restoreStateIfNeeded();
+      // App returning to foreground - no timeout checks, restore state if needed
+      if (!this.isAppTerminated) {
+        this.restoreStateIfNeeded();
+      }
     }
   }
 
@@ -61,13 +76,21 @@ export class AppLifecycle {
   }
 
   static handleBlur() {
-    // Save state immediately without timeout to preserve session
-    this.saveCurrentState();
+    // Delay saving state to avoid excessive saves
+    if (this.visibilityTimeout) {
+      clearTimeout(this.visibilityTimeout);
+    }
+    
+    this.visibilityTimeout = setTimeout(() => {
+      this.saveCurrentState();
+    }, 100);
   }
 
   static clearAppState() {
-    // DISABLED: Never clear app state automatically - only admin can delete accounts
-    console.log('App state clearing disabled - only admin can delete accounts');
+    localStorage.removeItem('app_session_state');
+    localStorage.removeItem('app_background_time');
+    sessionStorage.removeItem('app_active_session');
+    StateManager.clearAppState();
   }
 
   static saveCurrentState() {

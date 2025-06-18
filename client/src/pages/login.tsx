@@ -19,7 +19,6 @@ export default function Login() {
   const [pinVerified, setPinVerified] = useState(false);
   const [holdTimer, setHoldTimer] = useState<NodeJS.Timeout | null>(null);
   const [holdProgress, setHoldProgress] = useState(0);
-
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [isLoginAnimating, setIsLoginAnimating] = useState(false);
   const [loginProgress, setLoginProgress] = useState(0);
@@ -33,6 +32,7 @@ export default function Login() {
     customerNumber: ''
   });
   const [logoTapCount, setLogoTapCount] = useState(0);
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [showOtcVerification, setShowOtcVerification] = useState(false);
   const [otcCode, setOtcCode] = useState('');
   const [generatedOtc, setGeneratedOtc] = useState('');
@@ -56,20 +56,42 @@ export default function Login() {
   // Validate users against server and clean up deleted ones
   const validateAndCleanUsers = async () => {
     const cachedUsers = UserDataManager.getAllUsers();
-    // Always preserve all locally stored users - don't delete them based on server validation
-    setValidatedUsers(cachedUsers);
+    const validUsers: any = {};
+    
+    for (const [customerNumber, userData] of Object.entries(cachedUsers)) {
+      try {
+        // Check if user still exists on server
+        const response = await fetch(`/api/profile/${customerNumber}`);
+        if (response.ok) {
+          validUsers[customerNumber] = userData;
+        } else if (response.status === 404) {
+          // User was deleted by admin - remove from frontend cache
+          console.log(`Removing deleted user ${customerNumber} from cache`);
+          UserDataManager.adminDeleteUser(customerNumber);
+        }
+      } catch (error) {
+        // Keep user on network error to avoid false removal
+        validUsers[customerNumber] = userData;
+      }
+    }
+    
+    setValidatedUsers(validUsers);
   };
 
   // Assets are always loaded - no delays
   useEffect(() => {
     setAssetsLoaded(true);
     
-    // DISABLED: Never clear user data automatically - preserve all sessions and authentication
-    // Only admin panel can delete accounts - sign-out preserves all data for immediate re-login
-    const wasSignOut = sessionStorage.getItem('user_signed_out') === 'true';
+    // For cold starts, clear all auth state and require fresh login
+    const wasColdStart = sessionStorage.getItem('app_cold_start') === 'true' || 
+                        !sessionStorage.getItem('splashShown');
     
-    // Clear the sign-out flag but preserve all user data
-    sessionStorage.removeItem('user_signed_out');
+    if (wasColdStart) {
+      // Cold start - clear all authentication data
+      UserDataManager.clearCurrentUser();
+      localStorage.removeItem('bankingUser');
+      localStorage.removeItem('lastActiveUser');
+    }
     
     // Clear form fields regardless
     setCustomerNumber('');
@@ -77,13 +99,14 @@ export default function Login() {
     setBiometricVerified(false);
     setPinVerified(false);
     setLogoTapCount(0);
+    setShowAdminLogin(false);
 
     // Monitor for admin deletions through localStorage changes
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'adminDeletedUser' && e.newValue) {
         const deletedCustomer = e.newValue;
         
-        // If current user was deleted, immediately clear only current session
+        // If current user was deleted, immediately clear everything
         if (deletedCustomer === UserDataManager.getCurrentUser()) {
           UserDataManager.clearCurrentUser();
           setCustomerNumber('');
@@ -99,7 +122,8 @@ export default function Login() {
           });
         }
         
-        // Only remove the deletion signal - don't delete user data automatically
+        // Clean up cached data and remove the signal
+        UserDataManager.adminDeleteUser(deletedCustomer);
         localStorage.removeItem('adminDeletedUser');
       }
     };
@@ -111,7 +135,12 @@ export default function Login() {
     };
   }, []);
 
-
+  // Validate users when Admin Access dialog opens
+  useEffect(() => {
+    if (showAdminLogin) {
+      validateAndCleanUsers();
+    }
+  }, [showAdminLogin]);
 
   const handleNavigation = (path: string) => {
     setIsNavigating(true);
@@ -125,20 +154,7 @@ export default function Login() {
     setLogoTapCount(newTapCount);
     
     if (newTapCount === 5) {
-      // Check if there's a current logged-in user
-      const currentUser = UserDataManager.getCurrentUser();
-      
-      if (currentUser) {
-        // Show current user info
-        const allUsers = UserDataManager.getAllUsers();
-        const userData = allUsers[currentUser];
-        if (userData) {
-          alert(`Current User: ${userData.name}\nCustomer Number: ${currentUser}`);
-        }
-      } else {
-        // No user logged in, show create account form
-        setShowSignUp(true);
-      }
+      setShowAdminLogin(true);
       setLogoTapCount(0);
     }
     
@@ -302,7 +318,7 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Check if user exists locally
+    // Check if user exists
     if (!UserDataManager.userExists(customerNumber)) {
       toast({
         title: "Login Failed",
@@ -312,67 +328,11 @@ export default function Login() {
       return;
     }
 
+    // Set current user and record login time
+    UserDataManager.setCurrentUser(customerNumber);
+    UserDataManager.recordLoginTime(customerNumber);
+    
     try {
-      UserDataManager.setCurrentUser(customerNumber);
-      const userProfile = UserDataManager.getUserProfile();
-      if (!userProfile) {
-        throw new Error("User profile not found");
-      }
-
-      // Authenticate with backend to establish proper session
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          customerNumber: customerNumber,
-          pin: userProfile.pin || pin || '1234'
-        })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        
-        // Register user in UserDataManager if not exists
-        if (!UserDataManager.userExists(customerNumber)) {
-          UserDataManager.registerUser({
-            customerNumber: customerNumber,
-            name: data.user.name || userProfile.name,
-            email: data.user.email || userProfile.email,
-            phone: '',
-            pin: userProfile.pin || pin || '1234',
-            joinDate: 'Member since 2018',
-            dateCreated: new Date().toISOString()
-          });
-        }
-        
-        // Set current user and initialize data after successful backend auth
-        UserDataManager.setCurrentUser(customerNumber);
-        UserDataManager.recordLoginTime(customerNumber);
-        UserDataManager.initializeFreshAccount(customerNumber);
-        
-        // Login through auth context with backend user data
-        login(data.user || {
-          id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
-          name: userProfile.name,
-          email: userProfile.email
-        });
-        
-        // Trigger signing in animation
-        setTimeout(() => {
-          handleLoginButton();
-        }, 100);
-      } else {
-        throw new Error("Backend authentication failed");
-      }
-    } catch (error) {
-      console.warn('Backend auth failed, using local session:', error);
-      
-      // Fallback to local authentication
-      UserDataManager.setCurrentUser(customerNumber);
-      UserDataManager.recordLoginTime(customerNumber);
-      UserDataManager.initializeFreshAccount(customerNumber);
-      
       const userProfile = UserDataManager.getUserProfile();
       if (userProfile) {
         login({
@@ -380,36 +340,32 @@ export default function Login() {
           name: userProfile.name,
           email: userProfile.email
         });
-        
-        // Trigger signing in animation
-        setTimeout(() => {
-          handleLoginButton();
-        }, 100);
-      } else {
-        toast({
-          title: "Login Failed",
-          description: "Invalid customer number or PIN. Please try again.",
-          variant: "destructive",
-        });
       }
+      navigate("/dashboard");
+    } catch (error) {
+      toast({
+        title: "Login Failed",
+        description: "Invalid customer number or PIN. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
-
-
-  const handleBiometricMouseDown = async (e: any) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (biometricVerified || isScanning) return;
+  const handleBiometricHoldStart = async () => {
+    if (biometricVerified) return;
     
     // Check if any users exist first
     const allUsers = UserDataManager.getAllUsers();
     if (Object.keys(allUsers).length === 0) {
+      toast({
+        title: "No Account Found",
+        description: "Please create an account first by tapping 'Waiting for approval'.",
+        variant: "destructive",
+      });
       return;
     }
 
-    // Find target user
+    // Validate account exists on server before proceeding
     let targetUser = null;
     if (customerNumber && customerNumber.trim()) {
       targetUser = customerNumber;
@@ -425,49 +381,47 @@ export default function Login() {
       }
     }
 
-    // Verify user exists locally and validate against database
-    if (!targetUser || !UserDataManager.userExists(targetUser)) {
-      toast({
-        title: "Account Not Found",
-        description: "No biometric authentication data found. Please log in with your customer number first.",
-        variant: "destructive",
-      });
-      return;
-    }
+    if (targetUser) {
+      try {
+        const response = await fetch('/api/validate-user', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ customerNumber: targetUser }),
+        });
 
-    // Additional validation: Check if user still exists in database before starting biometric scan
-    try {
-      const validationResponse = await fetch('/api/validate-user', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ customerNumber: targetUser })
-      });
-      
-      const validationData = await validationResponse.json();
-      if (!validationData.exists) {
-        // User deleted from database - clear local data and block biometric login
-        UserDataManager.removeUser(targetUser);
-        localStorage.removeItem('currentUser');
-        localStorage.removeItem('lastActiveUser');
-        
+        if (!response.ok || !(await response.json()).exists) {
+          // Account deleted on server - remove from local storage
+          UserDataManager.removeUser(targetUser);
+          if (UserDataManager.getCurrentUser() === targetUser) {
+            UserDataManager.clearCurrentUser();
+          }
+          
+          toast({
+            title: "Account Not Found",
+            description: "This account has been removed. Please contact support if you believe this is an error.",
+            variant: "destructive",
+          });
+          
+          // Clear form and reset state
+          setCustomerNumber('');
+          setBiometricVerified(false);
+          setPinVerified(false);
+          return;
+        }
+      } catch (error) {
+        console.error('Account validation failed:', error);
         toast({
-          title: "Account Deleted",
-          description: "This account has been deleted. Please contact support for assistance.",
+          title: "Connection Error",
+          description: "Unable to verify account. Please check your connection and try again.",
           variant: "destructive",
         });
         return;
       }
-    } catch (error) {
-      console.error('User validation failed:', error);
-      toast({
-        title: "Validation Error",
-        description: "Unable to verify account status. Please try logging in with your customer number.",
-        variant: "destructive",
-      });
-      return;
     }
 
+    // If customer number is entered, validate it exists
     if (customerNumber && !UserDataManager.userExists(customerNumber)) {
       toast({
         title: "Account Not Found",
@@ -477,173 +431,72 @@ export default function Login() {
       return;
     }
     
-    // Start hold timer and animation
     setIsScanning(true);
     setHoldProgress(0);
     
-    const progressTimer = setInterval(() => {
+    const timer = setInterval(() => {
       setHoldProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(progressTimer);
+        const newProgress = prev + 2;
+        if (newProgress >= 100) {
+          clearInterval(timer);
+          setBiometricVerified(true);
+          setIsScanning(false);
+          setHoldProgress(0);
+          
+          // Initialize fresh account data based on entered customer number or last active user if none entered
+          let targetUser = null;
+          if (customerNumber && UserDataManager.userExists(customerNumber)) {
+            targetUser = customerNumber;
+            UserDataManager.setCurrentUser(customerNumber);
+            UserDataManager.initializeFreshAccount(customerNumber);
+          } else if (!customerNumber) {
+            // If no customer number entered, use last active user first, then fall back to most recent
+            const lastActiveUser = UserDataManager.getLastActiveUser();
+            if (lastActiveUser && UserDataManager.userExists(lastActiveUser)) {
+              targetUser = lastActiveUser;
+              UserDataManager.setCurrentUser(lastActiveUser);
+              UserDataManager.initializeFreshAccount(lastActiveUser);
+              setCustomerNumber(lastActiveUser); // Update the display
+            } else {
+              // Fall back to most recent account if no last active user
+              const allUsers = UserDataManager.getAllUsers();
+              const userNumbers = Object.keys(allUsers);
+              if (userNumbers.length > 0) {
+                const mostRecentUser = userNumbers.reduce((latest, current) => {
+                  const latestDate = new Date(allUsers[latest].dateCreated);
+                  const currentDate = new Date(allUsers[current].dateCreated);
+                  return currentDate > latestDate ? current : latest;
+                });
+                targetUser = mostRecentUser;
+                UserDataManager.setCurrentUser(mostRecentUser);
+                UserDataManager.initializeFreshAccount(mostRecentUser);
+                setCustomerNumber(mostRecentUser); // Update the display
+              }
+            }
+          }
+          
           return 100;
         }
-        return prev + 2; // Increase by 2% every 50ms = 100% in 2.5 seconds
+        return newProgress;
       });
-    }, 50);
-
-    const timer = setTimeout(() => {
-      setBiometricVerified(true);
-      setIsScanning(false);
-      setHoldProgress(0);
-      clearInterval(progressTimer);
-      
-      // Complete biometric authentication with backend session
-      let finalTargetUser = null;
-      if (customerNumber && UserDataManager.userExists(customerNumber)) {
-        finalTargetUser = customerNumber;
-      } else if (!customerNumber) {
-        const lastActiveUser = UserDataManager.getLastActiveUser();
-        if (lastActiveUser && UserDataManager.userExists(lastActiveUser)) {
-          finalTargetUser = lastActiveUser;
-          setCustomerNumber(lastActiveUser);
-        } else {
-          const allUsers = UserDataManager.getAllUsers();
-          const userNumbers = Object.keys(allUsers);
-          if (userNumbers.length > 0) {
-            const mostRecentUser = userNumbers.reduce((latest, current) => {
-              const latestDate = new Date(allUsers[latest].dateCreated);
-              const currentDate = new Date(allUsers[current].dateCreated);
-              return currentDate > latestDate ? current : latest;
-            });
-            finalTargetUser = mostRecentUser;
-            setCustomerNumber(mostRecentUser);
-          }
-        }
-      }
-      
-      if (finalTargetUser) {
-        // Establish backend session for biometric login
-        UserDataManager.setCurrentUser(finalTargetUser);
-        const userProfile = UserDataManager.getUserProfile();
-        
-        if (userProfile) {
-          // First validate user exists in database before attempting authentication
-          fetch('/api/validate-user', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({
-              customerNumber: finalTargetUser
-            })
-          }).then(response => response.json()).then(validationData => {
-            if (!validationData.exists) {
-              // User deleted or doesn't exist - clear all local data and block login
-              console.log(`❌ BIOMETRIC LOGIN BLOCKED: User ${finalTargetUser} not found in database`);
-              
-              // Clear all local storage for this user
-              UserDataManager.removeUser(finalTargetUser);
-              localStorage.removeItem('currentUser');
-              localStorage.removeItem('lastActiveUser');
-              localStorage.removeItem(`user_${finalTargetUser}_biometricEnabled`);
-              localStorage.removeItem(`user_${finalTargetUser}_lastLogin`);
-              
-              // Show error and reset biometric state
-              setBiometricVerified(false);
-              setIsScanning(false);
-              setHoldProgress(0);
-              
-              toast({
-                title: "Account Not Found",
-                description: "This account has been deleted or no longer exists. Please contact support.",
-                variant: "destructive",
-              });
-              return;
-            }
-            
-            // User exists, proceed with backend authentication
-            return fetch('/api/auth/login', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              credentials: 'include',
-              body: JSON.stringify({
-                customerNumber: finalTargetUser,
-                pin: userProfile.pin || '1234'
-              })
-            }).then(response => {
-              if (response.ok) {
-                return response.json();
-              }
-              console.warn('Backend authentication failed for biometric login');
-              throw new Error('Backend authentication failed');
-            }).then(data => {
-              console.log('Biometric login: Backend authentication successful');
-              
-              // Record login and restore user data
-              UserDataManager.recordLoginTime(finalTargetUser);
-              UserDataManager.initializeFreshAccount(finalTargetUser);
-              
-              // Login through auth context with backend user data
-              login(data.user);
-              
-              // Trigger signing in animation
-              setTimeout(() => {
-                handleLoginButton();
-              }, 100);
-            }).catch(error => {
-              console.error('Biometric login: Backend authentication failed', error);
-              
-              // NO FALLBACK - If backend auth fails, user cannot login
-              setBiometricVerified(false);
-              setIsScanning(false);
-              setHoldProgress(0);
-              
-              toast({
-                title: "Authentication Failed",
-                description: "Unable to authenticate account. Please try logging in with your customer number and PIN.",
-                variant: "destructive",
-              });
-            });
-          }).catch(error => {
-            console.error('User validation failed:', error);
-            setBiometricVerified(false);
-            setIsScanning(false);
-            setHoldProgress(0);
-            
-            toast({
-              title: "Authentication Error",
-              description: "Unable to verify account status. Please try again.",
-              variant: "destructive",
-            });
-          });
-        } else {
-          console.warn('No user profile found for biometric login');
-          toast({
-            title: "Authentication Error",
-            description: "Unable to retrieve user profile for biometric authentication.",
-            variant: "destructive",
-          });
-        }
-      }
-    }, 2500); // 2.5 seconds hold time
-
+    }, 60);
+    
     setHoldTimer(timer);
   };
 
-  const handleBiometricMouseUp = () => {
-    // Cancel hold if released early
+  const handleBiometricHoldEnd = () => {
     if (holdTimer) {
-      clearTimeout(holdTimer);
+      clearInterval(holdTimer);
       setHoldTimer(null);
     }
-    setIsScanning(false);
-    setHoldProgress(0);
+    if (!biometricVerified) {
+      setIsScanning(false);
+      setHoldProgress(0);
+    }
   };
 
-
-
   const handleLoginButton = async () => {
-    // Skip authentication check if already triggered by biometric/PIN login
-    if (!biometricVerified && !pinVerified && !authHook?.user) {
+    if (!biometricVerified && !pinVerified) {
       toast({
         title: "Authentication Required",
         description: "Please verify with biometric or PIN first",
@@ -651,9 +504,6 @@ export default function Login() {
       });
       return;
     }
-
-    // Prevent multiple animations
-    if (isLoginAnimating) return;
 
     setIsLoginAnimating(true);
     setLoginProgress(0);
@@ -714,30 +564,10 @@ export default function Login() {
         throw new Error("No valid user session found");
       }
       
-      // Authenticate with server to establish session for API calls
+      // Record login time and authenticate through auth context
+      UserDataManager.recordLoginTime(currentUser);
       const userProfile = UserDataManager.getUserProfile();
       if (userProfile) {
-        try {
-          const serverAuthResponse = await fetch('/api/login', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              customerNumber: currentUser,
-              pin: userProfile.pin || '1234' // Use stored PIN or default
-            }),
-          });
-
-          if (!serverAuthResponse.ok) {
-            console.warn('Server authentication failed, continuing with local session');
-          }
-        } catch (error) {
-          console.warn('Server authentication error, continuing with local session:', error);
-        }
-
-        // Record login time and authenticate through auth context
-        UserDataManager.recordLoginTime(currentUser);
         login({
           id: parseInt(currentUser.replace(/\D/g, '')) || 1,
           name: userProfile.name,
@@ -808,8 +638,8 @@ export default function Login() {
     }
     setPinVerified(true);
     
-    // Navigate to root - let App.tsx routing handle dashboard display
-    navigate('/');
+    // Navigate to dashboard after verification
+    navigate('/dashboard');
   };
 
   const requestLocation = () => {
@@ -1207,10 +1037,11 @@ export default function Login() {
                           ? 'bg-gradient-to-br from-blue-50 to-blue-100' 
                           : 'bg-gradient-to-br from-gray-50 to-gray-100 hover:from-blue-50 hover:to-blue-100'
                     }`}
-                    onMouseDown={handleBiometricMouseDown}
-                    onMouseUp={handleBiometricMouseUp}
-                    onTouchStart={handleBiometricMouseDown}
-                    onTouchEnd={handleBiometricMouseUp}
+                    onMouseDown={handleBiometricHoldStart}
+                    onMouseUp={handleBiometricHoldEnd}
+                    onMouseLeave={handleBiometricHoldEnd}
+                    onTouchStart={handleBiometricHoldStart}
+                    onTouchEnd={handleBiometricHoldEnd}
                     style={{
                       touchAction: 'manipulation',
                       userSelect: 'none',
@@ -1219,31 +1050,38 @@ export default function Login() {
                       WebkitTapHighlightColor: 'transparent'
                     }}
                   >
-                    {/* Progress ring animation during hold */}
+                    {/* Progress ring for holding */}
                     {isScanning && (
                       <div className="absolute inset-0 rounded-full">
-                        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                        <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
                           <circle
                             cx="50"
                             cy="50"
                             r="45"
-                            stroke="#e5e7eb"
+                            fill="none"
+                            stroke="currentColor"
                             strokeWidth="4"
-                            fill="transparent"
+                            className="text-gray-200"
                           />
                           <circle
                             cx="50"
                             cy="50"
                             r="45"
-                            stroke="#3b82f6"
+                            fill="none"
+                            stroke="currentColor"
                             strokeWidth="4"
-                            fill="transparent"
-                            strokeDasharray="282.7"
-                            strokeDashoffset={282.7 - (282.7 * holdProgress) / 100}
-                            className="transition-all duration-75 ease-linear"
+                            strokeLinecap="round"
+                            className="text-blue-500 transition-all duration-100"
+                            strokeDasharray={`${2 * Math.PI * 45}`}
+                            strokeDashoffset={`${2 * Math.PI * 45 * (1 - holdProgress / 100)}`}
                           />
                         </svg>
                       </div>
+                    )}
+                    
+                    {/* Simplified visual feedback */}
+                    {isScanning && (
+                      <div className="absolute inset-0 rounded-full border-2 border-blue-300 opacity-50"></div>
                     )}
                     
                     {/* Original Fingerprint icon with effects */}
@@ -1275,7 +1113,7 @@ export default function Login() {
                       WebkitTapHighlightColor: 'transparent'
                     }}
                   >
-                    {biometricVerified ? 'Fingerprint verified' : isScanning ? 'Hold to scan fingerprint...' : 'Biometric login'}
+                    {biometricVerified ? 'Fingerprint verified' : isScanning ? 'Hold to scan fingerprint...' : 'Biometrics login'}
                   </p>
                 </div>
 
@@ -1610,7 +1448,146 @@ export default function Login() {
         </div>
       )}
 
+      {/* Admin Login Modal */}
+      {showAdminLogin && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-sm p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Admin Access
+              </h2>
+              <button 
+                onClick={() => setShowAdminLogin(false)}
+                className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center active:scale-95 transition-transform"
+              >
+                <span className="text-gray-600 text-lg">×</span>
+              </button>
+            </div>
 
+            <div className="space-y-4">
+              <div className="text-center mb-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Quick Account Access
+                </h3>
+                <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Sign in to any registered account
+                </p>
+              </div>
+              
+              {/* Account List */}
+              <div className="max-h-60 overflow-y-auto space-y-2">
+                {Object.entries(validatedUsers).map(([customerNumber, userData]: [string, any]) => (
+                  <div
+                    key={customerNumber}
+                    className="bg-gray-50 rounded-xl p-3 border"
+                  >
+                    <div className="flex items-center justify-between">
+                      <button
+                        onClick={() => {
+                          UserDataManager.initializeFreshAccount(customerNumber);
+                          UserDataManager.recordLoginTime(customerNumber);
+                          login({
+                            id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
+                            name: userData.name,
+                            email: userData.email
+                          });
+                          setShowAdminLogin(false);
+                          setCustomerNumber(customerNumber);
+                          setBiometricVerified(true);
+                          navigate('/dashboard');
+                        }}
+                        className="flex-1 text-left hover:bg-gray-100 rounded-lg p-2 active:scale-98 transition-all"
+                      >
+                        <div className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          {userData.name}
+                        </div>
+                        <div className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          {customerNumber}
+                        </div>
+                      </button>
+                      
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // Remove this specific user using UserDataManager
+                          UserDataManager.removeUser(customerNumber);
+                          
+                          // If this was the current user, clear the session
+                          if (UserDataManager.getCurrentUser() === customerNumber) {
+                            UserDataManager.clearCurrentUser();
+                            setCustomerNumber('');
+                            setBiometricVerified(false);
+                            setPinVerified(false);
+                          }
+                          
+                          toast({
+                            title: "Account Removed",
+                            description: `${userData.name} has been signed out and removed.`,
+                          });
+                          
+                          // Force re-render by closing and reopening the panel
+                          setShowAdminLogin(false);
+                          setTimeout(() => setShowAdminLogin(true), 100);
+                        }}
+                        className="ml-2 w-8 h-8 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg flex items-center justify-center active:scale-95 transition-all"
+                        title="Sign out and remove account"
+                      >
+                        <span className="text-sm font-bold">×</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                
+                {Object.keys(validatedUsers).length === 0 && (
+                  <div className="text-center py-8 text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    No accounts registered yet
+                  </div>
+                )}
+              </div>
+              
+              {/* Admin Actions */}
+              <div className="border-t pt-4 mt-4 space-y-3">
+                <button
+                  onClick={() => {
+                    setShowAdminLogin(false);
+                    setShowSignUp(true);
+                  }}
+                  className="w-full p-3 bg-green-50 text-green-600 rounded-xl font-medium active:scale-98 transition-transform"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  Create New Account
+                </button>
+                
+                <button
+                  onClick={() => {
+                    // Clear current user session completely
+                    UserDataManager.clearCurrentUser();
+                    setShowAdminLogin(false);
+                    setCustomerNumber('');
+                    setPin('');
+                    setBiometricVerified(false);
+                    setPinVerified(false);
+                    setIsScanning(false);
+                    setShowPinLogin(false);
+                    
+                    // Force refresh of the component state
+                    window.location.reload();
+                    
+                    toast({
+                      title: "Session Cleared",
+                      description: "All active sessions have been terminated.",
+                    });
+                  }}
+                  className="w-full p-3 bg-red-50 text-red-600 rounded-xl font-medium active:scale-98 transition-transform"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  Sign Out & Clear Session
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* OTC Verification Modal */}
       {showOtcVerification && (
