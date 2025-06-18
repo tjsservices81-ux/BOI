@@ -63,49 +63,30 @@ function AppRoutes() {
     }
   };
 
-  // Initialize app state with force close detection
+  // Initialize app state - always show splash screen on startup
   useEffect(() => {
     const initializeApp = async () => {
-      // Check if sessionStorage was cleared (indicates fresh app start or force close)
-      const wasAppActive = sessionStorage.getItem('app_was_active');
-      const appCloseTime = localStorage.getItem('app_close_time');
+      // Always show splash screen for every app startup
+      setSplashShown(false);
+      sessionStorage.setItem('app_was_active', 'true');
       
-      // Detect force close by checking if background time exists without active session
-      const backgroundTime = localStorage.getItem('app_background_time');
-      const wasForceeClosed = backgroundTime && !wasAppActive;
+      // Clear any previous background/close timestamps
+      localStorage.removeItem('app_background_time');
+      localStorage.removeItem('app_close_time');
       
-      if (!wasAppActive || wasForceeClosed) {
-        // Fresh app start or force close - restart completely with splash
-        if (wasForceeClosed) {
-          console.log('App was force closed - restarting fresh');
-          // Clear all state except user login for force close restart
-          localStorage.removeItem('app_background_time');
-          localStorage.removeItem('app_close_time');
-        }
-        setSplashShown(false);
-        sessionStorage.setItem('app_was_active', 'true');
-      } else {
-        // Normal app backgrounding - restore state without splash animation
-        try {
-          // Try to restore user from localStorage - no expiration checks
-          const savedUser = localStorage.getItem('bankingUser');
-          if (savedUser && !user) {
-            try {
-              const parsedUser = JSON.parse(savedUser);
-              login(parsedUser);
-            } catch (error) {
-              console.error('Failed to restore user:', error);
-            }
+      // Try to restore user from localStorage during splash - no expiration checks
+      try {
+        const savedUser = localStorage.getItem('bankingUser');
+        if (savedUser && !user) {
+          try {
+            const parsedUser = JSON.parse(savedUser);
+            login(parsedUser);
+          } catch (error) {
+            console.error('Failed to restore user:', error);
           }
-          // Skip splash entirely for normal app restoration - no animations
-          setSplashShown(true);
-          setSplashTransitioning(false);
-          setIsRestoringState(false);
-        } catch (error) {
-          console.error('Failed to restore app state:', error);
-          setSplashShown(true);
-          setIsRestoringState(false);
         }
+      } catch (error) {
+        console.error('Failed to restore app state:', error);
       }
       
       // Clear only temporary state, preserve user sessions
