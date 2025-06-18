@@ -593,14 +593,45 @@ router.get('/panel', adminAuth, async (req, res) => {
                 localStorage.removeItem(\`user_\${currentCustomerNumber}_lastLogin\`);
                 localStorage.removeItem(\`bankUsers\`); // Force reload of user list
                 
-                // Broadcast deletion event to all tabs/windows to force immediate logout
-                const broadcastChannel = new BroadcastChannel('bankingApp');
-                broadcastChannel.postMessage({
-                  type: 'USER_DELETED',
-                  customerNumber: currentCustomerNumber,
-                  timestamp: Date.now()
+                // Force immediate logout on all devices by clearing all possible storage
+                console.log('🧹 COMPLETE CLEANUP: Clearing all user data and sessions');
+                
+                // Clear user-specific localStorage entries
+                Object.keys(localStorage).forEach(key => {
+                  if (key.includes(currentCustomerNumber) || 
+                      key === 'currentUser' || 
+                      key === 'lastActiveUser' || 
+                      key === 'bankingUser' ||
+                      key === 'bankUsers') {
+                    localStorage.removeItem(key);
+                    console.log('Cleared localStorage:', key);
+                  }
                 });
-                broadcastChannel.close();
+                
+                // Clear sessionStorage
+                Object.keys(sessionStorage).forEach(key => {
+                  if (key.includes(currentCustomerNumber)) {
+                    sessionStorage.removeItem(key);
+                  }
+                });
+                
+                // Broadcast deletion event to all tabs/windows to force immediate logout
+                try {
+                  const broadcastChannel = new BroadcastChannel('bankingApp');
+                  broadcastChannel.postMessage({
+                    type: 'USER_DELETED',
+                    customerNumber: currentCustomerNumber,
+                    timestamp: Date.now()
+                  });
+                  broadcastChannel.close();
+                } catch (broadcastError) {
+                  console.warn('Broadcast channel not available:', broadcastError);
+                }
+                
+                // Force page refresh to ensure complete logout
+                setTimeout(() => {
+                  window.location.href = '/';
+                }, 1000);
                 
                 // Force immediate logout for any active sessions
                 window.postMessage({

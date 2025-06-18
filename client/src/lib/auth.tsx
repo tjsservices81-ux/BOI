@@ -119,7 +119,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const currentUser = localStorage.getItem('currentUser');
         
         if (currentUser === deletedCustomerNumber) {
-          console.log('🚨 Account deleted by admin - forcing immediate logout');
+          console.log('Account deleted by admin - forcing immediate logout');
           
           // Clear all user data immediately
           setUser(null);
@@ -136,34 +136,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
           
           // Force navigation to login
-          window.location.href = '/login';
+          window.location.href = '/';
         }
       }
     };
 
     // Listen for cross-tab deletion events
+    const broadcastChannel = new BroadcastChannel('bankingApp');
     const handleBroadcastMessage = (event: MessageEvent) => {
       if (event.data?.type === 'USER_DELETED') {
         const deletedCustomerNumber = event.data.customerNumber;
         const currentUser = localStorage.getItem('currentUser');
         
         if (currentUser === deletedCustomerNumber) {
-          console.log('🚨 Account deleted in another tab - forcing logout');
-          handleUserDeletion({
-            data: {
-              type: 'FORCE_LOGOUT',
-              customerNumber: deletedCustomerNumber,
-              reason: 'ACCOUNT_DELETED'
+          console.log('BROADCAST: User account deleted - forcing immediate logout');
+          
+          // Clear all user data immediately
+          setUser(null);
+          localStorage.removeItem('bankingUser');
+          localStorage.removeItem('currentUser');
+          localStorage.removeItem('lastActiveUser');
+          
+          // Clear all user-specific data including biometric data
+          Object.keys(localStorage).forEach(key => {
+            if (key.includes(deletedCustomerNumber) || 
+                key.includes('_biometricEnabled') || 
+                key.includes('_lastLogin')) {
+              localStorage.removeItem(key);
             }
-          } as MessageEvent);
+          });
+          
+          // Force navigation to login with error message
+          window.location.href = '/';
         }
       }
     };
-
+    
     // Set up listeners
     window.addEventListener('message', handleUserDeletion);
-    
-    const broadcastChannel = new BroadcastChannel('bankingApp');
     broadcastChannel.addEventListener('message', handleBroadcastMessage);
 
     // Listen for admin profile updates to refresh user data immediately
