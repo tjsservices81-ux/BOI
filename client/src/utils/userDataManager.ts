@@ -370,18 +370,18 @@ export class UserDataManager {
     console.log('🔒 SECURE: Cleared temporary state while preserving all user account data');
   }
 
-  // Admin function to clear all data
+  // DISABLED: This function has been disabled to prevent auto-deletion
+  // User accounts can ONLY be deleted manually by admin via /admin/login
   static clearAllData() {
-    // Clear all localStorage data
-    const keys = Object.keys(localStorage);
-    keys.forEach(key => {
-      if (key.startsWith('user_') || key === 'bankUsers' || key === 'currentUser') {
-        localStorage.removeItem(key);
-      }
-    });
+    console.error(`🚨 SECURITY VIOLATION: clearAllData() called but is COMPLETELY DISABLED`);
+    console.error(`🚨 User accounts can ONLY be deleted manually by admin via /admin/login`);
+    console.error(`🚨 This function would delete all user accounts and is now blocked`);
     
-    // Reset current user
-    this.currentUser = null;
+    // Log the call stack to identify where this was called from
+    console.trace('clearAllData call stack:');
+    
+    // Refuse to delete any user data - all accounts are preserved
+    return false;
   }
 
   // DISABLED: This function has been completely disabled to prevent any auto-deletion
