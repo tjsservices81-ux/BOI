@@ -438,6 +438,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         updatedUser = newUser;
       }
       
+      // Notify admin panel of profile update by logging the change
+      console.log(`✅ Profile updated for customer ${customerNumber}:`, {
+        name: updates.name,
+        email: updates.email,
+        dateOfBirth: updates.dateOfBirth
+      });
+      
       res.json(updatedUser);
     } catch (error) {
       if (error instanceof z.ZodError) {

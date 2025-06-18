@@ -617,6 +617,80 @@ router.get('/panel', adminAuth, async (req, res) => {
           }, 1000);
         }
         
+        // Auto-refresh admin panel to catch profile updates
+        function refreshUserData() {
+          fetch('/admin/panel-data')
+            .then(response => response.json())
+            .then(data => {
+              if (data.users) {
+                updateUserDisplay(data.users);
+              }
+            })
+            .catch(error => {
+              console.log('Refresh check failed:', error);
+            });
+        }
+        
+        function updateUserDisplay(users) {
+          const userList = document.querySelector('.user-list');
+          if (!userList) return;
+          
+          const currentHTML = userList.innerHTML;
+          const newHTML = generateUserListHTML(users);
+          
+          if (currentHTML !== newHTML) {
+            userList.innerHTML = newHTML;
+            console.log('Admin panel updated with latest user data');
+          }
+        }
+        
+        function generateUserListHTML(users) {
+          if (users.length === 0) {
+            return \`
+              <div class="empty-state">
+                <div class="empty-icon">👥</div>
+                <div>No active user sessions found</div>
+              </div>
+            \`;
+          }
+          
+          return users.map(session => \`
+            <div class="user-item \${session.isLoggedIn ? 'logged-in' : 'not-logged-in'}" id="user-\${session.sessionId}">
+              <div class="user-header">
+                <div class="user-info">
+                  <div class="user-name">\${session.username || 'Unknown User'} \${session.isLoggedIn ? '🟢' : '🔴'}</div>
+                  <div class="user-email">\${session.email || 'No email provided'}</div>
+                  
+                  <div class="user-details">
+                    <div class="detail-item">
+                      <div class="detail-label">Date of Birth</div>
+                      <div class="detail-value">\${session.dateOfBirth || 'Not provided'}</div>
+                    </div>
+                    <div class="detail-item">
+                      <div class="detail-label">Device Model</div>
+                      <div class="detail-value">\${session.deviceInfo || 'Unknown Device'}</div>
+                    </div>
+                    <div class="detail-item">
+                      <div class="detail-label">IP Address</div>
+                      <div class="detail-value">\${session.ipAddress || 'Unknown'}</div>
+                    </div>
+                    <div class="detail-item">
+                      <div class="detail-label">Login Time</div>
+                      <div class="detail-value">\${session.loginTime ? new Date(session.loginTime).toLocaleString() : 'Unknown'}</div>
+                    </div>
+                  </div>
+                </div>
+                <button class="delete-btn" onclick="confirmDelete('\${session.customerNumber}', '\${session.username || 'Unknown User'}')">
+                  Delete Account
+                </button>
+              </div>
+            </div>
+          \`).join('');
+        }
+        
+        // Start auto-refresh every 5 seconds to catch profile updates
+        setInterval(refreshUserData, 5000);
+        
         function logout() {
           window.location.href = '/admin/logout';
         }
@@ -635,6 +709,20 @@ router.get('/panel', adminAuth, async (req, res) => {
   } catch (error) {
     console.error('Error loading admin panel:', error);
     res.status(500).send('<h1>Error loading admin panel</h1><p>Please check server logs.</p>');
+  }
+});
+
+// API endpoint for admin panel data refresh
+router.get('/panel-data', adminAuth, async (req, res) => {
+  try {
+    const userSessions = await getUserSessions();
+    res.json({
+      users: userSessions,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error fetching panel data:', error);
+    res.status(500).json({ error: 'Failed to fetch panel data' });
   }
 });
 
