@@ -47,8 +47,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 localStorage.setItem('bankingUser', JSON.stringify(serverUser));
               }
             } else {
-              // DISABLED: Never clear user session automatically - only admin can delete accounts
-              // Keep cached user session active regardless of server response
+              // Check if account was deleted
+              const errorData = await response.json().catch(() => ({}));
+              if (errorData.accountDeleted) {
+                console.log('🚫 ACCOUNT DELETED: Force logout and clear all data');
+                setUser(null);
+                localStorage.removeItem('bankingUser');
+                localStorage.removeItem('currentUser');
+                localStorage.removeItem('lastActiveUser');
+                // Clear all biometric data
+                Object.keys(localStorage).forEach(key => {
+                  if (key.includes('_biometricEnabled') || key.includes('_lastLogin')) {
+                    localStorage.removeItem(key);
+                  }
+                });
+                window.location.href = '/';
+                return;
+              }
+              // For other errors, keep cached user session
               console.log('Server session check failed - maintaining cached user session');
             }
           } catch (error) {

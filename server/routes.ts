@@ -316,16 +316,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Check authentication status
-  app.get("/api/auth/user", (req, res) => {
+  app.get("/api/auth/user", async (req, res) => {
     console.log('User check - Session ID:', req.sessionID);
     console.log('User check - Session user:', (req as any).session?.user);
     console.log('User check - Session userId:', (req as any).session?.userId);
     console.log('User check - Full session:', (req as any).session);
     
     if ((req as any).session && (req as any).session.user) {
-      // Refresh session on successful auth check
-      (req as any).session.touch();
-      res.json((req as any).session.user);
+      // Verify user still exists in database
+      try {
+        const sessionUser = (req as any).session.user;
+        const user = await storage.getUserById(sessionUser.id);
+        
+        if (!user) {
+          // User has been deleted - destroy session immediately
+          console.log(`🚫 SESSION TERMINATED: User ID ${sessionUser.id} deleted from database`);
+          (req as any).session.destroy((err: any) => {
+            if (err) {
+              console.error('Error destroying session:', err);
+            }
+          });
+          return res.status(401).json({ message: "Account has been deleted", accountDeleted: true });
+        }
+        
+        // User exists - refresh session
+        (req as any).session.touch();
+        res.json((req as any).session.user);
+      } catch (error) {
+        console.error('Error validating user session:', error);
+        // On error, destroy session for security
+        (req as any).session.destroy((err: any) => {
+          if (err) {
+            console.error('Error destroying session:', err);
+          }
+        });
+        res.status(401).json({ message: "Authentication validation failed" });
+      }
     } else {
       res.status(401).json({ message: "Not authenticated" });
     }

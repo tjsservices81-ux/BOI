@@ -13,6 +13,7 @@ import { PersistentDataManager } from "./persistentStorage";
 export interface IStorage {
   // User operations
   getUserByCredentials(customerNumber: string, pin: string): Promise<User | undefined>;
+  getUserById(userId: number): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   getUserByCustomerNumber(customerNumber: string): Promise<User | undefined>;
   updateUserProfile(customerNumber: string, updates: Partial<User>): Promise<User | undefined>;
@@ -180,6 +181,10 @@ class MemStorage implements IStorage {
     this.users.set(user.id, user);
     await this.saveData(); // Persist data immediately
     return user;
+  }
+
+  async getUserById(userId: number): Promise<User | undefined> {
+    return this.users.get(userId);
   }
 
   async getUserByCustomerNumber(customerNumber: string): Promise<User | undefined> {

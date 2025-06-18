@@ -494,52 +494,93 @@ export default function Login() {
         const userProfile = UserDataManager.getUserProfile();
         
         if (userProfile) {
-          // Authenticate with backend API to establish proper session
-          fetch('/api/auth/login', {
+          // First validate user exists in database before attempting authentication
+          fetch('/api/validate-user', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
             body: JSON.stringify({
-              customerNumber: finalTargetUser,
-              pin: userProfile.pin || '1234'
+              customerNumber: finalTargetUser
             })
-          }).then(response => {
-            if (response.ok) {
-              return response.json();
+          }).then(response => response.json()).then(validationData => {
+            if (!validationData.exists) {
+              // User deleted or doesn't exist - clear all local data and block login
+              console.log(`❌ BIOMETRIC LOGIN BLOCKED: User ${finalTargetUser} not found in database`);
+              
+              // Clear all local storage for this user
+              UserDataManager.removeUser(finalTargetUser);
+              localStorage.removeItem('currentUser');
+              localStorage.removeItem('lastActiveUser');
+              localStorage.removeItem(`user_${finalTargetUser}_biometricEnabled`);
+              localStorage.removeItem(`user_${finalTargetUser}_lastLogin`);
+              
+              // Show error and reset biometric state
+              setBiometricVerified(false);
+              setIsScanning(false);
+              setHoldProgress(0);
+              
+              toast({
+                title: "Account Not Found",
+                description: "This account has been deleted or no longer exists. Please contact support.",
+                variant: "destructive",
+              });
+              return;
             }
-            console.warn('Backend authentication failed for biometric login');
-            throw new Error('Backend authentication failed');
-          }).then(data => {
-            console.log('Biometric login: Backend authentication successful');
             
-            // Record login and restore user data
-            UserDataManager.recordLoginTime(finalTargetUser);
-            UserDataManager.initializeFreshAccount(finalTargetUser);
-            
-            // Login through auth context with backend user data
-            login(data.user);
-            
-            // Trigger signing in animation
-            setTimeout(() => {
-              handleLoginButton();
-            }, 100);
-          }).catch(error => {
-            console.warn('Biometric login: Backend auth failed, using local session', error);
-            
-            // Fallback to local authentication
-            UserDataManager.recordLoginTime(finalTargetUser);
-            UserDataManager.initializeFreshAccount(finalTargetUser);
-            
-            login({
-              id: parseInt(finalTargetUser.replace(/\D/g, '')) || 1,
-              name: userProfile.name,
-              email: userProfile.email
+            // User exists, proceed with backend authentication
+            return fetch('/api/auth/login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({
+                customerNumber: finalTargetUser,
+                pin: userProfile.pin || '1234'
+              })
+            }).then(response => {
+              if (response.ok) {
+                return response.json();
+              }
+              console.warn('Backend authentication failed for biometric login');
+              throw new Error('Backend authentication failed');
+            }).then(data => {
+              console.log('Biometric login: Backend authentication successful');
+              
+              // Record login and restore user data
+              UserDataManager.recordLoginTime(finalTargetUser);
+              UserDataManager.initializeFreshAccount(finalTargetUser);
+              
+              // Login through auth context with backend user data
+              login(data.user);
+              
+              // Trigger signing in animation
+              setTimeout(() => {
+                handleLoginButton();
+              }, 100);
+            }).catch(error => {
+              console.error('Biometric login: Backend authentication failed', error);
+              
+              // NO FALLBACK - If backend auth fails, user cannot login
+              setBiometricVerified(false);
+              setIsScanning(false);
+              setHoldProgress(0);
+              
+              toast({
+                title: "Authentication Failed",
+                description: "Unable to authenticate account. Please try logging in with your customer number and PIN.",
+                variant: "destructive",
+              });
             });
+          }).catch(error => {
+            console.error('User validation failed:', error);
+            setBiometricVerified(false);
+            setIsScanning(false);
+            setHoldProgress(0);
             
-            // Trigger signing in animation
-            setTimeout(() => {
-              handleLoginButton();
-            }, 100);
+            toast({
+              title: "Authentication Error",
+              description: "Unable to verify account status. Please try again.",
+              variant: "destructive",
+            });
           });
         } else {
           console.warn('No user profile found for biometric login');
