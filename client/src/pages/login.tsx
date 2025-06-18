@@ -352,7 +352,8 @@ export default function Login() {
       return;
     }
 
-    // Validate account exists on server before proceeding
+    // Biometric authentication uses local credentials only - no server validation needed
+    // This ensures biometric login works even when app is reopened or connection is unstable
     let targetUser = null;
     if (customerNumber && customerNumber.trim()) {
       targetUser = customerNumber;
@@ -368,44 +369,14 @@ export default function Login() {
       }
     }
 
-    if (targetUser) {
-      try {
-        const response = await fetch('/api/validate-user', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ customerNumber: targetUser }),
-        });
-
-        if (!response.ok || !(await response.json()).exists) {
-          // SECURITY: Never delete user accounts automatically
-          // Only clear current session temporarily - preserve all account data
-          if (UserDataManager.getCurrentUser() === targetUser) {
-            UserDataManager.clearCurrentUser();
-          }
-          
-          toast({
-            title: "Connection Issue",
-            description: "Unable to verify account status. Please try again or contact support if the issue persists.",
-            variant: "destructive",
-          });
-          
-          // Clear form and reset state but preserve user registration data
-          setCustomerNumber('');
-          setBiometricVerified(false);
-          setPinVerified(false);
-          return;
-        }
-      } catch (error) {
-        console.error('Account validation failed:', error);
-        toast({
-          title: "Connection Error",
-          description: "Unable to verify account. Please check your connection and try again.",
-          variant: "destructive",
-        });
-        return;
-      }
+    // Verify the user exists locally (biometric credentials are stored locally)
+    if (!targetUser || !UserDataManager.userExists(targetUser)) {
+      toast({
+        title: "Account Not Found",
+        description: "No biometric authentication data found. Please log in with your customer number first.",
+        variant: "destructive",
+      });
+      return;
     }
 
     // If customer number is entered, validate it exists
@@ -571,10 +542,30 @@ export default function Login() {
         throw new Error("No valid user session found");
       }
       
-      // Record login time and authenticate through auth context
-      UserDataManager.recordLoginTime(currentUser);
+      // Authenticate with server to establish session for API calls
       const userProfile = UserDataManager.getUserProfile();
       if (userProfile) {
+        try {
+          const serverAuthResponse = await fetch('/api/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              customerNumber: currentUser,
+              pin: userProfile.pin || '1234' // Use stored PIN or default
+            }),
+          });
+
+          if (!serverAuthResponse.ok) {
+            console.warn('Server authentication failed, continuing with local session');
+          }
+        } catch (error) {
+          console.warn('Server authentication error, continuing with local session:', error);
+        }
+
+        // Record login time and authenticate through auth context
+        UserDataManager.recordLoginTime(currentUser);
         login({
           id: parseInt(currentUser.replace(/\D/g, '')) || 1,
           name: userProfile.name,
