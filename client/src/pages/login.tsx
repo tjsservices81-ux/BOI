@@ -1539,31 +1539,7 @@ export default function Login() {
                   Create New Account
                 </button>
                 
-                <button
-                  onClick={() => {
-                    // Clear current user session completely
-                    UserDataManager.clearCurrentUser();
-                    setShowAdminLogin(false);
-                    setCustomerNumber('');
-                    setPin('');
-                    setBiometricVerified(false);
-                    setPinVerified(false);
-                    setIsScanning(false);
-                    setShowPinLogin(false);
-                    
-                    // Force refresh of the component state
-                    window.location.reload();
-                    
-                    toast({
-                      title: "Session Cleared",
-                      description: "All active sessions have been terminated.",
-                    });
-                  }}
-                  className="w-full p-3 bg-red-50 text-red-600 rounded-xl font-medium active:scale-98 transition-transform"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                >
-                  Sign Out & Clear Session
-                </button>
+
               </div>
             </div>
           </div>
