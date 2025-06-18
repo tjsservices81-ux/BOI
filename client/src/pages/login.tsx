@@ -334,7 +334,7 @@ export default function Login() {
     }
   };
 
-  const handleBiometricHoldStart = async (e: any) => {
+  const handleBiometricClick = async (e: any) => {
     // Prevent any accidental triggers
     e.preventDefault();
     e.stopPropagation();
@@ -389,89 +389,54 @@ export default function Login() {
       return;
     }
     
-    // Start hold timer - requires continuous hold
+    // Start biometric scanning - simplified instant verification
     setIsScanning(true);
-    setHoldProgress(0);
     
-    // Slower progress - 80ms interval, 1.25% increment = 6.4 seconds total
-    const timer = setInterval(() => {
-      setHoldProgress(prev => {
-        const newProgress = prev + 1.25;
-        if (newProgress >= 100) {
-          clearInterval(timer);
-          setBiometricVerified(true);
-          setIsScanning(false);
-          setHoldProgress(0);
-          
-          // Initialize fresh account data based on entered customer number or last active user if none entered
-          let targetUser = null;
-          if (customerNumber && UserDataManager.userExists(customerNumber)) {
-            targetUser = customerNumber;
-            UserDataManager.setCurrentUser(customerNumber);
-            UserDataManager.initializeFreshAccount(customerNumber);
-          } else if (!customerNumber) {
-            // If no customer number entered, use last active user first, then fall back to most recent
-            const lastActiveUser = UserDataManager.getLastActiveUser();
-            if (lastActiveUser && UserDataManager.userExists(lastActiveUser)) {
-              targetUser = lastActiveUser;
-              UserDataManager.setCurrentUser(lastActiveUser);
-              UserDataManager.initializeFreshAccount(lastActiveUser);
-              setCustomerNumber(lastActiveUser); // Update the display
-            } else {
-              // Fall back to most recent account if no last active user
-              const allUsers = UserDataManager.getAllUsers();
-              const userNumbers = Object.keys(allUsers);
-              if (userNumbers.length > 0) {
-                const mostRecentUser = userNumbers.reduce((latest, current) => {
-                  const latestDate = new Date(allUsers[latest].dateCreated);
-                  const currentDate = new Date(allUsers[current].dateCreated);
-                  return currentDate > latestDate ? current : latest;
-                });
-                targetUser = mostRecentUser;
-                UserDataManager.setCurrentUser(mostRecentUser);
-                UserDataManager.initializeFreshAccount(mostRecentUser);
-                setCustomerNumber(mostRecentUser); // Update the display
-              }
-            }
+    // Quick authentication simulation - 1.5 seconds
+    setTimeout(() => {
+      setBiometricVerified(true);
+      setIsScanning(false);
+      
+      // Initialize fresh account data based on entered customer number or last active user if none entered
+      let finalTargetUser = null;
+      if (customerNumber && UserDataManager.userExists(customerNumber)) {
+        finalTargetUser = customerNumber;
+        UserDataManager.setCurrentUser(customerNumber);
+        UserDataManager.initializeFreshAccount(customerNumber);
+      } else if (!customerNumber) {
+        // If no customer number entered, use last active user first, then fall back to most recent
+        const lastActiveUser = UserDataManager.getLastActiveUser();
+        if (lastActiveUser && UserDataManager.userExists(lastActiveUser)) {
+          finalTargetUser = lastActiveUser;
+          UserDataManager.setCurrentUser(lastActiveUser);
+          UserDataManager.initializeFreshAccount(lastActiveUser);
+          setCustomerNumber(lastActiveUser); // Update the display
+        } else {
+          // Fall back to most recent account if no last active user
+          const allUsers = UserDataManager.getAllUsers();
+          const userNumbers = Object.keys(allUsers);
+          if (userNumbers.length > 0) {
+            const mostRecentUser = userNumbers.reduce((latest, current) => {
+              const latestDate = new Date(allUsers[latest].dateCreated);
+              const currentDate = new Date(allUsers[current].dateCreated);
+              return currentDate > latestDate ? current : latest;
+            });
+            finalTargetUser = mostRecentUser;
+            UserDataManager.setCurrentUser(mostRecentUser);
+            UserDataManager.initializeFreshAccount(mostRecentUser);
+            setCustomerNumber(mostRecentUser); // Update the display
           }
-          
-          return 100;
         }
-        return newProgress;
-      });
-    }, 80);
-    
-    setHoldTimer(timer);
+      }
+      
+      // Record login time for the authenticated user
+      if (finalTargetUser) {
+        UserDataManager.recordLoginTime(finalTargetUser);
+      }
+    }, 1500);
   };
 
-  const handleBiometricHoldEnd = (e?: any) => {
-    // Prevent event bubbling
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    
-    // Always clear timer if it exists
-    if (holdTimer) {
-      clearInterval(holdTimer);
-      setHoldTimer(null);
-    }
-    
-    // Only reset scanning if not yet verified
-    if (!biometricVerified && isScanning) {
-      setIsScanning(false);
-      setHoldProgress(0);
-      
-      // Visual feedback for early release
-      if (holdProgress > 0 && holdProgress < 100) {
-        toast({
-          title: "Hold Required",
-          description: "Please hold the fingerprint button until scanning completes.",
-          variant: "destructive",
-        });
-      }
-    }
-  };
+
 
   const handleLoginButton = async () => {
     if (!biometricVerified && !pinVerified) {
@@ -1035,11 +1000,7 @@ export default function Login() {
                           ? 'bg-gradient-to-br from-blue-50 to-blue-100' 
                           : 'bg-gradient-to-br from-gray-50 to-gray-100 hover:from-blue-50 hover:to-blue-100'
                     }`}
-                    onMouseDown={handleBiometricHoldStart}
-                    onMouseUp={handleBiometricHoldEnd}
-                    onMouseLeave={handleBiometricHoldEnd}
-                    onTouchStart={handleBiometricHoldStart}
-                    onTouchEnd={handleBiometricHoldEnd}
+                    onClick={handleBiometricClick}
                     style={{
                       touchAction: 'manipulation',
                       userSelect: 'none',
@@ -1048,33 +1009,9 @@ export default function Login() {
                       WebkitTapHighlightColor: 'transparent'
                     }}
                   >
-                    {/* Progress ring for holding */}
+                    {/* Pulse effect when scanning */}
                     {isScanning && (
-                      <div className="absolute inset-0 rounded-full">
-                        <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                          <circle
-                            cx="50"
-                            cy="50"
-                            r="45"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                            className="text-gray-200"
-                          />
-                          <circle
-                            cx="50"
-                            cy="50"
-                            r="45"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                            strokeLinecap="round"
-                            className="text-blue-500 transition-all duration-100"
-                            strokeDasharray={`${2 * Math.PI * 45}`}
-                            strokeDashoffset={`${2 * Math.PI * 45 * (1 - holdProgress / 100)}`}
-                          />
-                        </svg>
-                      </div>
+                      <div className="absolute inset-0 rounded-full border-2 border-blue-300 opacity-50 animate-pulse"></div>
                     )}
                     
                     {/* Simplified visual feedback */}
@@ -1111,7 +1048,7 @@ export default function Login() {
                       WebkitTapHighlightColor: 'transparent'
                     }}
                   >
-                    {biometricVerified ? 'Fingerprint verified' : isScanning ? 'Hold to scan fingerprint...' : 'Biometrics login'}
+                    {biometricVerified ? 'Fingerprint verified' : isScanning ? 'Scanning fingerprint...' : 'Biometric login'}
                   </p>
                 </div>
 
