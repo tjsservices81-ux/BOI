@@ -120,35 +120,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Customer number and PIN required" });
       }
 
-      // Create a working user for testing session persistence
-      const sessionUser = {
-        id: 1,
-        customerNumber: customerNumber,
-        pin: pin,
-        name: "Test User",
-        email: "test@test.com"
-      };
-
-      console.log(`Creating permanent session for any login attempt - session persistence testing`);
+      // Lookup user with database credentials
+      const user = await storage.getUserByCredentials(customerNumber, pin);
       
-      // Create permanent session data with infinite duration
-      (req as any).session.userId = sessionUser.id;
-      (req as any).session.user = { id: sessionUser.id, name: sessionUser.name, email: sessionUser.email };
-      (req as any).session.customerNumber = sessionUser.customerNumber;
-      (req as any).session.authenticated = true;
+      if (!user) {
+        // Try direct database query as fallback
+        const allUsers = await storage.getAllUsers();
+        const dbUser = allUsers.find(u => u.customerNumber === customerNumber && u.pin === pin);
+        
+        if (!dbUser) {
+          console.log(`Authentication failed for ${customerNumber}`);
+          return res.status(401).json({ message: "Invalid credentials" });
+        }
+        
+        // Use database user for permanent session
+        (req as any).session.userId = dbUser.id;
+        (req as any).session.user = { id: dbUser.id, name: dbUser.name, email: dbUser.email };
+        (req as any).session.customerNumber = dbUser.customerNumber;
+        (req as any).session.authenticated = true;
 
-      // Register session for tracking with indefinite duration
-      addUserSession(req.sessionID, sessionUser.customerNumber, sessionUser.id);
+        addUserSession(req.sessionID, dbUser.customerNumber, dbUser.id);
+        
+        console.log(`✅ PERMANENT SESSION: ${dbUser.name} logged in with indefinite duration`);
+        
+        return res.json({ 
+          success: true,
+          user: { id: dbUser.id, name: dbUser.name, email: dbUser.email } 
+        });
+      }
 
-      console.log(`✅ PERMANENT SESSION ESTABLISHED: User ${sessionUser.id} with indefinite session`);
-      console.log(`🔒 NO AUTO-LOGOUT: Session will persist until manual admin deletion only`);
-
-      return res.json({ 
-        success: true,
-        user: { id: sessionUser.id, name: sessionUser.name, email: sessionUser.email } 
-      });
-
-      // Create permanent session data
+      // Create permanent session data for authenticated user
       (req as any).session.userId = user.id;
       (req as any).session.user = { id: user.id, name: user.name, email: user.email };
       (req as any).session.customerNumber = user.customerNumber;
