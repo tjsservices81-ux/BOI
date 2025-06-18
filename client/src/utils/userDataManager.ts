@@ -326,92 +326,48 @@ export class UserDataManager {
     // Keep accounts intact - don't clear them
   }
 
-  // Remove specific user and their data
+  // DISABLED: This function has been disabled to prevent auto-deletion
+  // User accounts can ONLY be deleted by admin via /admin/login
   static removeUser(customerNumber: string) {
-    // Secure data wiping - overwrite data multiple times before deletion
-    const secureWipe = (data: any) => {
-      const iterations = 7; // DOD 5220.22-M standard
-      for (let i = 0; i < iterations; i++) {
-        // Overwrite with random data
-        const randomData = Array.from({length: JSON.stringify(data).length}, 
-          () => String.fromCharCode(Math.floor(Math.random() * 256))).join('');
-        return randomData;
-      }
-    };
+    console.warn(`⚠️ SECURITY: removeUser() called for ${customerNumber} but is DISABLED to prevent auto-deletion`);
+    console.warn(`⚠️ User accounts can ONLY be deleted by admin via /admin/login`);
     
-    // Securely wipe user from users list
-    const allUsers = this.getAllUsers();
-    if (allUsers[customerNumber]) {
-      // Overwrite user data multiple times before deletion
-      for (let i = 0; i < 7; i++) {
-        allUsers[customerNumber] = {
-          customerNumber: Array(customerNumber.length).fill('X').join(''),
-          name: Array(50).fill('X').join(''),
-          email: Array(50).fill('X').join(''),
-          phone: Array(20).fill('X').join(''),
-          address: Array(100).fill('X').join(''),
-          dateOfBirth: Array(20).fill('X').join(''),
-          joinDate: Array(30).fill('X').join(''),
-          dateCreated: Array(30).fill('X').join('')
-        };
-        localStorage.setItem('bankUsers', JSON.stringify(allUsers));
-      }
-      delete allUsers[customerNumber];
-      localStorage.setItem('bankUsers', JSON.stringify(allUsers));
+    // Only clear current session if this is the current user - DO NOT DELETE ACCOUNT DATA
+    if (this.getCurrentUser() === customerNumber) {
+      this.clearCurrentUser();
+      console.log(`Session cleared for ${customerNumber} but account data preserved`);
     }
     
-    // Securely wipe user-specific data
-    const keys = Object.keys(localStorage);
-    keys.forEach(key => {
-      if (key.startsWith(`user_${customerNumber}_`)) {
-        const originalData = localStorage.getItem(key);
-        if (originalData) {
-          // Overwrite multiple times with different patterns
-          for (let i = 0; i < 7; i++) {
-            const pattern = i % 3 === 0 ? '0'.repeat(originalData.length) :
-                          i % 3 === 1 ? '1'.repeat(originalData.length) :
-                          Array(originalData.length).fill().map(() => 
-                            String.fromCharCode(Math.floor(Math.random() * 256))).join('');
-            localStorage.setItem(key, pattern);
-          }
-        }
-        localStorage.removeItem(key);
-      }
-    });
-    
-    // Clear related entries
-    localStorage.removeItem(`lastLogin_${customerNumber}`);
-    if (localStorage.getItem('lastActiveUser') === customerNumber) {
-      localStorage.removeItem('lastActiveUser');
-    }
-    if (localStorage.getItem('currentUser') === customerNumber) {
-      localStorage.removeItem('currentUser');
-    }
-    
-    // Force garbage collection attempt
-    if (window.gc) {
-      window.gc();
-    }
-    
-    console.log(`🔒 SECURE DELETE: User ${customerNumber} data wiped with DOD standards`);
+    // Account data is preserved - no deletion occurs
+    return false;
   }
 
-  // Clear temporary state for cold launch
+  // Clear temporary state for cold launch - SECURED to preserve user accounts
   static clearTemporaryState() {
-    // Clear cache and session-related data
+    // Clear cache and session-related data only
     this.dataCache.clear();
     this.cacheTimestamps.clear();
     
-    // Clear temporary storage items
+    // SECURITY: Only clear truly temporary items - NEVER delete user accounts
     const keys = Object.keys(localStorage);
     keys.forEach(key => {
-      if (key.includes('chat') || key.includes('liveChat') || key.includes('tempState') || key.includes('session_')) {
+      // Only clear non-critical temporary data - preserve all user account data
+      if (key.includes('chat') || key.includes('liveChat') || key.includes('tempState') || 
+          key.startsWith('session_') || key === 'splashShown' || key === 'app_') {
         localStorage.removeItem(key);
+      }
+      // PROTECTED: Never touch 'bankUsers', 'currentUser', 'lastActiveUser', or user data keys
+    });
+    
+    // Clear only non-user sessionStorage - preserve user sessions
+    const sessionKeys = Object.keys(sessionStorage);
+    sessionKeys.forEach(key => {
+      if (!key.includes('user') && !key.includes('account') && !key.includes('bank')) {
+        sessionStorage.removeItem(key);
       }
     });
     
-    // Clear session storage
-    sessionStorage.clear();
+    console.log('🔒 SECURE: Cleared temporary state while preserving all user account data');
   }
 
   // Admin function to clear all data
@@ -428,46 +384,17 @@ export class UserDataManager {
     this.currentUser = null;
   }
 
-  // Admin-triggered cleanup - removes all traces of a deleted user
+  // DISABLED: This function has been completely disabled to prevent any auto-deletion
+  // User accounts can ONLY be deleted manually by admin via /admin/login
   static adminDeleteUser(customerNumber: string) {
-    // Remove user from the users registry
-    const allUsers = this.getAllUsers();
-    if (allUsers[customerNumber]) {
-      delete allUsers[customerNumber];
-      localStorage.setItem('bankUsers', JSON.stringify(allUsers));
-    }
+    console.error(`🚨 SECURITY VIOLATION: adminDeleteUser() called for ${customerNumber} but is COMPLETELY DISABLED`);
+    console.error(`🚨 User accounts can ONLY be deleted manually by admin via /admin/login`);
+    console.error(`🚨 This function call indicates a potential security breach or programming error`);
     
-    // Remove from current user if this was the active user
-    if (this.currentUser === customerNumber) {
-      this.currentUser = null;
-      localStorage.removeItem('currentUser');
-    }
+    // Log the call stack to identify where this was called from
+    console.trace('adminDeleteUser call stack:');
     
-    // Remove from last active user
-    if (this.getLastActiveUser() === customerNumber) {
-      localStorage.removeItem('lastActiveUser');
-    }
-    
-    // Clear any cached data for this user
-    this.dataCache.delete(customerNumber);
-    this.cacheTimestamps.delete(customerNumber);
-    
-    // Clear all user-specific localStorage entries
-    const allKeys = Object.keys(localStorage);
-    for (const key of allKeys) {
-      if (key.includes(customerNumber) || key.startsWith(`user_${customerNumber}_`)) {
-        localStorage.removeItem(key);
-      }
-    }
-    
-    // Clear sessionStorage entries
-    const sessionKeys = Object.keys(sessionStorage);
-    for (const key of sessionKeys) {
-      if (key.includes(customerNumber)) {
-        sessionStorage.removeItem(key);
-      }
-    }
-    
-    console.log(`Admin cleanup: All data for customer ${customerNumber} removed from browser storage`);
+    // Refuse to delete any user data - all accounts are preserved
+    return false;
   }
 }

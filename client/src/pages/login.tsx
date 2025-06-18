@@ -383,19 +383,19 @@ export default function Login() {
         });
 
         if (!response.ok || !(await response.json()).exists) {
-          // Don't delete user from localStorage - preserve local registration data
-          // Only clear current session if this user was active
+          // SECURITY: Never delete user accounts automatically
+          // Only clear current session temporarily - preserve all account data
           if (UserDataManager.getCurrentUser() === targetUser) {
             UserDataManager.clearCurrentUser();
           }
           
           toast({
-            title: "Account Not Found",
-            description: "This account has been removed. Please contact support if you believe this is an error.",
+            title: "Connection Issue",
+            description: "Unable to verify account status. Please try again or contact support if the issue persists.",
             variant: "destructive",
           });
           
-          // Clear form and reset state
+          // Clear form and reset state but preserve user registration data
           setCustomerNumber('');
           setBiometricVerified(false);
           setPinVerified(false);
