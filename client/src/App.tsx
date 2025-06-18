@@ -7,7 +7,7 @@ import { queryClient } from '@/lib/queryClient';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { SecurityWrapper } from '@/components/SecurityWrapper';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { StateManager } from '@/utils/appLifecycle';
+// Removed AppLifecycle dependency for simplified authentication
 
 // Pages
 import Login from '@/pages/login';
@@ -76,21 +76,18 @@ function AppRoutes() {
       } else {
         // App was backgrounded - always restore state (no session timeouts)
         try {
-          const savedState = StateManager.restoreAppState();
-          
-          if (savedState && savedState.user && !user) {
-            // Restore user session silently - no expiration checks
-            login(savedState.user);
-            
-            // Restore route if different from current
-            if (savedState.currentRoute !== location && savedState.currentRoute !== '/login') {
-              navigate(savedState.currentRoute);
+          // Try to restore user from localStorage - no expiration checks
+          const savedUser = localStorage.getItem('bankingUser');
+          if (savedUser && !user) {
+            try {
+              const parsedUser = JSON.parse(savedUser);
+              login(parsedUser);
+              setSplashShown(true);
+            } catch (error) {
+              console.error('Failed to restore user:', error);
+              setSplashShown(false);
             }
-            
-            // Skip splash if restoring state
-            setSplashShown(true);
           } else {
-            // No valid saved state, show splash
             setSplashShown(false);
           }
         } catch (error) {
@@ -118,12 +115,12 @@ function AppRoutes() {
 
     initializeApp();
     
-    // Handle app lifecycle events - no timeouts, just state preservation
+    // Handle app lifecycle events - preserve user sessions permanently
     const handleVisibilityChange = () => {
       if (document.hidden) {
-        // App going to background - save state without timeout
+        // App going to background - save user to localStorage
         if (user) {
-          StateManager.handleVisibilityChange(location, user);
+          localStorage.setItem('bankingUser', JSON.stringify(user));
         }
       }
     };
@@ -131,8 +128,9 @@ function AppRoutes() {
     const handleBeforeUnload = () => {
       // Clear session marker to detect force close
       sessionStorage.removeItem('app_was_active');
+      // Save user to localStorage - no timeouts
       if (user) {
-        StateManager.handleVisibilityChange(location, user);
+        localStorage.setItem('bankingUser', JSON.stringify(user));
       }
     };
 
@@ -173,18 +171,12 @@ function AppRoutes() {
     updateThemeColor(color);
   }, [location]);
 
-  // Track navigation state for restoration
+  // Save user session persistently - no timeouts
   useEffect(() => {
-    if (user && location && isInitialized) {
-      StateManager.saveAppState({
-        user,
-        currentRoute: location,
-        scrollPositions: {},
-        formData: {},
-        timestamp: Date.now()
-      });
+    if (user && isInitialized) {
+      localStorage.setItem('bankingUser', JSON.stringify(user));
     }
-  }, [user, location, isInitialized]);
+  }, [user, isInitialized]);
 
   if (!isInitialized) {
     return null;
