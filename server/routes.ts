@@ -26,8 +26,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(session({
     secret: process.env.SESSION_SECRET || 'banking-app-secret-key-for-dev',
     store: sessionStore,
-    resave: false,
-    saveUninitialized: false,
+    resave: true, // Force session to be saved back to store - required for persistence
+    saveUninitialized: true, // Force session to be saved even when unmodified
     cookie: {
       secure: false, // Set to true in production with HTTPS
       httpOnly: true, // Secure cookie access
@@ -107,6 +107,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: error.errors[0].message });
       }
       res.status(500).json({ message: "Registration failed" });
+    }
+  });
+
+  // Frontend login endpoint - consolidating authentication
+  app.post("/api/login", async (req, res) => {
+    try {
+      const { customerNumber, pin } = loginSchema.parse(req.body);
+      const user = await storage.getUserByCredentials(customerNumber, pin);
+      
+      if (!user) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      // Store user session data permanently and force save
+      (req as any).session.userId = user.id;
+      (req as any).session.user = { id: user.id, name: user.name, email: user.email };
+      (req as any).session.customerNumber = user.customerNumber;
+
+      // Force save session to store
+      await new Promise((resolve, reject) => {
+        (req as any).session.save((err: any) => {
+          if (err) reject(err);
+          else resolve(true);
+        });
+      });
+
+      // Register session for tracking with indefinite duration
+      addUserSession(req.sessionID, user.customerNumber, user.id);
+
+      console.log(`✅ LOGIN SUCCESS: User ${user.id} (${user.customerNumber}) session established indefinitely`);
+      console.log(`🔒 SESSION DATA SAVED: UserId=${user.id}, SessionId=${req.sessionID}`);
+      console.log(`🔒 SESSION PERMANENT: No automatic logout - only admin can delete accounts`);
+
+      res.json({ user: { id: user.id, name: user.name, email: user.email } });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors[0].message });
+      }
+      res.status(500).json({ message: "Internal server error" });
     }
   });
 

@@ -7,16 +7,19 @@ const TEST_USER = {
   pin: '1234'
 };
 
+const axiosConfig = {
+  withCredentials: true,
+  validateStatus: () => true,
+  timeout: 10000
+};
+
 async function testSessionPersistence() {
   console.log('🧪 TESTING: Complete elimination of automatic logout mechanisms\n');
   
   try {
     // Test 1: Login and establish session
     console.log('1️⃣ Testing login and session establishment...');
-    const loginResponse = await axios.post(`${BASE_URL}/api/login`, TEST_USER, {
-      withCredentials: true,
-      validateStatus: () => true
-    });
+    const loginResponse = await axios.post(`${BASE_URL}/api/login`, TEST_USER, axiosConfig);
     
     if (loginResponse.status !== 200) {
       console.log('❌ Login failed - cannot test session persistence');
@@ -26,13 +29,15 @@ async function testSessionPersistence() {
     const sessionCookie = loginResponse.headers['set-cookie'];
     console.log('✅ Login successful - session established');
     
+    // Create axios instance with persistent cookies
+    const sessionAxios = axios.create({
+      ...axiosConfig,
+      headers: sessionCookie ? { Cookie: sessionCookie.join('; ') } : {}
+    });
+    
     // Test 2: Verify immediate session validity
     console.log('\n2️⃣ Testing immediate session validity...');
-    const authCheck1 = await axios.get(`${BASE_URL}/api/auth/user`, {
-      headers: { Cookie: sessionCookie },
-      withCredentials: true,
-      validateStatus: () => true
-    });
+    const authCheck1 = await sessionAxios.get(`${BASE_URL}/api/auth/user`);
     
     if (authCheck1.status === 200) {
       console.log('✅ Session valid immediately after login');
