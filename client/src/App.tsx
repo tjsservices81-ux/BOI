@@ -74,7 +74,7 @@ function AppRoutes() {
         setSplashShown(false);
         sessionStorage.setItem('app_was_active', 'true');
       } else {
-        // App was backgrounded - always restore state (no session timeouts)
+        // App was backgrounded - restore state without splash animation
         try {
           // Try to restore user from localStorage - no expiration checks
           const savedUser = localStorage.getItem('bankingUser');
@@ -82,17 +82,17 @@ function AppRoutes() {
             try {
               const parsedUser = JSON.parse(savedUser);
               login(parsedUser);
-              setSplashShown(true);
             } catch (error) {
               console.error('Failed to restore user:', error);
-              setSplashShown(false);
             }
-          } else {
-            setSplashShown(false);
           }
+          // Skip splash entirely for app restoration
+          setSplashShown(true);
+          setIsRestoringState(false);
         } catch (error) {
           console.error('Failed to restore app state:', error);
-          setSplashShown(false);
+          setSplashShown(true);
+          setIsRestoringState(false);
         }
       }
       
@@ -143,9 +143,11 @@ function AppRoutes() {
     };
   }, [user, location]);
 
-  // Handle splash screen timing
+  // Handle splash screen timing - only for fresh app starts
   useEffect(() => {
-    if (!splashShown && isInitialized && !isRestoringState) {
+    const wasAppActive = sessionStorage.getItem('app_was_active');
+    
+    if (!splashShown && isInitialized && !isRestoringState && !wasAppActive) {
       const timer = setTimeout(() => {
         setSplashTransitioning(true);
         setTimeout(() => {
