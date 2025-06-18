@@ -119,6 +119,8 @@ function AppRoutes() {
             <Route path="/">
               {!splashShown || splashTransitioning ? (
                 <Splash />
+              ) : isLoading ? (
+                <Splash />
               ) : user ? (
                 <Dashboard />
               ) : (
