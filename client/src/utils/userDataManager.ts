@@ -342,31 +342,9 @@ export class UserDataManager {
     return false;
   }
 
-  // Clear temporary state for cold launch - SECURED to preserve user accounts
+  // DISABLED: Never clear any state automatically - only admin can delete accounts
   static clearTemporaryState() {
-    // Clear cache and session-related data only
-    this.dataCache.clear();
-    this.cacheTimestamps.clear();
-    
-    // SECURITY: Only clear truly temporary items - NEVER delete user accounts
-    const keys = Object.keys(localStorage);
-    keys.forEach(key => {
-      // Only clear non-critical temporary data - preserve all user account data
-      if (key.includes('chat') || key.includes('liveChat') || key.includes('tempState') || 
-          key.startsWith('session_') || key === 'splashShown' || key === 'app_') {
-        localStorage.removeItem(key);
-      }
-      // PROTECTED: Never touch 'bankUsers', 'currentUser', 'lastActiveUser', or user data keys
-    });
-    
-    // Clear only non-user sessionStorage - preserve user sessions
-    const sessionKeys = Object.keys(sessionStorage);
-    sessionKeys.forEach(key => {
-      if (!key.includes('user') && !key.includes('account') && !key.includes('bank')) {
-        sessionStorage.removeItem(key);
-      }
-    });
-    
-    console.log('🔒 SECURE: Cleared temporary state while preserving all user account data');
+    console.log('🔒 SECURE: State clearing disabled - only admin can delete accounts');
+    // All user data and sessions preserved indefinitely
   }
 }

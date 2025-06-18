@@ -63,19 +63,11 @@ export default function Login() {
   useEffect(() => {
     setAssetsLoaded(true);
     
-    // Detect if this is a genuine cold start (fresh app launch) vs sign-out navigation
-    const wasColdStart = sessionStorage.getItem('app_cold_start') === 'true' || 
-                        !sessionStorage.getItem('splashShown');
+    // DISABLED: Never clear user data automatically - preserve all sessions and authentication
+    // Only admin panel can delete accounts - sign-out preserves all data for immediate re-login
     const wasSignOut = sessionStorage.getItem('user_signed_out') === 'true';
     
-    if (wasColdStart && !wasSignOut) {
-      // Only clear session on genuine cold starts - NOT on sign-out navigation
-      UserDataManager.clearCurrentUser();
-      localStorage.removeItem('bankingUser');
-      // Keep lastActiveUser for biometric login access
-    }
-    
-    // Clear the sign-out flag if it exists
+    // Clear the sign-out flag but preserve all user data
     sessionStorage.removeItem('user_signed_out');
     
     // Clear form fields regardless
