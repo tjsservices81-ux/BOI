@@ -399,7 +399,7 @@ export default function Login() {
     
     const timer = setInterval(() => {
       setHoldProgress(prev => {
-        const newProgress = prev + 1.25;
+        const newProgress = Math.min(prev + 1.25, 100);
         if (newProgress >= 100) {
           clearInterval(timer);
           setBiometricVerified(true);

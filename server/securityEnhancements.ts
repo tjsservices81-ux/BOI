@@ -82,18 +82,18 @@ export function sessionSecurityMiddleware(req: Request, res: Response, next: Nex
   if (req.session) {
     // Check for session hijacking
     const userAgent = req.get('User-Agent') || '';
-    const storedUA = req.session.userAgent;
+    const storedUA = (req.session as any).userAgent;
     
     if (storedUA && storedUA !== userAgent) {
       // Log security violation but don't destroy session - users stay logged in permanently
       console.log('⚠️ User agent change detected but session preserved for permanent login');
       // Don't destroy session - just update the stored user agent
-      req.session.userAgent = userAgent;
+      (req.session as any).userAgent = userAgent;
     }
     
     // Store user agent on first login
     if (!storedUA) {
-      req.session.userAgent = userAgent;
+      (req.session as any).userAgent = userAgent;
     }
   }
   
@@ -105,7 +105,8 @@ setInterval(() => {
   const now = Date.now();
   const windowMs = 15 * 60 * 1000; // 15 minutes
   
-  for (const [ip, record] of rateLimitStore.entries()) {
+  const entries = Array.from(rateLimitStore.entries());
+  for (const [ip, record] of entries) {
     if (now - record.lastAttempt > windowMs) {
       rateLimitStore.delete(ip);
     }
