@@ -15,6 +15,10 @@ interface Account {
 }
 
 export default function Dashboard() {
+  console.log('🚨 DASHBOARD COMPONENT RENDERING!', { 
+    timestamp: Date.now(),
+    stack: new Error().stack?.split('\n').slice(0, 5).join('\n')
+  });
   const [, setLocation] = useLocation();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   

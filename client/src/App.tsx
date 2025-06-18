@@ -119,19 +119,37 @@ function AppRoutes() {
             <Route path="/login" component={Login} />
             <Route path="/more" component={More} />
             <Route path="/">
-              {!splashCompleted ? (
-                <Splash />
-              ) : isLoading ? (
-                <Splash />
-              ) : user ? (
-                <Dashboard />
-              ) : (
-                <Login />
-              )}
+              {(() => {
+                console.log('🔍 ROOT ROUTE RENDER:', {
+                  splashCompleted,
+                  isLoading,
+                  user: !!user,
+                  userId: user?.id,
+                  timestamp: Date.now()
+                });
+                
+                if (!splashCompleted) {
+                  console.log('✅ Showing Splash (splash not completed)');
+                  return <Splash />;
+                }
+                if (isLoading) {
+                  console.log('✅ Showing Splash (auth loading)');
+                  return <Splash />;
+                }
+                if (user) {
+                  console.log('🚨 DASHBOARD RENDER FROM ROOT ROUTE!', { userId: user.id });
+                  return <Dashboard />;
+                }
+                console.log('✅ Showing Login (no user)');
+                return <Login />;
+              })()}
             </Route>
             <Route path="/dashboard">
               <ProtectedRoute>
-                <Dashboard />
+                {(() => {
+                  console.log('🚨 DASHBOARD RENDER FROM /dashboard ROUTE!');
+                  return <Dashboard />;
+                })()}
               </ProtectedRoute>
             </Route>
             <Route path="/payments">
