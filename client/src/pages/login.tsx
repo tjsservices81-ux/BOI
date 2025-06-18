@@ -383,7 +383,7 @@ export default function Login() {
 
     if (targetUser) {
       try {
-        const response = await fetch('/api/validate-user', {
+        const response = await fetch('/api/auth/validate-user', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

@@ -248,6 +248,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Validate user exists in database before biometric login
+  app.post("/api/auth/validate-user", async (req, res) => {
+    try {
+      const { customerNumber } = req.body;
+      
+      if (!customerNumber) {
+        return res.status(400).json({ exists: false, message: "Customer number required" });
+      }
+      
+      const user = await storage.getUserByCustomerNumber(customerNumber);
+      
+      if (user) {
+        res.json({ exists: true, user: { id: user.id, name: user.name, email: user.email } });
+      } else {
+        res.json({ exists: false, message: "Account not found" });
+      }
+    } catch (error) {
+      console.error('User validation error:', error);
+      res.status(500).json({ exists: false, message: "Validation failed" });
+    }
+  });
+
   // Check authentication status
   app.get("/api/auth/user", (req, res) => {
     console.log('User check - Session ID:', req.sessionID);
