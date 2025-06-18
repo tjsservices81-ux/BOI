@@ -401,52 +401,55 @@ export default function Login() {
     setIsScanning(true);
     setHoldProgress(0);
     
+    let progressCount = 0;
+    const totalSteps = 80; // 80 steps over 4 seconds (50ms intervals)
+    
     const timer = setInterval(() => {
-      setHoldProgress(prev => {
-        const newProgress = Math.min(prev + 2.5, 100); // 4 second hold (100/2.5 = 40 intervals * 100ms = 4000ms)
-        if (newProgress >= 100) {
-          clearInterval(timer);
-          setBiometricVerified(true);
-          setIsScanning(false);
-          setHoldProgress(0);
-          
-          // Initialize fresh account data based on entered customer number or last active user if none entered
-          let targetUser = null;
-          if (customerNumber && UserDataManager.userExists(customerNumber)) {
-            targetUser = customerNumber;
-            UserDataManager.setCurrentUser(customerNumber);
-            UserDataManager.initializeFreshAccount(customerNumber);
-          } else if (!customerNumber) {
-            // If no customer number entered, use last active user first, then fall back to most recent
-            const lastActiveUser = UserDataManager.getLastActiveUser();
-            if (lastActiveUser && UserDataManager.userExists(lastActiveUser)) {
-              targetUser = lastActiveUser;
-              UserDataManager.setCurrentUser(lastActiveUser);
-              UserDataManager.initializeFreshAccount(lastActiveUser);
-              setCustomerNumber(lastActiveUser); // Update the display
-            } else {
-              // Fall back to most recent account if no last active user
-              const allUsers = UserDataManager.getAllUsers();
-              const userNumbers = Object.keys(allUsers);
-              if (userNumbers.length > 0) {
-                const mostRecentUser = userNumbers.reduce((latest, current) => {
-                  const latestDate = new Date(allUsers[latest].dateCreated);
-                  const currentDate = new Date(allUsers[current].dateCreated);
-                  return currentDate > latestDate ? current : latest;
-                });
-                targetUser = mostRecentUser;
-                UserDataManager.setCurrentUser(mostRecentUser);
-                UserDataManager.initializeFreshAccount(mostRecentUser);
-                setCustomerNumber(mostRecentUser); // Update the display
-              }
+      progressCount++;
+      const newProgress = (progressCount / totalSteps) * 100;
+      
+      setHoldProgress(newProgress);
+      
+      // Only authenticate when timer completes the full 4 seconds
+      if (progressCount >= totalSteps) {
+        clearInterval(timer);
+        setBiometricVerified(true);
+        setIsScanning(false);
+        setHoldProgress(0);
+        
+        // Initialize fresh account data based on entered customer number or last active user if none entered
+        let targetUser = null;
+        if (customerNumber && UserDataManager.userExists(customerNumber)) {
+          targetUser = customerNumber;
+          UserDataManager.setCurrentUser(customerNumber);
+          UserDataManager.initializeFreshAccount(customerNumber);
+        } else if (!customerNumber) {
+          // If no customer number entered, use last active user first, then fall back to most recent
+          const lastActiveUser = UserDataManager.getLastActiveUser();
+          if (lastActiveUser && UserDataManager.userExists(lastActiveUser)) {
+            targetUser = lastActiveUser;
+            UserDataManager.setCurrentUser(lastActiveUser);
+            UserDataManager.initializeFreshAccount(lastActiveUser);
+            setCustomerNumber(lastActiveUser); // Update the display
+          } else {
+            // Fall back to most recent account if no last active user
+            const allUsers = UserDataManager.getAllUsers();
+            const userNumbers = Object.keys(allUsers);
+            if (userNumbers.length > 0) {
+              const mostRecentUser = userNumbers.reduce((latest, current) => {
+                const latestDate = new Date(allUsers[latest].dateCreated);
+                const currentDate = new Date(allUsers[current].dateCreated);
+                return currentDate > latestDate ? current : latest;
+              });
+              targetUser = mostRecentUser;
+              UserDataManager.setCurrentUser(mostRecentUser);
+              UserDataManager.initializeFreshAccount(mostRecentUser);
+              setCustomerNumber(mostRecentUser); // Update the display
             }
           }
-          
-          return 100;
         }
-        return newProgress;
-      });
-    }, 100); // Changed from 50ms to 100ms intervals for proper 4-second timing
+      }
+    }, 50); // 50ms intervals for smooth progress animation
     
     setHoldTimer(timer);
   };
