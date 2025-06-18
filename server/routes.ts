@@ -874,9 +874,15 @@ BIC Code: ${lastTransfer.bicCode || 'Not available'}`;
 Last transfer: €${transferAmount.toFixed(2)} to ${recipientName} on ${transferDate}
 Reference: ${lastTransfer.reference || 'Not specified'}
 Transaction ID: ${lastTransfer.id}
+Payment Type: ${lastTransfer.paymentMethod}
 Status: Confirmed and processed${accountDetails}
 
-IMPORTANT: When customer asks for payment confirmation or transfer details, include ALL the above information including the account details (Account Number/Sort Code for UK transfers, IBAN/BIC for IBAN transfers).`;
+IMPORTANT: When customer asks for payment confirmation or transfer details, include ALL the above information including the account details (Account Number/Sort Code for UK transfers, IBAN/BIC for SEPA transfers).
+
+CRITICAL PAYMENT TYPE RESPONSE RULES:
+- IF Payment Type is "SEPA Transfer": Use SEPA response variations, NEVER mention "UK account" or "currency conversion"
+- IF Payment Type is "UK Transfer": Can mention "UK account" and "currency conversion" if relevant (euro to GBP)
+- Always check Payment Type first before crafting response`;
         } else {
           transferContext = `\n\nCUSTOMER'S RECENT TRANSFER CONTEXT:
 No transfers found yet on your account.`;
