@@ -96,29 +96,21 @@ function AppRoutes() {
     updateThemeForRoute();
   }, [location]);
 
-  // Listen for splash completion - wait for auth to fully resolve
+  // Listen for splash completion
   useEffect(() => {
     const handleSplashComplete = () => {
       setSplashTransitioning(true);
       setTimeout(() => {
         setSplashShown(true);
         setSplashTransitioning(false);
-        // Only mark splash as completed after auth has stabilized
-        const checkAuthStable = () => {
-          if (!isLoading) {
-            setSplashCompleted(true);
-          } else {
-            setTimeout(checkAuthStable, 50);
-          }
-        };
-        checkAuthStable();
+        setSplashCompleted(true);
       }, 100);
       updateThemeColor('#126987');
     };
 
     window.addEventListener('splashComplete', handleSplashComplete);
     return () => window.removeEventListener('splashComplete', handleSplashComplete);
-  }, [isLoading]);
+  }, []);
 
   return (
     <SecurityWrapper>
