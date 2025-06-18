@@ -63,16 +63,20 @@ export default function Login() {
   useEffect(() => {
     setAssetsLoaded(true);
     
-    // For cold starts, only clear current session - preserve registered user data
+    // Detect if this is a genuine cold start (fresh app launch) vs sign-out navigation
     const wasColdStart = sessionStorage.getItem('app_cold_start') === 'true' || 
                         !sessionStorage.getItem('splashShown');
+    const wasSignOut = sessionStorage.getItem('user_signed_out') === 'true';
     
-    if (wasColdStart) {
-      // Cold start - clear only current session, preserve registration data
+    if (wasColdStart && !wasSignOut) {
+      // Only clear session on genuine cold starts - NOT on sign-out navigation
       UserDataManager.clearCurrentUser();
       localStorage.removeItem('bankingUser');
       // Keep lastActiveUser for biometric login access
     }
+    
+    // Clear the sign-out flag if it exists
+    sessionStorage.removeItem('user_signed_out');
     
     // Clear form fields regardless
     setCustomerNumber('');

@@ -1063,8 +1063,12 @@ export default function Profile() {
             <button 
               onClick={async () => {
                 setIsSigningOut(true);
+                // Mark this as a sign-out navigation to preserve session data
+                sessionStorage.setItem('user_signed_out', 'true');
                 setTimeout(() => {
-                  // Only navigate to login screen - do NOT clear any data
+                  // NAVIGATION ONLY - NO DATA CLEARING
+                  // User remains logged in with full session and biometric access
+                  // Only admin panel can actually delete accounts and clear data
                   navigate('/login');
                 }, 2000);
               }}
