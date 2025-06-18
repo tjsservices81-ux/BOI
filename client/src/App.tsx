@@ -34,14 +34,19 @@ function ProtectedRoute({ children, fallback }: { children: React.ReactNode; fal
   const user = authHook?.user || null;
   const isLoading = authHook?.isLoading || false;
   
-  if (!user && !isLoading) {
-    return fallback ? <>{fallback}</> : <Redirect to="/login" />;
-  }
+  console.log('🔍 PROTECTED ROUTE CHECK:', { user: !!user, isLoading, timestamp: Date.now() });
   
   if (isLoading) {
+    console.log('✅ ProtectedRoute: Loading - returning null');
     return null;
   }
   
+  if (!user) {
+    console.log('🚨 ProtectedRoute: No user - redirecting to login');
+    return fallback ? <>{fallback}</> : <Redirect to="/login" />;
+  }
+  
+  console.log('✅ ProtectedRoute: User authenticated - rendering children');
   return <>{children}</>;
 }
 
@@ -52,6 +57,17 @@ function AppRoutes() {
   
   const locationHook = useLocation();
   const [location, navigate] = locationHook || ['/', () => {}];
+  
+  // Debug initial URL
+  useEffect(() => {
+    console.log('🔍 APP INITIAL URL:', {
+      location,
+      href: window.location.href,
+      pathname: window.location.pathname,
+      hash: window.location.hash,
+      timestamp: Date.now()
+    });
+  }, []);
   const [splashShown, setSplashShown] = useState(false);
   const [splashTransitioning, setSplashTransitioning] = useState(false);
   const [splashCompleted, setSplashCompleted] = useState(false);
