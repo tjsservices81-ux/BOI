@@ -805,6 +805,44 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     return responses[Math.floor(Math.random() * responses.length)];
   };
 
+  // Get typing speed based on agent personality
+  const getAgentTypingSpeed = (agentName: string): number => {
+    const typingSpeeds: { [key: string]: number } = {
+      'Emma': 45,        // Friendly - average speed
+      'James': 50,       // Formal - measured speed
+      'Sarah': 35,       // Overly helpful - slower, thoughtful
+      'Zoe': 60,         // Sarcastic - quick responses
+      'Aoife': 40,       // Relaxed - laid back speed
+      'Liam': 80,        // Quick texter - very fast
+      'Rachel': 15,      // Slow typer - very slow
+      'Connor': 55,      // Emoji lover - fast but pauses for emojis
+      'Sophie': 70,      // Bubbly - excited, fast typing
+      'David': 45,       // Professional - consistent speed
+      'Claire': 30,      // Patient - slow and careful
+      'Ryan': 65,        // Direct - fast, no nonsense
+      'Rebecca': 75,     // Tech savvy - very fast typing
+      'Sean': 35,        // Chatty - slower due to long messages
+      'Katie': 40,       // Cautious - careful typing
+      'Adam': 50,        // Laid back - average speed
+      'Niamh': 85,       // Enthusiastic - extremely fast
+      'Daniel': 55,      // Punctual - precise speed
+      'Amy': 35,         // Empathetic - thoughtful, slower
+      'Jack': 65,        // Trendy - fast modern typing
+      'Laura': 45,       // Methodical - consistent average
+      'Thomas': 40,      // Worldly - thoughtful responses
+      'Hannah': 80,      // Millennial - very fast mobile typing
+      'Mark': 70,        // No nonsense - quick and direct
+      'Grace': 25,       // Reassuring - slow, caring responses
+      'Oliver': 50,      // Witty - average with pauses for humor
+      'Ella': 45,        // Thorough - careful but efficient
+      'Luke': 90,        // Geeky - extremely fast technical typing
+      'Chloe': 55,       // Warm - enthusiastic but caring
+      'Ben': 45          // Curious - average speed with thoughtful pauses
+    };
+
+    return typingSpeeds[agentName] || 45; // Default to average speed
+  };
+
   const generateAIResponse = async (userMessage: string): Promise<{ text: string; category: string }> => {
     try {
       // Check if user is asking about transactions with no results
@@ -927,12 +965,11 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
         // Generate response while agent is "reading"
         const responseData = await generateAIResponse(userMessage.text);
         
-        // Calculate realistic typing time for response
-        // Average typing speed: 40-60 words per minute
+        // Calculate realistic typing time based on agent personality
         const responseWords = responseData.text.split(' ').length;
-        const typingWPM = Math.random() * 20 + 40; // 40-60 WPM
+        const typingWPM = getAgentTypingSpeed(chatState.agentName);
         const typingTimeMs = (responseWords / typingWPM) * 60 * 1000;
-        const typingDelay = Math.max(2000, typingTimeMs); // Minimum 2 seconds
+        const typingDelay = Math.max(1500, typingTimeMs); // Minimum 1.5 seconds
         
         // Show typing indicator
         setIsTyping(true);
