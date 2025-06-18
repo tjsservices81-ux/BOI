@@ -7,7 +7,7 @@ export class AppLifecycle {
   private static visibilityTimeout: NodeJS.Timeout | null = null;
   private static isAppTerminated = false;
   private static backgroundTime = 0;
-  private static SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
+  // Session timeout removed - users stay logged in permanently unless admin deletes account
 
   static initialize() {
     if (this.isInitialized) return;
@@ -35,25 +35,19 @@ export class AppLifecycle {
     const lastBackgroundTime = localStorage.getItem('app_background_time');
     
     if (!sessionData || !lastBackgroundTime) {
-      // No previous session or background time - fresh start
+      // No previous session or background time - fresh start but keep user logged in
       this.isAppTerminated = true;
-      this.clearAppState();
+      // Don't clear app state - preserve user login
       return;
     }
     
-    const backgroundDuration = Date.now() - parseInt(lastBackgroundTime);
-    
-    // If backgrounded for more than session timeout, treat as terminated
-    if (backgroundDuration > this.SESSION_TIMEOUT) {
-      this.isAppTerminated = true;
-      this.clearAppState();
-      return;
-    }
+    // Always restore state regardless of background duration
+    // Users stay logged in permanently unless admin deletes account
     
     // Check if page was unloaded/refreshed (indicates force close or refresh)
     if (!sessionStorage.getItem('app_active_session')) {
       this.isAppTerminated = true;
-      this.clearAppState();
+      // Don't clear app state - preserve user login
       return;
     }
     
@@ -67,15 +61,9 @@ export class AppLifecycle {
       localStorage.setItem('app_background_time', this.backgroundTime.toString());
       this.saveCurrentState();
     } else {
-      // App returning to foreground
-      const backgroundDuration = Date.now() - this.backgroundTime;
-      
-      // If backgrounded for too long, treat as fresh start
-      if (backgroundDuration > this.SESSION_TIMEOUT) {
-        this.isAppTerminated = true;
-        this.clearAppState();
-        window.location.reload();
-      } else if (!this.isAppTerminated) {
+      // App returning to foreground - always restore state
+      // Users stay logged in permanently unless admin deletes account
+      if (!this.isAppTerminated) {
         this.restoreStateIfNeeded();
       }
     }
@@ -119,10 +107,11 @@ export class AppLifecycle {
   }
 
   static clearAppState() {
+    // Only clear temporary session data, preserve user login
     localStorage.removeItem('app_session_state');
     localStorage.removeItem('app_background_time');
     sessionStorage.removeItem('app_active_session');
-    StateManager.clearAppState();
+    // Don't call StateManager.clearAppState() - preserve user login
   }
 
   static saveCurrentState() {
