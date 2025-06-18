@@ -20,23 +20,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const existingUsers = await storage.getAllUsers();
   console.log(`Found ${existingUsers.length} existing users in database`);
 
-  // Configure session middleware with simple in-memory storage
-  const sessionStore = new session.MemoryStore();
-
-  app.use(session({
-    secret: process.env.SESSION_SECRET || 'banking-app-secret-key-for-dev',
-    store: sessionStore,
-    resave: true, // Force session to be saved back to store - required for persistence
-    saveUninitialized: true, // Force session to be saved even when unmodified
-    cookie: {
-      secure: false, // Set to true in production with HTTPS
-      httpOnly: true, // Secure cookie access
-      maxAge: undefined, // Infinite session duration - no automatic expiry
-      sameSite: 'lax' // Allow cookies to be sent with same-site requests
-    },
-    rolling: true, // Extend session on each request to prevent auto-expiry
-    name: 'banking.session.id' // Custom session name for security
-  }));
+  // REMOVED: Duplicate session configuration that was causing automatic logouts
+  // Session middleware is already configured in server/index.ts with permanent settings
+  console.log('🔒 SECURE: Using main session configuration with infinite duration');
 
   // Add session tracking middleware
   app.use(sessionTrackingMiddleware);
