@@ -85,10 +85,10 @@ export function sessionSecurityMiddleware(req: Request, res: Response, next: Nex
     const storedUA = req.session.userAgent;
     
     if (storedUA && storedUA !== userAgent) {
-      req.session.destroy(() => {
-        res.status(401).json({ error: 'Session security violation detected' });
-      });
-      return;
+      // Log security violation but don't destroy session - users stay logged in permanently
+      console.log('⚠️ User agent change detected but session preserved for permanent login');
+      // Don't destroy session - just update the stored user agent
+      req.session.userAgent = userAgent;
     }
     
     // Store user agent on first login

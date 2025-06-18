@@ -332,8 +332,7 @@ export class UserDataManager {
       }
     });
     
-    // Clear session storage
-    sessionStorage.clear();
+    // Don't clear sessionStorage - preserve user login state
   }
 
   // Admin function to clear all data
