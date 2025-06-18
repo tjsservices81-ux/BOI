@@ -843,6 +843,96 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     return typingSpeeds[agentName] || 45; // Default to average speed
   };
 
+  // Get personality-based banking responses
+  const getPersonalityBankingResponse = (agentName: string, userMessage: string): string => {
+    const message = userMessage.toLowerCase();
+    
+    // Card-related responses
+    if (message.includes('card') || message.includes('blocked') || message.includes('unblock')) {
+      const cardResponses: { [key: string]: string[] } = {
+        'Emma': ["I can definitely help with your card! To unblock it, just go to Profile > Admin Panel and tap 'Unblock Card' - it'll work right away! 😊"],
+        'Zoe': ["Card blocked? Shocking. Go to Profile > Admin Panel, hit 'Unblock Card' and voilà - magic happens."],
+        'Liam': ["card blocked? profile > admin panel > unblock card. done."],
+        'Rachel': ["Let me... help you... with that card... Go to... Profile... then Admin Panel... and tap... Unblock Card..."],
+        'Sarah': ["Oh no! Don't worry at all - I'll get your card sorted immediately! Just pop over to Profile > Admin Panel and you'll see 'Unblock Card' right there! It'll be working perfectly in seconds!"],
+        'James': ["I shall assist you with your card matter. Please navigate to Profile > Admin Panel and select 'Unblock Card' for immediate resolution."],
+        'Connor': ["Card trouble? 😅 No worries! Head to Profile > Admin Panel and hit 'Unblock Card'! 🔓✨ You'll be good to go!"],
+        'Sophie': ["OMG your card! 💳 Don't worry hun, just go to Profile > Admin Panel and tap 'Unblock Card'! It'll be working again super quick! 💕"]
+      };
+      const responses = cardResponses[agentName] || cardResponses['Emma'];
+      return responses[Math.floor(Math.random() * responses.length)];
+    }
+    
+    // Transfer-related responses
+    if (message.includes('transfer') || message.includes('payment') || message.includes('send')) {
+      const transferResponses: { [key: string]: string[] } = {
+        'Emma': ["For transfers, just tap 'Payments' at the bottom! UK Transfer takes up to 24 hours, SEPA Transfer is 1-2 days. Which are you looking to do?"],
+        'Zoe': ["Transfers, huh? Revolutionary. Hit 'Payments', pick UK Transfer or SEPA Transfer. One's domestic, one's not. Figure it out."],
+        'James': ["I shall guide you through the transfer process. Access 'Payments' and select either UK Transfer for domestic transactions or SEPA Transfer for European payments."],
+        'Liam': ["payments > uk transfer (24hrs) or sepa transfer (1-2 days). where u sending?"],
+        'Sarah': ["Absolutely! I'm so excited to help with your transfer! Go to 'Payments' and you'll see UK Transfer (up to 24 hours) or SEPA Transfer (1-2 days). Which country are you sending to? I want to make sure we get this perfect for you!"],
+        'Connor': ["Transfer time! 💸 Check out 'Payments' for UK Transfer (24hrs) or SEPA Transfer (1-2 days)! ⏰ Where's the money going? 🌍"]
+      };
+      const responses = transferResponses[agentName] || transferResponses['Emma'];
+      return responses[Math.floor(Math.random() * responses.length)];
+    }
+    
+    // Balance/account info responses
+    if (message.includes('balance') || message.includes('account') || message.includes('statement')) {
+      const balanceResponses: { [key: string]: string[] } = {
+        'Emma': ["Your balances are right on the main dashboard! For detailed info like IBAN or statements, just tap any account to see everything."],
+        'Zoe': ["Balance? It's literally on the front page. Tap an account for the thrilling details like IBAN and statements."],
+        'James': ["Your account balances are displayed prominently on the main dashboard. For comprehensive account details, simply select the relevant account."],
+        'Liam': ["balance = homepage. tap account for details."],
+        'Sarah': ["Perfect question! Your balances are beautifully displayed right on your main dashboard! And if you need any specific details like your IBAN or statements, just tap on whichever account you're interested in - everything's there waiting for you!"],
+        'Connor': ["Balance check! 📊 It's all on your homepage! Tap any account for the full details! 💰✨"]
+      };
+      const responses = balanceResponses[agentName] || balanceResponses['Emma'];
+      return responses[Math.floor(Math.random() * responses.length)];
+    }
+    
+    // Generic banking help
+    return getPersonalityGenericResponse(agentName, userMessage);
+  };
+
+  // Get personality-based generic responses
+  const getPersonalityGenericResponse = (agentName: string, userMessage: string): string => {
+    const genericResponses: { [key: string]: string[] } = {
+      'Emma': ["I'm here to help! What specifically can I assist you with today?", "Let me know what you need help with and I'll do my best to sort it out!"],
+      'Zoe': ["Right, what's the actual problem then?", "OK, what do you need help with? Specifically."],
+      'James': ["How may I assist you with your banking requirements today?", "Please specify your inquiry so I may provide appropriate assistance."],
+      'Liam': ["whats up?", "need help with something?"],
+      'Rachel': ["How can... I help you... today?", "What do... you need... assistance with?"],
+      'Sarah': ["I'm absolutely here to help with whatever you need! What can I do to make your day better?", "Please tell me what you're looking for and I'll make sure we get it sorted perfectly!"],
+      'Connor': ["How can I help make your day awesome? 😊✨", "What can I do for you today? 🤝"],
+      'Sophie': ["What can I help you with today sweetie? 💕", "Tell me what you need hun! I'm here for you! 🥰"],
+      'David': ["How may I provide professional assistance today?", "What banking matter requires my attention?"],
+      'Claire': ["Take your time - what would you like help with?", "I'm here to help at whatever pace works for you. What do you need?"],
+      'Ryan': ["What needs fixing?", "What's the issue?"],
+      'Rebecca': ["What can I help you navigate in our digital banking world?", "How can I assist with your tech needs today?"],
+      'Sean': ["Well now, what brings you here today? I'm all ears and ready to help with whatever's on your mind!", "What's happening? I'm here and happy to chat about whatever you need!"],
+      'Katie': ["What security or account matter can I help you with today?", "How can I assist while ensuring your account remains secure?"],
+      'Adam': ["What can I help sort out for you?", "What's going on? Let me know what you need."],
+      'Niamh': ["What can I help you with?! I'm SO ready to assist!!", "Tell me what you need!! I'm excited to help!!"],
+      'Daniel': ["What requires efficient resolution today?", "How may I assist you promptly?"],
+      'Amy': ["What's on your mind? I'm here to listen and help however I can.", "How can I support you today? I want to make sure you feel heard."],
+      'Jack': ["What's good? How can I help you out today?", "What can I assist you with in the digital realm?"],
+      'Laura': ["What systematic assistance do you require today?", "How may I methodically help you?"],
+      'Thomas': ["What international or domestic matter can I assist with today?", "How may I help you navigate your banking needs?"],
+      'Hannah': ["What can I help you with today? Our app has so many cool features!", "How can I assist you with your digital banking experience?"],
+      'Mark': ["What do you need?", "What's the problem?"],
+      'Grace': ["What can I help you with today, dear? I want to make sure you feel completely comfortable.", "How can I assist you? Please don't worry about anything at all."],
+      'Oliver': ["What delightful banking conundrum can I help untangle for you today?", "What's the situation? I'm here to help with whatever's going on."],
+      'Ella': ["What account matter requires secure attention today?", "How may I assist while maintaining proper security protocols?"],
+      'Luke': ["What technical challenge or banking query can I help process for you today?", "What's the situation? I love solving problems!"],
+      'Chloe': ["What can I help you with today sweetie? I'm here to make everything lovely for you!", "How can I brighten your day and help with whatever you need?"],
+      'Ben': ["What's the story? I'm curious to hear what you need help with!", "What interesting challenge can I help you with today?"]
+    };
+    
+    const responses = genericResponses[agentName] || genericResponses['Emma'];
+    return responses[Math.floor(Math.random() * responses.length)];
+  };
+
   const generateAIResponse = async (userMessage: string): Promise<{ text: string; category: string }> => {
     try {
       // Check if user is asking about transactions with no results
