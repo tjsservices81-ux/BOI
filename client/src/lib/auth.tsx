@@ -129,22 +129,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
-    try {
-      // Clear user state immediately
-      setUser(null);
-      localStorage.removeItem('bankingUser');
-      
-      // Call backend logout endpoint
-      await fetch('/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include',
-      });
-    } catch (error) {
-      console.error('Logout error:', error);
-      // Even if backend fails, ensure local state is cleared
-      setUser(null);
-      localStorage.removeItem('bankingUser');
-    }
+    // DISABLED: Only admin panel can terminate sessions or delete accounts
+    console.log('🚫 SECURITY VIOLATION: Frontend logout attempt blocked');
+    console.log('🔒 SECURITY RULE: Only admin panel can terminate sessions');
+    console.log('📋 Call Stack:', new Error().stack);
+    
+    // Return without clearing any user data or localStorage
+    // Sessions and user data persist until admin intervention
   };
 
   return (

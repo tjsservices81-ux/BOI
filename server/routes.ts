@@ -41,28 +41,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Add session tracking middleware
   app.use(sessionTrackingMiddleware);
 
-  // Authentication middleware - only destroys session for admin blocks/panic mode
+  // Authentication middleware - NEVER destroys sessions automatically
   const requireAuth = (req: any, res: any, next: any) => {
     console.log('Auth check - Session ID:', req.sessionID);
     console.log('Auth check - User ID:', req.session?.userId);
     console.log('Auth check - Full session:', req.session);
     
     if (req.session && req.session.userId) {
-      // Only destroy session for admin-initiated blocks
+      // SECURITY VIOLATION LOG: Check for admin blocks but DO NOT destroy session
       if (req.session.deviceSessionId && isDeviceBlocked(req.session.deviceSessionId)) {
-        console.log(`🚫 BLOCKED DEVICE ACCESS ATTEMPT: Session ${req.session.deviceSessionId}`);
-        req.session.destroy();
+        console.log(`🚫 ADMIN BLOCKED DEVICE - DENYING ACCESS: Session ${req.session.deviceSessionId}`);
+        console.log(`🔒 SECURITY RULE: Session preserved - only admin can delete accounts`);
         return res.status(403).json({ message: "Device access has been blocked by administrator" });
       }
       
-      // Only destroy session for admin-initiated panic mode
+      // SECURITY VIOLATION LOG: Check for panic mode but DO NOT destroy session
       if (req.session.deviceSessionId && isDeviceInPanicMode(req.session.deviceSessionId)) {
-        console.log(`🚨 PANIC MODE ACCESS ATTEMPT: Session ${req.session.deviceSessionId}`);
-        req.session.destroy();
+        console.log(`🚨 PANIC MODE ACTIVE - DENYING ACCESS: Session ${req.session.deviceSessionId}`);
+        console.log(`🔒 SECURITY RULE: Session preserved - only admin can delete accounts`);
         return res.status(403).json({ message: "System temporarily unavailable" });
       }
       
-      // Refresh session on each request to extend 24-hour window
+      // Refresh session on each request to maintain indefinite duration
       req.session.touch();
       return next();
     }
@@ -266,28 +266,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Logout
+  // DISABLED LOGOUT - Only admin can terminate sessions
   app.post("/api/auth/logout", (req, res) => {
     const userId = (req as any).session?.userId;
     const deviceSessionId = (req as any).session?.deviceSessionId;
     
-    // Remove session from tracking
-    if (req.sessionID) {
-      removeUserSession(req.sessionID);
-    }
+    console.log(`🚫 SECURITY VIOLATION: Logout attempt blocked for User ${userId}`);
+    console.log(`🔒 SECURITY RULE: Only admin panel can terminate sessions or delete accounts`);
+    console.log(`📋 Call Stack:`, new Error().stack);
     
-    // Release device lock when user logs out
-    if (userId) {
-      removeUserDeviceSession(userId);
-      console.log(`🔓 USER LOGOUT: User ${userId} logged out and device lock released`);
-    }
-    
-    (req as any).session.destroy((err: any) => {
-      if (err) {
-        return res.status(500).json({ message: "Could not log out" });
-      }
-      res.json({ message: "Logged out successfully" });
-    });
+    // Return success but DO NOT destroy session or clear any data
+    res.json({ message: "Session maintained - only admin can terminate accounts" });
   });
 
   // Get user accounts

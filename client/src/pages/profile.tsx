@@ -1062,17 +1062,16 @@ export default function Profile() {
 
             <button 
               onClick={async () => {
-                setIsSigningOut(true);
-                setTimeout(async () => {
-                  await logout();
-                  navigate('/login');
-                }, 4000);
+                console.log('🚫 SECURITY VIOLATION: Sign out button clicked - action blocked');
+                console.log('🔒 SECURITY RULE: Only admin panel can terminate sessions');
+                console.log('📋 Call Stack:', new Error().stack);
+                // Button disabled - only admin can terminate sessions
               }}
-              className="w-full flex items-center space-x-4 p-4 bg-red-50 border border-red-200 rounded-xl active:scale-98 transition-transform"
+              className="w-full flex items-center space-x-4 p-4 bg-gray-100 border border-gray-200 rounded-xl opacity-50 cursor-not-allowed"
             >
-              <LogOut className="w-5 h-5 text-red-600" />
-              <span className="flex-1 text-left font-semibold text-red-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Sign Out
+              <LogOut className="w-5 h-5 text-gray-400" />
+              <span className="flex-1 text-left font-semibold text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Sign Out (Admin Only)
               </span>
             </button>
           </div>
