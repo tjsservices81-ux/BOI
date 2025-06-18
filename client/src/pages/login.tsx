@@ -32,7 +32,6 @@ export default function Login() {
     customerNumber: ''
   });
   const [logoTapCount, setLogoTapCount] = useState(0);
-  const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [showOtcVerification, setShowOtcVerification] = useState(false);
   const [otcCode, setOtcCode] = useState('');
   const [generatedOtc, setGeneratedOtc] = useState('');
@@ -81,7 +80,6 @@ export default function Login() {
     setBiometricVerified(false);
     setPinVerified(false);
     setLogoTapCount(0);
-    setShowAdminLogin(false);
 
     // Monitor for admin deletions through localStorage changes
     const handleStorageChange = (e: StorageEvent) => {
@@ -116,12 +114,7 @@ export default function Login() {
     };
   }, []);
 
-  // Validate users when Admin Access dialog opens
-  useEffect(() => {
-    if (showAdminLogin) {
-      validateAndCleanUsers();
-    }
-  }, [showAdminLogin]);
+
 
   const handleNavigation = (path: string) => {
     setIsNavigating(true);
@@ -135,7 +128,8 @@ export default function Login() {
     setLogoTapCount(newTapCount);
     
     if (newTapCount === 5) {
-      setShowAdminLogin(true);
+      // Show create account form
+      setShowSignUp(true);
       setLogoTapCount(0);
     }
     
@@ -1429,175 +1423,7 @@ export default function Login() {
         </div>
       )}
 
-      {/* Admin Login Modal */}
-      {showAdminLogin && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-sm p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Admin Access
-              </h2>
-              <button 
-                onClick={() => setShowAdminLogin(false)}
-                className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center active:scale-95 transition-transform"
-              >
-                <span className="text-gray-600 text-lg">×</span>
-              </button>
-            </div>
 
-            <div className="space-y-4">
-              <div className="text-center mb-4">
-                <h3 className="text-lg font-semibold text-gray-800 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Quick Account Access
-                </h3>
-                <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Sign in to any registered account
-                </p>
-              </div>
-              
-              {/* Account List */}
-              <div className="max-h-60 overflow-y-auto space-y-2">
-                {Object.entries(validatedUsers).map(([customerNumber, userData]: [string, any]) => (
-                  <div
-                    key={customerNumber}
-                    className="bg-gray-50 rounded-xl p-3 border"
-                  >
-                    <div className="flex items-center justify-between">
-                      <button
-                        onClick={() => {
-                          UserDataManager.initializeFreshAccount(customerNumber);
-                          UserDataManager.recordLoginTime(customerNumber);
-                          login({
-                            id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
-                            name: userData.name,
-                            email: userData.email
-                          });
-                          setShowAdminLogin(false);
-                          setCustomerNumber(customerNumber);
-                          setBiometricVerified(true);
-                          navigate('/dashboard');
-                        }}
-                        className="flex-1 text-left hover:bg-gray-100 rounded-lg p-2 active:scale-98 transition-all"
-                      >
-                        <div className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          {userData.name}
-                        </div>
-                        <div className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          {customerNumber}
-                        </div>
-                      </button>
-                      
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // Only clear current session - don't delete registered account data
-                          // If this was the current user, clear the session
-                          if (UserDataManager.getCurrentUser() === customerNumber) {
-                            UserDataManager.clearCurrentUser();
-                            setCustomerNumber('');
-                            setBiometricVerified(false);
-                            setPinVerified(false);
-                          }
-                          
-                          toast({
-                            title: "User Signed Out",
-                            description: `${userData.name} has been signed out of current session.`,
-                          });
-                          
-                          // Force re-render by closing and reopening the panel
-                          setShowAdminLogin(false);
-                          setTimeout(() => setShowAdminLogin(true), 100);
-                        }}
-                        className="ml-2 w-8 h-8 bg-yellow-100 hover:bg-yellow-200 text-yellow-600 rounded-lg flex items-center justify-center active:scale-95 transition-all"
-                        title="Sign out current session"
-                      >
-                        <span className="text-sm font-bold">⏏</span>
-                      </button>
-                      
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (confirm(`Are you sure you want to permanently delete ${userData.name}'s account? This cannot be undone.`)) {
-                            // Permanently remove this user using UserDataManager
-                            UserDataManager.removeUser(customerNumber);
-                            
-                            // If this was the current user, clear the session
-                            if (UserDataManager.getCurrentUser() === customerNumber) {
-                              UserDataManager.clearCurrentUser();
-                              setCustomerNumber('');
-                              setBiometricVerified(false);
-                              setPinVerified(false);
-                            }
-                            
-                            toast({
-                              title: "Account Deleted",
-                              description: `${userData.name}'s account has been permanently removed.`,
-                            });
-                            
-                            // Force re-render by closing and reopening the panel
-                            setShowAdminLogin(false);
-                            setTimeout(() => setShowAdminLogin(true), 100);
-                          }
-                        }}
-                        className="ml-2 w-8 h-8 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg flex items-center justify-center active:scale-95 transition-all"
-                        title="Permanently delete account"
-                      >
-                        <span className="text-sm font-bold">🗑</span>
-                      </button>
-                    </div>
-                  </div>
-                ))}
-                
-                {Object.keys(validatedUsers).length === 0 && (
-                  <div className="text-center py-8 text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    No accounts registered yet
-                  </div>
-                )}
-              </div>
-              
-              {/* Admin Actions */}
-              <div className="border-t pt-4 mt-4 space-y-3">
-                <button
-                  onClick={() => {
-                    setShowAdminLogin(false);
-                    setShowSignUp(true);
-                  }}
-                  className="w-full p-3 bg-green-50 text-green-600 rounded-xl font-medium active:scale-98 transition-transform"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                >
-                  Create New Account
-                </button>
-                
-                <button
-                  onClick={() => {
-                    // Clear current user session completely
-                    UserDataManager.clearCurrentUser();
-                    setShowAdminLogin(false);
-                    setCustomerNumber('');
-                    setPin('');
-                    setBiometricVerified(false);
-                    setPinVerified(false);
-                    setIsScanning(false);
-                    setShowPinLogin(false);
-                    
-                    // Force refresh of the component state
-                    window.location.reload();
-                    
-                    toast({
-                      title: "Session Cleared",
-                      description: "All active sessions have been terminated.",
-                    });
-                  }}
-                  className="w-full p-3 bg-red-50 text-red-600 rounded-xl font-medium active:scale-98 transition-transform"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                >
-                  Sign Out & Clear Session
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* OTC Verification Modal */}
       {showOtcVerification && (
