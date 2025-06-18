@@ -199,19 +199,44 @@ export default function Profile() {
     }
   };
 
-  // Admin panel functions
+  // Admin panel functions - Load accounts when panel opens and on changes
   useEffect(() => {
-    try {
-      const storedAccounts = UserDataManager.getUserAccounts();
-      setAccounts(storedAccounts);
-      loadChatResponses();
-    } catch (error) {
-      console.error('Error initializing admin panel:', error);
-      // Set default empty accounts if there's an error
-      setAccounts([]);
-      setChatResponses([]);
+    if (showAdminPanel) {
+      try {
+        const storedAccounts = UserDataManager.getUserAccounts();
+        console.log('Loading accounts for admin panel:', storedAccounts);
+        setAccounts(storedAccounts);
+        loadChatResponses();
+      } catch (error) {
+        console.error('Error initializing admin panel:', error);
+        // Set default empty accounts if there's an error
+        setAccounts([]);
+        setChatResponses([]);
+      }
     }
-  }, []);
+  }, [showAdminPanel]);
+
+  // Force reload accounts when admin panel is opened
+  useEffect(() => {
+    const reloadAccounts = () => {
+      if (showAdminPanel) {
+        const freshAccounts = UserDataManager.getUserAccounts();
+        console.log('Reloading accounts from storage:', freshAccounts);
+        setAccounts(freshAccounts);
+      }
+    };
+
+    // Listen for balance and account updates
+    window.addEventListener('balanceUpdate', reloadAccounts);
+    window.addEventListener('accountsUpdate', reloadAccounts);
+    window.addEventListener('transactionUpdate', reloadAccounts);
+
+    return () => {
+      window.removeEventListener('balanceUpdate', reloadAccounts);
+      window.removeEventListener('accountsUpdate', reloadAccounts);
+      window.removeEventListener('transactionUpdate', reloadAccounts);
+    };
+  }, [showAdminPanel]);
 
   // Chat response management functions
   const getDefaultChatResponses = () => [
@@ -775,18 +800,47 @@ export default function Profile() {
         : account
     );
     
-    // Update UserDataManager
+    // Update UserDataManager and clear cache for instant propagation
     UserDataManager.setUserData('bankAccounts', updatedAccounts);
+    UserDataManager.clearCache('bankAccounts');
+    UserDataManager.clearCache(); // Clear all caches
     setAccounts(updatedAccounts);
     
     // Close the editing modal
     setEditingAccount(null);
     setNewBalance('');
     
-    // Notify other components about the balance change
+    // Dispatch multiple comprehensive events for instant app-wide updates
     window.dispatchEvent(new CustomEvent('balanceUpdate', {
-      detail: { accountId: editingAccount.id, newBalance: numericBalance.toFixed(2) }
+      detail: { 
+        accountId: editingAccount.id, 
+        newBalance: numericBalance.toFixed(2),
+        accounts: updatedAccounts,
+        source: 'adminPanel'
+      }
     }));
+    
+    window.dispatchEvent(new CustomEvent('accountsUpdate', {
+      detail: { 
+        accounts: updatedAccounts,
+        source: 'adminBalanceUpdate'
+      }
+    }));
+    
+    // Additional event for dashboard refresh
+    window.dispatchEvent(new CustomEvent('forceRefresh', {
+      detail: { 
+        type: 'balanceChange',
+        accountId: editingAccount.id,
+        newBalance: numericBalance.toFixed(2)
+      }
+    }));
+    
+    // Force localStorage update for immediate persistence
+    const currentUser = UserDataManager.getCurrentUser();
+    if (currentUser) {
+      localStorage.setItem(`user_${currentUser}_bankAccounts`, JSON.stringify(updatedAccounts));
+    }
     
     alert(`${editingAccount.displayName} balance updated to €${numericBalance.toFixed(2)}`);
   };
