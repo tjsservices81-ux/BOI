@@ -33,10 +33,10 @@ app.use(session({
   cookie: {
     secure: false,
     httpOnly: true,
-    // No maxAge specified - sessions persist indefinitely
+    maxAge: 24 * 60 * 60 * 1000,
     sameSite: 'lax'
   },
-  rolling: false // Disable rolling sessions to prevent refresh-based logout
+  rolling: true
 }));
 
 // Security headers to prevent sharing and protect content

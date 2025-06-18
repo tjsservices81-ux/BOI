@@ -198,16 +198,6 @@ export default function Dashboard() {
     window.addEventListener('transactionUpdate', handleTransactionDeleted as EventListener);
     window.addEventListener('forceRefresh', handleForceRefresh as EventListener);
     
-    // Listen for account creation events to ensure immediate sync
-    const handleAccountCreated = (event: CustomEvent) => {
-      const { accounts: newAccounts } = event.detail || {};
-      if (newAccounts) {
-        setAccounts(newAccounts);
-        UserDataManager.clearCache('bankAccounts');
-      }
-    };
-    window.addEventListener('accountCreated', handleAccountCreated as EventListener);
-    
     return () => {
       window.removeEventListener('balanceUpdate', handleBalanceUpdate as EventListener);
       window.removeEventListener('adminProfileUpdate', handleProfileUpdate as EventListener);
@@ -217,7 +207,6 @@ export default function Dashboard() {
       window.removeEventListener('transactionDeleted', handleTransactionDeleted as EventListener);
       window.removeEventListener('transactionUpdate', handleTransactionDeleted as EventListener);
       window.removeEventListener('forceRefresh', handleForceRefresh as EventListener);
-      window.removeEventListener('accountCreated', handleAccountCreated as EventListener);
     };
   }, [accounts]);
 
@@ -308,7 +297,7 @@ export default function Dashboard() {
             {(accounts && Array.isArray(accounts)) && accounts.map((account, index) => (
               <button 
                 key={account.id}
-                className={`w-full flex items-center justify-between border-b border-gray-100 hover:bg-gray-50 touch-manipulation transform-gpu transition-all duration-150 ease-out relative stagger-item card-interactive ${isNavigating ? 'opacity-50 pointer-events-none' : ''}`}
+                className={`w-full flex items-center justify-between border-b border-gray-100 hover:bg-gray-50 touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-98 haptic-feedback relative stagger-item card-interactive ${isNavigating ? 'opacity-50 pointer-events-none' : ''}`}
                 onClick={() => navigateWithAnimation(`/transactions/${account.id}`, 'slide-right')}
                 style={{ animationDelay: `${index * 0.1}s` }}
               >

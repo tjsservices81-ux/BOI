@@ -31,10 +31,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     cookie: {
       secure: false, // Set to true in production with HTTPS
       httpOnly: true, // Secure cookie access
-      maxAge: undefined, // No expiration - session persists forever
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours for better security
       sameSite: 'lax' // Allow cookies to be sent with same-site requests
     },
-    rolling: false, // Don't refresh session to avoid reset
+    rolling: true, // Refresh session on each request
   }));
 
   // Add session tracking middleware
@@ -61,7 +61,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "System temporarily unavailable" });
       }
       
-      // Session persists indefinitely - no refresh needed
+      // Refresh session on each authenticated request
+      req.session.touch();
       return next();
     }
     return res.status(401).json({ message: "Not authenticated" });
@@ -245,28 +246,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: error.errors[0].message });
       }
       res.status(500).json({ message: "Internal server error" });
-    }
-  });
-
-  // Validate user exists in database before biometric login
-  app.post("/api/auth/validate-user", async (req, res) => {
-    try {
-      const { customerNumber } = req.body;
-      
-      if (!customerNumber) {
-        return res.status(400).json({ exists: false, message: "Customer number required" });
-      }
-      
-      const user = await storage.getUserByCustomerNumber(customerNumber);
-      
-      if (user) {
-        res.json({ exists: true, user: { id: user.id, name: user.name, email: user.email } });
-      } else {
-        res.json({ exists: false, message: "Account not found" });
-      }
-    } catch (error) {
-      console.error('User validation error:', error);
-      res.status(500).json({ exists: false, message: "Validation failed" });
     }
   });
 
@@ -625,28 +604,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid validation data format" });
       }
       res.status(500).json({ message: "Failed to validate OTC" });
-    }
-  });
-
-  // User validation endpoint for biometric login
-  app.post("/api/validate-user", async (req, res) => {
-    try {
-      const { customerNumber } = req.body;
-      
-      if (!customerNumber) {
-        return res.status(400).json({ exists: false, message: "Customer number required" });
-      }
-      
-      // Check if user exists in database
-      const user = await storage.getUserByCustomerNumber(customerNumber);
-      
-      res.json({ 
-        exists: !!user,
-        customerNumber: customerNumber
-      });
-    } catch (error) {
-      console.error('User validation error:', error);
-      res.status(500).json({ exists: false, message: "Validation failed" });
     }
   });
 

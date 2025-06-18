@@ -1,8 +1,5 @@
 // App lifecycle management for state preservation
-import { StateManager as InternalStateManager } from './stateManager';
-
-// Export StateManager for use in other components
-export const StateManager = InternalStateManager;
+import { StateManager } from './stateManager';
 
 export class AppLifecycle {
   private static isInitialized = false;
@@ -10,6 +7,7 @@ export class AppLifecycle {
   private static visibilityTimeout: NodeJS.Timeout | null = null;
   private static isAppTerminated = false;
   private static backgroundTime = 0;
+  private static SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
 
   static initialize() {
     if (this.isInitialized) return;
@@ -33,7 +31,32 @@ export class AppLifecycle {
   }
 
   static checkAppTermination() {
-    // DISABLED: No automatic logout - users stay logged in unless admin deletes or manual logout
+    const sessionData = localStorage.getItem('app_session_state');
+    const lastBackgroundTime = localStorage.getItem('app_background_time');
+    
+    if (!sessionData || !lastBackgroundTime) {
+      // No previous session or background time - fresh start
+      this.isAppTerminated = true;
+      this.clearAppState();
+      return;
+    }
+    
+    const backgroundDuration = Date.now() - parseInt(lastBackgroundTime);
+    
+    // If backgrounded for more than session timeout, treat as terminated
+    if (backgroundDuration > this.SESSION_TIMEOUT) {
+      this.isAppTerminated = true;
+      this.clearAppState();
+      return;
+    }
+    
+    // Check if page was unloaded/refreshed (indicates force close or refresh)
+    if (!sessionStorage.getItem('app_active_session')) {
+      this.isAppTerminated = true;
+      this.clearAppState();
+      return;
+    }
+    
     this.isAppTerminated = false;
   }
 
@@ -44,8 +67,15 @@ export class AppLifecycle {
       localStorage.setItem('app_background_time', this.backgroundTime.toString());
       this.saveCurrentState();
     } else {
-      // App returning to foreground - no timeout checks, restore state if needed
-      if (!this.isAppTerminated) {
+      // App returning to foreground
+      const backgroundDuration = Date.now() - this.backgroundTime;
+      
+      // If backgrounded for too long, treat as fresh start
+      if (backgroundDuration > this.SESSION_TIMEOUT) {
+        this.isAppTerminated = true;
+        this.clearAppState();
+        window.location.reload();
+      } else if (!this.isAppTerminated) {
         this.restoreStateIfNeeded();
       }
     }

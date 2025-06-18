@@ -604,7 +604,7 @@ router.get('/panel', adminAuth, async (req, res) => {
               console.error('Error deleting user:', result);
             }
           } catch (error) {
-            console.error('Error deleting user:', error instanceof Error ? error.message : String(error));
+            console.error('Error deleting user:', error);
           }
           
           closeModal();
@@ -671,9 +671,6 @@ router.post('/delete-user', adminAuth, async (req, res) => {
       console.log(`Database deletion: ${userDeleted ? 'SUCCESS' : 'FAILED'}`);
       console.log(`Invalidated ${invalidatedSessions.length} active sessions`);
       
-      // Signal client-side biometric session cleanup through browser storage
-      // This will trigger localStorage event on all open tabs/windows
-      
       res.json({ 
         success: true, 
         message: 'User account permanently deleted and logged out from all devices',
@@ -688,7 +685,7 @@ router.post('/delete-user', adminAuth, async (req, res) => {
     }
   } catch (error) {
     console.error('Error deleting user account:', error);
-    res.status(500).json({ error: 'Failed to delete user', details: error instanceof Error ? error.message : String(error) });
+    res.status(500).json({ error: 'Failed to delete user', details: error.message });
   }
 });
 

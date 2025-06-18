@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,6 +42,12 @@ export default function Login() {
   const [locationError, setLocationError] = useState<string | null>(null);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [nearbyATMs, setNearbyATMs] = useState<any[]>([]);
+  
+  // Input refs for proper focus management in PWA
+  const nameInputRef = useRef<HTMLInputElement>(null);
+  const emailInputRef = useRef<HTMLInputElement>(null);
+  const phoneInputRef = useRef<HTMLInputElement>(null);
+  
   const authHook = useAuth();
   const login = authHook?.login || (() => {});
   const isLoading = authHook?.isLoading || false;
@@ -78,6 +84,78 @@ export default function Login() {
     setValidatedUsers(validUsers);
   };
 
+  // PWA Focus Management - Ensures keyboard shows on input tap
+  const handleInputFocus = (inputRef: React.RefObject<HTMLInputElement>) => {
+    if (inputRef.current) {
+      // Force focus and trigger virtual keyboard
+      inputRef.current.focus();
+      
+      // PWA-specific keyboard triggering
+      setTimeout(() => {
+        if (inputRef.current) {
+          // Simulate user interaction to trigger virtual keyboard
+          const event = new Event('touchstart', { bubbles: true, cancelable: true });
+          inputRef.current.dispatchEvent(event);
+          inputRef.current.focus();
+        }
+      }, 50);
+    }
+  };
+
+  // Enhanced input touch handler for PWA
+  const handleInputTouch = (inputRef: React.RefObject<HTMLInputElement>) => {
+    return (e: React.TouchEvent) => {
+      e.stopPropagation();
+      if (inputRef.current) {
+        inputRef.current.focus();
+        // Force virtual keyboard to show
+        setTimeout(() => {
+          if (inputRef.current) {
+            inputRef.current.click();
+          }
+        }, 10);
+      }
+    };
+  };
+
+  // Reset form state when modal opens to ensure clean mounting
+  const resetSignUpForm = () => {
+    setNewUserData({
+      name: '',
+      email: '',
+      phone: '',
+      customerNumber: ''
+    });
+    // Clear any stale focus states
+    setTimeout(() => {
+      [nameInputRef, emailInputRef, phoneInputRef].forEach(ref => {
+        if (ref.current) {
+          ref.current.blur();
+        }
+      });
+    }, 50);
+  };
+
+  // PWA Modal Focus Management - Ensures proper input mounting
+  useEffect(() => {
+    if (showSignUp) {
+      // Force DOM reflow and ensure inputs are properly mounted
+      setTimeout(() => {
+        const inputs = [nameInputRef, emailInputRef, phoneInputRef];
+        inputs.forEach(ref => {
+          if (ref.current) {
+            // Remove any readonly or disabled states
+            ref.current.removeAttribute('readonly');
+            ref.current.removeAttribute('disabled');
+            // Ensure proper touch handling
+            ref.current.style.pointerEvents = 'auto';
+            ref.current.style.touchAction = 'manipulation';
+          }
+        });
+      }, 200);
+    }
+  }, [showSignUp]);
+
   // Assets are always loaded - no delays
   useEffect(() => {
     setAssetsLoaded(true);
@@ -100,39 +178,6 @@ export default function Login() {
     setPinVerified(false);
     setLogoTapCount(0);
     setShowAdminLogin(false);
-
-    // Monitor for admin deletions through localStorage changes
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'adminDeletedUser' && e.newValue) {
-        const deletedCustomer = e.newValue;
-        
-        // If current user was deleted, immediately clear everything
-        if (deletedCustomer === UserDataManager.getCurrentUser()) {
-          UserDataManager.clearCurrentUser();
-          setCustomerNumber('');
-          setBiometricVerified(false);
-          setPinVerified(false);
-          setIsScanning(false);
-          setShowPinLogin(false);
-          
-          toast({
-            title: "Account Removed",
-            description: "Your account has been removed by an administrator.",
-            variant: "destructive",
-          });
-        }
-        
-        // Clean up cached data and remove the signal
-        UserDataManager.adminDeleteUser(deletedCustomer);
-        localStorage.removeItem('adminDeletedUser');
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
   }, []);
 
   // Validate users when Admin Access dialog opens
@@ -267,23 +312,6 @@ export default function Login() {
         UserDataManager.registerUser(pendingAccountData);
         UserDataManager.initializeFreshAccount(pendingAccountData.customerNumber);
 
-        // Force complete synchronization - ensure all data is immediately available
-        const accounts = UserDataManager.getUserAccounts();
-        const transactions = UserDataManager.getUserData('bankTransactions', []);
-        
-        // Dispatch multiple events to ensure all components receive the data
-        window.dispatchEvent(new CustomEvent('accountCreated', {
-          detail: { 
-            customerNumber: pendingAccountData.customerNumber,
-            accounts: accounts,
-            transactions: transactions
-          }
-        }));
-        
-        window.dispatchEvent(new CustomEvent('forceRefresh', {
-          detail: { source: 'accountCreation' }
-        }));
-
         toast({
           title: "Account Created Successfully",
           description: `Your customer number is ${pendingAccountData.customerNumber}. Please remember this for future logins.`,
@@ -351,7 +379,7 @@ export default function Login() {
     }
   };
 
-  const handleBiometricHoldStart = async () => {
+  const handleBiometricHoldStart = () => {
     if (biometricVerified) return;
     
     // Check if any users exist first
@@ -363,62 +391,6 @@ export default function Login() {
         variant: "destructive",
       });
       return;
-    }
-
-    // Validate account exists on server before proceeding
-    let targetUser = null;
-    if (customerNumber && customerNumber.trim()) {
-      targetUser = customerNumber;
-    } else {
-      const lastActiveUser = UserDataManager.getLastActiveUser();
-      if (lastActiveUser) {
-        targetUser = lastActiveUser;
-      } else {
-        const userKeys = Object.keys(allUsers);
-        if (userKeys.length > 0) {
-          targetUser = userKeys[0];
-        }
-      }
-    }
-
-    if (targetUser) {
-      try {
-        const response = await fetch('/api/auth/validate-user', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ customerNumber: targetUser }),
-        });
-
-        if (!response.ok || !(await response.json()).exists) {
-          // Account deleted on server - remove from local storage
-          UserDataManager.removeUser(targetUser);
-          if (UserDataManager.getCurrentUser() === targetUser) {
-            UserDataManager.clearCurrentUser();
-          }
-          
-          toast({
-            title: "Account Not Found",
-            description: "This account has been removed. Please contact support if you believe this is an error.",
-            variant: "destructive",
-          });
-          
-          // Clear form and reset state
-          setCustomerNumber('');
-          setBiometricVerified(false);
-          setPinVerified(false);
-          return;
-        }
-      } catch (error) {
-        console.error('Account validation failed:', error);
-        toast({
-          title: "Connection Error",
-          description: "Unable to verify account. Please check your connection and try again.",
-          variant: "destructive",
-        });
-        return;
-      }
     }
 
     // If customer number is entered, validate it exists
@@ -1342,8 +1314,24 @@ export default function Login() {
 
       {/* Sign Up Modal */}
       {showSignUp && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md p-6 max-h-[80vh] overflow-y-auto">
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+          style={{ 
+            touchAction: 'manipulation',
+            WebkitTouchCallout: 'none',
+            WebkitUserSelect: 'none',
+            userSelect: 'none'
+          }}
+        >
+          <div 
+            className="bg-white rounded-2xl w-full max-w-md p-6 max-h-[80vh] overflow-y-auto"
+            style={{
+              touchAction: 'auto',
+              WebkitUserSelect: 'text',
+              userSelect: 'text',
+              pointerEvents: 'auto'
+            }}
+          >
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                 Create New Account
@@ -1368,12 +1356,23 @@ export default function Login() {
                   Full Name *
                 </label>
                 <input
+                  ref={nameInputRef}
                   type="text"
                   value={newUserData.name}
                   onChange={(e) => setNewUserData({...newUserData, name: e.target.value})}
-                  className="w-full p-3 border border-gray-300 rounded-xl"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  onFocus={() => handleInputFocus(nameInputRef)}
+                  onTouchStart={handleInputTouch(nameInputRef)}
+                  className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  style={{ 
+                    fontFamily: 'OpenSans, sans-serif',
+                    touchAction: 'manipulation',
+                    WebkitUserSelect: 'text',
+                    userSelect: 'text',
+                    pointerEvents: 'auto'
+                  }}
                   placeholder="Enter your full name"
+                  autoComplete="name"
+                  inputMode="text"
                   required
                 />
               </div>
@@ -1383,12 +1382,23 @@ export default function Login() {
                   Email Address *
                 </label>
                 <input
+                  ref={emailInputRef}
                   type="email"
                   value={newUserData.email}
                   onChange={(e) => setNewUserData({...newUserData, email: e.target.value})}
-                  className="w-full p-3 border border-gray-300 rounded-xl"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  onFocus={() => handleInputFocus(emailInputRef)}
+                  onTouchStart={handleInputTouch(emailInputRef)}
+                  className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  style={{ 
+                    fontFamily: 'OpenSans, sans-serif',
+                    touchAction: 'manipulation',
+                    WebkitUserSelect: 'text',
+                    userSelect: 'text',
+                    pointerEvents: 'auto'
+                  }}
                   placeholder="Enter your email address"
+                  autoComplete="email"
+                  inputMode="email"
                   required
                 />
               </div>
@@ -1398,12 +1408,23 @@ export default function Login() {
                   Phone Number *
                 </label>
                 <input
+                  ref={phoneInputRef}
                   type="tel"
                   value={newUserData.phone}
                   onChange={(e) => setNewUserData({...newUserData, phone: e.target.value})}
-                  className="w-full p-3 border border-gray-300 rounded-xl"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  onFocus={() => handleInputFocus(phoneInputRef)}
+                  onTouchStart={handleInputTouch(phoneInputRef)}
+                  className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  style={{ 
+                    fontFamily: 'OpenSans, sans-serif',
+                    touchAction: 'manipulation',
+                    WebkitUserSelect: 'text',
+                    userSelect: 'text',
+                    pointerEvents: 'auto'
+                  }}
                   placeholder="+353 XX XXX XXXX"
+                  autoComplete="tel"
+                  inputMode="tel"
                   required
                 />
               </div>
@@ -1411,18 +1432,6 @@ export default function Login() {
               <div className="bg-blue-50 p-4 rounded-xl">
                 <p className="text-sm text-blue-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                   <strong>Important:</strong> A unique customer number will be generated for you. Please save this number as you'll need it to log in to your account.
-                </p>
-              </div>
-
-              {/* Terms & Conditions Message */}
-              <div style={{ paddingTop: '10px' }}>
-                <p style={{ 
-                  fontSize: '13px', 
-                  color: '#666',
-                  fontFamily: 'OpenSans, sans-serif',
-                  lineHeight: '1.4'
-                }}>
-                  ⚠️ Terms & Conditions: If you want to change your phone or you lose your phone, you'll get 1 free replacement account. After that, you'll need to pay for a new one.
                 </p>
               </div>
 
@@ -1550,6 +1559,7 @@ export default function Login() {
                 <button
                   onClick={() => {
                     setShowAdminLogin(false);
+                    resetSignUpForm();
                     setShowSignUp(true);
                   }}
                   className="w-full p-3 bg-green-50 text-green-600 rounded-xl font-medium active:scale-98 transition-transform"

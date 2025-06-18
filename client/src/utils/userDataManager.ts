@@ -277,46 +277,22 @@ export class UserDataManager {
     // Set current user first
     this.setCurrentUser(customerNumber);
     
-    // Always initialize fresh account data for new accounts
-    const freshAccounts = [
-      { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "0.00", accountType: "current" },
-      { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "0.00", accountType: "credit" },
-      { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "0.00", accountType: "savings" },
-    ];
-    
-    // Force set fresh data immediately
-    this.setUserData('bankAccounts', freshAccounts);
-    this.setUserData('bankTransactions', []);
-    this.setUserData('savedPayees', []);
-    this.setUserData('recentPayees', []);
-    
-    // Clear cache to ensure fresh data loads
-    this.clearCache();
-    
-    // Force storage events to notify all components
-    window.dispatchEvent(new CustomEvent('accountsUpdate', {
-      detail: { 
-        accounts: freshAccounts,
-        source: 'accountCreation',
-        customerNumber: customerNumber
-      }
-    }));
-    
-    window.dispatchEvent(new CustomEvent('balanceUpdate', {
-      detail: { 
-        accounts: freshAccounts,
-        action: 'accountCreated'
-      }
-    }));
-    
-    window.dispatchEvent(new CustomEvent('adminProfileUpdate', {
-      detail: { 
-        accounts: freshAccounts,
-        action: 'accountCreated'
-      }
-    }));
-    
-    console.log(`Account fully initialized for ${customerNumber}:`, freshAccounts);
+    // Only initialize fresh data if user has no existing account data
+    const existingAccounts = this.getUserData('bankAccounts', null);
+    if (existingAccounts === null) {
+      // Initialize with fresh account data (zero balances)
+      const freshAccounts = [
+        { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "0.00", accountType: "current" },
+        { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "0.00", accountType: "credit" },
+        { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "0.00", accountType: "savings" },
+      ];
+      
+      // Set fresh data only for new accounts
+      this.setUserData('bankAccounts', freshAccounts);
+      this.setUserData('bankTransactions', []);
+      this.setUserData('savedPayees', []);
+      this.setUserData('recentPayees', []);
+    }
   }
 
   // Clear current user's data (transactions, payees) but preserve accounts

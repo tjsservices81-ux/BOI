@@ -215,16 +215,6 @@ class MemStorage implements IStorage {
       const payees = await this.getPayeesByUserId(user.id);
       payees.forEach(payee => this.payees.delete(payee.id));
       
-      // Delete all user's scheduled payments
-      const scheduledPayments = await this.getScheduledPaymentsByUserId(user.id);
-      scheduledPayments.forEach(payment => this.scheduledPayments.delete(payment.id));
-      
-      // Delete all user's statements
-      for (const account of userAccounts) {
-        const statements = await this.getStatementsByAccountId(account.id);
-        statements.forEach(statement => this.statements.delete(statement.id));
-      }
-      
       // Delete all user's chat messages and sessions
       const userChatMessages = Array.from(this.chatMessages.values()).filter(msg => msg.userId === user.id);
       userChatMessages.forEach(msg => this.chatMessages.delete(msg.id));
