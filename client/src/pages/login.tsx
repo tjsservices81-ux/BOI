@@ -84,39 +84,7 @@ export default function Login() {
     setValidatedUsers(validUsers);
   };
 
-  // PWA Focus Management - Ensures keyboard shows on input tap
-  const handleInputFocus = (inputRef: React.RefObject<HTMLInputElement>) => {
-    if (inputRef.current) {
-      // Force focus and trigger virtual keyboard
-      inputRef.current.focus();
-      
-      // PWA-specific keyboard triggering
-      setTimeout(() => {
-        if (inputRef.current) {
-          // Simulate user interaction to trigger virtual keyboard
-          const event = new Event('touchstart', { bubbles: true, cancelable: true });
-          inputRef.current.dispatchEvent(event);
-          inputRef.current.focus();
-        }
-      }, 50);
-    }
-  };
 
-  // Enhanced input touch handler for PWA
-  const handleInputTouch = (inputRef: React.RefObject<HTMLInputElement>) => {
-    return (e: React.TouchEvent) => {
-      e.stopPropagation();
-      if (inputRef.current) {
-        inputRef.current.focus();
-        // Force virtual keyboard to show
-        setTimeout(() => {
-          if (inputRef.current) {
-            inputRef.current.click();
-          }
-        }, 10);
-      }
-    };
-  };
 
   // Reset form state when modal opens to ensure clean mounting
   const resetSignUpForm = () => {
@@ -1316,21 +1284,16 @@ export default function Login() {
       {showSignUp && (
         <div 
           className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
-          style={{ 
-            touchAction: 'manipulation',
-            WebkitTouchCallout: 'none',
-            WebkitUserSelect: 'none',
-            userSelect: 'none'
+          onClick={(e) => {
+            // Only close modal if clicking the backdrop, not the modal content
+            if (e.target === e.currentTarget) {
+              setShowSignUp(false);
+            }
           }}
         >
           <div 
             className="bg-white rounded-2xl w-full max-w-md p-6 max-h-[80vh] overflow-y-auto"
-            style={{
-              touchAction: 'auto',
-              WebkitUserSelect: 'text',
-              userSelect: 'text',
-              pointerEvents: 'auto'
-            }}
+            onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -1360,19 +1323,10 @@ export default function Login() {
                   type="text"
                   value={newUserData.name}
                   onChange={(e) => setNewUserData({...newUserData, name: e.target.value})}
-                  onFocus={() => handleInputFocus(nameInputRef)}
-                  onTouchStart={handleInputTouch(nameInputRef)}
                   className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  style={{ 
-                    fontFamily: 'OpenSans, sans-serif',
-                    touchAction: 'manipulation',
-                    WebkitUserSelect: 'text',
-                    userSelect: 'text',
-                    pointerEvents: 'auto'
-                  }}
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
                   placeholder="Enter your full name"
                   autoComplete="name"
-                  inputMode="text"
                   required
                 />
               </div>
@@ -1386,19 +1340,10 @@ export default function Login() {
                   type="email"
                   value={newUserData.email}
                   onChange={(e) => setNewUserData({...newUserData, email: e.target.value})}
-                  onFocus={() => handleInputFocus(emailInputRef)}
-                  onTouchStart={handleInputTouch(emailInputRef)}
                   className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  style={{ 
-                    fontFamily: 'OpenSans, sans-serif',
-                    touchAction: 'manipulation',
-                    WebkitUserSelect: 'text',
-                    userSelect: 'text',
-                    pointerEvents: 'auto'
-                  }}
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
                   placeholder="Enter your email address"
                   autoComplete="email"
-                  inputMode="email"
                   required
                 />
               </div>
@@ -1412,19 +1357,10 @@ export default function Login() {
                   type="tel"
                   value={newUserData.phone}
                   onChange={(e) => setNewUserData({...newUserData, phone: e.target.value})}
-                  onFocus={() => handleInputFocus(phoneInputRef)}
-                  onTouchStart={handleInputTouch(phoneInputRef)}
                   className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  style={{ 
-                    fontFamily: 'OpenSans, sans-serif',
-                    touchAction: 'manipulation',
-                    WebkitUserSelect: 'text',
-                    userSelect: 'text',
-                    pointerEvents: 'auto'
-                  }}
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
                   placeholder="+353 XX XXX XXXX"
                   autoComplete="tel"
-                  inputMode="tel"
                   required
                 />
               </div>
