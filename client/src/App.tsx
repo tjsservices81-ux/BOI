@@ -63,18 +63,29 @@ function AppRoutes() {
     }
   };
 
-  // Initialize app state with persistent login (no timeouts)
+  // Initialize app state with force close detection
   useEffect(() => {
     const initializeApp = async () => {
-      // Check if sessionStorage was cleared (indicates fresh app start)
+      // Check if sessionStorage was cleared (indicates fresh app start or force close)
       const wasAppActive = sessionStorage.getItem('app_was_active');
+      const appCloseTime = localStorage.getItem('app_close_time');
       
-      if (!wasAppActive) {
-        // Fresh app start - show splash but preserve user sessions
+      // Detect force close by checking if background time exists without active session
+      const backgroundTime = localStorage.getItem('app_background_time');
+      const wasForceeClosed = backgroundTime && !wasAppActive;
+      
+      if (!wasAppActive || wasForceeClosed) {
+        // Fresh app start or force close - restart completely with splash
+        if (wasForceeClosed) {
+          console.log('App was force closed - restarting fresh');
+          // Clear all state except user login for force close restart
+          localStorage.removeItem('app_background_time');
+          localStorage.removeItem('app_close_time');
+        }
         setSplashShown(false);
         sessionStorage.setItem('app_was_active', 'true');
       } else {
-        // App was backgrounded - restore state without splash animation
+        // Normal app backgrounding - restore state without splash animation
         try {
           // Try to restore user from localStorage - no expiration checks
           const savedUser = localStorage.getItem('bankingUser');
@@ -86,7 +97,7 @@ function AppRoutes() {
               console.error('Failed to restore user:', error);
             }
           }
-          // Skip splash entirely for app restoration - no animations
+          // Skip splash entirely for normal app restoration - no animations
           setSplashShown(true);
           setSplashTransitioning(false);
           setIsRestoringState(false);
@@ -119,7 +130,8 @@ function AppRoutes() {
     // Handle app lifecycle events - preserve user sessions permanently
     const handleVisibilityChange = () => {
       if (document.hidden) {
-        // App going to background - save user to localStorage
+        // App going to background - save state and timestamp for force close detection
+        localStorage.setItem('app_background_time', Date.now().toString());
         if (user) {
           localStorage.setItem('bankingUser', JSON.stringify(user));
         }
@@ -127,7 +139,8 @@ function AppRoutes() {
     };
 
     const handleBeforeUnload = () => {
-      // Clear session marker to detect force close
+      // Mark app as closing - helps detect force close vs normal background
+      localStorage.setItem('app_close_time', Date.now().toString());
       sessionStorage.removeItem('app_was_active');
       // Save user to localStorage - no timeouts
       if (user) {
@@ -135,12 +148,23 @@ function AppRoutes() {
       }
     };
 
+    const handlePageHide = () => {
+      // Page being hidden - potential force close
+      localStorage.setItem('app_close_time', Date.now().toString());
+      sessionStorage.removeItem('app_was_active');
+      if (user) {
+        localStorage.setItem('bankingUser', JSON.stringify(user));
+      }
+    };
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('pagehide', handlePageHide);
     
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('pagehide', handlePageHide);
     };
   }, [user, location]);
 
