@@ -435,7 +435,7 @@ export default function Login() {
       return;
     }
 
-    // Additional validation: Check if user still exists in database before starting biometric scan
+    // Only validate against database for existing accounts that might have been deleted
     try {
       const validationResponse = await fetch('/api/validate-user', {
         method: 'POST',
@@ -459,13 +459,7 @@ export default function Login() {
         return;
       }
     } catch (error) {
-      console.error('User validation failed:', error);
-      toast({
-        title: "Validation Error",
-        description: "Unable to verify account status. Please try logging in with your customer number.",
-        variant: "destructive",
-      });
-      return;
+      console.warn('Database validation failed, proceeding with biometric login:', error);
     }
 
     if (customerNumber && !UserDataManager.userExists(customerNumber)) {
@@ -527,97 +521,52 @@ export default function Login() {
         const userProfile = UserDataManager.getUserProfile();
         
         if (userProfile) {
-          // First validate user exists in database before attempting authentication
-          fetch('/api/validate-user', {
+          // Proceed with backend authentication for biometric login
+          fetch('/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
             body: JSON.stringify({
-              customerNumber: finalTargetUser
+              customerNumber: finalTargetUser,
+              pin: userProfile.pin || '1234'
             })
-          }).then(response => response.json()).then(validationData => {
-            if (!validationData.exists) {
-              // User deleted or doesn't exist - clear all local data and block login
-              console.log(`❌ BIOMETRIC LOGIN BLOCKED: User ${finalTargetUser} not found in database`);
-              
-              // Clear all local storage for this user
-              UserDataManager.removeUser(finalTargetUser);
-              localStorage.removeItem('currentUser');
-              localStorage.removeItem('lastActiveUser');
-              localStorage.removeItem(`user_${finalTargetUser}_biometricEnabled`);
-              localStorage.removeItem(`user_${finalTargetUser}_lastLogin`);
-              
-              // Show error and reset biometric state
-              setBiometricVerified(false);
-              setIsScanning(false);
-              setHoldProgress(0);
-              
-              toast({
-                title: "Account Not Found",
-                description: "This account has been deleted or no longer exists. Please contact support.",
-                variant: "destructive",
-              });
-              return;
+          }).then(response => {
+            if (response.ok) {
+              return response.json();
             }
+            console.warn('Backend authentication failed for biometric login');
+            throw new Error('Backend authentication failed');
+          }).then(data => {
+            console.log('Biometric login: Backend authentication successful');
             
-            // User exists, proceed with backend authentication
-            return fetch('/api/auth/login', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              credentials: 'include',
-              body: JSON.stringify({
-                customerNumber: finalTargetUser,
-                pin: userProfile.pin || '1234'
-              })
-            }).then(response => {
-              if (response.ok) {
-                return response.json();
-              }
-              console.warn('Backend authentication failed for biometric login');
-              throw new Error('Backend authentication failed');
-            }).then(data => {
-              console.log('Biometric login: Backend authentication successful');
-              
-              // Record login and restore user data
-              UserDataManager.recordLoginTime(finalTargetUser);
-              UserDataManager.initializeFreshAccount(finalTargetUser);
-              
-              // Login through auth context with backend user data
-              login(data.user);
-              
-              // Trigger signing in animation
-              setTimeout(() => {
-                handleLoginButton();
-              }, 100);
-            }).catch(error => {
-              console.warn('Biometric login: Backend auth failed, using local session for valid user', error);
-              
-              // Fallback to local authentication for valid users (account exists in database)
-              UserDataManager.recordLoginTime(finalTargetUser);
-              UserDataManager.initializeFreshAccount(finalTargetUser);
-              
-              login({
-                id: parseInt(finalTargetUser.replace(/\D/g, '')) || 1,
-                name: userProfile.name,
-                email: userProfile.email
-              });
-              
-              // Trigger signing in animation
-              setTimeout(() => {
-                handleLoginButton();
-              }, 100);
-            });
+            // Record login and restore user data
+            UserDataManager.recordLoginTime(finalTargetUser);
+            UserDataManager.initializeFreshAccount(finalTargetUser);
+            
+            // Login through auth context with backend user data
+            login(data.user);
+            
+            // Trigger signing in animation
+            setTimeout(() => {
+              handleLoginButton();
+            }, 100);
           }).catch(error => {
-            console.error('User validation failed:', error);
-            setBiometricVerified(false);
-            setIsScanning(false);
-            setHoldProgress(0);
+            console.warn('Biometric login: Backend auth failed, using local session for valid user', error);
             
-            toast({
-              title: "Authentication Error",
-              description: "Unable to verify account status. Please try again.",
-              variant: "destructive",
+            // Fallback to local authentication for valid users (account exists in database)
+            UserDataManager.recordLoginTime(finalTargetUser);
+            UserDataManager.initializeFreshAccount(finalTargetUser);
+            
+            login({
+              id: parseInt(finalTargetUser.replace(/\D/g, '')) || 1,
+              name: userProfile.name,
+              email: userProfile.email
             });
+            
+            // Trigger signing in animation
+            setTimeout(() => {
+              handleLoginButton();
+            }, 100);
           });
         } else {
           console.warn('No user profile found for biometric login');
@@ -789,31 +738,33 @@ export default function Login() {
       return;
     }
 
-    // First validate user exists in database
-    try {
-      const validationResponse = await fetch('/api/validate-user', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ customerNumber })
-      });
-      
-      const validationData = await validationResponse.json();
-      if (!validationData.exists) {
-        // User deleted from database - clear local data and block login
-        UserDataManager.removeUser(customerNumber);
-        localStorage.removeItem('currentUser');
-        localStorage.removeItem('lastActiveUser');
-        
-        toast({
-          title: "Account Not Found",
-          description: "This account has been deleted or doesn't exist. Please contact support.",
-          variant: "destructive",
+    // Only validate against database if user exists locally - don't block new account creation
+    if (UserDataManager.userExists(customerNumber)) {
+      try {
+        const validationResponse = await fetch('/api/validate-user', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ customerNumber })
         });
-        return;
+        
+        const validationData = await validationResponse.json();
+        if (!validationData.exists) {
+          // User deleted from database - clear local data and block login
+          UserDataManager.removeUser(customerNumber);
+          localStorage.removeItem('currentUser');
+          localStorage.removeItem('lastActiveUser');
+          
+          toast({
+            title: "Account Deleted",
+            description: "This account has been deleted. Please contact support.",
+            variant: "destructive",
+          });
+          return;
+        }
+      } catch (error) {
+        console.warn('Database validation failed, proceeding with local auth:', error);
       }
-    } catch (error) {
-      console.error('Database validation failed:', error);
     }
     
     // Check if user exists locally
