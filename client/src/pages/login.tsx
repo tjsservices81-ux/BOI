@@ -338,8 +338,12 @@ export default function Login() {
     }
   };
 
-  const handleBiometricHoldStart = async () => {
-    if (biometricVerified) return;
+  const handleBiometricHoldStart = async (e: any) => {
+    // Prevent any accidental triggers
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (biometricVerified || isScanning) return;
     
     // Check if any users exist first
     const allUsers = UserDataManager.getAllUsers();
@@ -418,12 +422,14 @@ export default function Login() {
       return;
     }
     
+    // Start hold timer - requires continuous hold
     setIsScanning(true);
     setHoldProgress(0);
     
+    // Slower progress - 80ms interval, 1.25% increment = 6.4 seconds total
     const timer = setInterval(() => {
       setHoldProgress(prev => {
-        const newProgress = prev + 2;
+        const newProgress = prev + 1.25;
         if (newProgress >= 100) {
           clearInterval(timer);
           setBiometricVerified(true);
@@ -466,19 +472,37 @@ export default function Login() {
         }
         return newProgress;
       });
-    }, 60);
+    }, 80);
     
     setHoldTimer(timer);
   };
 
-  const handleBiometricHoldEnd = () => {
+  const handleBiometricHoldEnd = (e?: any) => {
+    // Prevent event bubbling
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    // Always clear timer if it exists
     if (holdTimer) {
       clearInterval(holdTimer);
       setHoldTimer(null);
     }
-    if (!biometricVerified) {
+    
+    // Only reset scanning if not yet verified
+    if (!biometricVerified && isScanning) {
       setIsScanning(false);
       setHoldProgress(0);
+      
+      // Visual feedback for early release
+      if (holdProgress > 0 && holdProgress < 100) {
+        toast({
+          title: "Hold Required",
+          description: "Please hold the fingerprint button until scanning completes.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
