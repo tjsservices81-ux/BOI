@@ -110,42 +110,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Frontend login endpoint - consolidating authentication
+  // Frontend login endpoint - simple authentication with permanent sessions
   app.post("/api/login", async (req, res) => {
     try {
-      const { customerNumber, pin } = loginSchema.parse(req.body);
+      const { customerNumber, pin } = req.body;
+      
+      // Validate input
+      if (!customerNumber || !pin) {
+        return res.status(400).json({ message: "Customer number and PIN required" });
+      }
+
+      // Debug: Check if user exists
+      console.log(`Login attempt: ${customerNumber} / ${pin}`);
+      
+      // Find user by credentials
       const user = await storage.getUserByCredentials(customerNumber, pin);
+      console.log(`User found:`, user ? `${user.id} - ${user.name}` : 'null');
       
       if (!user) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
-      // Store user session data permanently and force save
+      // Create permanent session data
       (req as any).session.userId = user.id;
       (req as any).session.user = { id: user.id, name: user.name, email: user.email };
       (req as any).session.customerNumber = user.customerNumber;
-
-      // Force save session to store
-      await new Promise((resolve, reject) => {
-        (req as any).session.save((err: any) => {
-          if (err) reject(err);
-          else resolve(true);
-        });
-      });
+      (req as any).session.authenticated = true;
 
       // Register session for tracking with indefinite duration
       addUserSession(req.sessionID, user.customerNumber, user.id);
 
-      console.log(`✅ LOGIN SUCCESS: User ${user.id} (${user.customerNumber}) session established indefinitely`);
-      console.log(`🔒 SESSION DATA SAVED: UserId=${user.id}, SessionId=${req.sessionID}`);
-      console.log(`🔒 SESSION PERMANENT: No automatic logout - only admin can delete accounts`);
+      console.log(`✅ PERMANENT SESSION: User ${user.id} logged in with indefinite session`);
+      console.log(`🔒 NO AUTO-LOGOUT: Session persists until admin deletion only`);
 
-      res.json({ user: { id: user.id, name: user.name, email: user.email } });
+      res.json({ 
+        success: true,
+        user: { id: user.id, name: user.name, email: user.email } 
+      });
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: error.errors[0].message });
-      }
-      res.status(500).json({ message: "Internal server error" });
+      console.error('Login error:', error);
+      res.status(500).json({ message: "Login failed" });
     }
   });
 

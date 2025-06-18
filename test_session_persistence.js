@@ -3,7 +3,7 @@ import axios from 'axios';
 
 const BASE_URL = 'http://localhost:5000';
 const TEST_USER = {
-  customerNumber: '123456789',
+  customerNumber: '12345678',
   pin: '1234'
 };
 
