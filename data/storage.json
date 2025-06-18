@@ -1,22 +1,6 @@
 {
   "users": [
     [
-      27,
-      {
-        "id": 27,
-        "customerNumber": "22933919",
-        "pin": "1234",
-        "name": "Test User",
-        "email": "test@example.com",
-        "phone": null,
-        "address": null,
-        "dateOfBirth": "1990-01-01",
-        "joinDate": "Member since 2018",
-        "dateCreated": "2025-06-18T04:55:34.470Z",
-        "isDisabled": false
-      }
-    ],
-    [
       28,
       {
         "id": 28,

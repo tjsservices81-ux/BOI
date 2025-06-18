@@ -341,14 +341,10 @@ export default function Login() {
     
     if (biometricVerified || isScanning) return;
     
-    // Check if any users exist first
+    // Check if any users exist first - if none exist, biometric won't work
     const allUsers = UserDataManager.getAllUsers();
     if (Object.keys(allUsers).length === 0) {
-      toast({
-        title: "No Account Found",
-        description: "Please create an account first by tapping 'Waiting for approval'.",
-        variant: "destructive",
-      });
+      // No error toast - just silently do nothing, user can still create account
       return;
     }
 
