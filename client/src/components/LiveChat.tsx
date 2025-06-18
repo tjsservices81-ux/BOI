@@ -149,9 +149,9 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
             // Check if session is still valid (within 24 hours)
             const lastActivity = parsedState.lastActivity || 0;
             const now = Date.now();
-            const sessionTimeout = 24 * 60 * 60 * 1000; // 24 hours
+            // DISABLED: No session timeout - users stay logged in indefinitely
             
-            if (now - lastActivity < sessionTimeout) {
+            if (true) { // Always restore chat state - no timeout
               setChatState({
                 ...parsedState,
                 messages: parsedState.messages.map((msg: any) => ({

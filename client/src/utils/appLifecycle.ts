@@ -7,7 +7,7 @@ export class AppLifecycle {
   private static visibilityTimeout: NodeJS.Timeout | null = null;
   private static isAppTerminated = false;
   private static backgroundTime = 0;
-  private static SESSION_TIMEOUT = 24 * 60 * 60 * 1000; // 24 hours - no premature logout
+  private static SESSION_TIMEOUT = Number.MAX_SAFE_INTEGER; // Infinite session - no automatic logout
 
   static initialize() {
     if (this.isInitialized) return;
@@ -76,14 +76,8 @@ export class AppLifecycle {
   }
 
   static handleBlur() {
-    // Delay saving state to avoid excessive saves
-    if (this.visibilityTimeout) {
-      clearTimeout(this.visibilityTimeout);
-    }
-    
-    this.visibilityTimeout = setTimeout(() => {
-      this.saveCurrentState();
-    }, 100);
+    // Save state immediately without timeout to preserve session
+    this.saveCurrentState();
   }
 
   static clearAppState() {

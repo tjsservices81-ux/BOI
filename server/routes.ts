@@ -31,7 +31,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     cookie: {
       secure: false, // Set to true in production with HTTPS
       httpOnly: true, // Secure cookie access
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours session duration
+      maxAge: undefined, // Infinite session duration - no automatic expiry
       sameSite: 'lax' // Allow cookies to be sent with same-site requests
     },
     rolling: true, // Extend session on each request to prevent auto-expiry
