@@ -234,7 +234,7 @@ export class UserDataManager {
     return this.getUserData('recentPayees', []);
   }
 
-  static addRecentPayee(payee: { name: string; accountInfo: string; transferType: string; timestamp: string }) {
+  static addRecentPayee(payee: { name: string; accountInfo: string; transferType: string; timestamp: string; reference?: string; bicCode?: string }) {
     const recentPayees = this.getRecentPayees();
     
     // Check if payee already exists (by name and account info)

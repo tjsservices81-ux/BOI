@@ -1,38 +1,5 @@
 {
-  "users": [
-    [
-      24,
-      {
-        "id": 24,
-        "customerNumber": "BOI295437042",
-        "pin": "000000",
-        "name": "Jacob Hanfeild",
-        "email": "jacbobh19@gmail.com",
-        "phone": "07684321915",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "2025-06-17T02:58:08.986Z",
-        "dateCreated": "2025-06-17T02:58:08.986Z",
-        "isDisabled": false
-      }
-    ],
-    [
-      25,
-      {
-        "id": 25,
-        "customerNumber": "BOI625580554",
-        "pin": "000000",
-        "name": "Shshjs",
-        "email": "ahahaj@gmail.com",
-        "phone": "48545454",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "2025-06-18T17:31:57.222Z",
-        "dateCreated": "2025-06-18T17:31:57.222Z",
-        "isDisabled": false
-      }
-    ]
-  ],
+  "users": [],
   "accounts": [],
   "transactions": [],
   "payees": [],

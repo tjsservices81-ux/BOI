@@ -180,6 +180,11 @@ export default function UkTransfer() {
             form.setValue('sortCode', sortCodeClean);
             form.setValue('accountNumber', accountNumber);
             
+            // Pre-fill reference if available
+            if (payee.reference) {
+              form.setValue('reference', payee.reference);
+            }
+            
             // Force update the form fields after a brief delay
             setTimeout(() => {
               // Update sort code input field display
@@ -198,6 +203,12 @@ export default function UkTransfer() {
               const nameInput = document.querySelector('input[placeholder="Recipient full name"]') as HTMLInputElement;
               if (nameInput) {
                 nameInput.value = payee.name;
+              }
+              
+              // Update reference input field
+              const referenceInput = document.querySelector('input[placeholder="Payment reference (optional)"]') as HTMLInputElement;
+              if (referenceInput && payee.reference) {
+                referenceInput.value = payee.reference;
               }
             }, 200);
           }
@@ -295,6 +306,7 @@ export default function UkTransfer() {
               name: formData.recipientName,
               accountInfo: `${formatSortCode(formData.sortCode)} ${formData.accountNumber}`,
               transferType: 'UK Transfer',
+              reference: formData.reference || '',
               timestamp: new Date().toISOString()
             };
             UserDataManager.addRecentPayee(payee);
