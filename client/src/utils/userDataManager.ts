@@ -6,6 +6,7 @@ export interface UserData {
   name: string;
   email: string;
   phone: string;
+  pin?: string;
   address?: string;
   dateOfBirth?: string;
   joinDate: string;
