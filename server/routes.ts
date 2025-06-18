@@ -31,10 +31,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     cookie: {
       secure: false, // Set to true in production with HTTPS
       httpOnly: true, // Secure cookie access
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours for better security
+      maxAge: undefined, // No expiration - session persists forever
       sameSite: 'lax' // Allow cookies to be sent with same-site requests
     },
-    rolling: true, // Refresh session on each request
+    rolling: false, // Don't refresh session to avoid reset
   }));
 
   // Add session tracking middleware

@@ -7,7 +7,6 @@ export class AppLifecycle {
   private static visibilityTimeout: NodeJS.Timeout | null = null;
   private static isAppTerminated = false;
   private static backgroundTime = 0;
-  private static SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
 
   static initialize() {
     if (this.isInitialized) return;

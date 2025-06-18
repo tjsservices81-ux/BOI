@@ -101,35 +101,25 @@ function AppRoutes() {
         localStorage.removeItem('app_background_time');
         sessionStorage.setItem('app_was_active', 'true');
       } else if (lastBackgroundTime) {
-        // App was backgrounded - check if too much time passed
-        const backgroundDuration = Date.now() - parseInt(lastBackgroundTime);
-        const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
-        
-        if (backgroundDuration > SESSION_TIMEOUT) {
-          // Too long in background - treat as fresh start
-          setSplashShown(false);
-          StateManager.clearAppState();
-          localStorage.removeItem('app_background_time');
-        } else {
-          // Quick return from background - restore state
-          try {
-            const savedState = StateManager.restoreAppState();
+        // App was backgrounded - always restore state (no timeout)
+        try {
+          const savedState = StateManager.restoreAppState();
+          
+          if (savedState && savedState.user && !user) {
+            // Restore user session silently
+            login(savedState.user);
             
-            if (savedState && savedState.user && !user) {
-              // Restore user session silently
-              login(savedState.user);
-              
-              // Restore route if different from current
-              if (savedState.currentRoute !== location && savedState.currentRoute !== '/login') {
-                navigate(savedState.currentRoute);
-              }
-              
-              // Skip splash if restoring state
-              setSplashShown(true);
-            } else {
-              // No valid saved state, show splash
-              setSplashShown(false);
+            // Restore route if different from current
+            if (savedState.currentRoute !== location && savedState.currentRoute !== '/login') {
+              navigate(savedState.currentRoute);
             }
+            
+            // Skip splash if restoring state
+            setSplashShown(true);
+          } else {
+            // No valid saved state, show splash
+            setSplashShown(false);
+          }
           } catch (error) {
             console.error('Failed to restore app state:', error);
             setSplashShown(false);

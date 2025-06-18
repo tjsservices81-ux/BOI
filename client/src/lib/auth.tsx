@@ -21,21 +21,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Initialize auth state on mount - check for valid session
+  // Initialize auth state on mount - persistent login
   useEffect(() => {
     let isMounted = true;
     
     const initializeAuth = async () => {
       try {
-        // Always check for cached user - no cold start logout behavior
+        // Always restore cached user - sessions persist indefinitely
         const cachedUser = localStorage.getItem('bankingUser');
         if (cachedUser && isMounted) {
           try {
             const parsedUser = JSON.parse(cachedUser);
             setUser(parsedUser);
           } catch (error) {
-            localStorage.removeItem('bankingUser');
-            setUser(null);
+            console.error('Failed to parse cached user:', error);
+            // Don't remove - preserve for recovery
           }
         }
         if (isMounted) {
@@ -44,7 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       } catch (error) {
         if (isMounted) {
-          setUser(null);
+          // Don't clear user - preserve login state
           setIsLoading(false);
           setIsInitialized(true);
         }
