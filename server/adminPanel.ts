@@ -771,9 +771,9 @@ router.post('/delete-user', adminAuth, async (req, res) => {
       console.error(`Failed to delete user from database: ${customerNumber}`);
       res.status(500).json({ error: 'Failed to delete user from database' });
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error deleting user account:', error);
-    res.status(500).json({ error: 'Failed to delete user', details: error.message });
+    res.status(500).json({ error: 'Failed to delete user', details: error?.message || 'Unknown error' });
   }
 });
 
