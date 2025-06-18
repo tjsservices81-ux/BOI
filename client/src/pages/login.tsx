@@ -19,6 +19,7 @@ export default function Login() {
   const [pinVerified, setPinVerified] = useState(false);
   const [holdTimer, setHoldTimer] = useState<NodeJS.Timeout | null>(null);
   const [holdProgress, setHoldProgress] = useState(0);
+
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [isLoginAnimating, setIsLoginAnimating] = useState(false);
   const [loginProgress, setLoginProgress] = useState(0);
@@ -334,22 +335,21 @@ export default function Login() {
     }
   };
 
-  const handleBiometricClick = async (e: any) => {
-    // Prevent any accidental triggers
+
+
+  const handleBiometricMouseDown = async (e: any) => {
     e.preventDefault();
     e.stopPropagation();
     
     if (biometricVerified || isScanning) return;
     
-    // Check if any users exist first - if none exist, biometric won't work
+    // Check if any users exist first
     const allUsers = UserDataManager.getAllUsers();
     if (Object.keys(allUsers).length === 0) {
-      // No error toast - just silently do nothing, user can still create account
       return;
     }
 
-    // Biometric authentication uses local credentials only - no server validation needed
-    // This ensures biometric login works even when app is reopened or connection is unstable
+    // Find target user
     let targetUser = null;
     if (customerNumber && customerNumber.trim()) {
       targetUser = customerNumber;
@@ -365,7 +365,7 @@ export default function Login() {
       }
     }
 
-    // Verify the user exists locally (biometric credentials are stored locally)
+    // Verify user exists
     if (!targetUser || !UserDataManager.userExists(targetUser)) {
       toast({
         title: "Account Not Found",
@@ -375,7 +375,6 @@ export default function Login() {
       return;
     }
 
-    // If customer number is entered, validate it exists
     if (customerNumber && !UserDataManager.userExists(customerNumber)) {
       toast({
         title: "Account Not Found",
@@ -385,30 +384,40 @@ export default function Login() {
       return;
     }
     
-    // Start biometric scanning with 6-second hold requirement
+    // Start hold timer and animation
     setIsScanning(true);
+    setHoldProgress(0);
     
-    // 6-second hold requirement for biometric authentication
-    setTimeout(() => {
+    const progressTimer = setInterval(() => {
+      setHoldProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(progressTimer);
+          return 100;
+        }
+        return prev + 2; // Increase by 2% every 50ms = 100% in 2.5 seconds
+      });
+    }, 50);
+
+    const timer = setTimeout(() => {
       setBiometricVerified(true);
       setIsScanning(false);
+      setHoldProgress(0);
+      clearInterval(progressTimer);
       
-      // Initialize fresh account data based on entered customer number or last active user if none entered
+      // Initialize account data
       let finalTargetUser = null;
       if (customerNumber && UserDataManager.userExists(customerNumber)) {
         finalTargetUser = customerNumber;
         UserDataManager.setCurrentUser(customerNumber);
         UserDataManager.initializeFreshAccount(customerNumber);
       } else if (!customerNumber) {
-        // If no customer number entered, use last active user first, then fall back to most recent
         const lastActiveUser = UserDataManager.getLastActiveUser();
         if (lastActiveUser && UserDataManager.userExists(lastActiveUser)) {
           finalTargetUser = lastActiveUser;
           UserDataManager.setCurrentUser(lastActiveUser);
           UserDataManager.initializeFreshAccount(lastActiveUser);
-          setCustomerNumber(lastActiveUser); // Update the display
+          setCustomerNumber(lastActiveUser);
         } else {
-          // Fall back to most recent account if no last active user
           const allUsers = UserDataManager.getAllUsers();
           const userNumbers = Object.keys(allUsers);
           if (userNumbers.length > 0) {
@@ -420,16 +429,27 @@ export default function Login() {
             finalTargetUser = mostRecentUser;
             UserDataManager.setCurrentUser(mostRecentUser);
             UserDataManager.initializeFreshAccount(mostRecentUser);
-            setCustomerNumber(mostRecentUser); // Update the display
+            setCustomerNumber(mostRecentUser);
           }
         }
       }
       
-      // Record login time for the authenticated user
       if (finalTargetUser) {
         UserDataManager.recordLoginTime(finalTargetUser);
       }
-    }, 6000);
+    }, 2500); // 2.5 seconds hold time
+
+    setHoldTimer(timer);
+  };
+
+  const handleBiometricMouseUp = () => {
+    // Cancel hold if released early
+    if (holdTimer) {
+      clearTimeout(holdTimer);
+      setHoldTimer(null);
+    }
+    setIsScanning(false);
+    setHoldProgress(0);
   };
 
 
@@ -996,7 +1016,10 @@ export default function Login() {
                           ? 'bg-gradient-to-br from-blue-50 to-blue-100' 
                           : 'bg-gradient-to-br from-gray-50 to-gray-100 hover:from-blue-50 hover:to-blue-100'
                     }`}
-                    onClick={handleBiometricClick}
+                    onMouseDown={handleBiometricMouseDown}
+                    onMouseUp={handleBiometricMouseUp}
+                    onTouchStart={handleBiometricMouseDown}
+                    onTouchEnd={handleBiometricMouseUp}
                     style={{
                       touchAction: 'manipulation',
                       userSelect: 'none',
