@@ -120,33 +120,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Customer number and PIN required" });
       }
 
-      // Lookup user with database credentials
-      const user = await storage.getUserByCredentials(customerNumber, pin);
+      // Direct database authentication with permanent session creation
+      const allUsers = await storage.getAllUsers();
+      const user = allUsers.find(u => u.customerNumber === customerNumber && u.pin === pin);
       
       if (!user) {
-        // Try direct database query as fallback
-        const allUsers = await storage.getAllUsers();
-        const dbUser = allUsers.find(u => u.customerNumber === customerNumber && u.pin === pin);
-        
-        if (!dbUser) {
-          console.log(`Authentication failed for ${customerNumber}`);
-          return res.status(401).json({ message: "Invalid credentials" });
-        }
-        
-        // Use database user for permanent session
-        (req as any).session.userId = dbUser.id;
-        (req as any).session.user = { id: dbUser.id, name: dbUser.name, email: dbUser.email };
-        (req as any).session.customerNumber = dbUser.customerNumber;
-        (req as any).session.authenticated = true;
-
-        addUserSession(req.sessionID, dbUser.customerNumber, dbUser.id);
-        
-        console.log(`✅ PERMANENT SESSION: ${dbUser.name} logged in with indefinite duration`);
-        
-        return res.json({ 
-          success: true,
-          user: { id: dbUser.id, name: dbUser.name, email: dbUser.email } 
-        });
+        console.log(`Authentication failed for ${customerNumber}`);
+        return res.status(401).json({ message: "Invalid credentials" });
       }
 
       // Create permanent session data for authenticated user

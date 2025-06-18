@@ -187,28 +187,10 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const startInactivityTimer = () => {
-    if (inactivityTimerRef.current) {
-      clearTimeout(inactivityTimerRef.current);
-    }
-
-    // Set 3-minute (180 seconds) timer for inactivity check-in
-    inactivityTimerRef.current = setTimeout(() => {
-      if (!chatState.hasCheckedIn && chatState.queueStatus === 'connected') {
-        const checkInMessage: ChatMessage = {
-          id: Date.now().toString(),
-          text: getCheckInMessage(chatState.agentName),
-          isUser: false,
-          timestamp: new Date(),
-          agentName: chatState.agentName
-        };
-
-        setChatState(prev => ({
-          ...prev,
-          messages: [...prev.messages, checkInMessage],
-          hasCheckedIn: true
-        }));
-      }
-    }, 180000); // 3 minutes
+    // DISABLED: No automatic session termination - users stay logged in indefinitely
+    console.log('🔒 SECURE: Inactivity timer function disabled - sessions persist forever');
+    // All automatic logout mechanisms have been eliminated
+    // Only admin panel can delete accounts and terminate sessions
   };
 
   const scrollToBottom = () => {
@@ -401,8 +383,8 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
                 setIsTyping(false);
                 setTypingText("");
                 
-                // Start inactivity timer when agent connects
-                startInactivityTimer();
+                // DISABLED: No inactivity timers - sessions persist indefinitely
+                console.log('🔒 SECURE: Inactivity timer disabled - sessions never expire automatically');
               }, finalDelay);
             }, 500); // typing indicator delay
           }, 500);
