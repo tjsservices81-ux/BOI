@@ -24,7 +24,7 @@ app.use(panicModeMiddleware);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Configure session middleware before admin routes
+// Configure session middleware before admin routes - NO EXPIRY
 app.use(session({
   secret: process.env.SESSION_SECRET || 'banking-app-secret-key-for-dev',
   store: new session.MemoryStore(),
@@ -33,10 +33,10 @@ app.use(session({
   cookie: {
     secure: false,
     httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000,
+    maxAge: null, // No expiry - users stay logged in permanently
     sameSite: 'lax'
   },
-  rolling: true
+  rolling: false // No rolling sessions to prevent timeout resets
 }));
 
 // Security headers to prevent sharing and protect content

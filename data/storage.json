@@ -1,54 +1,5 @@
 {
-  "users": [
-    [
-      27,
-      {
-        "id": 27,
-        "customerNumber": "BOI091936327",
-        "pin": "000000",
-        "name": "Ahuajs",
-        "email": "anajaj@gmail.com",
-        "phone": "484545",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "2025-06-18T18:10:12.895Z",
-        "dateCreated": "2025-06-18T18:10:12.895Z",
-        "isDisabled": false
-      }
-    ],
-    [
-      29,
-      {
-        "id": 29,
-        "customerNumber": "BOI050171232",
-        "pin": "000000",
-        "name": "John Updated",
-        "email": "john.updated@example.com",
-        "phone": null,
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "2025-06-18T19:54:50.214Z",
-        "dateCreated": "2025-06-18T19:54:50.214Z",
-        "isDisabled": false
-      }
-    ],
-    [
-      30,
-      {
-        "id": 30,
-        "customerNumber": "BOI228882243",
-        "pin": "000000",
-        "name": "Ahahaha",
-        "email": "ahahah@gmail.com",
-        "phone": "45545454",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "2025-06-18T20:49:36.977Z",
-        "dateCreated": "2025-06-18T20:49:36.977Z",
-        "isDisabled": false
-      }
-    ]
-  ],
+  "users": [],
   "accounts": [],
   "transactions": [],
   "payees": [],

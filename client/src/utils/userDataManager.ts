@@ -34,10 +34,12 @@ export class UserDataManager {
     return this.currentUser;
   }
 
-  // Clear current user session
+  // Clear current user session - DISABLED: Only admin deletion should log users out
   static clearCurrentUser() {
-    this.currentUser = null;
-    localStorage.removeItem('currentUser');
+    // This method is disabled to prevent automatic logouts
+    // Users can only be logged out via admin deletion
+    console.warn('clearCurrentUser() disabled - users can only be logged out via admin deletion');
+    return;
   }
 
   // Store last active user for biometric authentication

@@ -263,28 +263,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Logout
+  // Logout - DISABLED: Users can only be logged out via admin deletion
   app.post("/api/auth/logout", (req, res) => {
-    const userId = (req as any).session?.userId;
-    const deviceSessionId = (req as any).session?.deviceSessionId;
-    
-    // Remove session from tracking
-    if (req.sessionID) {
-      removeUserSession(req.sessionID);
-    }
-    
-    // Release device lock when user logs out
-    if (userId) {
-      removeUserDeviceSession(userId);
-      console.log(`🔓 USER LOGOUT: User ${userId} logged out and device lock released`);
-    }
-    
-    (req as any).session.destroy((err: any) => {
-      if (err) {
-        return res.status(500).json({ message: "Could not log out" });
-      }
-      res.json({ message: "Logged out successfully" });
-    });
+    // Logout functionality disabled - users stay logged in permanently
+    // Only admin deletion should remove user sessions
+    console.warn('Logout attempt blocked - users can only be logged out via admin deletion');
+    res.status(403).json({ message: "Logout disabled - users can only be logged out via admin deletion" });
   });
 
   // Get user accounts

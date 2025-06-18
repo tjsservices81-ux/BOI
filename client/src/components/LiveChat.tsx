@@ -148,12 +148,9 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
           const parsedState = JSON.parse(saved);
           // Restore any active chat state (waiting, connected) but not ended
           if (parsedState && parsedState.isActive && parsedState.queueStatus !== 'ended') {
-            // Check if session is still valid (within 24 hours)
-            const lastActivity = parsedState.lastActivity || 0;
-            const now = Date.now();
-            const sessionTimeout = 24 * 60 * 60 * 1000; // 24 hours
-            
-            if (now - lastActivity < sessionTimeout) {
+            // Always restore chat state - no session timeout
+            // Users stay logged in permanently unless admin deletes account
+            if (true) {
               setChatState({
                 ...parsedState,
                 messages: parsedState.messages.map((msg: any) => ({
