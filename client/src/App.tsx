@@ -95,50 +95,58 @@ function AppRoutes() {
       const lastBackgroundTime = localStorage.getItem('app_background_time');
       
       if (!wasAppActive) {
-        // Fresh app start - show splash and clear state
+        // Fresh app start - show splash but keep user logged in
         setSplashShown(false);
-        StateManager.clearAppState();
         localStorage.removeItem('app_background_time');
         sessionStorage.setItem('app_was_active', 'true');
-      } else if (lastBackgroundTime) {
-        // App was backgrounded - check if too much time passed
-        const backgroundDuration = Date.now() - parseInt(lastBackgroundTime);
-        const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
         
-        if (backgroundDuration > SESSION_TIMEOUT) {
-          // Too long in background - treat as fresh start
-          setSplashShown(false);
-          StateManager.clearAppState();
-          localStorage.removeItem('app_background_time');
-        } else {
-          // Quick return from background - restore state
-          try {
-            const savedState = StateManager.restoreAppState();
+        // Always try to restore user session
+        try {
+          const savedState = StateManager.restoreAppState();
+          if (savedState && savedState.user && !user) {
+            // Restore user session silently
+            login(savedState.user);
+          }
+        } catch (error) {
+          console.error('Failed to restore user session:', error);
+        }
+      } else if (lastBackgroundTime) {
+        // App was backgrounded - always restore state regardless of time
+        localStorage.removeItem('app_background_time');
+        
+        try {
+          const savedState = StateManager.restoreAppState();
+          
+          if (savedState && savedState.user && !user) {
+            // Restore user session silently
+            login(savedState.user);
             
-            if (savedState && savedState.user && !user) {
-              // Restore user session silently
-              login(savedState.user);
-              
-              // Restore route if different from current
-              if (savedState.currentRoute !== location && savedState.currentRoute !== '/login') {
-                navigate(savedState.currentRoute);
-              }
-              
-              // Skip splash if restoring state
-              setSplashShown(true);
-            } else {
-              // No valid saved state, show splash
-              setSplashShown(false);
+            // Restore route if different from current
+            if (savedState.currentRoute !== location && savedState.currentRoute !== '/login') {
+              navigate(savedState.currentRoute);
             }
-          } catch (error) {
-            console.error('Failed to restore app state:', error);
+            
+            // Skip splash if restoring state
+            setSplashShown(true);
+          } else {
+            // No valid saved state, show splash
             setSplashShown(false);
           }
+        } catch (error) {
+          console.error('Failed to restore app state:', error);
+          setSplashShown(false);
         }
-        localStorage.removeItem('app_background_time');
       } else {
-        // No background time recorded - show splash
+        // No background time recorded - show splash but try to restore user
         setSplashShown(false);
+        try {
+          const savedState = StateManager.restoreAppState();
+          if (savedState && savedState.user && !user) {
+            login(savedState.user);
+          }
+        } catch (error) {
+          console.error('Failed to restore user session:', error);
+        }
       }
       
       // Clear temporary state for cold launch behavior
