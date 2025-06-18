@@ -617,8 +617,8 @@ export default function Login() {
     }
     setPinVerified(true);
     
-    // Navigate to dashboard after verification
-    navigate('/dashboard');
+    // Navigate to root - let App.tsx routing handle dashboard display
+    navigate('/');
   };
 
   const requestLocation = () => {

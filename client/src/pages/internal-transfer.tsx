@@ -233,7 +233,7 @@ export default function InternalTransfer() {
               </p>
             </div>
             <button
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate('/')}
               className="w-full bg-[#126987] text-white py-4 rounded-2xl font-semibold active:scale-98 transition-transform"
               style={{ fontFamily: 'OpenSans, sans-serif' }}
             >
@@ -382,7 +382,7 @@ export default function InternalTransfer() {
 
             <div className="flex space-x-3">
               <button 
-                onClick={() => navigate('/dashboard')}
+                onClick={() => navigate('/')}
                 className="flex-1 bg-[#126987] text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform text-sm"
                 style={{ fontFamily: 'OpenSans, sans-serif' }}
               >
