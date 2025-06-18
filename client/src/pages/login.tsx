@@ -352,7 +352,7 @@ export default function Login() {
   };
 
   const handleBiometricHoldStart = async () => {
-    if (biometricVerified) return;
+    if (biometricVerified || isScanning) return;
     
     // Check if any users exist first
     const allUsers = UserDataManager.getAllUsers();
@@ -403,7 +403,7 @@ export default function Login() {
     
     const timer = setInterval(() => {
       setHoldProgress(prev => {
-        const newProgress = Math.min(prev + 1.25, 100);
+        const newProgress = Math.min(prev + 2.5, 100); // 4 second hold (100/2.5 = 40 intervals * 100ms = 4000ms)
         if (newProgress >= 100) {
           clearInterval(timer);
           setBiometricVerified(true);
@@ -446,7 +446,7 @@ export default function Login() {
         }
         return newProgress;
       });
-    }, 50);
+    }, 100); // Changed from 50ms to 100ms intervals for proper 4-second timing
     
     setHoldTimer(timer);
   };
@@ -456,6 +456,7 @@ export default function Login() {
       clearInterval(holdTimer);
       setHoldTimer(null);
     }
+    // Always reset scanning state and progress when user stops holding
     if (!biometricVerified) {
       setIsScanning(false);
       setHoldProgress(0);
