@@ -96,21 +96,29 @@ function AppRoutes() {
     updateThemeForRoute();
   }, [location]);
 
-  // Listen for splash completion
+  // Listen for splash completion - wait for auth to fully resolve
   useEffect(() => {
     const handleSplashComplete = () => {
       setSplashTransitioning(true);
       setTimeout(() => {
         setSplashShown(true);
         setSplashTransitioning(false);
-        setSplashCompleted(true);
+        // Only mark splash as completed after auth has stabilized
+        const checkAuthStable = () => {
+          if (!isLoading) {
+            setSplashCompleted(true);
+          } else {
+            setTimeout(checkAuthStable, 50);
+          }
+        };
+        checkAuthStable();
       }, 100);
       updateThemeColor('#126987');
     };
 
     window.addEventListener('splashComplete', handleSplashComplete);
     return () => window.removeEventListener('splashComplete', handleSplashComplete);
-  }, []);
+  }, [isLoading]);
 
   return (
     <SecurityWrapper>
@@ -121,9 +129,7 @@ function AppRoutes() {
             <Route path="/login" component={Login} />
             <Route path="/more" component={More} />
             <Route path="/">
-              {!splashCompleted ? (
-                <Splash />
-              ) : isLoading ? (
+              {!splashCompleted || isLoading ? (
                 <Splash />
               ) : user ? (
                 <Dashboard />
