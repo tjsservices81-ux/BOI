@@ -34,19 +34,14 @@ function ProtectedRoute({ children, fallback }: { children: React.ReactNode; fal
   const user = authHook?.user || null;
   const isLoading = authHook?.isLoading || false;
   
-  console.log('🔍 PROTECTED ROUTE CHECK:', { user: !!user, isLoading, timestamp: Date.now() });
-  
   if (isLoading) {
-    console.log('✅ ProtectedRoute: Loading - returning null');
     return null;
   }
   
   if (!user) {
-    console.log('🚨 ProtectedRoute: No user - redirecting to login');
     return fallback ? <>{fallback}</> : <Redirect to="/login" />;
   }
   
-  console.log('✅ ProtectedRoute: User authenticated - rendering children');
   return <>{children}</>;
 }
 
@@ -58,16 +53,7 @@ function AppRoutes() {
   const locationHook = useLocation();
   const [location, navigate] = locationHook || ['/', () => {}];
   
-  // Debug initial URL
-  useEffect(() => {
-    console.log('🔍 APP INITIAL URL:', {
-      location,
-      href: window.location.href,
-      pathname: window.location.pathname,
-      hash: window.location.hash,
-      timestamp: Date.now()
-    });
-  }, []);
+
   const [splashShown, setSplashShown] = useState(false);
   const [splashTransitioning, setSplashTransitioning] = useState(false);
   const [splashCompleted, setSplashCompleted] = useState(false);
@@ -135,39 +121,17 @@ function AppRoutes() {
             <Route path="/login" component={Login} />
             <Route path="/more" component={More} />
             <Route path="/">
-              {(() => {
-                console.log('🔍 ROOT ROUTE RENDER:', {
-                  splashCompleted,
-                  isLoading,
-                  user: !!user,
-                  userId: user?.id,
-                  timestamp: Date.now()
-                });
-                
-                if (!splashCompleted) {
-                  console.log('✅ Showing Splash (splash not completed)');
-                  return <Splash />;
-                }
-                if (isLoading) {
-                  console.log('✅ Showing Splash (auth loading)');
-                  return <Splash />;
-                }
-                if (user) {
-                  console.log('🚨 DASHBOARD RENDER FROM ROOT ROUTE!', { userId: user.id });
-                  return <Dashboard />;
-                }
-                console.log('✅ Showing Login (no user)');
-                return <Login />;
-              })()}
+              {!splashCompleted ? (
+                <Splash />
+              ) : isLoading ? (
+                <Splash />
+              ) : user ? (
+                <Dashboard />
+              ) : (
+                <Login />
+              )}
             </Route>
-            <Route path="/dashboard">
-              <ProtectedRoute>
-                {(() => {
-                  console.log('🚨 DASHBOARD RENDER FROM /dashboard ROUTE!');
-                  return <Dashboard />;
-                })()}
-              </ProtectedRoute>
-            </Route>
+
             <Route path="/payments">
               <ProtectedRoute>
                 <Payments />
