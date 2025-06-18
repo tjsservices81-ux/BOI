@@ -953,7 +953,7 @@ export default function Profile() {
         <div className="bg-[#126987] px-4 py-6 pt-12 relative z-10">
           <div className="flex items-center justify-between">
             <button 
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate('/')}
               className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center active:scale-95 transition-transform"
             >
               <ChevronLeft className="w-6 h-6 text-white" />

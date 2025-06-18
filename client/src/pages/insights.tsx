@@ -10,7 +10,7 @@ export default function Insights() {
       <div className="bg-[#126987] text-white px-4 py-6 status-bar-safe">
         <div className="flex items-center mb-2">
           <button 
-            onClick={() => setLocation('/dashboard')}
+            onClick={() => setLocation('/')}
             className="mr-3 p-1 hover:bg-white/20 rounded-full transition-colors haptic-feedback"
           >
             <ChevronLeft className="h-5 w-5 text-white" />
@@ -172,7 +172,7 @@ export default function Insights() {
         <div className="flex justify-around items-center py-3">
           <button 
             className="flex flex-col items-center text-gray-400 hover:text-[#126987] transition-colors haptic-feedback"
-            onClick={() => setLocation('/dashboard')}
+            onClick={() => setLocation('/')}
           >
             <img src="/icon-footer-accounts.svg" alt="Accounts" className="w-5 h-5 mb-1" />
             <span className="text-xs font-medium boi-regular-font">Accounts</span>

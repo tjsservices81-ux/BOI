@@ -108,7 +108,7 @@ export default function Transactions() {
       <div className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0">
         <div className="flex items-center mb-4">
           <button 
-            onClick={() => setLocation('/dashboard')}
+            onClick={() => setLocation('/')}
             className="mr-3 p-1 hover:bg-white/20 rounded-full transition-colors haptic-feedback"
           >
             <ChevronLeft className="h-5 w-5 text-white" />
