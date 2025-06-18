@@ -56,26 +56,8 @@ export default function Login() {
   // Validate users against server and clean up deleted ones
   const validateAndCleanUsers = async () => {
     const cachedUsers = UserDataManager.getAllUsers();
-    const validUsers: any = {};
-    
-    for (const [customerNumber, userData] of Object.entries(cachedUsers)) {
-      try {
-        // Check if user still exists on server
-        const response = await fetch(`/api/profile/${customerNumber}`);
-        if (response.ok) {
-          validUsers[customerNumber] = userData;
-        } else if (response.status === 404) {
-          // User was deleted by admin - remove from frontend cache
-          console.log(`Removing deleted user ${customerNumber} from cache`);
-          UserDataManager.adminDeleteUser(customerNumber);
-        }
-      } catch (error) {
-        // Keep user on network error to avoid false removal
-        validUsers[customerNumber] = userData;
-      }
-    }
-    
-    setValidatedUsers(validUsers);
+    // Always preserve all locally stored users - don't delete them based on server validation
+    setValidatedUsers(cachedUsers);
   };
 
   // Assets are always loaded - no delays
@@ -106,7 +88,7 @@ export default function Login() {
       if (e.key === 'adminDeletedUser' && e.newValue) {
         const deletedCustomer = e.newValue;
         
-        // If current user was deleted, immediately clear everything
+        // If current user was deleted, immediately clear only current session
         if (deletedCustomer === UserDataManager.getCurrentUser()) {
           UserDataManager.clearCurrentUser();
           setCustomerNumber('');
@@ -122,8 +104,7 @@ export default function Login() {
           });
         }
         
-        // Clean up cached data and remove the signal
-        UserDataManager.adminDeleteUser(deletedCustomer);
+        // Only remove the deletion signal - don't delete user data automatically
         localStorage.removeItem('adminDeletedUser');
       }
     };
