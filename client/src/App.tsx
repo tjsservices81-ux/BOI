@@ -267,7 +267,7 @@ function AppRoutes() {
       if (forceColdStart) {
         // This was a real app closure - force full reload for cold launch
         localStorage.removeItem('force_cold_start');
-        sessionStorage.clear();
+        // Don't clear sessionStorage - preserve user login state
         window.location.reload();
       } else {
         // This was just backgrounding/foregrounding - restore state

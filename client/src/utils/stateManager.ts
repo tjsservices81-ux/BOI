@@ -25,10 +25,8 @@ export class StateManager {
       const saved = localStorage.getItem(this.STATE_KEY);
       if (saved) {
         const state = JSON.parse(saved);
-        // Only restore if saved within last 24 hours
-        if (Date.now() - state.timestamp < 24 * 60 * 60 * 1000) {
-          return state;
-        }
+        // Always restore state regardless of time - users stay logged in permanently
+        return state;
       }
     } catch (error) {
       console.error('Failed to restore app state:', error);

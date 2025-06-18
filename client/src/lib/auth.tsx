@@ -27,34 +27,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     const initializeAuth = async () => {
       try {
-        // Check if this is a cold start (app was closed and reopened)
-        const wasColdStart = sessionStorage.getItem('app_cold_start') === 'true';
-        
-        if (wasColdStart) {
-          // Cold start - clear all auth state and require fresh login
-          localStorage.removeItem('bankingUser');
-          if (isMounted) {
+        // Always check for cached user - no cold start detection
+        // Users stay logged in permanently until admin deletion
+        const cachedUser = localStorage.getItem('bankingUser');
+        if (cachedUser && isMounted) {
+          try {
+            const parsedUser = JSON.parse(cachedUser);
+            setUser(parsedUser);
+          } catch (error) {
+            localStorage.removeItem('bankingUser');
             setUser(null);
-            setIsLoading(false);
-            setIsInitialized(true);
           }
-          sessionStorage.removeItem('app_cold_start');
-        } else {
-          // Normal navigation - check for cached user
-          const cachedUser = localStorage.getItem('bankingUser');
-          if (cachedUser && isMounted) {
-            try {
-              const parsedUser = JSON.parse(cachedUser);
-              setUser(parsedUser);
-            } catch (error) {
-              localStorage.removeItem('bankingUser');
-              setUser(null);
-            }
-          }
-          if (isMounted) {
-            setIsLoading(false);
-            setIsInitialized(true);
-          }
+        }
+        if (isMounted) {
+          setIsLoading(false);
+          setIsInitialized(true);
         }
       } catch (error) {
         if (isMounted) {

@@ -31,7 +31,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     cookie: {
       secure: false, // Set to true in production with HTTPS
       httpOnly: true, // Secure cookie access
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours for better security
+      maxAge: undefined, // No expiry - sessions persist permanently until admin deletion
       sameSite: 'lax' // Allow cookies to be sent with same-site requests
     },
     rolling: true, // Refresh session on each request
@@ -47,17 +47,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log('Auth check - Full session:', req.session);
     
     if (req.session && req.session.userId) {
-      // Check if device session is blocked
+      // Check if device session is blocked - return error without destroying session
       if (req.session.deviceSessionId && isDeviceBlocked(req.session.deviceSessionId)) {
         console.log(`🚫 BLOCKED DEVICE ACCESS ATTEMPT: Session ${req.session.deviceSessionId}`);
-        req.session.destroy();
         return res.status(403).json({ message: "Device access has been blocked by administrator" });
       }
       
-      // Check if device is in panic mode
+      // Check if device is in panic mode - return error without destroying session
       if (req.session.deviceSessionId && isDeviceInPanicMode(req.session.deviceSessionId)) {
         console.log(`🚨 PANIC MODE ACCESS ATTEMPT: Session ${req.session.deviceSessionId}`);
-        req.session.destroy();
         return res.status(403).json({ message: "System temporarily unavailable" });
       }
       
