@@ -21,30 +21,69 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Initialize auth state on mount - check for valid session
+  // Initialize auth state on mount - preserve session across refreshes
   useEffect(() => {
     let isMounted = true;
     
     const initializeAuth = async () => {
       try {
-        // Always check for cached user - no cold start logout behavior
+        // Check for cached user first - maintain session persistence
         const cachedUser = localStorage.getItem('bankingUser');
         if (cachedUser && isMounted) {
           try {
             const parsedUser = JSON.parse(cachedUser);
             setUser(parsedUser);
+            
+            // Verify session with server to ensure it's still valid
+            const response = await fetch('/api/auth/user', {
+              credentials: 'include'
+            });
+            
+            if (response.ok) {
+              const serverUser = await response.json();
+              // Update user data if server has newer info
+              if (serverUser) {
+                setUser(serverUser);
+                localStorage.setItem('bankingUser', JSON.stringify(serverUser));
+              }
+            } else {
+              // Server session invalid - only clear if 401 unauthorized
+              if (response.status === 401) {
+                localStorage.removeItem('bankingUser');
+                setUser(null);
+              }
+              // For other errors (500, network), keep cached user
+            }
           } catch (error) {
-            localStorage.removeItem('bankingUser');
-            setUser(null);
+            // Network/parsing error - keep cached user, don't logout
+            console.warn('Auth initialization error, maintaining cached session:', error);
+          }
+        } else {
+          // No cached user - check server session anyway
+          try {
+            const response = await fetch('/api/auth/user', {
+              credentials: 'include'
+            });
+            
+            if (response.ok) {
+              const serverUser = await response.json();
+              if (serverUser && isMounted) {
+                setUser(serverUser);
+                localStorage.setItem('bankingUser', JSON.stringify(serverUser));
+              }
+            }
+          } catch (error) {
+            // Network error during server check - no action needed
+            console.warn('Server auth check failed:', error);
           }
         }
+        
         if (isMounted) {
           setIsLoading(false);
           setIsInitialized(true);
         }
       } catch (error) {
         if (isMounted) {
-          setUser(null);
           setIsLoading(false);
           setIsInitialized(true);
         }

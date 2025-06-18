@@ -31,37 +31,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     cookie: {
       secure: false, // Set to true in production with HTTPS
       httpOnly: true, // Secure cookie access
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours for better security
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours session duration
       sameSite: 'lax' // Allow cookies to be sent with same-site requests
     },
-    rolling: true, // Refresh session on each request
+    rolling: true, // Extend session on each request to prevent auto-expiry
+    name: 'banking.session.id' // Custom session name for security
   }));
 
   // Add session tracking middleware
   app.use(sessionTrackingMiddleware);
 
-  // Authentication middleware
+  // Authentication middleware - only destroys session for admin blocks/panic mode
   const requireAuth = (req: any, res: any, next: any) => {
     console.log('Auth check - Session ID:', req.sessionID);
     console.log('Auth check - User ID:', req.session?.userId);
     console.log('Auth check - Full session:', req.session);
     
     if (req.session && req.session.userId) {
-      // Check if device session is blocked
+      // Only destroy session for admin-initiated blocks
       if (req.session.deviceSessionId && isDeviceBlocked(req.session.deviceSessionId)) {
         console.log(`🚫 BLOCKED DEVICE ACCESS ATTEMPT: Session ${req.session.deviceSessionId}`);
         req.session.destroy();
         return res.status(403).json({ message: "Device access has been blocked by administrator" });
       }
       
-      // Check if device is in panic mode
+      // Only destroy session for admin-initiated panic mode
       if (req.session.deviceSessionId && isDeviceInPanicMode(req.session.deviceSessionId)) {
         console.log(`🚨 PANIC MODE ACCESS ATTEMPT: Session ${req.session.deviceSessionId}`);
         req.session.destroy();
         return res.status(403).json({ message: "System temporarily unavailable" });
       }
       
-      // Session persists indefinitely - no refresh needed
+      // Refresh session on each request to extend 24-hour window
+      req.session.touch();
       return next();
     }
     return res.status(401).json({ message: "Not authenticated" });
