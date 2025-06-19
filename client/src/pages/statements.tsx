@@ -53,23 +53,37 @@ export default function Statements() {
     try {
       // Get transactions for the selected account
       const allTransactions = UserDataManager.getUserData('bankTransactions', []);
-      const accountTransactions = allTransactions
+      let accountTransactions = allTransactions
         .filter((tx: any) => tx.accountId === selectedAccount.id.toString())
         .sort((a: any, b: any) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
         .slice(-20); // Last 20 transactions
 
+      // If no transactions exist, create sample transactions for demonstration
+      if (accountTransactions.length === 0) {
+        const sampleTransactions = [
+          { id: '1', timestamp: Date.now() - (7 * 24 * 60 * 60 * 1000), description: 'Balance Forward', amount: 0, type: 'credit' },
+          { id: '2', timestamp: Date.now() - (6 * 24 * 60 * 60 * 1000), description: 'Direct Debit - ESB Networks', amount: -85.42, type: 'debit' },
+          { id: '3', timestamp: Date.now() - (5 * 24 * 60 * 60 * 1000), description: 'ATM Withdrawal - Grafton Street', amount: -60.00, type: 'debit' },
+          { id: '4', timestamp: Date.now() - (4 * 24 * 60 * 60 * 1000), description: 'Salary Credit', amount: 2450.00, type: 'credit' },
+          { id: '5', timestamp: Date.now() - (3 * 24 * 60 * 60 * 1000), description: 'Card Payment - Tesco Ireland', amount: -34.67, type: 'debit' },
+          { id: '6', timestamp: Date.now() - (2 * 24 * 60 * 60 * 1000), description: 'Online Transfer', amount: -200.00, type: 'debit' },
+          { id: '7', timestamp: Date.now() - (1 * 24 * 60 * 60 * 1000), description: 'Card Payment - Dunnes Stores', amount: -45.23, type: 'debit' }
+        ];
+        accountTransactions = sampleTransactions;
+      }
+
       // Calculate running balances
       let runningBalance = 185.83; // Starting balance forward
       const transactionsWithBalance: Transaction[] = accountTransactions.map((tx: any, index: number) => {
-        const amount = parseFloat(tx.amount);
-        const isCredit = tx.type === 'credit' || amount > 0;
-        runningBalance += isCredit ? Math.abs(amount) : -Math.abs(amount);
+        const amount = Math.abs(parseFloat(tx.amount));
+        const isCredit = tx.type === 'credit' || parseFloat(tx.amount) > 0;
+        runningBalance += isCredit ? amount : -amount;
         
         return {
           id: tx.id,
           date: new Date(tx.timestamp).toLocaleDateString('en-IE'),
           description: tx.description || tx.merchant || 'Bank Transfer',
-          amount: Math.abs(amount),
+          amount: amount,
           type: isCredit ? 'credit' : 'debit',
           balance: runningBalance
         };
@@ -87,139 +101,216 @@ export default function Statements() {
     const pdf = new jsPDF('p', 'mm', 'a4');
     const pageWidth = 210;
     const pageHeight = 297;
-    const margin = 20;
+    const margin = 15;
 
     // Bank of Ireland Blue
     const boiBlue: [number, number, number] = [18, 105, 135];
     
-    // Header Section
-    pdf.setFillColor(boiBlue[0], boiBlue[1], boiBlue[2]);
-    pdf.rect(0, 0, pageWidth, 35, 'F');
-    
-    // Bank Logo Area (white background for logo)
+    // Header Section - White background
     pdf.setFillColor(255, 255, 255);
-    pdf.rect(margin, 8, 60, 19, 'F');
+    pdf.rect(0, 0, pageWidth, 40, 'F');
     
-    // Bank of Ireland text (logo placeholder)
-    pdf.setTextColor(18, 105, 135);
-    pdf.setFontSize(16);
+    // Blue stripe at top
+    pdf.setFillColor(boiBlue[0], boiBlue[1], boiBlue[2]);
+    pdf.rect(0, 0, pageWidth, 6, 'F');
+    
+    // Bank of Ireland logo and text
+    pdf.setTextColor(boiBlue[0], boiBlue[1], boiBlue[2]);
+    pdf.setFontSize(20);
     pdf.setFont('helvetica', 'bold');
-    pdf.text('Bank of Ireland', margin + 2, 20);
+    pdf.text('Bank of Ireland', margin, 25);
+    
+    // Add small logo symbol
+    pdf.setFillColor(boiBlue[0], boiBlue[1], boiBlue[2]);
+    pdf.circle(margin + 85, 20, 3, 'F');
     
     // Statement title
-    pdf.setTextColor(255, 255, 255);
-    pdf.setFontSize(18);
+    pdf.setTextColor(boiBlue[0], boiBlue[1], boiBlue[2]);
+    pdf.setFontSize(16);
     pdf.setFont('helvetica', 'bold');
-    pdf.text('BANK STATEMENT', pageWidth - margin - 50, 25);
+    pdf.text('BANK STATEMENT', pageWidth - margin - 45, 25);
 
     // Customer Information Section
-    let yPos = 50;
+    let yPos = 55;
     pdf.setTextColor(0, 0, 0);
-    pdf.setFontSize(10);
+    pdf.setFontSize(9);
     pdf.setFont('helvetica', 'normal');
     
-    // Customer details
+    // Customer details (left side)
     const customerInfo = UserDataManager.getUserProfile();
-    pdf.text(`${customerInfo?.name || user?.name || 'Customer Name'}`, margin, yPos);
-    pdf.text(`${customerInfo?.address || '123 Main Street'}`, margin, yPos + 5);
-    pdf.text(`Dublin 2, Ireland`, margin, yPos + 10);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Customer:', margin, yPos);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(`${customerInfo?.name || user?.name || 'Customer Name'}`, margin + 20, yPos);
+    pdf.text(`${customerInfo?.address || '123 Main Street'}`, margin, yPos + 4);
+    pdf.text(`Dublin 2, D02 VY79`, margin, yPos + 8);
+    pdf.text(`Ireland`, margin, yPos + 12);
     
     // Account details (right side)
     pdf.setFont('helvetica', 'bold');
-    pdf.text('Account Details:', pageWidth - margin - 60, yPos);
+    pdf.text('Account Details:', pageWidth - margin - 50, yPos);
     pdf.setFont('helvetica', 'normal');
-    pdf.text(`Account: ${account.displayName}`, pageWidth - margin - 60, yPos + 5);
-    pdf.text(`Number: ${account.accountNumber}`, pageWidth - margin - 60, yPos + 10);
-    pdf.text(`IBAN: IE29 BOFI 9000 ${account.accountNumber}`, pageWidth - margin - 60, yPos + 15);
+    pdf.text(`${account.displayName}`, pageWidth - margin - 50, yPos + 4);
+    pdf.text(`Sort Code: 90-00-17`, pageWidth - margin - 50, yPos + 8);
+    pdf.text(`Account: ${account.accountNumber}`, pageWidth - margin - 50, yPos + 12);
+    pdf.text(`IBAN: IE29 BOFI 9000 17${account.accountNumber}`, pageWidth - margin - 50, yPos + 16);
     
     // Statement period
-    yPos += 30;
+    yPos += 25;
     const currentDate = new Date();
     const startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
     
     pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(9);
     pdf.text('Statement Period:', margin, yPos);
     pdf.setFont('helvetica', 'normal');
-    pdf.text(`${startDate.toLocaleDateString('en-IE')} to ${currentDate.toLocaleDateString('en-IE')}`, margin + 35, yPos);
-    
-    pdf.text(`Statement Date: ${currentDate.toLocaleDateString('en-IE')}`, pageWidth - margin - 50, yPos);
-
-    // Balance Summary
-    yPos += 15;
-    pdf.setFillColor(240, 240, 240);
-    pdf.rect(margin, yPos, pageWidth - 2 * margin, 25, 'F');
+    pdf.text(`${startDate.toLocaleDateString('en-IE')} to ${currentDate.toLocaleDateString('en-IE')}`, margin + 30, yPos);
     
     pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(11);
-    pdf.text('Balance Summary', margin + 5, yPos + 8);
-    
+    pdf.text('Statement Date:', pageWidth - margin - 45, yPos);
     pdf.setFont('helvetica', 'normal');
-    pdf.setFontSize(10);
-    pdf.text('Balance Forward:', margin + 5, yPos + 15);
-    pdf.text('€185.83', margin + 40, yPos + 15);
+    pdf.text(`${currentDate.toLocaleDateString('en-IE')}`, pageWidth - margin - 20, yPos);
+
+    // Balance Summary Box
+    yPos += 15;
+    pdf.setDrawColor(boiBlue[0], boiBlue[1], boiBlue[2]);
+    pdf.setLineWidth(0.5);
+    pdf.rect(margin, yPos, pageWidth - 2 * margin, 20);
     
-    pdf.text('Current Balance:', margin + 80, yPos + 15);
-    pdf.text(`€${account.balance}`, margin + 115, yPos + 15);
+    // Balance headers
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(8);
+    pdf.text('Opening Balance', margin + 3, yPos + 6);
+    pdf.text('Total Payments In', margin + 45, yPos + 6);
+    pdf.text('Total Payments Out', margin + 85, yPos + 6);
+    pdf.text('Closing Balance', margin + 130, yPos + 6);
+    
+    // Balance amounts
+    pdf.setFont('helvetica', 'normal');
+    pdf.text('€185.83', margin + 8, yPos + 12);
+    
+    const totalIn = transactions.filter(tx => tx.type === 'credit').reduce((sum, tx) => sum + tx.amount, 0);
+    const totalOut = transactions.filter(tx => tx.type === 'debit').reduce((sum, tx) => sum + tx.amount, 0);
+    
+    pdf.text(`€${totalIn.toFixed(2)}`, margin + 50, yPos + 12);
+    pdf.text(`€${totalOut.toFixed(2)}`, margin + 90, yPos + 12);
+    pdf.text(`€${account.balance}`, margin + 135, yPos + 12);
+    
+    // Draw separator lines
+    pdf.line(margin + 40, yPos, margin + 40, yPos + 20);
+    pdf.line(margin + 80, yPos, margin + 80, yPos + 20);
+    pdf.line(margin + 125, yPos, margin + 125, yPos + 20);
 
     // Transaction Table Header
-    yPos += 35;
-    pdf.setFillColor(boiBlue[0], boiBlue[1], boiBlue[2]);
-    pdf.rect(margin, yPos, pageWidth - 2 * margin, 8, 'F');
+    yPos += 30;
+    pdf.setFillColor(230, 230, 230);
+    pdf.rect(margin, yPos, pageWidth - 2 * margin, 10, 'F');
     
-    pdf.setTextColor(255, 255, 255);
+    pdf.setTextColor(0, 0, 0);
     pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(9);
-    pdf.text('Date', margin + 2, yPos + 6);
-    pdf.text('Transaction Details', margin + 25, yPos + 6);
-    pdf.text('Payments Out', margin + 85, yPos + 6);
-    pdf.text('Payments In', margin + 115, yPos + 6);
-    pdf.text('Balance', margin + 145, yPos + 6);
+    pdf.setFontSize(8);
+    pdf.text('Date', margin + 2, yPos + 7);
+    pdf.text('Transaction Details', margin + 22, yPos + 7);
+    pdf.text('Money Out', margin + 90, yPos + 7);
+    pdf.text('Money In', margin + 120, yPos + 7);
+    pdf.text('Balance', margin + 150, yPos + 7);
+
+    // Draw table borders
+    pdf.setDrawColor(150, 150, 150);
+    pdf.setLineWidth(0.3);
+    pdf.line(margin + 18, yPos, margin + 18, yPos + 10); // Date separator
+    pdf.line(margin + 85, yPos, margin + 85, yPos + 10); // Details separator
+    pdf.line(margin + 115, yPos, margin + 115, yPos + 10); // Money Out separator
+    pdf.line(margin + 145, yPos, margin + 145, yPos + 10); // Money In separator
 
     // Transaction Rows
-    yPos += 8;
+    yPos += 10;
     pdf.setTextColor(0, 0, 0);
     pdf.setFont('helvetica', 'normal');
-    pdf.setFontSize(8);
+    pdf.setFontSize(7);
 
     transactions.forEach((transaction, index) => {
-      if (yPos > pageHeight - 30) {
+      if (yPos > pageHeight - 40) {
         pdf.addPage();
         yPos = 30;
+        
+        // Redraw header on new page
+        pdf.setFillColor(230, 230, 230);
+        pdf.rect(margin, yPos, pageWidth - 2 * margin, 10, 'F');
+        pdf.setTextColor(0, 0, 0);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(8);
+        pdf.text('Date', margin + 2, yPos + 7);
+        pdf.text('Transaction Details', margin + 22, yPos + 7);
+        pdf.text('Money Out', margin + 90, yPos + 7);
+        pdf.text('Money In', margin + 120, yPos + 7);
+        pdf.text('Balance', margin + 150, yPos + 7);
+        yPos += 10;
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(7);
       }
 
-      const rowColor: [number, number, number] = index % 2 === 0 ? [255, 255, 255] : [248, 248, 248];
-      pdf.setFillColor(rowColor[0], rowColor[1], rowColor[2]);
-      pdf.rect(margin, yPos, pageWidth - 2 * margin, 6, 'F');
+      // Alternate row colors
+      if (index % 2 === 1) {
+        pdf.setFillColor(248, 248, 248);
+        pdf.rect(margin, yPos, pageWidth - 2 * margin, 8, 'F');
+      }
 
-      pdf.text(transaction.date, margin + 2, yPos + 4);
+      // Draw vertical lines for table structure
+      pdf.setDrawColor(200, 200, 200);
+      pdf.setLineWidth(0.2);
+      pdf.line(margin + 18, yPos, margin + 18, yPos + 8);
+      pdf.line(margin + 85, yPos, margin + 85, yPos + 8);
+      pdf.line(margin + 115, yPos, margin + 115, yPos + 8);
+      pdf.line(margin + 145, yPos, margin + 145, yPos + 8);
+
+      // Transaction data
+      pdf.setTextColor(0, 0, 0);
+      pdf.text(transaction.date, margin + 1, yPos + 5);
       
-      // Truncate long descriptions
-      const description = transaction.description.length > 30 
-        ? transaction.description.substring(0, 30) + '...'
+      // Truncate long descriptions to fit
+      const description = transaction.description.length > 35 
+        ? transaction.description.substring(0, 35) + '...'
         : transaction.description;
-      pdf.text(description, margin + 25, yPos + 4);
+      pdf.text(description, margin + 20, yPos + 5);
       
+      // Amount placement
       if (transaction.type === 'debit') {
-        pdf.text(`€${transaction.amount.toFixed(2)}`, margin + 85, yPos + 4);
+        pdf.text(`€${transaction.amount.toFixed(2)}`, margin + 87, yPos + 5);
       } else {
-        pdf.text(`€${transaction.amount.toFixed(2)}`, margin + 115, yPos + 4);
+        pdf.text(`€${transaction.amount.toFixed(2)}`, margin + 117, yPos + 5);
       }
       
-      pdf.text(`€${transaction.balance?.toFixed(2) || '0.00'}`, margin + 145, yPos + 4);
+      // Balance with proper formatting
+      pdf.text(`€${transaction.balance?.toFixed(2) || '0.00'}`, margin + 147, yPos + 5);
       
-      yPos += 6;
+      yPos += 8;
     });
 
-    // Footer
-    yPos = pageHeight - 25;
+    // Add statement footer information
+    yPos += 15;
+    pdf.setTextColor(100, 100, 100);
+    pdf.setFontSize(7);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text('Important Information:', margin, yPos);
+    pdf.text('• Please check your statement carefully and report any discrepancies immediately', margin, yPos + 5);
+    pdf.text('• For queries contact Bank of Ireland at 1850 946 764', margin, yPos + 10);
+    pdf.text('• Keep this statement in a safe place for your records', margin, yPos + 15);
+
+    // Footer with Bank branding
+    yPos = pageHeight - 20;
     pdf.setFillColor(boiBlue[0], boiBlue[1], boiBlue[2]);
-    pdf.rect(0, yPos, pageWidth, 25, 'F');
+    pdf.rect(0, yPos, pageWidth, 20, 'F');
     
     pdf.setTextColor(255, 255, 255);
-    pdf.setFontSize(8);
+    pdf.setFontSize(7);
     pdf.setFont('helvetica', 'normal');
-    pdf.text('Bank of Ireland is regulated by the Central Bank of Ireland', margin, yPos + 8);
-    pdf.text('www.bankofireland.com', margin, yPos + 15);
+    pdf.text('Bank of Ireland is regulated by the Central Bank of Ireland', margin, yPos + 6);
+    pdf.text('Head Office: 40 Mespil Road, Dublin 4, D04 C2N4', margin, yPos + 10);
+    pdf.text('www.bankofireland.com', margin, yPos + 14);
+    
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('CONFIDENTIAL', pageWidth - margin - 25, yPos + 10);
 
     // Generate filename and save
     const filename = `BOI_Statement_${account.accountNumber}_${currentDate.toISOString().split('T')[0]}.pdf`;
