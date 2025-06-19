@@ -522,7 +522,7 @@ export default function Statements() {
                   generateStatement();
                 }}
                 disabled={isGenerating || !selectedAccount}
-                className="w-full bg-[var(--boi-green)] hover:bg-[var(--boi-green)]/90 text-white py-4 text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-green-600 hover:bg-green-700 text-white py-6 px-4 text-xl font-bold rounded-lg shadow-lg border-2 border-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 type="button"
               >
                 {isGenerating ? (
