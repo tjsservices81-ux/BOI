@@ -396,11 +396,7 @@ function AppRoutes() {
               <Transfer />
             </ProtectedRoute>
           </Route>
-          <Route path="/bills">
-            <ProtectedRoute>
-              <BillPay />
-            </ProtectedRoute>
-          </Route>
+
           <Route path="/transactions">
             <ProtectedRoute>
               <Transactions />
