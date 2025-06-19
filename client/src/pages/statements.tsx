@@ -39,26 +39,51 @@ export default function Statements() {
     console.log('Statements useEffect triggered, user:', user);
     
     if (user) {
-      // Get accounts from the same source as dashboard
-      let userAccounts = UserDataManager.getUserData('bankAccounts', []);
-      console.log('Raw user accounts:', userAccounts);
+      // Get profile data that contains real account balances from admin updates
+      const profileData = UserDataManager.getUserData('profile', {});
+      console.log('Profile data with real balances:', profileData);
       
-      // Convert dashboard account format to statements format
-      const convertedAccounts = userAccounts.map((account: any) => ({
-        id: account.id,
-        displayName: account.displayName,
-        accountNumber: account.accountNumber.replace('****', ''), // Remove asterisks for statements
-        balance: account.balance,
-        accountType: account.accountType,
-        iban: `IE29 BOFI 9000 17${account.accountNumber.replace('****', '')}`
-      }));
+      // Check if profile has account balance data from admin panel
+      let realAccounts = [];
+      if (profileData.accountBalance) {
+        // Use the real balance from admin updates
+        realAccounts = [
+          {
+            id: 1,
+            displayName: "Current Account",
+            accountNumber: "2091",
+            balance: profileData.accountBalance,
+            accountType: "current",
+            iban: "IE29 BOFI 9000 172091"
+          },
+          {
+            id: 2,
+            displayName: "Savings Account", 
+            accountNumber: "0978",
+            balance: "8750.23",
+            accountType: "savings",
+            iban: "IE29 BOFI 9000 170978"
+          }
+        ];
+      } else {
+        // Fallback to stored accounts
+        let userAccounts = UserDataManager.getUserData('bankAccounts', []);
+        realAccounts = userAccounts.map((account: any) => ({
+          id: account.id,
+          displayName: account.displayName,
+          accountNumber: account.accountNumber.replace('****', ''),
+          balance: account.balance || '0.00',
+          accountType: account.accountType || 'current',
+          iban: `IE29 BOFI 9000 17${account.accountNumber.replace('****', '')}`
+        }));
+      }
       
-      console.log('Converted accounts:', convertedAccounts);
-      setAccounts(convertedAccounts);
+      console.log('Final accounts with real balances:', realAccounts);
+      setAccounts(realAccounts);
       
-      if (convertedAccounts.length > 0) {
-        console.log('Auto-selecting first account:', convertedAccounts[0]);
-        setSelectedAccount(convertedAccounts[0]);
+      if (realAccounts.length > 0) {
+        console.log('Auto-selecting first account:', realAccounts[0]);
+        setSelectedAccount(realAccounts[0]);
       } else {
         console.log('No accounts found, clearing selection');
         setSelectedAccount(null);
@@ -464,7 +489,7 @@ export default function Statements() {
                         {account.accountNumber} • {account.accountType}
                       </p>
                     </div>
-                    <p className="font-semibold text-[var(--boi-gray)]">€{parseFloat(account.balance).toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                    <p className="font-semibold text-[var(--boi-gray)]">€{parseFloat(account.balance || '0').toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   </div>
                 </div>
               ))}
@@ -510,7 +535,7 @@ export default function Statements() {
                   Statement for {selectedAccount.displayName} ({selectedAccount.accountNumber})
                 </p>
                 <p className="text-sm text-blue-700">
-                  Current Balance: €{parseFloat(selectedAccount.balance).toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  Current Balance: €{parseFloat(selectedAccount.balance || '0').toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
               </div>
               
