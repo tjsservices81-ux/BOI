@@ -27,7 +27,7 @@ import Transactions from "@/pages/transactions";
 import Cards from "@/pages/cards";
 import Insights from "@/pages/insights";
 import Transfer from "@/pages/transfer";
-import BillPay from "@/pages/bill-pay";
+
 import TransactionHistoryWorking from "@/pages/transaction-history-working";
 
 import Statements from "@/pages/statements";
