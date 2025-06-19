@@ -37,7 +37,33 @@ export default function Statements() {
 
   useEffect(() => {
     if (user) {
-      const userAccounts = UserDataManager.getUserData('userAccounts', []);
+      // Try to get accounts from multiple sources
+      let userAccounts = UserDataManager.getUserData('userAccounts', []);
+      
+      // If no accounts found, create default accounts for the user
+      if (userAccounts.length === 0) {
+        const defaultAccounts = [
+          {
+            id: 1,
+            displayName: 'Current Account',
+            accountNumber: '12345678',
+            balance: '2,340.67',
+            accountType: 'Current'
+          },
+          {
+            id: 2,
+            displayName: 'Savings Account',
+            accountNumber: '87654321',
+            balance: '8,750.23',
+            accountType: 'Savings'
+          }
+        ];
+        
+        // Store the default accounts for this user
+        UserDataManager.setUserData('userAccounts', defaultAccounts);
+        userAccounts = defaultAccounts;
+      }
+      
       setAccounts(userAccounts);
       if (userAccounts.length > 0) {
         setSelectedAccount(userAccounts[0]);
