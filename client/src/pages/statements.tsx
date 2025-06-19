@@ -36,9 +36,12 @@ export default function Statements() {
   const [statementPeriod, setStatementPeriod] = useState('current');
 
   useEffect(() => {
+    console.log('Statements useEffect triggered, user:', user);
+    
     if (user) {
       // Get accounts from the same source as dashboard
       let userAccounts = UserDataManager.getUserData('bankAccounts', []);
+      console.log('Raw user accounts:', userAccounts);
       
       // Convert dashboard account format to statements format
       const convertedAccounts = userAccounts.map((account: any) => ({
@@ -50,9 +53,15 @@ export default function Statements() {
         iban: `IE29 BOFI 9000 17${account.accountNumber.replace('****', '')}`
       }));
       
+      console.log('Converted accounts:', convertedAccounts);
       setAccounts(convertedAccounts);
+      
       if (convertedAccounts.length > 0) {
+        console.log('Auto-selecting first account:', convertedAccounts[0]);
         setSelectedAccount(convertedAccounts[0]);
+      } else {
+        console.log('No accounts found, clearing selection');
+        setSelectedAccount(null);
       }
     }
   }, [user]);
@@ -423,6 +432,12 @@ export default function Statements() {
       </div>
 
       <div className="p-6 space-y-6 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 160px)' }}>
+        {/* Debug Info - Remove in production */}
+        <div className="bg-gray-100 p-2 rounded text-xs">
+          <p>Debug: User: {user ? 'YES' : 'NO'} | Accounts: {accounts.length} | Selected: {selectedAccount ? 'YES' : 'NO'}</p>
+          {selectedAccount && <p>Selected Account: {selectedAccount.displayName} (ID: {selectedAccount.id})</p>}
+        </div>
+        
         {/* Account Selection */}
         <Card>
           <CardContent className="p-4">
@@ -437,7 +452,10 @@ export default function Statements() {
                       ? 'border-[var(--boi-green)] bg-green-50' 
                       : 'border-gray-200 bg-white hover:border-gray-300'
                   }`}
-                  onClick={() => setSelectedAccount(account)}
+                  onClick={() => {
+                    console.log('Account clicked:', account);
+                    setSelectedAccount(account);
+                  }}
                 >
                   <div className="flex justify-between items-center">
                     <div>
@@ -483,7 +501,7 @@ export default function Statements() {
         </Card>
 
         {/* Generate Statement */}
-        {selectedAccount && (
+        {selectedAccount ? (
           <Card>
             <CardContent className="p-4">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
@@ -523,6 +541,28 @@ export default function Statements() {
               <p className="text-sm text-[var(--boi-light-gray)] mt-3 text-center">
                 PDF will download automatically to your device
               </p>
+            </CardContent>
+          </Card>
+        ) : accounts.length > 0 ? (
+          <Card>
+            <CardContent className="p-4">
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                <h4 className="font-medium text-orange-900 mb-2">Select Account</h4>
+                <p className="text-sm text-orange-700">
+                  Please select an account above to generate your statement
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card>
+            <CardContent className="p-4">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <h4 className="font-medium text-red-900 mb-2">No Accounts Found</h4>
+                <p className="text-sm text-red-700">
+                  Loading your accounts... Please wait.
+                </p>
+              </div>
             </CardContent>
           </Card>
         )}
