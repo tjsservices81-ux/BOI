@@ -40,28 +40,34 @@ export default function Statements() {
       // Try to get accounts from multiple sources
       let userAccounts = UserDataManager.getUserData('userAccounts', []);
       
-      // If no accounts found, create default accounts for the user
+      // If no accounts found, try to get from dashboard data or create defaults
       if (userAccounts.length === 0) {
-        const defaultAccounts = [
-          {
-            id: 1,
-            displayName: 'Current Account',
-            accountNumber: '12345678',
-            balance: '2,340.67',
-            accountType: 'Current'
-          },
-          {
-            id: 2,
-            displayName: 'Savings Account',
-            accountNumber: '87654321',
-            balance: '8,750.23',
-            accountType: 'Savings'
-          }
-        ];
-        
-        // Store the default accounts for this user
-        UserDataManager.setUserData('userAccounts', defaultAccounts);
-        userAccounts = defaultAccounts;
+        // Try to get the same accounts shown on dashboard
+        const customerNumber = UserDataManager.getCurrentUser();
+        if (customerNumber) {
+          const defaultAccounts = [
+            {
+              id: 1,
+              displayName: 'Current Account',
+              accountNumber: '12345678',
+              balance: '2340.67', // Remove comma for calculations
+              accountType: 'Current',
+              iban: `IE29 BOFI 9000 1712345678`
+            },
+            {
+              id: 2,
+              displayName: 'Savings Account', 
+              accountNumber: '87654321',
+              balance: '8750.23', // Remove comma for calculations
+              accountType: 'Savings',
+              iban: `IE29 BOFI 9000 1787654321`
+            }
+          ];
+          
+          // Store the accounts for this user
+          UserDataManager.setUserData('userAccounts', defaultAccounts);
+          userAccounts = defaultAccounts;
+        }
       }
       
       setAccounts(userAccounts);
@@ -179,7 +185,7 @@ export default function Statements() {
     pdf.text(`${account.displayName}`, pageWidth - margin - 50, yPos + 4);
     pdf.text(`Sort Code: 90-00-17`, pageWidth - margin - 50, yPos + 8);
     pdf.text(`Account: ${account.accountNumber}`, pageWidth - margin - 50, yPos + 12);
-    pdf.text(`IBAN: IE29 BOFI 9000 17${account.accountNumber}`, pageWidth - margin - 50, yPos + 16);
+    pdf.text(`IBAN: IE29 BOFI 9000 17 ${account.accountNumber}`, pageWidth - margin - 50, yPos + 16);
     
     // Statement period
     yPos += 25;
@@ -220,7 +226,7 @@ export default function Statements() {
     
     pdf.text(`€${totalIn.toFixed(2)}`, margin + 50, yPos + 12);
     pdf.text(`€${totalOut.toFixed(2)}`, margin + 90, yPos + 12);
-    pdf.text(`€${account.balance}`, margin + 135, yPos + 12);
+    pdf.text(`€${parseFloat(account.balance).toFixed(2)}`, margin + 135, yPos + 12);
     
     // Draw separator lines
     pdf.line(margin + 40, yPos, margin + 40, yPos + 20);
@@ -338,15 +344,27 @@ export default function Statements() {
     pdf.setFont('helvetica', 'bold');
     pdf.text('CONFIDENTIAL', pageWidth - margin - 25, yPos + 10);
 
-    // Generate filename and save
+    // Generate filename and save with proper download
     const filename = `BOI_Statement_${account.accountNumber}_${currentDate.toISOString().split('T')[0]}.pdf`;
-    pdf.save(filename);
+    
+    try {
+      // Use the save method which triggers browser download
+      pdf.save(filename);
+      
+      // Optional: Show success message
+      setTimeout(() => {
+        console.log('PDF statement downloaded successfully');
+      }, 500);
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      throw error;
+    }
   };
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20 page-fade-in">
       {/* Header */}
-      <div className="bg-white px-6 py-4 shadow-sm">
+      <div className="bg-white px-6 py-4 shadow-sm sticky top-0 z-10">
         <div className="flex items-center">
           <Button 
             variant="ghost" 
@@ -360,7 +378,7 @@ export default function Statements() {
         </div>
       </div>
 
-      <div className="p-6 space-y-6">
+      <div className="p-6 space-y-6 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 160px)' }}>
         {/* Account Selection */}
         <Card>
           <CardContent className="p-4">
@@ -384,7 +402,7 @@ export default function Statements() {
                         {account.accountNumber} • {account.accountType}
                       </p>
                     </div>
-                    <p className="font-semibold text-[var(--boi-gray)]">€{account.balance}</p>
+                    <p className="font-semibold text-[var(--boi-gray)]">€{parseFloat(account.balance).toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   </div>
                 </div>
               ))}
@@ -421,31 +439,43 @@ export default function Statements() {
         </Card>
 
         {/* Generate Statement */}
-        <Card>
-          <CardContent className="p-4">
-            <Button
-              onClick={generateStatement}
-              disabled={!selectedAccount || isGenerating}
-              className="w-full bg-[var(--boi-green)] hover:bg-[var(--boi-green)]/90 text-white py-3"
-            >
-              {isGenerating ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Generating Statement...
-                </>
-              ) : (
-                <>
-                  <Download className="w-5 h-5 mr-2" />
-                  Download PDF Statement
-                </>
-              )}
-            </Button>
-            
-            <p className="text-sm text-[var(--boi-light-gray)] mt-3 text-center">
-              Your statement will be downloaded as a PDF file
-            </p>
-          </CardContent>
-        </Card>
+        {selectedAccount && (
+          <Card>
+            <CardContent className="p-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <h4 className="font-medium text-blue-900 mb-2">Ready to Generate</h4>
+                <p className="text-sm text-blue-700">
+                  Statement for {selectedAccount.displayName} ({selectedAccount.accountNumber})
+                </p>
+                <p className="text-sm text-blue-700">
+                  Current Balance: €{parseFloat(selectedAccount.balance).toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </p>
+              </div>
+              
+              <Button
+                onClick={generateStatement}
+                disabled={isGenerating}
+                className="w-full bg-[var(--boi-green)] hover:bg-[var(--boi-green)]/90 text-white py-4 text-lg font-semibold"
+              >
+                {isGenerating ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                    Generating PDF Statement...
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-6 h-6 mr-3" />
+                    Download Bank Statement
+                  </>
+                )}
+              </Button>
+              
+              <p className="text-sm text-[var(--boi-light-gray)] mt-3 text-center">
+                PDF will download automatically to your device
+              </p>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Statement Info */}
         <Card>
