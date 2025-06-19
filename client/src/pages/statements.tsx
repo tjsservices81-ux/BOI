@@ -37,42 +37,22 @@ export default function Statements() {
 
   useEffect(() => {
     if (user) {
-      // Try to get accounts from multiple sources
-      let userAccounts = UserDataManager.getUserData('userAccounts', []);
+      // Get accounts from the same source as dashboard
+      let userAccounts = UserDataManager.getUserData('bankAccounts', []);
       
-      // If no accounts found, try to get from dashboard data or create defaults
-      if (userAccounts.length === 0) {
-        // Try to get the same accounts shown on dashboard
-        const customerNumber = UserDataManager.getCurrentUser();
-        if (customerNumber) {
-          const defaultAccounts = [
-            {
-              id: 1,
-              displayName: 'Current Account',
-              accountNumber: '12345678',
-              balance: '2340.67', // Remove comma for calculations
-              accountType: 'Current',
-              iban: `IE29 BOFI 9000 1712345678`
-            },
-            {
-              id: 2,
-              displayName: 'Savings Account', 
-              accountNumber: '87654321',
-              balance: '8750.23', // Remove comma for calculations
-              accountType: 'Savings',
-              iban: `IE29 BOFI 9000 1787654321`
-            }
-          ];
-          
-          // Store the accounts for this user
-          UserDataManager.setUserData('userAccounts', defaultAccounts);
-          userAccounts = defaultAccounts;
-        }
-      }
+      // Convert dashboard account format to statements format
+      const convertedAccounts = userAccounts.map((account: any) => ({
+        id: account.id,
+        displayName: account.displayName,
+        accountNumber: account.accountNumber.replace('****', ''), // Remove asterisks for statements
+        balance: account.balance,
+        accountType: account.accountType,
+        iban: `IE29 BOFI 9000 17${account.accountNumber.replace('****', '')}`
+      }));
       
-      setAccounts(userAccounts);
-      if (userAccounts.length > 0) {
-        setSelectedAccount(userAccounts[0]);
+      setAccounts(convertedAccounts);
+      if (convertedAccounts.length > 0) {
+        setSelectedAccount(convertedAccounts[0]);
       }
     }
   }, [user]);
@@ -83,38 +63,43 @@ export default function Statements() {
     setIsGenerating(true);
 
     try {
-      // Get transactions for the selected account
+      // Get transactions for the selected account from the same source as other pages
       const allTransactions = UserDataManager.getUserData('bankTransactions', []);
       let accountTransactions = allTransactions
-        .filter((tx: any) => tx.accountId === selectedAccount.id.toString())
-        .sort((a: any, b: any) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
+        .filter((tx: any) => tx.accountId === selectedAccount.id.toString() || tx.fromAccountId === selectedAccount.id || tx.toAccountId === selectedAccount.id)
+        .sort((a: any, b: any) => new Date(a.timestamp || a.date).getTime() - new Date(b.timestamp || b.date).getTime())
         .slice(-20); // Last 20 transactions
 
-      // If no transactions exist, create sample transactions for demonstration
+      // Add balance forward entry if transactions exist
       if (accountTransactions.length === 0) {
-        const sampleTransactions = [
-          { id: '1', timestamp: Date.now() - (7 * 24 * 60 * 60 * 1000), description: 'Balance Forward', amount: 0, type: 'credit' },
-          { id: '2', timestamp: Date.now() - (6 * 24 * 60 * 60 * 1000), description: 'Direct Debit - ESB Networks', amount: -85.42, type: 'debit' },
-          { id: '3', timestamp: Date.now() - (5 * 24 * 60 * 60 * 1000), description: 'ATM Withdrawal - Grafton Street', amount: -60.00, type: 'debit' },
-          { id: '4', timestamp: Date.now() - (4 * 24 * 60 * 60 * 1000), description: 'Salary Credit', amount: 2450.00, type: 'credit' },
-          { id: '5', timestamp: Date.now() - (3 * 24 * 60 * 60 * 1000), description: 'Card Payment - Tesco Ireland', amount: -34.67, type: 'debit' },
-          { id: '6', timestamp: Date.now() - (2 * 24 * 60 * 60 * 1000), description: 'Online Transfer', amount: -200.00, type: 'debit' },
-          { id: '7', timestamp: Date.now() - (1 * 24 * 60 * 60 * 1000), description: 'Card Payment - Dunnes Stores', amount: -45.23, type: 'debit' }
-        ];
-        accountTransactions = sampleTransactions;
+        // Only add balance forward if account has non-zero balance
+        if (parseFloat(selectedAccount.balance) !== 0) {
+          accountTransactions = [{
+            id: 'balance_forward',
+            timestamp: Date.now() - (30 * 24 * 60 * 60 * 1000),
+            description: 'Balance Forward',
+            amount: parseFloat(selectedAccount.balance),
+            type: 'credit'
+          }];
+        }
       }
 
-      // Calculate running balances
-      let runningBalance = 185.83; // Starting balance forward
+      // Calculate running balances starting from current account balance
+      const currentBalance = parseFloat(selectedAccount.balance);
+      let runningBalance = currentBalance - accountTransactions.reduce((sum: number, tx: any) => {
+        const amount = parseFloat(tx.amount);
+        return sum + (tx.type === 'credit' || amount > 0 ? Math.abs(amount) : -Math.abs(amount));
+      }, 0);
+
       const transactionsWithBalance: Transaction[] = accountTransactions.map((tx: any, index: number) => {
-        const amount = Math.abs(parseFloat(tx.amount));
-        const isCredit = tx.type === 'credit' || parseFloat(tx.amount) > 0;
+        const amount = Math.abs(parseFloat(tx.amount || 0));
+        const isCredit = tx.type === 'credit' || parseFloat(tx.amount || 0) > 0;
         runningBalance += isCredit ? amount : -amount;
         
         return {
           id: tx.id,
-          date: new Date(tx.timestamp).toLocaleDateString('en-IE'),
-          description: tx.description || tx.merchant || 'Bank Transfer',
+          date: new Date(tx.timestamp || tx.date).toLocaleDateString('en-IE'),
+          description: tx.description || tx.merchant || tx.category || 'Bank Transfer',
           amount: amount,
           type: isCredit ? 'credit' : 'debit',
           balance: runningBalance
@@ -217,9 +202,10 @@ export default function Statements() {
     pdf.text('Total Payments Out', margin + 85, yPos + 6);
     pdf.text('Closing Balance', margin + 130, yPos + 6);
     
-    // Balance amounts
+    // Balance amounts - use opening balance from calculation
     pdf.setFont('helvetica', 'normal');
-    pdf.text('€185.83', margin + 8, yPos + 12);
+    const openingBalance = transactions.length > 0 && transactions[0].balance ? transactions[0].balance - transactions[0].amount : parseFloat(account.balance);
+    pdf.text(`€${openingBalance.toFixed(2)}`, margin + 8, yPos + 12);
     
     const totalIn = transactions.filter(tx => tx.type === 'credit').reduce((sum, tx) => sum + tx.amount, 0);
     const totalOut = transactions.filter(tx => tx.type === 'debit').reduce((sum, tx) => sum + tx.amount, 0);
@@ -348,15 +334,31 @@ export default function Statements() {
     const filename = `BOI_Statement_${account.accountNumber}_${currentDate.toISOString().split('T')[0]}.pdf`;
     
     try {
-      // Use the save method which triggers browser download
+      // Force download using jsPDF save method
       pdf.save(filename);
       
-      // Optional: Show success message
-      setTimeout(() => {
-        console.log('PDF statement downloaded successfully');
-      }, 500);
+      // Verify download initiated
+      console.log(`PDF statement generated: ${filename}`);
+      
+      // Create a backup blob download method if needed
+      const pdfBlob = pdf.output('blob');
+      const url = URL.createObjectURL(pdfBlob);
+      const downloadLink = document.createElement('a');
+      downloadLink.href = url;
+      downloadLink.download = filename;
+      
+      // Trigger download programmatically as backup
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+      
+      // Clean up blob URL
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      
     } catch (error) {
       console.error('Error downloading PDF:', error);
+      // Show user-friendly error
+      alert('Error generating PDF statement. Please try again.');
       throw error;
     }
   };
