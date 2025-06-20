@@ -76,7 +76,7 @@ export default function Login() {
         } catch (error) {
           console.log('Auto-login failed, proceeding to login screen');
         }
-        setIsLoading(false);
+        setLocalIsLoading(false);
       }
     };
     
@@ -605,7 +605,7 @@ export default function Login() {
     }
     
     try {
-      setIsLoading(true);
+      setLocalIsLoading(true);
       const loginData = await loginWithPermanentAuth(customerNumber, pin);
       setUser(loginData.user);
       setPinVerified(true);
@@ -618,7 +618,7 @@ export default function Login() {
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setLocalIsLoading(false);
     }
   };
 
@@ -1478,7 +1478,7 @@ export default function Login() {
                       onClick={() => {
                         UserDataManager.initializeFreshAccount(customerNumber);
                         UserDataManager.recordLoginTime(customerNumber);
-                        login({
+                        setUser({
                           id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
                           name: userData.name,
                           email: userData.email
