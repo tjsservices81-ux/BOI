@@ -65,6 +65,9 @@ export default function Login() {
   useEffect(() => {
     const checkAutoLogin = async () => {
       if (hasPermanentToken()) {
+        // 🔐 CRITICAL: If user has permanent token, they are logged in - disable logo
+        setIsUserLoggedIn(true);
+        
         setLocalIsLoading(true);
         try {
           const userData = await autoLoginOnStart();
