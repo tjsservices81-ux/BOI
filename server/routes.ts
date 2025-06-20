@@ -278,41 +278,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`🔍 VALIDATING TOKEN: ${sessionToken.substring(0, 20)}...`);
 
-      // Direct database query for permanent session validation
+      // Try multiple validation approaches for permanent session
       const sessionResult = await db
-        .select({
-          session: permanentUserSessions,
-          user: users
-        })
+        .select()
         .from(permanentUserSessions)
-        .innerJoin(users, eq(permanentUserSessions.userId, users.id))
-        .where(
-          and(
-            eq(permanentUserSessions.sessionToken, sessionToken),
-            eq(permanentUserSessions.isActive, true)
-          )
-        )
+        .where(eq(permanentUserSessions.sessionToken, sessionToken))
+        .limit(1);
+        
+      console.log(`🔍 RAW SESSION QUERY: Found ${sessionResult.length} sessions`);
+      
+      if (sessionResult.length === 0) {
+        console.log('❌ No session found with this token');
+        return res.status(401).json({ message: "Session invalid", valid: false });
+      }
+      
+      const session = sessionResult[0];
+      
+      // Check if session is active
+      if (!session.isActive) {
+        console.log('❌ Session found but not active');
+        return res.status(401).json({ message: "Session inactive", valid: false });
+      }
+      
+      // Get user data
+      const userResult = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, session.userId))
         .limit(1);
 
-      console.log(`🔍 DIRECT QUERY RESULT: Found ${sessionResult.length} sessions`);
+      console.log(`🔍 USER QUERY: Found ${userResult.length} users`);
       
-      if (sessionResult.length > 0) {
-        const user = sessionResult[0].user;
-        
-        // Update last activity
-        await db.update(permanentUserSessions)
-          .set({ lastActivity: new Date() })
-          .where(eq(permanentUserSessions.sessionToken, sessionToken));
-
-        console.log(`✅ PERMANENT SESSION VALIDATED: User ${user.id} authenticated permanently`);
-        res.json({ 
-          user: { id: user.id, name: user.name, email: user.email },
-          valid: true 
-        });
-      } else {
-        console.log('❌ PERMANENT SESSION INVALID: No matching active session found');
-        res.status(401).json({ message: "Session invalid", valid: false });
+      if (userResult.length === 0) {
+        console.log('❌ User not found for session');
+        return res.status(401).json({ message: "User not found", valid: false });
       }
+      
+      const user = userResult[0];
+      
+      // Update last activity - session NEVER expires
+      await db.update(permanentUserSessions)
+        .set({ lastActivity: new Date() })
+        .where(eq(permanentUserSessions.sessionToken, sessionToken));
+
+      console.log(`✅ PERMANENT SESSION VALIDATED: User ${user.id} authenticated permanently`);
+      res.json({ 
+        user: { id: user.id, name: user.name, email: user.email },
+        valid: true 
+      });
     } catch (error) {
       console.error('Permanent session validation error:', error);
       res.status(500).json({ message: "Server error", valid: false });
