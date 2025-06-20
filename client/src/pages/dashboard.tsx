@@ -1,13 +1,10 @@
-import { ChevronRight, User, WifiOff } from "lucide-react";
+import { ChevronRight, User } from "lucide-react";
 import { useLocation } from "wouter";
 import { useState, useEffect, useRef } from "react";
 import SpendingVisualization from "../components/SpendingVisualization";
 import SpendingInsights from "../components/SpendingInsights";
 import { UserDataManager } from "../utils/userDataManager";
 import { StateManager } from "../utils/stateManager";
-import { offlineManager } from "../utils/offlineManager";
-import { useQuery } from "@tanstack/react-query";
-import { useAuth } from "../lib/auth";
 
 interface Account {
   id: number;
@@ -20,20 +17,10 @@ interface Account {
 export default function Dashboard() {
   const [, setLocation] = useLocation();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const { user } = useAuth();
   
   // Local state for account balances that can be updated by transfers
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [isNavigating, setIsNavigating] = useState(false);
-  const [isOffline, setIsOffline] = useState(!navigator.onLine);
-
-  // Query for accounts with offline fallback
-  const { data: onlineAccounts, isLoading, error } = useQuery({
-    queryKey: ['/api/accounts', user?.id],
-    enabled: !!user?.id && navigator.onLine,
-    retry: false,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
 
   // Enhanced navigation with smooth animations
   const navigateWithAnimation = (path: string, animationType: 'slide-right' | 'slide-left' | 'slide-up' = 'slide-right') => {

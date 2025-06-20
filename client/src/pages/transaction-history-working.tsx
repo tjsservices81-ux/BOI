@@ -306,8 +306,9 @@ export default function TransactionHistoryWorking() {
           <button 
             className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-lg font-semibold text-sm"
             style={{ fontFamily: 'OpenSans, sans-serif' }}
+            onClick={() => navigateWithAnimation('/statements', 'slide-right')}
           >
-            Pay Bills
+            Statements
           </button>
         </div>
       </div>

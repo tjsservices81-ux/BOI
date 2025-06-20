@@ -11,7 +11,6 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import { StateManager } from "@/utils/stateManager";
 import { AppLifecycle } from "@/utils/appLifecycle";
 import LiveChat from "@/components/LiveChat";
-import { OfflineBanner } from "@/components/OfflineBanner";
 
 
 
@@ -28,7 +27,7 @@ import Transactions from "@/pages/transactions";
 import Cards from "@/pages/cards";
 import Insights from "@/pages/insights";
 import Transfer from "@/pages/transfer";
-import BillPay from "@/pages/bill-pay";
+
 import TransactionHistoryWorking from "@/pages/transaction-history-working";
 
 import Statements from "@/pages/statements";
@@ -349,7 +348,6 @@ function AppRoutes() {
   return (
     <SecurityWrapper>
       <ErrorBoundary>
-        <OfflineBanner />
         <div className="w-full h-full overflow-hidden relative">
           <Switch>
             <Route path="/splash" component={Splash} />
@@ -398,11 +396,7 @@ function AppRoutes() {
               <Transfer />
             </ProtectedRoute>
           </Route>
-          <Route path="/bills">
-            <ProtectedRoute>
-              <BillPay />
-            </ProtectedRoute>
-          </Route>
+
           <Route path="/transactions">
             <ProtectedRoute>
               <Transactions />
