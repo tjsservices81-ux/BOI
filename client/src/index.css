@@ -120,11 +120,55 @@ select {
   }
 }
 
-/* Samsung Internet specific fixes */
-@media screen and (-webkit-min-device-pixel-ratio: 2) {
-  .mobile-app-container {
-    /* Samsung Internet viewport fix */
-    height: calc(100vh - env(keyboard-inset-height, 0px));
+/* Enhanced Android viewport and scroll handling */
+@media screen and (max-width: 768px) {
+  /* Dynamic viewport height variables */
+  :root {
+    --dynamic-vh: 1vh;
+    --app-height: 100vh;
+    --keyboard-height: 0px;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  
+  /* Viewport height handling for all full-height containers */
+  .full-height,
+  .mobile-app-container,
+  .page-container {
+    height: 100vh;
+    height: 100dvh;
+    height: calc(var(--app-height) - var(--keyboard-height));
+    min-height: calc(var(--app-height) - var(--keyboard-height));
+  }
+  
+  /* Android Chrome address bar compensation */
+  @supports (height: 100dvh) {
+    .full-height,
+    .mobile-app-container,
+    .page-container {
+      height: 100dvh;
+      min-height: 100dvh;
+    }
+  }
+  
+  /* Samsung Internet specific fixes */
+  @supports (-webkit-min-device-pixel-ratio: 2) {
+    .full-height,
+    .mobile-app-container,
+    .page-container {
+      height: calc(100vh - env(keyboard-inset-height, 0px));
+      min-height: calc(100vh - env(keyboard-inset-height, 0px));
+    }
+  }
+  
+  /* Keyboard visibility state handling */
+  body.keyboard-visible {
+    .full-height,
+    .mobile-app-container,
+    .page-container {
+      height: calc(var(--app-height) - var(--keyboard-height));
+      transition: height 0.3s ease;
+    }
   }
 }
 
