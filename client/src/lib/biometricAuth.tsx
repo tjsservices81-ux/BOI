@@ -12,6 +12,7 @@ interface BiometricAuthContextType {
   state: BiometricAuthState;
   authenticateWithBiometric: () => Promise<boolean>;
   checkAuthenticationStatus: () => Promise<void>;
+  setNeedsBiometric: (needs: boolean) => void;
   logout: () => void;
 }
 

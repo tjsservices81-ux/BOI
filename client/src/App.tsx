@@ -40,17 +40,24 @@ function ProtectedRoute({ children, fallback }: { children: React.ReactNode; fal
   const user = authHook?.user || null;
   const isLoading = authHook?.isLoading || false;
   
-  // Check if user needs biometric authentication
-  if (biometricAuth.state.needsBiometric && !biometricAuth.state.isAuthenticated) {
-    return <Redirect to="/biometric" />;
-  }
-  
   if (isLoading) {
     return fallback || <div>Loading...</div>;
   }
   
+  // No user session at all - redirect to login
   if (!user) {
     return <Redirect to="/login" />;
+  }
+  
+  // User has session but biometric verification is required and not completed
+  if (biometricAuth.state.needsBiometric && !biometricAuth.state.isAuthenticated) {
+    return <Redirect to="/biometric" />;
+  }
+  
+  // If user has session but biometric state is not set, force biometric check
+  if (!biometricAuth.state.needsBiometric && !biometricAuth.state.isAuthenticated) {
+    biometricAuth.setNeedsBiometric(true);
+    return <Redirect to="/biometric" />;
   }
   
   return <>{children}</>;
