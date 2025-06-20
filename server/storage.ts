@@ -114,11 +114,20 @@ export class DatabaseStorage implements IStorage {
       const user = await this.getUser(customerNumber);
       if (!user) return false;
 
+      console.log(`🗑️ PERMANENT DELETION: Starting complete removal of user ${customerNumber}`);
+
+      // Delete all user data from database - PERMANENT AND UNRECOVERABLE
       await this.deleteAccountsByUserId(user.id);
+      
+      // Delete the user record - this makes deletion permanent and unrecoverable
       await db.delete(users).where(eq(users.customerNumber, customerNumber));
+      
+      console.log(`✅ PERMANENT DELETION COMPLETE: User ${customerNumber} and ALL associated data permanently removed from database`);
+      console.log(`⚠️ UNRECOVERABLE: This deletion cannot be undone - user data is permanently destroyed`);
+      
       return true;
     } catch (error) {
-      console.error('Error deleting user:', error);
+      console.error('❌ CRITICAL ERROR during permanent user deletion:', error);
       return false;
     }
   }
@@ -146,14 +155,29 @@ export class DatabaseStorage implements IStorage {
   async deleteAccountsByUserId(userId: number): Promise<boolean> {
     try {
       const userAccounts = await this.getAccountsByUserId(userId);
+      
+      // Delete all transactions for each account - PERMANENT REMOVAL
       for (const account of userAccounts) {
         await db.delete(transactions).where(eq(transactions.accountId, account.id));
       }
+      
+      // Delete all accounts - PERMANENT REMOVAL
       await db.delete(accounts).where(eq(accounts.userId, userId));
+      
+      // Delete all payees - PERMANENT REMOVAL
       await db.delete(payees).where(eq(payees.userId, userId));
+      
+      // Delete all chat messages - PERMANENT REMOVAL
+      await db.delete(chatMessages).where(eq(chatMessages.userId, userId));
+      
+      // Delete all chat sessions - PERMANENT REMOVAL
+      await db.delete(chatSessions).where(eq(chatSessions.userId, userId));
+      
+      console.log(`🗑️ PERMANENT DATA WIPE: All accounts, transactions, payees, and chat data for user ${userId} permanently destroyed`);
+      
       return true;
     } catch (error) {
-      console.error('Error deleting accounts:', error);
+      console.error('❌ CRITICAL ERROR during permanent account deletion:', error);
       return false;
     }
   }
