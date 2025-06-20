@@ -101,7 +101,7 @@ function AppRoutes() {
           const savedState = StateManager.restoreAppState();
           if (savedState && savedState.user && !user) {
             // Restore user session silently
-            login(savedState.user);
+            setUser(savedState.user);
           }
         } catch (error) {
           console.error('Failed to restore user session:', error);
@@ -115,7 +115,7 @@ function AppRoutes() {
           
           if (savedState && savedState.user && !user) {
             // Restore user session silently
-            login(savedState.user);
+            setUser(savedState.user);
             
             // Restore route if different from current
             if (savedState.currentRoute !== location && savedState.currentRoute !== '/login') {
@@ -446,10 +446,10 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <AuthProvider>
+        <PermanentAuthProvider>
           <Toaster />
           <AppRoutes />
-        </AuthProvider>
+        </PermanentAuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );
