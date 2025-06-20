@@ -10,6 +10,7 @@ import fs from 'fs';
 dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
 import express, { type Request, Response, NextFunction } from "express";
+import cookieParser from "cookie-parser";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { panicModeMiddleware } from "./panicMode";
@@ -21,6 +22,7 @@ const app = express();
 // Apply panic mode check only - IP whitelist disabled
 app.use(panicModeMiddleware);
 
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -33,7 +35,7 @@ app.use(session({
   cookie: {
     secure: false,
     httpOnly: true,
-    maxAge: null, // No expiry - users stay logged in permanently
+    maxAge: undefined, // No expiry - users stay logged in permanently
     sameSite: 'lax'
   },
   rolling: false // No rolling sessions to prevent timeout resets

@@ -355,33 +355,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Authentication status for biometric flow
   app.get('/api/auth/status', async (req, res) => {
     try {
-      const sessionToken = req.cookies.permanentSession;
+      // Check for permanent session token in cookies or Authorization header
+      const sessionToken = req.cookies?.permanentSession || 
+                          req.headers.authorization?.replace('Bearer ', '');
+      
       if (!sessionToken) {
         return res.json({ isLoggedIn: false, needsBiometric: false });
       }
 
-      const session = await permanentAuthManager.getSession(req);
+      // Validate permanent session token directly
+      const user = await permanentAuthManager.validatePermanentSession(sessionToken);
       
-      if (session && session.isValid) {
-        const storageUser = await storage.getUser(session.userId);
-        if (storageUser) {
-          console.log(`✅ PERMANENT SESSION VERIFIED: ${storageUser.name} (ID: ${storageUser.id})`);
-          res.json({ 
-            isLoggedIn: true, 
-            needsBiometric: true,
-            user: {
-              id: storageUser.id,
-              customerNumber: storageUser.customerNumber,
-              name: storageUser.name,
-              email: storageUser.email,
-              phone: storageUser.phone,
-              address: storageUser.address,
-              dateOfBirth: storageUser.dateOfBirth,
-              joinDate: storageUser.joinDate
-            }
-          });
-          return;
-        }
+      if (user) {
+        console.log(`✅ PERMANENT SESSION VERIFIED: ${user.name} (ID: ${user.id})`);
+        res.json({ 
+          isLoggedIn: true, 
+          needsBiometric: true,
+          user: {
+            id: user.id,
+            customerNumber: user.customerNumber,
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+            address: user.address,
+            dateOfBirth: user.dateOfBirth,
+            joinDate: user.joinDate
+          }
+        });
+        return;
       }
       
       console.log('❌ NO VALID PERMANENT SESSION FOUND');

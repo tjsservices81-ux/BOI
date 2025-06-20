@@ -51,7 +51,7 @@ export class PermanentAuthManager {
       return null;
     }
 
-    const user = await PermanentAuthManager.validatePermanentSession(sessionToken);
+    const user = await this.validatePermanentSession(sessionToken);
     if (user) {
       return { userId: user.id, isValid: true };
     }
@@ -60,7 +60,7 @@ export class PermanentAuthManager {
   }
 
   // Validate permanent session - NO expiry checks
-  static async validatePermanentSession(sessionToken: string): Promise<User | null> {
+  async validatePermanentSession(sessionToken: string): Promise<User | null> {
     try {
       console.log(`🔍 VALIDATING PERMANENT SESSION: ${sessionToken.substring(0, 20)}...`);
       
