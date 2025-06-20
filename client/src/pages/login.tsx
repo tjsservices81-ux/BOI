@@ -168,9 +168,8 @@ export default function Login() {
   };
 
   const handleLogoTap = () => {
-    // Disable logo tap functionality when user is logged in
-    // Check both user state AND permanent token to ensure complete coverage
-    if (user || hasPermanentToken()) {
+    // Simple check: if user exists, disable logo tap completely
+    if (user) {
       return;
     }
     
@@ -1000,9 +999,9 @@ export default function Login() {
         <div className="flex items-center justify-center pt-12 pb-6 flex-shrink-0">
           <div className="flex items-center">
             <button 
-              onClick={user || hasPermanentToken() ? undefined : handleLogoTap}
-              className={user || hasPermanentToken() ? "cursor-default" : "active:scale-95 transition-transform"}
-              style={user || hasPermanentToken() ? { pointerEvents: 'none' } : {}}
+              onClick={user ? undefined : handleLogoTap}
+              className={user ? "cursor-default" : "active:scale-95 transition-transform"}
+              style={user ? { pointerEvents: 'none' } : {}}
             >
               <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-8 filter brightness-0 invert" />
             </button>
