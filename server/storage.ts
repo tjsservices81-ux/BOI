@@ -7,6 +7,8 @@ import {
   type InsertChatMessage, type InsertChatResponse, type InsertChatSession
 } from "@shared/schema";
 import { PersistentDataManager } from "./persistentStorage";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
