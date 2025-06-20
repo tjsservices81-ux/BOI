@@ -138,7 +138,7 @@ function AppRoutes() {
         try {
           const savedState = StateManager.restoreAppState();
           if (savedState && savedState.user && !user) {
-            login(savedState.user);
+            setUser(savedState.user);
           }
         } catch (error) {
           console.error('Failed to restore user session:', error);

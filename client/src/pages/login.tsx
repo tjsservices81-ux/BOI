@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { loginWithPermanentAuth, autoLoginOnStart, hasPermanentToken } from "@/lib/permanentAuth";
+import { usePermanentAuth } from "@/lib/permanentAuthContext";
 import { User, ExternalLink, HelpCircle, Phone, Settings, Shield, MapPin, MoreHorizontal } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { UserDataManager } from "@/utils/userDataManager";
@@ -49,8 +50,8 @@ export default function Login() {
   const phoneInputRef = useRef<HTMLInputElement>(null);
   
   // Permanent authentication - no session expiry
-  const [user, setUser] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const { user, setUser, isLoading } = usePermanentAuth();
+  const [localIsLoading, setLocalIsLoading] = useState(false);
   
   const locationHook = useLocation();
   const [, navigate] = locationHook || [null, () => {}];
@@ -63,7 +64,7 @@ export default function Login() {
   useEffect(() => {
     const checkAutoLogin = async () => {
       if (hasPermanentToken()) {
-        setIsLoading(true);
+        setLocalIsLoading(true);
         try {
           const userData = await autoLoginOnStart();
           if (userData) {
@@ -339,7 +340,7 @@ export default function Login() {
     try {
       const userProfile = UserDataManager.getUserProfile();
       if (userProfile) {
-        login({
+        setUser({
           id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
           name: userProfile.name,
           email: userProfile.email
