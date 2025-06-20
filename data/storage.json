@@ -15,6 +15,22 @@
         "dateCreated": "2025-06-20T23:23:53.002Z",
         "isDisabled": false
       }
+    ],
+    [
+      32,
+      {
+        "id": 32,
+        "customerNumber": "25278053",
+        "pin": "1234",
+        "name": "Test User",
+        "email": "testuser@example.com",
+        "phone": null,
+        "address": null,
+        "dateOfBirth": "1990-01-01",
+        "joinDate": "Member since 2018",
+        "dateCreated": "2025-06-20T23:29:00.247Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [],
@@ -26,7 +42,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 32,
+    "currentUserId": 33,
     "currentAccountId": 37,
     "currentTransactionId": 49,
     "currentPayeeId": 25,
