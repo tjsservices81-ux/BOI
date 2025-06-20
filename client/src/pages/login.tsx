@@ -168,6 +168,11 @@ export default function Login() {
   };
 
   const handleLogoTap = () => {
+    // Disable logo tap functionality when user is logged in
+    if (user) {
+      return;
+    }
+    
     const newTapCount = logoTapCount + 1;
     setLogoTapCount(newTapCount);
     
