@@ -169,6 +169,11 @@ export default function Login() {
   };
 
   const handleLogoTap = () => {
+    // 🔐 CRITICAL: Disable logo tap functionality if user is logged in
+    if (isUserLoggedIn) {
+      return;
+    }
+    
     const newTapCount = logoTapCount + 1;
     setLogoTapCount(newTapCount);
     
@@ -999,7 +1004,10 @@ export default function Login() {
           <div className="flex items-center">
             <button 
               onClick={handleLogoTap}
-              className="active:scale-95 transition-transform"
+              className={`transition-transform ${isUserLoggedIn ? 'cursor-default opacity-50' : 'active:scale-95 cursor-pointer'}`}
+              style={{
+                pointerEvents: isUserLoggedIn ? 'none' : 'auto'
+              }}
             >
               <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-8 filter brightness-0 invert" />
             </button>
