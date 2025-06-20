@@ -235,7 +235,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       // Create permanent session in database - NEVER EXPIRES
-      const sessionToken = await PermanentAuthManager.createPermanentSession(
+      const sessionToken = await permanentAuthManager.createPermanentSession(
         user.id,
         user.customerNumber,
         {

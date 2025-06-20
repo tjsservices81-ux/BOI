@@ -160,13 +160,7 @@ class DatabaseStorage implements IStorage {
   }
 
   async getUserByCredentials(customerNumber: string, pin: string): Promise<User | undefined> {
-    // Check memory cache first
-    let user = Array.from(this.users.values()).find(user => 
-      user.customerNumber === customerNumber && user.pin === pin
-    );
-    if (user) return user;
-    
-    // Check database if not in cache
+    // Always check database first for permanent persistence
     try {
       const [dbUser] = await db.select().from(users)
         .where(eq(users.customerNumber, customerNumber))
@@ -179,7 +173,16 @@ class DatabaseStorage implements IStorage {
         return dbUser;
       }
     } catch (error) {
-      console.error('Error fetching user credentials from database:', error);
+      console.error('Database lookup failed, checking memory cache:', error);
+      
+      // Fallback to memory cache
+      let user = Array.from(this.users.values()).find(user => 
+        user.customerNumber === customerNumber && user.pin === pin
+      );
+      if (user) {
+        console.log(`✅ USER LOGGED IN FROM MEMORY: ${user.name} (ID: ${user.id})`);
+        return user;
+      }
     }
     
     return undefined;

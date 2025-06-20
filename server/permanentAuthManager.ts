@@ -16,13 +16,13 @@ interface DeviceInfo {
 export class PermanentAuthManager {
   
   // Create permanent session that NEVER expires
-  static async createPermanentSession(
+  async createPermanentSession(
     userId: number,
     customerNumber: string,
     deviceInfo: DeviceInfo
   ): Promise<string> {
     const sessionToken = crypto.randomBytes(64).toString('hex');
-    const deviceFingerprint = this.generateDeviceFingerprint(deviceInfo);
+    const deviceFingerprint = PermanentAuthManager.generateDeviceFingerprint(deviceInfo);
 
     // Remove any existing session for this user (one device per user)
     await db.delete(permanentUserSessions)
@@ -42,6 +42,21 @@ export class PermanentAuthManager {
 
     console.log(`🔒 PERMANENT SESSION CREATED: User ${userId} locked to device forever`);
     return sessionToken;
+  }
+
+  // Get session from request cookies
+  async getSession(req: any): Promise<{ userId: number; isValid: boolean } | null> {
+    const sessionToken = req.cookies.permanentSession;
+    if (!sessionToken) {
+      return null;
+    }
+
+    const user = await PermanentAuthManager.validatePermanentSession(sessionToken);
+    if (user) {
+      return { userId: user.id, isValid: true };
+    }
+    
+    return null;
   }
 
   // Validate permanent session - NO expiry checks
@@ -91,7 +106,7 @@ export class PermanentAuthManager {
   }
 
   // Revoke session - ONLY for admin deletion
-  static async revokePermanentSession(userId: number): Promise<boolean> {
+  async revokePermanentSession(userId: number): Promise<boolean> {
     try {
       await db.update(permanentUserSessions)
         .set({ isActive: false })
