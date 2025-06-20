@@ -38,18 +38,25 @@ export function hasPermanentToken(): boolean {
   return getPermanentToken() !== null;
 }
 
-// Validate token with server
+// Validate token with server - optimized for both iOS and Android
 export async function validateTokenWithServer(): Promise<any | null> {
   const token = getPermanentToken();
   if (!token) return null;
 
   try {
+    // Add timeout for mobile network reliability
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
     const response = await fetch('/api/auth/user', {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
-      }
+      },
+      signal: controller.signal
     });
+
+    clearTimeout(timeoutId);
 
     if (response.ok) {
       const userData = await response.json();

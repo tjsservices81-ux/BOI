@@ -198,6 +198,8 @@ function AppRoutes() {
 
   // Handle app state management for proper restart behavior
   useEffect(() => {
+    let isAppVisible = true;
+    
     const handleVisibilityChange = () => {
       if (!document.hidden) {
         // App came back to foreground - check if we need to restore state
@@ -208,6 +210,10 @@ function AppRoutes() {
         }
         isAppVisible = true;
         sessionStorage.removeItem('app_backgrounded');
+      } else {
+        // App going to background - mark as backgrounded for both iOS and Android
+        isAppVisible = false;
+        sessionStorage.setItem('app_backgrounded', Date.now().toString());
       }
     };
 
@@ -236,46 +242,43 @@ function AppRoutes() {
       }
     };
 
+    // Cross-platform app lifecycle event handlers for iOS and Android
     const handlePageHide = () => {
-      // Only mark for cold restart if this is actually an app closure
-      // PageHide can trigger for various reasons, so we're more conservative
-      sessionStorage.setItem('page_hidden', 'true');
+      isAppVisible = false;
+      sessionStorage.setItem('app_backgrounded', Date.now().toString());
     };
 
     const handlePageShow = (event: PageTransitionEvent) => {
-      // Only reload if this was a true app closure (page cache was not used)
-      const forceColdStart = localStorage.getItem('force_cold_start') === 'true';
-      
-      if (forceColdStart) {
-        // This was a real app closure - force full reload for cold launch
-        localStorage.removeItem('force_cold_start');
-        // Don't clear sessionStorage - preserve user login state
-        window.location.reload();
-      } else {
-        // This was just backgrounding/foregrounding - restore state
-        sessionStorage.removeItem('page_hidden');
+      isAppVisible = true;
+      if (event.persisted) {
+        // Page was restored from cache - restore state
         restoreAppStateOnForeground();
       }
+      sessionStorage.removeItem('app_backgrounded');
     };
 
-    const handleBeforeUnload = () => {
-      // Only mark for cold restart on actual app closure
-      // beforeUnload can trigger for many reasons, so we're conservative
-      if (document.visibilityState === 'hidden') {
-        localStorage.setItem('force_cold_start', 'true');
-      }
-    };
-
+    // Add cross-platform event listeners for iOS and Android
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('pagehide', handlePageHide);
     window.addEventListener('pageshow', handlePageShow);
-    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    // Android-specific app lifecycle events
+    window.addEventListener('focus', () => {
+      isAppVisible = true;
+      restoreAppStateOnForeground();
+    });
+    
+    window.addEventListener('blur', () => {
+      isAppVisible = false;
+      sessionStorage.setItem('app_backgrounded', Date.now().toString());
+    });
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('pagehide', handlePageHide);
       window.removeEventListener('pageshow', handlePageShow);
-      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('focus', () => {});
+      window.removeEventListener('blur', () => {});
     };
   }, []);
 

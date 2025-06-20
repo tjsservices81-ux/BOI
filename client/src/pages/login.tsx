@@ -1021,8 +1021,19 @@ export default function Login() {
                     onMouseDown={handleBiometricHoldStart}
                     onMouseUp={handleBiometricHoldEnd}
                     onMouseLeave={handleBiometricHoldEnd}
-                    onTouchStart={handleBiometricHoldStart}
-                    onTouchEnd={handleBiometricHoldEnd}
+                    onTouchStart={(e) => {
+                      e.preventDefault();
+                      handleBiometricHoldStart();
+                    }}
+                    onTouchEnd={(e) => {
+                      e.preventDefault();
+                      handleBiometricHoldEnd();
+                    }}
+                    onTouchCancel={(e) => {
+                      e.preventDefault();
+                      handleBiometricHoldEnd();
+                    }}
+                    onContextMenu={(e) => e.preventDefault()}
                     style={{
                       touchAction: 'manipulation',
                       userSelect: 'none',
