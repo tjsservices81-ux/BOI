@@ -3,8 +3,6 @@
   "schema": "./shared/schema.ts",
   "out": "./drizzle",
   "dbCredentials": {
-    "url": {
-      "env": "DATABASE_URL"
-    }
+    "url": "postgresql://neondb_owner:npg_7skOV3YLoMfQ@ep-falling-glitter-a6imi7n4.us-west-2.aws.neon.tech/neondb?sslmode=require"
   }
 }
