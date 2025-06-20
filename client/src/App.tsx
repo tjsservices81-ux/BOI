@@ -9,7 +9,7 @@ import BottomNavigation from "@/components/BottomNavigation";
 import { SecurityWrapper } from "@/components/SecurityWrapper";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { StateManager } from "@/utils/stateManager";
-import { AppLifecycle } from "@/utils/appLifecycle";
+// Removed AppLifecycle import for simpler restart handling
 import LiveChat from "@/components/LiveChat";
 import { OfflineBanner } from "@/components/OfflineBanner";
 
@@ -91,9 +91,10 @@ function AppRoutes() {
       const lastBackgroundTime = localStorage.getItem('app_background_time');
       
       if (!wasAppActive) {
-        // Fresh app start - show splash but keep user logged in
+        // Fresh app start - clear transient state but preserve authentication
+        console.log('Fresh app start detected - resetting UI state');
         setSplashShown(false);
-        localStorage.removeItem('app_background_time');
+        StateManager.clearTransientState();
         sessionStorage.setItem('app_was_active', 'true');
         
         // Always try to restore user session
@@ -165,58 +166,43 @@ function AppRoutes() {
 
     initializeApp();
     
-    // Handle app lifecycle events directly
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        // App going to background - save state and timestamp
-        localStorage.setItem('app_background_time', Date.now().toString());
-        if (user) {
-          StateManager.handleVisibilityChange(location, user);
-        }
-      }
-    };
-
+    // Handle app lifecycle events for proper restart detection
     const handleBeforeUnload = () => {
-      // Clear session marker to detect force close
+      // Clear session marker to detect app termination
       sessionStorage.removeItem('app_was_active');
-      if (user) {
-        StateManager.handleVisibilityChange(location, user);
-      }
     };
 
     const handlePageHide = () => {
+      // Clear session marker when app is hidden/swiped away
       sessionStorage.removeItem('app_was_active');
-      if (user) {
-        StateManager.handleVisibilityChange(location, user);
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        // App going to background - save timestamp
+        localStorage.setItem('app_background_time', Date.now().toString());
       }
     };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    // Add event listeners
     window.addEventListener('beforeunload', handleBeforeUnload);
     window.addEventListener('pagehide', handlePageHide);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('pagehide', handlePageHide);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 
-
-
-  // Handle app visibility changes for proper lifecycle management
+  // Handle app state management for proper restart behavior
   useEffect(() => {
-    let isAppVisible = true;
-    
     const handleVisibilityChange = () => {
-      if (document.hidden) {
-        isAppVisible = false;
-        // App is being backgrounded - just track state, don't set reload timers
-        sessionStorage.setItem('app_backgrounded', Date.now().toString());
-        sessionStorage.setItem('current_location', location);
-      } else {
-        // App is being foregrounded - restore state without any reloading
-        if (!isAppVisible) {
+      if (!document.hidden) {
+        // App came back to foreground - check if we need to restore state
+        const wasBackgrounded = sessionStorage.getItem('app_backgrounded');
+        if (wasBackgrounded) {
           // Always restore app state when returning from background
           restoreAppStateOnForeground();
         }
