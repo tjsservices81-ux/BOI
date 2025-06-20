@@ -2,6 +2,40 @@
 @tailwind components;
 @tailwind utilities;
 
+/* PWA and mobile platform optimizations */
+:root {
+  /* Android Chrome fix for viewport units */
+  --vh: 1vh;
+  --app-height: 100vh;
+  --app-height-android: 100dvh;
+}
+
+/* Universal mobile app container */
+.mobile-app-container {
+  height: 100vh;
+  height: 100dvh;
+  height: var(--app-height);
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
+  touch-action: manipulation;
+}
+
+/* Android-specific fixes */
+@media screen and (max-width: 768px) {
+  .mobile-app-container {
+    /* Fix for Samsung Internet and Chrome mobile */
+    height: 100vh;
+    height: 100dvh;
+    min-height: -webkit-fill-available;
+    min-height: 100dvh;
+  }
+}
+
 /* Mobile keyboard and viewport handling */
 .chat-container {
   height: 100vh;
@@ -27,10 +61,41 @@
   z-index: 10;
 }
 
-/* Prevent viewport zooming on input focus */
-input[type="text"], input[type="email"], input[type="password"], textarea {
+/* Prevent viewport zooming on input focus - Android/iOS universal */
+input[type="text"], 
+input[type="email"], 
+input[type="password"], 
+input[type="tel"],
+input[type="number"],
+textarea,
+select {
   font-size: 16px !important;
   -webkit-text-size-adjust: 100%;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  /* Fix Android Chrome autofill styling */
+  -webkit-box-shadow: 0 0 0 1000px white inset !important;
+  box-shadow: 0 0 0 1000px white inset !important;
+}
+
+/* Android-specific input fixes */
+@media screen and (max-width: 768px) {
+  input[type="text"], 
+  input[type="email"], 
+  input[type="password"], 
+  input[type="tel"],
+  input[type="number"],
+  textarea {
+    /* Prevent zoom on focus in Android Chrome */
+    font-size: max(16px, 1em) !important;
+    /* Fix Samsung keyboard interference */
+    -webkit-user-select: text;
+    user-select: text;
+    /* Remove Android Chrome blue highlight */
+    -webkit-tap-highlight-color: transparent;
+    tap-highlight-color: transparent;
+  }
 }
 
 /* iOS specific keyboard handling */
@@ -41,6 +106,123 @@ input[type="text"], input[type="email"], input[type="password"], textarea {
   
   .chat-input-area {
     padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
+
+/* Android Chrome PWA status bar fix */
+@media (display-mode: standalone) {
+  :root {
+    --status-bar-height: env(safe-area-inset-top, 0px);
+  }
+  
+  body {
+    padding-top: var(--status-bar-height);
+  }
+}
+
+/* Samsung Internet specific fixes */
+@media screen and (-webkit-min-device-pixel-ratio: 2) {
+  .mobile-app-container {
+    /* Samsung Internet viewport fix */
+    height: calc(100vh - env(keyboard-inset-height, 0px));
+  }
+}
+
+/* Android font rendering consistency */
+@media screen and (max-width: 768px) {
+  * {
+    /* Fix Android Chrome font rendering differences */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  
+  /* Android-specific button and tap fixes */
+  button, 
+  .btn,
+  [role="button"],
+  a {
+    /* Remove Android tap delay */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    /* Fix Samsung Internet button spacing */
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  
+  /* Android Chrome autofill override */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px white inset !important;
+    box-shadow: 0 0 0 30px white inset !important;
+    -webkit-text-fill-color: #000 !important;
+  }
+  
+  /* Fix Android scrolling performance */
+  .overflow-auto,
+  .overflow-y-auto,
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+}
+
+/* PWA splash screen fix for Android */
+@media (display-mode: standalone) and (max-width: 768px) {
+  .splash-screen {
+    /* Ensure full coverage on Android PWA */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    z-index: 9999;
+    background: #126987;
+  }
+}
+
+/* Android keyboard handling */
+@supports (height: 100dvh) {
+  @media screen and (max-width: 768px) {
+    .mobile-app-container {
+      height: 100dvh;
+      min-height: 100dvh;
+    }
+    
+    /* Fix for Android Chrome when keyboard appears */
+    .keyboard-visible .mobile-app-container {
+      height: calc(100dvh - env(keyboard-inset-height, 0px));
+    }
+  }
+}
+
+/* Android Chrome specific input fixes */
+@media screen and (max-width: 768px) and (-webkit-min-device-pixel-ratio: 1) {
+  /* Target Android Chrome specifically */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  input[type="number"] {
+    /* Prevent zoom and fix layout shift */
+    font-size: 16px !important;
+    line-height: 1.5;
+    padding: 12px;
+    border-radius: 8px;
+    /* Fix Android Chrome input border rendering */
+    border: 1px solid #d1d5db;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+  
+  input:focus {
+    border-color: #126987;
+    /* Remove Android Chrome blue outline */
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
   }
 }
 
