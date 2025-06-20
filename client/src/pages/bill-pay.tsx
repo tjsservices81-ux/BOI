@@ -15,8 +15,7 @@ import {
 import type { Payee, ScheduledPayment } from "@shared/schema";
 
 export default function BillPay() {
-  const authHook = useAuth();
-  const user = authHook?.user || null;
+  const { user } = usePermanentAuth();
   
   const locationHook = useLocation();
   const [, navigate] = locationHook || [null, () => {}];

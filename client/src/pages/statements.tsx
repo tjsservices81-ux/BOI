@@ -14,8 +14,7 @@ import {
 import type { Account, Statement } from "@shared/schema";
 
 export default function Statements() {
-  const authHook = useAuth();
-  const user = authHook?.user || null;
+  const { user } = usePermanentAuth();
   
   const locationHook = useLocation();
   const [, navigate] = locationHook || [null, () => {}];
