@@ -994,8 +994,9 @@ export default function Login() {
         <div className="flex items-center justify-center pt-12 pb-6 flex-shrink-0">
           <div className="flex items-center">
             <button 
-              onClick={handleLogoTap}
-              className="active:scale-95 transition-transform"
+              onClick={user ? undefined : handleLogoTap}
+              className={user ? "cursor-default" : "active:scale-95 transition-transform"}
+              style={user ? { pointerEvents: 'none' } : {}}
             >
               <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-8 filter brightness-0 invert" />
             </button>
