@@ -1,5 +1,4 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
-import { offlineManager } from "@/utils/offlineManager";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -13,40 +12,15 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  try {
-    const res = await fetch(url, {
-      method,
-      headers: data ? { "Content-Type": "application/json" } : {},
-      body: data ? JSON.stringify(data) : undefined,
-      credentials: "include",
-    });
+  const res = await fetch(url, {
+    method,
+    headers: data ? { "Content-Type": "application/json" } : {},
+    body: data ? JSON.stringify(data) : undefined,
+    credentials: "include",
+  });
 
-    await throwIfResNotOk(res);
-    return res;
-  } catch (error) {
-    // If offline and it's a mutation, queue for later
-    if (!navigator.onLine && ['POST', 'PUT', 'DELETE'].includes(method)) {
-      await offlineManager.queuePendingAction({
-        method,
-        url,
-        data,
-        type: 'api_request'
-      });
-      
-      // Return a success response indicating it's queued
-      return new Response(
-        JSON.stringify({ 
-          message: 'Request queued for when online',
-          offline: true 
-        }),
-        { 
-          status: 202,
-          headers: { 'Content-Type': 'application/json' }
-        }
-      );
-    }
-    throw error;
-  }
+  await throwIfResNotOk(res);
+  return res;
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";

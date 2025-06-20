@@ -2,14 +2,15 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin, Calendar, CreditCard, X, RefreshCw, Plus, MessageCircle, Trash2, PhoneCall } from "lucide-react";
 import { UserDataManager } from "@/utils/userDataManager";
-import { usePermanentAuth } from "@/lib/permanentAuthContext";
+import { useAuth } from "@/lib/auth";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Profile() {
   const locationHook = useLocation();
   const [, navigate] = locationHook || [null, () => {}];
   
-  const { user } = usePermanentAuth();
+  const authHook = useAuth();
+  const logout = authHook?.logout || (() => {});
   const [tapCount, setTapCount] = useState(0);
   const [lastTapTime, setLastTapTime] = useState(0);
   const [showAdminPanel, setShowAdminPanel] = useState(false);

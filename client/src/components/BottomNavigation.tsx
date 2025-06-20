@@ -1,12 +1,13 @@
 import { useLocation } from "wouter";
-import { usePermanentAuth } from "@/lib/permanentAuthContext";
+import { useAuth } from "@/lib/auth";
 import { useEffect, useState } from "react";
 
 export default function BottomNavigation() {
   const locationHook = useLocation();
   const [location, setLocation] = locationHook || ['/', () => {}];
   
-  const { user } = usePermanentAuth();
+  const authHook = useAuth();
+  const user = authHook?.user || null;
   const [isSplashActive, setIsSplashActive] = useState(true);
 
   // Monitor splash screen state

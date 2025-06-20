@@ -562,11 +562,7 @@ router.get('/panel', adminAuth, async (req, res) => {
             if (response.ok) {
               // Clear all cached data for the deleted user from browser storage
               try {
-                // CRITICAL: Clear permanent authentication tokens first
-                localStorage.removeItem('banking_permanent_token');
-                localStorage.removeItem('banking_user_data');
-                
-                // Clear all user-specific localStorage entries
+                // Clear localStorage entries for this customer
                 const allKeys = Object.keys(localStorage);
                 for (const key of allKeys) {
                   if (key.includes(currentCustomerNumber)) {
@@ -591,18 +587,7 @@ router.get('/panel', adminAuth, async (req, res) => {
                   localStorage.removeItem('lastActiveUser');
                 }
                 
-                // Clear user registry and cached data
-                try {
-                  const allUsers = JSON.parse(localStorage.getItem('bankUsers') || '{}');
-                  if (allUsers[currentCustomerNumber]) {
-                    delete allUsers[currentCustomerNumber];
-                    localStorage.setItem('bankUsers', JSON.stringify(allUsers));
-                  }
-                } catch (e) {
-                  console.log('No user registry to clean');
-                }
-                
-                console.log(\`🧹 Admin cleanup: Removed ALL authentication data and browser storage for customer \${currentCustomerNumber}\`);
+                console.log(\`🧹 Admin cleanup: Removed all browser data for customer \${currentCustomerNumber}\`);
               } catch (cleanupError) {
                 console.error('Error during frontend cleanup:', cleanupError);
               }
@@ -753,17 +738,12 @@ router.post('/delete-user', adminAuth, async (req, res) => {
     // Import required modules
     const { storage } = await import('./storage');
     const { invalidateAllUserSessions } = await import('./sessionManager');
-    const { revokeAllUserTokens } = await import('./permanentAuth');
     
     // First, verify user exists
     const user = await storage.getUserByCustomerNumber(customerNumber);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
-    
-    // CRITICAL: Revoke all permanent authentication tokens FIRST
-    const revokedTokens = await revokeAllUserTokens(user.id);
-    console.log(`🔑 PERMANENT TOKEN CLEANUP: Revoked ${revokedTokens} authentication tokens for user ${customerNumber}`);
     
     // Delete user from database (this includes all accounts, transactions, payees, etc.)
     const userDeleted = await storage.deleteUser(customerNumber);
@@ -772,21 +752,18 @@ router.post('/delete-user', adminAuth, async (req, res) => {
       // Invalidate all active express sessions for this user
       const invalidatedSessions = invalidateAllUserSessions(customerNumber);
       
-      // Remove all device sessions for this customer - PERMANENT REMOVAL
+      // Remove all device sessions for this customer
       await deleteAllUserSessions(customerNumber);
       
-      console.log(`🗑️ ADMIN DELETION COMPLETE: User ${customerNumber} PERMANENTLY REMOVED`);
-      console.log(`📊 Database deletion: ${userDeleted ? 'SUCCESS - ALL DATA PERMANENTLY DESTROYED' : 'FAILED'}`);
-      console.log(`🔑 Token cleanup: ${revokedTokens} permanent authentication tokens revoked`);
-      console.log(`🔒 Session cleanup: ${invalidatedSessions.length} active sessions permanently terminated`);
-      console.log(`⚠️ UNRECOVERABLE: User ${customerNumber} and ALL associated data permanently deleted - CANNOT BE RESTORED`);
+      console.log(`Admin successfully deleted user account: ${customerNumber}`);
+      console.log(`Database deletion: ${userDeleted ? 'SUCCESS' : 'FAILED'}`);
+      console.log(`Invalidated ${invalidatedSessions.length} active sessions`);
       
       res.json({ 
         success: true, 
         message: 'User account permanently deleted and logged out from all devices',
         details: {
           userDeleted: true,
-          tokensRevoked: revokedTokens,
           sessionsInvalidated: invalidatedSessions.length
         }
       });

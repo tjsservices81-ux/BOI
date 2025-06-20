@@ -73,7 +73,7 @@ export const statements = pgTable("statements", {
   available: boolean("available").notNull().default(true),
 });
 
-// Permanent session storage table for authentication persistence
+// Session storage table for authentication persistence
 export const sessions = pgTable(
   "sessions",
   {
@@ -83,18 +83,6 @@ export const sessions = pgTable(
   },
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
-
-// Permanent authentication tokens table - never expires unless admin deletes
-export const permanentTokens = pgTable("permanent_tokens", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
-  token: text("token").notNull().unique(),
-  deviceId: text("device_id"),
-  deviceInfo: jsonb("device_info"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  lastUsed: timestamp("last_used").notNull().defaultNow(),
-  isActive: boolean("is_active").notNull().default(true),
-});
 
 // Chat messages table for persistent chat storage
 export const chatMessages = pgTable("chat_messages", {
@@ -157,10 +145,6 @@ export const insertChatSessionSchema = createInsertSchema(chatSessions).omit({
   id: true,
 });
 
-export const insertPermanentTokenSchema = createInsertSchema(permanentTokens).omit({
-  id: true,
-});
-
 export const loginSchema = z.object({
   customerNumber: z.string().min(1, "Customer number is required"),
   pin: z.string().min(4, "PIN must be at least 4 digits"),
@@ -183,7 +167,6 @@ export type Statement = typeof statements.$inferSelect;
 export type ChatMessage = typeof chatMessages.$inferSelect;
 export type ChatResponse = typeof chatResponses.$inferSelect;
 export type ChatSession = typeof chatSessions.$inferSelect;
-export type PermanentToken = typeof permanentTokens.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertAccount = z.infer<typeof insertAccountSchema>;
 export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
@@ -191,6 +174,5 @@ export type InsertPayee = z.infer<typeof insertPayeeSchema>;
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type InsertChatResponse = z.infer<typeof insertChatResponseSchema>;
 export type InsertChatSession = z.infer<typeof insertChatSessionSchema>;
-export type InsertPermanentToken = z.infer<typeof insertPermanentTokenSchema>;
 export type LoginRequest = z.infer<typeof loginSchema>;
 export type TransferRequest = z.infer<typeof transferSchema>;

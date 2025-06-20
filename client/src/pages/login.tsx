@@ -4,8 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { loginWithPermanentAuth, autoLoginOnStart, hasPermanentToken } from "@/lib/permanentAuth";
-import { usePermanentAuth } from "@/lib/permanentAuthContext";
+import { useAuth } from "@/lib/auth";
 import { User, ExternalLink, HelpCircle, Phone, Settings, Shield, MapPin, MoreHorizontal } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { UserDataManager } from "@/utils/userDataManager";
@@ -34,7 +33,6 @@ export default function Login() {
   });
   const [logoTapCount, setLogoTapCount] = useState(0);
   const [showAdminLogin, setShowAdminLogin] = useState(false);
-  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
   const [showOtcVerification, setShowOtcVerification] = useState(false);
   const [otcCode, setOtcCode] = useState('');
   const [generatedOtc, setGeneratedOtc] = useState('');
@@ -50,9 +48,9 @@ export default function Login() {
   const emailInputRef = useRef<HTMLInputElement>(null);
   const phoneInputRef = useRef<HTMLInputElement>(null);
   
-  // Permanent authentication - no session expiry
-  const { user, setUser, isLoading } = usePermanentAuth();
-  const [localIsLoading, setLocalIsLoading] = useState(false);
+  const authHook = useAuth();
+  const login = authHook?.login || (() => {});
+  const isLoading = authHook?.isLoading || false;
   
   const locationHook = useLocation();
   const [, navigate] = locationHook || [null, () => {}];
@@ -60,32 +58,6 @@ export default function Login() {
   
   const toastHook = useToast();
   const toast = toastHook?.toast || (() => {});
-
-  // Auto-login check on component mount
-  useEffect(() => {
-    const checkAutoLogin = async () => {
-      if (hasPermanentToken()) {
-        // 🔐 CRITICAL: If user has permanent token, they are logged in - disable logo
-        setIsUserLoggedIn(true);
-        
-        setLocalIsLoading(true);
-        try {
-          const userData = await autoLoginOnStart();
-          if (userData) {
-            setUser(userData);
-            console.log('Auto-login successful - user authenticated permanently');
-            navigate('/dashboard');
-            return;
-          }
-        } catch (error) {
-          console.log('Auto-login failed, proceeding to login screen');
-        }
-        setLocalIsLoading(false);
-      }
-    };
-    
-    checkAutoLogin();
-  }, [navigate]);
 
   // Validate users against server and clean up deleted ones
   const validateAndCleanUsers = async () => {
@@ -172,11 +144,6 @@ export default function Login() {
   };
 
   const handleLogoTap = () => {
-    // 🔐 CRITICAL: Disable logo tap functionality if user is logged in
-    if (isUserLoggedIn) {
-      return;
-    }
-    
     const newTapCount = logoTapCount + 1;
     setLogoTapCount(newTapCount);
     
@@ -298,9 +265,6 @@ export default function Login() {
         UserDataManager.registerUser(pendingAccountData);
         UserDataManager.initializeFreshAccount(pendingAccountData.customerNumber);
 
-        // 🔐 CRITICAL: User has finished verification - disable Bank of Ireland logo tap
-        setIsUserLoggedIn(true);
-
         toast({
           title: "Account Created Successfully",
           description: `Your customer number is ${pendingAccountData.customerNumber}. Please remember this for future logins.`,
@@ -352,7 +316,7 @@ export default function Login() {
     try {
       const userProfile = UserDataManager.getUserProfile();
       if (userProfile) {
-        setUser({
+        login({
           id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
           name: userProfile.name,
           email: userProfile.email
@@ -458,10 +422,10 @@ export default function Login() {
   };
 
   const handleLoginButton = async () => {
-    if (!biometricVerified) {
+    if (!biometricVerified && !pinVerified) {
       toast({
         title: "Authentication Required",
-        description: "Please complete biometric verification to continue",
+        description: "Please verify with biometric or PIN first",
         variant: "destructive",
       });
       return;
@@ -557,14 +521,15 @@ export default function Login() {
         throw new Error("No valid user session found");
       }
       
-      // Authenticate with permanent token system using biometric verification
-      try {
-        const targetUser = currentUser || UserDataManager.getLastActiveUser() || Object.keys(UserDataManager.getAllUsers())[0];
-        const loginData = await loginWithPermanentAuth(targetUser, "000000"); // Use default PIN since biometric is verified
-        setUser(loginData.user);
-        console.log('Permanent authentication successful - user will stay logged in indefinitely');
-      } catch (error) {
-        throw new Error("Authentication failed");
+      // Record login time and authenticate through auth context
+      UserDataManager.recordLoginTime(currentUser);
+      const userProfile = UserDataManager.getUserProfile();
+      if (userProfile) {
+        login({
+          id: parseInt(currentUser.replace(/\D/g, '')) || 1,
+          name: userProfile.name,
+          email: userProfile.email
+        });
       }
       
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -617,22 +582,21 @@ export default function Login() {
       return;
     }
     
-    try {
-      setLocalIsLoading(true);
-      const loginData = await loginWithPermanentAuth(customerNumber, pin);
-      setUser(loginData.user);
-      setPinVerified(true);
-      console.log('PIN verification successful - permanent authentication active');
-      navigate('/dashboard');
-    } catch (error: any) {
-      toast({
-        title: "Login Failed",
-        description: error.message || "Invalid credentials",
-        variant: "destructive",
+    // Initialize fresh account data and verify PIN
+    UserDataManager.initializeFreshAccount(customerNumber);
+    UserDataManager.recordLoginTime(customerNumber);
+    const userProfile = UserDataManager.getUserProfile();
+    if (userProfile) {
+      login({
+        id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
+        name: userProfile.name,
+        email: userProfile.email
       });
-    } finally {
-      setLocalIsLoading(false);
     }
+    setPinVerified(true);
+    
+    // Navigate to dashboard after verification
+    navigate('/dashboard');
   };
 
   const requestLocation = () => {
@@ -1007,10 +971,7 @@ export default function Login() {
           <div className="flex items-center">
             <button 
               onClick={handleLogoTap}
-              className={`transition-transform ${isUserLoggedIn ? 'cursor-default opacity-50' : 'active:scale-95 cursor-pointer'}`}
-              style={{
-                pointerEvents: isUserLoggedIn ? 'none' : 'auto'
-              }}
+              className="active:scale-95 transition-transform"
             >
               <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-8 filter brightness-0 invert" />
             </button>
@@ -1036,19 +997,8 @@ export default function Login() {
                     onMouseDown={handleBiometricHoldStart}
                     onMouseUp={handleBiometricHoldEnd}
                     onMouseLeave={handleBiometricHoldEnd}
-                    onTouchStart={(e) => {
-                      e.preventDefault();
-                      handleBiometricHoldStart();
-                    }}
-                    onTouchEnd={(e) => {
-                      e.preventDefault();
-                      handleBiometricHoldEnd();
-                    }}
-                    onTouchCancel={(e) => {
-                      e.preventDefault();
-                      handleBiometricHoldEnd();
-                    }}
-                    onContextMenu={(e) => e.preventDefault()}
+                    onTouchStart={handleBiometricHoldStart}
+                    onTouchEnd={handleBiometricHoldEnd}
                     style={{
                       touchAction: 'manipulation',
                       userSelect: 'none',
@@ -1129,7 +1079,7 @@ export default function Login() {
                   onClick={handleLoginButton}
                   disabled={isLoading}
                   className={`w-full py-2.5 ios-button font-semibold text-sm mb-3 transition-all duration-200 ${
-                    biometricVerified 
+                    biometricVerified || pinVerified 
                       ? 'bg-[#126987] text-white hover:bg-[#3a5a65] active:scale-95' 
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   } disabled:opacity-50`}
@@ -1138,7 +1088,13 @@ export default function Login() {
                   {isLoading ? "Logging in..." : "Log in"}
                 </button>
 
-
+                {/* Forgot PIN */}
+                <div className="text-center mb-3">
+                  <button className="text-[#126987] text-xs flex items-center justify-center space-x-1 active:scale-95 transition-transform" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
+                    <span>Forgot your PIN?</span>
+                    <ExternalLink className="w-2.5 h-2.5" />
+                  </button>
+                </div>
 
                 {/* Divider */}
                 <div className="border-t border-gray-200 my-3"></div>
@@ -1152,9 +1108,81 @@ export default function Login() {
                 </div>
               </div>
 
+              {/* PIN Option Card - separate gray card */}
+              <button 
+                className="w-full bg-gray-50 border border-gray-200 ios-card p-3 flex items-center space-x-3 hover:bg-gray-100 active:scale-98 transition-all duration-150"
+                onClick={() => {
+                  console.log("PIN button clicked, current showPinLogin:", showPinLogin);
+                  setShowPinLogin(!showPinLogin);
+                }}
+              >
+                <div className="w-5 h-5 bg-gray-300 rounded-full flex items-center justify-center">
+                  <span className="text-gray-600 text-xs font-bold">⋯</span>
+                </div>
+                <span className="flex-1 text-left text-gray-700 text-xs font-medium" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>Use your PIN instead</span>
+                <span className="text-gray-400 text-sm">›</span>
+              </button>
 
-
-
+              {/* PIN Login Form - shows when showPinLogin is true */}
+              {showPinLogin ? (
+                <div className="bg-white ios-card p-4 border-2 border-blue-200">
+                  <h3 className="text-lg font-semibold mb-4 text-gray-800" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
+                    Log in with PIN
+                  </h3>
+                  <form onSubmit={handlePinVerification} className="space-y-4">
+                    <div>
+                      <Label htmlFor="customerNumber" className="text-sm font-medium text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Customer Number
+                      </Label>
+                      <Input
+                        id="customerNumber"
+                        type="text"
+                        value={customerNumber}
+                        onChange={(e) => setCustomerNumber(e.target.value)}
+                        placeholder="Enter your customer number"
+                        className="mt-1 ios-input"
+                        disabled={isLoading}
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="pin" className="text-sm font-medium text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        PIN
+                      </Label>
+                      <Input
+                        id="pin"
+                        type="password"
+                        value={pin}
+                        onChange={(e) => setPin(e.target.value)}
+                        placeholder="Enter your PIN"
+                        className="mt-1 ios-input"
+                        maxLength={6}
+                        disabled={isLoading}
+                      />
+                    </div>
+                    
+                    <Button 
+                      type="submit" 
+                      className={`w-full text-white hover:bg-[#3a5a65] ${
+                        pinVerified ? 'bg-green-600' : 'bg-[#126987]'
+                      }`}
+                      disabled={isLoading || pinVerified}
+                      style={{ fontFamily: 'OpenSans, sans-serif' }}
+                    >
+                      {pinVerified ? "PIN Verified ✓" : "Verify PIN"}
+                    </Button>
+                    
+                    <button
+                      type="button"
+                      onClick={() => setShowPinLogin(false)}
+                      className="w-full text-gray-500 text-sm hover:text-gray-700 transition-colors duration-150"
+                      style={{ fontFamily: 'OpenSans, sans-serif' }}
+                    >
+                      Cancel
+                    </button>
+                  </form>
+                </div>
+              ) : null}
 
               {/* Approval Option Card - display only */}
               <div className="w-full bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center space-x-3">
@@ -1427,7 +1455,7 @@ export default function Login() {
                       onClick={() => {
                         UserDataManager.initializeFreshAccount(customerNumber);
                         UserDataManager.recordLoginTime(customerNumber);
-                        setUser({
+                        login({
                           id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
                           name: userData.name,
                           email: userData.email

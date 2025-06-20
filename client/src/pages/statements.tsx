@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
-import { usePermanentAuth } from "@/lib/permanentAuthContext";
+import { useAuth } from "@/lib/auth";
 import { BottomNavigation } from "@/components/ui/bottom-navigation";
 import { 
   ArrowLeft, 
@@ -14,7 +14,8 @@ import {
 import type { Account, Statement } from "@shared/schema";
 
 export default function Statements() {
-  const { user } = usePermanentAuth();
+  const authHook = useAuth();
+  const user = authHook?.user || null;
   
   const locationHook = useLocation();
   const [, navigate] = locationHook || [null, () => {}];

@@ -7,6 +7,7 @@ export class AppLifecycle {
   private static visibilityTimeout: NodeJS.Timeout | null = null;
   private static isAppTerminated = false;
   private static backgroundTime = 0;
+  // Session timeout removed - users stay logged in permanently unless admin deletes account
 
   static initialize() {
     if (this.isInitialized) return;
@@ -30,25 +31,27 @@ export class AppLifecycle {
   }
 
   static checkAppTermination() {
-    // Use sessionStorage to detect true app restart vs resume
-    const wasActiveSession = sessionStorage.getItem('app_active_session');
+    const sessionData = localStorage.getItem('app_session_state');
+    const lastBackgroundTime = localStorage.getItem('app_background_time');
     
-    if (!wasActiveSession) {
-      // This is a fresh app start (no active session marker)
+    if (!sessionData || !lastBackgroundTime) {
+      // No previous session or background time - fresh start but keep user logged in
       this.isAppTerminated = true;
-      console.log('Fresh app start detected - resetting transient state');
-      
-      // Clear only transient app state, preserve authentication
-      StateManager.clearTransientState();
-      
-      // Mark session as active
-      sessionStorage.setItem('app_active_session', Date.now().toString());
+      // Don't clear app state - preserve user login
       return;
     }
     
-    // This is a resume from background, preserve all state
+    // Always restore state regardless of background duration
+    // Users stay logged in permanently unless admin deletes account
+    
+    // Check if page was unloaded/refreshed (indicates force close or refresh)
+    if (!sessionStorage.getItem('app_active_session')) {
+      this.isAppTerminated = true;
+      // Don't clear app state - preserve user login
+      return;
+    }
+    
     this.isAppTerminated = false;
-    console.log('App resumed from background - preserving state');
   }
 
   static handleVisibilityChange() {
@@ -93,57 +96,95 @@ export class AppLifecycle {
   }
 
   static handleBlur() {
-    this.lastActiveTime = Date.now();
-    this.saveCurrentState();
+    // Delay saving state to avoid excessive saves
+    if (this.visibilityTimeout) {
+      clearTimeout(this.visibilityTimeout);
+    }
+    
+    this.visibilityTimeout = setTimeout(() => {
+      this.saveCurrentState();
+    }, 100);
+  }
+
+  static clearAppState() {
+    // Only clear temporary session data, preserve user login
+    localStorage.removeItem('app_session_state');
+    localStorage.removeItem('app_background_time');
+    sessionStorage.removeItem('app_active_session');
+    // Don't call StateManager.clearAppState() - preserve user login
   }
 
   static saveCurrentState() {
     try {
-      const currentState = {
-        route: window.location.pathname,
-        timestamp: Date.now(),
-        scrollPosition: window.scrollY
-      };
-      localStorage.setItem('app_session_state', JSON.stringify(currentState));
+      const currentUser = JSON.parse(localStorage.getItem('bankingUser') || 'null');
+      const currentRoute = window.location.pathname;
+      
+      if (currentUser) {
+        // Save scroll positions for all scroll containers
+        const scrollPositions: Record<string, number> = {};
+        
+        document.querySelectorAll('[data-scroll-container]').forEach(element => {
+          const container = element as HTMLElement;
+          const route = container.dataset.scrollRoute;
+          if (route) {
+            scrollPositions[route] = container.scrollTop;
+          }
+        });
+
+        // Save main window scroll if no specific containers
+        if (Object.keys(scrollPositions).length === 0) {
+          scrollPositions[currentRoute] = window.scrollY;
+        }
+
+        StateManager.saveAppState({
+          currentRoute,
+          user: currentUser,
+          scrollPositions,
+          formData: StateManager.getAllFormData(),
+          timestamp: Date.now()
+        });
+      }
     } catch (error) {
-      console.error('Failed to save current state:', error);
+      console.error('Failed to save app state:', error);
     }
   }
 
   static restoreStateIfNeeded() {
     try {
-      const savedState = localStorage.getItem('app_session_state');
-      if (savedState) {
-        const state = JSON.parse(savedState);
-        // Restore scroll position if on same route
-        if (state.route === window.location.pathname && state.scrollPosition) {
-          setTimeout(() => {
-            window.scrollTo(0, state.scrollPosition);
-          }, 100);
-        }
+      const savedState = StateManager.restoreAppState();
+      if (savedState && savedState.scrollPositions) {
+        // Restore scroll positions after a brief delay
+        setTimeout(() => {
+          Object.entries(savedState.scrollPositions).forEach(([route, position]) => {
+            const scrollPosition = typeof position === 'number' ? position : 0;
+            const container = document.querySelector(`[data-scroll-route="${route}"]`) as HTMLElement;
+            if (container && scrollPosition > 0) {
+              container.scrollTo({ top: scrollPosition, behavior: 'instant' });
+            } else if (route === window.location.pathname && scrollPosition > 0) {
+              window.scrollTo({ top: scrollPosition, behavior: 'instant' });
+            }
+          });
+        }, 100);
       }
     } catch (error) {
       console.error('Failed to restore state:', error);
     }
   }
 
-  static getAppTerminationStatus() {
-    return this.isAppTerminated;
-  }
-
   static cleanup() {
-    if (this.visibilityTimeout) {
-      clearTimeout(this.visibilityTimeout);
-      this.visibilityTimeout = null;
-    }
-    
+    if (!this.isInitialized) return;
+
     document.removeEventListener('visibilitychange', this.handleVisibilityChange.bind(this));
     window.removeEventListener('beforeunload', this.handleBeforeUnload.bind(this));
     window.removeEventListener('pagehide', this.handlePageHide.bind(this));
     window.removeEventListener('pageshow', this.handlePageShow.bind(this));
     window.removeEventListener('focus', this.handleFocus.bind(this));
     window.removeEventListener('blur', this.handleBlur.bind(this));
-    
+
+    if (this.visibilityTimeout) {
+      clearTimeout(this.visibilityTimeout);
+    }
+
     this.isInitialized = false;
   }
 }

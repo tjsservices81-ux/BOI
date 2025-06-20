@@ -4,14 +4,13 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { PermanentAuthProvider, usePermanentAuth } from "@/lib/permanentAuthContext";
+import { AuthProvider, useAuth } from "@/lib/auth";
 import BottomNavigation from "@/components/BottomNavigation";
 import { SecurityWrapper } from "@/components/SecurityWrapper";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { StateManager } from "@/utils/stateManager";
-// Removed AppLifecycle import for simpler restart handling
+import { AppLifecycle } from "@/utils/appLifecycle";
 import LiveChat from "@/components/LiveChat";
-import { OfflineBanner } from "@/components/OfflineBanner";
 
 
 
@@ -36,7 +35,9 @@ import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
 
 function ProtectedRoute({ children, fallback }: { children: React.ReactNode; fallback?: React.ReactNode }) {
-  const { user, isLoading } = usePermanentAuth();
+  const authHook = useAuth();
+  const user = authHook?.user || null;
+  const isLoading = authHook?.isLoading || false;
   
   // Prevent any flash by immediately redirecting if no user
   if (!user && !isLoading) {
@@ -52,7 +53,10 @@ function ProtectedRoute({ children, fallback }: { children: React.ReactNode; fal
 }
 
 function AppRoutes() {
-  const { user, isLoading, setUser } = usePermanentAuth();
+  const authHook = useAuth();
+  const user = authHook?.user || null;
+  const isLoading = authHook?.isLoading || false;
+  const login = authHook?.login || (() => {});
   
   const locationHook = useLocation();
   const [location, navigate] = locationHook || ['/', () => {}];
@@ -91,10 +95,9 @@ function AppRoutes() {
       const lastBackgroundTime = localStorage.getItem('app_background_time');
       
       if (!wasAppActive) {
-        // Fresh app start - clear transient state but preserve authentication
-        console.log('Fresh app start detected - resetting UI state');
+        // Fresh app start - show splash but keep user logged in
         setSplashShown(false);
-        StateManager.clearTransientState();
+        localStorage.removeItem('app_background_time');
         sessionStorage.setItem('app_was_active', 'true');
         
         // Always try to restore user session
@@ -102,7 +105,7 @@ function AppRoutes() {
           const savedState = StateManager.restoreAppState();
           if (savedState && savedState.user && !user) {
             // Restore user session silently
-            setUser(savedState.user);
+            login(savedState.user);
           }
         } catch (error) {
           console.error('Failed to restore user session:', error);
@@ -116,7 +119,7 @@ function AppRoutes() {
           
           if (savedState && savedState.user && !user) {
             // Restore user session silently
-            setUser(savedState.user);
+            login(savedState.user);
             
             // Restore route if different from current
             if (savedState.currentRoute !== location && savedState.currentRoute !== '/login') {
@@ -139,7 +142,7 @@ function AppRoutes() {
         try {
           const savedState = StateManager.restoreAppState();
           if (savedState && savedState.user && !user) {
-            setUser(savedState.user);
+            login(savedState.user);
           }
         } catch (error) {
           console.error('Failed to restore user session:', error);
@@ -166,55 +169,63 @@ function AppRoutes() {
 
     initializeApp();
     
-    // Handle app lifecycle events for proper restart detection
-    const handleBeforeUnload = () => {
-      // Clear session marker to detect app termination
-      sessionStorage.removeItem('app_was_active');
-    };
-
-    const handlePageHide = () => {
-      // Clear session marker when app is hidden/swiped away
-      sessionStorage.removeItem('app_was_active');
-    };
-
+    // Handle app lifecycle events directly
     const handleVisibilityChange = () => {
       if (document.hidden) {
-        // App going to background - save timestamp
+        // App going to background - save state and timestamp
         localStorage.setItem('app_background_time', Date.now().toString());
+        if (user) {
+          StateManager.handleVisibilityChange(location, user);
+        }
       }
     };
 
-    // Add event listeners
+    const handleBeforeUnload = () => {
+      // Clear session marker to detect force close
+      sessionStorage.removeItem('app_was_active');
+      if (user) {
+        StateManager.handleVisibilityChange(location, user);
+      }
+    };
+
+    const handlePageHide = () => {
+      sessionStorage.removeItem('app_was_active');
+      if (user) {
+        StateManager.handleVisibilityChange(location, user);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('beforeunload', handleBeforeUnload);
     window.addEventListener('pagehide', handlePageHide);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
     
     return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('pagehide', handlePageHide);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 
-  // Handle app state management for proper restart behavior
-  const [isAppVisible, setIsAppVisible] = useState(true);
-  
+
+
+  // Handle app visibility changes for proper lifecycle management
   useEffect(() => {
+    let isAppVisible = true;
     
     const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        // App came back to foreground - check if we need to restore state
-        const wasBackgrounded = sessionStorage.getItem('app_backgrounded');
-        if (wasBackgrounded) {
+      if (document.hidden) {
+        isAppVisible = false;
+        // App is being backgrounded - just track state, don't set reload timers
+        sessionStorage.setItem('app_backgrounded', Date.now().toString());
+        sessionStorage.setItem('current_location', location);
+      } else {
+        // App is being foregrounded - restore state without any reloading
+        if (!isAppVisible) {
           // Always restore app state when returning from background
           restoreAppStateOnForeground();
         }
-        setIsAppVisible(true);
+        isAppVisible = true;
         sessionStorage.removeItem('app_backgrounded');
-      } else {
-        // App going to background - mark as backgrounded for both iOS and Android
-        setIsAppVisible(false);
-        sessionStorage.setItem('app_backgrounded', Date.now().toString());
       }
     };
 
@@ -243,43 +254,46 @@ function AppRoutes() {
       }
     };
 
-    // Cross-platform app lifecycle event handlers for iOS and Android
     const handlePageHide = () => {
-      setIsAppVisible(false);
-      sessionStorage.setItem('app_backgrounded', Date.now().toString());
+      // Only mark for cold restart if this is actually an app closure
+      // PageHide can trigger for various reasons, so we're more conservative
+      sessionStorage.setItem('page_hidden', 'true');
     };
 
     const handlePageShow = (event: PageTransitionEvent) => {
-      setIsAppVisible(true);
-      if (event.persisted) {
-        // Page was restored from cache - restore state
+      // Only reload if this was a true app closure (page cache was not used)
+      const forceColdStart = localStorage.getItem('force_cold_start') === 'true';
+      
+      if (forceColdStart) {
+        // This was a real app closure - force full reload for cold launch
+        localStorage.removeItem('force_cold_start');
+        // Don't clear sessionStorage - preserve user login state
+        window.location.reload();
+      } else {
+        // This was just backgrounding/foregrounding - restore state
+        sessionStorage.removeItem('page_hidden');
         restoreAppStateOnForeground();
       }
-      sessionStorage.removeItem('app_backgrounded');
     };
 
-    // Add cross-platform event listeners for iOS and Android
+    const handleBeforeUnload = () => {
+      // Only mark for cold restart on actual app closure
+      // beforeUnload can trigger for many reasons, so we're conservative
+      if (document.visibilityState === 'hidden') {
+        localStorage.setItem('force_cold_start', 'true');
+      }
+    };
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('pagehide', handlePageHide);
     window.addEventListener('pageshow', handlePageShow);
-    
-    // Android-specific app lifecycle events
-    window.addEventListener('focus', () => {
-      setIsAppVisible(true);
-      restoreAppStateOnForeground();
-    });
-    
-    window.addEventListener('blur', () => {
-      setIsAppVisible(false);
-      sessionStorage.setItem('app_backgrounded', Date.now().toString());
-    });
+    window.addEventListener('beforeunload', handleBeforeUnload);
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('pagehide', handlePageHide);
       window.removeEventListener('pageshow', handlePageShow);
-      window.removeEventListener('focus', () => {});
-      window.removeEventListener('blur', () => {});
+      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, []);
 
@@ -334,7 +348,6 @@ function AppRoutes() {
   return (
     <SecurityWrapper>
       <ErrorBoundary>
-        <OfflineBanner />
         <div className="w-full h-full overflow-hidden relative">
           <Switch>
             <Route path="/splash" component={Splash} />
@@ -436,10 +449,10 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <PermanentAuthProvider>
+        <AuthProvider>
           <Toaster />
           <AppRoutes />
-        </PermanentAuthProvider>
+        </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );
