@@ -7,16 +7,19 @@ import {
   type InsertChatMessage, type InsertChatResponse, type InsertChatSession
 } from "@shared/schema";
 import { PersistentDataManager } from "./persistentStorage";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
   getUserByCredentials(customerNumber: string, pin: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  getUser(customerNumber: string): Promise<User | undefined>;
+  getUser(id: number): Promise<User | undefined>;
   getUserByCustomerNumber(customerNumber: string): Promise<User | undefined>;
   updateUserProfile(customerNumber: string, updates: Partial<User>): Promise<User | undefined>;
   getAllUsers(): Promise<User[]>;
   deleteUser(customerNumber: string): Promise<boolean>;
+  waitForInitialization(): Promise<void>;
   
   // Account operations
   getAccountsByUserId(userId: number): Promise<Account[]>;
@@ -64,8 +67,8 @@ export interface IStorage {
   initializeSampleData(): Promise<void>;
 }
 
-// Persistent storage implementation
-class MemStorage implements IStorage {
+// Database-backed storage implementation for permanent user persistence
+class DatabaseStorage implements IStorage {
   private users = new Map<number, User>();
   private accounts = new Map<number, Account>();
   private transactions = new Map<number, Transaction>();
@@ -163,26 +166,69 @@ class MemStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const user: User = {
-      id: this.currentUserId++,
-      customerNumber: insertUser.customerNumber,
-      pin: insertUser.pin,
-      name: insertUser.name || "",
-      email: insertUser.email || "",
-      phone: insertUser.phone || null,
-      address: insertUser.address || null,
-      dateOfBirth: insertUser.dateOfBirth || null,
-      joinDate: insertUser.joinDate || "Member since 2018",
-      dateCreated: insertUser.dateCreated || new Date(),
-      isDisabled: false
-    };
-    this.users.set(user.id, user);
-    await this.saveData(); // Persist data immediately
-    return user;
+    try {
+      // Create user in database first for permanent persistence
+      const [dbUser] = await db.insert(users).values({
+        customerNumber: insertUser.customerNumber,
+        pin: insertUser.pin,
+        name: insertUser.name || "",
+        email: insertUser.email || "",
+        phone: insertUser.phone || null,
+        address: insertUser.address || null,
+        dateOfBirth: insertUser.dateOfBirth || null,
+        joinDate: insertUser.joinDate || "Member since 2018",
+        isDisabled: false
+      }).returning();
+
+      // Cache in memory
+      this.users.set(dbUser.id, dbUser);
+      
+      // Also save to persistent storage as backup
+      await this.saveData();
+      
+      console.log(`✅ USER CREATED IN DATABASE: ${dbUser.name} (ID: ${dbUser.id})`);
+      return dbUser;
+    } catch (error) {
+      console.error('Error creating user in database:', error);
+      
+      // Fallback to memory storage
+      const user: User = {
+        id: this.currentUserId++,
+        customerNumber: insertUser.customerNumber,
+        pin: insertUser.pin,
+        name: insertUser.name || "",
+        email: insertUser.email || "",
+        phone: insertUser.phone || null,
+        address: insertUser.address || null,
+        dateOfBirth: insertUser.dateOfBirth || null,
+        joinDate: insertUser.joinDate || "Member since 2018",
+        dateCreated: insertUser.dateCreated || new Date(),
+        isDisabled: false
+      };
+      this.users.set(user.id, user);
+      await this.saveData();
+      return user;
+    }
   }
 
-  async getUser(customerNumber: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.customerNumber === customerNumber);
+  async getUser(id: number): Promise<User | undefined> {
+    // Check memory cache first
+    let user = this.users.get(id);
+    if (user) return user;
+    
+    // Check database if not in cache
+    try {
+      const [dbUser] = await db.select().from(users).where(eq(users.id, id)).limit(1);
+      if (dbUser) {
+        // Cache the user for future requests
+        this.users.set(dbUser.id, dbUser);
+        return dbUser;
+      }
+    } catch (error) {
+      console.error('Error fetching user from database:', error);
+    }
+    
+    return undefined;
   }
 
   async getUserByCustomerNumber(customerNumber: string): Promise<User | undefined> {
@@ -651,4 +697,4 @@ class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
