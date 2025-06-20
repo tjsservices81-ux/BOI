@@ -47,6 +47,8 @@ export class PermanentAuthManager {
   // Validate permanent session - NO expiry checks
   static async validatePermanentSession(sessionToken: string): Promise<User | null> {
     try {
+      console.log(`🔍 VALIDATING PERMANENT SESSION: ${sessionToken.substring(0, 20)}...`);
+      
       const sessionResult = await db
         .select({
           session: permanentUserSessions,
@@ -57,13 +59,16 @@ export class PermanentAuthManager {
         .where(
           and(
             eq(permanentUserSessions.sessionToken, sessionToken),
-            eq(permanentUserSessions.isActive, true),
-            eq(users.isDisabled, false)
+            eq(permanentUserSessions.isActive, true)
+            // Removed isDisabled check - users stay logged in unless manually deleted
           )
         )
         .limit(1);
 
+      console.log(`🔍 SESSION QUERY RESULT: Found ${sessionResult.length} matching sessions`);
+
       if (sessionResult.length === 0) {
+        console.log('❌ NO MATCHING SESSION FOUND');
         return null;
       }
 
@@ -72,6 +77,7 @@ export class PermanentAuthManager {
         .set({ lastActivity: new Date() })
         .where(eq(permanentUserSessions.sessionToken, sessionToken));
 
+      console.log(`✅ PERMANENT SESSION VALIDATED: User ${sessionResult[0].user.id} authenticated`);
       return sessionResult[0].user;
     } catch (error) {
       console.error('Error validating permanent session:', error);

@@ -12,6 +12,9 @@ import { isDeviceBlocked, addDeviceSession, isDeviceInPanicMode, isCustomerInPan
 import { isAccountActiveOnOtherDevice, setUserDeviceSession, removeUserDeviceSession, getUserDeviceSession, isCurrentDeviceAuthorized } from "./deviceExclusiveAuth";
 import { addUserSession, removeUserSession, sessionTrackingMiddleware, isSessionValid } from "./sessionManager";
 import { PermanentAuthManager } from "./permanentAuthManager";
+import { db } from "./db";
+import { permanentUserSessions, users } from "@shared/schema";
+import { eq, and } from "drizzle-orm";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Wait for storage to fully initialize from persistent data
@@ -273,23 +276,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Session token required" });
       }
 
-      // Validate permanent session - NO expiry check
-      const user = await PermanentAuthManager.validatePermanentSession(sessionToken);
+      console.log(`🔍 VALIDATING TOKEN: ${sessionToken.substring(0, 20)}...`);
+
+      // Direct database query for permanent session validation
+      const sessionResult = await db
+        .select({
+          session: permanentUserSessions,
+          user: users
+        })
+        .from(permanentUserSessions)
+        .innerJoin(users, eq(permanentUserSessions.userId, users.id))
+        .where(
+          and(
+            eq(permanentUserSessions.sessionToken, sessionToken),
+            eq(permanentUserSessions.isActive, true)
+          )
+        )
+        .limit(1);
+
+      console.log(`🔍 DIRECT QUERY RESULT: Found ${sessionResult.length} sessions`);
       
-      if (user) {
-        console.log(`🔒 PERMANENT SESSION VALIDATED: User ${user.id} authenticated via database token`);
+      if (sessionResult.length > 0) {
+        const user = sessionResult[0].user;
+        
+        // Update last activity
+        await db.update(permanentUserSessions)
+          .set({ lastActivity: new Date() })
+          .where(eq(permanentUserSessions.sessionToken, sessionToken));
+
+        console.log(`✅ PERMANENT SESSION VALIDATED: User ${user.id} authenticated permanently`);
         res.json({ 
           user: { id: user.id, name: user.name, email: user.email },
           valid: true 
         });
       } else {
-        // Session invalid - likely user was deleted by admin
-        console.log('🗑️ PERMANENT SESSION INVALID: User may have been deleted by admin');
+        console.log('❌ PERMANENT SESSION INVALID: No matching active session found');
         res.status(401).json({ message: "Session invalid", valid: false });
       }
     } catch (error) {
-      console.error('Error validating permanent session:', error);
-      res.status(500).json({ message: "Internal server error" });
+      console.error('Permanent session validation error:', error);
+      res.status(500).json({ message: "Server error", valid: false });
     }
   });
 
