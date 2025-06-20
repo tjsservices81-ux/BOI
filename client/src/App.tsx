@@ -197,8 +197,9 @@ function AppRoutes() {
   }, []);
 
   // Handle app state management for proper restart behavior
+  const [isAppVisible, setIsAppVisible] = useState(true);
+  
   useEffect(() => {
-    let isAppVisible = true;
     
     const handleVisibilityChange = () => {
       if (!document.hidden) {
@@ -208,11 +209,11 @@ function AppRoutes() {
           // Always restore app state when returning from background
           restoreAppStateOnForeground();
         }
-        isAppVisible = true;
+        setIsAppVisible(true);
         sessionStorage.removeItem('app_backgrounded');
       } else {
         // App going to background - mark as backgrounded for both iOS and Android
-        isAppVisible = false;
+        setIsAppVisible(false);
         sessionStorage.setItem('app_backgrounded', Date.now().toString());
       }
     };
@@ -244,12 +245,12 @@ function AppRoutes() {
 
     // Cross-platform app lifecycle event handlers for iOS and Android
     const handlePageHide = () => {
-      isAppVisible = false;
+      setIsAppVisible(false);
       sessionStorage.setItem('app_backgrounded', Date.now().toString());
     };
 
     const handlePageShow = (event: PageTransitionEvent) => {
-      isAppVisible = true;
+      setIsAppVisible(true);
       if (event.persisted) {
         // Page was restored from cache - restore state
         restoreAppStateOnForeground();
@@ -264,12 +265,12 @@ function AppRoutes() {
     
     // Android-specific app lifecycle events
     window.addEventListener('focus', () => {
-      isAppVisible = true;
+      setIsAppVisible(true);
       restoreAppStateOnForeground();
     });
     
     window.addEventListener('blur', () => {
-      isAppVisible = false;
+      setIsAppVisible(false);
       sessionStorage.setItem('app_backgrounded', Date.now().toString());
     });
 
