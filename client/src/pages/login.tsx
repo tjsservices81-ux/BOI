@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { useAuth } from "@/lib/auth";
+import { loginWithPermanentAuth, autoLoginOnStart, hasPermanentToken } from "@/lib/permanentAuth";
 import { User, ExternalLink, HelpCircle, Phone, Settings, Shield, MapPin, MoreHorizontal } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { UserDataManager } from "@/utils/userDataManager";
@@ -48,9 +48,9 @@ export default function Login() {
   const emailInputRef = useRef<HTMLInputElement>(null);
   const phoneInputRef = useRef<HTMLInputElement>(null);
   
-  const authHook = useAuth();
-  const login = authHook?.login || (() => {});
-  const isLoading = authHook?.isLoading || false;
+  // Permanent authentication - no session expiry
+  const [user, setUser] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
   
   const locationHook = useLocation();
   const [, navigate] = locationHook || [null, () => {}];
@@ -58,6 +58,29 @@ export default function Login() {
   
   const toastHook = useToast();
   const toast = toastHook?.toast || (() => {});
+
+  // Auto-login check on component mount
+  useEffect(() => {
+    const checkAutoLogin = async () => {
+      if (hasPermanentToken()) {
+        setIsLoading(true);
+        try {
+          const userData = await autoLoginOnStart();
+          if (userData) {
+            setUser(userData);
+            console.log('Auto-login successful - user authenticated permanently');
+            navigate('/dashboard');
+            return;
+          }
+        } catch (error) {
+          console.log('Auto-login failed, proceeding to login screen');
+        }
+        setIsLoading(false);
+      }
+    };
+    
+    checkAutoLogin();
+  }, [navigate]);
 
   // Validate users against server and clean up deleted ones
   const validateAndCleanUsers = async () => {
@@ -521,15 +544,13 @@ export default function Login() {
         throw new Error("No valid user session found");
       }
       
-      // Record login time and authenticate through auth context
-      UserDataManager.recordLoginTime(currentUser);
-      const userProfile = UserDataManager.getUserProfile();
-      if (userProfile) {
-        login({
-          id: parseInt(currentUser.replace(/\D/g, '')) || 1,
-          name: userProfile.name,
-          email: userProfile.email
-        });
+      // Authenticate with permanent token system
+      try {
+        const loginData = await loginWithPermanentAuth(customerNumber, pin);
+        setUser(loginData.user);
+        console.log('Permanent authentication successful - user will stay logged in indefinitely');
+      } catch (error) {
+        throw new Error("Authentication failed");
       }
       
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -582,21 +603,22 @@ export default function Login() {
       return;
     }
     
-    // Initialize fresh account data and verify PIN
-    UserDataManager.initializeFreshAccount(customerNumber);
-    UserDataManager.recordLoginTime(customerNumber);
-    const userProfile = UserDataManager.getUserProfile();
-    if (userProfile) {
-      login({
-        id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
-        name: userProfile.name,
-        email: userProfile.email
+    try {
+      setIsLoading(true);
+      const loginData = await loginWithPermanentAuth(customerNumber, pin);
+      setUser(loginData.user);
+      setPinVerified(true);
+      console.log('PIN verification successful - permanent authentication active');
+      navigate('/dashboard');
+    } catch (error: any) {
+      toast({
+        title: "Login Failed",
+        description: error.message || "Invalid credentials",
+        variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
-    setPinVerified(true);
-    
-    // Navigate to dashboard after verification
-    navigate('/dashboard');
   };
 
   const requestLocation = () => {
