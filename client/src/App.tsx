@@ -56,7 +56,6 @@ function ProtectedRoute({ children, fallback }: { children: React.ReactNode; fal
   
   // If user has session but biometric state is not set, force biometric check
   if (!biometricAuth.state.needsBiometric && !biometricAuth.state.isAuthenticated) {
-    biometricAuth.setNeedsBiometric(true);
     return <Redirect to="/biometric" />;
   }
   

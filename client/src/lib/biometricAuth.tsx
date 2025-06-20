@@ -129,6 +129,14 @@ export function BiometricAuthProvider({ children }: { children: React.ReactNode 
     }
   };
 
+  const setNeedsBiometric = (needs: boolean) => {
+    setState(prev => ({
+      ...prev,
+      needsBiometric: needs,
+      isAuthenticated: needs ? false : prev.isAuthenticated
+    }));
+  };
+
   const logout = () => {
     setState({
       isAuthenticated: false,
@@ -147,6 +155,7 @@ export function BiometricAuthProvider({ children }: { children: React.ReactNode 
     state,
     authenticateWithBiometric,
     checkAuthenticationStatus,
+    setNeedsBiometric,
     logout
   };
 
