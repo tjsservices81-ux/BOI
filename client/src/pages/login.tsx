@@ -446,10 +446,10 @@ export default function Login() {
   };
 
   const handleLoginButton = async () => {
-    if (!biometricVerified && !pinVerified) {
+    if (!biometricVerified) {
       toast({
         title: "Authentication Required",
-        description: "Please verify with biometric or PIN first",
+        description: "Please complete biometric verification to continue",
         variant: "destructive",
       });
       return;
@@ -545,9 +545,10 @@ export default function Login() {
         throw new Error("No valid user session found");
       }
       
-      // Authenticate with permanent token system
+      // Authenticate with permanent token system using biometric verification
       try {
-        const loginData = await loginWithPermanentAuth(customerNumber, pin);
+        const targetUser = currentUser || UserDataManager.getLastActiveUser() || Object.keys(UserDataManager.getAllUsers())[0];
+        const loginData = await loginWithPermanentAuth(targetUser, "000000"); // Use default PIN since biometric is verified
         setUser(loginData.user);
         console.log('Permanent authentication successful - user will stay logged in indefinitely');
       } catch (error) {
@@ -1102,7 +1103,7 @@ export default function Login() {
                   onClick={handleLoginButton}
                   disabled={isLoading}
                   className={`w-full py-2.5 ios-button font-semibold text-sm mb-3 transition-all duration-200 ${
-                    biometricVerified || pinVerified 
+                    biometricVerified 
                       ? 'bg-[#126987] text-white hover:bg-[#3a5a65] active:scale-95' 
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   } disabled:opacity-50`}
@@ -1111,13 +1112,7 @@ export default function Login() {
                   {isLoading ? "Logging in..." : "Log in"}
                 </button>
 
-                {/* Forgot PIN */}
-                <div className="text-center mb-3">
-                  <button className="text-[#126987] text-xs flex items-center justify-center space-x-1 active:scale-95 transition-transform" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
-                    <span>Forgot your PIN?</span>
-                    <ExternalLink className="w-2.5 h-2.5" />
-                  </button>
-                </div>
+
 
                 {/* Divider */}
                 <div className="border-t border-gray-200 my-3"></div>
@@ -1133,66 +1128,7 @@ export default function Login() {
 
 
 
-              {/* PIN Login Form - shows when showPinLogin is true */}
-              {showPinLogin ? (
-                <div className="bg-white ios-card p-4 border-2 border-blue-200">
-                  <h3 className="text-lg font-semibold mb-4 text-gray-800" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
-                    Log in with PIN
-                  </h3>
-                  <form onSubmit={handlePinVerification} className="space-y-4">
-                    <div>
-                      <Label htmlFor="customerNumber" className="text-sm font-medium text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        Customer Number
-                      </Label>
-                      <Input
-                        id="customerNumber"
-                        type="text"
-                        value={customerNumber}
-                        onChange={(e) => setCustomerNumber(e.target.value)}
-                        placeholder="Enter your customer number"
-                        className="mt-1 ios-input"
-                        disabled={isLoading}
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="pin" className="text-sm font-medium text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        PIN
-                      </Label>
-                      <Input
-                        id="pin"
-                        type="password"
-                        value={pin}
-                        onChange={(e) => setPin(e.target.value)}
-                        placeholder="Enter your PIN"
-                        className="mt-1 ios-input"
-                        maxLength={6}
-                        disabled={isLoading}
-                      />
-                    </div>
-                    
-                    <Button 
-                      type="submit" 
-                      className={`w-full text-white hover:bg-[#3a5a65] ${
-                        pinVerified ? 'bg-green-600' : 'bg-[#126987]'
-                      }`}
-                      disabled={isLoading || pinVerified}
-                      style={{ fontFamily: 'OpenSans, sans-serif' }}
-                    >
-                      {pinVerified ? "PIN Verified ✓" : "Verify PIN"}
-                    </Button>
-                    
-                    <button
-                      type="button"
-                      onClick={() => setShowPinLogin(false)}
-                      className="w-full text-gray-500 text-sm hover:text-gray-700 transition-colors duration-150"
-                      style={{ fontFamily: 'OpenSans, sans-serif' }}
-                    >
-                      Cancel
-                    </button>
-                  </form>
-                </div>
-              ) : null}
+
 
               {/* Approval Option Card - display only */}
               <div className="w-full bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center space-x-3">
