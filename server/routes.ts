@@ -300,8 +300,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Session inactive", valid: false });
       }
       
-      // Get user data
-      const userResult = await db
+      // Get user data with fallback to storage layer
+      let userResult = await db
         .select()
         .from(users)
         .where(eq(users.id, session.userId))
@@ -309,9 +309,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`🔍 USER QUERY: Found ${userResult.length} users`);
       
+      // If user not found in database, check storage layer
       if (userResult.length === 0) {
-        console.log('❌ User not found for session');
-        return res.status(401).json({ message: "User not found", valid: false });
+        console.log('⚠️ User not found in database, checking storage layer...');
+        const storageUser = await storage.getUser(session.userId);
+        
+        if (storageUser) {
+          console.log('✅ User found in storage, session remains valid');
+          // Update last activity - session NEVER expires
+          await db.update(permanentUserSessions)
+            .set({ lastActivity: new Date() })
+            .where(eq(permanentUserSessions.sessionToken, sessionToken));
+
+          return res.json({ 
+            user: { id: storageUser.id, name: storageUser.name, email: storageUser.email },
+            valid: true 
+          });
+        } else {
+          console.log('❌ User not found in storage either - may have been deleted by admin');
+          return res.status(401).json({ message: "User not found", valid: false });
+        }
       }
       
       const user = userResult[0];
