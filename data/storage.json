@@ -1,5 +1,22 @@
 {
-  "users": [],
+  "users": [
+    [
+      31,
+      {
+        "id": 31,
+        "customerNumber": "25078104",
+        "pin": "1234",
+        "name": "John Doe",
+        "email": "john.doe@example.com",
+        "phone": null,
+        "address": null,
+        "dateOfBirth": "1990-01-01",
+        "joinDate": "Member since 2018",
+        "dateCreated": "2025-06-20T23:23:53.002Z",
+        "isDisabled": false
+      }
+    ]
+  ],
   "accounts": [],
   "transactions": [],
   "payees": [],
@@ -9,7 +26,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 31,
+    "currentUserId": 32,
     "currentAccountId": 37,
     "currentTransactionId": 49,
     "currentPayeeId": 25,

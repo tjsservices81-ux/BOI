@@ -100,29 +100,18 @@ export class StateManager {
     }
   }
 
-  // Clear expired state
+  // Clear expired state - DISABLED: Users stay logged in permanently
   static clearExpiredState() {
-    try {
-      const state = this.restoreAppState();
-      if (!state) {
-        localStorage.removeItem(this.STATE_KEY);
-        localStorage.removeItem(this.SCROLL_POSITIONS_KEY);
-        localStorage.removeItem(this.FORM_DATA_KEY);
-      }
-    } catch (error) {
-      console.error('Failed to clear expired state:', error);
-    }
+    // State clearing disabled - users never get logged out automatically
+    // Only admin deletion should clear state
+    return;
   }
 
   // Clear all app state
   static clearAppState() {
-    try {
-      localStorage.removeItem(this.STATE_KEY);
-      localStorage.removeItem(this.SCROLL_POSITIONS_KEY);
-      localStorage.removeItem(this.FORM_DATA_KEY);
-    } catch (error) {
-      console.error('Failed to clear app state:', error);
-    }
+    // App state clearing disabled - users stay logged in permanently
+    console.warn('clearAppState() disabled - users can only be logged out via admin deletion');
+    return;
   }
 
   // Handle page visibility change
