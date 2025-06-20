@@ -160,9 +160,29 @@ class DatabaseStorage implements IStorage {
   }
 
   async getUserByCredentials(customerNumber: string, pin: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => 
+    // Check memory cache first
+    let user = Array.from(this.users.values()).find(user => 
       user.customerNumber === customerNumber && user.pin === pin
     );
+    if (user) return user;
+    
+    // Check database if not in cache
+    try {
+      const [dbUser] = await db.select().from(users)
+        .where(eq(users.customerNumber, customerNumber))
+        .limit(1);
+        
+      if (dbUser && dbUser.pin === pin) {
+        // Cache the user for future requests
+        this.users.set(dbUser.id, dbUser);
+        console.log(`✅ USER LOGGED IN FROM DATABASE: ${dbUser.name} (ID: ${dbUser.id})`);
+        return dbUser;
+      }
+    } catch (error) {
+      console.error('Error fetching user credentials from database:', error);
+    }
+    
+    return undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
@@ -232,7 +252,23 @@ class DatabaseStorage implements IStorage {
   }
 
   async getUserByCustomerNumber(customerNumber: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.customerNumber === customerNumber);
+    // Check memory cache first
+    let user = Array.from(this.users.values()).find(user => user.customerNumber === customerNumber);
+    if (user) return user;
+    
+    // Check database if not in cache
+    try {
+      const [dbUser] = await db.select().from(users).where(eq(users.customerNumber, customerNumber)).limit(1);
+      if (dbUser) {
+        // Cache the user for future requests
+        this.users.set(dbUser.id, dbUser);
+        return dbUser;
+      }
+    } catch (error) {
+      console.error('Error fetching user by customer number from database:', error);
+    }
+    
+    return undefined;
   }
 
   async updateUserProfile(customerNumber: string, updates: Partial<User>): Promise<User | undefined> {
