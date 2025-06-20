@@ -34,6 +34,7 @@ export default function Login() {
   });
   const [logoTapCount, setLogoTapCount] = useState(0);
   const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
   const [showOtcVerification, setShowOtcVerification] = useState(false);
   const [otcCode, setOtcCode] = useState('');
   const [generatedOtc, setGeneratedOtc] = useState('');
@@ -288,6 +289,9 @@ export default function Login() {
         // OTC is valid, create the account
         UserDataManager.registerUser(pendingAccountData);
         UserDataManager.initializeFreshAccount(pendingAccountData.customerNumber);
+
+        // 🔐 CRITICAL: User has finished verification - disable Bank of Ireland logo tap
+        setIsUserLoggedIn(true);
 
         toast({
           title: "Account Created Successfully",
