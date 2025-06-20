@@ -1131,20 +1131,7 @@ export default function Login() {
                 </div>
               </div>
 
-              {/* PIN Option Card - separate gray card */}
-              <button 
-                className="w-full bg-gray-50 border border-gray-200 ios-card p-3 flex items-center space-x-3 hover:bg-gray-100 active:scale-98 transition-all duration-150"
-                onClick={() => {
-                  console.log("PIN button clicked, current showPinLogin:", showPinLogin);
-                  setShowPinLogin(!showPinLogin);
-                }}
-              >
-                <div className="w-5 h-5 bg-gray-300 rounded-full flex items-center justify-center">
-                  <span className="text-gray-600 text-xs font-bold">⋯</span>
-                </div>
-                <span className="flex-1 text-left text-gray-700 text-xs font-medium" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>Use your PIN instead</span>
-                <span className="text-gray-400 text-sm">›</span>
-              </button>
+
 
               {/* PIN Login Form - shows when showPinLogin is true */}
               {showPinLogin ? (
