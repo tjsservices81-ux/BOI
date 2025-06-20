@@ -101,7 +101,7 @@ export class PermanentAuthManager {
   }
 
   // Get user by session token
-  static async getUserBySessionToken(sessionToken: string): Promise<User | null> {
+  async getUserBySessionToken(sessionToken: string): Promise<User | null> {
     return this.validatePermanentSession(sessionToken);
   }
 

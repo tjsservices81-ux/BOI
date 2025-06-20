@@ -14,8 +14,6 @@ import { StateManager } from "@/utils/stateManager";
 import { AppLifecycle } from "@/utils/appLifecycle";
 import LiveChat from "@/components/LiveChat";
 
-
-
 import Splash from "@/pages/splash";
 import Login from "@/pages/login";
 import BiometricAuth from "@/pages/BiometricAuth";
@@ -32,7 +30,6 @@ import Insights from "@/pages/insights";
 import Transfer from "@/pages/transfer";
 import BillPay from "@/pages/bill-pay";
 import TransactionHistoryWorking from "@/pages/transaction-history-working";
-
 import Statements from "@/pages/statements";
 import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
@@ -48,14 +45,12 @@ function ProtectedRoute({ children, fallback }: { children: React.ReactNode; fal
     return <Redirect to="/biometric" />;
   }
   
-  // Prevent any flash by immediately redirecting if no user
-  if (!user && !isLoading && !biometricAuth.state.isLoading) {
-    return fallback ? <>{fallback}</> : <Redirect to="/login" />;
+  if (isLoading) {
+    return fallback || <div>Loading...</div>;
   }
   
-  // Show nothing while loading to prevent flash
-  if (isLoading || biometricAuth.state.isLoading) {
-    return null;
+  if (!user) {
+    return <Redirect to="/login" />;
   }
   
   return <>{children}</>;
@@ -63,19 +58,15 @@ function ProtectedRoute({ children, fallback }: { children: React.ReactNode; fal
 
 function AppRoutes() {
   const authHook = useAuth();
-  const user = authHook?.user || null;
-  const isLoading = authHook?.isLoading || false;
-  const login = authHook?.login || (() => {});
-  
+  const biometricAuth = useBiometricAuth();
   const locationHook = useLocation();
   const [location, navigate] = locationHook || ['/', () => {}];
   const [splashShown, setSplashShown] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
-  const [splashTransitioning, setSplashTransitioning] = useState(false);
-  const [isRestoringState, setIsRestoringState] = useState(true);
-  
-  // Global Live Chat state - persistent across all navigation
   const [showLiveChat, setShowLiveChat] = useState(false);
+
+  const user = authHook?.user || null;
+  const login = authHook?.login || (() => {});
 
   // Listen for global live chat open events
   useEffect(() => {
@@ -87,389 +78,204 @@ function AppRoutes() {
     return () => window.removeEventListener('openLiveChat', handleOpenLiveChat);
   }, []);
 
-  // Centralized theme color management
-  const updateThemeColor = (color: string) => {
-    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-    if (themeColorMeta) {
-      themeColorMeta.setAttribute('content', color);
-    }
-  };
-
-  
-  // Initialize app state with persistence support
+  // Initialize app - always start with splash and check for permanent session
   useEffect(() => {
     const initializeApp = async () => {
-      // Check if sessionStorage was cleared (indicates fresh app start)
-      const wasAppActive = sessionStorage.getItem('app_was_active');
-      const lastBackgroundTime = localStorage.getItem('app_background_time');
+      // Always start with splash screen on app restart
+      setSplashShown(false);
       
-      if (!wasAppActive) {
-        // Fresh app start - show splash but keep user logged in
-        setSplashShown(false);
-        localStorage.removeItem('app_background_time');
-        sessionStorage.setItem('app_was_active', 'true');
+      // Check for permanent session but always require biometric verification
+      try {
+        const response = await fetch('/api/auth/status', {
+          credentials: 'include'
+        });
+        const authStatus = await response.json();
         
-        // Always try to restore user session
-        try {
-          const savedState = StateManager.restoreAppState();
-          if (savedState && savedState.user && !user) {
-            // Restore user session silently
-            login(savedState.user);
+        if (authStatus.isLoggedIn && authStatus.needsBiometric) {
+          console.log('Permanent session found - requires biometric verification');
+          // Set biometric requirement
+          biometricAuth.setNeedsBiometric(true);
+          if (authStatus.user) {
+            login(authStatus.user);
           }
-        } catch (error) {
-          console.error('Failed to restore user session:', error);
+        } else {
+          console.log('No permanent session found');
         }
-      } else if (lastBackgroundTime) {
-        // App was backgrounded - always restore state regardless of time
-        localStorage.removeItem('app_background_time');
-        
-        try {
-          const savedState = StateManager.restoreAppState();
-          
-          if (savedState && savedState.user && !user) {
-            // Restore user session silently
-            login(savedState.user);
-            
-            // Restore route if different from current
-            if (savedState.currentRoute !== location && savedState.currentRoute !== '/login') {
-              navigate(savedState.currentRoute);
-            }
-            
-            // Skip splash if restoring state
-            setSplashShown(true);
-          } else {
-            // No valid saved state, show splash
-            setSplashShown(false);
-          }
-        } catch (error) {
-          console.error('Failed to restore app state:', error);
-          setSplashShown(false);
-        }
-      } else {
-        // No background time recorded - show splash but try to restore user
-        setSplashShown(false);
-        try {
-          const savedState = StateManager.restoreAppState();
-          if (savedState && savedState.user && !user) {
-            login(savedState.user);
-          }
-        } catch (error) {
-          console.error('Failed to restore user session:', error);
-        }
+      } catch (error) {
+        console.error('Failed to check authentication status:', error);
       }
       
-      // Clear temporary state for cold launch behavior
-      const keys = Object.keys(localStorage);
-      keys.forEach(key => {
-        if (key.includes('chat') || key.includes('liveChat') || key.includes('tempState') || key.includes('session_')) {
-          localStorage.removeItem(key);
-        }
-      });
-      
-      const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-      if (themeColorMeta) {
-        themeColorMeta.setAttribute('content', '#000DFF');
-      }
-      
-      setIsRestoringState(false);
-      // Mark as initialized after a tick to prevent flash
-      setTimeout(() => setIsInitialized(true), 0);
-    };
-
-    initializeApp();
-    
-    // Handle app lifecycle events directly
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        // App going to background - save state and timestamp
-        localStorage.setItem('app_background_time', Date.now().toString());
-        if (user) {
-          StateManager.handleVisibilityChange(location, user);
-        }
-      }
-    };
-
-    const handleBeforeUnload = () => {
-      // Clear session marker to detect force close
-      sessionStorage.removeItem('app_was_active');
-      if (user) {
-        StateManager.handleVisibilityChange(location, user);
-      }
-    };
-
-    const handlePageHide = () => {
-      sessionStorage.removeItem('app_was_active');
-      if (user) {
-        StateManager.handleVisibilityChange(location, user);
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    window.addEventListener('pagehide', handlePageHide);
-    
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      window.removeEventListener('pagehide', handlePageHide);
-    };
-  }, []);
-
-
-
-  // Handle app visibility changes for proper lifecycle management
-  useEffect(() => {
-    let isAppVisible = true;
-    
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        isAppVisible = false;
-        // App is being backgrounded - just track state, don't set reload timers
-        sessionStorage.setItem('app_backgrounded', Date.now().toString());
-        sessionStorage.setItem('current_location', location);
-      } else {
-        // App is being foregrounded - restore state without any reloading
-        if (!isAppVisible) {
-          // Always restore app state when returning from background
-          restoreAppStateOnForeground();
-        }
-        isAppVisible = true;
-        sessionStorage.removeItem('app_backgrounded');
-      }
-    };
-
-    const restoreThemeForCurrentScreen = () => {
-      const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-      if (!themeColorMeta) return;
-
-      // Set correct theme color based on current location
-      if (location === '/splash') {
-        themeColorMeta.setAttribute('content', '#000DFF');
-      } else {
-        themeColorMeta.setAttribute('content', '#126987');
-      }
-    };
-
-    const restoreAppStateOnForeground = () => {
-      // Restore theme color
-      restoreThemeForCurrentScreen();
-      
-      // Force navigation visibility restoration if needed
-      if (user && splashShown && !['/login', '/splash'].includes(location)) {
-        const navElement = document.querySelector('[data-bottom-nav]') as HTMLElement;
-        if (navElement && navElement.classList.contains('hidden')) {
-          navElement.classList.remove('hidden');
-        }
-      }
-    };
-
-    const handlePageHide = () => {
-      // Only mark for cold restart if this is actually an app closure
-      // PageHide can trigger for various reasons, so we're more conservative
-      sessionStorage.setItem('page_hidden', 'true');
-    };
-
-    const handlePageShow = (event: PageTransitionEvent) => {
-      // Only reload if this was a true app closure (page cache was not used)
-      const forceColdStart = localStorage.getItem('force_cold_start') === 'true';
-      
-      if (forceColdStart) {
-        // This was a real app closure - force full reload for cold launch
-        localStorage.removeItem('force_cold_start');
-        // Don't clear sessionStorage - preserve user login state
-        window.location.reload();
-      } else {
-        // This was just backgrounding/foregrounding - restore state
-        sessionStorage.removeItem('page_hidden');
-        restoreAppStateOnForeground();
-      }
-    };
-
-    const handleBeforeUnload = () => {
-      // Only mark for cold restart on actual app closure
-      // beforeUnload can trigger for many reasons, so we're conservative
-      if (document.visibilityState === 'hidden') {
-        localStorage.setItem('force_cold_start', 'true');
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('pagehide', handlePageHide);
-    window.addEventListener('pageshow', handlePageShow);
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('pagehide', handlePageHide);
-      window.removeEventListener('pageshow', handlePageShow);
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, []);
-
-
-
-  // Listen for splash completion
-  useEffect(() => {
-    const handleSplashComplete = () => {
-      setSplashTransitioning(true);
-      // Small delay to prevent flash, then complete transition
+      // Show splash screen for 1.5 seconds
       setTimeout(() => {
         setSplashShown(true);
-        setSplashTransitioning(false);
-      }, 100);
-      const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-      if (themeColorMeta) {
-        themeColorMeta.setAttribute('content', '#126987');
-      }
+        setIsInitialized(true);
+      }, 1500);
     };
-
-    window.addEventListener('splashComplete', handleSplashComplete);
-    return () => window.removeEventListener('splashComplete', handleSplashComplete);
+    
+    initializeApp();
   }, []);
 
-  // Restore app state when returning from background - MUST be before conditional return
+  // Handle app lifecycle for state persistence
   useEffect(() => {
-    const handleFocusRestore = () => {
-      // Restore correct theme color
-      const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-      if (themeColorMeta) {
-        if (location === '/splash') {
-          themeColorMeta.setAttribute('content', '#000DFF');
-        } else {
-          themeColorMeta.setAttribute('content', '#126987');
-        }
+    const appLifecycle = new AppLifecycle();
+    
+    // Save state when app goes to background
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        StateManager.saveAppState({
+          user,
+          currentRoute: location,
+          timestamp: Date.now()
+        });
       }
     };
 
-    window.addEventListener('focus', handleFocusRestore);
-    return () => window.removeEventListener('focus', handleFocusRestore);
-  }, [location]);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [user, location]);
 
-  // Prevent flash during initialization
-  if (!isInitialized) {
-    return (
-      <div className="w-full h-full bg-[#000DFF]">
-        {/* Empty blue screen during initialization */}
-      </div>
-    );
+  // Route to splash if not initialized
+  if (!isInitialized || !splashShown) {
+    return <Splash />;
   }
 
+  // Route to biometric auth if needed
+  if (biometricAuth.state.needsBiometric && !biometricAuth.state.isAuthenticated && user) {
+    return <BiometricAuth />;
+  }
+
+  // Handle navigation and bottom bar visibility
+  const hideBottomBar = ['/login', '/splash', '/biometric'].includes(location);
+
   return (
-    <SecurityWrapper>
-      <ErrorBoundary>
-        <div className="w-full h-full overflow-hidden relative">
-          <Switch>
-            <Route path="/splash" component={Splash} />
-            <Route path="/login" component={Login} />
-            <Route path="/biometric" component={BiometricAuth} />
-            <Route path="/more" component={More} />
-            <Route path="/">
-              {/* Handle root route - always show proper sequence for cold starts */}
-              {!splashShown || splashTransitioning ? (
-                <Splash />
-              ) : (
-                <Login />
-              )}
-            </Route>
-          <Route path="/dashboard">
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          </Route>
-          <Route path="/payments">
-            <ProtectedRoute>
-              <Payments />
-            </ProtectedRoute>
-          </Route>
-          <Route path="/apply">
-            <ProtectedRoute>
-              <Apply />
-            </ProtectedRoute>
-          </Route>
-          <Route path="/iban-transfer">
-            <ProtectedRoute>
-              <IbanTransfer />
-            </ProtectedRoute>
-          </Route>
-          <Route path="/uk-transfer">
-            <ProtectedRoute>
-              <UkTransfer />
-            </ProtectedRoute>
-          </Route>
-          <Route path="/internal-transfer">
-            <ProtectedRoute>
-              <InternalTransfer />
-            </ProtectedRoute>
-          </Route>
-          <Route path="/transfer">
-            <ProtectedRoute>
-              <Transfer />
-            </ProtectedRoute>
-          </Route>
-          <Route path="/bills">
-            <ProtectedRoute>
-              <BillPay />
-            </ProtectedRoute>
-          </Route>
-          <Route path="/transactions">
-            <ProtectedRoute>
-              <Transactions />
-            </ProtectedRoute>
-          </Route>
-          <Route path="/cards">
-            <ProtectedRoute>
-              <Cards />
-            </ProtectedRoute>
-          </Route>
-          <Route path="/insights">
-            <ProtectedRoute>
-              <Insights />
-            </ProtectedRoute>
-          </Route>
-          <Route path="/statements">
-            <ProtectedRoute>
-              <Statements />
-            </ProtectedRoute>
-          </Route>
-          <Route path="/transactions/:accountId">
-            <ProtectedRoute>
-              <TransactionHistoryWorking />
-            </ProtectedRoute>
-          </Route>
+    <>
+      <Switch>
+        <Route path="/login" component={Login} />
+        <Route path="/biometric" component={BiometricAuth} />
+        <Route path="/" component={() => <Redirect to="/dashboard" />} />
+        
+        <Route path="/dashboard">
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        </Route>
+        
+        <Route path="/payments">
+          <ProtectedRoute>
+            <Payments />
+          </ProtectedRoute>
+        </Route>
+        
+        <Route path="/apply">
+          <ProtectedRoute>
+            <Apply />
+          </ProtectedRoute>
+        </Route>
+        
+        <Route path="/more">
+          <ProtectedRoute>
+            <More />
+          </ProtectedRoute>
+        </Route>
+        
+        <Route path="/transfer">
+          <ProtectedRoute>
+            <Transfer />
+          </ProtectedRoute>
+        </Route>
+        
+        <Route path="/iban-transfer">
+          <ProtectedRoute>
+            <IbanTransfer />
+          </ProtectedRoute>
+        </Route>
+        
+        <Route path="/uk-transfer">
+          <ProtectedRoute>
+            <UkTransfer />
+          </ProtectedRoute>
+        </Route>
+        
+        <Route path="/internal-transfer">
+          <ProtectedRoute>
+            <InternalTransfer />
+          </ProtectedRoute>
+        </Route>
+        
+        <Route path="/transactions">
+          <ProtectedRoute>
+            <Transactions />
+          </ProtectedRoute>
+        </Route>
+        
+        <Route path="/cards">
+          <ProtectedRoute>
+            <Cards />
+          </ProtectedRoute>
+        </Route>
+        
+        <Route path="/insights">
+          <ProtectedRoute>
+            <Insights />
+          </ProtectedRoute>
+        </Route>
+        
+        <Route path="/bill-pay">
+          <ProtectedRoute>
+            <BillPay />
+          </ProtectedRoute>
+        </Route>
+        
+        <Route path="/transaction-history-working">
+          <ProtectedRoute>
+            <TransactionHistoryWorking />
+          </ProtectedRoute>
+        </Route>
+        
+        <Route path="/statements">
+          <ProtectedRoute>
+            <Statements />
+          </ProtectedRoute>
+        </Route>
+        
+        <Route path="/profile">
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        </Route>
+        
+        <Route component={NotFound} />
+      </Switch>
 
-          <Route path="/profile">
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          </Route>
-          <Route component={NotFound} />
-        </Switch>
-        <BottomNavigation />
-
-        {/* Global Persistent Live Chat - stays active across all navigation */}
-        <LiveChat isOpen={showLiveChat} onClose={() => setShowLiveChat(false)} />
-
-        </div>
-      </ErrorBoundary>
-    </SecurityWrapper>
+      {!hideBottomBar && <BottomNavigation />}
+      
+      {showLiveChat && (
+        <LiveChat 
+          onClose={() => setShowLiveChat(false)}
+          isOpen={showLiveChat}
+        />
+      )}
+    </>
   );
 }
 
-function App() {
+export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <BiometricAuthProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
           <AuthProvider>
             <PermanentAuthProvider>
-              <Toaster />
-              <AppRoutes />
+              <BiometricAuthProvider>
+                <SecurityWrapper>
+                  <AppRoutes />
+                  <Toaster />
+                </SecurityWrapper>
+              </BiometricAuthProvider>
             </PermanentAuthProvider>
           </AuthProvider>
-        </BiometricAuthProvider>
-      </TooltipProvider>
-    </QueryClientProvider>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
-
-export default App;

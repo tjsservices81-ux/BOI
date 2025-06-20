@@ -258,6 +258,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`🔒 ACCOUNT LOCKED TO DEVICE: User ${user.id} locked to ${deviceModel}`);
       console.log(`💾 PERMANENT SESSION CREATED: Token stored in database - NEVER EXPIRES`);
 
+      // Set permanent session cookie that never expires
+      res.cookie('permanentSession', sessionToken, {
+        httpOnly: true,
+        secure: false, // Set to true in production with HTTPS
+        sameSite: 'lax',
+        maxAge: undefined // Never expires
+      });
+
       res.json({ 
         user: { id: user.id, name: user.name, email: user.email },
         sessionToken: sessionToken // Send token to client for permanent storage
@@ -390,6 +398,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Auth status check error:', error);
       res.json({ isLoggedIn: false, needsBiometric: false });
+    }
+  });
+
+  // Biometric verification endpoint
+  app.post('/api/auth/verify-biometric', async (req, res) => {
+    try {
+      // Check for permanent session token
+      const sessionToken = req.cookies?.permanentSession || 
+                          req.headers.authorization?.replace('Bearer ', '');
+      
+      if (!sessionToken) {
+        return res.status(401).json({ success: false, message: 'No session found' });
+      }
+
+      // Validate permanent session
+      const user = await permanentAuthManager.validatePermanentSession(sessionToken);
+      
+      if (!user) {
+        return res.status(401).json({ success: false, message: 'Invalid session' });
+      }
+
+      console.log(`🔐 BIOMETRIC VERIFICATION PASSED: ${user.name} (ID: ${user.id})`);
+      
+      // Return success with user data
+      res.json({ 
+        success: true,
+        user: {
+          id: user.id,
+          customerNumber: user.customerNumber,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          address: user.address,
+          dateOfBirth: user.dateOfBirth,
+          joinDate: user.joinDate
+        }
+      });
+    } catch (error) {
+      console.error('Biometric verification error:', error);
+      res.status(500).json({ success: false, message: 'Verification failed' });
     }
   });
 
