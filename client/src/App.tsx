@@ -154,7 +154,7 @@ function AppRoutes() {
   const hideBottomBar = ['/login', '/splash', '/biometric'].includes(location);
 
   return (
-    <>
+    <div className="mobile-app-container">
       <Switch>
         <Route path="/login" component={Login} />
         <Route path="/biometric" component={BiometricAuth} />
@@ -261,7 +261,7 @@ function AppRoutes() {
           isOpen={showLiveChat}
         />
       )}
-    </>
+    </div>
   );
 }
 
