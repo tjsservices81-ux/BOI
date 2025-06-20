@@ -18,6 +18,7 @@ import LiveChat from "@/components/LiveChat";
 
 import Splash from "@/pages/splash";
 import Login from "@/pages/login";
+import BiometricAuth from "@/pages/BiometricAuth";
 import More from "@/pages/more";
 import Dashboard from "@/pages/dashboard";
 import Payments from "@/pages/payments";
@@ -38,16 +39,22 @@ import NotFound from "@/pages/not-found";
 
 function ProtectedRoute({ children, fallback }: { children: React.ReactNode; fallback?: React.ReactNode }) {
   const authHook = useAuth();
+  const biometricAuth = useBiometricAuth();
   const user = authHook?.user || null;
   const isLoading = authHook?.isLoading || false;
   
+  // Check if user needs biometric authentication
+  if (biometricAuth.state.needsBiometric && !biometricAuth.state.isAuthenticated) {
+    return <Redirect to="/biometric" />;
+  }
+  
   // Prevent any flash by immediately redirecting if no user
-  if (!user && !isLoading) {
+  if (!user && !isLoading && !biometricAuth.state.isLoading) {
     return fallback ? <>{fallback}</> : <Redirect to="/login" />;
   }
   
   // Show nothing while loading to prevent flash
-  if (isLoading) {
+  if (isLoading || biometricAuth.state.isLoading) {
     return null;
   }
   
@@ -354,6 +361,7 @@ function AppRoutes() {
           <Switch>
             <Route path="/splash" component={Splash} />
             <Route path="/login" component={Login} />
+            <Route path="/biometric" component={BiometricAuth} />
             <Route path="/more" component={More} />
             <Route path="/">
               {/* Handle root route - always show proper sequence for cold starts */}
@@ -451,10 +459,14 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <AuthProvider>
-          <Toaster />
-          <AppRoutes />
-        </AuthProvider>
+        <BiometricAuthProvider>
+          <AuthProvider>
+            <PermanentAuthProvider>
+              <Toaster />
+              <AppRoutes />
+            </PermanentAuthProvider>
+          </AuthProvider>
+        </BiometricAuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

@@ -16,6 +16,9 @@ import { db } from "./db";
 import { permanentUserSessions, users } from "@shared/schema";
 import { eq, and } from "drizzle-orm";
 
+// Initialize permanent authentication manager
+const permanentAuthManager = new PermanentAuthManager();
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Wait for storage to fully initialize from persistent data
   await storage.waitForInitialization();
@@ -346,6 +349,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Permanent session validation error:', error);
       res.status(500).json({ message: "Server error", valid: false });
+    }
+  });
+
+  // Authentication status for biometric flow
+  app.get('/api/auth/status', async (req, res) => {
+    try {
+      const sessionToken = req.cookies.permanentSession;
+      if (!sessionToken) {
+        return res.json({ isLoggedIn: false, needsBiometric: false });
+      }
+
+      const session = await permanentAuthManager.getSession(req);
+      
+      if (session && session.isValid) {
+        const storageUser = await storage.getUser(session.userId);
+        if (storageUser) {
+          console.log(`✅ PERMANENT SESSION VERIFIED: ${storageUser.name} (ID: ${storageUser.id})`);
+          res.json({ 
+            isLoggedIn: true, 
+            needsBiometric: true,
+            user: {
+              id: storageUser.id,
+              customerNumber: storageUser.customerNumber,
+              name: storageUser.name,
+              email: storageUser.email,
+              phone: storageUser.phone,
+              address: storageUser.address,
+              dateOfBirth: storageUser.dateOfBirth,
+              joinDate: storageUser.joinDate
+            }
+          });
+          return;
+        }
+      }
+      
+      console.log('❌ NO VALID PERMANENT SESSION FOUND');
+      res.json({ isLoggedIn: false, needsBiometric: false });
+    } catch (error) {
+      console.error('Auth status check error:', error);
+      res.json({ isLoggedIn: false, needsBiometric: false });
     }
   });
 
