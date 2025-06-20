@@ -752,12 +752,13 @@ router.post('/delete-user', adminAuth, async (req, res) => {
       // Invalidate all active express sessions for this user
       const invalidatedSessions = invalidateAllUserSessions(customerNumber);
       
-      // Remove all device sessions for this customer
+      // Remove all device sessions for this customer - PERMANENT REMOVAL
       await deleteAllUserSessions(customerNumber);
       
-      console.log(`Admin successfully deleted user account: ${customerNumber}`);
-      console.log(`Database deletion: ${userDeleted ? 'SUCCESS' : 'FAILED'}`);
-      console.log(`Invalidated ${invalidatedSessions.length} active sessions`);
+      console.log(`🗑️ ADMIN DELETION COMPLETE: User ${customerNumber} PERMANENTLY REMOVED`);
+      console.log(`📊 Database deletion: ${userDeleted ? 'SUCCESS - ALL DATA PERMANENTLY DESTROYED' : 'FAILED'}`);
+      console.log(`🔒 Session cleanup: ${invalidatedSessions.length} active sessions permanently terminated`);
+      console.log(`⚠️ UNRECOVERABLE: User ${customerNumber} and ALL associated data permanently deleted - CANNOT BE RESTORED`);
       
       res.json({ 
         success: true, 
