@@ -11,6 +11,7 @@ import { generateChatResponse } from "./openai";
 import { isDeviceBlocked, addDeviceSession, isDeviceInPanicMode, isCustomerInPanicMode } from "./deviceSessions";
 import { isAccountActiveOnOtherDevice, setUserDeviceSession, removeUserDeviceSession, getUserDeviceSession, isCurrentDeviceAuthorized } from "./deviceExclusiveAuth";
 import { addUserSession, removeUserSession, sessionTrackingMiddleware, isSessionValid } from "./sessionManager";
+import { PermanentAuthManager } from "./permanentAuthManager";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Wait for storage to fully initialize from persistent data
