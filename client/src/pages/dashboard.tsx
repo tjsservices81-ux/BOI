@@ -7,7 +7,7 @@ import { UserDataManager } from "../utils/userDataManager";
 import { StateManager } from "../utils/stateManager";
 import { offlineManager } from "../utils/offlineManager";
 import { useQuery } from "@tanstack/react-query";
-import { useAuth } from "../lib/auth";
+import { usePermanentAuth } from "../lib/permanentAuthContext";
 
 interface Account {
   id: number;
@@ -20,7 +20,7 @@ interface Account {
 export default function Dashboard() {
   const [, setLocation] = useLocation();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const { user } = useAuth();
+  const { user } = usePermanentAuth();
   
   // Local state for account balances that can be updated by transfers
   const [accounts, setAccounts] = useState<Account[]>([]);
