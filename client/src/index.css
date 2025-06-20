@@ -135,6 +135,15 @@ select {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    font-variant-ligatures: none;
+  }
+  
+  /* Normalize font weights between Android and iOS */
+  body, input, button, textarea, select {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: -0.01em;
   }
   
   /* Android-specific button and tap fixes */
@@ -148,6 +157,9 @@ select {
     /* Fix Samsung Internet button spacing */
     -webkit-appearance: none;
     appearance: none;
+    /* Ensure consistent font rendering */
+    font-weight: 500;
+    line-height: 1.4;
   }
   
   /* Android Chrome autofill override */
@@ -158,6 +170,8 @@ select {
     -webkit-box-shadow: 0 0 0 30px white inset !important;
     box-shadow: 0 0 0 30px white inset !important;
     -webkit-text-fill-color: #000 !important;
+    transition: background-color 5000s ease-in-out 0s;
+    background-clip: content-box !important;
   }
   
   /* Fix Android scrolling performance */
@@ -166,6 +180,77 @@ select {
   .overflow-x-auto {
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
+  }
+  
+  /* Hide scrollbars on Android to match iOS */
+  ::-webkit-scrollbar {
+    width: 0px;
+    height: 0px;
+    background: transparent;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: transparent;
+  }
+  
+  /* Android scrollbar hiding for Firefox */
+  html {
+    scrollbar-width: none;
+  }
+  
+  /* Normalize placeholder text across platforms */
+  ::placeholder {
+    color: #9ca3af;
+    opacity: 1;
+    font-weight: 400;
+  }
+  
+  ::-webkit-input-placeholder {
+    color: #9ca3af;
+    opacity: 1;
+    font-weight: 400;
+  }
+  
+  ::-moz-placeholder {
+    color: #9ca3af;
+    opacity: 1;
+    font-weight: 400;
+  }
+  
+  /* Android Material Design ripple effect */
+  @supports (touch-action: manipulation) {
+    button:not(.no-ripple)::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      transform: translate(-50%, -50%);
+      transition: width 0.3s ease, height 0.3s ease;
+      pointer-events: none;
+      z-index: 1;
+    }
+    
+    button:not(.no-ripple):active::before {
+      width: 200px;
+      height: 200px;
+    }
+    
+    /* Dark buttons get light ripple */
+    button[data-variant="default"]:not(.no-ripple)::before,
+    button[data-variant="destructive"]:not(.no-ripple)::before {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    
+    /* Light buttons get dark ripple */
+    button[data-variant="outline"]:not(.no-ripple)::before,
+    button[data-variant="secondary"]:not(.no-ripple)::before,
+    button[data-variant="ghost"]:not(.no-ripple)::before {
+      background: rgba(0, 0, 0, 0.1);
+    }
   }
 }
 
