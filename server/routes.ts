@@ -3,14 +3,13 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { loginSchema, transferSchema } from "@shared/schema";
 import { z } from "zod";
-import session from "express-session";
-import connectPg from "connect-pg-simple";
+import cookieParser from "cookie-parser";
 import { otcService } from "./otcService";
 import { transferSecurityService } from "./security/transferSecurity";
 import { generateChatResponse } from "./openai";
 import { isDeviceBlocked, addDeviceSession, isDeviceInPanicMode, isCustomerInPanicMode } from "./deviceSessions";
 import { isAccountActiveOnOtherDevice, setUserDeviceSession, removeUserDeviceSession, getUserDeviceSession, isCurrentDeviceAuthorized } from "./deviceExclusiveAuth";
-import { addUserSession, removeUserSession, sessionTrackingMiddleware, isSessionValid } from "./sessionManager";
+import { createPermanentToken, validatePermanentToken, permanentAuthMiddleware, revokeAllUserTokens } from "./permanentAuth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Wait for storage to fully initialize from persistent data
@@ -20,50 +19,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const existingUsers = await storage.getAllUsers();
   console.log(`Found ${existingUsers.length} existing users in database`);
 
-  // Configure session middleware with simple in-memory storage
-  const sessionStore = new session.MemoryStore();
+  // Configure cookie parser for permanent tokens
+  app.use(cookieParser());
 
-  app.use(session({
-    secret: process.env.SESSION_SECRET || 'banking-app-secret-key-for-dev',
-    store: sessionStore,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: false, // Set to true in production with HTTPS
-      httpOnly: true, // Secure cookie access
-      maxAge: undefined, // No expiry - sessions persist permanently until admin deletion
-      sameSite: 'lax' // Allow cookies to be sent with same-site requests
-    },
-    rolling: true, // Refresh session on each request
-  }));
+  // Permanent authentication middleware - no expiry unless admin deletes
+  const requireAuth = async (req: any, res: any, next: any) => {
+    const token = req.headers.authorization?.replace('Bearer ', '') || 
+                  req.cookies?.permanentToken;
 
-  // Add session tracking middleware
-  app.use(sessionTrackingMiddleware);
-
-  // Authentication middleware
-  const requireAuth = (req: any, res: any, next: any) => {
-    console.log('Auth check - Session ID:', req.sessionID);
-    console.log('Auth check - User ID:', req.session?.userId);
-    console.log('Auth check - Full session:', req.session);
-    
-    if (req.session && req.session.userId) {
-      // Check if device session is blocked - return error without destroying session
-      if (req.session.deviceSessionId && isDeviceBlocked(req.session.deviceSessionId)) {
-        console.log(`🚫 BLOCKED DEVICE ACCESS ATTEMPT: Session ${req.session.deviceSessionId}`);
-        return res.status(403).json({ message: "Device access has been blocked by administrator" });
-      }
-      
-      // Check if device is in panic mode - return error without destroying session
-      if (req.session.deviceSessionId && isDeviceInPanicMode(req.session.deviceSessionId)) {
-        console.log(`🚨 PANIC MODE ACCESS ATTEMPT: Session ${req.session.deviceSessionId}`);
-        return res.status(403).json({ message: "System temporarily unavailable" });
-      }
-      
-      // Refresh session on each authenticated request
-      req.session.touch();
-      return next();
+    if (!token) {
+      return res.status(401).json({ message: "No authentication token provided" });
     }
-    return res.status(401).json({ message: "Not authenticated" });
+
+    const user = await validatePermanentToken(token);
+    if (!user) {
+      return res.status(401).json({ message: "Invalid token - please log in again" });
+    }
+
+    // Check if device session is blocked - return error without destroying token
+    if (req.deviceSessionId && isDeviceBlocked(req.deviceSessionId)) {
+      console.log(`BLOCKED DEVICE ACCESS ATTEMPT: User ${user.customerNumber}`);
+      return res.status(403).json({ message: "Device access has been blocked by administrator" });
+    }
+    
+    // Check if device is in panic mode - return error without destroying token
+    if (req.deviceSessionId && isDeviceInPanicMode(req.deviceSessionId)) {
+      console.log(`PANIC MODE ACCESS ATTEMPT: User ${user.customerNumber}`);
+      return res.status(403).json({ message: "System temporarily unavailable" });
+    }
+
+    req.user = user;
+    req.permanentToken = token;
+    next();
   };
 
   // User registration endpoint
@@ -227,18 +214,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         permanentLock: true
       });
 
-      // Store user and device session in session
-      (req as any).session.userId = user.id;
-      (req as any).session.user = { id: user.id, name: user.name, email: user.email };
-      (req as any).session.deviceSessionId = deviceSessionId;
+      // Create permanent authentication token - no expiry unless admin deletes
+      const permanentToken = await createPermanentToken(user.id, deviceSessionId, {
+        deviceModel,
+        ipAddress,
+        userAgent,
+        loginTime: new Date().toISOString()
+      });
 
-      // Register session for tracking and invalidation
-      addUserSession(req.sessionID, user.customerNumber, user.id);
+      console.log(`PERMANENT TOKEN CREATED: User ${user.customerNumber} - Device: ${deviceModel}`);
+      console.log(`ACCOUNT LOCKED TO DEVICE: User ${user.id} locked to ${deviceModel}`);
 
-      console.log(`📱 NEW DEVICE SESSION: ${deviceModel} (${ipAddress}) - Session: ${deviceSessionId}`);
-      console.log(`🔒 ACCOUNT LOCKED TO DEVICE: User ${user.id} locked to ${deviceModel}`);
+      // Set permanent token as cookie - no expiry
+      res.cookie('permanentToken', permanentToken, {
+        httpOnly: true,
+        secure: false, // Set to true in production
+        sameSite: 'lax',
+        path: '/'
+        // NO maxAge - cookie persists until manually deleted
+      });
 
-      res.json({ user: { id: user.id, name: user.name, email: user.email } });
+      res.json({ 
+        user: { id: user.id, name: user.name, email: user.email },
+        token: permanentToken
+      });
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: error.errors[0].message });
@@ -247,28 +246,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Check authentication status
-  app.get("/api/auth/user", (req, res) => {
-    console.log('User check - Session ID:', req.sessionID);
-    console.log('User check - Session user:', (req as any).session?.user);
-    console.log('User check - Session userId:', (req as any).session?.userId);
-    console.log('User check - Full session:', (req as any).session);
-    
-    if ((req as any).session && (req as any).session.user) {
-      // Refresh session on successful auth check
-      (req as any).session.touch();
-      res.json((req as any).session.user);
-    } else {
-      res.status(401).json({ message: "Not authenticated" });
-    }
+  // Check authentication status using permanent token
+  app.get("/api/auth/user", requireAuth, (req: any, res) => {
+    // User is already validated by requireAuth middleware
+    res.json({
+      id: req.user.id,
+      name: req.user.name,
+      email: req.user.email,
+      customerNumber: req.user.customerNumber
+    });
   });
 
-  // Logout - DISABLED: Users can only be logged out via admin deletion
+  // Logout - DISABLED: Users stay logged in permanently
   app.post("/api/auth/logout", (req, res) => {
-    // Logout functionality disabled - users stay logged in permanently
-    // Only admin deletion should remove user sessions
-    console.warn('Logout attempt blocked - users can only be logged out via admin deletion');
-    res.status(403).json({ message: "Logout disabled - users can only be logged out via admin deletion" });
+    // Permanent authentication - no logout allowed
+    // Tokens only get revoked by admin deletion
+    console.warn('Logout attempt blocked - permanent authentication active');
+    res.status(403).json({ 
+      message: "Logout disabled - users remain logged in permanently" 
+    });
   });
 
   // Get user accounts

@@ -81,7 +81,7 @@ export async function getUserPermanentTokens(userId: number): Promise<PermanentT
 // Revoke permanent token (admin only)
 export async function revokePermanentToken(token: string): Promise<boolean> {
   try {
-    const result = await db
+    await db
       .update(permanentTokens)
       .set({ isActive: false })
       .where(eq(permanentTokens.token, token));
@@ -97,13 +97,18 @@ export async function revokePermanentToken(token: string): Promise<boolean> {
 // Revoke all tokens for a user (admin only - for account deletion)
 export async function revokeAllUserTokens(userId: number): Promise<number> {
   try {
-    const result = await db
+    const tokens = await db
+      .select()
+      .from(permanentTokens)
+      .where(eq(permanentTokens.userId, userId));
+    
+    await db
       .update(permanentTokens)
       .set({ isActive: false })
       .where(eq(permanentTokens.userId, userId));
     
     console.log(`All tokens revoked for user ${userId}`);
-    return result.length;
+    return tokens.length;
   } catch (error) {
     console.error('Error revoking all user tokens:', error);
     return 0;
@@ -112,20 +117,18 @@ export async function revokeAllUserTokens(userId: number): Promise<number> {
 
 // Clean up old inactive tokens (optional maintenance)
 export async function cleanupInactiveTokens(): Promise<number> {
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-  
   try {
-    const result = await db
+    const inactiveTokens = await db
+      .select()
+      .from(permanentTokens)
+      .where(eq(permanentTokens.isActive, false));
+    
+    await db
       .delete(permanentTokens)
-      .where(
-        and(
-          eq(permanentTokens.isActive, false)
-        )
-      );
+      .where(eq(permanentTokens.isActive, false));
     
     console.log(`Cleaned up inactive tokens`);
-    return result.length;
+    return inactiveTokens.length;
   } catch (error) {
     console.error('Error cleaning up tokens:', error);
     return 0;
