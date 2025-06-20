@@ -11,6 +11,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import { StateManager } from "@/utils/stateManager";
 import { AppLifecycle } from "@/utils/appLifecycle";
 import LiveChat from "@/components/LiveChat";
+import { OfflineBanner } from "@/components/OfflineBanner";
 
 
 
@@ -348,6 +349,7 @@ function AppRoutes() {
   return (
     <SecurityWrapper>
       <ErrorBoundary>
+        <OfflineBanner />
         <div className="w-full h-full overflow-hidden relative">
           <Switch>
             <Route path="/splash" component={Splash} />
