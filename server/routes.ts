@@ -228,9 +228,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         permanentLock: true
       });
 
-      // Store user and device session in session
+      // Create permanent session in database - NEVER EXPIRES
+      const sessionToken = await PermanentAuthManager.createPermanentSession(
+        user.id,
+        user.customerNumber,
+        {
+          deviceModel,
+          ipAddress,
+          userAgent
+        }
+      );
+
+      // Store permanent session token in regular session for compatibility
       (req as any).session.userId = user.id;
       (req as any).session.user = { id: user.id, name: user.name, email: user.email };
+      (req as any).session.permanentSessionToken = sessionToken;
       (req as any).session.deviceSessionId = deviceSessionId;
 
       // Register session for tracking and invalidation
@@ -238,8 +250,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`📱 NEW DEVICE SESSION: ${deviceModel} (${ipAddress}) - Session: ${deviceSessionId}`);
       console.log(`🔒 ACCOUNT LOCKED TO DEVICE: User ${user.id} locked to ${deviceModel}`);
+      console.log(`💾 PERMANENT SESSION CREATED: Token stored in database - NEVER EXPIRES`);
 
-      res.json({ user: { id: user.id, name: user.name, email: user.email } });
+      res.json({ 
+        user: { id: user.id, name: user.name, email: user.email },
+        sessionToken: sessionToken // Send token to client for permanent storage
+      });
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: error.errors[0].message });
@@ -248,7 +264,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Check authentication status
+  // Validate permanent session token
+  app.post("/api/auth/validate-permanent", async (req, res) => {
+    try {
+      const { sessionToken } = req.body;
+      
+      if (!sessionToken) {
+        return res.status(400).json({ message: "Session token required" });
+      }
+
+      // Validate permanent session - NO expiry check
+      const user = await PermanentAuthManager.validatePermanentSession(sessionToken);
+      
+      if (user) {
+        console.log(`🔒 PERMANENT SESSION VALIDATED: User ${user.id} authenticated via database token`);
+        res.json({ 
+          user: { id: user.id, name: user.name, email: user.email },
+          valid: true 
+        });
+      } else {
+        // Session invalid - likely user was deleted by admin
+        console.log('🗑️ PERMANENT SESSION INVALID: User may have been deleted by admin');
+        res.status(401).json({ message: "Session invalid", valid: false });
+      }
+    } catch (error) {
+      console.error('Error validating permanent session:', error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Check authentication status - LEGACY SUPPORT
   app.get("/api/auth/user", (req, res) => {
     console.log('User check - Session ID:', req.sessionID);
     console.log('User check - Session user:', (req as any).session?.user);
