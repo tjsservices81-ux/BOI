@@ -73,34 +73,46 @@ export async function validateTokenWithServer(): Promise<any | null> {
   }
 }
 
-// Login with permanent token
+// Login with permanent authentication - cross-platform optimized
 export async function loginWithPermanentAuth(customerNumber: string, pin: string): Promise<any> {
   try {
+    // Add timeout for mobile network reliability
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+
     const response = await fetch('/api/auth/login', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ customerNumber, pin })
+      body: JSON.stringify({
+        customerNumber,
+        pin,
+        deviceInfo: {
+          userAgent: navigator.userAgent,
+          platform: navigator.platform,
+          language: navigator.language,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+        }
+      }),
+      signal: controller.signal
     });
+
+    clearTimeout(timeoutId);
 
     if (response.ok) {
       const data = await response.json();
       
       // Store permanent token and user data
-      if (data.token) {
-        storePermanentToken(data.token);
+      if (data.permanentToken) {
+        storePermanentToken(data.permanentToken);
+        storeUserData(data.user);
+        console.log('Permanent authentication established - user will stay logged in indefinitely');
       }
       
-      if (data.user) {
-        storeUserData(data.user);
-      }
-
-      console.log('User logged in with permanent authentication');
       return data;
     } else {
-      const error = await response.json();
-      throw new Error(error.message);
+      throw new Error('Login failed');
     }
   } catch (error) {
     console.error('Login error:', error);
@@ -108,38 +120,21 @@ export async function loginWithPermanentAuth(customerNumber: string, pin: string
   }
 }
 
-// Auto-login on app start
+// Auto-login on app start - cross-platform compatible
 export async function autoLoginOnStart(): Promise<any | null> {
   if (!hasPermanentToken()) {
     return null;
   }
 
-  // Check if token is still valid
-  const userData = await validateTokenWithServer();
-  
-  if (userData) {
-    console.log('Auto-login successful - user remains authenticated');
-    return userData;
-  } else {
-    console.log('Auto-login failed - token expired or invalid');
-    return null;
-  }
-}
-
-// Make authenticated API requests
-export async function makeAuthenticatedRequest(url: string, options: RequestInit = {}): Promise<Response> {
-  const token = getPermanentToken();
-  
-  if (!token) {
-    throw new Error('No authentication token available');
-  }
-
-  return fetch(url, {
-    ...options,
-    headers: {
-      ...options.headers,
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
+  try {
+    const userData = await validateTokenWithServer();
+    if (userData) {
+      console.log('Auto-login successful - permanent authentication restored');
+      return userData;
     }
-  });
+  } catch (error) {
+    console.error('Auto-login failed:', error);
+  }
+
+  return null;
 }
