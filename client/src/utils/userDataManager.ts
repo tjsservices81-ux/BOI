@@ -304,8 +304,14 @@ export class UserDataManager {
     // Keep accounts intact - don't clear them
   }
 
-  // Remove specific user and their data
+  // Remove specific user and their data - ADMIN ONLY
   static removeUser(customerNumber: string) {
+    // SECURITY: Only admin can remove users
+    if (!this.isAdminContext()) {
+      console.error('SECURITY VIOLATION: removeUser() can only be called by admin');
+      return false;
+    }
+    
     // Remove from users list
     const allUsers = this.getAllUsers();
     delete allUsers[customerNumber];
@@ -318,15 +324,18 @@ export class UserDataManager {
         localStorage.removeItem(key);
       }
     });
+    
+    console.log(`Admin authorized: User ${customerNumber} removed`);
+    return true;
   }
 
-  // Clear temporary state for cold launch
+  // Clear temporary state for cold launch - ONLY clears cache, NOT user data
   static clearTemporaryState() {
-    // Clear cache and session-related data
+    // SECURITY: Only clear memory cache and temporary items, never user data
     this.dataCache.clear();
     this.cacheTimestamps.clear();
     
-    // Clear temporary storage items
+    // Clear ONLY temporary storage items - exclude user data
     const keys = Object.keys(localStorage);
     keys.forEach(key => {
       if (key.includes('chat') || key.includes('liveChat') || key.includes('tempState') || key.includes('session_')) {
@@ -335,10 +344,17 @@ export class UserDataManager {
     });
     
     // Don't clear sessionStorage - preserve user login state
+    // Don't clear bankingUser, currentUser, or any user_ prefixed keys
   }
 
-  // Admin function to clear all data
+  // Admin function to clear all data - RESTRICTED ACCESS
   static clearAllData() {
+    // SECURITY: This function can only be called from admin context
+    if (!this.isAdminContext()) {
+      console.error('SECURITY VIOLATION: clearAllData() can only be called by admin');
+      return false;
+    }
+    
     // Clear all localStorage data
     const keys = Object.keys(localStorage);
     keys.forEach(key => {
@@ -349,6 +365,16 @@ export class UserDataManager {
     
     // Reset current user
     this.currentUser = null;
+    console.log('Admin authorized: All user data cleared');
+    return true;
+  }
+
+  // Admin context verification
+  private static isAdminContext(): boolean {
+    // Check if we're in admin panel context
+    return window.location.pathname.includes('/admin') || 
+           document.title.includes('Admin') ||
+           window.location.hostname === 'localhost'; // Allow in development
   }
 
   // Admin-triggered cleanup - removes all traces of a deleted user

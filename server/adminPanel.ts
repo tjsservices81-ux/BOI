@@ -559,9 +559,10 @@ router.get('/panel', adminAuth, async (req, res) => {
             });
             
             const result = await response.json();
-            if (response.ok) {
-              // Clear all cached data for the deleted user from browser storage
-              try {
+            if (response.ok && result.success) {
+              // SECURITY: Only clear frontend data AFTER backend confirms successful deletion
+              if (result.details && result.details.userDeleted && result.details.permanentSessionsRevoked) {
+                try {
                 // Clear localStorage entries for this customer
                 const allKeys = Object.keys(localStorage);
                 for (const key of allKeys) {
