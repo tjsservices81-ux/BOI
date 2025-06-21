@@ -122,17 +122,20 @@ export class UserDataManager {
     }
   }
 
-  // Clear cache for specific user data with proper synchronization
+  // Clear cache for specific user data - PROTECTED (preserve in localStorage)
   static clearCache(key?: string) {
     const currentUser = this.getCurrentUser();
     if (!currentUser) return;
+
+    // Save to localStorage before clearing memory cache
+    this.saveCacheToStorage();
 
     if (key) {
       const cacheKey = `${currentUser}_${key}`;
       this.dataCache.delete(cacheKey);
       this.cacheTimestamps.delete(cacheKey);
     } else {
-      // Clear all cache entries for current user
+      // Clear all cache entries for current user (memory only)
       const userPrefix = `${currentUser}_`;
       this.dataCache.forEach((value, key) => {
         if (key.startsWith(userPrefix)) {
@@ -141,6 +144,8 @@ export class UserDataManager {
         }
       });
     }
+    
+    console.log('Memory cache cleared but data preserved in localStorage');
   }
 
   // Get all registered users
