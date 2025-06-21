@@ -1289,8 +1289,7 @@ No transfers found yet on your account.`;
     } catch (error) {
       console.error('Failed to validate user:', error);
       res.status(500).json({ 
-        success: false, 
-        message: "Failed to validate account status" 
+        error: "Failed to validate account status" 
       });
     }
   });

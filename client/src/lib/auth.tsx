@@ -1,5 +1,6 @@
 // Authentication context for the banking app
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { UserDataManager } from '../utils/userDataManager';
 
 interface User {
   id: number;
@@ -27,11 +28,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     const initializeAuth = async () => {
       try {
-        // Check for cached user first
-        const cachedUser = localStorage.getItem('currentUser');
+        // Check for cached user first through UserDataManager
+        const cachedUser = UserDataManager.getCurrentUser();
         if (cachedUser && isMounted) {
-          try {
-            const parsedUser = JSON.parse(cachedUser);
+          const userProfile = UserDataManager.getUserProfile();
+          if (userProfile) {
             
             // Validate user still exists on server for bulletproof authentication
             const response = await fetch('/api/auth/status', {
@@ -93,7 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         // Update user state immediately without flickering
         setUser(updatedUser);
-        localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+        UserDataManager.setUserData('currentUser', JSON.stringify(updatedUser));
       }
     };
 
@@ -109,7 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = (userData: User) => {
     console.log('🔐 AuthContext login() called with:', userData);
     setUser(userData);
-    localStorage.setItem('currentUser', JSON.stringify(userData));
+    UserDataManager.setUserData('currentUser', JSON.stringify(userData));
     console.log('✅ User session saved to localStorage');
     
     // Emit global login event for navigation handlers
