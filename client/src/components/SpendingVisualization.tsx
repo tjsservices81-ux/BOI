@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { UserDataManager } from '@/utils/userDataManager';
+import { UserDataManager } from '../utils/userDataManager';
 
 interface Transaction {
   id: number;

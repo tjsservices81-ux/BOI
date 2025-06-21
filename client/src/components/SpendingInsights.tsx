@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, DollarSign, Calendar, Eye, EyeOff } from 'lucide-react';
-import { UserDataManager } from '@/utils/userDataManager';
+import { UserDataManager } from '../utils/userDataManager';
 
 interface SpendingData {
   totalSpent: number;

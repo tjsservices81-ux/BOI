@@ -1,5 +1,5 @@
 import { useLocation } from "wouter";
-import { useAuth } from "@/lib/auth";
+import { useAuth } from "../lib/auth";
 import { useEffect, useState } from "react";
 
 export default function BottomNavigation() {

@@ -1,6 +1,5 @@
 // User Data Management System
 // Handles isolated data storage for each user account
-import type { User } from '@shared/schema';
 
 export interface UserData {
   id?: number;

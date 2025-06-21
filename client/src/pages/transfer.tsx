@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useAuth } from "@/lib/auth";
+import { useAuth } from "../lib/auth";
 import { BottomNavigation } from "@/components/ui/bottom-navigation";
 import { apiRequest } from "@/lib/queryClient";
 import { ArrowLeft, PiggyBank, ChevronDown, Send, Info } from "lucide-react";

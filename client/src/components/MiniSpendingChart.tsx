@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, BarChart3 } from 'lucide-react';
-import { UserDataManager } from '@/utils/userDataManager';
+import { UserDataManager } from '../utils/userDataManager';
 
 interface ChartData {
   date: string;

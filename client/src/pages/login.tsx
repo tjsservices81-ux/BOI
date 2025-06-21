@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { useAuth } from "@/lib/auth";
+import { useAuth } from "../lib/auth";
 import { User, ExternalLink, HelpCircle, Phone, Settings, Shield, MapPin, MoreHorizontal } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { UserDataManager } from "@/utils/userDataManager";
+import { UserDataManager } from "../utils/userDataManager";
 
 export default function Login() {
   const [customerNumber, setCustomerNumber] = useState("");

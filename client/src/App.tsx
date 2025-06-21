@@ -12,7 +12,7 @@ import { SecurityWrapper } from "@/components/SecurityWrapper";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { StateManager } from "@/utils/stateManager";
 import { AppLifecycle } from "@/utils/appLifecycle";
-import { UserDataManager } from "@/utils/userDataManager";
+import { UserDataManager } from "./utils/userDataManager";
 import LiveChat from "@/components/LiveChat";
 
 import Splash from "@/pages/splash";
