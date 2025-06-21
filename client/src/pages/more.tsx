@@ -1,6 +1,6 @@
 import { useLocation } from "wouter";
 import { ChevronLeft, User, HelpCircle, Info, Settings, Shield, Building2, MessageCircle } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function More() {
   const [, setLocation] = useLocation();
@@ -17,11 +17,22 @@ export default function More() {
   const handleLiveChatClick = () => {
     setIsLoadingChat(true);
     // Simulate loading time for a realistic experience
-    setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       setIsLoadingChat(false);
       // Dispatch global event to open persistent live chat
       window.dispatchEvent(new CustomEvent('openLiveChat'));
     }, 1200); // 1.2 seconds loading
+    
+    // Safety fallback to prevent stuck loading state
+    const fallbackTimeoutId = setTimeout(() => {
+      setIsLoadingChat(false);
+    }, 3000); // Maximum 3 seconds
+    
+    // Cleanup on component unmount
+    return () => {
+      clearTimeout(timeoutId);
+      clearTimeout(fallbackTimeoutId);
+    };
   };
 
   return (
