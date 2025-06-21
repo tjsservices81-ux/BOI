@@ -319,18 +319,7 @@ export default function IbanTransfer() {
                     </p>
                   </div>
                   
-                  {/* Professional Security Notice */}
-                  <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-gray-200 shadow-lg">
-                    <div className="flex items-center justify-center space-x-3 mb-3">
-                      <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                      <span className="text-sm font-semibold text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        Secure Connection Active
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-500 leading-relaxed" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Your SEPA transfer is being processed through Bank of Ireland's secure SWIFT network with end-to-end encryption
-                    </p>
-                  </div>
+
                 </div>
               </div>
             ) : (
