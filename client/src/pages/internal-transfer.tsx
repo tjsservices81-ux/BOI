@@ -481,7 +481,7 @@ export default function InternalTransfer() {
                 <option value="">Select source account</option>
                 {accounts.map((account) => (
                   <option key={account.id} value={account.id}>
-                    {account.displayName} - €{typeof account.balance === 'string' ? parseFloat(account.balance).toFixed(2) : account.balance.toFixed(2)}
+                    {account.displayName} - {CurrencyManager.formatAmount(account.balance, currentCurrency)}
                   </option>
                 ))}
               </select>
@@ -517,7 +517,7 @@ export default function InternalTransfer() {
 
             <div>
               <label className="block text-sm font-semibold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Amount (EUR)
+                Amount ({CurrencyManager.getCode(currentCurrency)})
               </label>
               <input
                 type="number"

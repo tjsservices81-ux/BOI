@@ -12,7 +12,7 @@
         "address": "",
         "dateOfBirth": "",
         "joinDate": "2025-06-21T08:48:15.511Z",
-        "primaryCurrency": "EUR",
+        "primaryCurrency": "GBP",
         "dateCreated": "2025-06-21T08:48:15.511Z",
         "isDisabled": false
       }
@@ -352,7 +352,7 @@
         "address": null,
         "dateOfBirth": null,
         "joinDate": "Member since 2018",
-        "primaryCurrency": "GBP",
+        "primaryCurrency": "EUR",
         "dateCreated": "2025-06-21T08:57:07.321Z",
         "isDisabled": false
       }

@@ -537,7 +537,9 @@ export default function IbanTransfer() {
               
               <div className="flex justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Amount:</span>
-                <span className="font-semibold text-[#126987] text-xl" style={{ fontFamily: 'OpenSans, sans-serif' }}>€{formData?.amount}</span>
+                <span className="font-semibold text-[#126987] text-xl" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  {CurrencyManager.formatAmount(formData?.amount || '0', currentCurrency)}
+                </span>
               </div>
               
               <div className="flex justify-between py-2">
