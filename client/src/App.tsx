@@ -159,45 +159,42 @@ function AppRoutes() {
         return;
       }
       
-      // Case 2: App was fully closed - show splash then check backend session
+      // Case 2: App was force closed - show splash then check permanent login
       if (AppLifecycle.isFreshStart()) {
-        console.log('🚀 Fresh app start - checking session');
+        console.log('🚀 FORCE CLOSE RESTART: Show splash then check permanent login');
         
-        // Always show splash screen for fresh starts
+        // Always show splash screen for force close restarts
         setSplashShown(false);
         
         setTimeout(async () => {
           try {
-            // Check backend session after splash
-            const response = await fetch('/api/auth/status', {
-              credentials: 'include'
-            });
-            const authStatus = await response.json();
+            // PERMANENT LOGIN: Check if user is permanently logged in
+            const cachedUser = UserDataManager.getCurrentUser();
+            const userProfile = UserDataManager.getUserProfile();
+            const isPermanentlyLoggedIn = UserDataManager.getUserData('permanentlyLoggedIn', false);
             
-            if (authStatus.isLoggedIn) {
-              console.log('✅ Valid backend session found');
+            if (cachedUser && userProfile && isPermanentlyLoggedIn) {
+              console.log('✅ PERMANENT LOGIN: User found - they stay logged in forever');
               
-              if (authStatus.user) {
-                login(authStatus.user);
-              }
+              // Restore permanent login after force close
+              login({
+                id: userProfile.id || parseInt(userProfile.customerNumber) || 0,
+                name: userProfile.name,
+                email: userProfile.email
+              });
               
-              if (authStatus.needsBiometric) {
-                console.log('Session requires biometric verification');
-                biometricAuth.setNeedsBiometric(true);
-              } else {
-                // Navigate to dashboard if no biometric needed
-                navigate('/dashboard');
-              }
+              // Dashboard only accessible through biometric authentication after force close
+              console.log('Force close detected - biometric verification required');
+              biometricAuth.setNeedsBiometric(true);
+              navigate('/biometric');
             } else {
-              console.log('❌ No valid backend session - showing login');
+              console.log('❌ No permanent login found - showing login screen');
               
-              // Clear stale authentication data through UserDataManager
+              // Clear any stale data
               try {
                 UserDataManager.clearUserData('currentUser');
                 console.log('Clearing stale user data from UserDataManager');
               } catch (error) {
-                // Handle case where no user is currently set - use UserDataManager
-                try {
                   UserDataManager.clearUserData('currentUser');
                 } catch (clearError) {
                   console.warn('Failed to clear user data via UserDataManager');

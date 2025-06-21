@@ -354,9 +354,10 @@ export default function Login() {
       return;
     }
 
-    // Set current user and record login time
+    // PERMANENT LOGIN: Set current user and mark as permanently logged in
     UserDataManager.setCurrentUser(customerNumber);
     UserDataManager.recordLoginTime(customerNumber);
+    UserDataManager.setUserData('permanentlyLoggedIn', true);
     
     try {
       const userProfile = UserDataManager.getUserProfile();
@@ -638,6 +639,12 @@ export default function Login() {
 
       if (response.ok) {
         const data = await response.json();
+        
+        // PERMANENT LOGIN: Mark user as permanently logged in
+        UserDataManager.setCurrentUser(customerNumber);
+        UserDataManager.setUserProfile(data.user);
+        UserDataManager.setUserData('permanentlyLoggedIn', true);
+        
         // Set user in auth context
         login({
           id: data.user.id,

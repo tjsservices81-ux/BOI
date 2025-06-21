@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { AuthContext } from './auth';
+import { UserDataManager } from '../utils/userDataManager';
 
 interface BiometricAuthState {
   isAuthenticated: boolean;
@@ -154,7 +155,7 @@ export function BiometricAuthProvider({ children }: { children: React.ReactNode 
         body: JSON.stringify({ verified: true })
       });
 
-      if (response.ok) {
+      if (response && response.ok) {
         const data = await response.json();
         if (data.success) {
           // Call main auth context login to establish shared session
@@ -174,6 +175,29 @@ export function BiometricAuthProvider({ children }: { children: React.ReactNode 
             isAuthenticated: true,
             needsBiometric: false,
             userInfo: data.user,
+            isLoading: false
+          }));
+          return true;
+        }
+      } else if (!response) {
+        // OFFLINE MODE: Allow biometric authentication offline if user data exists
+        const cachedUser = UserDataManager.getCurrentUser();
+        const userProfile = UserDataManager.getUserProfile();
+        
+        if (cachedUser && userProfile) {
+          if (login) {
+            login({
+              id: userProfile.id || parseInt(userProfile.customerNumber) || 0,
+              name: userProfile.name,
+              email: userProfile.email
+            });
+          }
+          
+          setState(prev => ({
+            ...prev,
+            isAuthenticated: true,
+            needsBiometric: false,
+            userInfo: userProfile,
             isLoading: false
           }));
           return true;

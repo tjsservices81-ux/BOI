@@ -79,14 +79,8 @@ self.addEventListener('fetch', function(event) {
         return fetch(event.request).catch(() => {
           return caches.match('/');
         });
-      }
-    )
+      })
   );
-});
-      }
-    )
-  );
-});
 });
 
 // Prevent any attempts to access the service worker from external sources
