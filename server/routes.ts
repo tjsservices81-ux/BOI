@@ -5,8 +5,7 @@ import { loginSchema, transferSchema } from "@shared/schema";
 import { z } from "zod";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
-import { otcService as accountOtcService } from "./otcService";
-import { launchOtcService } from "./otcService";
+import { launchScreenOtc } from "./launchScreenOtc";
 import { transferSecurityService } from "./security/transferSecurity";
 import { generateChatResponse } from "./openai";
 import { isDeviceBlocked, addDeviceSession, isDeviceInPanicMode, isCustomerInPanicMode } from "./deviceSessions";
@@ -56,7 +55,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ verified: false, message: "Invalid code format" });
       }
 
-      const verified = await otcService.verifyCode(otc.trim().toUpperCase());
+      const verified = await launchScreenOtc.verifyCode(otc.trim().toUpperCase());
       
       if (verified) {
         console.log(`✅ OTC VERIFICATION SUCCESS: ${otc}`);
@@ -74,8 +73,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin endpoint to get current OTC (hidden method)
   app.get("/api/admin/current-otc", async (req, res) => {
     try {
-      const currentOtc = await otcService.getCurrentCode();
-      const expiresAt = await otcService.getExpirationTime();
+      const currentOtc = await launchScreenOtc.getCurrentCode();
+      const expiresAt = await launchScreenOtc.getExpirationTime();
       
       console.log(`🔐 ADMIN OTC REQUEST: ${req.ip} - Code: ${currentOtc}`);
       
@@ -95,8 +94,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { customCode, expiryHours } = req.body;
       
-      const newOtc = await otcService.generateNewCode(customCode, expiryHours);
-      const expiresAt = await otcService.getExpirationTime();
+      const newOtc = await launchOtcService.generateNewCode(customCode, expiryHours);
+      const expiresAt = await launchOtcService.getExpirationTime();
       
       console.log(`🔄 ADMIN OTC GENERATION: New code ${newOtc} expires at ${expiresAt}`);
       
