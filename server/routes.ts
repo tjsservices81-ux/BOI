@@ -109,7 +109,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: error.errors[0].message });
       }
-      res.status(500).json({ message: "Registration failed" });
+      res.status(500).json({ error: "Registration failed" });
     }
   });
 
@@ -125,7 +125,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.getUserByCredentials(customerNumber, pin);
       
       if (!user) {
-        return res.status(401).json({ message: "Invalid credentials" });
+        return res.status(401).json({ error: "Invalid credentials" });
       }
 
       // Check if this customer has any devices in panic mode
@@ -206,7 +206,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const existingSession = getUserDeviceSession(user.id);
         console.log(`🚫 UNAUTHORIZED DEVICE: User ${user.id} attempted login from ${deviceModel}, but account is permanently locked to ${existingSession?.deviceModel}`);
         return res.status(403).json({ 
-          message: "This account is already active on another device." 
+          error: "This account is already active on another device." 
         });
       }
 
@@ -516,7 +516,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const newBalance = (currentBalance - amount).toFixed(2);
       await storage.updateAccountBalance(transferData.fromAccountId, newBalance);
 
-      res.json({ message: "Transfer completed successfully", transaction });
+      res.json({ success: true, message: "Transfer completed successfully", transaction });
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: error.errors[0].message });
