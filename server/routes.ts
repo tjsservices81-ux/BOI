@@ -320,30 +320,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`🔍 USER QUERY: Found ${userResult.length} users`);
       
-      // If user not found in database, check storage layer
+      // If user not found in database, they were deleted - revoke session immediately
       if (userResult.length === 0) {
-        console.log('⚠️ User not found in database, checking storage layer...');
-        const storageUser = await storage.getUser(session.userId);
-        
-        if (!storageUser) {
-          console.log('❌ USER DELETED - REVOKING SESSION IMMEDIATELY');
-          // User was deleted by admin - revoke session
-          await db.update(permanentUserSessions)
-            .set({ isActive: false })
-            .where(eq(permanentUserSessions.sessionToken, sessionToken));
-          return res.status(401).json({ message: "Account no longer exists", valid: false });
-        }
-        
-        console.log('✅ User found in storage, session remains valid');
-        // Update last activity
+        console.log('❌ USER DELETED FROM DATABASE - REVOKING SESSION IMMEDIATELY');
+        // User was deleted by admin - revoke session without checking storage fallback
         await db.update(permanentUserSessions)
-          .set({ lastActivity: new Date() })
+          .set({ isActive: false })
           .where(eq(permanentUserSessions.sessionToken, sessionToken));
-
-        return res.json({ 
-          user: { id: storageUser.id, name: storageUser.name, email: storageUser.email },
-          valid: true 
-        });
+        return res.status(401).json({ message: "Account no longer exists", valid: false });
       }
       
       const user = userResult[0];
