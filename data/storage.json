@@ -8,11 +8,11 @@
         "pin": "000000",
         "name": "User",
         "email": "user@example.com",
-        "phone": null,
-        "address": null,
-        "dateOfBirth": null,
+        "phone": "",
+        "address": "",
+        "dateOfBirth": "",
         "joinDate": "2025-06-21T08:48:15.511Z",
-        "primaryCurrency": "EUR",
+        "primaryCurrency": "GBP",
         "dateCreated": "2025-06-21T08:48:15.511Z",
         "isDisabled": false
       }

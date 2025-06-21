@@ -520,8 +520,8 @@ export default function TransactionHistoryWorking() {
                   </>
                 )}
 
-                {/* Conversion Rate for UK Transfers */}
-                {selectedTransaction.paymentMethod === 'UK Transfer' && selectedTransaction.exchangeRate && (
+                {/* Conversion Rate for UK Transfers - Only show if EUR currency */}
+                {!CurrencyManager.shouldHideConversion() && selectedTransaction.paymentMethod === 'UK Transfer' && selectedTransaction.exchangeRate && (
                   <>
                     <div className="border-t border-gray-200 pt-4 mt-4">
                       <h4 className="font-semibold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -532,7 +532,7 @@ export default function TransactionHistoryWorking() {
                     <div className="flex justify-between">
                       <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Exchange Rate:</span>
                       <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        €1 = £{selectedTransaction.exchangeRate.toFixed(4)}
+                        {CurrencyManager.getSymbol('EUR')}1 = {CurrencyManager.getSymbol('GBP')}{selectedTransaction.exchangeRate.toFixed(4)}
                       </span>
                     </div>
 
@@ -540,7 +540,7 @@ export default function TransactionHistoryWorking() {
                       <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>GBP Equivalent:</span>
                       <div className="text-right">
                         <span className="font-semibold text-green-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          £{selectedTransaction.convertedAmount}
+                          {CurrencyManager.getSymbol('GBP')}{selectedTransaction.convertedAmount}
                         </span>
                         <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                           Live rate at time of transfer
@@ -550,14 +550,14 @@ export default function TransactionHistoryWorking() {
 
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
                       <p className="text-sm text-blue-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        <strong>UK Transfer:</strong> Exchange rate applied at time of transfer. UK transfers typically take 1-2 business days to reach the recipient.
+                        <strong>UK Transfer:</strong> Exchange rate applied at time of transfer. {CurrencyManager.getTransferTiming('UK')}
                       </p>
                     </div>
                   </>
                 )}
 
-                {/* Show message for UK transfers without exchange rate data */}
-                {selectedTransaction.paymentMethod === 'UK Transfer' && !selectedTransaction.exchangeRate && (
+                {/* Show message for UK transfers without exchange rate data - Only for EUR users */}
+                {!CurrencyManager.shouldHideConversion() && selectedTransaction.paymentMethod === 'UK Transfer' && !selectedTransaction.exchangeRate && (
                   <div className="border-t border-gray-200 pt-4 mt-4">
                     <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
                       <p className="text-sm text-yellow-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -572,7 +572,18 @@ export default function TransactionHistoryWorking() {
                   <div className="border-t border-gray-200 pt-4 mt-4">
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                       <p className="text-sm text-blue-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        <strong>SEPA Transfer:</strong> Transfers within the SEPA zone typically take 1 business day to complete.
+                        <strong>SEPA Transfer:</strong> {CurrencyManager.getTransferTiming('SEPA')}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Show processing time message for UK transfers when GBP */}
+                {selectedTransaction.paymentMethod === 'UK Transfer' && CurrencyManager.shouldHideConversion() && (
+                  <div className="border-t border-gray-200 pt-4 mt-4">
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                      <p className="text-sm text-blue-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <strong>UK Transfer:</strong> {CurrencyManager.getTransferTiming('UK')}
                       </p>
                     </div>
                   </div>
