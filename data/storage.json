@@ -1,6 +1,57 @@
 {
-  "users": [],
-  "accounts": [],
+  "users": [
+    [
+      31,
+      {
+        "id": 31,
+        "customerNumber": "BOI993691886",
+        "pin": "000000",
+        "name": "Hallo",
+        "email": "maghh@gmail.com",
+        "phone": "4646464",
+        "address": "Shsu",
+        "dateOfBirth": "2025-06-21",
+        "joinDate": "Whau",
+        "dateCreated": "2025-06-21T05:14:15.221Z",
+        "isDisabled": false
+      }
+    ]
+  ],
+  "accounts": [
+    [
+      37,
+      {
+        "id": 37,
+        "userId": 31,
+        "accountType": "current",
+        "accountNumber": "****2091",
+        "balance": "0.00",
+        "displayName": "Current Account"
+      }
+    ],
+    [
+      38,
+      {
+        "id": 38,
+        "userId": 31,
+        "accountType": "credit",
+        "accountNumber": "****1820",
+        "balance": "0.00",
+        "displayName": "Credit Card"
+      }
+    ],
+    [
+      39,
+      {
+        "id": 39,
+        "userId": 31,
+        "accountType": "savings",
+        "accountNumber": "****0978",
+        "balance": "0.00",
+        "displayName": "Savings Account"
+      }
+    ]
+  ],
   "transactions": [],
   "payees": [],
   "scheduledPayments": [],
@@ -9,8 +60,8 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 31,
-    "currentAccountId": 37,
+    "currentUserId": 32,
+    "currentAccountId": 40,
     "currentTransactionId": 49,
     "currentPayeeId": 25,
     "currentScheduledPaymentId": 1,
