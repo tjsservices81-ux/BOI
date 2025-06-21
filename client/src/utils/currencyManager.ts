@@ -95,7 +95,11 @@ export class CurrencyManager {
   
   // Trigger instant global currency update across all components
   static triggerGlobalCurrencyUpdate(currency: Currency): void {
-    console.log(`🔄 Triggering global currency update: ${currency}`);
+    console.log(`🔄 CurrencyManager: Triggering global currency update to ${currency}`);
+    console.log(`🔄 Symbol: ${CURRENCY_CONFIGS[currency].symbol}, Code: ${CURRENCY_CONFIGS[currency].code}`);
+    
+    // Update local storage immediately for CurrencyManager methods
+    UserDataManager.setUserData('primaryCurrency', currency);
     
     // Dispatch custom event for all components listening to currency changes
     const currencyEvent = new CustomEvent('currencyChanged', {
@@ -107,21 +111,27 @@ export class CurrencyManager {
       }
     });
     
+    console.log(`🔄 Dispatching currencyChanged event:`, currencyEvent.detail);
     window.dispatchEvent(currencyEvent);
     
-    // Also trigger balance and account updates
-    const balanceEvent = new CustomEvent('balanceUpdate', {
-      detail: { currency, forceUpdate: true }
-    });
-    window.dispatchEvent(balanceEvent);
-    
-    const accountsEvent = new CustomEvent('accountsUpdate', {
-      detail: { currency, forceUpdate: true }
-    });
-    window.dispatchEvent(accountsEvent);
-    
-    // Notify traditional listeners as well
-    this.notifyListeners(currency);
+    // Small delay to ensure event is processed, then trigger other updates
+    setTimeout(() => {
+      console.log(`🔄 Dispatching balance and account update events`);
+      
+      const balanceEvent = new CustomEvent('balanceUpdate', {
+        detail: { currency, forceUpdate: true, timestamp: Date.now() }
+      });
+      window.dispatchEvent(balanceEvent);
+      
+      const accountsEvent = new CustomEvent('accountsUpdate', {
+        detail: { currency, forceUpdate: true, timestamp: Date.now() }
+      });
+      window.dispatchEvent(accountsEvent);
+      
+      // Notify traditional listeners as well
+      this.notifyListeners(currency);
+      console.log(`🔄 Currency update sequence completed for ${currency}`);
+    }, 50);
   }
   
   // Format amount with correct currency symbol and decimal places

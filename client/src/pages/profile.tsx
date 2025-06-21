@@ -88,29 +88,23 @@ export default function Profile() {
     };
   });
 
-  // Initialize primary currency from user data and set up currency change listener
+  // Initialize primary currency from user data and listen for external changes
   useEffect(() => {
     const storedCurrency = UserDataManager.getUserData('primaryCurrency', 'EUR');
     setPrimaryCurrency(storedCurrency);
     setCurrentCurrency(storedCurrency);
     
-    // Listen for currency changes from other sources
-    const handleCurrencyChange = (event: any) => {
+    // Listen for currency changes from CurrencyManager
+    const handleGlobalCurrencyChange = (event: any) => {
       const { currency } = event.detail;
-      setCurrentCurrency(currency);
       setPrimaryCurrency(currency);
-      
-      // Force accounts to re-render with new currency symbols
-      if (showAdminPanel) {
-        const freshAccounts = UserDataManager.getUserAccounts();
-        setAccounts([...freshAccounts]);
-      }
+      setCurrentCurrency(currency);
     };
     
-    window.addEventListener('currencyChanged', handleCurrencyChange);
+    window.addEventListener('currencyChanged', handleGlobalCurrencyChange);
     
     return () => {
-      window.removeEventListener('currencyChanged', handleCurrencyChange);
+      window.removeEventListener('currencyChanged', handleGlobalCurrencyChange);
     };
   }, []);
 
@@ -119,31 +113,15 @@ export default function Profile() {
     const newCurrency = event.target.value as 'EUR' | 'GBP';
     setPrimaryCurrency(newCurrency);
     
-    // Save to user data locally
-    UserDataManager.setUserData('primaryCurrency', newCurrency);
-    
-    // Update CurrencyManager state
-    CurrencyManager.setCurrency(newCurrency);
-    
-    // Persist to database if user is available
-    if (profileData?.customerNumber) {
-      try {
-        await fetch(`/api/profile/${profileData.customerNumber}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ primaryCurrency: newCurrency }),
-        });
-      } catch (error) {
-        console.error('Failed to persist currency preference:', error);
-      }
+    try {
+      // Use CurrencyManager.setCurrency which handles all updates automatically
+      await CurrencyManager.setCurrency(newCurrency);
+      console.log(`Currency successfully changed to ${newCurrency}`);
+    } catch (error) {
+      console.error('Failed to change currency:', error);
+      // Revert the UI state on error
+      setPrimaryCurrency(CurrencyManager.getCurrentCurrency());
     }
-    
-    // Dispatch currency change event for live updates across the app
-    window.dispatchEvent(new CustomEvent('currencyChanged', {
-      detail: { currency: newCurrency }
-    }));
   };
 
   // Load profile data from database with real-time updates
