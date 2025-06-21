@@ -543,7 +543,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const payments = await storage.getScheduledPaymentsByUserId(userId);
       res.json(payments);
     } catch (error) {
-      res.status(500).json({ message: "Internal server error" });
+      res.status(500).json({ error: "Internal server error" });
     }
   });
 
@@ -554,7 +554,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const statements = await storage.getStatementsByAccountId(accountId);
       res.json(statements);
     } catch (error) {
-      res.status(500).json({ message: "Internal server error" });
+      res.status(500).json({ error: "Internal server error" });
     }
   });
 
@@ -566,13 +566,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // If user doesn't exist in database, return 404 instead of creating with fake data
       if (!user) {
-        return res.status(404).json({ message: "User not found" });
+        return res.status(404).json({ error: "User not found" });
       }
       
       res.json(user);
     } catch (error) {
       console.error('Get profile error:', error);
-      res.status(500).json({ message: "Internal server error" });
+      res.status(500).json({ error: "Internal server error" });
     }
   });
 
@@ -619,10 +619,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(updatedUser);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: error.errors[0].message });
+        return res.status(400).json({ error: error.errors[0].message });
       }
       console.error('Profile update error:', error);
-      res.status(500).json({ message: "Internal server error" });
+      res.status(500).json({ error: "Internal server error" });
     }
   });
 
@@ -647,7 +647,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let updatedUser = await storage.updateUserProfile(customerNumber, updates);
       
       if (!updatedUser) {
-        return res.status(404).json({ message: "User not found" });
+        return res.status(404).json({ error: "User not found" });
       }
       
       // Return success with updated user data
@@ -691,9 +691,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('OTC generation failed:', error);
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid account data format" });
+        return res.status(400).json({ error: "Invalid account data format" });
       }
-      res.status(500).json({ message: "Failed to generate OTC" });
+      res.status(500).json({ error: "Failed to generate OTC" });
     }
   });
 
