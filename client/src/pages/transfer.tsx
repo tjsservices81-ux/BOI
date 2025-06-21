@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -33,6 +33,15 @@ export default function Transfer() {
   const [transferType, setTransferType] = useState<"bank" | "card" | "email">("bank");
   const [cardNumber, setCardNumber] = useState("");
   const [emailAddress, setEmailAddress] = useState("");
+
+  // Check URL parameters to set initial transfer type
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const typeParam = urlParams.get('type');
+    if (typeParam === 'card' || typeParam === 'email') {
+      setTransferType(typeParam);
+    }
+  }, []);
 
   const { data: accounts = [] } = useQuery<Account[]>({
     queryKey: ["/api/accounts", user?.id],

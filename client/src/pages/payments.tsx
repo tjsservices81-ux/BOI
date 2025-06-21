@@ -1,9 +1,14 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { ChevronLeft, ChevronRight, User, ArrowUpDown, Globe, MapPin, Clock, Users, X, Trash2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { ChevronLeft, ChevronRight, User, ArrowUpDown, Globe, MapPin, Clock, Users, X, Trash2, CreditCard, Mail } from "lucide-react";
 import { UserDataManager } from "../utils/userDataManager";
+import { useAuth } from "@/lib/auth";
 
 export default function Payments() {
+  const authHook = useAuth();
+  const user = authHook?.user || null;
+  
   const [, navigate] = useLocation() || ['/', () => {}];
   const [selectedPaymentType, setSelectedPaymentType] = useState<string | null>(null);
   const [recentPayments, setRecentPayments] = useState<any[]>([]);
@@ -11,7 +16,14 @@ export default function Payments() {
   const [recentPayees, setRecentPayees] = useState<any[]>([]);
   const [deleteConfirm, setDeleteConfirm] = useState<{name: string, accountInfo: string} | null>(null);
 
-  const paymentOptions = [
+  // Fetch user profile data to check transfer toggle settings
+  const { data: profileData } = useQuery({
+    queryKey: ["/api/profile", user?.id],
+    enabled: !!user?.id,
+  });
+
+  // Base payment options (always available)
+  const basePaymentOptions = [
     {
       id: 'iban',
       title: 'SEPA Transfer',
@@ -37,6 +49,34 @@ export default function Payments() {
       popular: false
     }
   ];
+
+  // Additional payment options based on user toggles
+  const conditionalPaymentOptions = [];
+  
+  if (profileData?.showCardTransfer) {
+    conditionalPaymentOptions.push({
+      id: 'card',
+      title: 'Card Transfer',
+      subtitle: 'Transfer to another card',
+      icon: <CreditCard className="w-6 h-6 text-blue-600" />,
+      description: 'Send money directly to a debit or credit card',
+      popular: false
+    });
+  }
+  
+  if (profileData?.showEmailTransfer) {
+    conditionalPaymentOptions.push({
+      id: 'email',
+      title: 'Email Transfer',
+      subtitle: 'Send money via email',
+      icon: <Mail className="w-6 h-6 text-green-600" />,
+      description: 'Send money to an email address',
+      popular: false
+    });
+  }
+
+  // Combine all payment options
+  const paymentOptions = [...basePaymentOptions, ...conditionalPaymentOptions];
 
   // Load recent payments and payees using UserDataManager
   useEffect(() => {
@@ -156,6 +196,8 @@ export default function Payments() {
                 if (option.id === 'iban') navigate('/iban-transfer');
                 else if (option.id === 'domestic') navigate('/uk-transfer');
                 else if (option.id === 'internal') navigate('/internal-transfer');
+                else if (option.id === 'card') navigate('/transfer?type=card');
+                else if (option.id === 'email') navigate('/transfer?type=email');
                 else setSelectedPaymentType(option.id);
               }}
               className="w-full bg-white rounded-2xl p-5 shadow-sm active:scale-98 transition-all duration-200 border-2 border-transparent hover:border-[#126987]/20 stagger-item card-interactive"
