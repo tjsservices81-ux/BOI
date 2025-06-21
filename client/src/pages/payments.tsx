@@ -23,19 +23,25 @@ export default function Payments() {
   useEffect(() => {
     const loadProfileData = async () => {
       const currentCustomerNumber = UserDataManager.getCurrentUser();
+      console.log('PAYMENTS DEBUG - Current customer number:', currentCustomerNumber);
       
       if (!currentCustomerNumber) {
+        console.log('PAYMENTS DEBUG - No customer number found');
         return;
       }
 
       try {
+        console.log('PAYMENTS DEBUG - Fetching profile for:', currentCustomerNumber);
         const response = await fetch(`/api/profile/${currentCustomerNumber}`);
         if (response.ok) {
           const userData = await response.json();
+          console.log('PAYMENTS DEBUG - Profile data received:', userData);
           setProfileData(userData);
+        } else {
+          console.log('PAYMENTS DEBUG - API response not ok:', response.status);
         }
       } catch (error) {
-        console.error('Error loading profile:', error);
+        console.error('PAYMENTS DEBUG - Error loading profile:', error);
       }
     };
 
