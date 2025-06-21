@@ -16,27 +16,36 @@ export default function Payments() {
   const [recentPayees, setRecentPayees] = useState<any[]>([]);
   const [deleteConfirm, setDeleteConfirm] = useState<{name: string, accountInfo: string} | null>(null);
 
-  // Fetch user profile data to check transfer toggle settings
-  const { data: profileData, refetch } = useQuery({
-    queryKey: ["/api/profile"],
-    queryFn: async () => {
-      const currentCustomerNumber = UserDataManager.getCurrentUser();
-      console.log('Current customer number:', currentCustomerNumber);
-      if (!currentCustomerNumber) return null;
-      const response = await fetch(`/api/profile/${currentCustomerNumber}`);
-      const data = response.ok ? await response.json() : null;
-      console.log('Fetched profile data:', data);
-      return data;
-    },
-    enabled: true,
-    refetchOnWindowFocus: true,
-    staleTime: 0, // Always fetch fresh data
-  });
+  // State for profile data
+  const [profileData, setProfileData] = useState(null);
 
-  // Force refresh profile data when page loads
+  // Load profile data directly like App Control page
   useEffect(() => {
-    refetch();
-  }, [refetch]);
+    const loadProfileData = async () => {
+      const currentCustomerNumber = UserDataManager.getCurrentUser();
+      console.log('Loading profile for:', currentCustomerNumber);
+      
+      if (!currentCustomerNumber) {
+        console.log('No current user found');
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/profile/${currentCustomerNumber}`);
+        if (response.ok) {
+          const userData = await response.json();
+          console.log('Profile data loaded:', userData);
+          setProfileData(userData);
+        } else {
+          console.error('Failed to load profile:', response.status);
+        }
+      } catch (error) {
+        console.error('Error loading profile:', error);
+      }
+    };
+
+    loadProfileData();
+  }, []);
 
   // Base payment options (always available)
   const basePaymentOptions = [
