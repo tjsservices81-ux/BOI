@@ -1,18 +1,16 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
+import { UserDataManager } from "../utils/userDataManager";
 
 export default function Splash() {
   const [, navigate] = useLocation();
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
-    // Ensure complete state clearing during splash
-    const keys = Object.keys(localStorage);
-    keys.forEach(key => {
-      if (key.includes('chat') || key.includes('liveChat') || key.includes('tempState') || key.includes('session_')) {
-        localStorage.removeItem(key);
-      }
-    });
+    // Ensure complete state clearing during splash through UserDataManager
+    UserDataManager.clearCache('chat');
+    UserDataManager.clearCache('liveChat');
+    UserDataManager.clearCache('tempState');
     
     // Add splash-specific full screen class for iOS PWA
     document.body.classList.add('splash-fullscreen');

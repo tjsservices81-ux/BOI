@@ -33,31 +33,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (cachedUser && isMounted) {
           const userProfile = UserDataManager.getUserProfile();
           if (userProfile) {
-            
-            // Validate user still exists on server for bulletproof authentication
-            const response = await fetch('/api/auth/status', {
-              credentials: 'include'
-            });
-            
-            if (response.ok) {
-              const authData = await response.json();
-              if (authData.isLoggedIn && authData.user) {
-                // Server confirms user exists - maintain session
-                setUser(parsedUser);
+            try {
+              // Validate user still exists on server for bulletproof authentication
+              const response = await fetch('/api/auth/status', {
+                credentials: 'include'
+              });
+              
+              if (response.ok) {
+                const authData = await response.json();
+                if (authData.isLoggedIn && authData.user) {
+                  // Server confirms user exists - maintain session
+                  setUser({
+                    id: userProfile.customerNumber ? parseInt(userProfile.customerNumber) : 0,
+                    name: userProfile.name,
+                    email: userProfile.email
+                  });
+                } else {
+                  // Server indicates no valid session - user was deleted
+                  console.log('Clearing stale user data');
+                  UserDataManager.clearCache();
+                  setUser(null);
+                }
               } else {
-                // Server indicates no valid session - user was deleted
-                console.log('Clearing stale user data from localStorage');
-                localStorage.removeItem('currentUser');
-                setUser(null);
+                // SECURITY: Preserve user session during server errors
+                console.log('Server error during auth check - preserving user session');
+                setUser({
+                  id: userProfile.customerNumber ? parseInt(userProfile.customerNumber) : 0,
+                  name: userProfile.name,
+                  email: userProfile.email
+                });
               }
-            } else {
-              // SECURITY: Preserve user session during server errors
-              console.log('Server error during auth check - preserving user session');
-              setUser(parsedUser);
+            } catch (error) {
+              UserDataManager.clearCache();
+              setUser(null);
             }
-          } catch (error) {
-            localStorage.removeItem('currentUser');
-            setUser(null);
           }
         }
         

@@ -25,7 +25,7 @@ export default function Dashboard() {
   // Debug authentication state on dashboard load
   useEffect(() => {
     console.log('📊 Dashboard component mounted');
-    const cachedUser = localStorage.getItem('currentUser');
+    const cachedUser = UserDataManager.getCurrentUser();
     
     if (cachedUser) {
       console.log('📊 Dashboard: User data found in localStorage:', JSON.parse(cachedUser));
