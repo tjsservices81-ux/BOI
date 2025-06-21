@@ -28,36 +28,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     const initializeAuth = async () => {
       try {
-        // Check for valid access first (access control system)
-        const accessGranted = localStorage.getItem('accessGranted');
-        
-        // Always check for cached user first to maintain session
+        // Always check for cached user - no cold start detection
+        // Users stay logged in permanently until admin deletion
         try {
           const cachedUser = localStorage.getItem('bankingUser');
           if (cachedUser && isMounted) {
             try {
               const parsedUser = JSON.parse(cachedUser);
               setUser(parsedUser);
-              console.log('Restored user session from cache');
-              return; // Early return if user found in cache
+              // Reset parse failure counter on success
+              localStorage.removeItem('bankingUser_parseFailures');
             } catch (parseError) {
-              console.error('JSON parse failed, will recreate user session:', parseError);
+              console.error('JSON parse failed, user data preserved for recovery:', parseError);
+              // Keep user data safe - never delete on parse errors
+              // Show recoverable error state instead of wiping account
+              setUser(null); // Temporary state, data preserved
             }
           }
         } catch (storageError) {
-          console.error('localStorage access failed:', storageError);
-        }
-        
-        // If no cached user but access is granted, create new session
-        if (accessGranted === 'true' && isMounted) {
-          const defaultUser = {
-            id: 1,
-            name: 'Banking User',
-            email: 'user@bankofireland.ie'
-          };
-          setUser(defaultUser);
-          localStorage.setItem('bankingUser', JSON.stringify(defaultUser));
-          console.log('Created new user session from access grant');
+          console.error('localStorage access failed, maintaining current state:', storageError);
+          // Don't change user state on storage access errors
         }
         
         if (isMounted) {

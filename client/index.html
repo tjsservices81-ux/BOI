@@ -42,7 +42,8 @@
     <link rel="preload" href="/icon-footer-more.svg" as="image">
     <link rel="preload" href="/icon-footer-more-highlight.svg" as="image">
     
-    <!-- PWA Manifest - will be dynamically injected -->
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
     
     <!-- App Icons for different devices -->
     <link rel="apple-touch-icon" sizes="57x57" href="/boi_app_icon.png" />
@@ -249,26 +250,24 @@
       function initializeApp() {
         clearTimeout(appLoadTimeout);
         
-        // Set timeout for app initialization (reduced from 15s to 8s)
+        // Set timeout for app initialization
         appLoadTimeout = setTimeout(() => {
-          console.warn('App initialization timeout reached, forcing completion');
-          // Force hide loading screen if React hasn't mounted
-          const hasAccess = localStorage.getItem('accessGranted');
-          if (hasAccess === 'true') {
-            hideLoadingScreen();
-          }
-        }, 8000);
+          console.error('App initialization timeout');
+          showError('App is taking longer than expected to load. This might be due to a slow connection.');
+        }, 15000);
         
-        // Monitor for successful React mount with more aggressive checking
+        // Monitor for successful React mount
         const checkAppReady = setInterval(() => {
           const root = document.getElementById('root');
           if (root && root.children.length > 0) {
             clearInterval(checkAppReady);
             clearTimeout(appLoadTimeout);
-            hideLoadingScreen();
+            hideLoading();
           }
-        }, 50); // Check every 50ms instead of 100ms
+        }, 100);
         
+        // The main React app script is already in the HTML
+        // Just wait for it to mount
         console.log('Waiting for React app to mount...');
       }
       
@@ -470,120 +469,15 @@
         });
       }
 
-      // Dynamic PWA Manifest Generation
-      function generateDynamicManifest() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const accessCode = urlParams.get('access');
-        const hasStoredAccess = localStorage.getItem('accessGranted') === 'true';
-        const storedCode = localStorage.getItem('accessCode');
-        
-        // Determine the start URL - preserve access code for PWA
-        let startUrl = '/';
-        if (accessCode) {
-          startUrl = `/?access=${accessCode}`;
-        } else if (hasStoredAccess && storedCode) {
-          startUrl = `/?access=${storedCode}`;
-        }
-        
-        const manifest = {
-          name: "Bank of Ireland Mobile",
-          short_name: "BOI Mobile",
-          description: "Bank of Ireland Mobile Banking Application",
-          start_url: startUrl,
-          display: "standalone",
-          orientation: "portrait-primary",
-          theme_color: "#126987",
-          background_color: "#126987",
-          scope: "/",
-          lang: "en-IE",
-          icons: [
-            {
-              src: "/boi_app_icon.png",
-              sizes: "192x192",
-              type: "image/png",
-              purpose: "any maskable"
-            },
-            {
-              src: "/boi_app_icon.png", 
-              sizes: "512x512",
-              type: "image/png",
-              purpose: "any maskable"
-            },
-            {
-              src: "/icon-192.svg",
-              sizes: "192x192", 
-              type: "image/svg+xml",
-              purpose: "any"
-            },
-            {
-              src: "/icon-512.svg",
-              sizes: "512x512",
-              type: "image/svg+xml", 
-              purpose: "any"
-            }
-          ],
-          categories: ["finance", "banking"],
-          prefer_related_applications: false,
-          shortcuts: [
-            {
-              name: "Make Transfer",
-              short_name: "Transfer",
-              description: "Send money quickly", 
-              url: startUrl.includes('access=') ? startUrl.replace('/?', '/uk-transfer?') : "/uk-transfer",
-              icons: [{ src: "/boi_app_icon.png", sizes: "96x96" }]
-            },
-            {
-              name: "View Accounts",
-              short_name: "Accounts", 
-              description: "Check your balances",
-              url: startUrl.includes('access=') ? startUrl.replace('/?', '/dashboard?') : "/dashboard",
-              icons: [{ src: "/boi_app_icon.png", sizes: "96x96" }]
-            }
-          ]
-        };
-        
-        // Create blob URL for the manifest
-        const manifestBlob = new Blob([JSON.stringify(manifest, null, 2)], {
-          type: 'application/manifest+json'
-        });
-        const manifestUrl = URL.createObjectURL(manifestBlob);
-        
-        // Remove any existing manifest link
-        const existingManifest = document.querySelector('link[rel="manifest"]');
-        if (existingManifest) {
-          existingManifest.remove();
-        }
-        
-        // Inject the new dynamic manifest
-        const manifestLink = document.createElement('link');
-        manifestLink.rel = 'manifest';
-        manifestLink.href = manifestUrl;
-        document.head.appendChild(manifestLink);
-        
-        console.log('Dynamic PWA manifest generated with start_url:', startUrl);
-        return manifestUrl;
-      }
-
       // Access control system
       async function checkAccess() {
         const loader = document.getElementById('loading-screen');
-        
-        // Generate dynamic PWA manifest before access check
-        generateDynamicManifest();
         
         try {
           // Check if user already has access granted
           const hasAccess = localStorage.getItem('accessGranted');
           if (hasAccess === 'true') {
-            // Ensure all app state flags are set for existing access
-            localStorage.setItem('app_session_active', 'true');
-            localStorage.setItem('splash_completed', 'true');
-            console.log('Existing access found - proceeding to app');
             hideLoadingScreen();
-            // Regenerate manifest with stored access code for PWA consistency
-            generateDynamicManifest();
-            // Mark access control as completed so React can load
-            window.accessControlCompleted = true;
             return;
           }
 
@@ -593,13 +487,10 @@
           
           if (!accessCode) {
             // No access code and no stored access - show "Not available"
-            console.log('No access code in URL and no stored access');
             showAccessDenied("Not available");
             return;
           }
 
-          console.log('Verifying access code:', accessCode);
-          
           // Verify access code with backend
           const response = await fetch('/api/verify-code', {
             method: 'POST',
@@ -610,40 +501,18 @@
           });
 
           const result = await response.json();
-          console.log('Access verification result:', result);
 
           if (result.success) {
             // Access granted - save to localStorage and clean URL
             localStorage.setItem('accessGranted', 'true');
             localStorage.setItem('accessCode', accessCode);
-            localStorage.setItem('app_session_active', 'true');
-            localStorage.setItem('splash_completed', 'true');
-            
-            // Store user session for React app
-            const defaultUser = {
-              id: 1,
-              name: 'Banking User',
-              email: 'user@bankofireland.ie'
-            };
-            localStorage.setItem('bankingUser', JSON.stringify(defaultUser));
-            
             window.history.replaceState({}, document.title, window.location.pathname);
-            console.log('Access granted successfully - proceeding to app');
-            
-            // Regenerate manifest with preserved access code for PWA
-            generateDynamicManifest();
-            
-            // Force hide loading screen immediately
+            console.log('Access granted successfully');
             hideLoadingScreen();
-            
-            // Mark access control as completed so React can load
-            window.accessControlCompleted = true;
-            
             // Start periodic access validation
             startAccessValidation();
           } else {
             // Access denied - show appropriate message
-            console.log('Access denied:', result);
             const message = result.message || "Access code invalid or expired";
             showAccessDenied(message);
           }
@@ -653,14 +522,11 @@
           const hasAccess = localStorage.getItem('accessGranted');
           if (hasAccess === 'true') {
             console.log('Connection error but user has existing access - allowing entry');
-            localStorage.setItem('app_session_active', 'true');
-            localStorage.setItem('splash_completed', 'true');
             hideLoadingScreen();
             // Still start validation to check later when connection is restored
             startAccessValidation();
           } else {
             // Only deny access if they have no existing access AND connection fails
-            console.log('Connection error and no existing access');
             showAccessDenied("Connection error - please try again");
           }
         }
@@ -736,53 +602,16 @@
         checkAccess();
       }
 
-      // Fallback timeout for slow connections - more aggressive
+      // Fallback timeout for slow connections
       setTimeout(() => {
         const loader = document.getElementById('loading-screen');
         const hasAccess = localStorage.getItem('accessGranted');
         if (hasAccess === 'true' && loader) {
-          console.log('Fallback timeout: Hiding loading screen for valid access');
           loader.style.display = 'none';
-          // Ensure app state is properly initialized
-          localStorage.setItem('app_session_active', 'true');
-          localStorage.setItem('splash_completed', 'true');
         }
-      }, 5000); // Reduced from 15s to 5s
+      }, 15000);
     </script>
-    <script>
-      // Delay React initialization until access control completes
-      window.accessControlCompleted = false;
-      
-      // Override the React script loading to wait for access control
-      const loadReactApp = () => {
-        const script = document.createElement('script');
-        script.type = 'module';
-        script.src = '/src/main.tsx';
-        document.head.appendChild(script);
-      };
-      
-      // Check if access control is complete
-      let reactLoadAttempts = 0;
-      const maxAttempts = 50; // 5 seconds max wait
-      
-      const waitForAccessControl = () => {
-        reactLoadAttempts++;
-        
-        if (window.accessControlCompleted) {
-          console.log('Access control completed - loading React app');
-          loadReactApp();
-        } else if (reactLoadAttempts >= maxAttempts) {
-          // Fallback: load React anyway after timeout
-          console.log('Access control timeout - loading React app anyway');
-          loadReactApp();
-        } else {
-          setTimeout(waitForAccessControl, 100);
-        }
-      };
-      
-      // Start waiting for access control completion
-      setTimeout(waitForAccessControl, 500);
-    </script>
+    <script type="module" src="/src/main.tsx"></script>
     <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
     <script type="text/javascript" src="https://replit.com/public/js/replit-dev-banner.js"></script>
   </body>
