@@ -17,6 +17,8 @@ export class UserDataManager {
   private static dataCache: Map<string, any> = new Map();
   private static cacheTimestamps: Map<string, number> = new Map();
   private static readonly CACHE_DURATION = null; // No cache expiration - permanent storage
+  private static readonly CACHE_STORAGE_KEY = 'userDataManager_cache';
+  private static readonly CACHE_TIMESTAMPS_KEY = 'userDataManager_timestamps';
 
   // Set the current active user
   static setCurrentUser(customerNumber: string) {
@@ -303,9 +305,14 @@ export class UserDataManager {
     // Keep accounts intact - don't clear them
   }
 
-  // Remove specific user and their data
-  static removeUser(customerNumber: string) {
-    // Remove from users list
+  // Remove specific user and their data - PROTECTED (admin-only)
+  static removeUser(customerNumber: string, adminAuthorized = false) {
+    if (!adminAuthorized) {
+      console.warn(`removeUser(${customerNumber}) blocked - admin authorization required`);
+      return;
+    }
+    
+    // Only proceed if explicitly authorized by admin
     const allUsers = this.getAllUsers();
     delete allUsers[customerNumber];
     localStorage.setItem('bankUsers', JSON.stringify(allUsers));
@@ -317,28 +324,79 @@ export class UserDataManager {
         localStorage.removeItem(key);
       }
     });
+    
+    console.log(`Admin authorized: User ${customerNumber} removed`);
   }
 
-  // Clear temporary state for cold launch
+  // Clear temporary state for cold launch - PROTECTED
   static clearTemporaryState() {
-    // Clear cache and session-related data
+    // Preserve cache in localStorage before clearing in-memory
+    this.saveCacheToStorage();
+    
+    // Only clear in-memory cache - data persists in localStorage
     this.dataCache.clear();
     this.cacheTimestamps.clear();
     
-    // Clear temporary storage items
+    // Only clear truly temporary debug items - preserve user data
     const keys = Object.keys(localStorage);
     keys.forEach(key => {
-      if (key.includes('chat') || key.includes('liveChat') || key.includes('tempState') || key.includes('session_')) {
+      if (key.startsWith('_debug_') || key.startsWith('temp_cache_')) {
         localStorage.removeItem(key);
       }
     });
     
-    // Don't clear sessionStorage - preserve user login state
+    // Preserve all user session and authentication data
   }
 
-  // Admin function to clear all data
-  static clearAllData() {
-    // Clear all localStorage data
+  // Save cache to localStorage for persistence across reloads
+  private static saveCacheToStorage() {
+    try {
+      const cacheData = Object.fromEntries(this.dataCache.entries());
+      const timestampData = Object.fromEntries(this.cacheTimestamps.entries());
+      
+      localStorage.setItem(this.CACHE_STORAGE_KEY, JSON.stringify(cacheData));
+      localStorage.setItem(this.CACHE_TIMESTAMPS_KEY, JSON.stringify(timestampData));
+    } catch (error) {
+      console.error('Failed to save cache to storage:', error);
+    }
+  }
+
+  // Restore cache from localStorage on initialization
+  private static restoreCacheFromStorage() {
+    try {
+      const cacheData = localStorage.getItem(this.CACHE_STORAGE_KEY);
+      const timestampData = localStorage.getItem(this.CACHE_TIMESTAMPS_KEY);
+      
+      if (cacheData) {
+        const parsedCache = JSON.parse(cacheData);
+        this.dataCache = new Map(Object.entries(parsedCache));
+      }
+      
+      if (timestampData) {
+        const parsedTimestamps = JSON.parse(timestampData);
+        this.cacheTimestamps = new Map(Object.entries(parsedTimestamps).map(([k, v]) => [k, Number(v)]));
+      }
+    } catch (error) {
+      console.error('Failed to restore cache from storage:', error);
+    }
+  }
+
+  // Initialize cache persistence
+  static initializeCachePersistence() {
+    this.restoreCacheFromStorage();
+    
+    // Save cache periodically and on important operations
+    setInterval(() => this.saveCacheToStorage(), 30000); // Every 30 seconds
+  }
+
+  // Admin function to clear all data - PROTECTED (admin-only)
+  static clearAllData(adminAuthorized = false) {
+    if (!adminAuthorized) {
+      console.warn('clearAllData() blocked - admin authorization required');
+      return;
+    }
+    
+    // Only proceed if explicitly authorized by admin
     const keys = Object.keys(localStorage);
     keys.forEach(key => {
       if (key.startsWith('user_') || key === 'bankUsers' || key === 'currentUser') {
@@ -348,6 +406,7 @@ export class UserDataManager {
     
     // Reset current user
     this.currentUser = null;
+    console.log('Admin authorized: All user data cleared');
   }
 
   // Admin-triggered cleanup - removes all traces of a deleted user

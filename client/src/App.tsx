@@ -90,6 +90,10 @@ function AppRoutes() {
   // Initialize app state with persistence support
   useEffect(() => {
     const initializeApp = async () => {
+      // Initialize cache persistence system
+      const { UserDataManager } = await import('./utils/userDataManager');
+      UserDataManager.initializeCachePersistence();
+      
       // Check persistent app state - no session dependency
       const wasAppActive = localStorage.getItem('app_was_active');
       const lastBackgroundTime = localStorage.getItem('app_background_time');

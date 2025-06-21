@@ -32,7 +32,11 @@ app.use(session({
   store: new PgSession({
     conString: process.env.DATABASE_URL,
     tableName: 'user_sessions',
-    createTableIfMissing: true
+    createTableIfMissing: true,
+    ttl: 365 * 24 * 60 * 60 * 1000, // 1 year TTL for permanent sessions
+    disableTouch: false, // Allow session refresh
+    pruneSessionInterval: false, // Never auto-prune sessions
+    errorLog: (...args: any[]) => console.error('Session store error:', ...args)
   }),
   resave: false,
   saveUninitialized: false,

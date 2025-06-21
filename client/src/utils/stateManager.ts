@@ -100,17 +100,17 @@ export class StateManager {
     }
   }
 
-  // Clear expired state
+  // Clear expired state - PROTECTED (never auto-clear user data)
   static clearExpiredState() {
     try {
       const state = this.restoreAppState();
+      // Never auto-clear state - only clear on explicit admin action
       if (!state) {
-        localStorage.removeItem(this.STATE_KEY);
-        localStorage.removeItem(this.SCROLL_POSITIONS_KEY);
-        localStorage.removeItem(this.FORM_DATA_KEY);
+        console.log('App state missing but preserved for user data integrity');
+        // Don't remove localStorage - preserve all user data
       }
     } catch (error) {
-      console.error('Failed to clear expired state:', error);
+      console.error('Failed to check expired state:', error);
     }
   }
 
