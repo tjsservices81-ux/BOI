@@ -28,6 +28,8 @@ export class PlatformDetection {
       this.setupIOSHandlers();
     } else if (this.isAndroid()) {
       this.setupAndroidHandlers();
+      // Apply Android UI fixes immediately
+      this.applyAndroidUIFixes();
     }
     
     // Universal mobile handlers
@@ -36,6 +38,35 @@ export class PlatformDetection {
     }
     
     this.initialized = true;
+  }
+  
+  private static applyAndroidUIFixes(): void {
+    // Apply immediate Android fixes without importing the module
+    const style = document.createElement('style');
+    style.id = 'android-ui-fixes';
+    style.textContent = `
+      /* Immediate Android tap highlight removal */
+      * {
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0) !important;
+        tap-highlight-color: rgba(0, 0, 0, 0) !important;
+      }
+      
+      /* Android button fixes */
+      button:focus, button:active {
+        outline: none !important;
+        box-shadow: none !important;
+      }
+      
+      /* Android performance optimization */
+      .transform-gpu {
+        transform: translate3d(0, 0, 0);
+        will-change: transform;
+      }
+    `;
+    
+    if (!document.getElementById('android-ui-fixes')) {
+      document.head.appendChild(style);
+    }
   }
   
   private static getPlateform(): string {

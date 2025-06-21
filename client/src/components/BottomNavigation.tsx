@@ -112,10 +112,14 @@ export default function BottomNavigation() {
         {navigationItems.map((item) => (
           <button
             key={item.id}
-            className={`navigation-item flex flex-col items-center space-y-1 py-2 px-3 rounded-lg touch-manipulation relative ${
+            className={`navigation-item flex flex-col items-center space-y-1 py-2 px-3 rounded-lg touch-manipulation relative android-no-highlight ${
               item.isActive ? 'text-[#126987]' : 'text-gray-400 hover:text-[#126987]'
             }`}
             onClick={() => setLocation(item.path)}
+            style={{
+              WebkitTapHighlightColor: 'transparent',
+              outline: 'none'
+            }}
           >
             <img 
               src={item.isActive ? item.highlightIcon : item.icon} 

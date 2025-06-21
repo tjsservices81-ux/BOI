@@ -261,8 +261,12 @@ export default function Dashboard() {
         </div>
         <div className="flex items-center">
           <button 
-            className="text-white hover:bg-white/20 h-8 w-8 rounded-full flex items-center justify-center touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-95"
+            className="text-white hover:bg-white/20 h-8 w-8 rounded-full flex items-center justify-center touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-95 android-no-highlight"
             onClick={() => navigateWithAnimation('/profile', 'slide-up')}
+            style={{
+              WebkitTapHighlightColor: 'transparent',
+              outline: 'none'
+            }}
           >
             <User className="h-5 w-5" />
           </button>
@@ -300,9 +304,13 @@ export default function Dashboard() {
             {(accounts && Array.isArray(accounts)) && accounts.map((account, index) => (
               <button 
                 key={account.id}
-                className={`w-full flex items-center justify-between border-b border-gray-100 hover:bg-gray-50 touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-98 haptic-feedback relative stagger-item card-interactive ${isNavigating ? 'opacity-50 pointer-events-none' : ''}`}
+                className={`w-full flex items-center justify-between border-b border-gray-100 hover:bg-gray-50 touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-98 haptic-feedback relative stagger-item card-interactive android-no-highlight ${isNavigating ? 'opacity-50 pointer-events-none' : ''}`}
                 onClick={() => navigateWithAnimation(`/transactions/${account.id}`, 'slide-right')}
-                style={{ animationDelay: `${index * 0.1}s` }}
+                style={{ 
+                  animationDelay: `${index * 0.1}s`,
+                  WebkitTapHighlightColor: 'transparent',
+                  outline: 'none'
+                }}
               >
                 {/* Colored side bar */}
                 <div className={`absolute left-0 top-0 bottom-0 w-1 ${getAccountColor(account.accountType)}`}></div>

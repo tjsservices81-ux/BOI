@@ -107,6 +107,10 @@ function AppRoutes() {
       // Initialize platform-specific handlers first
       PlatformDetection.setupPlatformSpecificHandlers();
       
+      // Apply Android UI fixes to match iOS
+      const { AndroidUIFixes } = await import('./utils/androidUIFixes');
+      AndroidUIFixes.initialize();
+      
       // Initialize cache persistence system
       const { UserDataManager } = await import('./utils/userDataManager');
       UserDataManager.initializeCachePersistence();

@@ -552,7 +552,7 @@ h1, h2, h3, h4, h5, h6, p, span, div, button, input, label {
   z-index: 1100;
 }
 
-/* Prevent button flash states */
+/* Prevent button flash states - Android optimized */
 button {
   opacity: 1;
   transition: background-color 0.1s ease, transform 0.1s ease;
@@ -560,6 +560,23 @@ button {
 
 button:active {
   transform: scale(0.98);
+}
+
+/* Android-specific class for removing tap highlights */
+.android-no-highlight {
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0) !important;
+  tap-highlight-color: rgba(0, 0, 0, 0) !important;
+  outline: none !important;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+.android-no-highlight:focus,
+.android-no-highlight:active {
+  outline: none !important;
+  box-shadow: none !important;
+  background-color: inherit;
 }
 
 /* Force immediate font rendering */
@@ -1407,6 +1424,25 @@ body {
   border-radius: 16px;
 }
 
+/* Android-specific card fixes to match iOS exactly */
+@media screen and (-webkit-min-device-pixel-ratio: 1) {
+  .card-interactive {
+    border-radius: 0 !important; /* iOS has no rounded corners on account cards */
+    box-shadow: none !important; /* iOS uses simple border separator */
+    background-color: white !important;
+    border-bottom: 1px solid #f3f4f6 !important;
+  }
+  
+  .card-interactive:hover {
+    background-color: #f9fafb !important;
+  }
+  
+  .card-interactive:active {
+    background-color: #f3f4f6 !important;
+    transform: scale(0.98) !important;
+  }
+}
+
 /* iOS status bar integration */
 @supports (padding-top: env(safe-area-inset-top)) {
   .full-height {
@@ -1614,7 +1650,7 @@ body {
   }
 }
 
-/* iOS Native App Styling */
+/* iOS Native App Styling - Android UI Fixes */
 * {
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
@@ -1622,6 +1658,39 @@ body {
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+}
+
+/* Android-specific fixes to match iOS */
+@media screen and (max-width: 768px) and (-webkit-min-device-pixel-ratio: 1) {
+  /* Remove Android blue tap highlight globally */
+  * {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0) !important;
+    outline: none !important;
+  }
+  
+  /* Remove Android focus outlines */
+  *:focus {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+  
+  /* Remove Android button press states */
+  button:focus,
+  button:active,
+  a:focus,
+  a:active,
+  [role="button"]:focus,
+  [role="button"]:active {
+    outline: none !important;
+    box-shadow: none !important;
+    background-color: inherit !important;
+  }
+  
+  /* Android WebView specific fixes */
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+  }
 }
 
 input, textarea, select {
@@ -1648,19 +1717,39 @@ body {
   overflow: hidden;
 }
 
-/* Native iOS button effects */
+/* Native iOS button effects - Android optimized */
 button {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  outline: none;
+  outline: none !important;
   cursor: pointer;
   transition: all 0.15s ease;
+  /* Android-specific fixes */
+  -webkit-tap-highlight-color: transparent !important;
+  tap-highlight-color: transparent !important;
+  user-select: none;
+  touch-action: manipulation;
 }
 
 button:active {
   transform: scale(0.98);
   opacity: 0.8;
+}
+
+/* Android-specific button fixes */
+@media screen and (-webkit-min-device-pixel-ratio: 1) {
+  button {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0) !important;
+    background-clip: padding-box !important;
+  }
+  
+  button:focus,
+  button:active {
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
 }
 
 /* iOS-style scrolling */
