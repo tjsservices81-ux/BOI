@@ -262,9 +262,9 @@ export default function IbanTransfer() {
               </>
             )}
 
-            {/* iOS-style Processing Transfer Screen */}
+            {/* Processing Transfer Screen - Properly Centered */}
             {!showReference ? (
-              <div className="ios-processing-screen" style={{ 
+              <div style={{ 
                 position: 'fixed', 
                 top: 0, 
                 left: 0, 
@@ -275,23 +275,21 @@ export default function IbanTransfer() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontFamily: 'OpenSans, sans-serif'
+                fontFamily: 'OpenSans, sans-serif',
+                padding: '0 1.5rem'
               }}>
-                <div className="ios-processing-content" style={{
+                <div style={{
                   textAlign: 'center',
-                  padding: '2rem',
-                  maxWidth: '400px',
                   width: '100%',
+                  maxWidth: '350px',
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '1.5rem',
-                  minHeight: '60vh'
+                  gap: '3rem'
                 }}>
                   
-                  {/* Circular Spinner - iOS Style */}
-                  <div className="ios-spinner-container" style={{
+                  {/* Spinner */}
+                  <div style={{
                     width: '90px',
                     height: '90px',
                     backgroundColor: '#126987',
@@ -299,33 +297,31 @@ export default function IbanTransfer() {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    boxShadow: '0 8px 32px rgba(18, 105, 135, 0.3)',
-                    marginTop: '1rem'
+                    boxShadow: '0 8px 24px rgba(18, 105, 135, 0.25)'
                   }}>
                     <div style={{
                       width: '50px',
                       height: '50px',
-                      border: '5px solid rgba(255, 255, 255, 0.3)',
-                      borderTop: '5px solid white',
+                      border: '4px solid rgba(255, 255, 255, 0.3)',
+                      borderTop: '4px solid white',
                       borderRadius: '50%',
                       animation: 'spin 1s linear infinite'
                     }}></div>
                   </div>
                   
-                  {/* Title and Stage */}
-                  <div className="ios-text-section" style={{
+                  {/* Text Section */}
+                  <div style={{
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '0.75rem',
+                    gap: '0.5rem',
                     alignItems: 'center'
                   }}>
                     <h1 style={{ 
-                      fontSize: '2rem',
+                      fontSize: '1.75rem',
                       fontWeight: '700',
                       color: '#1d1d1f',
                       margin: '0',
-                      lineHeight: '1.2',
-                      letterSpacing: '-0.02em'
+                      lineHeight: '1.2'
                     }}>
                       Processing Transfer
                     </h1>
@@ -333,57 +329,52 @@ export default function IbanTransfer() {
                       fontSize: '1rem',
                       color: '#86868b',
                       margin: '0',
-                      fontWeight: '400',
-                      lineHeight: '1.4'
+                      fontWeight: '400'
                     }}>
                       {processingStage}
                     </p>
                   </div>
                   
-                  {/* Progress Bar - iOS Style */}
-                  <div className="ios-progress-section" style={{
+                  {/* Progress Section */}
+                  <div style={{
                     width: '100%',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '1rem',
                     alignItems: 'center'
                   }}>
-                    <div className="ios-progress-track" style={{
+                    <div style={{
                       width: '100%',
-                      height: '8px',
+                      height: '6px',
                       backgroundColor: '#e5e5e7',
-                      borderRadius: '4px',
-                      overflow: 'hidden',
-                      position: 'relative'
+                      borderRadius: '3px',
+                      overflow: 'hidden'
                     }}>
-                      <div className="ios-progress-fill" style={{ 
+                      <div style={{ 
                         width: `${animationProgress}%`,
-                        height: '8px',
+                        height: '6px',
                         backgroundColor: '#126987',
-                        borderRadius: '4px',
-                        transition: 'width 300ms ease-out',
-                        position: 'relative'
+                        borderRadius: '3px',
+                        transition: 'width 300ms ease-out'
                       }}></div>
                     </div>
                     <p style={{ 
                       fontSize: '1.125rem',
                       fontWeight: '600',
                       color: '#126987',
-                      margin: '0',
-                      lineHeight: '1.2'
+                      margin: '0'
                     }}>
                       {Math.round(animationProgress)}% Complete
                     </p>
                   </div>
                   
-                  {/* Security Notice - iOS Style */}
-                  <div className="ios-security-notice" style={{
+                  {/* Security Notice */}
+                  <div style={{
                     backgroundColor: 'white',
                     borderRadius: '16px',
                     padding: '1.25rem',
                     width: '100%',
-                    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)',
-                    border: '1px solid rgba(0, 0, 0, 0.04)'
+                    boxShadow: '0 2px 12px rgba(0, 0, 0, 0.1)'
                   }}>
                     <div style={{
                       display: 'flex',
@@ -396,14 +387,12 @@ export default function IbanTransfer() {
                         width: '8px',
                         height: '8px',
                         backgroundColor: '#34c759',
-                        borderRadius: '50%',
-                        animation: 'pulse 2s ease-in-out infinite'
+                        borderRadius: '50%'
                       }}></div>
                       <span style={{ 
                         fontSize: '0.875rem',
                         fontWeight: '600',
-                        color: '#1d1d1f',
-                        lineHeight: '1.3'
+                        color: '#1d1d1f'
                       }}>
                         Secure Connection Active
                       </span>
