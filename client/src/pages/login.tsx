@@ -593,31 +593,60 @@ export default function Login() {
       return;
     }
 
-    // Check if user exists
-    if (!UserDataManager.userExists(customerNumber)) {
+    try {
+      // Verify PIN with database
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          customerNumber,
+          pin
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        // PIN is correct, authenticate user
+        UserDataManager.setCurrentUser(customerNumber);
+        UserDataManager.initializeFreshAccount(customerNumber);
+        UserDataManager.recordLoginTime(customerNumber);
+        
+        const userProfile = UserDataManager.getUserProfile();
+        if (userProfile) {
+          login({
+            id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
+            name: userProfile.name,
+            email: userProfile.email
+          });
+        }
+        
+        setPinVerified(true);
+        toast({
+          title: "Login Successful",
+          description: "Welcome back to Bank of Ireland",
+        });
+        
+        // Navigate to dashboard after verification
+        navigate('/dashboard');
+      } else {
+        // PIN verification failed
+        toast({
+          title: "Login Failed",
+          description: result.message || "Invalid customer number or PIN. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('PIN verification error:', error);
       toast({
         title: "Login Failed",
-        description: "Customer number not found. Please create an account first.",
+        description: "Unable to verify credentials. Please check your connection and try again.",
         variant: "destructive",
       });
-      return;
     }
-    
-    // Initialize fresh account data and verify PIN
-    UserDataManager.initializeFreshAccount(customerNumber);
-    UserDataManager.recordLoginTime(customerNumber);
-    const userProfile = UserDataManager.getUserProfile();
-    if (userProfile) {
-      login({
-        id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
-        name: userProfile.name,
-        email: userProfile.email
-      });
-    }
-    setPinVerified(true);
-    
-    // Navigate to dashboard after verification
-    navigate('/dashboard');
   };
 
   const requestLocation = () => {

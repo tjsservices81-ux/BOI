@@ -380,6 +380,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Login authentication endpoint
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const loginSchema = z.object({
+        customerNumber: z.string(),
+        pin: z.string().length(4)
+      });
+
+      const { customerNumber, pin } = loginSchema.parse(req.body);
+      
+      // Find user by customer number and verify PIN
+      const user = await storage.getUserByCredentials(customerNumber, pin);
+      
+      if (!user) {
+        return res.status(401).json({ 
+          success: false,
+          message: "Invalid customer number or PIN" 
+        });
+      }
+
+      console.log(`✅ LOGIN SUCCESSFUL: ${user.name} (${user.customerNumber})`);
+      
+      res.json({ 
+        success: true,
+        user: {
+          id: user.id,
+          customerNumber: user.customerNumber,
+          name: user.name,
+          email: user.email
+        },
+        message: "Login successful" 
+      });
+    } catch (error) {
+      console.error('Login error:', error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          success: false,
+          message: error.errors[0].message 
+        });
+      }
+      res.status(500).json({ 
+        success: false,
+        message: "Login failed" 
+      });
+    }
+  });
+
   // Create new user with PIN
   app.post("/api/users/create", async (req, res) => {
     try {
