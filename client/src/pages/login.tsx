@@ -410,6 +410,14 @@ export default function Login() {
     setLoginProgress(0);
 
     try {
+      // If PIN was verified, it already established session and set auth context
+      // Just navigate to biometric auth for device verification
+      if (pinVerified) {
+        setIsLoginAnimating(false);
+        navigate('/biometric-auth');
+        return;
+      }
+
       // Stage 1: Authenticating (2 seconds)
       setLoginStage('Authenticating...');
       const progressInterval = setInterval(() => {
