@@ -147,6 +147,31 @@ textarea:focus {
   backface-visibility: hidden;
 }
 
+/* Android-specific optimizations */
+@media screen and (-webkit-min-device-pixel-ratio: 1) {
+  .android-optimized {
+    -webkit-font-smoothing: subpixel-antialiased;
+    -moz-osx-font-smoothing: auto;
+  }
+}
+
+/* Remove any remaining platform-specific differences */
+.platform-neutral {
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  border-radius: 8px !important;
+  transition: all 0.15s ease !important;
+}
+
+/* Ensure consistent touch response */
+.touch-optimized {
+  touch-action: manipulation !important;
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+}
+
 /* Remove platform-specific scrollbar styling */
 .scroll-unified {
   -webkit-overflow-scrolling: touch;

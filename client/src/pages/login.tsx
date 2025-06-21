@@ -1338,8 +1338,7 @@ export default function Login() {
                   type="text"
                   value={newUserData.name}
                   onChange={(e) => setNewUserData({...newUserData, name: e.target.value})}
-                  className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  className="input-unified unified-font w-full"
                   placeholder="Enter your full name"
                   autoComplete="name"
                   required
@@ -1355,8 +1354,7 @@ export default function Login() {
                   type="email"
                   value={newUserData.email}
                   onChange={(e) => setNewUserData({...newUserData, email: e.target.value})}
-                  className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  className="input-unified unified-font w-full"
                   placeholder="Enter your email address"
                   autoComplete="email"
                   required
@@ -1372,8 +1370,7 @@ export default function Login() {
                   type="tel"
                   value={newUserData.phone}
                   onChange={(e) => setNewUserData({...newUserData, phone: e.target.value})}
-                  className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  className="input-unified unified-font w-full"
                   placeholder="+353 XX XXX XXXX"
                   autoComplete="tel"
                   required
@@ -1426,7 +1423,7 @@ export default function Login() {
               </h2>
               <button 
                 onClick={() => setShowAdminLogin(false)}
-                className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center active:scale-95 transition-transform"
+                className="button-unified w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center"
               >
                 <span className="text-gray-600 text-lg">×</span>
               </button>
