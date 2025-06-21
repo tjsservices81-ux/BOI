@@ -518,11 +518,15 @@
           }
         } catch (error) {
           console.error('Access verification failed:', error);
-          // If verification fails due to connection issues, still check localStorage
+          // If verification fails due to connection issues, prioritize existing access
           const hasAccess = localStorage.getItem('accessGranted');
           if (hasAccess === 'true') {
+            console.log('Connection error but user has existing access - allowing entry');
             hideLoadingScreen();
+            // Still start validation to check later when connection is restored
+            startAccessValidation();
           } else {
+            // Only deny access if they have no existing access AND connection fails
             showAccessDenied("Connection error - please try again");
           }
         }
@@ -569,16 +573,24 @@
               body: JSON.stringify({ code: accessCode })
             });
 
-            const result = await response.json();
+            // Only process response if request was successful
+            if (response.ok) {
+              const result = await response.json();
 
-            if (!result.success || result.error === "Access denied or revoked") {
-              // Access has been revoked - clear localStorage and show message
-              localStorage.removeItem('accessGranted');
-              localStorage.removeItem('accessCode');
-              showAccessDenied("Access denied or revoked");
+              // Only revoke if explicitly told access is denied/revoked
+              if (!result.success && result.error === "Access denied or revoked") {
+                console.log('Access revoked by administrator');
+                localStorage.removeItem('accessGranted');
+                localStorage.removeItem('accessCode');
+                showAccessDenied("Access denied or revoked");
+              }
+            } else {
+              // Network/server errors don't affect access - user stays logged in
+              console.warn('Access validation failed due to connection issue - maintaining access');
             }
           } catch (error) {
-            console.warn('Access validation check failed:', error);
+            // Connection errors don't affect access - user stays logged in
+            console.warn('Access validation check failed due to connection - maintaining access:', error);
           }
         }, 30000);
       }
