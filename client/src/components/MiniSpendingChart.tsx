@@ -15,6 +15,21 @@ export default function MiniSpendingChart({ accountId }: MiniSpendingChartProps)
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const [trend, setTrend] = useState<'up' | 'down' | 'stable'>('stable');
   const [isVisible, setIsVisible] = useState(true);
+  const [currentCurrency, setCurrentCurrency] = useState(CurrencyManager.getCurrentCurrency());
+
+  // Listen for real-time currency changes
+  useEffect(() => {
+    const handleCurrencyChange = (event: any) => {
+      const { currency } = event.detail;
+      setCurrentCurrency(currency);
+    };
+
+    window.addEventListener('currencyChanged', handleCurrencyChange);
+    
+    return () => {
+      window.removeEventListener('currencyChanged', handleCurrencyChange);
+    };
+  }, []);
 
   useEffect(() => {
     const calculateChartData = () => {

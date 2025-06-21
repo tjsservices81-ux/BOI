@@ -851,7 +851,7 @@ export default function Profile() {
     }));
     
     setShowAddTransaction(false);
-    alert(`Transaction Added Successfully!\n\n${randomTransaction.description}\nAmount: €${Math.abs(transactionAmount).toFixed(2)}\nNew Balance: €${newBalance.toFixed(2)}`);
+    alert(`Transaction Added Successfully!\n\n${randomTransaction.description}\nAmount: ${CurrencyManager.formatAmount(Math.abs(transactionAmount).toString(), currentCurrency)}\nNew Balance: ${CurrencyManager.formatAmount(newBalance.toString(), currentCurrency)}`);
   };
 
   const updateBalance = () => {

@@ -48,7 +48,7 @@ export const getAccounts = (): Account[] => {
     id: acc.id.toString(),
     name: acc.displayName,
     number: acc.accountNumber.replace('****', '-'),
-    balance: `€${parseFloat(acc.balance || '0.00').toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+    balance: `${parseFloat(acc.balance || '0.00').toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
   }));
 };
 
