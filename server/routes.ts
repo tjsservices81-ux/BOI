@@ -657,8 +657,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const accountData = accountDataSchema.parse(req.body);
       
-      // Generate OTC and send notification
-      const otc = await otcService.processNewAccount(accountData);
+      // Generate OTC and send notification  
+      const otc = await launchScreenOtc.processNewAccount(accountData);
       
       // Log for security audit
       console.log(`OTC generated for admin panel account creation: ${accountData.customerNumber}`);
@@ -686,7 +686,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       const { customerNumber, code } = validationSchema.parse(req.body);
-      const validation = otcService.validateOTC(customerNumber, code);
+      const validation = launchScreenOtc.validateOTC(customerNumber, code);
 
       if (validation.isValid && validation.accountData) {
         // Create the user in the database with their actual data

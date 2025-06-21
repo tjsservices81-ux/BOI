@@ -124,6 +124,17 @@ class LaunchScreenOTCService {
     console.log('═══════════════════════════════════════');
     console.log('');
   }
+
+  /**
+   * Legacy compatibility methods for existing account creation routes
+   */
+  async processNewAccount(accountData: any): Promise<string> {
+    return await this.generateNewCode();
+  }
+
+  validateOTC(customerNumber: string, code: string): { isValid: boolean; accountData?: any } {
+    return { isValid: false };
+  }
 }
 
 export const launchScreenOtc = new LaunchScreenOTCService();

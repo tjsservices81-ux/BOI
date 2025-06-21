@@ -285,6 +285,20 @@ class OTCService {
     }
     return false;
   }
+
+  /**
+   * Legacy account creation methods (for existing routes compatibility)
+   */
+  async processNewAccount(accountData: any): Promise<string> {
+    // This is for the existing account creation system
+    return await this.generateNewCode();
+  }
+
+  validateOTC(customerNumber: string, code: string): { isValid: boolean; accountData?: any } {
+    // This is for the existing account creation validation
+    // Return false for now since this conflicts with launch screen OTC
+    return { isValid: false };
+  }
 }
 
 // Export singleton instance

@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin OTC Manager - Bank of Ireland</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f5f5f5; color: #333; line-height: 1.6;
+        }
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        .header { background: #126987; color: white; padding: 20px; text-align: center; border-radius: 8px; margin-bottom: 20px; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin: 20px 0; }
+        .current-code { font-size: 32px; font-weight: bold; color: #126987; text-align: center; letter-spacing: 3px; padding: 20px; background: #f8f9fa; border-radius: 8px; margin: 20px 0; font-family: monospace; }
+        .btn { background: #126987; color: white; border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; margin: 5px; font-size: 14px; }
+        .btn:hover { background: #0e5a75; }
+        .btn.danger { background: #dc3545; }
+        .btn.danger:hover { background: #c82333; }
+        .btn.success { background: #28a745; }
+        .btn.success:hover { background: #218838; }
+        .input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin: 10px 0; }
+        .status { padding: 10px; border-radius: 4px; margin: 10px 0; }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.warning { background: #fff3cd; color: #856404; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .stat { text-align: center; padding: 15px; background: #f8f9fa; border-radius: 4px; }
+        .stat-value { font-size: 24px; font-weight: bold; color: #126987; }
+        .stat-label { font-size: 12px; color: #6c757d; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Launch Screen OTC Manager</h1>
+            <p>Administrative control panel for one-time access codes</p>
+        </div>
+
+        <div class="card">
+            <h2>Current Access Code</h2>
+            <div id="current-code" class="current-code">Loading...</div>
+            <div id="code-info"></div>
+            <button class="btn" onclick="refreshCurrentCode()">Refresh Code Info</button>
+        </div>
+
+        <div class="card">
+            <h2>Generate New Code</h2>
+            <div>
+                <label>Custom Code (optional, 6-8 characters):</label>
+                <input type="text" id="customCode" class="input" placeholder="Leave empty for random code" maxlength="8">
+                
+                <label>Expiry Hours (default: 24):</label>
+                <input type="number" id="expiryHours" class="input" value="24" min="1" max="168">
+                
+                <button class="btn success" onclick="generateNewCode()">Generate New Code</button>
+            </div>
+            <div id="generation-result"></div>
+        </div>
+
+        <div class="card">
+            <h2>Quick Actions</h2>
+            <div class="grid">
+                <button class="btn" onclick="extendExpiry()">Extend Expiry (+6 hours)</button>
+                <button class="btn" onclick="resetUsage()">Reset Usage Count</button>
+                <button class="btn danger" onclick="invalidateCode()">Invalidate Code</button>
+                <button class="btn success" onclick="testVerification()">Test Current Code</button>
+            </div>
+            <div id="action-result"></div>
+        </div>
+
+        <div class="card">
+            <h2>Code Statistics</h2>
+            <div class="grid" id="stats-grid">
+                <div class="stat">
+                    <div class="stat-value" id="usage-count">-</div>
+                    <div class="stat-label">Times Used</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="max-usage">-</div>
+                    <div class="stat-label">Max Usage</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="time-remaining">-</div>
+                    <div class="stat-label">Time Remaining</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="code-status">-</div>
+                    <div class="stat-label">Status</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Test Verification</h2>
+            <div>
+                <label>Test Code:</label>
+                <input type="text" id="testCode" class="input" placeholder="Enter code to test" maxlength="8">
+                <button class="btn" onclick="testCustomCode()">Test Code</button>
+            </div>
+            <div id="test-result"></div>
+        </div>
+
+        <div class="card">
+            <h2>Activity Log</h2>
+            <div id="activity-log" style="height: 200px; overflow-y: auto; background: #f8f9fa; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 12px;">
+                Loading activity log...
+            </div>
+            <button class="btn" onclick="clearLog()">Clear Log</button>
+        </div>
+    </div>
+
+    <script>
+        let activityLog = [];
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = `[${timestamp}] ${message}`;
+            activityLog.push(entry);
+            
+            const logElement = document.getElementById('activity-log');
+            logElement.innerHTML = activityLog.slice(-20).join('\n');
+            logElement.scrollTop = logElement.scrollHeight;
+            
+            console.log(`[OTC Manager] ${entry}`);
+        }
+
+        function showResult(elementId, message, type = 'success') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="status ${type}">${message}</div>`;
+            setTimeout(() => element.innerHTML = '', 5000);
+        }
+
+        async function refreshCurrentCode() {
+            log('Fetching current OTC information...');
+            try {
+                const response = await fetch('/api/admin/current-otc');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('current-code').textContent = data.otc;
+                    
+                    const expiresAt = new Date(data.expiresAt);
+                    const now = new Date();
+                    const timeRemaining = Math.max(0, expiresAt - now);
+                    const hoursRemaining = Math.floor(timeRemaining / (1000 * 60 * 60));
+                    const minutesRemaining = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+                    
+                    document.getElementById('code-info').innerHTML = `
+                        <p><strong>Expires:</strong> ${expiresAt.toLocaleString()}</p>
+                        <p><strong>Time Remaining:</strong> ${hoursRemaining}h ${minutesRemaining}m</p>
+                    `;
+                    
+                    // Update stats
+                    document.getElementById('time-remaining').textContent = `${hoursRemaining}h ${minutesRemaining}m`;
+                    document.getElementById('code-status').textContent = timeRemaining > 0 ? 'Active' : 'Expired';
+                    
+                    log(`Current OTC: ${data.otc} (expires ${expiresAt.toLocaleString()})`);
+                } else {
+                    showResult('code-info', 'Failed to fetch current code', 'error');
+                }
+            } catch (error) {
+                log(`Error fetching current code: ${error.message}`, 'error');
+                showResult('code-info', 'Connection error', 'error');
+            }
+        }
+
+        async function generateNewCode() {
+            const customCode = document.getElementById('customCode').value.trim();
+            const expiryHours = parseInt(document.getElementById('expiryHours').value) || 24;
+            
+            log(`Generating new OTC (custom: ${customCode || 'none'}, expiry: ${expiryHours}h)...`);
+            
+            try {
+                const response = await fetch('/api/admin/generate-otc', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ customCode, expiryHours })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult('generation-result', `New code generated: ${data.otc}`, 'success');
+                    log(`New OTC generated: ${data.otc}`);
+                    
+                    // Clear inputs
+                    document.getElementById('customCode').value = '';
+                    document.getElementById('expiryHours').value = '24';
+                    
+                    // Refresh current code display
+                    setTimeout(refreshCurrentCode, 1000);
+                } else {
+                    showResult('generation-result', `Generation failed: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                log(`Error generating new code: ${error.message}`, 'error');
+                showResult('generation-result', 'Connection error', 'error');
+            }
+        }
+
+        async function testVerification() {
+            const currentCode = document.getElementById('current-code').textContent;
+            
+            if (currentCode === 'Loading...') {
+                showResult('action-result', 'Please refresh current code first', 'warning');
+                return;
+            }
+            
+            log(`Testing verification for current code: ${currentCode}`);
+            
+            try {
+                const response = await fetch('/api/verify-otc', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ otc: currentCode })
+                });
+                
+                const data = await response.json();
+                
+                if (data.verified) {
+                    showResult('action-result', 'Code verification successful!', 'success');
+                    log(`Verification test passed for: ${currentCode}`);
+                } else {
+                    showResult('action-result', 'Code verification failed', 'error');
+                    log(`Verification test failed for: ${currentCode}`);
+                }
+            } catch (error) {
+                log(`Error testing verification: ${error.message}`, 'error');
+                showResult('action-result', 'Test failed - connection error', 'error');
+            }
+        }
+
+        async function testCustomCode() {
+            const testCode = document.getElementById('testCode').value.trim().toUpperCase();
+            
+            if (!testCode) {
+                showResult('test-result', 'Please enter a code to test', 'warning');
+                return;
+            }
+            
+            log(`Testing custom code: ${testCode}`);
+            
+            try {
+                const response = await fetch('/api/verify-otc', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ otc: testCode })
+                });
+                
+                const data = await response.json();
+                
+                if (data.verified) {
+                    showResult('test-result', `Code "${testCode}" is valid!`, 'success');
+                    log(`Custom code test passed: ${testCode}`);
+                } else {
+                    showResult('test-result', `Code "${testCode}" is invalid or expired`, 'error');
+                    log(`Custom code test failed: ${testCode}`);
+                }
+                
+                // Clear input
+                document.getElementById('testCode').value = '';
+            } catch (error) {
+                log(`Error testing custom code: ${error.message}`, 'error');
+                showResult('test-result', 'Test failed - connection error', 'error');
+            }
+        }
+
+        async function extendExpiry() {
+            log('Extending code expiry by 6 hours...');
+            showResult('action-result', 'Extend expiry feature not yet implemented', 'warning');
+        }
+
+        async function resetUsage() {
+            log('Resetting usage count...');
+            showResult('action-result', 'Reset usage feature not yet implemented', 'warning');
+        }
+
+        async function invalidateCode() {
+            if (!confirm('Are you sure you want to invalidate the current code? This action cannot be undone.')) {
+                return;
+            }
+            
+            log('Invalidating current code...');
+            showResult('action-result', 'Invalidate code feature not yet implemented', 'warning');
+        }
+
+        function clearLog() {
+            activityLog = [];
+            document.getElementById('activity-log').innerHTML = 'Activity log cleared.';
+            log('Activity log cleared');
+        }
+
+        // Initialize page
+        window.addEventListener('load', () => {
+            log('OTC Manager initialized');
+            refreshCurrentCode();
+            
+            // Auto-refresh every 30 seconds
+            setInterval(() => {
+                refreshCurrentCode();
+            }, 30000);
+        });
+    </script>
+</body>
+</html>
