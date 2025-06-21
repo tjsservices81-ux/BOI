@@ -289,8 +289,8 @@ export default function IbanTransfer() {
                 <div className="text-center max-w-sm w-full">
                   {/* Bank of Ireland Professional Logo Area */}
                   <div className="mb-6">
-                    <div className="w-20 h-20 bg-[#126987] rounded-full flex items-center justify-center mx-auto mb-4 shadow-xl" style={{ background: '#126987' }}>
-                      <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin" style={{ background: 'transparent' }}></div>
+                    <div className="w-20 h-20 bg-[#126987] rounded-full flex items-center justify-center mx-auto mb-4 shadow-xl">
+                      <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
                     </div>
                   </div>
                   
@@ -319,18 +319,7 @@ export default function IbanTransfer() {
                     </p>
                   </div>
                   
-                  {/* Professional Security Notice */}
-                  <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-gray-200 shadow-lg">
-                    <div className="flex items-center justify-center space-x-3 mb-3">
-                      <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                      <span className="text-sm font-semibold text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        Secure Connection Active
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-500 leading-relaxed" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Your SEPA transfer is being processed through Bank of Ireland's secure SWIFT network with end-to-end encryption
-                    </p>
-                  </div>
+
                 </div>
               </div>
             ) : (
