@@ -28,26 +28,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     const initializeAuth = async () => {
       try {
-        // Always check for cached user - no cold start detection
-        // Users stay logged in permanently until admin deletion
-        try {
-          const cachedUser = localStorage.getItem('bankingUser');
-          if (cachedUser && isMounted) {
-            try {
-              const parsedUser = JSON.parse(cachedUser);
-              setUser(parsedUser);
-              // Reset parse failure counter on success
-              localStorage.removeItem('bankingUser_parseFailures');
-            } catch (parseError) {
-              console.error('JSON parse failed, user data preserved for recovery:', parseError);
-              // Keep user data safe - never delete on parse errors
-              // Show recoverable error state instead of wiping account
-              setUser(null); // Temporary state, data preserved
+        // Check for valid access first (access control system)
+        const accessGranted = localStorage.getItem('accessGranted');
+        
+        if (accessGranted === 'true' && isMounted) {
+          // Valid access code - create a default user session
+          const defaultUser = {
+            id: 1,
+            name: 'Banking User',
+            email: 'user@bankofireland.ie'
+          };
+          setUser(defaultUser);
+          // Store for persistence
+          localStorage.setItem('bankingUser', JSON.stringify(defaultUser));
+        } else {
+          // Check for cached user - no cold start detection
+          try {
+            const cachedUser = localStorage.getItem('bankingUser');
+            if (cachedUser && isMounted) {
+              try {
+                const parsedUser = JSON.parse(cachedUser);
+                setUser(parsedUser);
+                // Reset parse failure counter on success
+                localStorage.removeItem('bankingUser_parseFailures');
+              } catch (parseError) {
+                console.error('JSON parse failed, user data preserved for recovery:', parseError);
+                // Keep user data safe - never delete on parse errors
+                setUser(null); // Temporary state, data preserved
+              }
             }
+          } catch (storageError) {
+            console.error('localStorage access failed, maintaining current state:', storageError);
+            // Don't change user state on storage access errors
           }
-        } catch (storageError) {
-          console.error('localStorage access failed, maintaining current state:', storageError);
-          // Don't change user state on storage access errors
         }
         
         if (isMounted) {
