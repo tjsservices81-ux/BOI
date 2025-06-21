@@ -174,7 +174,9 @@ class MemStorage implements IStorage {
       dateOfBirth: insertUser.dateOfBirth || null,
       joinDate: insertUser.joinDate || "Member since 2018",
       dateCreated: insertUser.dateCreated || new Date(),
-      isDisabled: false
+      isDisabled: false,
+      showCardTransfer: insertUser.showCardTransfer ?? true,
+      showEmailTransfer: insertUser.showEmailTransfer ?? true
     };
     this.users.set(user.id, user);
     await this.saveData(); // Persist data immediately
@@ -454,7 +456,9 @@ class MemStorage implements IStorage {
         phone: "+353 1 234",
         address: "Hello shehsjs",
         dateOfBirth: "2025-06-01",
-        joinDate: "Member since 2022"
+        joinDate: "Member since 2022",
+        showCardTransfer: true,
+        showEmailTransfer: true
       },
       {
         customerNumber: "BOI050171232",

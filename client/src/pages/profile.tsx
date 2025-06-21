@@ -14,6 +14,10 @@ export default function Profile() {
   const [tapCount, setTapCount] = useState(0);
   const [lastTapTime, setLastTapTime] = useState(0);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [profilePicTapCount, setProfilePicTapCount] = useState(0);
+  const [showTransferToggles, setShowTransferToggles] = useState(false);
+  const [showCardTransfer, setShowCardTransfer] = useState(true);
+  const [showEmailTransfer, setShowEmailTransfer] = useState(true);
   // isSigningOut removed - users can only be logged out via admin deletion
   const [accounts, setAccounts] = useState<any[]>([]);
   const [editingAccount, setEditingAccount] = useState<any>(null);
