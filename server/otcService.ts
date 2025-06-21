@@ -1,356 +1,305 @@
-import nodemailer from 'nodemailer';
+/**
+ * One-Time Code (OTC) Service for WHERE Access Control
+ * Handles generation, verification, and management of access codes
+ */
 
-export interface OTCRequest {
-  accountData: {
-    customerNumber: string;
-    name: string;
-    email: string;
-    phone: string;
-  };
-  otc: string;
+interface OTCData {
+  code: string;
+  generatedAt: Date;
+  expiresAt: Date;
+  usageCount: number;
+  maxUsage: number;
 }
 
 class OTCService {
-  private transporter: nodemailer.Transporter | null = null;
-  private otcStorage: Map<string, { code: string; expires: number; accountData: any }> = new Map();
+  private currentOTC: OTCData | null = null;
+  private readonly defaultExpiryHours = 24;
+  private readonly maxUsageLimit = 100; // Prevent abuse
 
   constructor() {
-    this.initializeTransporter();
+    // Initialize with a default OTC on service start
+    this.initializeDefaultOTC();
   }
 
-  private initializeTransporter() {
-    // Use environment variables for email configuration
-    const emailConfig = {
-      host: process.env.SMTP_HOST,
-      port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: process.env.SMTP_PORT === '465', // Use secure for port 465
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS
-      },
-      tls: {
-        rejectUnauthorized: false
-      }
+  private async initializeDefaultOTC(): Promise<void> {
+    await this.generateNewCode();
+  }
+
+  /**
+   * Admin method to generate a new OTC code
+   * @param customCode Optional custom code (must be 6-8 characters)
+   * @param expiryHours Optional expiry time in hours (default: 24)
+   * @returns The generated OTC code
+   */
+  async generateNewCode(customCode?: string, expiryHours?: number): Promise<string> {
+    const expiry = expiryHours || this.defaultExpiryHours;
+    
+    let code: string;
+    if (customCode && this.isValidCustomCode(customCode)) {
+      code = customCode.toUpperCase();
+    } else {
+      code = this.generateRandomCode();
+    }
+
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + (expiry * 60 * 60 * 1000));
+
+    this.currentOTC = {
+      code,
+      generatedAt: now,
+      expiresAt,
+      usageCount: 0,
+      maxUsage: this.maxUsageLimit
     };
 
-    // Only initialize if SMTP credentials are provided
-    if (emailConfig.host && emailConfig.auth.user && emailConfig.auth.pass) {
-      this.transporter = nodemailer.createTransport(emailConfig);
-    }
-  }
-
-  generateOTC(): string {
-    // Generate a random 6-digit number
-    return Math.floor(100000 + Math.random() * 900000).toString();
-  }
-
-  async sendOTCToUser(accountData: OTCRequest['accountData'], otc: string): Promise<boolean> {
-    if (!this.transporter) {
-      console.log('SMTP not configured. OTC would be sent to user:', {
-        email: accountData.email,
-        customerNumber: accountData.customerNumber,
-        otc: otc
-      });
-      return false;
-    }
-
-    try {
-      // Validate user email format
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(accountData.email)) {
-        console.error('Invalid user email format:', accountData.email);
-        return false;
-      }
-      
-      const mailOptions = {
-        from: `"Bank of Ireland" <${process.env.SMTP_USER}>`,
-        to: accountData.email,
-        subject: 'Bank of Ireland - Account Verification Code',
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #126987;">Account Verification Required</h2>
-            <p>Hello ${accountData.name},</p>
-            <p>Thank you for creating your Bank of Ireland account. To complete the account setup process, please use the verification code below:</p>
-            
-            <div style="background-color: #e8f5e8; padding: 30px; border-radius: 8px; border-left: 4px solid #28a745; text-align: center; margin: 20px 0;">
-              <h3 style="color: #155724; margin-top: 0;">Your Verification Code</h3>
-              <p style="font-size: 32px; font-weight: bold; color: #155724; letter-spacing: 4px; margin: 20px 0;">${otc}</p>
-              <p style="color: #155724; font-size: 14px;">Enter this code in the verification screen to activate your account</p>
-            </div>
-            
-            <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-              <h4 style="color: #126987; margin-top: 0;">Account Details:</h4>
-              <p><strong>Customer Number:</strong> ${accountData.customerNumber}</p>
-              <p><strong>Name:</strong> ${accountData.name}</p>
-              <p><strong>Email:</strong> ${accountData.email}</p>
-            </div>
-            
-            <p style="color: #6c757d; font-size: 12px; margin-top: 30px;">
-              This verification code will expire in 10 minutes. If you didn't request this account, please ignore this email.
-            </p>
-            <p style="color: #6c757d; font-size: 12px;">
-              This email was automatically generated by the Bank of Ireland account creation system.
-            </p>
-          </div>
-        `
-      };
-
-      await this.transporter.sendMail(mailOptions);
-      console.log(`OTC email sent successfully to user: ${accountData.email}`);
-      return true;
-    } catch (error) {
-      console.error('Failed to send OTC email to user:', error);
-      return false;
-    }
-  }
-
-  async sendOTCToAdmin(accountData: OTCRequest['accountData'], otc: string): Promise<boolean> {
-    if (!this.transporter) {
-      console.log('No SMTP transporter available - email cannot be sent');
-      return false;
-    }
-
-    try {
-      const adminEmail = process.env.ADMIN_EMAIL?.trim() || 'admin@bankofireland.ie';
-      console.log('Attempting to send OTC to admin email:', adminEmail);
-      
-      // Validate email format
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(adminEmail)) {
-        console.error('Invalid admin email format:', adminEmail);
-        return false;
-      }
-      
-      const mailOptions = {
-        from: 'bankofireland2007@gmail.com',
-        to: 'bankofireland2007@gmail.com',
-        subject: 'New Bank Account Registration - Admin Approval Required',
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <div style="background-color: #126987; color: white; padding: 20px; border-radius: 8px 8px 0 0;">
-              <h2 style="margin: 0; font-size: 24px;">Bank of Ireland</h2>
-              <p style="margin: 5px 0 0 0; font-size: 16px;">New Account Registration</p>
-            </div>
-            
-            <div style="background-color: #f8f9fa; padding: 30px; border: 1px solid #dee2e6; border-top: none;">
-              <h3 style="color: #dc3545; margin-top: 0;">Admin Approval Required</h3>
-              <p style="margin-bottom: 20px;">A new customer has registered for a Bank of Ireland account and requires admin verification to complete the process.</p>
-              
-              <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                <h4 style="color: #856404; margin-top: 0;">Verification Code</h4>
-                <p style="font-size: 32px; font-weight: bold; color: #856404; letter-spacing: 4px; margin: 10px 0; text-align: center;">${otc}</p>
-                <p style="color: #856404; font-size: 14px; text-align: center; margin-bottom: 0;">Provide this code to the customer to complete registration</p>
-              </div>
-              
-              <div style="background-color: white; border: 1px solid #dee2e6; padding: 25px; border-radius: 8px; margin: 20px 0;">
-                <h4 style="color: #126987; margin-top: 0; border-bottom: 2px solid #126987; padding-bottom: 10px;">Customer Details</h4>
-                
-                <table style="width: 100%; border-collapse: collapse;">
-                  <tr>
-                    <td style="padding: 8px 0; font-weight: bold; color: #495057; width: 30%;">Full Name:</td>
-                    <td style="padding: 8px 0; color: #212529;">${accountData.name}</td>
-                  </tr>
-                  <tr style="background-color: #f8f9fa;">
-                    <td style="padding: 8px 0; font-weight: bold; color: #495057;">Customer Number:</td>
-                    <td style="padding: 8px 0; color: #212529; font-family: monospace;">${accountData.customerNumber}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 8px 0; font-weight: bold; color: #495057;">Email Address:</td>
-                    <td style="padding: 8px 0; color: #212529;">${accountData.email}</td>
-                  </tr>
-                  <tr style="background-color: #f8f9fa;">
-                    <td style="padding: 8px 0; font-weight: bold; color: #495057;">Phone Number:</td>
-                    <td style="padding: 8px 0; color: #212529;">${accountData.phone}</td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 8px 0; font-weight: bold; color: #495057;">Registration Time:</td>
-                    <td style="padding: 8px 0; color: #212529;">${new Date().toLocaleString('en-IE', { 
-                      timeZone: 'Europe/Dublin',
-                      year: 'numeric',
-                      month: 'long', 
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      second: '2-digit'
-                    })}</td>
-                  </tr>
-                </table>
-              </div>
-              
-              <div style="background-color: #d1ecf1; border: 1px solid #bee5eb; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                <h4 style="color: #0c5460; margin-top: 0;">Next Steps</h4>
-                <ol style="color: #0c5460; margin: 0; padding-left: 20px;">
-                  <li>Review the customer details above</li>
-                  <li>Verify the customer's identity if required</li>
-                  <li>Provide the verification code <strong>${otc}</strong> to the customer</li>
-                  <li>Customer will enter the code to complete account creation</li>
-                </ol>
-              </div>
-              
-              <div style="background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                <p style="color: #721c24; margin: 0; font-size: 14px;">
-                  <strong>Security Notice:</strong> This verification code expires in 10 minutes. Do not share this code with unauthorized personnel.
-                </p>
-              </div>
-            </div>
-            
-            <div style="background-color: #126987; color: white; padding: 15px; border-radius: 0 0 8px 8px; text-align: center;">
-              <p style="margin: 0; font-size: 14px;">Bank of Ireland - Admin Portal</p>
-              <p style="margin: 5px 0 0 0; font-size: 12px; opacity: 0.8;">This is an automated notification</p>
-            </div>
-          </div>
-        `
-      };
-
-      const info = await this.transporter.sendMail(mailOptions);
-      console.log(`Admin OTC email sent successfully to bankofireland2007@gmail.com`);
-      console.log(`Subject: New Bank Account Registration - Admin Approval Required`);
-      console.log(`OTC Code: ${otc}`);
-      console.log(`Customer Details:`);
-      console.log(`  - Name: ${accountData.name}`);
-      console.log(`  - Customer Number: ${accountData.customerNumber}`);
-      console.log(`  - Email: ${accountData.email}`);
-      console.log(`  - Phone: ${accountData.phone}`);
-      console.log(`  - Registration Time: ${new Date().toLocaleString('en-IE', { 
-        timeZone: 'Europe/Dublin',
-        year: 'numeric',
-        month: 'long', 
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      })}`);
-      return true;
-    } catch (error: any) {
-      console.error('❌ Failed to send admin notification email:', error);
-      console.error('SMTP Error Details:', {
-        message: error?.message || 'Unknown error',
-        code: error?.code || 'No code',
-        command: error?.command || 'No command'
-      });
-      return false;
-    }
-  }
-
-  storeOTC(customerNumber: string, code: string, accountData: any): void {
-    const expires = Date.now() + (10 * 60 * 1000); // 10 minutes expiry
-    this.otcStorage.set(customerNumber, { code, expires, accountData });
+    console.log(`🔑 NEW OTC GENERATED: ${code} (expires: ${expiresAt.toLocaleString()})`);
     
-    // Clean up expired OTCs
-    setTimeout(() => {
-      this.otcStorage.delete(customerNumber);
-    }, 10 * 60 * 1000);
+    // Hidden delivery method - console log for admin
+    this.deliverOTCToAdmin(code, expiresAt);
+    
+    return code;
+  }
+
+  /**
+   * Verify an OTC code
+   * @param inputCode The code to verify
+   * @returns True if valid and not expired
+   */
+  async verifyCode(inputCode: string): Promise<boolean> {
+    if (!this.currentOTC) {
+      console.log('❌ OTC VERIFICATION: No active code');
+      return false;
+    }
+
+    const now = new Date();
+    
+    // Check if code has expired
+    if (now > this.currentOTC.expiresAt) {
+      console.log('❌ OTC VERIFICATION: Code expired');
+      return false;
+    }
+
+    // Check usage limit
+    if (this.currentOTC.usageCount >= this.currentOTC.maxUsage) {
+      console.log('❌ OTC VERIFICATION: Usage limit exceeded');
+      return false;
+    }
+
+    // Verify the code
+    if (inputCode.toUpperCase() === this.currentOTC.code) {
+      this.currentOTC.usageCount++;
+      console.log(`✅ OTC VERIFICATION: Success (usage: ${this.currentOTC.usageCount}/${this.currentOTC.maxUsage})`);
+      return true;
+    }
+
+    console.log(`❌ OTC VERIFICATION: Invalid code attempted: ${inputCode}`);
+    return false;
+  }
+
+  /**
+   * Get the current active OTC code (admin method)
+   * @returns Current OTC code or null if none active
+   */
+  async getCurrentCode(): Promise<string | null> {
+    if (!this.currentOTC) {
+      return null;
+    }
+
+    const now = new Date();
+    if (now > this.currentOTC.expiresAt) {
+      console.log('⚠️ Current OTC has expired, generating new one');
+      await this.generateNewCode();
+    }
+
+    return this.currentOTC?.code || null;
+  }
+
+  /**
+   * Get expiration time of current OTC
+   * @returns ISO string of expiration time
+   */
+  async getExpirationTime(): Promise<string | null> {
+    return this.currentOTC?.expiresAt.toISOString() || null;
+  }
+
+  /**
+   * Get OTC usage statistics (admin method)
+   * @returns Usage statistics
+   */
+  async getUsageStats(): Promise<{
+    code: string;
+    usageCount: number;
+    maxUsage: number;
+    generatedAt: string;
+    expiresAt: string;
+    isExpired: boolean;
+  } | null> {
+    if (!this.currentOTC) {
+      return null;
+    }
+
+    const now = new Date();
+    return {
+      code: this.currentOTC.code,
+      usageCount: this.currentOTC.usageCount,
+      maxUsage: this.currentOTC.maxUsage,
+      generatedAt: this.currentOTC.generatedAt.toISOString(),
+      expiresAt: this.currentOTC.expiresAt.toISOString(),
+      isExpired: now > this.currentOTC.expiresAt
+    };
+  }
+
+  /**
+   * Admin method to extend OTC expiry
+   * @param additionalHours Hours to add to current expiry
+   * @returns New expiration time
+   */
+  async extendExpiry(additionalHours: number): Promise<string | null> {
+    if (!this.currentOTC) {
+      return null;
+    }
+
+    const extensionMs = additionalHours * 60 * 60 * 1000;
+    this.currentOTC.expiresAt = new Date(this.currentOTC.expiresAt.getTime() + extensionMs);
+    
+    console.log(`⏰ OTC EXPIRY EXTENDED: ${this.currentOTC.code} now expires at ${this.currentOTC.expiresAt.toLocaleString()}`);
+    
+    return this.currentOTC.expiresAt.toISOString();
+  }
+
+  /**
+   * Generate a random 6-character alphanumeric code
+   * @returns Random OTC code
+   */
+  private generateRandomCode(): string {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Removed confusing chars (0, O, I, 1)
+    let result = '';
+    
+    for (let i = 0; i < 6; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    
+    return result;
+  }
+
+  /**
+   * Validate custom code format
+   * @param code Custom code to validate
+   * @returns True if valid format
+   */
+  private isValidCustomCode(code: string): boolean {
+    // Must be 6-8 characters, alphanumeric only
+    const regex = /^[A-Z0-9]{6,8}$/i;
+    return regex.test(code);
+  }
+
+  /**
+   * Hidden delivery method for admin OTC access
+   * Currently logs to console, can be replaced with webhook/email
+   * @param code The OTC code
+   * @param expiresAt Expiration time
+   */
+  private deliverOTCToAdmin(code: string, expiresAt: Date): void {
+    // Console delivery (hidden method for admin)
+    console.log('');
+    console.log('═══════════════════════════════════════');
+    console.log('🔐 ADMIN OTC DELIVERY NOTIFICATION');
+    console.log('═══════════════════════════════════════');
+    console.log(`📧 Access Code: ${code}`);
+    console.log(`⏰ Valid Until: ${expiresAt.toLocaleString()}`);
+    console.log(`🌐 App: WHERE`);
+    console.log('═══════════════════════════════════════');
+    console.log('');
+
+    // Future webhook integration point
+    this.sendOTCWebhook(code, expiresAt).catch(err => {
+      console.log('Webhook delivery failed, using console fallback:', err.message);
+    });
+  }
+
+  /**
+   * Webhook delivery method (placeholder for future integration)
+   * Replace the URL with your actual webhook endpoint
+   * @param code OTC code
+   * @param expiresAt Expiration time
+   */
+  private async sendOTCWebhook(code: string, expiresAt: Date): Promise<void> {
+    // Replace this with your webhook URL
+    const webhookUrl = process.env.OTC_WEBHOOK_URL || 'https://your-webhook-endpoint.com/otc-delivery';
+    
+    if (webhookUrl === 'https://your-webhook-endpoint.com/otc-delivery') {
+      // Skip webhook if not configured
+      return;
+    }
+
+    try {
+      const response = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.OTC_WEBHOOK_TOKEN || 'your-webhook-token'}`
+        },
+        body: JSON.stringify({
+          type: 'otc_delivery',
+          otc: code,
+          expiresAt: expiresAt.toISOString(),
+          generatedAt: new Date().toISOString(),
+          app: 'WHERE',
+          environment: process.env.NODE_ENV || 'development'
+        })
+      });
+
+      if (response.ok) {
+        console.log('✅ OTC delivered via webhook successfully');
+      } else {
+        throw new Error(`Webhook returned ${response.status}`);
+      }
+    } catch (error) {
+      console.log('❌ Webhook delivery failed:', error);
+      // Webhook failures are non-critical, console delivery is the fallback
+    }
+  }
+
+  /**
+   * Admin method to reset usage count
+   * @returns New usage count (0)
+   */
+  async resetUsageCount(): Promise<number> {
+    if (this.currentOTC) {
+      this.currentOTC.usageCount = 0;
+      console.log(`🔄 OTC USAGE RESET: ${this.currentOTC.code} usage count reset to 0`);
+    }
+    return 0;
+  }
+
+  /**
+   * Admin method to invalidate current OTC immediately
+   * @returns True if invalidated
+   */
+  async invalidateCurrentOTC(): Promise<boolean> {
+    if (this.currentOTC) {
+      const oldCode = this.currentOTC.code;
+      this.currentOTC = null;
+      console.log(`🚫 OTC INVALIDATED: ${oldCode} has been manually invalidated`);
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Legacy account creation methods (for existing routes compatibility)
+   */
+  async processNewAccount(accountData: any): Promise<string> {
+    // This is for the existing account creation system
+    return await this.generateNewCode();
   }
 
   validateOTC(customerNumber: string, code: string): { isValid: boolean; accountData?: any } {
-    const stored = this.otcStorage.get(customerNumber);
-    
-    if (!stored) {
-      return { isValid: false };
-    }
-    
-    if (Date.now() > stored.expires) {
-      this.otcStorage.delete(customerNumber);
-      return { isValid: false };
-    }
-    
-    if (stored.code !== code) {
-      return { isValid: false };
-    }
-    
-    // Remove OTC after successful validation
-    this.otcStorage.delete(customerNumber);
-    return { isValid: true, accountData: stored.accountData };
-  }
-
-  async sendOTCEmail(email: string, code: string, deviceInfo: any): Promise<boolean> {
-    if (!this.transporter) {
-      console.log('No SMTP transporter available - device verification email cannot be sent');
-      console.log(`Device OTC Code: ${code} for ${email}`);
-      console.log('Device Info:', deviceInfo);
-      return false;
-    }
-
-    try {
-      const mailOptions = {
-        from: `"Bank of Ireland" <${process.env.SMTP_USER}>`,
-        to: email,
-        subject: 'Bank of Ireland - Device Verification Code',
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <div style="background-color: #126987; color: white; padding: 20px; border-radius: 8px 8px 0 0;">
-              <h2 style="margin: 0; font-size: 24px;">Bank of Ireland</h2>
-              <p style="margin: 5px 0 0 0; font-size: 16px;">Device Verification Required</p>
-            </div>
-            
-            <div style="background-color: #f8f9fa; padding: 30px; border: 1px solid #dee2e6; border-top: none;">
-              <h3 style="color: #dc3545; margin-top: 0;">New Device Access Request</h3>
-              <p>A new device is attempting to access the Bank of Ireland mobile application and requires verification.</p>
-              
-              <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                <h4 style="color: #856404; margin-top: 0;">Verification Code</h4>
-                <p style="font-size: 32px; font-weight: bold; color: #856404; letter-spacing: 4px; margin: 10px 0; text-align: center;">${code}</p>
-                <p style="color: #856404; font-size: 14px; text-align: center; margin-bottom: 0;">Provide this code to authorize the device</p>
-              </div>
-              
-              <div style="background-color: white; border: 1px solid #dee2e6; padding: 25px; border-radius: 8px; margin: 20px 0;">
-                <h4 style="color: #126987; margin-top: 0;">Device Information</h4>
-                <p><strong>Platform:</strong> ${deviceInfo.platform}</p>
-                <p><strong>Timestamp:</strong> ${new Date(deviceInfo.timestamp).toLocaleString()}</p>
-                <p><strong>User Agent:</strong> ${deviceInfo.deviceInfo}</p>
-              </div>
-              
-              <div style="background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                <p style="color: #721c24; margin: 0; font-size: 14px;">
-                  <strong>Security Notice:</strong> Only provide this code if you recognize this device access request.
-                </p>
-              </div>
-            </div>
-            
-            <div style="background-color: #126987; color: white; padding: 15px; border-radius: 0 0 8px 8px; text-align: center;">
-              <p style="margin: 0; font-size: 14px;">Bank of Ireland - Security Verification</p>
-            </div>
-          </div>
-        `
-      };
-
-      await this.transporter.sendMail(mailOptions);
-      console.log(`Device verification email sent to: ${email}`);
-      return true;
-    } catch (error) {
-      console.error('Failed to send device verification email:', error);
-      return false;
-    }
-  }
-
-  async processNewAccount(accountData: OTCRequest['accountData']): Promise<string> {
-    const otc = this.generateOTC();
-    
-    // Store OTC for validation
-    this.storeOTC(accountData.customerNumber, otc, accountData);
-    
-    // Always log the OTC prominently for admin access
-    console.log(`\n====== ADMIN OTC NOTIFICATION ======`);
-    console.log(`NEW ACCOUNT CREATED`);
-    console.log(`Customer: ${accountData.name}`);
-    console.log(`Number: ${accountData.customerNumber}`);
-    console.log(`Email: ${accountData.email}`);
-    console.log(`Phone: ${accountData.phone}`);
-    console.log(`OTC CODE: ${otc}`);
-    console.log(`Time: ${new Date().toISOString()}`);
-    console.log(`====================================\n`);
-    
-    // Send OTC to admin email only
-    const adminEmailSent = await this.sendOTCToAdmin(accountData, otc);
-    
-    if (adminEmailSent) {
-      console.log(`OTC email sent successfully to admin with verification code`);
-    } else {
-      console.log(`OTC email to admin failed - code is logged above for access`);
-    }
-    
-    return otc;
+    // This is for the existing account creation validation
+    // Return false for now since this conflicts with launch screen OTC
+    return { isValid: false };
   }
 }
 
-export const otcService = new OTCService();
+// Export singleton instance
+export const launchOtcService = new OTCService();

@@ -12,7 +12,7 @@ import { StateManager } from "@/utils/stateManager";
 import { AppLifecycle } from "@/utils/appLifecycle";
 import { PlatformDetection } from "@/utils/platformDetection";
 import LiveChat from "@/components/LiveChat";
-import OTCVerification from "@/components/OTCVerification";
+import { LaunchScreen } from "@/components/LaunchScreen";
 
 
 
@@ -124,7 +124,8 @@ function AppRoutes() {
   const [isInitialized, setIsInitialized] = useState(false);
   const [splashTransitioning, setSplashTransitioning] = useState(false);
   const [isRestoringState, setIsRestoringState] = useState(true);
-  const [showOTCVerification, setShowOTCVerification] = useState(false);
+  const [showLaunchScreen, setShowLaunchScreen] = useState(false);
+  const [isLaunchVerified, setIsLaunchVerified] = useState(false);
   
   // Global Live Chat state - persistent across all navigation
   const [showLiveChat, setShowLiveChat] = useState(false);
@@ -148,20 +149,42 @@ function AppRoutes() {
   };
 
   
+  // Check for launch screen verification status
+  useEffect(() => {
+    const checkLaunchVerification = () => {
+      const isVerified = localStorage.getItem('boi-otc-verified');
+      if (isVerified === 'true') {
+        setIsLaunchVerified(true);
+        setShowLaunchScreen(false);
+      } else {
+        setShowLaunchScreen(true);
+        setIsLaunchVerified(false);
+      }
+    };
+
+    checkLaunchVerification();
+  }, []);
+
+  // Handle launch screen verification completion
+  const handleLaunchVerified = () => {
+    setShowLaunchScreen(false);
+    setIsLaunchVerified(true);
+    // Store verification in localStorage
+    localStorage.setItem('boi-otc-verified', 'true');
+    localStorage.setItem('boi-otc-verified-at', new Date().toISOString());
+  };
+
   // Initialize app state with proper cold/warm start detection
   useEffect(() => {
     let initializationTimer: NodeJS.Timeout;
     
     const initializeApp = async () => {
       try {
-        // Check device verification status first
-        const otcVerified = localStorage.getItem('otcVerified');
-        if (!otcVerified) {
-          setShowOTCVerification(true);
-          setIsInitialized(true);
+        // Skip initialization if launch screen is showing
+        if (showLaunchScreen) {
           return;
         }
-        
+
         // Initialize platform-specific handlers first
         PlatformDetection.setupPlatformSpecificHandlers();
         
@@ -418,18 +441,6 @@ function AppRoutes() {
     return () => window.removeEventListener('focus', handleFocusRestore);
   }, [location]);
 
-  // Handle OTC verification completion
-  const handleOTCVerificationComplete = () => {
-    setShowOTCVerification(false);
-    // Continue with normal app initialization after device verification
-    window.location.reload();
-  };
-
-  // Show OTC verification screen for first-time devices
-  if (showOTCVerification) {
-    return <OTCVerification onVerificationComplete={handleOTCVerificationComplete} />;
-  }
-
   // Prevent flash during initialization
   if (!isInitialized) {
     return (
@@ -437,6 +448,11 @@ function AppRoutes() {
         {/* Empty blue screen during initialization */}
       </div>
     );
+  }
+
+  // Show launch screen if not verified
+  if (showLaunchScreen && !isLaunchVerified) {
+    return <LaunchScreen onVerified={handleLaunchVerified} />;
   }
 
   return (

@@ -31,5 +31,4 @@ const ensureFontsLoaded = () => {
 preloadCriticalAssets();
 ensureFontsLoaded();
 
-// Initialize React app normally - access control happens before this script loads
 createRoot(document.getElementById("root")!).render(<App />);

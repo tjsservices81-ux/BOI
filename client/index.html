@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no" />
     
-    <!-- Security Headers - Relaxed for PWA compatibility -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https: wss:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: blob: https:; font-src 'self' data: https:; connect-src 'self' wss: https: data:; worker-src 'self' blob:;">
+    <!-- Security Headers -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:; connect-src 'self' wss: https:;">
     <meta name="referrer" content="no-referrer">
     <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
     
@@ -18,9 +18,9 @@
     <meta name="theme-color" content="#000DFF" />
     
     <!-- Critical font preloading for instant rendering -->
-    <link rel="preload" href="/OpenSans-Regular-webfont.woff" as="font" type="font/woff" crossorigin>
-    <link rel="preload" href="/OpenSans-Bold-webfont.woff" as="font" type="font/woff" crossorigin>
-    <link rel="preload" href="/OpenSans-Semibold-webfont.woff" as="font" type="font/woff" crossorigin>
+    <link rel="preload" href="/OpenSans-Regular-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/OpenSans-Bold-webfont.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/OpenSans-Semibold-webfont.woff2" as="font" type="font/woff2" crossorigin>
     
     <!-- Critical asset preloading -->
     <link rel="preload" href="/boi_logo.svg" as="image">
@@ -259,53 +259,28 @@
       function initializeApp() {
         clearTimeout(appLoadTimeout);
         
-        // Set timeout for app initialization with device-specific timing
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        const timeout = isMobile ? 20000 : 15000; // Longer timeout for mobile devices
-        
+        // Set timeout for app initialization
         appLoadTimeout = setTimeout(() => {
           console.error('App initialization timeout');
           showError('App is taking longer than expected to load. This might be due to a slow connection.');
-        }, timeout);
+        }, 15000);
         
-        // Enhanced React mount detection with fallbacks
-        let checkCount = 0;
-        const maxChecks = 300; // 30 seconds at 100ms intervals
-        
+        // Monitor for successful React mount
         const checkAppReady = setInterval(() => {
-          checkCount++;
           const root = document.getElementById('root');
-          
-          // Check for successful React mount
           if (root && root.children.length > 0) {
             clearInterval(checkAppReady);
             clearTimeout(appLoadTimeout);
             hideLoading();
-            return;
-          }
-          
-          // Fallback if checks exceed maximum
-          if (checkCount >= maxChecks) {
-            clearInterval(checkAppReady);
-            clearTimeout(appLoadTimeout);
-            
-            // Try to force app load with emergency fallback
-            try {
-              if (root && !root.children.length) {
-                root.innerHTML = '<div style="padding: 20px; text-align: center; font-family: Arial, sans-serif;"><h2>Loading Bank of Ireland...</h2><p>Please wait while we prepare your banking experience.</p></div>';
-              }
-              hideLoading();
-            } catch (error) {
-              showError('Unable to load the application. Please refresh the page.');
-            }
           }
         }, 100);
         
         // The main React app script is already in the HTML
+        // Just wait for it to mount
         console.log('Waiting for React app to mount...');
       }
       
-      // Enhanced service worker registration for mobile PWA with error handling
+      // Enhanced service worker registration for mobile PWA
       if ('serviceWorker' in navigator) {
         updateLoadingMessage('Preparing offline features...');
         
@@ -320,29 +295,16 @@
             registration.waiting.postMessage({ type: 'SKIP_WAITING' });
           }
           
-          // Enhanced update handling for mobile devices
+          // Listen for updates and auto-activate
           registration.addEventListener('updatefound', () => {
             const newWorker = registration.installing;
             if (newWorker) {
               newWorker.addEventListener('statechange', () => {
                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  // New version available - auto-activate on mobile for better UX
-                  if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-                    newWorker.postMessage({ type: 'SKIP_WAITING' });
-                  }
+                  console.log('New service worker available');
+                  newWorker.postMessage({ type: 'SKIP_WAITING' });
                 }
               });
-            }
-          });
-          
-          // Listen for service worker updates and errors
-          navigator.serviceWorker.addEventListener('controllerchange', () => {
-            console.log('Service Worker controller changed');
-          });
-          
-          navigator.serviceWorker.addEventListener('message', (event) => {
-            if (event.data && event.data.type === 'SW_ACTIVATED') {
-              console.log('Service Worker activated successfully');
             }
           });
           
@@ -361,7 +323,12 @@
           setTimeout(initializeApp, 500);
         });
         
-
+        // Listen for service worker messages
+        navigator.serviceWorker.addEventListener('message', (event) => {
+          if (event.data && event.data.type === 'SW_ACTIVATED') {
+            console.log('Service worker activated for offline support');
+          }
+        });
       } else {
         // No service worker support, load app directly
         updateLoadingMessage('Loading banking app...');
@@ -511,69 +478,6 @@
         });
       }
     </script>
-
-    <!-- Access Control System - Immediate execution -->
-    <script>
-      (function() {
-        const validCodes = ['myboicode', '123abc', 'code456']; // Private access codes
-        const code = new URLSearchParams(window.location.search).get('access');
-        const alreadyVerified = localStorage.getItem('accessGranted');
-
-        // Set global access status immediately
-        if (alreadyVerified === 'true') {
-          // Already verified – allow app to load
-          console.log('Access already granted on this device');
-          window.accessGranted = true;
-          // Clean URL if it still has access parameter
-          if (code) {
-            window.history.replaceState({}, document.title, window.location.pathname);
-          }
-        } else if (validCodes.includes(code)) {
-          // Valid code provided - grant access and clean URL
-          localStorage.setItem('accessGranted', 'true');
-          window.history.replaceState({}, document.title, window.location.pathname);
-          console.log('Access granted with valid code');
-          window.accessGranted = true;
-        } else {
-          // No valid access - deny access
-          window.accessGranted = false;
-          
-          // Show "Not available" immediately
-          document.write(`
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-              <meta charset="UTF-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <meta name="robots" content="noindex, nofollow">
-              <title>Not Available</title>
-              <style>
-                * { margin: 0; padding: 0; box-sizing: border-box; }
-                body { 
-                  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-                  background: #f5f5f5; 
-                  display: flex; 
-                  align-items: center; 
-                  justify-content: center; 
-                  height: 100vh; 
-                  color: #333;
-                }
-                h1 { text-align: center; margin: 0; }
-              </style>
-            </head>
-            <body>
-              <h1>Not available</h1>
-            </body>
-            </html>
-          `);
-          document.close();
-          
-          // Stop further script execution
-          throw new Error('Access denied');
-        }
-      })();
-    </script>
-
     <script type="module" src="/src/main.tsx"></script>
     <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
     <script type="text/javascript" src="https://replit.com/public/js/replit-dev-banner.js"></script>

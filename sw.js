@@ -9,12 +9,13 @@ const FALLBACK_CACHE = 'boi-fallback-v1.0.0';
 // Critical assets that must be cached for PWA to work
 const CRITICAL_ASSETS = [
   '/',
+  '/client/index.html',
+  '/client/src/main.tsx',
+  '/client/src/App.tsx',
+  '/client/src/index.css',
   '/manifest.json',
   '/boi_app_icon.png',
-  '/boi_logo.svg',
-  '/IMG_0633_1749764752035.jpeg',
-  '/Icons_Fingerprint.svg',
-  '/icon_HID.svg'
+  '/boi_logo.svg'
 ];
 
 // Assets to cache for better performance
@@ -237,73 +238,7 @@ async function handleFetch(request) {
       return await cacheFirstStrategy(request);
     }
     
-    // Enhanced navigation handling to prevent blank screens
-    if (request.mode === 'navigate' || request.destination === 'document') {
-      try {
-        const networkResponse = await fetch(request, { 
-          mode: 'same-origin',
-          credentials: 'same-origin',
-          cache: 'no-cache'
-        });
-        
-        if (networkResponse.ok) {
-          const cache = await caches.open(CACHE_NAME);
-          cache.put(request, networkResponse.clone());
-          return networkResponse;
-        }
-      } catch (networkError) {
-        console.warn('Network navigation failed, trying cache:', networkError);
-      }
-      
-      // Try cached version
-      const cachedResponse = await caches.match('/');
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      
-      // Ultimate fallback for navigation
-      return new Response(`
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <meta name="apple-mobile-web-app-capable" content="yes">
-          <title>Bank of Ireland</title>
-          <style>
-            body { 
-              font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-              background: #126987; color: white; margin: 0;
-              display: flex; align-items: center; justify-content: center;
-              min-height: 100vh; text-align: center; padding: 20px;
-            }
-            .loading { animation: spin 1s linear infinite; }
-            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-          </style>
-        </head>
-        <body>
-          <div>
-            <h2>Bank of Ireland</h2>
-            <div class="loading">⟳</div>
-            <p>Preparing your secure banking experience...</p>
-            <script>
-              setTimeout(() => window.location.reload(), 3000);
-              if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.ready.then(() => {
-                  setTimeout(() => window.location.reload(), 1000);
-                });
-              }
-            </script>
-          </div>
-        </body>
-        </html>
-      `, {
-        headers: { 'Content-Type': 'text/html' },
-        status: 200
-      });
-    }
-    
-    // Stale-while-revalidate for other requests
+    // Stale-while-revalidate for HTML pages
     return await staleWhileRevalidateStrategy(request);
     
   } catch (error) {
