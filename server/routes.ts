@@ -107,7 +107,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Registration error:', error);
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: error.errors[0].message });
+        return res.status(400).json({ error: error.errors[0].message });
       }
       res.status(500).json({ error: "Registration failed" });
     }
@@ -132,7 +132,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (isCustomerInPanicMode(user.customerNumber)) {
         console.log(`🚨 PANIC MODE LOGIN BLOCKED: Customer ${user.customerNumber} attempted login but their device is in panic mode`);
         return res.status(503).json({ 
-          message: "System temporarily unavailable. Please try again later." 
+          error: "System temporarily unavailable. Please try again later." 
         });
       }
 
@@ -215,7 +215,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (existingSession && existingSession.sessionId && isDeviceInPanicMode(existingSession.sessionId)) {
         console.log(`🚨 PANIC MODE LOGIN BLOCKED: User ${user.id} attempted login, but device ${existingSession.deviceModel} is in panic mode`);
         return res.status(503).json({ 
-          message: "System temporarily unavailable. Please try again later." 
+          error: "System temporarily unavailable. Please try again later." 
         });
       }
 
