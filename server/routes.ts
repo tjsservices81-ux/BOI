@@ -1131,8 +1131,9 @@ No transfers found yet on your account.`;
   // OTC device verification endpoint
   app.post("/api/send-otc", async (req, res) => {
     try {
+      console.log('OTC Request Body:', JSON.stringify(req.body, null, 2));
+      
       const otcSchema = z.object({
-        email: z.string().email(),
         code: z.string().length(6),
         deviceInfo: z.object({
           userAgent: z.string(),
@@ -1141,13 +1142,23 @@ No transfers found yet on your account.`;
         })
       });
 
-      const { email, code, deviceInfo } = otcSchema.parse(req.body);
+      const { code, deviceInfo } = otcSchema.parse(req.body);
+      
+      // Use admin email from secrets instead of request email
+      const adminEmail = process.env.ADMIN_EMAIL;
+      if (!adminEmail) {
+        return res.status(500).json({
+          success: false,
+          message: "Admin email not configured"
+        });
+      }
       
       console.log(`📧 OTC Code Generated: ${code} for device verification`);
       console.log(`Device Info:`, deviceInfo);
+      console.log(`Sending to admin email: ${adminEmail}`);
       
       // Send email using existing email service
-      const emailSent = await otcService.sendOTCEmail(email, code, {
+      const emailSent = await otcService.sendOTCEmail(adminEmail, code, {
         deviceInfo: deviceInfo.userAgent,
         timestamp: deviceInfo.timestamp,
         platform: deviceInfo.platform

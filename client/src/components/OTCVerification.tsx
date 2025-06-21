@@ -29,7 +29,6 @@ export default function OTCVerification({ onVerificationComplete }: OTCVerificat
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email: 'youremail@example.com',
           code: code,
           deviceInfo: {
             userAgent: navigator.userAgent,
@@ -43,7 +42,7 @@ export default function OTCVerification({ onVerificationComplete }: OTCVerificat
         setCodeGenerated(true);
         toast({
           title: "Code Generated",
-          description: "A 6-digit verification code has been sent to the administrator.",
+          description: "A 6-digit verification code has been sent to your admin email address.",
         });
       } else {
         throw new Error('Failed to send OTC code');
