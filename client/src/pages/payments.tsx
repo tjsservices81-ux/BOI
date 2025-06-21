@@ -208,6 +208,11 @@ export default function Payments() {
 
       {/* Content */}
       <div className="flex-1 bg-gray-50 px-4 py-6 pb-32 ios-scroll overflow-y-auto">
+        {/* Component Test */}
+        <div className="bg-red-100 p-4 rounded mb-4">
+          <strong>PAYMENTS PAGE LOADED</strong>
+        </div>
+
         {/* Header Section */}
         <div className="mb-6">
           <h1 className="text-2xl font-semibold text-gray-900 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
