@@ -757,14 +757,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } catch (dbError) {
           console.error('Failed to create user in database:', dbError);
           res.status(500).json({ 
-            success: false, 
-            message: "OTC valid but failed to create account" 
+            error: "OTC valid but failed to create account" 
           });
         }
       } else {
         res.status(400).json({ 
-          success: false, 
-          message: "Invalid or expired OTC code" 
+          error: "Invalid or expired OTC code" 
         });
       }
     } catch (error) {
@@ -793,11 +791,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (result.success) {
         res.json({ success: true, callSid: result.callSid });
       } else {
-        res.status(400).json({ success: false, error: result.error });
+        res.status(400).json({ error: result.error });
       }
     } catch (error) {
       console.error('Security initiation failed:', error);
-      res.status(500).json({ success: false, error: "Failed to initiate security call" });
+      res.status(500).json({ error: "Failed to initiate security call" });
     }
   });
 
@@ -1262,9 +1260,8 @@ No transfers found yet on your account.`;
       const user = await storage.getUserByCustomerNumber(customerNumber);
       if (!user) {
         return res.status(404).json({ 
-          success: false, 
-          exists: false, 
-          message: "This account no longer exists." 
+          error: "This account no longer exists.",
+          exists: false
         });
       }
 
@@ -1272,10 +1269,9 @@ No transfers found yet on your account.`;
       const { isUserDisabled } = await import('./userDisableManager');
       if (isUserDisabled(user.id)) {
         return res.status(403).json({ 
-          success: false, 
+          error: "This account has been temporarily suspended.",
           exists: true, 
-          disabled: true,
-          message: "This account has been temporarily suspended." 
+          disabled: true
         });
       }
 
