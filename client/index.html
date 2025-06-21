@@ -305,7 +305,7 @@
         console.log('Waiting for React app to mount...');
       }
       
-      // Enhanced service worker registration for mobile PWA
+      // Enhanced service worker registration for mobile PWA with error handling
       if ('serviceWorker' in navigator) {
         updateLoadingMessage('Preparing offline features...');
         
@@ -320,16 +320,29 @@
             registration.waiting.postMessage({ type: 'SKIP_WAITING' });
           }
           
-          // Listen for updates and auto-activate
+          // Enhanced update handling for mobile devices
           registration.addEventListener('updatefound', () => {
             const newWorker = registration.installing;
             if (newWorker) {
               newWorker.addEventListener('statechange', () => {
                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  console.log('New service worker available');
-                  newWorker.postMessage({ type: 'SKIP_WAITING' });
+                  // New version available - auto-activate on mobile for better UX
+                  if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                    newWorker.postMessage({ type: 'SKIP_WAITING' });
+                  }
                 }
               });
+            }
+          });
+          
+          // Listen for service worker updates and errors
+          navigator.serviceWorker.addEventListener('controllerchange', () => {
+            console.log('Service Worker controller changed');
+          });
+          
+          navigator.serviceWorker.addEventListener('message', (event) => {
+            if (event.data && event.data.type === 'SW_ACTIVATED') {
+              console.log('Service Worker activated successfully');
             }
           });
           
@@ -348,12 +361,7 @@
           setTimeout(initializeApp, 500);
         });
         
-        // Listen for service worker messages
-        navigator.serviceWorker.addEventListener('message', (event) => {
-          if (event.data && event.data.type === 'SW_ACTIVATED') {
-            console.log('Service worker activated for offline support');
-          }
-        });
+
       } else {
         // No service worker support, load app directly
         updateLoadingMessage('Loading banking app...');
