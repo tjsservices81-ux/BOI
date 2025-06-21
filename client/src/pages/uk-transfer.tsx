@@ -300,7 +300,7 @@ export default function UkTransfer() {
             parseFloat(formData.amount),
             formData.recipientName,
             'UK',
-            transferReference,
+            formData.reference,
             exchangeRate,
             {
               accountNumber: formData.accountNumber,

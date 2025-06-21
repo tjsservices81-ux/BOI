@@ -467,8 +467,8 @@ export default function Login() {
     setLoginProgress(0);
 
     try {
-      // Stage 1: Checking connection (1 second)
-      setLoginStage('Checking connection...');
+      // Stage 1: Initializing (1 second)
+      setLoginStage('Initializing...');
       const progressInterval = setInterval(() => {
         setLoginProgress(prev => {
           if (prev < 20) return prev + 2;
@@ -1032,18 +1032,7 @@ export default function Login() {
             <div className="w-full max-w-xs mx-auto space-y-3">
               {/* Main White Login Card */}
               <div className="bg-white ios-card p-4">
-                {/* Connection Status Indicator */}
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-lg font-semibold text-gray-800" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
-                    Welcome back
-                  </h3>
-                  <div className="flex items-center space-x-2">
-                    <div className={`w-2 h-2 rounded-full ${connectionStatus === 'online' ? 'bg-green-500' : connectionStatus === 'offline' ? 'bg-red-500' : 'bg-yellow-500'}`}></div>
-                    <span className="text-xs text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      {connectionStatus === 'online' ? 'Online' : connectionStatus === 'offline' ? 'Offline' : 'Checking...'}
-                    </span>
-                  </div>
-                </div>
+                <div className="mb-3"></div>
 
                 {/* Offline Status Notice */}
                 {connectionStatus === 'offline' && offlineStatus && (
