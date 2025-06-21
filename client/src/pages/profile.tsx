@@ -85,34 +85,23 @@ export default function Profile() {
     };
   });
 
-  // Currency change handler
+  // Currency change handler with immediate state locking
   const handleCurrencyChange = async (newCurrency: 'EUR' | 'GBP') => {
-    console.log('=== CURRENCY CHANGE START ===');
-    console.log('Currency change requested:', newCurrency);
-    console.log('Current currency state before change:', currentCurrency);
-    console.log('Show admin panel state:', showAdminPanel);
-    console.log('Is updating profile state:', isUpdatingProfile);
-    
-    // Set updating flag to prevent polling from overriding
+    // Prevent any other state updates during currency change
     setIsUpdatingProfile(true);
-    console.log('Set isUpdatingProfile to true');
     
-    // Immediately update local state first
-    console.log('Setting currentCurrency state to:', newCurrency);
+    // Immediately update state and prevent further changes
     setCurrentCurrency(newCurrency);
-    console.log('State update called for currentCurrency');
     
-    // Save the currency preference to persistent storage
+    // Save to localStorage immediately
+    UserDataManager.setUserData('primaryCurrency', newCurrency);
     setCurrencyPreference(newCurrency);
     
-    // Force immediate save to localStorage as backup
-    UserDataManager.setUserData('primaryCurrency', newCurrency);
-    
-    // Also save to database for persistence across devices
+    // Save to database
     const currentUser = UserDataManager.getCurrentUser();
     if (currentUser) {
       try {
-        const response = await fetch(`/api/profile/${currentUser}`, {
+        await fetch(`/api/profile/${currentUser}`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
@@ -121,34 +110,22 @@ export default function Profile() {
             primaryCurrency: newCurrency
           }),
         });
-        
-        if (response.ok) {
-          console.log('Currency preference saved to database:', newCurrency);
-        } else {
-          console.warn('Failed to save currency to database, but localStorage saved');
-        }
       } catch (error) {
-        console.warn('Database save failed, using localStorage only:', error);
+        console.warn('Database save failed:', error);
       }
     }
     
-    // Verify the currency was saved
-    const savedCurrency = getUserCurrency();
-    console.log('Currency saved and verified:', savedCurrency);
-    
-    // Reload accounts to trigger UI updates
+    // Update accounts display
     const freshAccounts = UserDataManager.getUserAccounts();
     setAccounts(freshAccounts);
     
-    // Dispatch additional events to update other components
-    window.dispatchEvent(new CustomEvent('balanceUpdate'));
-    window.dispatchEvent(new CustomEvent('accountsUpdate', { detail: { accounts: freshAccounts } }));
+    // Dispatch update events
     window.dispatchEvent(new CustomEvent('currencyChanged', { detail: { currency: newCurrency } }));
     
-    // Clear updating flag after a brief delay to prevent immediate polling override
+    // Release lock after delay
     setTimeout(() => {
       setIsUpdatingProfile(false);
-    }, 2000);
+    }, 3000);
   };
 
   // Listen for currency updates and load currency on component mount
@@ -292,7 +269,7 @@ export default function Profile() {
     }
   };
 
-  // Admin panel functions - Load accounts when panel opens and on changes
+  // Admin panel functions - Load accounts when panel opens ONLY
   useEffect(() => {
     if (showAdminPanel) {
       try {
@@ -300,18 +277,6 @@ export default function Profile() {
         console.log('Loading accounts for admin panel:', storedAccounts);
         setAccounts(storedAccounts);
         loadChatResponses();
-        
-        // Load currency preference only when admin panel first opens (and not currently updating)
-        if (!isUpdatingProfile) {
-          const savedCurrency = getUserCurrency();
-          console.log('Admin panel opened - current currency in state:', currentCurrency, 'saved currency:', savedCurrency);
-          
-          // Only update if there's a significant difference (avoid overriding immediate user selections)
-          if (currentCurrency !== savedCurrency) {
-            console.log('Syncing currency state with saved preference');
-            setCurrentCurrency(savedCurrency);
-          }
-        }
       } catch (error) {
         console.error('Error initializing admin panel:', error);
         // Set default empty accounts if there's an error
