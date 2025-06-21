@@ -3,6 +3,7 @@ import { useLocation, useRoute } from "wouter";
 import { ChevronLeft, ArrowUpRight, CreditCard, Building2, Zap, Check, Clock, MapPin, Globe } from "lucide-react";
 import MiniSpendingChart from "../components/MiniSpendingChart";
 import { UserDataManager } from "../utils/userDataManager.ts";
+import { CurrencyManager } from "../utils/currencyManager";
 import { StateManager } from "../utils/stateManager";
 
 export default function TransactionHistoryWorking() {
@@ -16,6 +17,7 @@ export default function TransactionHistoryWorking() {
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
+  const [currentCurrency, setCurrentCurrency] = useState(CurrencyManager.getCurrentCurrency());
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   const accountId = params?.accountId ? parseInt(params.accountId) : 1;
@@ -42,6 +44,11 @@ export default function TransactionHistoryWorking() {
       document.body.classList.remove('page-transitioning');
       currentPage.classList.remove('page-slide-out-left', 'page-slide-out-right');
     }, 200);
+  };
+
+  // Currency change handler
+  const handleCurrencyChange = (event: CustomEvent) => {
+    setCurrentCurrency(event.detail.currency);
   };
 
   const handleDeleteTransaction = () => {
