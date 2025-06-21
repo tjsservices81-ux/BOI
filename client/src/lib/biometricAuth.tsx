@@ -36,7 +36,30 @@ export function BiometricAuthProvider({ children }: { children: React.ReactNode 
     try {
       setState(prev => ({ ...prev, isLoading: true, error: null }));
       
-      // OFFLINE FUNCTIONALITY: Auth status works offline through service worker
+      // FIRST: Check localStorage for permanent login flag
+      const permanentlyLoggedIn = localStorage.getItem('permanentlyLoggedIn');
+      
+      if (permanentlyLoggedIn === 'true') {
+        // User is permanently logged in - proceed with biometric auth
+        const lastActiveUser = UserDataManager.getLastActiveUser();
+        
+        if (lastActiveUser) {
+          const userProfile = UserDataManager.getUserProfile(lastActiveUser);
+          
+          if (userProfile) {
+            setState(prev => ({
+              ...prev,
+              needsBiometric: true,
+              isAuthenticated: false,
+              userInfo: userProfile,
+              isLoading: false
+            }));
+            return;
+          }
+        }
+      }
+      
+      // FALLBACK: Check server if localStorage check fails
       const response = await fetch('/api/auth/status', {
         credentials: 'include'
       });
@@ -180,11 +203,39 @@ export function BiometricAuthProvider({ children }: { children: React.ReactNode 
           return true;
         }
       } else if (!response) {
-        // OFFLINE MODE: Allow biometric authentication offline if user data exists
+        // OFFLINE MODE: Allow biometric authentication offline if permanently logged in
+        const permanentlyLoggedIn = localStorage.getItem('permanentlyLoggedIn');
+        
+        if (permanentlyLoggedIn === 'true') {
+          const lastActiveUser = UserDataManager.getLastActiveUser();
+          const userProfile = UserDataManager.getUserProfile(lastActiveUser);
+          
+          if (userProfile) {
+            if (login) {
+              login({
+                id: userProfile.id || parseInt(userProfile.customerNumber) || 0,
+                name: userProfile.name,
+                email: userProfile.email
+              });
+            }
+            
+            setState(prev => ({
+              ...prev,
+              isAuthenticated: true,
+              needsBiometric: false,
+              userInfo: userProfile,
+              isLoading: false
+            }));
+            return true;
+          }
+        }
+        
+        // FALLBACK: Check UserDataManager for cached session
         const cachedUser = UserDataManager.getCurrentUser();
         const userProfile = UserDataManager.getUserProfile();
+        const isPermanentlyLoggedIn = UserDataManager.getUserData('permanentlyLoggedIn', false);
         
-        if (cachedUser && userProfile) {
+        if (cachedUser && userProfile && isPermanentlyLoggedIn) {
           if (login) {
             login({
               id: userProfile.id || parseInt(userProfile.customerNumber) || 0,

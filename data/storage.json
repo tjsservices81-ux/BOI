@@ -1,23 +1,76 @@
 {
   "users": [
     [
-      69,
+      70,
       {
-        "id": 69,
-        "customerNumber": "650713408",
+        "id": 70,
+        "customerNumber": "BOI078639554",
         "pin": "000000",
-        "name": "James",
-        "email": "ahsjsj@gmail.com",
-        "phone": "0724548454",
-        "address": "Shhsjajs",
+        "name": "Jajjsjsjs",
+        "email": "shshsh@gmail.com",
+        "phone": "764664",
+        "address": null,
         "dateOfBirth": null,
-        "joinDate": "Jssjjs",
-        "dateCreated": "2025-06-21T03:22:30.694Z",
-        "isDisabled": false
+        "joinDate": "2025-06-21T04:06:18.674Z",
+        "dateCreated": "2025-06-21T04:06:18.776Z",
+        "isDisabled": false,
+        "profilePhoto": null,
+        "preferences": null,
+        "lastLoginTime": null,
+        "deviceInfo": null,
+        "notificationSettings": null,
+        "securitySettings": null,
+        "lastActivity": "2025-06-21T04:06:18.776Z"
+      }
+    ],
+    [
+      71,
+      {
+        "id": 71,
+        "customerNumber": "BOI516557182",
+        "pin": "000000",
+        "name": "Shshshsh",
+        "email": "ansnha@gmail.com",
+        "phone": "46464664",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-06-21T04:08:23.936Z",
+        "dateCreated": "2025-06-21T04:08:24.009Z",
+        "isDisabled": false,
+        "profilePhoto": null,
+        "preferences": null,
+        "lastLoginTime": null,
+        "deviceInfo": null,
+        "notificationSettings": null,
+        "securitySettings": null,
+        "lastActivity": "2025-06-21T04:08:24.009Z"
       }
     ]
   ],
-  "accounts": [],
+  "accounts": [
+    [
+      50,
+      {
+        "id": 50,
+        "displayName": "Current Account",
+        "userId": 70,
+        "accountType": "Current Account",
+        "accountNumber": "****2091",
+        "balance": "0.00"
+      }
+    ],
+    [
+      51,
+      {
+        "id": 51,
+        "displayName": "Savings Account",
+        "userId": 70,
+        "accountType": "Savings Account",
+        "accountNumber": "****0978",
+        "balance": "0.00"
+      }
+    ]
+  ],
   "transactions": [],
   "payees": [],
   "scheduledPayments": [],
@@ -27,7 +80,7 @@
   "chatSessions": [],
   "counters": {
     "currentUserId": 35,
-    "currentAccountId": 50,
+    "currentAccountId": 52,
     "currentTransactionId": 49,
     "currentPayeeId": 25,
     "currentScheduledPaymentId": 1,

@@ -22,25 +22,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Initialize auth state on mount - check for valid session
+  // Initialize auth state on mount - check localStorage first
   useEffect(() => {
     let isMounted = true;
     
     const initializeAuth = async () => {
       try {
-        // PERMANENT LOGIN: Check for permanent user session - users stay logged in forever
-        const cachedUser = UserDataManager.getCurrentUser();
-        const userProfile = UserDataManager.getUserProfile();
-        const isPermanentlyLoggedIn = UserDataManager.getUserData('permanentlyLoggedIn', false);
+        // PRIMARY CHECK: Look for permanentlyLoggedIn flag in localStorage
+        const permanentlyLoggedIn = localStorage.getItem('permanentlyLoggedIn');
         
-        if (cachedUser && userProfile && isPermanentlyLoggedIn && isMounted) {
-          // User has permanent session - they stay logged in forever unless admin deletes
-          console.log('🔐 PERMANENT SESSION: User stays logged in forever unless admin deletes');
-          setUser({
-            id: userProfile.id || parseInt(userProfile.customerNumber) || 0,
-            name: userProfile.name,
-            email: userProfile.email
-          });
+        if (permanentlyLoggedIn === 'true') {
+          // User is permanently logged in - restore session immediately
+          const lastActiveUser = UserDataManager.getLastActiveUser();
+          
+          if (lastActiveUser) {
+            const userProfile = UserDataManager.getUserProfile(lastActiveUser);
+            const sessionToken = UserDataManager.getUserData(lastActiveUser, 'permanentSessionToken', null);
+            
+            if (userProfile && sessionToken && isMounted) {
+              console.log('🔐 PERMANENT SESSION RESTORED: Auto-login from localStorage');
+              setUser({
+                id: userProfile.id || parseInt(userProfile.customerNumber) || 0,
+                name: userProfile.name,
+                email: userProfile.email
+              });
+            }
+          }
+        } else {
+          // FALLBACK: Check UserDataManager for individual user flags
+          const cachedUser = UserDataManager.getCurrentUser();
+          const userProfile = UserDataManager.getUserProfile();
+          const isPermanentlyLoggedIn = UserDataManager.getUserData('permanentlyLoggedIn', false);
+          
+          if (cachedUser && userProfile && isPermanentlyLoggedIn && isMounted) {
+            console.log('🔐 FALLBACK SESSION: User stays logged in via UserDataManager');
+            setUser({
+              id: userProfile.id || parseInt(userProfile.customerNumber) || 0,
+              name: userProfile.name,
+              email: userProfile.email
+            });
+          }
         }
         
         if (isMounted) {

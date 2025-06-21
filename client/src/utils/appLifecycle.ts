@@ -130,15 +130,18 @@ export class AppLifecycle {
   }
 
   static clearAppState() {
-    // PERMANENT LOGIN: Only clear temporary session data, NEVER clear user authentication
+    // ADMIN DELETION: Clear all authentication data when user is deleted by admin
     localStorage.removeItem('app_session_state');
     localStorage.removeItem('app_background_time');
+    localStorage.removeItem('permanentlyLoggedIn');
+    localStorage.removeItem('currentUser');
+    localStorage.removeItem('lastActiveUser');
+    localStorage.removeItem('allBankUsers');
     sessionStorage.removeItem('app_active_session');
     sessionStorage.removeItem('app_was_minimized');
     this.wasMinimized = false;
     this.isAppTerminated = true;
-    // SECURITY: Never clear user login data - users stay logged in forever unless admin deletes
-    console.log('App state cleared but user authentication preserved');
+    console.log('🗑️ App state and user authentication cleared by admin deletion');
   }
 
   static getAppTerminationState() {
