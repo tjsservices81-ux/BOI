@@ -44,7 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 if (authData.isLoggedIn && authData.user) {
                   // Server confirms user exists - maintain session
                   setUser({
-                    id: userProfile.customerNumber ? parseInt(userProfile.customerNumber) : 0,
+                    id: userProfile.id || parseInt(userProfile.customerNumber) || 0,
                     name: userProfile.name,
                     email: userProfile.email
                   });

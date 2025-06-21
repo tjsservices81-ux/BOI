@@ -75,8 +75,8 @@ export default function Login() {
     
     // STRICT CONDITION: Check authentication state comprehensively
     const isAuthenticatedContext = user !== null;
-    const cachedUser = localStorage.getItem('currentUser');
-    const authToken = localStorage.getItem('auth_token');
+    const cachedUser = UserDataManager.getCurrentUser();
+    const authToken = UserDataManager.getUserData('auth_token', null);
     const isAuthenticated = isAuthenticatedContext || cachedUser || authToken;
     
     if (isAuthenticated) {

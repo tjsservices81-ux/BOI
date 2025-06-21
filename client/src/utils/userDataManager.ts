@@ -2,6 +2,7 @@
 // Handles isolated data storage for each user account
 
 export interface UserData {
+  id?: number;
   customerNumber: string;
   name: string;
   email: string;

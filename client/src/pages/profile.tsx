@@ -839,7 +839,7 @@ export default function Profile() {
     // Force localStorage update for immediate persistence
     const currentUser = UserDataManager.getCurrentUser();
     if (currentUser) {
-      localStorage.setItem(`user_${currentUser}_bankAccounts`, JSON.stringify(updatedAccounts));
+      UserDataManager.setUserData('bankAccounts', updatedAccounts);
     }
     
     alert(`${editingAccount.displayName} balance updated to €${numericBalance.toFixed(2)}`);
@@ -862,18 +862,11 @@ export default function Profile() {
     UserDataManager.setUserData('savedPayees', []);
     UserDataManager.setUserData('recentPayees', []);
     
-    // Force clear any legacy localStorage entries that might exist
-    const currentUser = UserDataManager.getCurrentUser();
-    if (currentUser) {
-      localStorage.removeItem(`user_${currentUser}_bankAccounts`);
-      localStorage.removeItem(`user_${currentUser}_bankTransactions`);
-      localStorage.removeItem(`user_${currentUser}_savedPayees`);
-      localStorage.removeItem(`user_${currentUser}_recentPayees`);
-    }
-    localStorage.removeItem('bankTransactions');
-    localStorage.removeItem('savedPayees');
-    localStorage.removeItem('recentPayees');
-    localStorage.removeItem('bankAccounts');
+    // Clear all legacy data through UserDataManager
+    UserDataManager.clearUserData('bankAccounts');
+    UserDataManager.clearUserData('bankTransactions');
+    UserDataManager.clearUserData('savedPayees');
+    UserDataManager.clearUserData('recentPayees');
     
     // Update local state immediately
     setAccounts(defaultAccounts);
