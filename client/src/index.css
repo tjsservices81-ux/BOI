@@ -912,6 +912,23 @@ input, textarea, select {
   will-change: transform;
 }
 
+/* Admin panel specific styling - ensure it covers everything including navigation */
+.admin-panel {
+  z-index: 10000 !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: none !important;
+  max-height: none !important;
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
+  isolation: isolate;
+}
+
 /* Prevent any delayed icon loading in lists */
 .list-item svg, .menu-item svg, .option-item svg {
   opacity: 1;

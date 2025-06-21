@@ -1150,7 +1150,7 @@ export default function Profile() {
       {/* Admin Panel Modal */}
       {showAdminPanel && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000] p-4 modal-overlay admin-panel"
+          className="admin-panel bg-black bg-opacity-50 flex items-center justify-center p-4"
           onClick={() => setShowAdminPanel(false)}
         >
           <div 
