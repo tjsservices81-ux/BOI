@@ -450,7 +450,7 @@ export default function UkTransfer() {
               </>
             )}
 
-            {/* Processing Transfer Screen - Properly Centered */}
+            {/* Full-screen professional processing animation */}
             {!showReference ? (
               <div style={{ 
                 position: 'fixed', 
@@ -458,140 +458,54 @@ export default function UkTransfer() {
                 left: 0, 
                 right: 0, 
                 bottom: 0, 
-                backgroundColor: '#f5f5f7',
+                background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
                 zIndex: 1000,
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                fontFamily: 'OpenSans, sans-serif',
-                padding: '0 1.5rem'
+                justifyContent: 'center'
               }}>
-                <div style={{
-                  textAlign: 'center',
-                  width: '100%',
-                  maxWidth: '350px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '3rem'
-                }}>
-                  
-                  {/* Spinner */}
-                  <div style={{
-                    width: '90px',
-                    height: '90px',
-                    backgroundColor: '#126987',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    boxShadow: '0 8px 24px rgba(18, 105, 135, 0.25)'
-                  }}>
-                    <div style={{
-                      width: '50px',
-                      height: '50px',
-                      border: '4px solid rgba(255, 255, 255, 0.3)',
-                      borderTop: '4px solid white',
-                      borderRadius: '50%',
-                      animation: 'spin 1s linear infinite'
-                    }}></div>
+                <div className="text-center space-y-8 px-8 max-w-md w-full">
+                  {/* Bank of Ireland Professional Logo Area */}
+                  <div className="mb-8">
+                    <div className="w-20 h-20 bg-[#126987] rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
+                      <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+                    </div>
                   </div>
                   
-                  {/* Text Section */}
-                  <div style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '0.5rem',
-                    alignItems: 'center'
-                  }}>
-                    <h1 style={{ 
-                      fontSize: '1.75rem',
-                      fontWeight: '700',
-                      color: '#1d1d1f',
-                      margin: '0',
-                      lineHeight: '1.2'
-                    }}>
+                  {/* Professional Transfer Processing Header */}
+                  <div className="space-y-4">
+                    <h1 className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                       Processing Transfer
                     </h1>
-                    <p style={{ 
-                      fontSize: '1rem',
-                      color: '#86868b',
-                      margin: '0',
-                      fontWeight: '400'
-                    }}>
+                    <p className="text-lg text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                       {processingStage}
                     </p>
                   </div>
                   
-                  {/* Progress Section */}
-                  <div style={{
-                    width: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '1rem',
-                    alignItems: 'center'
-                  }}>
-                    <div style={{
-                      width: '100%',
-                      height: '6px',
-                      backgroundColor: '#e5e5e7',
-                      borderRadius: '3px',
-                      overflow: 'hidden'
-                    }}>
-                      <div style={{ 
-                        width: `${animationProgress}%`,
-                        height: '6px',
-                        backgroundColor: '#126987',
-                        borderRadius: '3px',
-                        transition: 'width 300ms ease-out'
-                      }}></div>
+                  {/* Professional Progress Indicator */}
+                  <div className="space-y-6">
+                    <div className="w-full bg-white rounded-full h-4 overflow-hidden shadow-inner border border-gray-200">
+                      <div 
+                        className="bg-gradient-to-r from-[#126987] via-[#5a7b85] to-[#126987] h-4 rounded-full transition-all duration-300 ease-out shadow-sm relative"
+                        style={{ width: `${animationProgress}%` }}
+                      >
+                        <div className="absolute inset-0 bg-white opacity-20 rounded-full animate-pulse"></div>
+                      </div>
                     </div>
-                    <p style={{ 
-                      fontSize: '1.125rem',
-                      fontWeight: '600',
-                      color: '#126987',
-                      margin: '0'
-                    }}>
+                    <p className="text-xl font-semibold text-[#126987]" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                       {Math.round(animationProgress)}% Complete
                     </p>
                   </div>
                   
-                  {/* Security Notice */}
-                  <div style={{
-                    backgroundColor: 'white',
-                    borderRadius: '16px',
-                    padding: '1.25rem',
-                    width: '100%',
-                    boxShadow: '0 2px 12px rgba(0, 0, 0, 0.1)'
-                  }}>
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '0.5rem',
-                      marginBottom: '0.5rem'
-                    }}>
-                      <div style={{
-                        width: '8px',
-                        height: '8px',
-                        backgroundColor: '#34c759',
-                        borderRadius: '50%'
-                      }}></div>
-                      <span style={{ 
-                        fontSize: '0.875rem',
-                        fontWeight: '600',
-                        color: '#1d1d1f'
-                      }}>
+                  {/* Professional Security Notice */}
+                  <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-gray-200 shadow-lg">
+                    <div className="flex items-center justify-center space-x-3 mb-3">
+                      <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                      <span className="text-sm font-semibold text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                         Secure Connection Active
                       </span>
                     </div>
-                    <p style={{ 
-                      fontSize: '0.8125rem',
-                      color: '#86868b',
-                      lineHeight: '1.4',
-                      margin: '0',
-                      textAlign: 'center'
-                    }}>
+                    <p className="text-xs text-gray-500 leading-relaxed" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                       Your transfer is being processed through Bank of Ireland's secure payment network with 256-bit encryption
                     </p>
                   </div>
