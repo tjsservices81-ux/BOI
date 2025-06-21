@@ -167,6 +167,14 @@ export default function IbanTransfer() {
     setShowReference(false);
     setAnimationProgress(0);
     
+    // Force animation to start immediately on all platforms
+    setTimeout(() => {
+      const animationElement = document.querySelector('.android-spinner-animation');
+      if (animationElement) {
+        (animationElement as HTMLElement).style.animationPlayState = 'running';
+      }
+    }, 100);
+    
     // Professional banking stages during 5-second animation
     const stages = [
       'Verifying transfer details...',
@@ -264,12 +272,27 @@ export default function IbanTransfer() {
 
             {/* Full-screen professional processing animation */}
             {!showReference ? (
-              <div className="processing-transfer-container">
+              <div className="processing-transfer-container" style={{ zIndex: 9999 }}>
                 <div className="processing-content-wrapper">
                   {/* Bank of Ireland Professional Logo Area */}
                   <div className="android-spinner-container">
                     <div className="android-spinner-circle">
-                      <div className="android-spinner-animation"></div>
+                      <div 
+                        className="android-spinner-animation"
+                        style={{
+                          animation: 'androidSpinnerRotate 1s linear infinite',
+                          WebkitAnimation: 'androidSpinnerRotate 1s linear infinite',
+                          animationPlayState: 'running',
+                          WebkitAnimationPlayState: 'running',
+                          width: '48px',
+                          height: '48px',
+                          border: '4px solid white',
+                          borderTop: '4px solid transparent',
+                          borderRadius: '50%',
+                          transform: 'translateZ(0)',
+                          WebkitTransform: 'translateZ(0)'
+                        }}
+                      ></div>
                     </div>
                   </div>
                   

@@ -1375,20 +1375,44 @@ button[type="submit"] {
   perspective: 1000px !important;
 }
 
-/* Ensure animation starts immediately on Android */
+/* Force immediate animation start on all platforms */
 .android-spinner-animation {
+  animation: androidSpinnerRotate 1s linear infinite !important;
+  -webkit-animation: androidSpinnerRotate 1s linear infinite !important;
   animation-play-state: running !important;
   -webkit-animation-play-state: running !important;
+  animation-fill-mode: both !important;
+  -webkit-animation-fill-mode: both !important;
 }
 
 .android-progress-shine {
+  animation: androidProgressPulse 2s ease-in-out infinite !important;
+  -webkit-animation: androidProgressPulse 2s ease-in-out infinite !important;
   animation-play-state: running !important;
   -webkit-animation-play-state: running !important;
+  animation-fill-mode: both !important;
+  -webkit-animation-fill-mode: both !important;
 }
 
 .android-security-dot {
+  animation: androidSecurityPulse 2s ease-in-out infinite !important;
+  -webkit-animation: androidSecurityPulse 2s ease-in-out infinite !important;
   animation-play-state: running !important;
   -webkit-animation-play-state: running !important;
+  animation-fill-mode: both !important;
+  -webkit-animation-fill-mode: both !important;
+}
+
+/* Android-specific animation fixes */
+@media screen and (-webkit-min-device-pixel-ratio: 1) {
+  .android-spinner-animation,
+  .android-progress-shine,
+  .android-security-dot {
+    animation-duration: inherit !important;
+    animation-timing-function: inherit !important;
+    animation-iteration-count: infinite !important;
+    animation-direction: normal !important;
+  }
 }
 
 /* Splash screen specific animations */
