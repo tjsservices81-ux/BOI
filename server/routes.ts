@@ -171,11 +171,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Check for global access block first - always block access during reset
-      return res.status(404).json({ 
-        success: false, 
-        error: "Access code not found" 
-      });
+      // Get access code data from database
+      const codeData = await db.get(`access_code_${code}`);
       
       if (!codeData) {
         return res.status(404).json({ 
@@ -306,11 +303,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // System reset - all access codes disabled
-      return res.status(404).json({ 
-        success: false, 
-        error: "Access code not found" 
-      });
+      // Get access code data from database
+      const codeData = await db.get(`access_code_${code}`);
       
       if (!codeData) {
         return res.status(404).json({ 
