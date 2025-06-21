@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/auth";
 import { User, ExternalLink, HelpCircle, Phone, Settings, Shield, MapPin, MoreHorizontal } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { UserDataManager } from "@/utils/userDataManager";
+import { OfflineAccessManager } from "@/utils/offlineAccessManager";
 
 export default function Login() {
   const [customerNumber, setCustomerNumber] = useState("");
@@ -61,7 +62,7 @@ export default function Login() {
   const toastHook = useToast();
   const toast = toastHook?.toast || (() => {});
 
-  // Check connection status and offline login availability
+  // Enhanced connection status and offline capability check
   const checkConnectionAndOfflineStatus = async () => {
     try {
       const { SecureAuthManager } = await import('../utils/secureAuthManager');
@@ -71,10 +72,16 @@ export default function Login() {
       setConnectionStatus(hasInternet ? 'online' : 'offline');
       
       // Check offline login status for current user
-      const currentUser = UserDataManager.getCurrentUser();
+      const currentUser = UserDataManager.getCurrentUser() || UserDataManager.getLastActiveUser();
       if (currentUser) {
         const offlineStatus = SecureAuthManager.getOfflineLoginStatus(currentUser);
         setOfflineStatus(offlineStatus);
+        
+        // Also check enhanced offline eligibility
+        if (!hasInternet) {
+          const enhancedCheck = await OfflineAccessManager.checkOfflineEligibilityEnhanced(currentUser);
+          console.log('Enhanced offline eligibility:', enhancedCheck);
+        }
       }
     } catch (error) {
       console.error('Error checking connection status:', error);
@@ -495,11 +502,11 @@ export default function Login() {
         throw new Error('User not found in local storage');
       }
 
-      // Enhanced authentication with offline support
+      // Enhanced authentication with comprehensive offline support
       const { SecureAuthManager } = await import('../utils/secureAuthManager');
       const { OfflineAuthManager } = await import('../utils/offlineAuthManager');
       
-      // Check connection status
+      // Check connection status first
       const hasConnection = await SecureAuthManager.hasInternetConnection();
       
       let authResult;
@@ -509,6 +516,8 @@ export default function Login() {
         const userProfile = UserDataManager.getUserProfile();
         if (userProfile) {
           await OfflineAuthManager.recordOnlineLogin(currentUser, userProfile);
+          // Also precache essential data for future offline access
+          await OfflineAccessManager.precacheEssentialData(currentUser);
         }
         
         authResult = {
@@ -518,21 +527,49 @@ export default function Login() {
           timeRemaining: null
         };
       } else {
-        // Offline authentication - use cached data
-        const offlineAuth = await OfflineAuthManager.authenticateOffline(currentUser);
+        // Network unavailable - check offline access eligibility
+        console.log('Network unavailable - checking offline access fallback');
         
-        if (!offlineAuth.success) {
-          clearInterval(authInterval);
-          throw new Error(offlineAuth.message || 'Offline authentication failed');
+        const offlineSupport = await OfflineAccessManager.ensureOfflineSupport({
+          affectedScreen: "BiometricAuthentication",
+          fallbackBehavior: "loadFromIndexedDBCache",
+          conditions: {
+            networkUnavailable: true,
+            cachedDataAvailable: true,
+            lastOnlineLoginWithin: "24h"
+          },
+          preventRedirects: true,
+          preserve: ["authSession", "localUserData"],
+          debugMode: false,
+          testDevice: "Android"
+        });
+        
+        if (offlineSupport.success && offlineSupport.action === 'offline_access_granted') {
+          // Offline access granted using cached data
+          authResult = {
+            success: true,
+            isOffline: true,
+            user: offlineSupport.userData,
+            timeRemaining: OfflineAccessManager.getOfflineTimeRemaining(),
+            message: offlineSupport.message
+          };
+        } else {
+          // Offline access denied - fallback to legacy offline auth
+          const offlineAuth = await OfflineAuthManager.authenticateOffline(currentUser);
+          
+          if (!offlineAuth.success) {
+            clearInterval(authInterval);
+            throw new Error(offlineAuth.message || 'Offline authentication failed. Please connect to the internet.');
+          }
+          
+          authResult = {
+            success: true,
+            isOffline: true,
+            user: offlineAuth.user,
+            timeRemaining: offlineAuth.timeRemaining,
+            message: offlineAuth.message
+          };
         }
-        
-        authResult = {
-          success: true,
-          isOffline: true,
-          user: offlineAuth.user,
-          timeRemaining: offlineAuth.timeRemaining,
-          message: offlineAuth.message
-        };
       }
       
       clearInterval(authInterval);

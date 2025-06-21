@@ -11,6 +11,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import { StateManager } from "@/utils/stateManager";
 import { AppLifecycle } from "@/utils/appLifecycle";
 import { PlatformDetection } from "@/utils/platformDetection";
+import { OfflineAccessManager } from "@/utils/offlineAccessManager";
 import LiveChat from "@/components/LiveChat";
 
 
@@ -125,23 +126,52 @@ function AppRoutes() {
       const isColdStart = startType === 'cold' || startType === 'uncertain';
       
       if (isColdStart) {
-        // COLD START: App was fully closed/terminated - always show splash sequence
-        console.log('Cold start detected - showing splash sequence');
+        // COLD START: App was fully closed/terminated - check offline access first
+        console.log('Cold start detected - checking offline access fallback');
         
-        // Reset all splash-related flags for fresh start
+        // Check if network is available or if we can use offline cache
+        try {
+          const offlineSupport = await OfflineAccessManager.ensureOfflineSupport({
+            affectedScreen: "InitialConnectionCheck",
+            fallbackBehavior: "loadFromIndexedDBCache",
+            conditions: {
+              networkUnavailable: !navigator.onLine,
+              cachedDataAvailable: true,
+              lastOnlineLoginWithin: "24h"
+            },
+            preventRedirects: false,
+            preserve: ["authSession", "localUserData", "routeState"],
+            debugMode: false,
+            testDevice: "Android"
+          });
+
+          if (offlineSupport.success && offlineSupport.action === 'offline_access_granted') {
+            // Offline access granted - restore user from cache
+            console.log('Offline access granted - restoring from cache');
+            if (offlineSupport.userData && !user && !isLoading) {
+              setTimeout(() => {
+                if (!user) {
+                  login(offlineSupport.userData);
+                }
+              }, 100);
+            }
+          }
+        } catch (error) {
+          console.error('Offline access check failed:', error);
+        }
+        
+        // Reset splash flags for fresh start
         setSplashShown(false);
         localStorage.removeItem('splash_completed');
         localStorage.removeItem('app_background_time');
         localStorage.setItem('app_session_active', 'true');
         
-        // Restore user session silently in background (permanent login)
-        // COORDINATION FIX: Only restore if auth context hasn't already initialized user
+        // Fallback to normal state restoration if offline access not available
         try {
           const savedState = StateManager.restoreAppState(true);
           if (savedState && savedState.user && !user && !isLoading) {
-            // Prevent race condition with auth.tsx initialization
             setTimeout(() => {
-              if (!user) { // Double-check user isn't set by auth context
+              if (!user) {
                 login(savedState.user);
               }
             }, 100);
