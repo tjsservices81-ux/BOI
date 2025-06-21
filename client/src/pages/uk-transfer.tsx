@@ -450,221 +450,156 @@ export default function UkTransfer() {
               </>
             )}
 
-            {/* Full-screen professional processing animation - Android optimized */}
+            {/* iOS-style Processing Transfer Screen */}
             {!showReference ? (
-              <div className="processing-transfer-screen android-processing-screen" style={{ 
+              <div className="ios-processing-screen" style={{ 
                 position: 'fixed', 
                 top: 0, 
                 left: 0, 
                 right: 0, 
                 bottom: 0, 
-                background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+                backgroundColor: '#f5f5f7',
                 zIndex: 1000,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                // Android rendering optimization
-                WebkitFontSmoothing: 'antialiased',
-                MozOsxFontSmoothing: 'grayscale'
+                fontFamily: 'OpenSans, sans-serif'
               }}>
-                <div className="processing-content android-processing-content" style={{
+                <div className="ios-processing-content" style={{
                   textAlign: 'center',
-                  padding: '2rem',
-                  maxWidth: '28rem',
+                  padding: '0 2rem',
+                  maxWidth: '400px',
                   width: '100%',
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '2rem',
-                  // Android-specific spacing fixes
-                  paddingTop: '3rem',
-                  paddingBottom: '3rem'
+                  alignItems: 'center',
+                  gap: '2rem'
                 }}>
-                  {/* Bank of Ireland Professional Logo Area */}
-                  <div className="processing-logo android-logo" style={{
+                  
+                  {/* Circular Spinner - iOS Style */}
+                  <div className="ios-spinner-container" style={{
+                    width: '90px',
+                    height: '90px',
+                    backgroundColor: '#126987',
+                    borderRadius: '50%',
                     display: 'flex',
-                    flexDirection: 'column',
                     alignItems: 'center',
-                    marginBottom: '1rem'
+                    justifyContent: 'center',
+                    boxShadow: '0 8px 32px rgba(18, 105, 135, 0.3)',
+                    marginTop: '1rem'
                   }}>
-                    <div className="spinner-container android-spinner" style={{
-                      width: '80px',
-                      height: '80px',
-                      backgroundColor: '#126987',
+                    <div style={{
+                      width: '50px',
+                      height: '50px',
+                      border: '5px solid rgba(255, 255, 255, 0.3)',
+                      borderTop: '5px solid white',
                       borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      marginBottom: '1.5rem',
-                      boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-                      // Android animation optimization
-                      WebkitTransform: 'translateZ(0)',
-                      transform: 'translateZ(0)',
-                      backfaceVisibility: 'hidden'
-                    }}>
-                      <div className="spinner android-spinner-inner" style={{
-                        width: '48px',
-                        height: '48px',
-                        border: '4px solid white',
-                        borderTop: '4px solid transparent',
-                        borderRadius: '50%',
-                        animation: 'spin 1s linear infinite',
-                        // Android-specific animation
-                        WebkitAnimation: 'spin 1s linear infinite',
-                        willChange: 'transform'
-                      }}></div>
-                    </div>
+                      animation: 'spin 1s linear infinite'
+                    }}></div>
                   </div>
                   
-                  {/* Professional Transfer Processing Header */}
-                  <div className="processing-header android-header" style={{
+                  {/* Title and Stage */}
+                  <div className="ios-text-section" style={{
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '1rem',
-                    textAlign: 'center'
+                    gap: '0.75rem',
+                    alignItems: 'center'
                   }}>
-                    <h1 className="processing-title android-title" style={{ 
-                      fontFamily: 'OpenSans, sans-serif',
-                      fontSize: '3rem',
+                    <h1 style={{ 
+                      fontSize: '2rem',
                       fontWeight: '700',
-                      color: '#111827',
-                      lineHeight: '1.1',
+                      color: '#1d1d1f',
                       margin: '0',
-                      // Android text rendering optimization
-                      WebkitFontSmoothing: 'antialiased',
-                      MozOsxFontSmoothing: 'grayscale',
-                      textRendering: 'optimizeLegibility',
-                      letterSpacing: '-0.025em'
+                      lineHeight: '1.2',
+                      letterSpacing: '-0.02em'
                     }}>
                       Processing Transfer
                     </h1>
-                    <p className="processing-stage android-stage" style={{ 
-                      fontFamily: 'OpenSans, sans-serif',
-                      fontSize: '1.125rem',
-                      color: '#6b7280',
-                      lineHeight: '1.4',
+                    <p style={{ 
+                      fontSize: '1rem',
+                      color: '#86868b',
                       margin: '0',
                       fontWeight: '400',
-                      // Android text optimization
-                      WebkitFontSmoothing: 'antialiased',
-                      MozOsxFontSmoothing: 'grayscale'
+                      lineHeight: '1.4'
                     }}>
                       {processingStage}
                     </p>
                   </div>
                   
-                  {/* Professional Progress Indicator */}
-                  <div className="progress-section android-progress" style={{
+                  {/* Progress Bar - iOS Style */}
+                  <div className="ios-progress-section" style={{
+                    width: '100%',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '1.5rem',
-                    width: '100%',
+                    gap: '1rem',
                     alignItems: 'center'
                   }}>
-                    <div className="progress-bar-track android-progress-track" style={{
+                    <div className="ios-progress-track" style={{
                       width: '100%',
-                      height: '16px',
-                      backgroundColor: 'white',
-                      borderRadius: '8px',
+                      height: '8px',
+                      backgroundColor: '#e5e5e7',
+                      borderRadius: '4px',
                       overflow: 'hidden',
-                      boxShadow: 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)',
-                      border: '1px solid rgba(229, 231, 235, 0.8)',
-                      // Android progress bar styling
-                      WebkitAppearance: 'none',
-                      appearance: 'none',
                       position: 'relative'
                     }}>
-                      <div className="progress-fill android-progress-fill" style={{ 
+                      <div className="ios-progress-fill" style={{ 
                         width: `${animationProgress}%`,
-                        height: '16px',
-                        background: 'linear-gradient(to right, #126987, #5a7b85, #126987)',
-                        borderRadius: '8px',
-                        transition: 'width 300ms cubic-bezier(0.4, 0, 0.2, 1)',
-                        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-                        position: 'relative',
-                        // Android hardware acceleration
-                        WebkitTransform: 'translateZ(0)',
-                        transform: 'translateZ(0)',
-                        backfaceVisibility: 'hidden'
-                      }}>
-                        <div className="progress-shimmer android-shimmer" style={{
-                          position: 'absolute',
-                          top: '0',
-                          left: '0',
-                          right: '0',
-                          bottom: '0',
-                          backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                          borderRadius: '8px',
-                          animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                          WebkitAnimation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
-                        }}></div>
-                      </div>
+                        height: '8px',
+                        backgroundColor: '#126987',
+                        borderRadius: '4px',
+                        transition: 'width 300ms ease-out',
+                        position: 'relative'
+                      }}></div>
                     </div>
-                    <p className="progress-percentage android-percentage" style={{ 
-                      fontFamily: 'OpenSans, sans-serif',
-                      fontSize: '1.25rem',
+                    <p style={{ 
+                      fontSize: '1.125rem',
                       fontWeight: '600',
                       color: '#126987',
                       margin: '0',
-                      lineHeight: '1.2',
-                      // Android text rendering
-                      WebkitFontSmoothing: 'antialiased',
-                      MozOsxFontSmoothing: 'grayscale'
+                      lineHeight: '1.2'
                     }}>
                       {Math.round(animationProgress)}% Complete
                     </p>
                   </div>
                   
-                  {/* Professional Security Notice */}
-                  <div className="security-notice android-security" style={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                    backdropFilter: 'blur(12px)',
-                    WebkitBackdropFilter: 'blur(12px)',
-                    borderRadius: '12px',
-                    padding: '1.5rem',
-                    border: '1px solid rgba(229, 231, 235, 0.8)',
-                    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                  {/* Security Notice - iOS Style */}
+                  <div className="ios-security-notice" style={{
+                    backgroundColor: 'white',
+                    borderRadius: '16px',
+                    padding: '1.25rem',
                     width: '100%',
-                    // Android backdrop fallback
-                    background: 'rgba(255, 255, 255, 0.9)'
+                    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)',
+                    border: '1px solid rgba(0, 0, 0, 0.04)'
                   }}>
-                    <div className="security-indicator android-indicator" style={{
+                    <div style={{
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      gap: '0.75rem',
-                      marginBottom: '0.75rem'
+                      gap: '0.5rem',
+                      marginBottom: '0.5rem'
                     }}>
-                      <div className="security-dot android-dot" style={{
-                        width: '12px',
-                        height: '12px',
-                        backgroundColor: '#10b981',
+                      <div style={{
+                        width: '8px',
+                        height: '8px',
+                        backgroundColor: '#34c759',
                         borderRadius: '50%',
-                        animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        WebkitAnimation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                        animation: 'pulse 2s ease-in-out infinite'
                       }}></div>
-                      <span className="security-label android-label" style={{ 
-                        fontFamily: 'OpenSans, sans-serif',
+                      <span style={{ 
                         fontSize: '0.875rem',
                         fontWeight: '600',
-                        color: '#374151',
-                        lineHeight: '1.25',
-                        // Android text rendering
-                        WebkitFontSmoothing: 'antialiased',
-                        MozOsxFontSmoothing: 'grayscale'
+                        color: '#1d1d1f',
+                        lineHeight: '1.3'
                       }}>
                         Secure Connection Active
                       </span>
                     </div>
-                    <p className="security-description android-description" style={{ 
-                      fontFamily: 'OpenSans, sans-serif',
-                      fontSize: '0.75rem',
-                      color: '#6b7280',
-                      lineHeight: '1.5',
+                    <p style={{ 
+                      fontSize: '0.8125rem',
+                      color: '#86868b',
+                      lineHeight: '1.4',
                       margin: '0',
-                      textAlign: 'center',
-                      // Android text rendering
-                      WebkitFontSmoothing: 'antialiased',
-                      MozOsxFontSmoothing: 'grayscale'
+                      textAlign: 'center'
                     }}>
                       Your transfer is being processed through Bank of Ireland's secure payment network with 256-bit encryption
                     </p>
