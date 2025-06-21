@@ -86,12 +86,41 @@ export default function Profile() {
   });
 
   // Currency change handler
-  const handleCurrencyChange = (newCurrency: 'EUR' | 'GBP') => {
+  const handleCurrencyChange = async (newCurrency: 'EUR' | 'GBP') => {
     console.log('Currency change requested:', newCurrency);
     
-    // Save the currency preference
-    setCurrencyPreference(newCurrency);
+    // Immediately update local state first
     setCurrentCurrency(newCurrency);
+    
+    // Save the currency preference to persistent storage
+    setCurrencyPreference(newCurrency);
+    
+    // Force immediate save to localStorage as backup
+    UserDataManager.setUserData('primaryCurrency', newCurrency);
+    
+    // Also save to database for persistence across devices
+    const currentUser = UserDataManager.getCurrentUser();
+    if (currentUser) {
+      try {
+        const response = await fetch(`/api/profile/${currentUser}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            primaryCurrency: newCurrency
+          }),
+        });
+        
+        if (response.ok) {
+          console.log('Currency preference saved to database:', newCurrency);
+        } else {
+          console.warn('Failed to save currency to database, but localStorage saved');
+        }
+      } catch (error) {
+        console.warn('Database save failed, using localStorage only:', error);
+      }
+    }
     
     // Verify the currency was saved
     const savedCurrency = getUserCurrency();
@@ -122,14 +151,7 @@ export default function Profile() {
     return () => window.removeEventListener('currencyUpdate', handleCurrencyUpdate);
   }, []);
 
-  // Ensure currency is loaded when returning to profile from other pages
-  useEffect(() => {
-    const savedCurrency = getUserCurrency();
-    if (savedCurrency !== currentCurrency) {
-      console.log('Currency sync on navigation:', savedCurrency);
-      setCurrentCurrency(savedCurrency);
-    }
-  }, [currentCurrency]);
+  // Remove conflicting currency sync effect that may override user selections
 
   // Load profile data from database with real-time updates
   useEffect(() => {
@@ -256,18 +278,20 @@ export default function Profile() {
         setAccounts(storedAccounts);
         loadChatResponses();
         
-        // Load and set the current saved currency preference
+        // Load currency preference only when admin panel first opens
         const savedCurrency = getUserCurrency();
-        console.log('Loading saved currency preference:', savedCurrency);
-        setCurrentCurrency(savedCurrency);
+        console.log('Admin panel opened - current currency in state:', currentCurrency, 'saved currency:', savedCurrency);
+        
+        // Only update if there's a significant difference (avoid overriding immediate user selections)
+        if (currentCurrency !== savedCurrency) {
+          console.log('Syncing currency state with saved preference');
+          setCurrentCurrency(savedCurrency);
+        }
       } catch (error) {
         console.error('Error initializing admin panel:', error);
         // Set default empty accounts if there's an error
         setAccounts([]);
         setChatResponses([]);
-        // Ensure currency is still loaded even if accounts fail
-        const savedCurrency = getUserCurrency();
-        setCurrentCurrency(savedCurrency);
       }
     }
   }, [showAdminPanel]);
