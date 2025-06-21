@@ -189,7 +189,25 @@ class MemStorage implements IStorage {
   }
 
   async getUserByCustomerNumber(customerNumber: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.customerNumber === customerNumber);
+    const user = Array.from(this.users.values()).find(user => user.customerNumber === customerNumber);
+    
+    // If user found in memory, also check database for latest currency preference
+    if (user) {
+      try {
+        const [dbUser] = await db.select().from(users).where(eq(users.customerNumber, customerNumber));
+        if (dbUser && dbUser.primaryCurrency !== user.primaryCurrency) {
+          // Update memory with database currency preference
+          const updatedUser = { ...user, primaryCurrency: dbUser.primaryCurrency };
+          this.users.set(user.id, updatedUser);
+          await this.saveData();
+          return updatedUser;
+        }
+      } catch (error) {
+        console.log('Note: Using memory currency preference');
+      }
+    }
+    
+    return user;
   }
 
   async updateUserProfile(customerNumber: string, updates: Partial<User>): Promise<User | undefined> {
