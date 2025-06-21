@@ -79,7 +79,7 @@ export class UserDataManager {
 
   // Get user-specific storage key
   private static getUserKey(key: string): string {
-    const currentUser = this.getCurrentUser();
+    const currentUser = this.currentUser || localStorage.getItem('currentUser');
     if (!currentUser) {
       throw new Error('No user is currently logged in');
     }
@@ -96,7 +96,7 @@ export class UserDataManager {
   static getUserData(key: string, defaultValue: any = null) {
     try {
       const userKey = this.getUserKey(key);
-      const cacheKey = `${this.getCurrentUser()}_${key}`;
+      const cacheKey = `${this.currentUser || localStorage.getItem('currentUser')}_${key}`;
       
       // Check cache first
       const cachedData = this.dataCache.get(cacheKey);
@@ -122,7 +122,7 @@ export class UserDataManager {
 
   // Clear cache for specific user data with proper synchronization
   static clearCache(key?: string) {
-    const currentUser = this.getCurrentUser();
+    const currentUser = this.currentUser || localStorage.getItem('currentUser');
     if (!currentUser) return;
 
     if (key) {

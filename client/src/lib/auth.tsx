@@ -58,7 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 // SECURITY: Preserve user session during server errors
                 console.log('Server error during auth check - preserving user session');
                 setUser({
-                  id: userProfile.customerNumber ? parseInt(userProfile.customerNumber) : 0,
+                  id: userProfile.id || parseInt(userProfile.customerNumber) || 0,
                   name: userProfile.name,
                   email: userProfile.email
                 });
