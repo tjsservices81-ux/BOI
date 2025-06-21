@@ -33,7 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           try {
             const parsedUser = JSON.parse(cachedUser);
             
-            // CRITICAL: Validate user still exists on server
+            // Validate user still exists on server for bulletproof authentication
             const response = await fetch('/api/auth/status', {
               credentials: 'include'
             });
@@ -41,18 +41,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (response.ok) {
               const authData = await response.json();
               if (authData.isLoggedIn && authData.user) {
-                // Server confirms user exists - keep cached data
+                // Server confirms user exists - maintain session
                 setUser(parsedUser);
               } else {
-                // Server says no valid session - user was deleted
-                console.log('🧹 Clearing stale user data from localStorage');
+                // Server indicates no valid session - user was deleted
+                console.log('Clearing stale user data from localStorage');
                 localStorage.removeItem('currentUser');
                 setUser(null);
               }
             } else {
-              // SECURITY: Don't clear data on server errors - preserve user session
+              // SECURITY: Preserve user session during server errors
               console.log('Server error during auth check - preserving user session');
-              setUser(parsedUser); // Keep user logged in during server issues
+              setUser(parsedUser);
             }
           } catch (error) {
             localStorage.removeItem('currentUser');

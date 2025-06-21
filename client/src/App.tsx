@@ -182,10 +182,10 @@ function AppRoutes() {
               console.log('❌ No valid backend session - showing login');
               
               // Clear any stale localStorage data
-              const cachedUser = localStorage.getItem('bankingUser');
+              const cachedUser = localStorage.getItem('currentUser');
               if (cachedUser) {
                 console.log('Clearing stale user data from localStorage');
-                localStorage.removeItem('bankingUser');
+                localStorage.removeItem('currentUser');
               }
               
               // Clear saved state since session is invalid
@@ -193,7 +193,7 @@ function AppRoutes() {
             }
           } catch (error) {
             console.error('Failed to check authentication status:', error);
-            localStorage.removeItem('bankingUser');
+            localStorage.removeItem('currentUser');
           }
           
           setSplashShown(true);

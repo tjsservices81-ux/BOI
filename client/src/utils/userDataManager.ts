@@ -344,7 +344,7 @@ export class UserDataManager {
     });
     
     // Don't clear sessionStorage - preserve user login state
-    // Don't clear bankingUser, currentUser, or any user_ prefixed keys
+    // Don't clear currentUser, or any user_ prefixed keys
   }
 
   // Admin function to clear all data - RESTRICTED ACCESS

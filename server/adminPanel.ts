@@ -589,13 +589,13 @@ router.get('/panel', adminAuth, async (req, res) => {
                 }
                 
                 // CRITICAL: Clear authentication localStorage to force immediate logout
-                const authUser = localStorage.getItem('bankingUser');
+                const authUser = localStorage.getItem('currentUser');
                 if (authUser) {
                   try {
                     const parsedUser = JSON.parse(authUser);
                     // Check if the authenticated user matches the deleted customer
                     if (parsedUser.id && parsedUser.id.toString().includes(currentCustomerNumber.replace(/\D/g, ''))) {
-                      localStorage.removeItem('bankingUser');
+                      localStorage.removeItem('currentUser');
                       console.log('🚫 Cleared authentication data for deleted user');
                     }
                   } catch (e) {

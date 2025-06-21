@@ -154,7 +154,7 @@ export class AppLifecycle {
 
   static saveCurrentState() {
     try {
-      const currentUser = JSON.parse(localStorage.getItem('bankingUser') || 'null');
+      const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
       const currentRoute = window.location.pathname;
       
       if (currentUser) {

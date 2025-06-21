@@ -178,15 +178,15 @@ export default function Login() {
   useEffect(() => {
     setAssetsLoaded(true);
     
-    // SECURITY: Do NOT clear authentication data on cold starts
-    // Users should remain logged in unless explicitly logged out by admin deletion
+    // SECURITY: Preserve authentication data on cold starts
+    // Users remain logged in unless explicitly logged out by admin deletion
     const wasColdStart = sessionStorage.getItem('app_cold_start') === 'true' || 
                         !sessionStorage.getItem('splashShown');
     
     if (wasColdStart) {
-      // Cold start - only clear temporary state, preserve authentication
-      UserDataManager.clearTemporaryState(); // Safe - only clears cache/temp data
-      console.warn('Cold start detected - preserved user authentication state');
+      // Cold start - only clear temporary cache data, preserve authentication
+      UserDataManager.clearTemporaryState();
+      console.log('Cold start detected - authentication state preserved');
     }
     
     // Clear form fields regardless

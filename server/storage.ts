@@ -505,11 +505,12 @@ class DatabaseStorage implements IStorage {
         sessionToken,
         userId,
         customerNumber,
-        deviceFingerprint: metadata.deviceModel || 'unknown',
-        deviceModel: metadata.deviceModel,
-        ipAddress: metadata.ipAddress,
-        userAgent: metadata.userAgent,
+        deviceFingerprint: metadata.deviceFingerprint || metadata.deviceModel || 'unknown',
+        deviceModel: metadata.deviceModel || 'Unknown Device',
+        ipAddress: metadata.ipAddress || 'Unknown IP',
+        userAgent: metadata.userAgent || 'Unknown Agent',
         createdAt: new Date(),
+        lastActivity: new Date(),
         isActive: true
       });
       
@@ -804,16 +805,7 @@ class DatabaseStorage implements IStorage {
         ];
 
         for (const transactionData of sampleTransactions) {
-          await this.createTransaction({
-            accountId: transactionData.accountId,
-            type: transactionData.type,
-            amount: transactionData.amount,
-            description: transactionData.description,
-            category: "Banking",
-            paymentMethod: "Card",
-            timestamp: transactionData.date,
-            reference: transactionData.reference
-          });
+          await this.createTransaction(transactionData);
         }
       }
 
