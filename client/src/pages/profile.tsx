@@ -89,6 +89,9 @@ export default function Profile() {
   const handleCurrencyChange = async (newCurrency: 'EUR' | 'GBP') => {
     console.log('Currency change requested:', newCurrency);
     
+    // Set updating flag to prevent polling from overriding
+    setIsUpdatingProfile(true);
+    
     // Immediately update local state first
     setCurrentCurrency(newCurrency);
     
@@ -134,6 +137,11 @@ export default function Profile() {
     window.dispatchEvent(new CustomEvent('balanceUpdate'));
     window.dispatchEvent(new CustomEvent('accountsUpdate', { detail: { accounts: freshAccounts } }));
     window.dispatchEvent(new CustomEvent('currencyChanged', { detail: { currency: newCurrency } }));
+    
+    // Clear updating flag after a brief delay to prevent immediate polling override
+    setTimeout(() => {
+      setIsUpdatingProfile(false);
+    }, 2000);
   };
 
   // Listen for currency updates and load currency on component mount
@@ -177,8 +185,8 @@ export default function Profile() {
               joinDate: userData.joinDate || ""
             });
             
-            // Only update currency if it's different from current state and we're not in admin panel
-            if (userData.primaryCurrency && userData.primaryCurrency !== currentCurrency && !showAdminPanel) {
+            // Only update currency if it's different from current state and we're not in admin panel or updating
+            if (userData.primaryCurrency && userData.primaryCurrency !== currentCurrency && !showAdminPanel && !isUpdatingProfile) {
               console.log('Updating currency from database:', userData.primaryCurrency);
               setCurrentCurrency(userData.primaryCurrency);
               setCurrencyPreference(userData.primaryCurrency);
@@ -286,14 +294,16 @@ export default function Profile() {
         setAccounts(storedAccounts);
         loadChatResponses();
         
-        // Load currency preference only when admin panel first opens
-        const savedCurrency = getUserCurrency();
-        console.log('Admin panel opened - current currency in state:', currentCurrency, 'saved currency:', savedCurrency);
-        
-        // Only update if there's a significant difference (avoid overriding immediate user selections)
-        if (currentCurrency !== savedCurrency) {
-          console.log('Syncing currency state with saved preference');
-          setCurrentCurrency(savedCurrency);
+        // Load currency preference only when admin panel first opens (and not currently updating)
+        if (!isUpdatingProfile) {
+          const savedCurrency = getUserCurrency();
+          console.log('Admin panel opened - current currency in state:', currentCurrency, 'saved currency:', savedCurrency);
+          
+          // Only update if there's a significant difference (avoid overriding immediate user selections)
+          if (currentCurrency !== savedCurrency) {
+            console.log('Syncing currency state with saved preference');
+            setCurrentCurrency(savedCurrency);
+          }
         }
       } catch (error) {
         console.error('Error initializing admin panel:', error);
