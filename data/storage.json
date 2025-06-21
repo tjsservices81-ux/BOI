@@ -30,6 +30,23 @@
         "joinDate": "2025-06-21T12:44:18.970Z",
         "dateCreated": "2025-06-21T12:44:18.971Z",
         "isDisabled": false,
+        "currency": "EUR"
+      }
+    ],
+    [
+      33,
+      {
+        "id": 33,
+        "customerNumber": "BOI185491826",
+        "pin": "000000",
+        "name": "Hhh",
+        "email": "huh@gmail.com",
+        "phone": "49844964",
+        "address": "",
+        "dateOfBirth": "",
+        "joinDate": "2025-06-21T13:03:17.866Z",
+        "dateCreated": "2025-06-21T13:03:17.867Z",
+        "isDisabled": false,
         "currency": "GBP"
       }
     ]
@@ -67,6 +84,39 @@
         "balance": "0.00",
         "displayName": "Savings Account"
       }
+    ],
+    [
+      40,
+      {
+        "id": 40,
+        "userId": 33,
+        "accountType": "current",
+        "accountNumber": "****2091",
+        "balance": "0.00",
+        "displayName": "Current Account"
+      }
+    ],
+    [
+      41,
+      {
+        "id": 41,
+        "userId": 33,
+        "accountType": "credit",
+        "accountNumber": "****1820",
+        "balance": "0.00",
+        "displayName": "Credit Card"
+      }
+    ],
+    [
+      42,
+      {
+        "id": 42,
+        "userId": 33,
+        "accountType": "savings",
+        "accountNumber": "****0978",
+        "balance": "0.00",
+        "displayName": "Savings Account"
+      }
     ]
   ],
   "transactions": [],
@@ -77,8 +127,8 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 33,
-    "currentAccountId": 40,
+    "currentUserId": 34,
+    "currentAccountId": 43,
     "currentTransactionId": 49,
     "currentPayeeId": 25,
     "currentScheduledPaymentId": 1,

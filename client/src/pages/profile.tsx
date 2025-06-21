@@ -791,7 +791,9 @@ export default function Profile() {
     }));
     
     setShowAddTransaction(false);
-    alert(`Transaction Added Successfully!\n\n${randomTransaction.description}\nAmount: €${Math.abs(transactionAmount).toFixed(2)}\nNew Balance: €${newBalance.toFixed(2)}`);
+    const currentCurrency = getUserCurrency();
+    const currencySymbol = currentCurrency === 'EUR' ? '€' : '£';
+    alert(`Transaction Added Successfully!\n\n${randomTransaction.description}\nAmount: ${currencySymbol}${Math.abs(transactionAmount).toFixed(2)}\nNew Balance: ${currencySymbol}${newBalance.toFixed(2)}`);
   };
 
   const updateBalance = () => {
@@ -855,7 +857,9 @@ export default function Profile() {
       localStorage.setItem(`user_${currentUser}_bankAccounts`, JSON.stringify(updatedAccounts));
     }
     
-    alert(`${editingAccount.displayName} balance updated to €${numericBalance.toFixed(2)}`);
+    const currentCurrency = getUserCurrency();
+    const currencySymbol = currentCurrency === 'EUR' ? '€' : '£';
+    alert(`${editingAccount.displayName} balance updated to ${currencySymbol}${numericBalance.toFixed(2)}`);
   };
 
   const resetToDefaults = () => {
@@ -1734,7 +1738,7 @@ export default function Profile() {
                       </div>
                       <div className="text-right">
                         <p className="text-lg font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          €{account.balance}
+                          {formatCurrency(account.balance, userCurrency)}
                         </p>
                       </div>
                     </button>
