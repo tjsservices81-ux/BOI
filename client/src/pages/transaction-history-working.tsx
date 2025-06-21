@@ -560,7 +560,7 @@ export default function TransactionHistoryWorking() {
                   <div className="border-t border-gray-200 pt-4 mt-4">
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                       <p className="text-sm text-blue-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        <strong>SEPA Transfer:</strong> Transfers within the SEPA zone typically take 1–2 business days depending on the recipient's country and bank.
+                        <strong>SEPA Transfer:</strong> Transfers within the SEPA zone typically take 1 business day to complete.
                       </p>
                     </div>
                   </div>

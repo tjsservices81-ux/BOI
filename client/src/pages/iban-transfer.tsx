@@ -200,14 +200,14 @@ export default function IbanTransfer() {
         if (newProgress >= 100) {
           clearInterval(interval);
           
-          // Process the transfer using the generated reference
+          // Process the transfer using the user's payment reference
           const transferSuccess = processConfirmedTransfer(
             `IBAN_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             formData.fromAccount,
             parseFloat(formData.amount),
             formData.recipientName,
             'IBAN',
-            ref, // Use the generated reference directly
+            formData.reference, // Use the user's input reference
             undefined, // No exchange rate for IBAN transfers
             {
               iban: formData.iban,
@@ -356,12 +356,12 @@ export default function IbanTransfer() {
                     <div className="flex justify-between">
                       <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Processing Time:</span>
                       <span className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        1-3 days
+                        1 business day
                       </span>
                     </div>
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
                       <p className="text-sm text-blue-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        <strong>SEPA Transfer:</strong> International transfers typically take 1-3 business days to reach the recipient depending on the destination country.
+                        <strong>SEPA Transfer:</strong> Transfers within the SEPA zone typically take 1 business day to complete.
                       </p>
                     </div>
                     <div className="bg-red-50 border border-red-200 rounded-lg p-3 mt-3">
@@ -527,7 +527,7 @@ export default function IbanTransfer() {
                 SEPA Transfer
               </p>
               <p className="text-xs text-blue-700 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Transfers within the SEPA zone typically take 1-2 business days depending on the recipient's country and bank.
+                SEPA Transfer: Transfers within the SEPA zone typically take 1 business day to complete.
               </p>
             </div>
           </div>
