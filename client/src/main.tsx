@@ -27,8 +27,16 @@ const ensureFontsLoaded = () => {
   });
 };
 
-// Initialize optimizations
+// Initialize offline support
+import { OfflineManager } from './utils/offlineManager'
+
+// Initialize optimizations and offline support
 preloadCriticalAssets();
 ensureFontsLoaded();
+
+// Initialize OfflineManager
+OfflineManager.initialize().catch(error => {
+  console.error('Failed to initialize offline manager:', error)
+})
 
 createRoot(document.getElementById("root")!).render(<App />);
