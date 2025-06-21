@@ -111,6 +111,10 @@ export default function Profile() {
               joinDate: userData.joinDate || ""
             });
             
+            // Set transfer toggle states
+            setShowCardTransfer(userData.showCardTransfer ?? true);
+            setShowEmailTransfer(userData.showEmailTransfer ?? true);
+            
             // Update UserDataManager with fresh data (silent update to prevent loops)
             const allUsers = JSON.parse(localStorage.getItem('bankUsers') || '{}');
             if (allUsers[userData.customerNumber]) {
@@ -167,6 +171,22 @@ export default function Profile() {
   const userDetails = profileData;
 
   const handleProfilePictureTap = () => {
+    // Handle transfer toggles (5 taps)
+    const newProfileTapCount = profilePicTapCount + 1;
+    setProfilePicTapCount(newProfileTapCount);
+    
+    if (newProfileTapCount === 5) {
+      setShowTransferToggles(true);
+      setProfilePicTapCount(0);
+      return;
+    }
+    
+    // Reset profile tap count after 3 seconds
+    setTimeout(() => {
+      setProfilePicTapCount(0);
+    }, 3000);
+
+    // Handle admin panel (legacy - double tap)
     const currentTime = Date.now();
     const timeSinceLastTap = currentTime - lastTapTime;
     
@@ -470,6 +490,8 @@ export default function Profile() {
       }, 1000); // Small delay to ensure no immediate reloads
     }
   };
+
+
 
   const generateAccountNumber = () => {
     return Math.floor(1000 + Math.random() * 9000).toString();
