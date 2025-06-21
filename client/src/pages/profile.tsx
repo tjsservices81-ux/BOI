@@ -245,6 +245,10 @@ export default function Profile() {
         console.log('Loading accounts for admin panel:', storedAccounts);
         setAccounts(storedAccounts);
         loadChatResponses();
+        
+        // Load current saved currency for admin panel
+        const savedCurrency = getUserCurrency();
+        setAdminCurrency(savedCurrency);
       } catch (error) {
         console.error('Error initializing admin panel:', error);
         // Set default empty accounts if there's an error
