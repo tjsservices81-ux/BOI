@@ -70,25 +70,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log(`Manifest requested - Access code: ${accessCode || 'none'}, Start URL: ${startUrl}`);
     
     const manifest = {
-      "name": "MyBOI App",
-      "short_name": "MyBOI", 
-      "description": "MyBOI Mobile Banking Application",
+      "name": "BOI Mobile",
+      "short_name": "BOI Mobile", 
+      "description": "BOI Mobile Application",
       "start_url": startUrl,
       "display": "standalone",
       "orientation": "portrait-primary",
-      "theme_color": "#126987",
-      "background_color": "#126987",
+      "theme_color": "#0047ab",
+      "background_color": "#ffffff",
       "scope": "/",
       "lang": "en-IE",
       "icons": [
         {
-          "src": "/boi_app_icon.png",
+          "src": "/icons/boi-icon-192.png",
           "sizes": "192x192",
           "type": "image/png",
           "purpose": "any maskable"
         },
         {
-          "src": "/boi_app_icon.png", 
+          "src": "/icons/boi-icon-512.png", 
           "sizes": "512x512",
           "type": "image/png",
           "purpose": "any maskable"
