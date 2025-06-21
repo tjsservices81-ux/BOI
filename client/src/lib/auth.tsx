@@ -90,6 +90,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(userData);
     localStorage.setItem('bankingUser', JSON.stringify(userData));
     console.log('✅ User session saved to localStorage');
+    
+    // Emit global login event for navigation handlers
+    window.dispatchEvent(new CustomEvent('userLoggedIn', { detail: userData }));
   };
 
   const logout = async () => {

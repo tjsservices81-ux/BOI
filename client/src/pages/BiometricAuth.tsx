@@ -21,24 +21,18 @@ export default function BiometricAuth() {
       isLoading: state.isLoading
     });
     
-    // If user exists in main auth context and no biometric needed, go to dashboard
-    if (user && !state.needsBiometric && !state.isLoading) {
-      console.log('✅ User session exists, no biometric needed - navigating to dashboard');
-      setTimeout(() => {
-        setLocation('/dashboard');
-      }, 200);
-    }
-    // If biometric auth is complete, go to dashboard
-    else if (user && state.isAuthenticated && !state.isLoading) {
+    // If biometric auth is complete with user, go to dashboard immediately
+    if (user && state.isAuthenticated && !state.isLoading) {
       console.log('✅ Biometric auth complete - navigating to dashboard');
-      setTimeout(() => {
-        setLocation('/dashboard');
-      }, 200);
-    } 
+      setLocation('/dashboard');
+      return;
+    }
+    
     // If no session and no biometric needed, go to login
-    else if (!state.needsBiometric && !state.isLoading && !user) {
+    if (!state.needsBiometric && !state.isLoading && !user) {
       console.log('❌ No session found - redirecting to login');
       setLocation('/login');
+      return;
     }
   }, [user, state.isAuthenticated, state.needsBiometric, state.isLoading, setLocation]);
 

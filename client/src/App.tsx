@@ -49,14 +49,19 @@ function ProtectedRoute({ children, fallback }: { children: React.ReactNode; fal
     return <Redirect to="/login" />;
   }
   
-  // User has session but biometric verification is required and not completed
-  if (biometricAuth.state.needsBiometric && !biometricAuth.state.isAuthenticated) {
+  // User authenticated and biometric complete - allow access
+  if (user && biometricAuth.state.isAuthenticated) {
+    return <>{children}</>;
+  }
+  
+  // User has session but biometric verification is required
+  if (user && biometricAuth.state.needsBiometric && !biometricAuth.state.isAuthenticated) {
     return <Redirect to="/biometric" />;
   }
   
-  // If user has session but biometric state is not set, force biometric check
-  if (!biometricAuth.state.needsBiometric && !biometricAuth.state.isAuthenticated) {
-    return <Redirect to="/biometric" />;
+  // User has session but biometric state is not initialized - allow access
+  if (user && !biometricAuth.state.needsBiometric && !biometricAuth.state.isAuthenticated) {
+    return <>{children}</>;
   }
   
   return <>{children}</>;
@@ -84,6 +89,23 @@ function AppRoutes() {
     return () => window.removeEventListener('openLiveChat', handleOpenLiveChat);
   }, []);
 
+  // Listen for successful login events and ensure navigation to dashboard
+  useEffect(() => {
+    const handleUserLoggedIn = (event: CustomEvent) => {
+      console.log('🎯 Global login event received:', event.detail);
+      // Allow time for biometric context to update, then navigate
+      setTimeout(() => {
+        if (location !== '/dashboard') {
+          console.log('🎯 Forcing navigation to dashboard after login');
+          navigate('/dashboard');
+        }
+      }, 500);
+    };
+
+    window.addEventListener('userLoggedIn', handleUserLoggedIn as EventListener);
+    return () => window.removeEventListener('userLoggedIn', handleUserLoggedIn as EventListener);
+  }, [location, navigate]);
+
   // Initialize app - always start with splash and check for permanent session
   useEffect(() => {
     const initializeApp = async () => {
@@ -106,6 +128,12 @@ function AppRoutes() {
           }
         } else {
           console.log('No permanent session found');
+          // Check if user exists in localStorage but no backend session
+          const cachedUser = localStorage.getItem('bankingUser');
+          if (cachedUser) {
+            console.log('User data found in localStorage but no backend session - clearing cache');
+            localStorage.removeItem('bankingUser');
+          }
         }
       } catch (error) {
         console.error('Failed to check authentication status:', error);
@@ -121,6 +149,14 @@ function AppRoutes() {
     initializeApp();
   }, []);
 
+  // Global authentication state handler - ensures proper dashboard navigation
+  useEffect(() => {
+    if (isInitialized && splashShown && user && biometricAuth.state.isAuthenticated && location !== '/dashboard') {
+      console.log('🚀 Global auth check: Redirecting authenticated user to dashboard');
+      navigate('/dashboard');
+    }
+  }, [user, biometricAuth.state.isAuthenticated, isInitialized, splashShown, location, navigate]);
+
   // Handle app lifecycle for state persistence
   useEffect(() => {
     const appLifecycle = new AppLifecycle();
@@ -131,7 +167,9 @@ function AppRoutes() {
         StateManager.saveAppState({
           user,
           currentRoute: location,
-          timestamp: Date.now()
+          timestamp: Date.now(),
+          scrollPositions: {},
+          formData: {}
         });
       }
     };
@@ -146,7 +184,7 @@ function AppRoutes() {
   }
 
   // Route to biometric auth if needed
-  if (biometricAuth.state.needsBiometric && !biometricAuth.state.isAuthenticated && user) {
+  if (user && biometricAuth.state.needsBiometric && !biometricAuth.state.isAuthenticated) {
     return <BiometricAuth />;
   }
 
