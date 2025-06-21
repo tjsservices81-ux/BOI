@@ -495,17 +495,45 @@ export default function Login() {
         throw new Error('User not found in local storage');
       }
 
-      // Import SecureAuthManager for connection checks
+      // Enhanced authentication with offline support
       const { SecureAuthManager } = await import('../utils/secureAuthManager');
+      const { OfflineAuthManager } = await import('../utils/offlineAuthManager');
       
-      // Check connection status for display purposes
+      // Check connection status
       const hasConnection = await SecureAuthManager.hasInternetConnection();
-      const authResult = {
-        success: true,
-        isOffline: !hasConnection,
-        user: UserDataManager.getUserProfile(),
-        timeRemaining: hasConnection ? null : 'Unknown'
-      };
+      
+      let authResult;
+      
+      if (hasConnection) {
+        // Online authentication - store data for offline access
+        const userProfile = UserDataManager.getUserProfile();
+        if (userProfile) {
+          await OfflineAuthManager.recordOnlineLogin(currentUser, userProfile);
+        }
+        
+        authResult = {
+          success: true,
+          isOffline: false,
+          user: userProfile,
+          timeRemaining: null
+        };
+      } else {
+        // Offline authentication - use cached data
+        const offlineAuth = await OfflineAuthManager.authenticateOffline(currentUser);
+        
+        if (!offlineAuth.success) {
+          clearInterval(authInterval);
+          throw new Error(offlineAuth.message || 'Offline authentication failed');
+        }
+        
+        authResult = {
+          success: true,
+          isOffline: true,
+          user: offlineAuth.user,
+          timeRemaining: offlineAuth.timeRemaining,
+          message: offlineAuth.message
+        };
+      }
       
       clearInterval(authInterval);
 
@@ -555,7 +583,7 @@ export default function Login() {
       if (authResult.isOffline) {
         toast({
           title: "Offline Mode",
-          description: "Connected to local data",
+          description: authResult.message || `Offline access (${authResult.timeRemaining || 'Limited time'})`,
           variant: "default",
         });
       }
@@ -1004,6 +1032,31 @@ export default function Login() {
             <div className="w-full max-w-xs mx-auto space-y-3">
               {/* Main White Login Card */}
               <div className="bg-white ios-card p-4">
+                {/* Connection Status Indicator */}
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-lg font-semibold text-gray-800" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
+                    Welcome back
+                  </h3>
+                  <div className="flex items-center space-x-2">
+                    <div className={`w-2 h-2 rounded-full ${connectionStatus === 'online' ? 'bg-green-500' : connectionStatus === 'offline' ? 'bg-red-500' : 'bg-yellow-500'}`}></div>
+                    <span className="text-xs text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      {connectionStatus === 'online' ? 'Online' : connectionStatus === 'offline' ? 'Offline' : 'Checking...'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Offline Status Notice */}
+                {connectionStatus === 'offline' && offlineStatus && (
+                  <div className={`p-3 rounded-lg border mb-4 ${offlineStatus.hasOfflineAccess ? 'bg-yellow-50 border-yellow-200' : 'bg-red-50 border-red-200'}`}>
+                    <p className="text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      {offlineStatus.hasOfflineAccess 
+                        ? `Offline mode active (${offlineStatus.timeRemaining} remaining)`
+                        : 'Offline login expired. Please reconnect to the internet to log in again.'
+                      }
+                    </p>
+                  </div>
+                )}
+                
                 {/* Biometric Section */}
                 <div className="text-center mb-6">
                   <div 

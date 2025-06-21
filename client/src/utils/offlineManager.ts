@@ -54,7 +54,7 @@ export class OfflineManager {
           // Users store
           if (!db.objectStoreNames.contains('users')) {
             const usersStore = db.createObjectStore('users', { keyPath: 'customerNumber' });
-            usersStore.createIndex('lastOnlineLogin', 'lastOnlineLogin');
+            usersStore.createIndex('lastOnlineLogin', 'lastOnlineLogin', { unique: false });
           }
 
           // Accounts store
