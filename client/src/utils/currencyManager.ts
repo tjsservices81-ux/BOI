@@ -106,10 +106,10 @@ export class CurrencyManager {
   // Initialize currency manager with event listeners
   static initialize(): void {
     // Listen for currency change events from admin panel
-    window.addEventListener('currencyChanged', (event: CustomEvent) => {
+    window.addEventListener('currencyChanged', ((event: CustomEvent) => {
       const { currency } = event.detail;
       this.notifyListeners(currency);
-    });
+    }) as EventListener);
   }
 }
 
