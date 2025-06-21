@@ -155,6 +155,9 @@ router.delete('/delete-user/:customerNumber', adminAuth, async (req, res) => {
     
     console.log(`🗑️ ADMIN PANEL DELETE: Starting deletion of user ${customerNumber}`);
     
+    // Import storage from the routes module
+    const { storage } = await import('./storage');
+    
     // Use the permanent delete function to remove all data
     const deleted = await storage.permanentDeleteUser(customerNumber);
     

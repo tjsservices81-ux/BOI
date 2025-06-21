@@ -54,21 +54,22 @@ export class RealTimeSync {
   // Setup event listeners for immediate sync triggers
   private static setupEventListeners() {
     // Sync on profile updates
-    window.addEventListener('profileUpdated', this.handleProfileUpdate);
+    window.addEventListener('profileUpdated', this.handleProfileUpdate as EventListener);
     
     // Sync on transaction updates
-    window.addEventListener('transactionUpdate', this.handleTransactionUpdate);
+    window.addEventListener('transactionUpdate', this.handleTransactionUpdate as EventListener);
     
     // Sync on balance updates
-    window.addEventListener('balanceUpdate', this.handleBalanceUpdate);
+    window.addEventListener('balanceUpdate', this.handleBalanceUpdate as EventListener);
     
     // Sync on page visibility changes
     document.addEventListener('visibilitychange', this.handleVisibilityChange);
   }
 
-  private static handleProfileUpdate = async (event: CustomEvent) => {
+  private static handleProfileUpdate = async (event: Event) => {
+    const customEvent = event as CustomEvent;
     try {
-      const profileData = event.detail;
+      const profileData = customEvent.detail;
       const currentUser = localStorage.getItem('currentUser');
       if (!currentUser || !profileData) return;
 
@@ -87,9 +88,10 @@ export class RealTimeSync {
     }
   };
 
-  private static handleTransactionUpdate = async (event: CustomEvent) => {
+  private static handleTransactionUpdate = async (event: Event) => {
+    const customEvent = event as CustomEvent;
     try {
-      const transactionData = event.detail;
+      const transactionData = customEvent.detail;
       console.log('📊 REAL-TIME SYNC: Transaction data persisted', transactionData);
       
       // Update user activity on transaction
@@ -99,9 +101,10 @@ export class RealTimeSync {
     }
   };
 
-  private static handleBalanceUpdate = async (event: CustomEvent) => {
+  private static handleBalanceUpdate = async (event: Event) => {
+    const customEvent = event as CustomEvent;
     try {
-      const balanceData = event.detail;
+      const balanceData = customEvent.detail;
       console.log('📊 REAL-TIME SYNC: Balance data persisted', balanceData);
       
       // Update user activity on balance change

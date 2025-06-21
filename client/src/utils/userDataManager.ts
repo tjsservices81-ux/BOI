@@ -11,6 +11,13 @@ export interface UserData {
   dateOfBirth?: string;
   joinDate: string;
   dateCreated: string;
+  profilePhoto?: string | null;
+  preferences?: any;
+  lastLoginTime?: string | null;
+  deviceInfo?: any;
+  notificationSettings?: any;
+  securitySettings?: any;
+  lastActivity?: string | null;
 }
 
 export class UserDataManager {
