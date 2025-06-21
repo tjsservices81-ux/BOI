@@ -8,8 +8,6 @@ import { useAuth } from "@/lib/auth";
 import { User, ExternalLink, HelpCircle, Phone, Settings, Shield, MapPin, MoreHorizontal } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { UserDataManager } from "@/utils/userDataManager";
-import { OfflineAccessManager } from "@/utils/offlineAccessManager";
-import { AccountVerificationManager } from "@/utils/accountVerificationManager";
 
 export default function Login() {
   const [customerNumber, setCustomerNumber] = useState("");
@@ -63,7 +61,7 @@ export default function Login() {
   const toastHook = useToast();
   const toast = toastHook?.toast || (() => {});
 
-  // Enhanced connection status and offline capability check
+  // Check connection status and offline login availability
   const checkConnectionAndOfflineStatus = async () => {
     try {
       const { SecureAuthManager } = await import('../utils/secureAuthManager');
@@ -73,16 +71,10 @@ export default function Login() {
       setConnectionStatus(hasInternet ? 'online' : 'offline');
       
       // Check offline login status for current user
-      const currentUser = UserDataManager.getCurrentUser() || UserDataManager.getLastActiveUser();
+      const currentUser = UserDataManager.getCurrentUser();
       if (currentUser) {
         const offlineStatus = SecureAuthManager.getOfflineLoginStatus(currentUser);
         setOfflineStatus(offlineStatus);
-        
-        // Also check enhanced offline eligibility
-        if (!hasInternet) {
-          const enhancedCheck = await OfflineAccessManager.checkOfflineEligibilityEnhanced(currentUser);
-          console.log('Enhanced offline eligibility:', enhancedCheck);
-        }
       }
     } catch (error) {
       console.error('Error checking connection status:', error);
@@ -92,41 +84,8 @@ export default function Login() {
 
   // Validate users against server and clean up deleted ones
   const validateAndCleanUsers = async () => {
-    try {
-      // Check server for actual users
-      const response = await fetch('/api/admin/get-all-users');
-      if (response.ok) {
-        const serverUsers = await response.json();
-        const validUsers: any = {};
-        
-        // Only keep users that exist on server
-        serverUsers.forEach((user: any) => {
-          validUsers[user.customerNumber] = user;
-        });
-        
-        // Update local storage to match server
-        localStorage.setItem('allUsers', JSON.stringify(validUsers));
-        setValidatedUsers(validUsers);
-        
-        console.log(`Synced ${Object.keys(validUsers).length} users from server`);
-        
-        // Force UI update if no users found
-        if (Object.keys(validUsers).length === 0) {
-          console.log('No users found - showing empty state');
-        }
-      } else {
-        // Server error or no users - clear local cache
-        localStorage.setItem('allUsers', '{}');
-        setValidatedUsers({});
-        console.log('No users found on server, cleared local cache');
-        console.log('Forcing empty state display');
-      }
-    } catch (error) {
-      console.error('Failed to validate users:', error);
-      // Fallback to cached users if server unreachable
-      const cachedUsers = UserDataManager.getAllUsers();
-      setValidatedUsers(cachedUsers);
-    }
+    const cachedUsers = UserDataManager.getAllUsers();
+    setValidatedUsers(cachedUsers); // Use cached users immediately, validate in background
   };
 
 
@@ -194,15 +153,7 @@ export default function Login() {
   // Validate users when Admin Access dialog opens
   useEffect(() => {
     if (showAdminLogin) {
-      // Force clear ALL cache and validate
-      localStorage.clear();
-      sessionStorage.clear();
-      setValidatedUsers({});
-      
-      // Small delay to ensure state is cleared
-      setTimeout(() => {
-        validateAndCleanUsers();
-      }, 100);
+      validateAndCleanUsers();
     }
   }, [showAdminLogin]);
 
@@ -274,14 +225,8 @@ export default function Login() {
       if (response.ok) {
         const responseData = await response.json();
         
-        // Store pending account data with verification flag
-        const verifiedUserData = {
-          ...userData,
-          verified: false, // Will be set to true after OTC verification
-          accountVerified: false,
-          verificationTimestamp: null
-        };
-        setPendingAccountData(verifiedUserData);
+        // Store pending account data
+        setPendingAccountData(userData);
         
         // Show OTC verification screen
         setShowSignUp(false);
@@ -337,24 +282,13 @@ export default function Login() {
       const result = await response.json();
 
       if (response.ok && result.success) {
-        // Mark account as verified and create the account
-        const verifiedAccountData = {
-          ...pendingAccountData,
-          verified: true,
-          accountVerified: true,
-          verificationTimestamp: new Date().toISOString()
-        };
-        
-        // Register user with verified status
-        UserDataManager.registerUser(verifiedAccountData);
-        UserDataManager.initializeFreshAccount(verifiedAccountData.customerNumber);
-        
-        // Use verification manager to ensure proper verification status
-        AccountVerificationManager.markAccountVerified(verifiedAccountData.customerNumber);
+        // OTC is valid, create the account
+        UserDataManager.registerUser(pendingAccountData);
+        UserDataManager.initializeFreshAccount(pendingAccountData.customerNumber);
 
         toast({
           title: "Account Created Successfully",
-          description: `Your customer number is ${verifiedAccountData.customerNumber}. Please remember this for future logins.`,
+          description: `Your customer number is ${pendingAccountData.customerNumber}. Please remember this for future logins.`,
           duration: 5000,
         });
 
@@ -363,7 +297,7 @@ export default function Login() {
         setOtcCode('');
         setPendingAccountData(null);
         setNewUserData({ name: '', email: '', phone: '', customerNumber: '' });
-        setCustomerNumber(verifiedAccountData.customerNumber);
+        setCustomerNumber(pendingAccountData.customerNumber);
 
       } else {
         // OTC validation failed
@@ -403,26 +337,13 @@ export default function Login() {
     try {
       const userProfile = UserDataManager.getUserProfile();
       if (userProfile) {
-        // Check account verification before proceeding
-        const verification = await AccountVerificationManager.performSilentVerificationCheck(customerNumber);
-        
-        if (!verification.canProceed) {
-          toast({
-            title: "Account Verification Required",
-            description: verification.message || "Please contact support to complete account verification.",
-            variant: "destructive",
-          });
-          return;
-        }
-        
-        // Only login if verified
         login({
           id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
           name: userProfile.name,
           email: userProfile.email
         });
-        navigate("/dashboard");
       }
+      navigate("/dashboard");
     } catch (error) {
       toast({
         title: "Login Failed",
@@ -574,11 +495,11 @@ export default function Login() {
         throw new Error('User not found in local storage');
       }
 
-      // Enhanced authentication with comprehensive offline support
+      // Enhanced authentication with offline support
       const { SecureAuthManager } = await import('../utils/secureAuthManager');
       const { OfflineAuthManager } = await import('../utils/offlineAuthManager');
       
-      // Check connection status first
+      // Check connection status
       const hasConnection = await SecureAuthManager.hasInternetConnection();
       
       let authResult;
@@ -588,8 +509,6 @@ export default function Login() {
         const userProfile = UserDataManager.getUserProfile();
         if (userProfile) {
           await OfflineAuthManager.recordOnlineLogin(currentUser, userProfile);
-          // Also precache essential data for future offline access
-          await OfflineAccessManager.precacheEssentialData(currentUser);
         }
         
         authResult = {
@@ -599,49 +518,21 @@ export default function Login() {
           timeRemaining: null
         };
       } else {
-        // Network unavailable - check offline access eligibility
-        console.log('Network unavailable - checking offline access fallback');
+        // Offline authentication - use cached data
+        const offlineAuth = await OfflineAuthManager.authenticateOffline(currentUser);
         
-        const offlineSupport = await OfflineAccessManager.ensureOfflineSupport({
-          affectedScreen: "BiometricAuthentication",
-          fallbackBehavior: "loadFromIndexedDBCache",
-          conditions: {
-            networkUnavailable: true,
-            cachedDataAvailable: true,
-            lastOnlineLoginWithin: "24h"
-          },
-          preventRedirects: true,
-          preserve: ["authSession", "localUserData"],
-          debugMode: false,
-          testDevice: "Android"
-        });
-        
-        if (offlineSupport.success && offlineSupport.action === 'offline_access_granted') {
-          // Offline access granted using cached data
-          authResult = {
-            success: true,
-            isOffline: true,
-            user: offlineSupport.userData,
-            timeRemaining: OfflineAccessManager.getOfflineTimeRemaining(),
-            message: offlineSupport.message
-          };
-        } else {
-          // Offline access denied - fallback to legacy offline auth
-          const offlineAuth = await OfflineAuthManager.authenticateOffline(currentUser);
-          
-          if (!offlineAuth.success) {
-            clearInterval(authInterval);
-            throw new Error(offlineAuth.message || 'Offline authentication failed. Please connect to the internet.');
-          }
-          
-          authResult = {
-            success: true,
-            isOffline: true,
-            user: offlineAuth.user,
-            timeRemaining: offlineAuth.timeRemaining,
-            message: offlineAuth.message
-          };
+        if (!offlineAuth.success) {
+          clearInterval(authInterval);
+          throw new Error(offlineAuth.message || 'Offline authentication failed');
         }
+        
+        authResult = {
+          success: true,
+          isOffline: true,
+          user: offlineAuth.user,
+          timeRemaining: offlineAuth.timeRemaining,
+          message: offlineAuth.message
+        };
       }
       
       clearInterval(authInterval);
@@ -663,23 +554,6 @@ export default function Login() {
       if (!userProfile) {
         clearInterval(loadInterval);
         throw new Error('Unable to load user profile');
-      }
-
-      // Check account verification before completing login
-      const verification = await AccountVerificationManager.performSilentVerificationCheck(currentUser);
-      
-      if (!verification.canProceed) {
-        clearInterval(loadInterval);
-        setIsLoginAnimating(false);
-        setIsScanning(false);
-        setBiometricVerified(false);
-        
-        toast({
-          title: "Account Verification Required", 
-          description: verification.message || "Please contact support to complete account verification.",
-          variant: "destructive",
-        });
-        return;
       }
 
       login({
@@ -1685,14 +1559,8 @@ export default function Login() {
                 ))}
                 
                 {Object.keys(validatedUsers).length === 0 && (
-                  <div className="text-center py-12 space-y-4">
-                    <div className="text-6xl">🏦</div>
-                    <div className="text-gray-500 text-lg font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      No registered accounts
-                    </div>
-                    <div className="text-gray-400 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Database is completely empty
-                    </div>
+                  <div className="text-center py-8 text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    No accounts registered yet
                   </div>
                 )}
               </div>

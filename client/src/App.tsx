@@ -11,8 +11,6 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import { StateManager } from "@/utils/stateManager";
 import { AppLifecycle } from "@/utils/appLifecycle";
 import { PlatformDetection } from "@/utils/platformDetection";
-import { OfflineAccessManager } from "@/utils/offlineAccessManager";
-import { AccountVerificationManager } from "@/utils/accountVerificationManager";
 import LiveChat from "@/components/LiveChat";
 
 
@@ -36,7 +34,6 @@ import TransactionHistoryWorking from "@/pages/transaction-history-working";
 import Statements from "@/pages/statements";
 import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
-import VerifyAccount from "@/pages/verify-account";
 
 function ProtectedRoute({ children, fallback }: { children: React.ReactNode; fallback?: React.ReactNode }) {
   const authHook = useAuth();
@@ -66,65 +63,6 @@ function ProtectedRoute({ children, fallback }: { children: React.ReactNode; fal
     return null;
   }
   
-  return <VerifiedRoute>{children}</VerifiedRoute>;
-}
-
-function VerifiedRoute({ children }: { children: React.ReactNode }) {
-  const [verificationStatus, setVerificationStatus] = useState<'checking' | 'verified' | 'unverified' | 'error'>('checking');
-  const [redirectPath, setRedirectPath] = useState<string>('/signup');
-  const [verificationMessage, setVerificationMessage] = useState<string>('');
-  const [location] = useLocation();
-
-  useEffect(() => {
-    const checkVerification = async () => {
-      try {
-        // Get current user
-        const { UserDataManager } = await import('./utils/userDataManager');
-        const currentUser = UserDataManager.getCurrentUser();
-        
-        if (!currentUser) {
-          setVerificationStatus('unverified');
-          setRedirectPath('/login');
-          setVerificationMessage('Please log in to continue');
-          return;
-        }
-
-        // Perform silent verification check
-        const result = await AccountVerificationManager.performSilentVerificationCheck(currentUser);
-        
-        if (result.canProceed) {
-          setVerificationStatus('verified');
-        } else {
-          setVerificationStatus('unverified');
-          setRedirectPath(result.redirectTo || '/signup');
-          setVerificationMessage(result.message || 'Account verification required');
-        }
-      } catch (error) {
-        console.error('Verification check failed:', error);
-        setVerificationStatus('error');
-        setRedirectPath('/signup');
-        setVerificationMessage('Unable to verify account status. Please try again.');
-      }
-    };
-
-    checkVerification();
-  }, [location]);
-
-  // Show loading during verification check
-  if (verificationStatus === 'checking') {
-    return (
-      <div className="w-full h-full flex items-center justify-center bg-[#126987]">
-        <div className="text-white">Verifying account...</div>
-      </div>
-    );
-  }
-
-  // Redirect if verification failed (but only redirect to login, not signup)
-  if (verificationStatus === 'unverified' || verificationStatus === 'error') {
-    return <Redirect to="/login" />;
-  }
-
-  // Render protected content for verified users
   return <>{children}</>;
 }
 
@@ -187,52 +125,23 @@ function AppRoutes() {
       const isColdStart = startType === 'cold' || startType === 'uncertain';
       
       if (isColdStart) {
-        // COLD START: App was fully closed/terminated - check offline access first
-        console.log('Cold start detected - checking offline access fallback');
+        // COLD START: App was fully closed/terminated - always show splash sequence
+        console.log('Cold start detected - showing splash sequence');
         
-        // Check if network is available or if we can use offline cache
-        try {
-          const offlineSupport = await OfflineAccessManager.ensureOfflineSupport({
-            affectedScreen: "InitialConnectionCheck",
-            fallbackBehavior: "loadFromIndexedDBCache",
-            conditions: {
-              networkUnavailable: !navigator.onLine,
-              cachedDataAvailable: true,
-              lastOnlineLoginWithin: "24h"
-            },
-            preventRedirects: false,
-            preserve: ["authSession", "localUserData", "routeState"],
-            debugMode: false,
-            testDevice: "Android"
-          });
-
-          if (offlineSupport.success && offlineSupport.action === 'offline_access_granted') {
-            // Offline access granted - restore user from cache
-            console.log('Offline access granted - restoring from cache');
-            if (offlineSupport.userData && !user && !isLoading) {
-              setTimeout(() => {
-                if (!user) {
-                  login(offlineSupport.userData);
-                }
-              }, 100);
-            }
-          }
-        } catch (error) {
-          console.error('Offline access check failed:', error);
-        }
-        
-        // Reset splash flags for fresh start
+        // Reset all splash-related flags for fresh start
         setSplashShown(false);
         localStorage.removeItem('splash_completed');
         localStorage.removeItem('app_background_time');
         localStorage.setItem('app_session_active', 'true');
         
-        // Fallback to normal state restoration if offline access not available
+        // Restore user session silently in background (permanent login)
+        // COORDINATION FIX: Only restore if auth context hasn't already initialized user
         try {
           const savedState = StateManager.restoreAppState(true);
           if (savedState && savedState.user && !user && !isLoading) {
+            // Prevent race condition with auth.tsx initialization
             setTimeout(() => {
-              if (!user) {
+              if (!user) { // Double-check user isn't set by auth context
                 login(savedState.user);
               }
             }, 100);
@@ -443,7 +352,6 @@ function AppRoutes() {
           <Switch>
             <Route path="/splash" component={Splash} />
             <Route path="/login" component={Login} />
-            <Route path="/verify-account" component={VerifyAccount} />
             <Route path="/more" component={More} />
             <Route path="/">
               {(() => {

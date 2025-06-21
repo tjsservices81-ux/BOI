@@ -1,0 +1,21 @@
+{
+  "users": [],
+  "accounts": [],
+  "transactions": [],
+  "payees": [],
+  "scheduledPayments": [],
+  "statements": [],
+  "chatMessages": [],
+  "chatResponses": [],
+  "chatSessions": [],
+  "counters": {
+    "currentUserId": 31,
+    "currentAccountId": 37,
+    "currentTransactionId": 49,
+    "currentPayeeId": 25,
+    "currentScheduledPaymentId": 1,
+    "currentStatementId": 1,
+    "currentChatMessageId": 1,
+    "currentChatResponseId": 1
+  }
+}
