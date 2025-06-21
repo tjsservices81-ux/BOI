@@ -22,6 +22,7 @@ export default function Dashboard() {
   // Local state for account balances that can be updated by transfers
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [isNavigating, setIsNavigating] = useState(false);
+  const [userCurrency, setUserCurrency] = useState<Currency>('EUR');
 
   // Enhanced navigation with smooth animations
   const navigateWithAnimation = (path: string, animationType: 'slide-right' | 'slide-left' | 'slide-up' = 'slide-right') => {
@@ -89,6 +90,9 @@ export default function Dashboard() {
     }
     
     setAccounts(storedAccounts);
+    
+    // Load user's currency preference
+    setUserCurrency(getUserCurrency());
   }, []);
 
   // Listen for balance updates from transfers and admin profile updates
@@ -322,7 +326,7 @@ export default function Dashboard() {
                     <p className="text-xs text-gray-500 mt-0.5 boi-regular-font">{account.accountNumber}</p>
                   </div>
                   <div className="flex items-center">
-                    <p className="text-lg font-semibold text-[#126987] boi-semibold-font">€{parseFloat(account.balance).toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                    <p className="text-lg font-semibold text-[#126987] boi-semibold-font">{formatCurrency(account.balance, userCurrency)}</p>
                     <ChevronRight className="h-4 w-4 ml-3 text-gray-400" />
                   </div>
                 </div>

@@ -4,6 +4,7 @@ import { ChevronLeft, ArrowUpRight, CreditCard, Building2, Zap, Check, Clock, Ma
 import MiniSpendingChart from "../components/MiniSpendingChart";
 import { UserDataManager } from "../utils/userDataManager.ts";
 import { StateManager } from "../utils/stateManager";
+import { formatCurrency, getUserCurrency, type Currency } from "../utils/currencyUtils";
 
 export default function TransactionHistoryWorking() {
   const locationHook = useLocation();
@@ -16,6 +17,7 @@ export default function TransactionHistoryWorking() {
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
+  const [userCurrency, setUserCurrency] = useState<Currency>('EUR');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   const accountId = params?.accountId ? parseInt(params.accountId) : 1;
@@ -121,6 +123,9 @@ export default function TransactionHistoryWorking() {
       console.log('Loaded transactions for account', accountId, ':', accountTransactions);
       
       // Don't set transactions here - wait for sorting
+      
+      // Load user's currency preference
+      setUserCurrency(getUserCurrency());
       
       // Get account info and balance using UserDataManager
       const storedAccounts = UserDataManager.getUserData('bankAccounts', []);
@@ -240,7 +245,7 @@ export default function TransactionHistoryWorking() {
           </div>
           <div className="text-right">
             <p className="text-3xl font-bold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              €{parseFloat(balance).toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              {formatCurrency(balance, userCurrency)}
             </p>
           </div>
         </div>
