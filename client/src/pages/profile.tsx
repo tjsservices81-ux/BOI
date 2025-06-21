@@ -1061,12 +1061,7 @@ export default function Profile() {
               <div className="flex flex-col items-center text-center mb-8">
                 <button 
                   onClick={handleProfilePictureTap}
-                  onTouchStart={(e) => e.preventDefault()}
-                  className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mb-4 active:scale-95 transition-all duration-200 touch-manipulation"
-                  style={{
-                    WebkitTapHighlightColor: 'transparent',
-                    touchAction: 'manipulation'
-                  }}
+                  className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mb-4 active:scale-95 transition-all duration-200"
                 >
                   <User className="w-12 h-12 text-gray-600" />
                 </button>
