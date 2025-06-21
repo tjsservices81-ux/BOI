@@ -145,7 +145,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Send email manually
-      await launchScreenOtc.sendEmailToAdmin(currentOtc, new Date(expiresAt));
+      if (expiresAt && typeof expiresAt === 'string') {
+        await launchScreenOtc.sendEmailToAdmin(currentOtc, new Date(expiresAt));
+      }
       
       console.log(`📧 MANUAL OTC EMAIL SENT: ${currentOtc}`);
       
