@@ -1,6 +1,12 @@
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
+import { AppErrorHandler } from "./utils/errorHandler";
+import { SecureNetworkHandler } from "./utils/secureNetworkHandler";
+
+// Initialize error handling and secure networking first
+AppErrorHandler.initialize();
+SecureNetworkHandler.initialize();
 
 // Preload critical assets immediately
 const preloadCriticalAssets = () => {
@@ -12,19 +18,23 @@ const preloadCriticalAssets = () => {
   ];
   
   criticalAssets.forEach(asset => {
-    const link = document.createElement('link');
-    link.rel = 'preload';
-    link.as = 'image';
-    link.href = asset;
-    document.head.appendChild(link);
+    AppErrorHandler.safeExecute(() => {
+      const link = document.createElement('link');
+      link.rel = 'preload';
+      link.as = 'image';
+      link.href = asset;
+      document.head.appendChild(link);
+    }, undefined, 'Asset preload');
   });
 };
 
 // Ensure fonts are immediately available
 const ensureFontsLoaded = () => {
-  document.fonts.ready.then(() => {
-    document.body.classList.add('fonts-loaded');
-  });
+  AppErrorHandler.safeExecute(() => {
+    document.fonts.ready.then(() => {
+      document.body.classList.add('fonts-loaded');
+    });
+  }, undefined, 'Font loading');
 };
 
 // Initialize optimizations
@@ -33,7 +43,7 @@ ensureFontsLoaded();
 
 // Initialize OfflineManager safely after DOM is ready
 const initializeOfflineManager = async () => {
-  try {
+  await AppErrorHandler.safeAsyncExecute(async () => {
     // Wait for DOM to be ready
     if (document.readyState === 'loading') {
       await new Promise(resolve => document.addEventListener('DOMContentLoaded', resolve));
@@ -42,9 +52,7 @@ const initializeOfflineManager = async () => {
     const { OfflineManager } = await import('./utils/offlineManager');
     await OfflineManager.initialize();
     console.log('OfflineManager initialized successfully');
-  } catch (error) {
-    console.warn('OfflineManager initialization failed, continuing without offline support:', error);
-  }
+  }, undefined, 'OfflineManager initialization');
 };
 
 // Initialize in background without blocking app startup
