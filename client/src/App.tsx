@@ -109,10 +109,10 @@ function AppRoutes() {
   // Initialize app - always check backend session first
   useEffect(() => {
     const initializeApp = async () => {
-      console.log('🚀 App initializing - checking backend session');
+      console.log('🚀 App initialization - checking backend session');
       
       try {
-        // Always check backend session status first
+        // Always call backend first to validate session
         const response = await fetch('/api/auth/status', {
           credentials: 'include'
         });
@@ -121,31 +121,26 @@ function AppRoutes() {
         if (authStatus.isLoggedIn) {
           console.log('✅ Valid backend session found');
           
+          // Skip splash screen and restore state immediately
+          setSplashShown(true);
+          setIsInitialized(true);
+          
           if (authStatus.user) {
             login(authStatus.user);
           }
           
-          // Set biometric requirement if needed
           if (authStatus.needsBiometric) {
-            console.log('🔐 Biometric verification required');
+            console.log('Session requires biometric verification');
             biometricAuth.setNeedsBiometric(true);
           }
           
-          // Skip splash screen and restore to last screen
-          setSplashShown(true);
-          setIsInitialized(true);
-          
-          // Restore saved route and state
+          // Restore saved app state after valid session
           const savedState = StateManager.restoreAppState();
           if (savedState && savedState.currentRoute && savedState.currentRoute !== '/') {
-            console.log(`🔄 Restoring to saved route: ${savedState.currentRoute}`);
-            // Add restore parameter to skip loading animations
-            const restoreUrl = savedState.currentRoute.includes('?') 
-              ? `${savedState.currentRoute}&restore=true`
-              : `${savedState.currentRoute}?restore=true`;
-            navigate(restoreUrl);
+            console.log(`🔄 Restoring saved route: ${savedState.currentRoute}`);
+            navigate(savedState.currentRoute);
             
-            // Restore scroll positions
+            // Restore scroll positions after navigation
             if (savedState.scrollPositions) {
               setTimeout(() => {
                 Object.entries(savedState.scrollPositions).forEach(([route, position]) => {
@@ -159,40 +154,39 @@ function AppRoutes() {
                 });
               }, 200);
             }
-          } else {
-            // Navigate to dashboard with restore parameter
-            navigate('/dashboard?restore=true');
+          } else if (!authStatus.needsBiometric) {
+            // Navigate to dashboard if no saved route and no biometric needed
+            navigate('/dashboard');
           }
           
           return;
         }
         
-        // No valid session - show login
+        // No valid backend session - show splash and go to login
         console.log('❌ No valid backend session - showing login');
         
-        // Clear any cached user data
+        // Clear any stale localStorage data
         const cachedUser = localStorage.getItem('bankingUser');
         if (cachedUser) {
-          console.log('🧹 Clearing cached user data');
+          console.log('Clearing stale user data from localStorage');
           localStorage.removeItem('bankingUser');
         }
         
-        // Show splash screen then login
-        setSplashShown(false);
-        setTimeout(() => {
-          setSplashShown(true);
-          setIsInitialized(true);
-        }, 1500);
+        // Clear saved state since session is invalid
+        StateManager.clearAppState();
         
       } catch (error) {
-        console.error('❌ Failed to check authentication status:', error);
-        // On error, assume no session and show login
-        setSplashShown(false);
-        setTimeout(() => {
-          setSplashShown(true);
-          setIsInitialized(true);
-        }, 1500);
+        console.error('Failed to check authentication status:', error);
+        // Clear localStorage on error
+        localStorage.removeItem('bankingUser');
       }
+      
+      // Show splash screen for login flow
+      setSplashShown(false);
+      setTimeout(() => {
+        setSplashShown(true);
+        setIsInitialized(true);
+      }, 1500);
     };
     
     initializeApp();
@@ -208,9 +202,11 @@ function AppRoutes() {
 
   // Handle app lifecycle for state persistence
   useEffect(() => {
-    // Save state when app goes to background for state restoration
+    const appLifecycle = new AppLifecycle();
+    
+    // Save state when app goes to background
     const handleVisibilityChange = () => {
-      if (document.hidden && user) {
+      if (document.hidden) {
         // Collect current scroll positions
         const scrollPositions: Record<string, number> = {};
         
@@ -228,7 +224,7 @@ function AppRoutes() {
           scrollPositions[location] = window.scrollY;
         }
 
-        // Save state for potential restoration (UI state only)
+        // App going to background - save complete state
         StateManager.saveAppState({
           user,
           currentRoute: location,
