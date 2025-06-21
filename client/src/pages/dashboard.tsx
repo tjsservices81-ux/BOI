@@ -207,6 +207,8 @@ export default function Dashboard() {
     window.addEventListener('transactionDeleted', handleTransactionDeleted as EventListener);
     window.addEventListener('transactionUpdate', handleTransactionDeleted as EventListener);
     window.addEventListener('forceRefresh', handleForceRefresh as EventListener);
+    window.addEventListener('currencyUpdate', handleCurrencyUpdate as EventListener);
+    window.addEventListener('currencyChanged', handleCurrencyUpdate as EventListener);
     
     return () => {
       window.removeEventListener('balanceUpdate', handleBalanceUpdate as EventListener);
@@ -217,6 +219,8 @@ export default function Dashboard() {
       window.removeEventListener('transactionDeleted', handleTransactionDeleted as EventListener);
       window.removeEventListener('transactionUpdate', handleTransactionDeleted as EventListener);
       window.removeEventListener('forceRefresh', handleForceRefresh as EventListener);
+      window.removeEventListener('currencyUpdate', handleCurrencyUpdate as EventListener);
+      window.removeEventListener('currencyChanged', handleCurrencyUpdate as EventListener);
     };
   }, [accounts]);
 
