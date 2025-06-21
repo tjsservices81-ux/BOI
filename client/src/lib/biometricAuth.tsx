@@ -117,18 +117,39 @@ export function BiometricAuthProvider({ children }: { children: React.ReactNode 
         }
       }
 
-      // For now, simulate successful biometric authentication
-      // In a real app, this would use WebAuthn or device biometric APIs
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate biometric scan time
+      // Simulate biometric scan time then verify with backend
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
+      // Call backend to verify biometric authentication
+      const response = await fetch('/api/auth/verify-biometric', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ verified: true })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setState(prev => ({
+            ...prev,
+            isAuthenticated: true,
+            needsBiometric: false,
+            userInfo: data.user,
+            isLoading: false
+          }));
+          return true;
+        }
+      }
+
       setState(prev => ({
         ...prev,
-        isAuthenticated: true,
-        needsBiometric: false,
+        error: 'Biometric verification failed',
         isLoading: false
       }));
-      
-      return true;
+      return false;
     } catch (error) {
       console.error('Biometric authentication failed:', error);
       setState(prev => ({
