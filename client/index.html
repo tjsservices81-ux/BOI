@@ -578,9 +578,12 @@
             // Ensure all app state flags are set for existing access
             localStorage.setItem('app_session_active', 'true');
             localStorage.setItem('splash_completed', 'true');
+            console.log('Existing access found - proceeding to app');
             hideLoadingScreen();
             // Regenerate manifest with stored access code for PWA consistency
             generateDynamicManifest();
+            // Mark access control as completed so React can load
+            window.accessControlCompleted = true;
             return;
           }
 
@@ -590,10 +593,13 @@
           
           if (!accessCode) {
             // No access code and no stored access - show "Not available"
+            console.log('No access code in URL and no stored access');
             showAccessDenied("Not available");
             return;
           }
 
+          console.log('Verifying access code:', accessCode);
+          
           // Verify access code with backend
           const response = await fetch('/api/verify-code', {
             method: 'POST',
@@ -604,6 +610,7 @@
           });
 
           const result = await response.json();
+          console.log('Access verification result:', result);
 
           if (result.success) {
             // Access granted - save to localStorage and clean URL
@@ -611,8 +618,17 @@
             localStorage.setItem('accessCode', accessCode);
             localStorage.setItem('app_session_active', 'true');
             localStorage.setItem('splash_completed', 'true');
+            
+            // Store user session for React app
+            const defaultUser = {
+              id: 1,
+              name: 'Banking User',
+              email: 'user@bankofireland.ie'
+            };
+            localStorage.setItem('bankingUser', JSON.stringify(defaultUser));
+            
             window.history.replaceState({}, document.title, window.location.pathname);
-            console.log('Access granted successfully');
+            console.log('Access granted successfully - proceeding to app');
             
             // Regenerate manifest with preserved access code for PWA
             generateDynamicManifest();
@@ -620,10 +636,14 @@
             // Force hide loading screen immediately
             hideLoadingScreen();
             
+            // Mark access control as completed so React can load
+            window.accessControlCompleted = true;
+            
             // Start periodic access validation
             startAccessValidation();
           } else {
             // Access denied - show appropriate message
+            console.log('Access denied:', result);
             const message = result.message || "Access code invalid or expired";
             showAccessDenied(message);
           }
@@ -633,11 +653,14 @@
           const hasAccess = localStorage.getItem('accessGranted');
           if (hasAccess === 'true') {
             console.log('Connection error but user has existing access - allowing entry');
+            localStorage.setItem('app_session_active', 'true');
+            localStorage.setItem('splash_completed', 'true');
             hideLoadingScreen();
             // Still start validation to check later when connection is restored
             startAccessValidation();
           } else {
             // Only deny access if they have no existing access AND connection fails
+            console.log('Connection error and no existing access');
             showAccessDenied("Connection error - please try again");
           }
         }
@@ -726,7 +749,40 @@
         }
       }, 5000); // Reduced from 15s to 5s
     </script>
-    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Delay React initialization until access control completes
+      window.accessControlCompleted = false;
+      
+      // Override the React script loading to wait for access control
+      const loadReactApp = () => {
+        const script = document.createElement('script');
+        script.type = 'module';
+        script.src = '/src/main.tsx';
+        document.head.appendChild(script);
+      };
+      
+      // Check if access control is complete
+      let reactLoadAttempts = 0;
+      const maxAttempts = 50; // 5 seconds max wait
+      
+      const waitForAccessControl = () => {
+        reactLoadAttempts++;
+        
+        if (window.accessControlCompleted) {
+          console.log('Access control completed - loading React app');
+          loadReactApp();
+        } else if (reactLoadAttempts >= maxAttempts) {
+          // Fallback: load React anyway after timeout
+          console.log('Access control timeout - loading React app anyway');
+          loadReactApp();
+        } else {
+          setTimeout(waitForAccessControl, 100);
+        }
+      };
+      
+      // Start waiting for access control completion
+      setTimeout(waitForAccessControl, 500);
+    </script>
     <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
     <script type="text/javascript" src="https://replit.com/public/js/replit-dev-banner.js"></script>
   </body>
