@@ -1344,10 +1344,18 @@ export default function Profile() {
                     <select
                       value={CurrencyManager.getCurrentCurrency()}
                       onChange={async (e) => {
-                        await CurrencyManager.setCurrency(e.target.value as 'EUR' | 'GBP');
-                        window.dispatchEvent(new CustomEvent('currencyChanged', {
-                          detail: { currency: e.target.value }
-                        }));
+                        try {
+                          await CurrencyManager.setCurrency(e.target.value as 'EUR' | 'GBP');
+                          window.dispatchEvent(new CustomEvent('currencyChanged', {
+                            detail: { currency: e.target.value }
+                          }));
+                          
+                          // Show success notification
+                          const currencyName = e.target.value === 'EUR' ? 'Euro (€)' : 'Pound Sterling (£)';
+                          alert(`Currency changed to ${currencyName} and saved successfully!`);
+                        } catch (error) {
+                          alert('Failed to save currency preference. Please try again.');
+                        }
                       }}
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                       style={{ fontFamily: 'OpenSans, sans-serif' }}

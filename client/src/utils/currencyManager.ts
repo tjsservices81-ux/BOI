@@ -62,11 +62,16 @@ export class CurrencyManager {
         });
         
         if (!response.ok) {
-          console.error('Failed to save currency preference to database');
+          throw new Error(`Database save failed: ${response.status}`);
         }
+        
+        console.log(`Currency preference saved to database: ${currency}`);
+      } else {
+        throw new Error('Customer number not found');
       }
     } catch (error) {
       console.error('Error saving currency preference:', error);
+      throw error; // Re-throw to trigger error handling in UI
     }
   }
   
