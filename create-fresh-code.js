@@ -2,22 +2,18 @@ import Database from '@replit/database';
 const db = new Database();
 
 async function createFreshCode() {
-  try {
-    // Create a completely fresh test code
-    const testCode = 'FRESH2024';
-    await db.set(`access_code_${testCode}`, {
-      code: testCode,
-      used: false,
-      createdAt: new Date().toISOString(),
-      description: `Fresh test access code: ${testCode}`
-    });
-    
-    console.log(`Created fresh test code: ${testCode}`);
-    console.log(`Test URL: /?access=${testCode}`);
-    
-  } catch (error) {
-    console.error('Error:', error);
-  }
+  const freshCode = 'fresh2024';
+  
+  await db.set(`access_code_${freshCode}`, {
+    code: freshCode,
+    used: false,
+    valid: true,
+    createdAt: new Date().toISOString(),
+    description: `Fresh access code: ${freshCode}`
+  });
+  
+  console.log(`✓ Created fresh code: ${freshCode}`);
+  console.log(`URL: /?access=${freshCode}`);
 }
 
-createFreshCode();
+createFreshCode().catch(console.error);
