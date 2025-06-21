@@ -11,12 +11,6 @@ import { generateChatResponse } from "./openai";
 import { isDeviceBlocked, addDeviceSession, isDeviceInPanicMode, isCustomerInPanicMode } from "./deviceSessions";
 import { isAccountActiveOnOtherDevice, setUserDeviceSession, removeUserDeviceSession, getUserDeviceSession, isCurrentDeviceAuthorized } from "./deviceExclusiveAuth";
 import { addUserSession, removeUserSession, sessionTrackingMiddleware, isSessionValid } from "./sessionManager";
-import { PermanentAuthManager } from "./permanentAuthManager";
-import { db } from "./db";
-import { permanentUserSessions, users } from "@shared/schema";
-import { eq, and } from "drizzle-orm";
-
-// PermanentAuthManager is used as a static class for security operations
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Wait for storage to fully initialize from persistent data
@@ -54,22 +48,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     if (req.session && req.session.userId) {
       // Check if device session is blocked - return error without destroying session
-      if (req.session.sessionId && isDeviceBlocked(req.session.sessionId)) {
-        console.log(`🚫 BLOCKED DEVICE ACCESS ATTEMPT: Session ${req.session.sessionId}`);
-        return res.status(403).json({ error: "Device access has been blocked by administrator" });
+      if (req.session.deviceSessionId && isDeviceBlocked(req.session.deviceSessionId)) {
+        console.log(`🚫 BLOCKED DEVICE ACCESS ATTEMPT: Session ${req.session.deviceSessionId}`);
+        return res.status(403).json({ message: "Device access has been blocked by administrator" });
       }
       
       // Check if device is in panic mode - return error without destroying session
-      if (req.session.sessionId && isDeviceInPanicMode(req.session.sessionId)) {
-        console.log(`🚨 PANIC MODE ACCESS ATTEMPT: Session ${req.session.sessionId}`);
-        return res.status(403).json({ error: "System temporarily unavailable" });
+      if (req.session.deviceSessionId && isDeviceInPanicMode(req.session.deviceSessionId)) {
+        console.log(`🚨 PANIC MODE ACCESS ATTEMPT: Session ${req.session.deviceSessionId}`);
+        return res.status(403).json({ message: "System temporarily unavailable" });
       }
       
       // Refresh session on each authenticated request
       req.session.touch();
       return next();
     }
-    return res.status(401).json({ error: "Not authenticated" });
+    return res.status(401).json({ message: "Not authenticated" });
   };
 
   // User registration endpoint
@@ -107,16 +101,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Registration error:', error);
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ error: error.errors[0].message });
+        return res.status(400).json({ message: error.errors[0].message });
       }
-      res.status(500).json({ error: "Registration failed" });
+      res.status(500).json({ message: "Registration failed" });
     }
   });
-
-  // Apply permanent authentication security middleware to protected routes (excluding login and status)
-  app.use('/api/accounts', PermanentAuthManager.createAuthMiddleware());
-  app.use('/api/transfers', PermanentAuthManager.createAuthMiddleware());
-  app.use('/api/auth/logout', PermanentAuthManager.createAuthMiddleware());
 
   // Authentication endpoints
   app.post("/api/auth/login", async (req, res) => {
@@ -125,14 +114,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.getUserByCredentials(customerNumber, pin);
       
       if (!user) {
-        return res.status(401).json({ error: "Invalid credentials" });
+        return res.status(401).json({ message: "Invalid credentials" });
       }
 
       // Check if this customer has any devices in panic mode
       if (isCustomerInPanicMode(user.customerNumber)) {
         console.log(`🚨 PANIC MODE LOGIN BLOCKED: Customer ${user.customerNumber} attempted login but their device is in panic mode`);
         return res.status(503).json({ 
-          error: "System temporarily unavailable. Please try again later." 
+          message: "System temporarily unavailable. Please try again later." 
         });
       }
 
@@ -206,21 +195,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const existingSession = getUserDeviceSession(user.id);
         console.log(`🚫 UNAUTHORIZED DEVICE: User ${user.id} attempted login from ${deviceModel}, but account is permanently locked to ${existingSession?.deviceModel}`);
         return res.status(403).json({ 
-          error: "This account is already active on another device." 
+          message: "This account is already active on another device." 
         });
       }
 
       // Check if the authorized device is in panic mode
       const existingSession = getUserDeviceSession(user.id);
-      if (existingSession && existingSession.sessionId && isDeviceInPanicMode(existingSession.sessionId)) {
+      if (existingSession && existingSession.deviceSessionId && isDeviceInPanicMode(existingSession.deviceSessionId)) {
         console.log(`🚨 PANIC MODE LOGIN BLOCKED: User ${user.id} attempted login, but device ${existingSession.deviceModel} is in panic mode`);
         return res.status(503).json({ 
-          error: "System temporarily unavailable. Please try again later." 
+          message: "System temporarily unavailable. Please try again later." 
         });
       }
 
       // Create device session only after confirming no existing session
-      const sessionId = addDeviceSession({
+      const deviceSessionId = addDeviceSession({
         deviceModel,
         ipAddress,
         userAgent,
@@ -230,7 +219,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Lock this account to the current device permanently
       setUserDeviceSession({
         userId: user.id,
-        sessionId,
+        deviceSessionId,
         deviceModel,
         ipAddress,
         loginTime: new Date().toISOString(),
@@ -238,203 +227,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         permanentLock: true
       });
 
-      // Create permanent session in database - NEVER EXPIRES
-      PermanentAuthManager.createPermanentSession(user.customerNumber);
-      const sessionToken = await storage.createPermanentUserSession(
-        user.id,
-        user.customerNumber,
-        {
-          deviceModel,
-          ipAddress,
-          userAgent
-        }
-      );
-
-      // Store permanent session token in regular session for compatibility
+      // Store user and device session in session
       (req as any).session.userId = user.id;
       (req as any).session.user = { id: user.id, name: user.name, email: user.email };
-      (req as any).session.permanentSessionToken = sessionToken;
-      (req as any).session.sessionId = sessionId;
+      (req as any).session.deviceSessionId = deviceSessionId;
 
       // Register session for tracking and invalidation
       addUserSession(req.sessionID, user.customerNumber, user.id);
 
-      console.log(`📱 NEW DEVICE SESSION: ${deviceModel} (${ipAddress}) - Session: ${sessionId}`);
+      console.log(`📱 NEW DEVICE SESSION: ${deviceModel} (${ipAddress}) - Session: ${deviceSessionId}`);
       console.log(`🔒 ACCOUNT LOCKED TO DEVICE: User ${user.id} locked to ${deviceModel}`);
-      console.log(`💾 PERMANENT SESSION CREATED: Token stored in database - NEVER EXPIRES`);
 
-      // Set permanent session cookie that never expires
-      res.cookie('permanentSession', sessionToken, {
-        httpOnly: true,
-        secure: false, // Set to true in production with HTTPS
-        sameSite: 'lax',
-        maxAge: undefined // Never expires
-      });
-
-      res.json({ 
-        user: { id: user.id, name: user.name, email: user.email },
-        sessionToken: sessionToken // Send token to client for permanent storage
-      });
+      res.json({ user: { id: user.id, name: user.name, email: user.email } });
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ error: error.errors[0].message });
+        return res.status(400).json({ message: error.errors[0].message });
       }
-      res.status(500).json({ error: "Internal server error" });
+      res.status(500).json({ message: "Internal server error" });
     }
   });
 
-  // Validate permanent session token
-  app.post("/api/auth/validate-permanent", async (req, res) => {
-    try {
-      const { sessionToken } = req.body;
-      
-      if (!sessionToken) {
-        return res.status(400).json({ error: "Session token required" });
-      }
-
-      console.log(`🔍 VALIDATING TOKEN: ${sessionToken.substring(0, 20)}...`);
-
-      // Try multiple validation approaches for permanent session
-      const sessionResult = await db
-        .select()
-        .from(permanentUserSessions)
-        .where(eq(permanentUserSessions.sessionToken, sessionToken))
-        .limit(1);
-        
-      console.log(`🔍 RAW SESSION QUERY: Found ${sessionResult.length} sessions`);
-      
-      if (sessionResult.length === 0) {
-        console.log('❌ No session found with this token');
-        return res.status(401).json({ error: "Session invalid", valid: false });
-      }
-      
-      const session = sessionResult[0];
-      
-      // Check if session is active
-      if (!session.isActive) {
-        console.log('❌ Session found but not active');
-        return res.status(401).json({ error: "Session inactive", valid: false });
-      }
-      
-      // Get user data with fallback to storage layer
-      let userResult = await db
-        .select()
-        .from(users)
-        .where(eq(users.id, session.userId))
-        .limit(1);
-
-      console.log(`🔍 USER QUERY: Found ${userResult.length} users`);
-      
-      // If user not found in database, they were deleted - revoke session immediately
-      if (userResult.length === 0) {
-        console.log('❌ USER DELETED FROM DATABASE - REVOKING SESSION IMMEDIATELY');
-        // User was deleted by admin - revoke session without checking storage fallback
-        await db.update(permanentUserSessions)
-          .set({ isActive: false })
-          .where(eq(permanentUserSessions.sessionToken, sessionToken));
-        return res.status(401).json({ error: "Account no longer exists", valid: false });
-      }
-      
-      const user = userResult[0];
-      
-      // Update last activity - session NEVER expires
-      await db.update(permanentUserSessions)
-        .set({ lastActivity: new Date() })
-        .where(eq(permanentUserSessions.sessionToken, sessionToken));
-
-      console.log(`✅ PERMANENT SESSION VALIDATED: User ${user.id} authenticated permanently`);
-      res.json({ 
-        user: { id: user.id, name: user.name, email: user.email },
-        valid: true 
-      });
-    } catch (error) {
-      console.error('Permanent session validation error:', error);
-      res.status(500).json({ error: "Server error", valid: false });
-    }
-  });
-
-  // Authentication status for biometric flow
-  app.get('/api/auth/status', async (req, res) => {
-    try {
-      // Check for permanent session token in cookies or Authorization header
-      const sessionToken = req.cookies?.permanentSession || 
-                          req.headers.authorization?.replace('Bearer ', '');
-      
-      if (!sessionToken) {
-        return res.json({ isLoggedIn: false, needsBiometric: false });
-      }
-
-      // Validate permanent session token directly
-      const user = await storage.validatePermanentUserSession(sessionToken);
-      
-      if (user) {
-        console.log(`✅ PERMANENT SESSION VERIFIED: ${user.name} (ID: ${user.id})`);
-        res.json({ 
-          isLoggedIn: true, 
-          needsBiometric: true,
-          user: {
-            id: user.id,
-            customerNumber: user.customerNumber,
-            name: user.name,
-            email: user.email,
-            phone: user.phone,
-            address: user.address,
-            dateOfBirth: user.dateOfBirth,
-            joinDate: user.joinDate
-          }
-        });
-        return;
-      }
-      
-      console.log('❌ NO VALID PERMANENT SESSION FOUND');
-      res.json({ isLoggedIn: false, needsBiometric: false });
-    } catch (error) {
-      console.error('Auth status check error:', error);
-      res.json({ isLoggedIn: false, needsBiometric: false });
-    }
-  });
-
-  // Biometric verification endpoint
-  app.post('/api/auth/verify-biometric', async (req, res) => {
-    try {
-      // Check for permanent session token
-      const sessionToken = req.cookies?.permanentSession || 
-                          req.headers.authorization?.replace('Bearer ', '');
-      
-      if (!sessionToken) {
-        return res.status(401).json({ error: 'No session found' });
-      }
-
-      // Validate permanent session
-      const user = await storage.validatePermanentUserSession(sessionToken);
-      
-      if (!user) {
-        return res.status(401).json({ error: 'Invalid session' });
-      }
-
-      console.log(`🔐 BIOMETRIC VERIFICATION PASSED: ${user.name} (ID: ${user.id})`);
-      
-      // Return success with user data
-      res.json({ 
-        success: true,
-        user: {
-          id: user.id,
-          customerNumber: user.customerNumber,
-          name: user.name,
-          email: user.email,
-          phone: user.phone,
-          address: user.address,
-          dateOfBirth: user.dateOfBirth,
-          joinDate: user.joinDate
-        }
-      });
-    } catch (error) {
-      console.error('Biometric verification error:', error);
-      res.status(500).json({ error: 'Verification failed' });
-    }
-  });
-
-  // Check authentication status - LEGACY SUPPORT
+  // Check authentication status
   app.get("/api/auth/user", (req, res) => {
     console.log('User check - Session ID:', req.sessionID);
     console.log('User check - Session user:', (req as any).session?.user);
@@ -446,7 +259,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       (req as any).session.touch();
       res.json((req as any).session.user);
     } else {
-      res.status(401).json({ error: "Not authenticated" });
+      res.status(401).json({ message: "Not authenticated" });
     }
   });
 
@@ -455,7 +268,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Logout functionality disabled - users stay logged in permanently
     // Only admin deletion should remove user sessions
     console.warn('Logout attempt blocked - users can only be logged out via admin deletion');
-    res.status(403).json({ error: "Logout disabled - users can only be logged out via admin deletion" });
+    res.status(403).json({ message: "Logout disabled - users can only be logged out via admin deletion" });
   });
 
   // Get user accounts
@@ -465,7 +278,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const accounts = await storage.getAccountsByUserId(userId);
       res.json(accounts);
     } catch (error) {
-      res.status(500).json({ error: "Internal server error" });
+      res.status(500).json({ message: "Internal server error" });
     }
   });
 
@@ -479,7 +292,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(transactions);
     } catch (error) {
       console.error('Transaction error:', error);
-      res.status(500).json({ error: "Internal server error" });
+      res.status(500).json({ message: "Internal server error" });
     }
   });
 
@@ -490,14 +303,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const account = await storage.getAccountById(transferData.fromAccountId);
       
       if (!account) {
-        return res.status(404).json({ error: "Account not found" });
+        return res.status(404).json({ message: "Account not found" });
       }
 
       const amount = parseFloat(transferData.amount);
       const currentBalance = parseFloat(account.balance);
       
       if (amount > currentBalance) {
-        return res.status(400).json({ error: "Insufficient funds" });
+        return res.status(400).json({ message: "Insufficient funds" });
       }
 
       // Create debit transaction
@@ -516,12 +329,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const newBalance = (currentBalance - amount).toFixed(2);
       await storage.updateAccountBalance(transferData.fromAccountId, newBalance);
 
-      res.json({ success: true, message: "Transfer completed successfully", transaction });
+      res.json({ message: "Transfer completed successfully", transaction });
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ error: error.errors[0].message });
+        return res.status(400).json({ message: error.errors[0].message });
       }
-      res.status(500).json({ error: "Internal server error" });
+      res.status(500).json({ message: "Internal server error" });
     }
   });
 
@@ -532,7 +345,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const payees = await storage.getPayeesByUserId(userId);
       res.json(payees);
     } catch (error) {
-      res.status(500).json({ error: "Internal server error" });
+      res.status(500).json({ message: "Internal server error" });
     }
   });
 
@@ -543,7 +356,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const payments = await storage.getScheduledPaymentsByUserId(userId);
       res.json(payments);
     } catch (error) {
-      res.status(500).json({ error: "Internal server error" });
+      res.status(500).json({ message: "Internal server error" });
     }
   });
 
@@ -554,7 +367,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const statements = await storage.getStatementsByAccountId(accountId);
       res.json(statements);
     } catch (error) {
-      res.status(500).json({ error: "Internal server error" });
+      res.status(500).json({ message: "Internal server error" });
     }
   });
 
@@ -566,13 +379,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // If user doesn't exist in database, return 404 instead of creating with fake data
       if (!user) {
-        return res.status(404).json({ error: "User not found" });
+        return res.status(404).json({ message: "User not found" });
       }
       
       res.json(user);
     } catch (error) {
       console.error('Get profile error:', error);
-      res.status(500).json({ error: "Internal server error" });
+      res.status(500).json({ message: "Internal server error" });
     }
   });
 
@@ -619,10 +432,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(updatedUser);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ error: error.errors[0].message });
+        return res.status(400).json({ message: error.errors[0].message });
       }
       console.error('Profile update error:', error);
-      res.status(500).json({ error: "Internal server error" });
+      res.status(500).json({ message: "Internal server error" });
     }
   });
 
@@ -638,28 +451,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         dateOfBirth: z.string().optional(),
         joinDate: z.string().optional(),
         balance: z.string().optional(),
-        sortCode: z.string().optional(),
-        isDisabled: z.boolean().optional()
+        sortCode: z.string().optional()
       });
       
       const updates = adminUpdateSchema.parse(req.body);
       
-      // Update user profile in database with admin changes
+      // Update user profile in database
       let updatedUser = await storage.updateUserProfile(customerNumber, updates);
       
       if (!updatedUser) {
-        return res.status(404).json({ error: "User not found" });
+        return res.status(404).json({ message: "User not found" });
       }
-      
-      // If balance was updated, update the user's accounts
-      if (updates.balance) {
-        const userAccounts = await storage.getAccountsByUserId(updatedUser.id);
-        if (userAccounts.length > 0) {
-          await storage.updateAccountBalance(userAccounts[0].id, updates.balance);
-        }
-      }
-      
-      console.log(`🔧 ADMIN UPDATE: Profile modified by admin for ${customerNumber}:`, updates);
       
       // Return success with updated user data
       res.json({
@@ -670,67 +472,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Admin profile update error:', error);
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ error: error.errors[0].message });
+        return res.status(400).json({ message: error.errors[0].message });
       }
-      res.status(500).json({ error: "Internal server error" });
-    }
-  });
-
-  // Admin delete user endpoint - complete deletion
-  app.delete("/api/admin/user/:customerNumber", async (req, res) => {
-    try {
-      const { customerNumber } = req.params;
-      
-      console.log(`🗑️ ADMIN DELETE: Starting complete deletion of user ${customerNumber}`);
-      
-      // Perform permanent deletion of user and all associated data
-      const deleted = await storage.permanentDeleteUser(customerNumber);
-      
-      if (deleted) {
-        console.log(`✅ ADMIN DELETE COMPLETE: User ${customerNumber} and all data permanently removed`);
-        res.json({
-          success: true,
-          message: `User ${customerNumber} and all associated data permanently deleted`
-        });
-      } else {
-        res.status(404).json({
-          success: false,
-          error: "User not found"
-        });
-      }
-    } catch (error) {
-      console.error('Admin delete user error:', error);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  });
-
-  // Admin panel data endpoint - real-time user data
-  app.get("/api/admin/users", async (req, res) => {
-    try {
-      const allUsers = await storage.getAllUsers();
-      
-      // Get additional data for each user
-      const usersWithData = await Promise.all(allUsers.map(async (user) => {
-        const accounts = await storage.getAccountsByUserId(user.id);
-        const totalBalance = accounts.reduce((sum, account) => sum + parseFloat(account.balance), 0);
-        
-        return {
-          ...user,
-          totalBalance: totalBalance.toFixed(2),
-          accountCount: accounts.length,
-          lastLoginTime: user.lastLoginTime?.toISOString() || null,
-          lastActivity: user.lastActivity?.toISOString() || null
-        };
-      }));
-      
-      res.json({
-        success: true,
-        users: usersWithData,
-        timestamp: new Date().toISOString()
-      });
-    } catch (error) {
-      console.error('Admin users fetch error:', error);
-      res.status(500).json({ error: "Internal server error" });
+      res.status(500).json({ message: "Internal server error" });
     }
   });
 
@@ -760,9 +504,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('OTC generation failed:', error);
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ error: "Invalid account data format" });
+        return res.status(400).json({ message: "Invalid account data format" });
       }
-      res.status(500).json({ error: "Failed to generate OTC" });
+      res.status(500).json({ message: "Failed to generate OTC" });
     }
   });
 
@@ -795,18 +539,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Create default accounts for the new user
           const defaultAccounts = [
             {
-              displayName: "Current Account",
               userId: newUser.id,
-              accountType: "Current Account",
+              accountType: "current" as const,
               accountNumber: "****2091",
-              balance: "0.00"
+              balance: "0.00",
+              displayName: "Current Account"
             },
             {
-              displayName: "Savings Account", 
               userId: newUser.id,
-              accountType: "Savings Account",
+              accountType: "credit" as const,
+              accountNumber: "****1820",
+              balance: "0.00",
+              displayName: "Credit Card"
+            },
+            {
+              userId: newUser.id,
+              accountType: "savings" as const,
               accountNumber: "****0978",
-              balance: "0.00"
+              balance: "0.00",
+              displayName: "Savings Account"
             }
           ];
 
@@ -826,20 +577,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } catch (dbError) {
           console.error('Failed to create user in database:', dbError);
           res.status(500).json({ 
-            error: "OTC valid but failed to create account" 
+            success: false, 
+            message: "OTC valid but failed to create account" 
           });
         }
       } else {
         res.status(400).json({ 
-          error: "Invalid or expired OTC code" 
+          success: false, 
+          message: "Invalid or expired OTC code" 
         });
       }
     } catch (error) {
       console.error('OTC validation failed:', error);
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ error: "Invalid validation data format" });
+        return res.status(400).json({ message: "Invalid validation data format" });
       }
-      res.status(500).json({ error: "Failed to validate OTC" });
+      res.status(500).json({ message: "Failed to validate OTC" });
     }
   });
 
@@ -860,11 +613,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (result.success) {
         res.json({ success: true, callSid: result.callSid });
       } else {
-        res.status(400).json({ error: result.error });
+        res.status(400).json({ success: false, error: result.error });
       }
     } catch (error) {
       console.error('Security initiation failed:', error);
-      res.status(500).json({ error: "Failed to initiate security call" });
+      res.status(500).json({ success: false, error: "Failed to initiate security call" });
     }
   });
 
@@ -935,7 +688,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(messages);
     } catch (error) {
       console.error('Failed to get chat messages:', error);
-      res.status(500).json({ error: "Failed to retrieve chat messages" });
+      res.status(500).json({ message: "Failed to retrieve chat messages" });
     }
   });
 
@@ -955,9 +708,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Failed to create chat message:', error);
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ error: "Invalid message data" });
+        return res.status(400).json({ message: "Invalid message data" });
       }
-      res.status(500).json({ error: "Failed to create chat message" });
+      res.status(500).json({ message: "Failed to create chat message" });
     }
   });
 
@@ -968,7 +721,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(session);
     } catch (error) {
       console.error('Failed to get chat session:', error);
-      res.status(500).json({ error: "Failed to retrieve chat session" });
+      res.status(500).json({ message: "Failed to retrieve chat session" });
     }
   });
 
@@ -987,9 +740,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Failed to create chat session:', error);
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ error: "Invalid session data" });
+        return res.status(400).json({ message: "Invalid session data" });
       }
-      res.status(500).json({ error: "Failed to create chat session" });
+      res.status(500).json({ message: "Failed to create chat session" });
     }
   });
 
@@ -1000,7 +753,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true });
     } catch (error) {
       console.error('Failed to end chat session:', error);
-      res.status(500).json({ error: "Failed to end chat session" });
+      res.status(500).json({ message: "Failed to end chat session" });
     }
   });
 
@@ -1010,7 +763,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(responses);
     } catch (error) {
       console.error('Failed to get chat responses:', error);
-      res.status(500).json({ error: "Failed to retrieve chat responses" });
+      res.status(500).json({ message: "Failed to retrieve chat responses" });
     }
   });
 
@@ -1029,9 +782,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Failed to create chat response:', error);
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ error: "Invalid response data" });
+        return res.status(400).json({ message: "Invalid response data" });
       }
-      res.status(500).json({ error: "Failed to create chat response" });
+      res.status(500).json({ message: "Failed to create chat response" });
     }
   });
 
@@ -1131,9 +884,9 @@ No transfers found yet on your account.`;
     } catch (error) {
       console.error('Failed to generate AI response:', error);
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ error: "Invalid request data" });
+        return res.status(400).json({ message: "Invalid request data" });
       }
-      res.status(500).json({ error: "Failed to generate AI response" });
+      res.status(500).json({ message: "Failed to generate AI response" });
     }
   });
 
@@ -1151,16 +904,16 @@ No transfers found yet on your account.`;
       const response = await storage.updateChatResponse(id, updates);
       
       if (!response) {
-        return res.status(404).json({ error: "Chat response not found" });
+        return res.status(404).json({ message: "Chat response not found" });
       }
       
       res.json(response);
     } catch (error) {
       console.error('Failed to update chat response:', error);
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ error: "Invalid update data" });
+        return res.status(400).json({ message: "Invalid update data" });
       }
-      res.status(500).json({ error: "Failed to update chat response" });
+      res.status(500).json({ message: "Failed to update chat response" });
     }
   });
 
@@ -1171,7 +924,7 @@ No transfers found yet on your account.`;
       res.json({ success: true });
     } catch (error) {
       console.error('Failed to delete chat response:', error);
-      res.status(500).json({ error: "Failed to delete chat response" });
+      res.status(500).json({ message: "Failed to delete chat response" });
     }
   });
 
@@ -1190,7 +943,7 @@ No transfers found yet on your account.`;
       res.json({ success: true, users: usersWithStatus });
     } catch (error) {
       console.error('Failed to get users:', error);
-      res.status(500).json({ error: "Failed to load users" });
+      res.status(500).json({ success: false, message: "Failed to load users" });
     }
   });
 
@@ -1200,7 +953,7 @@ No transfers found yet on your account.`;
       res.json({ success: true, sessions });
     } catch (error) {
       console.error('Failed to get device sessions:', error);
-      res.status(500).json({ error: "Failed to load device sessions" });
+      res.status(500).json({ success: false, message: "Failed to load device sessions" });
     }
   });
 
@@ -1211,7 +964,7 @@ No transfers found yet on your account.`;
       res.json({ success: true });
     } catch (error) {
       console.error('Failed to block device:', error);
-      res.status(500).json({ error: "Failed to block device" });
+      res.status(500).json({ success: false, message: "Failed to block device" });
     }
   });
 
@@ -1222,7 +975,7 @@ No transfers found yet on your account.`;
       res.json({ success: true });
     } catch (error) {
       console.error('Failed to unblock device:', error);
-      res.status(500).json({ error: "Failed to unblock device" });
+      res.status(500).json({ success: false, message: "Failed to unblock device" });
     }
   });
 
@@ -1233,7 +986,7 @@ No transfers found yet on your account.`;
       res.json({ success: true });
     } catch (error) {
       console.error('Failed to enable panic mode:', error);
-      res.status(500).json({ error: "Failed to enable panic mode" });
+      res.status(500).json({ success: false, message: "Failed to enable panic mode" });
     }
   });
 
@@ -1244,7 +997,7 @@ No transfers found yet on your account.`;
       res.json({ success: true });
     } catch (error) {
       console.error('Failed to disable panic mode:', error);
-      res.status(500).json({ error: "Failed to disable panic mode" });
+      res.status(500).json({ success: false, message: "Failed to disable panic mode" });
     }
   });
 
@@ -1256,7 +1009,7 @@ No transfers found yet on your account.`;
       res.json({ success: true });
     } catch (error) {
       console.error('Failed to disable user:', error);
-      res.status(500).json({ error: "Failed to disable user" });
+      res.status(500).json({ success: false, message: "Failed to disable user" });
     }
   });
 
@@ -1268,55 +1021,7 @@ No transfers found yet on your account.`;
       res.json({ success: true });
     } catch (error) {
       console.error('Failed to enable user:', error);
-      res.status(500).json({ error: "Failed to enable user" });
-    }
-  });
-
-  // Admin delete user endpoint - DATABASE DELETION
-  app.post("/api/admin/delete-user", async (req, res) => {
-    const { customerNumber } = req.body;
-    
-    if (!customerNumber) {
-      return res.status(400).json({ error: 'Customer number is required' });
-    }
-    
-    try {
-      // SECURITY: Mark user as permanently deleted FIRST
-      PermanentAuthManager.markUserDeleted(customerNumber);
-      
-      // Delete from database - PERMANENT DELETION
-      const dbDeleteResult = await db.delete(users)
-        .where(eq(users.customerNumber, customerNumber))
-        .returning();
-      
-      // Delete permanent sessions from database
-      const sessionDeleteResult = await db.delete(permanentUserSessions)
-        .where(eq(permanentUserSessions.customerNumber, customerNumber))
-        .returning();
-      
-      // Remove from memory storage (fallback)
-      const storageDeleteResult = storage.deleteUser(customerNumber);
-      
-      // Clear active sessions
-      removeUserSession(customerNumber);
-      removeUserDeviceSession(customerNumber);
-      
-      const details = {
-        userDeleted: dbDeleteResult.length > 0 || storageDeleteResult,
-        permanentSessionsRevoked: sessionDeleteResult.length >= 0,
-        memoryCleared: storageDeleteResult
-      };
-      
-      console.log(`🗑️ Admin deleted user: ${customerNumber}`, details);
-      
-      res.json({ 
-        success: true,
-        message: 'User permanently deleted from database and all sessions revoked',
-        details
-      });
-    } catch (error) {
-      console.error('Error deleting user:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ success: false, message: "Failed to enable user" });
     }
   });
 
@@ -1326,11 +1031,12 @@ No transfers found yet on your account.`;
       const { customerNumber } = req.params;
       
       // Check if user exists in database
-      const user = await storage.getUserByCustomerNumber(customerNumber);
+      const user = await storage.getUser(customerNumber);
       if (!user) {
         return res.status(404).json({ 
-          error: "This account no longer exists.",
-          exists: false
+          success: false, 
+          exists: false, 
+          message: "This account no longer exists." 
         });
       }
 
@@ -1338,9 +1044,10 @@ No transfers found yet on your account.`;
       const { isUserDisabled } = await import('./userDisableManager');
       if (isUserDisabled(user.id)) {
         return res.status(403).json({ 
-          error: "This account has been temporarily suspended.",
+          success: false, 
           exists: true, 
-          disabled: true
+          disabled: true,
+          message: "This account has been temporarily suspended." 
         });
       }
 
@@ -1358,7 +1065,8 @@ No transfers found yet on your account.`;
     } catch (error) {
       console.error('Failed to validate user:', error);
       res.status(500).json({ 
-        error: "Failed to validate account status" 
+        success: false, 
+        message: "Failed to validate account status" 
       });
     }
   });

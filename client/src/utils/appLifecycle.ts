@@ -1,6 +1,5 @@
 // App lifecycle management for state preservation
 import { StateManager } from './stateManager';
-import { UserDataManager } from './userDataManager';
 
 export class AppLifecycle {
   private static isInitialized = false;
@@ -8,7 +7,6 @@ export class AppLifecycle {
   private static visibilityTimeout: NodeJS.Timeout | null = null;
   private static isAppTerminated = false;
   private static backgroundTime = 0;
-  private static wasMinimized = false;
   // Session timeout removed - users stay logged in permanently unless admin deletes account
 
   static initialize() {
@@ -33,55 +31,39 @@ export class AppLifecycle {
   }
 
   static checkAppTermination() {
-    // Check for reliable indicators of app termination vs minimization
-    const appActiveMarker = sessionStorage.getItem('app_active_session');
-    const wasMinimizedFlag = sessionStorage.getItem('app_was_minimized');
-    // Use global localStorage for app lifecycle (not user-specific)
     const sessionData = localStorage.getItem('app_session_state');
+    const lastBackgroundTime = localStorage.getItem('app_background_time');
     
-    // If no session data exists, this is a fresh start
-    if (!sessionData) {
+    if (!sessionData || !lastBackgroundTime) {
+      // No previous session or background time - fresh start but keep user logged in
       this.isAppTerminated = true;
-      this.wasMinimized = false;
+      // Don't clear app state - preserve user login
       return;
     }
     
-    // If app was explicitly marked as minimized and session still exists, treat as minimize
-    if (wasMinimizedFlag === 'true' && appActiveMarker) {
-      this.isAppTerminated = false;
-      this.wasMinimized = true;
-      console.log('🔄 App resuming from minimize - restoring state');
-      return;
-    }
+    // Always restore state regardless of background duration
+    // Users stay logged in permanently unless admin deletes account
     
-    // If no active session marker, app was fully closed/terminated
-    if (!appActiveMarker) {
+    // Check if page was unloaded/refreshed (indicates force close or refresh)
+    if (!sessionStorage.getItem('app_active_session')) {
       this.isAppTerminated = true;
-      this.wasMinimized = false;
-      console.log('🚀 Fresh app start - checking session');
-      // Clear the minimized flag since this is a fresh start
-      sessionStorage.removeItem('app_was_minimized');
+      // Don't clear app state - preserve user login
       return;
     }
     
-    // Default to minimized state if session marker exists
     this.isAppTerminated = false;
-    this.wasMinimized = true;
   }
 
   static handleVisibilityChange() {
     if (document.hidden) {
-      // App going to background - mark as minimized and save state
+      // App going to background - save state and timestamp
       this.backgroundTime = Date.now();
-      this.wasMinimized = true;
-      // Use global localStorage for app lifecycle (not user-specific)
       localStorage.setItem('app_background_time', this.backgroundTime.toString());
-      sessionStorage.setItem('app_was_minimized', 'true');
-      sessionStorage.setItem('app_active_session', 'true');
       this.saveCurrentState();
     } else {
-      // App returning to foreground - restore state if minimized
-      if (this.wasMinimized && !this.isAppTerminated) {
+      // App returning to foreground - always restore state
+      // Users stay logged in permanently unless admin deletes account
+      if (!this.isAppTerminated) {
         this.restoreStateIfNeeded();
       }
     }
@@ -90,16 +72,11 @@ export class AppLifecycle {
   static handleBeforeUnload() {
     // Clear session marker to detect force close
     sessionStorage.removeItem('app_active_session');
-    sessionStorage.removeItem('app_was_minimized');
     this.saveCurrentState();
   }
 
   static handlePageHide() {
-    // Only clear if not minimized - pagehide fires on both minimize and close
-    if (!this.wasMinimized) {
-      sessionStorage.removeItem('app_active_session');
-      sessionStorage.removeItem('app_was_minimized');
-    }
+    sessionStorage.removeItem('app_active_session');
     this.saveCurrentState();
   }
 
@@ -130,54 +107,16 @@ export class AppLifecycle {
   }
 
   static clearAppState() {
-    // ADMIN DELETION: Clear all authentication data when user is deleted by admin
+    // Only clear temporary session data, preserve user login
     localStorage.removeItem('app_session_state');
     localStorage.removeItem('app_background_time');
-    localStorage.removeItem('permanentlyLoggedIn');
-    localStorage.removeItem('currentUser');
-    localStorage.removeItem('lastActiveUser');
-    localStorage.removeItem('allBankUsers');
     sessionStorage.removeItem('app_active_session');
-    sessionStorage.removeItem('app_was_minimized');
-    this.wasMinimized = false;
-    this.isAppTerminated = true;
-    console.log('🗑️ App state and user authentication cleared by admin deletion');
-  }
-
-  static getAppTerminationState() {
-    return {
-      isAppTerminated: this.isAppTerminated,
-      wasMinimized: this.wasMinimized
-    };
-  }
-
-  static isResumingFromMinimize() {
-    const wasMinimized = sessionStorage.getItem('app_was_minimized') === 'true';
-    const activeSession = sessionStorage.getItem('app_active_session') === 'true';
-    return wasMinimized && activeSession && !this.isAppTerminated;
-  }
-
-  static isFreshStart() {
-    return this.isAppTerminated && !this.wasMinimized;
-  }
-
-  // OFFLINE FUNCTIONALITY: Enable complete offline operation
-  static enableOfflineMode() {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js')
-        .then(registration => {
-          console.log('🔄 Offline functionality enabled - app works fully offline');
-        })
-        .catch(error => {
-          console.log('Offline mode unavailable - app still functional online');
-        });
-    }
+    // Don't call StateManager.clearAppState() - preserve user login
   }
 
   static saveCurrentState() {
     try {
-      // Get current user through UserDataManager for consistency
-      const currentUser = localStorage.getItem('currentUser');
+      const currentUser = JSON.parse(localStorage.getItem('bankingUser') || 'null');
       const currentRoute = window.location.pathname;
       
       if (currentUser) {

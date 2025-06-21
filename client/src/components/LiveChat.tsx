@@ -141,11 +141,11 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   useEffect(() => {
     if (isOpen && currentUser) {
       const userChatKey = `liveChatState_${currentUser}`;
-      const saved = UserDataManager.getUserData(`liveChatState`, null);
+      const saved = localStorage.getItem(userChatKey);
       
       if (saved) {
         try {
-          const parsedState = saved;
+          const parsedState = JSON.parse(saved);
           // Restore any active chat state (waiting, connected) but not ended
           if (parsedState && parsedState.isActive && parsedState.queueStatus !== 'ended') {
             // Always restore chat state - no session timeout
@@ -231,7 +231,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
         isPersistent: true,
         lastActivity: Date.now()
       };
-      UserDataManager.setUserData(`liveChatState`, persistentState);
+      localStorage.setItem(userChatKey, JSON.stringify(persistentState));
     }
   }, [chatState, currentUser]);
 
@@ -247,7 +247,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
         clearInterval(endChatTimerRef.current);
         endChatTimerRef.current = null;
       }
-      // Note: We don't clear UserDataManager here to preserve chat during page refreshes
+      // Note: We don't clear localStorage here to preserve chat during page refreshes
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
@@ -261,7 +261,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   useEffect(() => {
     if (currentUser) {
       // Simply mark that navigation is active without clearing chat
-      UserDataManager.setUserData('app_navigation_active', 'true');
+      sessionStorage.setItem('app_navigation_active', 'true');
     }
   }, [currentUser]);
 
@@ -1150,12 +1150,16 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       endChatTimerRef.current = null;
     }
     
-    // Clear only the current user's chat data from UserDataManager
-    UserDataManager.clearUserData(`liveChatState`);
+    // Clear only the current user's chat data from localStorage
+    const userChatKey = `liveChatState_${currentUser}`;
+    localStorage.removeItem(userChatKey);
     
-    // Clear any other user-specific chat-related storage through UserDataManager
-    UserDataManager.clearCache('liveChat');
-    UserDataManager.clearCache('chatState');
+    // Clear any other user-specific chat-related storage
+    Object.keys(localStorage).forEach(key => {
+      if (key.includes(`_${currentUser}_`) && (key.includes('chat') || key.includes('liveChat'))) {
+        localStorage.removeItem(key);
+      }
+    });
     
     // Reset all component state completely
     setChatState({

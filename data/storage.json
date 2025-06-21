@@ -1,121 +1,6 @@
 {
-  "users": [
-    [
-      72,
-      {
-        "id": 72,
-        "customerNumber": "BOI816723842",
-        "pin": "000000",
-        "name": "John",
-        "email": "john@gmail.com",
-        "phone": "464664646",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "2025-06-21T04:17:55.677Z",
-        "dateCreated": "2025-06-21T04:17:55.745Z",
-        "isDisabled": false,
-        "profilePhoto": null,
-        "preferences": null,
-        "lastLoginTime": null,
-        "deviceInfo": null,
-        "notificationSettings": null,
-        "securitySettings": null,
-        "lastActivity": "2025-06-21T04:17:55.745Z"
-      }
-    ],
-    [
-      73,
-      {
-        "id": 73,
-        "customerNumber": "BOI638844107",
-        "pin": "000000",
-        "name": "Shhshsjs",
-        "email": "sbshsh@gmail.com",
-        "phone": "46646464",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "2025-06-21T04:19:19.438Z",
-        "dateCreated": "2025-06-21T04:19:19.509Z",
-        "isDisabled": false,
-        "profilePhoto": null,
-        "preferences": null,
-        "lastLoginTime": null,
-        "deviceInfo": null,
-        "notificationSettings": null,
-        "securitySettings": null,
-        "lastActivity": "2025-06-21T04:19:19.509Z"
-      }
-    ],
-    [
-      74,
-      {
-        "id": 74,
-        "customerNumber": "12345678",
-        "pin": "000000",
-        "name": "John",
-        "email": "hahs@gmail.com",
-        "phone": "494949",
-        "address": "Shs",
-        "dateOfBirth": "",
-        "joinDate": "2025-06-21T04:19:52.330Z",
-        "dateCreated": "2025-06-21T04:19:52.340Z",
-        "isDisabled": false,
-        "profilePhoto": null,
-        "preferences": null,
-        "lastLoginTime": null,
-        "deviceInfo": null,
-        "notificationSettings": null,
-        "securitySettings": null,
-        "lastActivity": "2025-06-21T04:19:52.463Z"
-      }
-    ]
-  ],
-  "accounts": [
-    [
-      52,
-      {
-        "id": 52,
-        "displayName": "Current Account",
-        "userId": 72,
-        "accountType": "Current Account",
-        "accountNumber": "****2091",
-        "balance": "0.00"
-      }
-    ],
-    [
-      53,
-      {
-        "id": 53,
-        "displayName": "Savings Account",
-        "userId": 72,
-        "accountType": "Savings Account",
-        "accountNumber": "****0978",
-        "balance": "0.00"
-      }
-    ],
-    [
-      54,
-      {
-        "id": 54,
-        "displayName": "Current Account",
-        "userId": 73,
-        "accountType": "Current Account",
-        "accountNumber": "****2091",
-        "balance": "0.00"
-      }
-    ],
-    [
-      55,
-      {
-        "id": 55,
-        "displayName": "Savings Account",
-        "userId": 73,
-        "accountType": "Savings Account",
-        "accountNumber": "****0978",
-        "balance": "0.00"
-      }
-    ]
-  ],
+  "users": [],
+  "accounts": [],
   "transactions": [],
   "payees": [],
   "scheduledPayments": [],
@@ -124,8 +9,8 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 35,
-    "currentAccountId": 56,
+    "currentUserId": 31,
+    "currentAccountId": 37,
     "currentTransactionId": 49,
     "currentPayeeId": 25,
     "currentScheduledPaymentId": 1,

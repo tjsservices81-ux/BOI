@@ -13,7 +13,6 @@ export class StateManager {
     timestamp: number;
   }) {
     try {
-      // Use global localStorage for state management (not user-specific)
       localStorage.setItem(this.STATE_KEY, JSON.stringify(state));
     } catch (error) {
       console.error('Failed to save app state:', error);
@@ -23,7 +22,6 @@ export class StateManager {
   // Restore complete app state
   static restoreAppState(): any {
     try {
-      // Use global localStorage for state management (not user-specific)
       const saved = localStorage.getItem(this.STATE_KEY);
       if (saved) {
         const state = JSON.parse(saved);
@@ -41,7 +39,6 @@ export class StateManager {
     try {
       const positions = this.getScrollPositions();
       positions[route] = position;
-      // Use global localStorage for scroll positions (app-wide state)
       localStorage.setItem(this.SCROLL_POSITIONS_KEY, JSON.stringify(positions));
     } catch (error) {
       console.error('Failed to save scroll position:', error);
@@ -62,7 +59,6 @@ export class StateManager {
   // Get all scroll positions
   static getScrollPositions(): Record<string, number> {
     try {
-      // Use global localStorage for scroll positions (app-wide state)
       const saved = localStorage.getItem(this.SCROLL_POSITIONS_KEY);
       return saved ? JSON.parse(saved) : {};
     } catch (error) {
@@ -76,7 +72,6 @@ export class StateManager {
     try {
       const formData = this.getAllFormData();
       formData[formId] = data;
-      // Use global localStorage for form data (app-wide state)
       localStorage.setItem(this.FORM_DATA_KEY, JSON.stringify(formData));
     } catch (error) {
       console.error('Failed to save form data:', error);
@@ -97,7 +92,6 @@ export class StateManager {
   // Get all form data
   static getAllFormData(): Record<string, any> {
     try {
-      // Use global localStorage for form data (app-wide state)
       const saved = localStorage.getItem(this.FORM_DATA_KEY);
       return saved ? JSON.parse(saved) : {};
     } catch (error) {
@@ -106,18 +100,29 @@ export class StateManager {
     }
   }
 
-  // Clear expired state - DISABLED: Users stay logged in permanently
+  // Clear expired state
   static clearExpiredState() {
-    // State clearing disabled - users never get logged out automatically
-    // Only admin deletion should clear state
-    return;
+    try {
+      const state = this.restoreAppState();
+      if (!state) {
+        localStorage.removeItem(this.STATE_KEY);
+        localStorage.removeItem(this.SCROLL_POSITIONS_KEY);
+        localStorage.removeItem(this.FORM_DATA_KEY);
+      }
+    } catch (error) {
+      console.error('Failed to clear expired state:', error);
+    }
   }
 
   // Clear all app state
   static clearAppState() {
-    // App state clearing disabled - users stay logged in permanently
-    console.warn('clearAppState() disabled - users can only be logged out via admin deletion');
-    return;
+    try {
+      localStorage.removeItem(this.STATE_KEY);
+      localStorage.removeItem(this.SCROLL_POSITIONS_KEY);
+      localStorage.removeItem(this.FORM_DATA_KEY);
+    } catch (error) {
+      console.error('Failed to clear app state:', error);
+    }
   }
 
   // Handle page visibility change

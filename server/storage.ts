@@ -1,30 +1,22 @@
 import { 
   users, accounts, transactions, payees, scheduledPayments, statements,
-  chatMessages, chatResponses, chatSessions, permanentUserSessions,
+  chatMessages, chatResponses, chatSessions,
   type User, type Account, type Transaction, type Payee, type ScheduledPayment, type Statement,
   type ChatMessage, type ChatResponse, type ChatSession,
   type InsertUser, type InsertAccount, type InsertTransaction, type InsertPayee,
-  type InsertChatMessage, type InsertChatResponse, type InsertChatSession,
-  type InsertPermanentUserSession, type PermanentUserSession
+  type InsertChatMessage, type InsertChatResponse, type InsertChatSession
 } from "@shared/schema";
 import { PersistentDataManager } from "./persistentStorage";
-import { db } from "./db";
-import { eq } from "drizzle-orm";
 
 export interface IStorage {
-  // User operations with enhanced data persistence
+  // User operations
   getUserByCredentials(customerNumber: string, pin: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  getUser(id: number): Promise<User | undefined>;
+  getUser(customerNumber: string): Promise<User | undefined>;
   getUserByCustomerNumber(customerNumber: string): Promise<User | undefined>;
   updateUserProfile(customerNumber: string, updates: Partial<User>): Promise<User | undefined>;
-  updateUserActivity(customerNumber: string): Promise<void>;
-  saveUserPreferences(customerNumber: string, preferences: any): Promise<void>;
-  saveUserDeviceInfo(customerNumber: string, deviceInfo: any): Promise<void>;
   getAllUsers(): Promise<User[]>;
   deleteUser(customerNumber: string): Promise<boolean>;
-  permanentDeleteUser(customerNumber: string): Promise<boolean>;
-  waitForInitialization(): Promise<void>;
   
   // Account operations
   getAccountsByUserId(userId: number): Promise<Account[]>;
@@ -53,10 +45,6 @@ export interface IStorage {
   getChatSession(sessionId: string): Promise<ChatSession | undefined>;
   createChatSession(session: InsertChatSession): Promise<ChatSession>;
   endChatSession(sessionId: string): Promise<void>;
-  
-  // Permanent session operations for security
-  createPermanentUserSession(userId: number, customerNumber: string, metadata: any): Promise<string>;
-  validatePermanentUserSession(sessionToken: string): Promise<User | undefined>;
   getChatResponses(): Promise<ChatResponse[]>;
   createChatResponse(response: InsertChatResponse): Promise<ChatResponse>;
   updateChatResponse(id: number, updates: Partial<ChatResponse>): Promise<ChatResponse | undefined>;
@@ -76,8 +64,8 @@ export interface IStorage {
   initializeSampleData(): Promise<void>;
 }
 
-// Database-backed storage implementation for permanent user persistence
-class DatabaseStorage implements IStorage {
+// Persistent storage implementation
+class MemStorage implements IStorage {
   private users = new Map<number, User>();
   private accounts = new Map<number, Account>();
   private transactions = new Map<number, Transaction>();
@@ -96,7 +84,6 @@ class DatabaseStorage implements IStorage {
   private currentStatementId: number = 1;
   private currentChatMessageId: number = 1;
   private currentChatResponseId: number = 1;
-  private currentChatSessionId: number = 1;
 
   private persistentManager: PersistentDataManager;
 
@@ -170,303 +157,47 @@ class DatabaseStorage implements IStorage {
   }
 
   async getUserByCredentials(customerNumber: string, pin: string): Promise<User | undefined> {
-    // SECURITY: Always check database ONLY - no memory cache fallback
-    // This prevents deleted users from authenticating via cached credentials
-    try {
-      const [dbUser] = await db.select().from(users)
-        .where(eq(users.customerNumber, customerNumber))
-        .limit(1);
-        
-      if (dbUser && dbUser.pin === pin) {
-        // Cache the user for future requests only if database confirms existence
-        this.users.set(dbUser.id, dbUser);
-        console.log(`✅ USER AUTHENTICATED FROM DATABASE: ${dbUser.name} (ID: ${dbUser.id})`);
-        return dbUser;
-      } else if (dbUser) {
-        console.log(`❌ INVALID PIN for customer ${customerNumber}`);
-      } else {
-        console.log(`❌ USER NOT FOUND in database: ${customerNumber}`);
-      }
-    } catch (error) {
-      console.error('Database authentication failed:', error);
-      // SECURITY: NO fallback to memory cache - return undefined to block access
-      console.log(`🚫 AUTHENTICATION BLOCKED: Database error for ${customerNumber}`);
-    }
-    
-    return undefined;
+    return Array.from(this.users.values()).find(user => 
+      user.customerNumber === customerNumber && user.pin === pin
+    );
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    try {
-      // Create user in database first for permanent persistence
-      const [dbUser] = await db.insert(users).values({
-        customerNumber: insertUser.customerNumber,
-        pin: insertUser.pin,
-        name: insertUser.name || "",
-        email: insertUser.email || "",
-        phone: insertUser.phone || null,
-        address: insertUser.address || null,
-        dateOfBirth: insertUser.dateOfBirth || null,
-        joinDate: insertUser.joinDate || "Member since 2018",
-        isDisabled: false
-      }).returning();
-
-      // Cache in memory
-      this.users.set(dbUser.id, dbUser);
-      
-      // Also save to persistent storage as backup
-      await this.saveData();
-      
-      console.log(`✅ USER CREATED IN DATABASE: ${dbUser.name} (ID: ${dbUser.id})`);
-      return dbUser;
-    } catch (error) {
-      console.error('Error creating user in database:', error);
-      
-      // Fallback to memory storage
-      const user: User = {
-        id: this.currentUserId++,
-        customerNumber: insertUser.customerNumber,
-        pin: insertUser.pin,
-        name: insertUser.name || "",
-        email: insertUser.email || "",
-        phone: insertUser.phone || null,
-        address: insertUser.address || null,
-        dateOfBirth: insertUser.dateOfBirth || null,
-        joinDate: insertUser.joinDate || "Member since 2018",
-        dateCreated: insertUser.dateCreated || new Date(),
-        isDisabled: false,
-        profilePhoto: null,
-        preferences: null,
-        lastLoginTime: null,
-        deviceInfo: null,
-        notificationSettings: null,
-        securitySettings: null,
-        lastActivity: new Date()
-      };
-      this.users.set(user.id, user);
-      await this.saveData();
-      return user;
-    }
+    const user: User = {
+      id: this.currentUserId++,
+      customerNumber: insertUser.customerNumber,
+      pin: insertUser.pin,
+      name: insertUser.name || "",
+      email: insertUser.email || "",
+      phone: insertUser.phone || null,
+      address: insertUser.address || null,
+      dateOfBirth: insertUser.dateOfBirth || null,
+      joinDate: insertUser.joinDate || "Member since 2018",
+      dateCreated: insertUser.dateCreated || new Date(),
+      isDisabled: false
+    };
+    this.users.set(user.id, user);
+    await this.saveData(); // Persist data immediately
+    return user;
   }
 
-  async getUser(id: number): Promise<User | undefined> {
-    // Check memory cache first
-    let user = this.users.get(id);
-    if (user) return user;
-    
-    // Check database if not in cache
-    try {
-      const [dbUser] = await db.select().from(users).where(eq(users.id, id)).limit(1);
-      if (dbUser) {
-        // Cache the user for future requests
-        this.users.set(dbUser.id, dbUser);
-        return dbUser;
-      }
-    } catch (error) {
-      console.error('Error fetching user from database:', error);
-    }
-    
-    return undefined;
+  async getUser(customerNumber: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(user => user.customerNumber === customerNumber);
   }
 
   async getUserByCustomerNumber(customerNumber: string): Promise<User | undefined> {
-    // Check memory cache first
-    let user = Array.from(this.users.values()).find(user => user.customerNumber === customerNumber);
-    if (user) return user;
-    
-    // Check database if not in cache
-    try {
-      const [dbUser] = await db.select().from(users).where(eq(users.customerNumber, customerNumber)).limit(1);
-      if (dbUser) {
-        // Cache the user for future requests
-        this.users.set(dbUser.id, dbUser);
-        return dbUser;
-      }
-    } catch (error) {
-      console.error('Error fetching user by customer number from database:', error);
-    }
-    
-    return undefined;
+    return Array.from(this.users.values()).find(user => user.customerNumber === customerNumber);
   }
 
   async updateUserProfile(customerNumber: string, updates: Partial<User>): Promise<User | undefined> {
-    try {
-      await this.waitForInitialization();
-      
-      // Update in database with enhanced data persistence
-      const result = await db
-        .update(users)
-        .set({ 
-          ...updates,
-          lastActivity: new Date()
-        })
-        .where(eq(users.customerNumber, customerNumber))
-        .returning();
-      
-      if (result.length > 0) {
-        // Update in memory
-        const user = result[0];
-        this.users.set(user.id, user);
-        
-        // Persist to file
-        // Save updated data
-        await this.saveData();
-        
-        return user;
-      }
-      
-      return undefined;
-    } catch (error) {
-      console.error('Error updating user profile:', error);
-      return undefined;
+    const user = await this.getUserByCustomerNumber(customerNumber);
+    if (user) {
+      const updatedUser = { ...user, ...updates };
+      this.users.set(user.id, updatedUser);
+      await this.saveData(); // Persist changes to disk immediately
+      return updatedUser;
     }
-  }
-
-  async updateUserActivity(customerNumber: string): Promise<void> {
-    try {
-      await this.waitForInitialization();
-      
-      await db
-        .update(users)
-        .set({ lastActivity: new Date() })
-        .where(eq(users.customerNumber, customerNumber));
-      
-      // Update in memory
-      const user = await this.getUserByCustomerNumber(customerNumber);
-      if (user) {
-        user.lastActivity = new Date();
-        this.users.set(user.id, user);
-      }
-      
-      await this.saveData();
-    } catch (error) {
-      console.error('Error updating user activity:', error);
-    }
-  }
-
-  async saveUserPreferences(customerNumber: string, preferences: any): Promise<void> {
-    try {
-      await this.waitForInitialization();
-      
-      await db
-        .update(users)
-        .set({ 
-          preferences: preferences,
-          lastActivity: new Date()
-        })
-        .where(eq(users.customerNumber, customerNumber));
-      
-      // Update in memory
-      const user = await this.getUserByCustomerNumber(customerNumber);
-      if (user) {
-        user.preferences = preferences;
-        user.lastActivity = new Date();
-        this.users.set(user.id, user);
-      }
-      
-      await this.saveData();
-    } catch (error) {
-      console.error('Error saving user preferences:', error);
-    }
-  }
-
-  async saveUserDeviceInfo(customerNumber: string, deviceInfo: any): Promise<void> {
-    try {
-      await this.waitForInitialization();
-      
-      await db
-        .update(users)
-        .set({ 
-          deviceInfo: deviceInfo,
-          lastActivity: new Date()
-        })
-        .where(eq(users.customerNumber, customerNumber));
-      
-      // Update in memory
-      const user = await this.getUserByCustomerNumber(customerNumber);
-      if (user) {
-        user.deviceInfo = deviceInfo;
-        user.lastActivity = new Date();
-        this.users.set(user.id, user);
-      }
-      
-      await this.saveData();
-    } catch (error) {
-      console.error('Error saving device info:', error);
-    }
-  }
-
-  async permanentDeleteUser(customerNumber: string): Promise<boolean> {
-    try {
-      await this.waitForInitialization();
-      
-      // Get user before deletion for cleanup
-      const user = await this.getUserByCustomerNumber(customerNumber);
-      if (!user) {
-        return false;
-      }
-      
-      // Delete all related data in correct order to maintain referential integrity
-      
-      // 1. Delete user transactions (through accounts)
-      const userAccounts = await this.getAccountsByUserId(user.id);
-      for (const account of userAccounts) {
-        await db.delete(transactions).where(eq(transactions.accountId, account.id));
-      }
-      
-      // 2. Delete user accounts
-      await db.delete(accounts).where(eq(accounts.userId, user.id));
-      
-      // 3. Delete user payees
-      await db.delete(payees).where(eq(payees.userId, user.id));
-      
-      // 4. Delete scheduled payments
-      await db.delete(scheduledPayments).where(eq(scheduledPayments.userId, user.id));
-      
-      // 5. Delete statements (through accounts)
-      for (const account of userAccounts) {
-        await db.delete(statements).where(eq(statements.accountId, account.id));
-      }
-      
-      // 6. Delete chat messages
-      await db.delete(chatMessages).where(eq(chatMessages.userId, user.id));
-      
-      // 7. Delete permanent sessions
-      await db.delete(permanentUserSessions).where(eq(permanentUserSessions.userId, user.id));
-      
-      // 8. Finally delete the user
-      const deleteResult = await db.delete(users).where(eq(users.customerNumber, customerNumber));
-      
-      if (deleteResult.rowCount && deleteResult.rowCount > 0) {
-        // Remove from memory
-        this.users.delete(user.id);
-        
-        // Remove related data from memory
-        for (const account of userAccounts) {
-          this.accounts.delete(account.id);
-          const accountTransactions = Array.from(this.transactions.values()).filter(t => t.accountId === account.id);
-          for (const transaction of accountTransactions) {
-            this.transactions.delete(transaction.id);
-          }
-        }
-        
-        const userPayees = Array.from(this.payees.values()).filter(p => p.userId === user.id);
-        for (const payee of userPayees) {
-          this.payees.delete(payee.id);
-        }
-        
-        // Persist updated data
-        await this.saveData();
-        
-        console.log(`🗑️ PERMANENT DELETE: Completely removed user ${customerNumber} and all associated data`);
-        return true;
-      }
-      
-      return false;
-    } catch (error) {
-      console.error('Error permanently deleting user:', error);
-      return false;
-    }
+    return undefined;
   }
 
   async getAllUsers(): Promise<User[]> {
@@ -476,42 +207,31 @@ class DatabaseStorage implements IStorage {
   async deleteUser(customerNumber: string): Promise<boolean> {
     const user = await this.getUserByCustomerNumber(customerNumber);
     if (user) {
-      try {
-        // CRITICAL: Delete from DATABASE first to prevent authentication
-        await db.delete(users).where(eq(users.id, user.id));
-        console.log(`🗑️ DATABASE DELETION: User ${user.id} removed from database`);
-        
-        // Delete all user's accounts first
-        const userAccounts = await this.getAccountsByUserId(user.id);
-        for (const account of userAccounts) {
-          // Delete all transactions for this account
-          const accountTransactions = await this.getTransactionsByAccountId(account.id);
-          accountTransactions.forEach(transaction => this.transactions.delete(transaction.id));
-          // Delete the account
-          this.accounts.delete(account.id);
-        }
-        
-        // Delete all user's payees
-        const payees = await this.getPayeesByUserId(user.id);
-        payees.forEach(payee => this.payees.delete(payee.id));
-        
-        // Delete all user's chat messages and sessions
-        const userChatMessages = Array.from(this.chatMessages.values()).filter(msg => msg.userId === user.id);
-        userChatMessages.forEach(msg => this.chatMessages.delete(msg.id));
-        
-        const userChatSessions = Array.from(this.chatSessions.values()).filter(session => session.userId === user.id);
-        userChatSessions.forEach(session => this.chatSessions.delete(session.sessionId));
-        
-        // Finally delete from memory cache
-        this.users.delete(user.id);
-        await this.saveData(); // Persist data immediately
-        
-        console.log(`✅ COMPLETE DELETION: User ${customerNumber} removed from database and memory`);
-        return true;
-      } catch (error) {
-        console.error(`❌ DATABASE DELETION FAILED for user ${user.id}:`, error);
-        return false;
+      // Delete all user's accounts first
+      const userAccounts = await this.getAccountsByUserId(user.id);
+      for (const account of userAccounts) {
+        // Delete all transactions for this account
+        const accountTransactions = await this.getTransactionsByAccountId(account.id);
+        accountTransactions.forEach(transaction => this.transactions.delete(transaction.id));
+        // Delete the account
+        this.accounts.delete(account.id);
       }
+      
+      // Delete all user's payees
+      const payees = await this.getPayeesByUserId(user.id);
+      payees.forEach(payee => this.payees.delete(payee.id));
+      
+      // Delete all user's chat messages and sessions
+      const userChatMessages = Array.from(this.chatMessages.values()).filter(msg => msg.userId === user.id);
+      userChatMessages.forEach(msg => this.chatMessages.delete(msg.id));
+      
+      const userChatSessions = Array.from(this.chatSessions.values()).filter(session => session.userId === user.id);
+      userChatSessions.forEach(session => this.chatSessions.delete(session.sessionId));
+      
+      // Finally delete the user
+      this.users.delete(user.id);
+      await this.saveData(); // Persist data immediately
+      return true;
     }
     return false;
   }
@@ -565,17 +285,7 @@ class DatabaseStorage implements IStorage {
   async createTransaction(insertTransaction: InsertTransaction): Promise<Transaction> {
     const transaction: Transaction = {
       id: this.currentTransactionId++,
-      ...insertTransaction,
-      reference: insertTransaction.reference || null,
-      recipientName: insertTransaction.recipientName || null,
-      iban: insertTransaction.iban || null,
-      bicCode: insertTransaction.bicCode || null,
-      recipientAccountNumber: insertTransaction.recipientAccountNumber || null,
-      recipientSortCode: insertTransaction.recipientSortCode || null,
-      recipientIban: insertTransaction.recipientIban || null,
-      exchangeRate: insertTransaction.exchangeRate || null,
-      convertedAmount: insertTransaction.convertedAmount || null,
-      convertedCurrency: insertTransaction.convertedCurrency || null
+      ...insertTransaction
     };
     this.transactions.set(transaction.id, transaction);
     return transaction;
@@ -588,9 +298,7 @@ class DatabaseStorage implements IStorage {
   async createPayee(insertPayee: InsertPayee): Promise<Payee> {
     const payee: Payee = {
       id: this.currentPayeeId++,
-      ...insertPayee,
-      iban: insertPayee.iban || null,
-      lastAmount: insertPayee.lastAmount || null
+      ...insertPayee
     };
     this.payees.set(payee.id, payee);
     return payee;
@@ -612,9 +320,7 @@ class DatabaseStorage implements IStorage {
     const message: ChatMessage = {
       id: this.currentChatMessageId++,
       ...insertMessage,
-      timestamp: insertMessage.timestamp || new Date(),
-      userId: insertMessage.userId || null,
-      agentName: insertMessage.agentName || null
+      timestamp: insertMessage.timestamp || new Date()
     };
     this.chatMessages.set(message.id, message);
     return message;
@@ -626,12 +332,8 @@ class DatabaseStorage implements IStorage {
 
   async createChatSession(insertSession: InsertChatSession): Promise<ChatSession> {
     const session: ChatSession = {
-      id: this.currentChatSessionId++,
       ...insertSession,
-      startedAt: insertSession.startedAt || new Date(),
-      userId: insertSession.userId || null,
-      isActive: insertSession.isActive !== undefined ? insertSession.isActive : true,
-      endedAt: insertSession.endedAt || null
+      startedAt: insertSession.startedAt || new Date()
     };
     this.chatSessions.set(session.sessionId, session);
     return session;
@@ -653,10 +355,7 @@ class DatabaseStorage implements IStorage {
   async createChatResponse(insertResponse: InsertChatResponse): Promise<ChatResponse> {
     const response: ChatResponse = {
       id: this.currentChatResponseId++,
-      ...insertResponse,
-      isActive: insertResponse.isActive !== undefined ? insertResponse.isActive : true,
-      createdAt: insertResponse.createdAt || new Date(),
-      updatedAt: insertResponse.updatedAt || new Date()
+      ...insertResponse
     };
     this.chatResponses.set(response.id, response);
     return response;
@@ -674,65 +373,6 @@ class DatabaseStorage implements IStorage {
 
   async deleteChatResponse(id: number): Promise<void> {
     this.chatResponses.delete(id);
-  }
-
-  // Permanent session operations for bulletproof security
-  async createPermanentUserSession(userId: number, customerNumber: string, metadata: any): Promise<string> {
-    const sessionToken = `perm_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
-    try {
-      // Insert into database with permanent session data
-      await db.insert(permanentUserSessions).values({
-        sessionToken,
-        userId,
-        customerNumber,
-        deviceFingerprint: metadata.deviceFingerprint || metadata.deviceModel || 'unknown',
-        deviceModel: metadata.deviceModel || 'Unknown Device',
-        ipAddress: metadata.ipAddress || 'Unknown IP',
-        userAgent: metadata.userAgent || 'Unknown Agent',
-        createdAt: new Date(),
-        lastActivity: new Date(),
-        isActive: true
-      });
-      
-      console.log(`🔐 Permanent session created in database: ${sessionToken} for user ${customerNumber}`);
-      return sessionToken;
-    } catch (error) {
-      console.error('Failed to create permanent session:', error);
-      throw error;
-    }
-  }
-
-  async validatePermanentUserSession(sessionToken: string): Promise<User | undefined> {
-    try {
-      // Query permanent session from database
-      const session = await db.select()
-        .from(permanentUserSessions)
-        .where(eq(permanentUserSessions.sessionToken, sessionToken))
-        .limit(1);
-
-      if (session.length === 0 || !session[0].isActive) {
-        console.log(`❌ Invalid or inactive permanent session: ${sessionToken}`);
-        return undefined;
-      }
-
-      // Get user from database
-      const user = await db.select()
-        .from(users)
-        .where(eq(users.id, session[0].userId))
-        .limit(1);
-
-      if (user.length === 0) {
-        console.log(`❌ User not found for session: ${sessionToken}`);
-        return undefined;
-      }
-
-      console.log(`✅ Valid permanent session: ${sessionToken} for user ${user[0].customerNumber}`);
-      return user[0];
-    } catch (error) {
-      console.error('Failed to validate permanent session:', error);
-      return undefined;
-    }
   }
 
   // Admin operations
@@ -953,13 +593,7 @@ class DatabaseStorage implements IStorage {
       ];
 
       for (const accountData of sampleAccounts) {
-        const account = await this.createAccount({
-          userId: accountData.userId,
-          accountType: accountData.type,
-          accountNumber: accountData.accountNumber,
-          balance: accountData.balance,
-          displayName: accountData.type
-        });
+        const account = await this.createAccount(accountData);
 
         // Create sample transactions
         const sampleTransactions = [
@@ -967,21 +601,21 @@ class DatabaseStorage implements IStorage {
             accountId: account.id,
             type: "credit" as const,
             amount: "500.00",
+            currency: "EUR" as const,
             description: "Salary deposit",
-            category: "Income",
-            paymentMethod: "Bank Transfer",
-            timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-            reference: "SAL001"
+            reference: "SAL001",
+            date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+            balance: account.balance
           },
           {
             accountId: account.id,
             type: "debit" as const,
             amount: "125.50",
+            currency: "EUR" as const,
             description: "Grocery shopping",
-            category: "Shopping",
-            paymentMethod: "Card",
-            timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-            reference: "POS001"
+            reference: "POS001",
+            date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+            balance: (parseFloat(account.balance) - 125.50).toString()
           }
         ];
 
@@ -1009,12 +643,7 @@ class DatabaseStorage implements IStorage {
       ];
 
       for (const payeeData of samplePayees) {
-        await this.createPayee({
-          userId: payeeData.userId,
-          name: payeeData.name,
-          category: payeeData.type,
-          iban: payeeData.accountNumber
-        });
+        await this.createPayee(payeeData);
       }
     }
 
@@ -1022,4 +651,4 @@ class DatabaseStorage implements IStorage {
   }
 }
 
-export const storage = new DatabaseStorage();
+export const storage = new MemStorage();

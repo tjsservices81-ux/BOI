@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin, Calendar, CreditCard, X, RefreshCw, Plus, MessageCircle, Trash2, PhoneCall } from "lucide-react";
-import { UserDataManager } from "../utils/userDataManager";
-import { useAuth } from "../lib/auth";
+import { UserDataManager } from "@/utils/userDataManager";
+import { useAuth } from "@/lib/auth";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Profile() {
@@ -58,7 +58,7 @@ export default function Profile() {
     const currentCustomerNumber = UserDataManager.getCurrentUser();
     // Try to get cached data first to prevent flash
     if (currentCustomerNumber) {
-      const allUsers = UserDataManager.getAllUsers();
+      const allUsers = JSON.parse(localStorage.getItem('bankUsers') || '{}');
       const cachedUser = allUsers[currentCustomerNumber];
       if (cachedUser) {
         return {
@@ -108,7 +108,7 @@ export default function Profile() {
             });
             
             // Update UserDataManager with fresh data (silent update to prevent loops)
-            const allUsers = UserDataManager.getAllUsers();
+            const allUsers = JSON.parse(localStorage.getItem('bankUsers') || '{}');
             if (allUsers[userData.customerNumber]) {
               allUsers[userData.customerNumber] = {
                 ...allUsers[userData.customerNumber],
@@ -119,7 +119,7 @@ export default function Profile() {
                 address: userData.address || "",
                 joinDate: userData.joinDate || ""
               };
-              UserDataManager.setUserData(userData.customerNumber, allUsers[userData.customerNumber]);
+              localStorage.setItem('bankUsers', JSON.stringify(allUsers));
             }
           }
         } else {
@@ -839,7 +839,7 @@ export default function Profile() {
     // Force localStorage update for immediate persistence
     const currentUser = UserDataManager.getCurrentUser();
     if (currentUser) {
-      UserDataManager.setUserData('bankAccounts', updatedAccounts);
+      localStorage.setItem(`user_${currentUser}_bankAccounts`, JSON.stringify(updatedAccounts));
     }
     
     alert(`${editingAccount.displayName} balance updated to €${numericBalance.toFixed(2)}`);
@@ -862,11 +862,18 @@ export default function Profile() {
     UserDataManager.setUserData('savedPayees', []);
     UserDataManager.setUserData('recentPayees', []);
     
-    // Clear all legacy data through UserDataManager
-    UserDataManager.clearUserData('bankAccounts');
-    UserDataManager.clearUserData('bankTransactions');
-    UserDataManager.clearUserData('savedPayees');
-    UserDataManager.clearUserData('recentPayees');
+    // Force clear any legacy localStorage entries that might exist
+    const currentUser = UserDataManager.getCurrentUser();
+    if (currentUser) {
+      localStorage.removeItem(`user_${currentUser}_bankAccounts`);
+      localStorage.removeItem(`user_${currentUser}_bankTransactions`);
+      localStorage.removeItem(`user_${currentUser}_savedPayees`);
+      localStorage.removeItem(`user_${currentUser}_recentPayees`);
+    }
+    localStorage.removeItem('bankTransactions');
+    localStorage.removeItem('savedPayees');
+    localStorage.removeItem('recentPayees');
+    localStorage.removeItem('bankAccounts');
     
     // Update local state immediately
     setAccounts(defaultAccounts);

@@ -148,40 +148,6 @@ router.post('/login', (req, res) => {
   }
 });
 
-// Admin delete user endpoint
-router.delete('/delete-user/:customerNumber', adminAuth, async (req, res) => {
-  try {
-    const { customerNumber } = req.params;
-    
-    console.log(`🗑️ ADMIN PANEL DELETE: Starting deletion of user ${customerNumber}`);
-    
-    // Import storage consistently
-    const { storage } = await import('./storage');
-    
-    // Use the permanent delete function to remove all data
-    const deleted = await storage.permanentDeleteUser(customerNumber);
-    
-    if (deleted) {
-      console.log(`✅ ADMIN PANEL DELETE COMPLETE: User ${customerNumber} permanently removed`);
-      res.json({
-        success: true,
-        message: `User ${customerNumber} and all associated data permanently deleted`
-      });
-    } else {
-      res.status(404).json({
-        success: false,
-        error: "User not found"
-      });
-    }
-  } catch (error) {
-    console.error('Admin panel delete user error:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: "Failed to delete user" 
-    });
-  }
-});
-
 // Admin panel main page
 router.get('/panel', adminAuth, async (req, res) => {
   try {
@@ -584,7 +550,7 @@ router.get('/panel', adminAuth, async (req, res) => {
           if (!currentCustomerNumber) return;
           
           try {
-            const response = await fetch('/api/admin/delete-user', {
+            const response = await fetch('/admin/delete-user', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -593,10 +559,9 @@ router.get('/panel', adminAuth, async (req, res) => {
             });
             
             const result = await response.json();
-            if (response.ok && result.success) {
-              // SECURITY: Only clear frontend data AFTER backend confirms successful deletion
-              if (result.details && result.details.userDeleted && result.details.permanentSessionsRevoked) {
-                try {
+            if (response.ok) {
+              // Clear all cached data for the deleted user from browser storage
+              try {
                 // Clear localStorage entries for this customer
                 const allKeys = Object.keys(localStorage);
                 for (const key of allKeys) {
@@ -622,23 +587,7 @@ router.get('/panel', adminAuth, async (req, res) => {
                   localStorage.removeItem('lastActiveUser');
                 }
                 
-                // CRITICAL: Clear authentication localStorage to force immediate logout
-                const authUser = localStorage.getItem('currentUser');
-                if (authUser) {
-                  try {
-                    const parsedUser = JSON.parse(authUser);
-                    // Check if the authenticated user matches the deleted customer
-                    if (parsedUser.id && parsedUser.id.toString().includes(currentCustomerNumber.replace(/\D/g, ''))) {
-                      localStorage.removeItem('currentUser');
-                      console.log('Cleared authentication data for deleted user');
-                    }
-                  } catch (e) {
-                    // If parsing fails, clear it anyway for safety
-                    localStorage.removeItem('currentUser');
-                  }
-                }
-                
-                console.log('Admin cleanup: Removed all browser data for customer', currentCustomerNumber);
+                console.log(\`🧹 Admin cleanup: Removed all browser data for customer \${currentCustomerNumber}\`);
               } catch (cleanupError) {
                 console.error('Error during frontend cleanup:', cleanupError);
               }
@@ -649,15 +598,10 @@ router.get('/panel', adminAuth, async (req, res) => {
                 document.getElementById('successMessage').classList.remove('show');
               }, 3000);
               
-                // Update stats and reload to reflect changes
-                updateStats();
-              } else {
-                console.error('Backend deletion incomplete - skipping frontend cleanup');
-                alert('User deletion may have failed. Please refresh and try again.');
-              }
+              // Update stats and reload to reflect changes
+              updateStats();
             } else {
               console.error('Error deleting user:', result);
-              alert('Failed to delete user: ' + (result.error || 'Unknown error'));
             }
           } catch (error) {
             console.error('Error deleting user:', error);
@@ -794,25 +738,12 @@ router.post('/delete-user', adminAuth, async (req, res) => {
     // Import required modules
     const { storage } = await import('./storage');
     const { invalidateAllUserSessions } = await import('./sessionManager');
-    const { PermanentAuthManager } = await import('./permanentAuthManager');
-    const { db } = await import('./db');
-    const { permanentUserSessions } = await import('@shared/schema');
-    const { eq } = await import('drizzle-orm');
     
     // First, verify user exists
     const user = await storage.getUserByCustomerNumber(customerNumber);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
-    
-    // CRITICAL: Revoke ALL permanent sessions for this user FIRST
-    await db.update(permanentUserSessions)
-      .set({ isActive: false })
-      .where(eq(permanentUserSessions.userId, user.id));
-    
-    // Also delete permanent sessions entirely for security
-    await db.delete(permanentUserSessions)
-      .where(eq(permanentUserSessions.userId, user.id));
     
     // Delete user from database (this includes all accounts, transactions, payees, etc.)
     const userDeleted = await storage.deleteUser(customerNumber);
@@ -824,19 +755,16 @@ router.post('/delete-user', adminAuth, async (req, res) => {
       // Remove all device sessions for this customer
       await deleteAllUserSessions(customerNumber);
       
-      console.log(`🗑️ ADMIN DELETION COMPLETE: ${customerNumber}`);
-      console.log(`✅ Database deletion: ${userDeleted ? 'SUCCESS' : 'FAILED'}`);
-      console.log(`✅ Permanent sessions revoked and deleted`);
-      console.log(`✅ Invalidated ${invalidatedSessions.length} active sessions`);
-      console.log(`🚫 User can NO LONGER access the app from any device`);
+      console.log(`Admin successfully deleted user account: ${customerNumber}`);
+      console.log(`Database deletion: ${userDeleted ? 'SUCCESS' : 'FAILED'}`);
+      console.log(`Invalidated ${invalidatedSessions.length} active sessions`);
       
       res.json({ 
         success: true, 
         message: 'User account permanently deleted and logged out from all devices',
         details: {
           userDeleted: true,
-          sessionsInvalidated: invalidatedSessions.length,
-          permanentSessionsRevoked: true
+          sessionsInvalidated: invalidatedSessions.length
         }
       });
     } else {

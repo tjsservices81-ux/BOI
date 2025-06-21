@@ -22,20 +22,6 @@ export default function Dashboard() {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [isNavigating, setIsNavigating] = useState(false);
 
-  // Debug authentication state on dashboard load
-  useEffect(() => {
-    console.log('📊 Dashboard component mounted');
-    const cachedUser = UserDataManager.getCurrentUser();
-    
-    if (cachedUser) {
-      console.log('📊 Dashboard: User data found in UserDataManager:', JSON.parse(cachedUser));
-    } else {
-      console.log('📊 Dashboard: No user data in UserDataManager');
-    }
-    
-    console.log('📊 Dashboard: Loading animation removed for instant accounts access');
-  }, []);
-
   // Enhanced navigation with smooth animations
   const navigateWithAnimation = (path: string, animationType: 'slide-right' | 'slide-left' | 'slide-up' = 'slide-right') => {
     setIsNavigating(true);
@@ -173,8 +159,8 @@ export default function Dashboard() {
         UserDataManager.clearCache('bankAccounts');
         setAccounts(updatedAccounts);
         
-        // Update through UserDataManager for consistency
-        UserDataManager.setUserData('bankAccounts', updatedAccounts);
+        // Also update localStorage for immediate access by other components
+        localStorage.setItem('bankAccounts', JSON.stringify(updatedAccounts));
       }
     };
 
@@ -227,9 +213,9 @@ export default function Dashboard() {
     };
   }, [accounts]);
 
-  // Store accounts in UserDataManager for transfer forms to access
+  // Store accounts in localStorage for transfer forms to access
   useEffect(() => {
-    UserDataManager.setUserData('bankAccounts', accounts);
+    localStorage.setItem('bankAccounts', JSON.stringify(accounts));
   }, [accounts]);
 
   // Handle scroll position persistence
@@ -262,8 +248,6 @@ export default function Dashboard() {
       default: return 'bg-gray-500';
     }
   };
-
-
 
   return (
     <div className={`page-container h-screen bg-white overflow-hidden flex flex-col ios-safe-bottom relative page-fade-slide-in ${isNavigating ? 'dashboard-exit' : ''}`} style={{ maxHeight: '100vh' }}>

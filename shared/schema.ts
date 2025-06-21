@@ -14,14 +14,6 @@ export const users = pgTable("users", {
   joinDate: text("join_date").notNull().default("Member since 2018"),
   dateCreated: timestamp("date_created").notNull().defaultNow(),
   isDisabled: boolean("is_disabled").notNull().default(false),
-  // Profile data fields for persistent storage
-  profilePhoto: text("profile_photo"),
-  preferences: jsonb("preferences"), // User preferences and settings
-  lastLoginTime: timestamp("last_login_time"),
-  deviceInfo: jsonb("device_info"), // Device information
-  notificationSettings: jsonb("notification_settings"),
-  securitySettings: jsonb("security_settings"),
-  lastActivity: timestamp("last_activity").notNull().defaultNow(),
 });
 
 export const accounts = pgTable("accounts", {
@@ -81,32 +73,16 @@ export const statements = pgTable("statements", {
   available: boolean("available").notNull().default(true),
 });
 
-// Session storage table for authentication persistence - NO EXPIRY
+// Session storage table for authentication persistence
 export const sessions = pgTable(
   "sessions",
   {
     sid: varchar("sid").primaryKey(),
     sess: jsonb("sess").notNull(),
-    expire: timestamp("expire"), // Made nullable - no automatic expiry
+    expire: timestamp("expire").notNull(),
   },
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
-
-// Permanent user sessions for ultimate login persistence
-export const permanentUserSessions = pgTable("permanent_user_sessions", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().unique(),
-  customerNumber: text("customer_number").notNull(),
-  sessionToken: text("session_token").notNull().unique(),
-  deviceFingerprint: text("device_fingerprint").notNull(),
-  deviceModel: text("device_model"),
-  ipAddress: text("ip_address"),
-  userAgent: text("user_agent"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  lastActivity: timestamp("last_activity").notNull().defaultNow(),
-  isActive: boolean("is_active").notNull().default(true),
-  // NO expiry field - sessions never expire unless manually revoked
-});
 
 // Chat messages table for persistent chat storage
 export const chatMessages = pgTable("chat_messages", {
@@ -169,10 +145,6 @@ export const insertChatSessionSchema = createInsertSchema(chatSessions).omit({
   id: true,
 });
 
-export const insertPermanentUserSessionSchema = createInsertSchema(permanentUserSessions).omit({
-  id: true,
-});
-
 export const loginSchema = z.object({
   customerNumber: z.string().min(1, "Customer number is required"),
   pin: z.string().min(4, "PIN must be at least 4 digits"),
@@ -195,7 +167,6 @@ export type Statement = typeof statements.$inferSelect;
 export type ChatMessage = typeof chatMessages.$inferSelect;
 export type ChatResponse = typeof chatResponses.$inferSelect;
 export type ChatSession = typeof chatSessions.$inferSelect;
-export type PermanentUserSession = typeof permanentUserSessions.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertAccount = z.infer<typeof insertAccountSchema>;
 export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
@@ -203,6 +174,5 @@ export type InsertPayee = z.infer<typeof insertPayeeSchema>;
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type InsertChatResponse = z.infer<typeof insertChatResponseSchema>;
 export type InsertChatSession = z.infer<typeof insertChatSessionSchema>;
-export type InsertPermanentUserSession = z.infer<typeof insertPermanentUserSessionSchema>;
 export type LoginRequest = z.infer<typeof loginSchema>;
 export type TransferRequest = z.infer<typeof transferSchema>;

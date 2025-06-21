@@ -105,7 +105,7 @@ class TransferSecurityService {
       </Response>`;
   }
 
-  async handleUserResponse(transferId: string, digits: string): Promise<{ success: boolean; action?: 'confirmed' | 'cancelled'; error?: string }> {
+  async handleUserResponse(transferId: string, digits: string): Promise<{ success: boolean; action: 'confirmed' | 'cancelled' }> {
     const transfer = this.pendingTransfers.get(transferId);
     if (!transfer) {
       return { success: false, action: 'cancelled' };

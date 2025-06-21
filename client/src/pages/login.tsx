@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { useAuth } from "../lib/auth";
+import { useAuth } from "@/lib/auth";
 import { User, ExternalLink, HelpCircle, Phone, Settings, Shield, MapPin, MoreHorizontal } from "lucide-react";
-import { useToast } from "../hooks/use-toast";
-import { UserDataManager } from "../utils/userDataManager";
+import { useToast } from "@/hooks/use-toast";
+import { UserDataManager } from "@/utils/userDataManager";
 
 export default function Login() {
   const [customerNumber, setCustomerNumber] = useState("");
@@ -25,14 +25,14 @@ export default function Login() {
   const [loginStage, setLoginStage] = useState('');
   const [assetsLoaded, setAssetsLoaded] = useState(false);
   const [showSignUp, setShowSignUp] = useState(false);
-  const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [newUserData, setNewUserData] = useState({
     name: '',
     email: '',
     phone: '',
     customerNumber: ''
   });
-
+  const [logoTapCount, setLogoTapCount] = useState(0);
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [showOtcVerification, setShowOtcVerification] = useState(false);
   const [otcCode, setOtcCode] = useState('');
   const [generatedOtc, setGeneratedOtc] = useState('');
@@ -43,10 +43,6 @@ export default function Login() {
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [nearbyATMs, setNearbyATMs] = useState<any[]>([]);
   
-  // Logo tap functionality for account creation access
-  const [logoTapCount, setLogoTapCount] = useState(0);
-  const [lastLogoTapTime, setLastLogoTapTime] = useState(0);
-  
   // Input refs for proper focus management in PWA
   const nameInputRef = useRef<HTMLInputElement>(null);
   const emailInputRef = useRef<HTMLInputElement>(null);
@@ -55,78 +51,13 @@ export default function Login() {
   const authHook = useAuth();
   const login = authHook?.login || (() => {});
   const isLoading = authHook?.isLoading || false;
-  const user = authHook?.user || null;
   
   const locationHook = useLocation();
-  const [location, navigate] = locationHook || [null, () => {}];
+  const [, navigate] = locationHook || [null, () => {}];
   const [validatedUsers, setValidatedUsers] = useState<any>({});
   
   const toastHook = useToast();
   const toast = toastHook?.toast || (() => {});
-
-  // Handle logo tap for account creation access (ONLY on login screen when not authenticated)
-  const handleLogoTap = () => {
-    // STRICT CONDITION: Only allow on exact login route
-    const pathname = window.location.pathname;
-    if (pathname !== '/login') {
-      console.log(`Logo tap ignored - not on login page (current: ${pathname})`);
-      return; // Silently ignore taps on non-login pages
-    }
-    
-    // STRICT CONDITION: Check authentication state comprehensively
-    const isAuthenticatedContext = user !== null;
-    const cachedUser = UserDataManager.getCurrentUser();
-    const authToken = UserDataManager.getUserData('auth_token', null);
-    const isAuthenticated = isAuthenticatedContext || cachedUser || authToken;
-    
-    if (isAuthenticated) {
-      // User is already logged in - show warning toast and prevent any action
-      console.log('Logo tap blocked - user is authenticated');
-      toast({
-        title: "⚠️ You're already signed in.",
-        duration: 2500,
-        variant: "default",
-      });
-      // Reset tap counter to prevent accumulation
-      setLogoTapCount(0);
-      setLastLogoTapTime(0);
-      return;
-    }
-    
-    // Proceed with tap counting only if on login page and not authenticated
-    const currentTime = Date.now();
-    const timeSinceLastTap = currentTime - lastLogoTapTime;
-    
-    // Reset tap count if more than 2 seconds have passed since last tap
-    let newTapCount;
-    if (timeSinceLastTap > 2000) {
-      newTapCount = 1;
-    } else {
-      newTapCount = logoTapCount + 1;
-    }
-    
-    setLogoTapCount(newTapCount);
-    setLastLogoTapTime(currentTime);
-    
-    console.log(`Logo tap: ${newTapCount}/5 (login page, unauthenticated)`);
-    
-    // Open account creation modal when 5 taps are reached
-    if (newTapCount >= 5) {
-      console.log('Opening account creation modal...');
-      setShowSignUp(true);
-      setLogoTapCount(0);
-      setLastLogoTapTime(0);
-    }
-  };
-
-  // Reset logo tap counter when user becomes authenticated
-  useEffect(() => {
-    if (user) {
-      // User is authenticated, reset logo tap state
-      setLogoTapCount(0);
-      setLastLogoTapTime(0);
-    }
-  }, [user]);
 
   // Validate users against server and clean up deleted ones
   const validateAndCleanUsers = async () => {
@@ -178,15 +109,15 @@ export default function Login() {
   useEffect(() => {
     setAssetsLoaded(true);
     
-    // SECURITY: Preserve authentication data on cold starts
-    // Users remain logged in unless explicitly logged out by admin deletion
+    // For cold starts, clear all auth state and require fresh login
     const wasColdStart = sessionStorage.getItem('app_cold_start') === 'true' || 
                         !sessionStorage.getItem('splashShown');
     
     if (wasColdStart) {
-      // Cold start - only clear temporary cache data, preserve authentication
-      UserDataManager.clearTemporaryState();
-      console.log('Cold start detected - authentication state preserved');
+      // Cold start - clear all authentication data
+      UserDataManager.clearCurrentUser();
+      localStorage.removeItem('bankingUser');
+      localStorage.removeItem('lastActiveUser');
     }
     
     // Clear form fields regardless
@@ -194,9 +125,16 @@ export default function Login() {
     setPin('');
     setBiometricVerified(false);
     setPinVerified(false);
+    setLogoTapCount(0);
+    setShowAdminLogin(false);
   }, []);
 
-
+  // Validate users when Admin Access dialog opens
+  useEffect(() => {
+    if (showAdminLogin) {
+      validateAndCleanUsers();
+    }
+  }, [showAdminLogin]);
 
   const handleNavigation = (path: string) => {
     setIsNavigating(true);
@@ -205,7 +143,24 @@ export default function Login() {
     }, 150);
   };
 
-
+  const handleLogoTap = () => {
+    const newTapCount = logoTapCount + 1;
+    setLogoTapCount(newTapCount);
+    
+    if (newTapCount === 5) {
+      setShowAdminLogin(true);
+      setLogoTapCount(0);
+      return;
+    }
+    
+    // Reset tap count after 3 seconds of inactivity with cleanup
+    const timeoutId = setTimeout(() => {
+      setLogoTapCount(0);
+    }, 3000);
+    
+    // Store timeout ID for potential cleanup
+    return () => clearTimeout(timeoutId);
+  };
 
   const generateCustomerNumber = () => {
     return 'BOI' + Math.random().toString().substring(2, 11);
@@ -354,55 +309,20 @@ export default function Login() {
       return;
     }
 
+    // Set current user and record login time
+    UserDataManager.setCurrentUser(customerNumber);
+    UserDataManager.recordLoginTime(customerNumber);
+    
     try {
-      // Authenticate with server first
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ customerNumber, pin }),
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        
-        // PERMANENT LOGIN: Set current user and mark as permanently logged in
-        localStorage.setItem('currentUser', customerNumber);
-        localStorage.setItem('permanentlyLoggedIn', 'true');
-        localStorage.setItem('permanentUserData', JSON.stringify(result.user));
-        
-        UserDataManager.setCurrentUser(customerNumber);
-        UserDataManager.recordLoginTime(customerNumber);
-        UserDataManager.setUserData(customerNumber, 'permanentlyLoggedIn', true);
-        UserDataManager.setUserData(customerNumber, 'permanentSessionToken', result.sessionToken);
-        
-        // Login to auth context
-        login(result.user);
-        navigate("/dashboard");
-      } else {
-        // Server auth failed, try local verification
-        const userProfile = UserDataManager.getUserProfile(customerNumber);
-        const storedPin = UserDataManager.getUserData(customerNumber, 'pin');
-        
-        if (userProfile && storedPin === pin) {
-          // Local auth success
-          localStorage.setItem('currentUser', customerNumber);
-          localStorage.setItem('permanentlyLoggedIn', 'true');
-          localStorage.setItem('permanentUserData', JSON.stringify(userProfile));
-          
-          UserDataManager.setCurrentUser(customerNumber);
-          UserDataManager.recordLoginTime(customerNumber);
-          UserDataManager.setUserData(customerNumber, 'permanentlyLoggedIn', true);
-          
-          login({
-            id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
-            name: userProfile.name,
-            email: userProfile.email
-          });
-          navigate("/dashboard");
-        } else {
-          throw new Error('Invalid credentials');
-        }
+      const userProfile = UserDataManager.getUserProfile();
+      if (userProfile) {
+        login({
+          id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
+          name: userProfile.name,
+          email: userProfile.email
+        });
       }
+      navigate("/dashboard");
     } catch (error) {
       toast({
         title: "Login Failed",
@@ -515,14 +435,6 @@ export default function Login() {
     setLoginProgress(0);
 
     try {
-      // If PIN was verified, it already established session and set auth context
-      // Just navigate to biometric auth for device verification
-      if (pinVerified) {
-        setIsLoginAnimating(false);
-        navigate('/biometric-auth');
-        return;
-      }
-
       // Stage 1: Authenticating (2 seconds)
       setLoginStage('Authenticating...');
       const progressInterval = setInterval(() => {
@@ -532,7 +444,7 @@ export default function Login() {
         });
       }, 100);
 
-      // Validate user existence on server during authentication
+      // Validate user existence on server during authentication stage
       const targetCustomerNumber = customerNumber || UserDataManager.getLastActiveUser() || Object.keys(UserDataManager.getAllUsers())[0];
       if (targetCustomerNumber) {
         try {
@@ -545,7 +457,7 @@ export default function Login() {
             setLoginProgress(0);
             setLoginStage('');
             
-            // User was deleted - clean up local data
+            // User was deleted or suspended - clean up local data
             UserDataManager.adminDeleteUser(targetCustomerNumber);
             setBiometricVerified(false);
             setPinVerified(false);
@@ -603,7 +515,7 @@ export default function Login() {
       clearInterval(verifyInterval);
       clearInterval(secureInterval);
 
-      // PERMANENT LOGIN: Verify user is authenticated through UserDataManager
+      // Verify user is authenticated through UserDataManager
       const currentUser = UserDataManager.getCurrentUser();
       if (!currentUser || !UserDataManager.userExists(currentUser)) {
         throw new Error("No valid user session found");
@@ -611,8 +523,6 @@ export default function Login() {
       
       // Record login time and authenticate through auth context
       UserDataManager.recordLoginTime(currentUser);
-      UserDataManager.setUserData('permanentlyLoggedIn', true);
-      
       const userProfile = UserDataManager.getUserProfile();
       if (userProfile) {
         login({
@@ -662,50 +572,31 @@ export default function Login() {
       return;
     }
 
-    try {
-      // Call backend login API to establish session
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ customerNumber, pin })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        
-        // PERMANENT LOGIN: Mark user as permanently logged in
-        UserDataManager.setCurrentUser(customerNumber);
-        UserDataManager.setUserData('profile', data.user);
-        UserDataManager.setUserData('permanentlyLoggedIn', true);
-        
-        // Set user in auth context
-        login({
-          id: data.user.id,
-          name: data.user.name,
-          email: data.user.email
-        });
-        setPinVerified(true);
-        
-        // Navigate to biometric screen for device verification
-        navigate('/biometric-auth');
-      } else {
-        const errorData = await response.json();
-        toast({
-          title: "Login Failed",
-          description: errorData.message || "Invalid credentials",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
+    // Check if user exists
+    if (!UserDataManager.userExists(customerNumber)) {
       toast({
         title: "Login Failed",
-        description: "Unable to connect to server. Please try again.",
+        description: "Customer number not found. Please create an account first.",
         variant: "destructive",
       });
+      return;
     }
+    
+    // Initialize fresh account data and verify PIN
+    UserDataManager.initializeFreshAccount(customerNumber);
+    UserDataManager.recordLoginTime(customerNumber);
+    const userProfile = UserDataManager.getUserProfile();
+    if (userProfile) {
+      login({
+        id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
+        name: userProfile.name,
+        email: userProfile.email
+      });
+    }
+    setPinVerified(true);
+    
+    // Navigate to dashboard after verification
+    navigate('/dashboard');
   };
 
   const requestLocation = () => {
@@ -1078,19 +969,12 @@ export default function Login() {
         {/* Header */}
         <div className="flex items-center justify-center pt-12 pb-6 flex-shrink-0">
           <div className="flex items-center">
-            <img 
-              src="/boi_logo.svg" 
-              alt="Bank of Ireland" 
-              className="h-8 filter brightness-0 invert cursor-pointer" 
+            <button 
               onClick={handleLogoTap}
-              style={{
-                touchAction: 'manipulation',
-                userSelect: 'none',
-                WebkitUserSelect: 'none',
-                WebkitTouchCallout: 'none',
-                WebkitTapHighlightColor: 'transparent'
-              }}
-            />
+              className="active:scale-95 transition-transform"
+            >
+              <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-8 filter brightness-0 invert" />
+            </button>
           </div>
         </div>
 
@@ -1534,8 +1418,8 @@ export default function Login() {
         </div>
       )}
 
-      {/* Removed dev login modal */}
-      {false && (
+      {/* Admin Login Modal */}
+      {showAdminLogin && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-sm p-6">
             <div className="flex items-center justify-between mb-6">
@@ -1568,49 +1452,18 @@ export default function Login() {
                     className="bg-gray-50 rounded-xl p-3 border"
                   >
                     <button
-                      onClick={async () => {
-                        // SECURITY: Must validate user exists on server before allowing login
-                        try {
-                          const validateResponse = await fetch(`/api/auth/validate/${customerNumber}`, {
-                            credentials: 'include'
-                          });
-                          
-                          if (!validateResponse.ok) {
-                            toast({
-                              title: "Account Unavailable",
-                              description: "This account no longer exists or has been disabled.",
-                              variant: "destructive",
-                            });
-                            return;
-                          }
-                          
-                          const validationData = await validateResponse.json();
-                          if (!validationData.success || !validationData.exists) {
-                            toast({
-                              title: "Account No Longer Exists",
-                              description: "This account has been removed by an administrator.",
-                              variant: "destructive",
-                            });
-                            return;
-                          }
-                          
-                          // Only proceed if user exists on server
-                          UserDataManager.initializeFreshAccount(customerNumber);
-                          UserDataManager.recordLoginTime(customerNumber);
-                          setShowAdminLogin(false);
-                          setCustomerNumber(customerNumber);
-                          setBiometricVerified(true);
-                          
-                          // Navigate to PIN entry instead of bypassing authentication
-                          // User must still go through proper login flow
-                        } catch (error) {
-                          console.error('Error validating user:', error);
-                          toast({
-                            title: "Validation Failed",
-                            description: "Unable to verify account status. Please try again.",
-                            variant: "destructive",
-                          });
-                        }
+                      onClick={() => {
+                        UserDataManager.initializeFreshAccount(customerNumber);
+                        UserDataManager.recordLoginTime(customerNumber);
+                        login({
+                          id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
+                          name: userData.name,
+                          email: userData.email
+                        });
+                        setShowAdminLogin(false);
+                        setCustomerNumber(customerNumber);
+                        setBiometricVerified(true);
+                        navigate('/dashboard');
                       }}
                       className="w-full text-left hover:bg-gray-100 rounded-lg p-3 active:scale-98 transition-all"
                     >

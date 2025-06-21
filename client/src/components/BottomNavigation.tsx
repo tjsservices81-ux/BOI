@@ -1,5 +1,5 @@
 import { useLocation } from "wouter";
-import { useAuth } from "../lib/auth";
+import { useAuth } from "@/lib/auth";
 import { useEffect, useState } from "react";
 
 export default function BottomNavigation() {
@@ -18,12 +18,14 @@ export default function BottomNavigation() {
       setIsSplashActive(isCurrentlySplash);
     };
 
+    // Check immediately
     checkSplashState();
 
     // Monitor DOM changes and route changes
     const observer = new MutationObserver(checkSplashState);
     observer.observe(document.body, { childList: true, subtree: true });
 
+    // Check on route changes
     const interval = setInterval(checkSplashState, 100);
 
     return () => {

@@ -5,20 +5,17 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/lib/auth";
-import { PermanentAuthProvider } from "@/lib/permanentAuthContext";
-import { BiometricAuthProvider, useBiometricAuth } from "@/lib/biometricAuth";
 import BottomNavigation from "@/components/BottomNavigation";
 import { SecurityWrapper } from "@/components/SecurityWrapper";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { StateManager } from "@/utils/stateManager";
 import { AppLifecycle } from "@/utils/appLifecycle";
-import { UserDataManager } from "./utils/userDataManager";
-import { RealTimeSync } from "./utils/realTimeSync";
 import LiveChat from "@/components/LiveChat";
+
+
 
 import Splash from "@/pages/splash";
 import Login from "@/pages/login";
-import BiometricAuth from "@/pages/BiometricAuth";
 import More from "@/pages/more";
 import Dashboard from "@/pages/dashboard";
 import Payments from "@/pages/payments";
@@ -32,54 +29,44 @@ import Insights from "@/pages/insights";
 import Transfer from "@/pages/transfer";
 import BillPay from "@/pages/bill-pay";
 import TransactionHistoryWorking from "@/pages/transaction-history-working";
+
 import Statements from "@/pages/statements";
 import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
 
 function ProtectedRoute({ children, fallback }: { children: React.ReactNode; fallback?: React.ReactNode }) {
   const authHook = useAuth();
-  const biometricAuth = useBiometricAuth();
   const user = authHook?.user || null;
   const isLoading = authHook?.isLoading || false;
   
+  // Prevent any flash by immediately redirecting if no user
+  if (!user && !isLoading) {
+    return fallback ? <>{fallback}</> : <Redirect to="/login" />;
+  }
+  
+  // Show nothing while loading to prevent flash
   if (isLoading) {
-    return fallback || <div>Loading...</div>;
-  }
-  
-  // No user session at all - redirect to login
-  if (!user) {
-    return <Redirect to="/login" />;
-  }
-  
-  // User authenticated and biometric complete - allow access
-  if (user && biometricAuth.state.isAuthenticated) {
-    return <>{children}</>;
-  }
-  
-  // User has session but biometric verification is required
-  if (user && biometricAuth.state.needsBiometric && !biometricAuth.state.isAuthenticated) {
-    return <Redirect to="/biometric" />;
-  }
-  
-  // User has session but biometric state is not initialized - allow access
-  if (user && !biometricAuth.state.needsBiometric && !biometricAuth.state.isAuthenticated) {
-    return <>{children}</>;
+    return null;
   }
   
   return <>{children}</>;
 }
 
-function AppRoutes(): JSX.Element {
+function AppRoutes() {
   const authHook = useAuth();
-  const biometricAuth = useBiometricAuth();
+  const user = authHook?.user || null;
+  const isLoading = authHook?.isLoading || false;
+  const login = authHook?.login || (() => {});
+  
   const locationHook = useLocation();
   const [location, navigate] = locationHook || ['/', () => {}];
   const [splashShown, setSplashShown] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [splashTransitioning, setSplashTransitioning] = useState(false);
+  const [isRestoringState, setIsRestoringState] = useState(true);
+  
+  // Global Live Chat state - persistent across all navigation
   const [showLiveChat, setShowLiveChat] = useState(false);
-
-  const user = authHook?.user || null;
-  const login = authHook?.login || (() => {});
 
   // Listen for global live chat open events
   useEffect(() => {
@@ -91,312 +78,384 @@ function AppRoutes(): JSX.Element {
     return () => window.removeEventListener('openLiveChat', handleOpenLiveChat);
   }, []);
 
-  // Listen for successful login events and ensure navigation to dashboard
-  useEffect(() => {
-    const handleUserLoggedIn = (event: CustomEvent) => {
-      console.log('🎯 Global login event received:', event.detail);
-      // Allow time for biometric context to update, then navigate
-      setTimeout(() => {
-        if (location !== '/dashboard') {
-          console.log('🎯 Forcing navigation to dashboard after login');
-          navigate('/dashboard');
-        }
-      }, 500);
-    };
-
-    window.addEventListener('userLoggedIn', handleUserLoggedIn as EventListener);
-    return () => window.removeEventListener('userLoggedIn', handleUserLoggedIn as EventListener);
-  }, [location, navigate]);
-
-  // Initialize app lifecycle and determine app state
-  useEffect(() => {
-    AppLifecycle.initialize();
-    
-    // Enable real-time data synchronization for persistent storage
-    RealTimeSync.enable();
-    
-    // Enable offline functionality through service worker
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js')
-        .then(registration => {
-          console.log('🔄 Offline functionality enabled - app works fully offline');
-        })
-        .catch(error => {
-          console.log('Offline mode unavailable - app still functional online');
-        });
+  // Centralized theme color management
+  const updateThemeColor = (color: string) => {
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+    if (themeColorMeta) {
+      themeColorMeta.setAttribute('content', color);
     }
-    
+  };
+
+  
+  // Initialize app state with persistence support
+  useEffect(() => {
     const initializeApp = async () => {
-      const { isAppTerminated, wasMinimized } = AppLifecycle.getAppTerminationState();
+      // Check if sessionStorage was cleared (indicates fresh app start)
+      const wasAppActive = sessionStorage.getItem('app_was_active');
+      const lastBackgroundTime = localStorage.getItem('app_background_time');
       
-      // Case 1: App is resuming from minimize - INSTANTLY restore where user left off
-      if (AppLifecycle.isResumingFromMinimize()) {
-        console.log('🔄 MINIMIZE RESUME: Instantly restoring exact state - no splash, no delays');
-        
-        // Skip splash screen completely and restore immediately
-        setSplashShown(true);
-        setIsInitialized(true);
-        
-        // PERMANENT LOGIN: Check if user is permanently logged in
-        const cachedUser = UserDataManager.getCurrentUser();
-        const userProfile = UserDataManager.getUserProfile();
-        const isPermanentlyLoggedIn = UserDataManager.getUserData('permanentlyLoggedIn', false);
-        
-        if (cachedUser && userProfile && isPermanentlyLoggedIn) {
-          login({
-            id: userProfile.id || parseInt(userProfile.customerNumber) || 0,
-            name: userProfile.name,
-            email: userProfile.email
-          });
-        }
-        
-        // Restore exact route and scroll position
-        const savedState = StateManager.restoreAppState();
-        if (savedState && savedState.currentRoute && savedState.currentRoute !== '/') {
-          navigate(savedState.currentRoute);
-          
-          // Restore scroll positions instantly
-          if (savedState.scrollPositions) {
-            setTimeout(() => {
-              Object.entries(savedState.scrollPositions).forEach(([route, position]) => {
-                const scrollPosition = typeof position === 'number' ? position : 0;
-                const container = document.querySelector(`[data-scroll-route="${route}"]`) as HTMLElement;
-                if (container && scrollPosition > 0) {
-                  container.scrollTo({ top: scrollPosition, behavior: 'instant' });
-                } else if (route === window.location.pathname && scrollPosition > 0) {
-                  window.scrollTo({ top: scrollPosition, behavior: 'instant' });
-                }
-              });
-            }, 50);
-          }
-        }
-        return;
-      }
-      
-      // Case 2: App was force closed - show splash then check permanent login
-      if (AppLifecycle.isFreshStart()) {
-        console.log('🚀 FORCE CLOSE RESTART: Show splash then check permanent login');
-        
-        // Always show splash screen for force close restarts
+      if (!wasAppActive) {
+        // Fresh app start - show splash but keep user logged in
         setSplashShown(false);
+        localStorage.removeItem('app_background_time');
+        sessionStorage.setItem('app_was_active', 'true');
         
-        setTimeout(async () => {
-          try {
-            // PERMANENT LOGIN: Check if user is permanently logged in
-            const cachedUser = UserDataManager.getCurrentUser();
-            const userProfile = UserDataManager.getUserProfile();
-            const isPermanentlyLoggedIn = UserDataManager.getUserData('permanentlyLoggedIn', false);
-            
-            if (cachedUser && userProfile && isPermanentlyLoggedIn) {
-              console.log('✅ PERMANENT LOGIN: User found - they stay logged in forever');
-              
-              // Restore permanent login after force close
-              login({
-                id: userProfile.id || parseInt(userProfile.customerNumber) || 0,
-                name: userProfile.name,
-                email: userProfile.email
-              });
-              
-              // Dashboard only accessible through biometric authentication after force close
-              console.log('Force close detected - biometric verification required');
-              biometricAuth.setNeedsBiometric(true);
-              navigate('/biometric');
-            } else {
-              console.log('❌ No permanent login found - showing login screen');
-              
-              // Clear any stale data
-              try {
-                UserDataManager.clearUserData('currentUser');
-                console.log('Clearing stale user data from UserDataManager');
-              } catch (error) {
-                console.warn('clearAppState() disabled - users can only be logged out via admin deletion');
-              }
-              
-              // Clear saved state since session is invalid
-              StateManager.clearAppState();
-            }
-          } catch (error) {
-            console.error('Failed to check authentication status:', error);
-            console.warn('clearAppState() disabled - users can only be logged out via admin deletion');
+        // Always try to restore user session
+        try {
+          const savedState = StateManager.restoreAppState();
+          if (savedState && savedState.user && !user) {
+            // Restore user session silently
+            login(savedState.user);
           }
-          
-          setSplashShown(true);
-          setIsInitialized(true);
-        }, 1500);
+        } catch (error) {
+          console.error('Failed to restore user session:', error);
+        }
+      } else if (lastBackgroundTime) {
+        // App was backgrounded - always restore state regardless of time
+        localStorage.removeItem('app_background_time');
         
-        return;
+        try {
+          const savedState = StateManager.restoreAppState();
+          
+          if (savedState && savedState.user && !user) {
+            // Restore user session silently
+            login(savedState.user);
+            
+            // Restore route if different from current
+            if (savedState.currentRoute !== location && savedState.currentRoute !== '/login') {
+              navigate(savedState.currentRoute);
+            }
+            
+            // Skip splash if restoring state
+            setSplashShown(true);
+          } else {
+            // No valid saved state, show splash
+            setSplashShown(false);
+          }
+        } catch (error) {
+          console.error('Failed to restore app state:', error);
+          setSplashShown(false);
+        }
+      } else {
+        // No background time recorded - show splash but try to restore user
+        setSplashShown(false);
+        try {
+          const savedState = StateManager.restoreAppState();
+          if (savedState && savedState.user && !user) {
+            login(savedState.user);
+          }
+        } catch (error) {
+          console.error('Failed to restore user session:', error);
+        }
       }
       
-      // Fallback: treat as fresh start
-      setSplashShown(false);
+      // Clear temporary state for cold launch behavior
+      const keys = Object.keys(localStorage);
+      keys.forEach(key => {
+        if (key.includes('chat') || key.includes('liveChat') || key.includes('tempState') || key.includes('session_')) {
+          localStorage.removeItem(key);
+        }
+      });
+      
+      const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+      if (themeColorMeta) {
+        themeColorMeta.setAttribute('content', '#000DFF');
+      }
+      
+      setIsRestoringState(false);
+      // Mark as initialized after a tick to prevent flash
+      setTimeout(() => setIsInitialized(true), 0);
+    };
+
+    initializeApp();
+    
+    // Handle app lifecycle events directly
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        // App going to background - save state and timestamp
+        localStorage.setItem('app_background_time', Date.now().toString());
+        if (user) {
+          StateManager.handleVisibilityChange(location, user);
+        }
+      }
+    };
+
+    const handleBeforeUnload = () => {
+      // Clear session marker to detect force close
+      sessionStorage.removeItem('app_was_active');
+      if (user) {
+        StateManager.handleVisibilityChange(location, user);
+      }
+    };
+
+    const handlePageHide = () => {
+      sessionStorage.removeItem('app_was_active');
+      if (user) {
+        StateManager.handleVisibilityChange(location, user);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('pagehide', handlePageHide);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('pagehide', handlePageHide);
+    };
+  }, []);
+
+
+
+  // Handle app visibility changes for proper lifecycle management
+  useEffect(() => {
+    let isAppVisible = true;
+    
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        isAppVisible = false;
+        // App is being backgrounded - just track state, don't set reload timers
+        sessionStorage.setItem('app_backgrounded', Date.now().toString());
+        sessionStorage.setItem('current_location', location);
+      } else {
+        // App is being foregrounded - restore state without any reloading
+        if (!isAppVisible) {
+          // Always restore app state when returning from background
+          restoreAppStateOnForeground();
+        }
+        isAppVisible = true;
+        sessionStorage.removeItem('app_backgrounded');
+      }
+    };
+
+    const restoreThemeForCurrentScreen = () => {
+      const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+      if (!themeColorMeta) return;
+
+      // Set correct theme color based on current location
+      if (location === '/splash') {
+        themeColorMeta.setAttribute('content', '#000DFF');
+      } else {
+        themeColorMeta.setAttribute('content', '#126987');
+      }
+    };
+
+    const restoreAppStateOnForeground = () => {
+      // Restore theme color
+      restoreThemeForCurrentScreen();
+      
+      // Force navigation visibility restoration if needed
+      if (user && splashShown && !['/login', '/splash'].includes(location)) {
+        const navElement = document.querySelector('[data-bottom-nav]') as HTMLElement;
+        if (navElement && navElement.classList.contains('hidden')) {
+          navElement.classList.remove('hidden');
+        }
+      }
+    };
+
+    const handlePageHide = () => {
+      // Only mark for cold restart if this is actually an app closure
+      // PageHide can trigger for various reasons, so we're more conservative
+      sessionStorage.setItem('page_hidden', 'true');
+    };
+
+    const handlePageShow = (event: PageTransitionEvent) => {
+      // Only reload if this was a true app closure (page cache was not used)
+      const forceColdStart = localStorage.getItem('force_cold_start') === 'true';
+      
+      if (forceColdStart) {
+        // This was a real app closure - force full reload for cold launch
+        localStorage.removeItem('force_cold_start');
+        // Don't clear sessionStorage - preserve user login state
+        window.location.reload();
+      } else {
+        // This was just backgrounding/foregrounding - restore state
+        sessionStorage.removeItem('page_hidden');
+        restoreAppStateOnForeground();
+      }
+    };
+
+    const handleBeforeUnload = () => {
+      // Only mark for cold restart on actual app closure
+      // beforeUnload can trigger for many reasons, so we're conservative
+      if (document.visibilityState === 'hidden') {
+        localStorage.setItem('force_cold_start', 'true');
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('pagehide', handlePageHide);
+    window.addEventListener('pageshow', handlePageShow);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pagehide', handlePageHide);
+      window.removeEventListener('pageshow', handlePageShow);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
+
+
+
+  // Listen for splash completion
+  useEffect(() => {
+    const handleSplashComplete = () => {
+      setSplashTransitioning(true);
+      // Small delay to prevent flash, then complete transition
       setTimeout(() => {
         setSplashShown(true);
-        setIsInitialized(true);
-      }, 1500);
+        setSplashTransitioning(false);
+      }, 100);
+      const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+      if (themeColorMeta) {
+        themeColorMeta.setAttribute('content', '#126987');
+      }
     };
-    
-    initializeApp();
-  }, [login, navigate, biometricAuth]);
 
-  // Global authentication state handler - ensures proper dashboard navigation
+    window.addEventListener('splashComplete', handleSplashComplete);
+    return () => window.removeEventListener('splashComplete', handleSplashComplete);
+  }, []);
+
+  // Restore app state when returning from background - MUST be before conditional return
   useEffect(() => {
-    if (isInitialized && splashShown && user && biometricAuth.state.isAuthenticated && location !== '/dashboard') {
-      console.log('🚀 Global auth check: Redirecting authenticated user to dashboard');
-      navigate('/dashboard');
-    }
-  }, [user, biometricAuth.state.isAuthenticated, isInitialized, splashShown, location, navigate]);
+    const handleFocusRestore = () => {
+      // Restore correct theme color
+      const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+      if (themeColorMeta) {
+        if (location === '/splash') {
+          themeColorMeta.setAttribute('content', '#000DFF');
+        } else {
+          themeColorMeta.setAttribute('content', '#126987');
+        }
+      }
+    };
 
-  // App lifecycle is already initialized and handled by AppLifecycle class
-  // No additional visibility handling needed here
+    window.addEventListener('focus', handleFocusRestore);
+    return () => window.removeEventListener('focus', handleFocusRestore);
+  }, [location]);
 
-  // Route to splash if not initialized
-  if (!isInitialized || !splashShown) {
-    return <Splash />;
+  // Prevent flash during initialization
+  if (!isInitialized) {
+    return (
+      <div className="w-full h-full bg-[#000DFF]">
+        {/* Empty blue screen during initialization */}
+      </div>
+    );
   }
-
-  // Route to biometric auth if needed
-  if (user && biometricAuth.state.needsBiometric && !biometricAuth.state.isAuthenticated) {
-    return <BiometricAuth />;
-  }
-
-  // Handle navigation and bottom bar visibility
-  const hideBottomBar = ['/login', '/splash', '/biometric'].includes(location);
 
   return (
-    <div className="mobile-app-container">
-      <Switch>
-        <Route path="/login" component={Login} />
-        <Route path="/biometric" component={BiometricAuth} />
-        <Route path="/" component={() => <Redirect to="/dashboard" />} />
-        
-        <Route path="/dashboard">
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        </Route>
-        
-        <Route path="/payments">
-          <ProtectedRoute>
-            <Payments />
-          </ProtectedRoute>
-        </Route>
-        
-        <Route path="/apply">
-          <ProtectedRoute>
-            <Apply />
-          </ProtectedRoute>
-        </Route>
-        
-        <Route path="/more">
-          <ProtectedRoute>
-            <More />
-          </ProtectedRoute>
-        </Route>
-        
-        <Route path="/transfer">
-          <ProtectedRoute>
-            <Transfer />
-          </ProtectedRoute>
-        </Route>
-        
-        <Route path="/iban-transfer">
-          <ProtectedRoute>
-            <IbanTransfer />
-          </ProtectedRoute>
-        </Route>
-        
-        <Route path="/uk-transfer">
-          <ProtectedRoute>
-            <UkTransfer />
-          </ProtectedRoute>
-        </Route>
-        
-        <Route path="/internal-transfer">
-          <ProtectedRoute>
-            <InternalTransfer />
-          </ProtectedRoute>
-        </Route>
-        
-        <Route path="/transactions">
-          <ProtectedRoute>
-            <Transactions />
-          </ProtectedRoute>
-        </Route>
-        
-        <Route path="/transactions/:accountId">
-          <ProtectedRoute>
-            <TransactionHistoryWorking />
-          </ProtectedRoute>
-        </Route>
-        
-        <Route path="/cards">
-          <ProtectedRoute>
-            <Cards />
-          </ProtectedRoute>
-        </Route>
-        
-        <Route path="/insights">
-          <ProtectedRoute>
-            <Insights />
-          </ProtectedRoute>
-        </Route>
-        
-        <Route path="/bill-pay">
-          <ProtectedRoute>
-            <BillPay />
-          </ProtectedRoute>
-        </Route>
-        
-        <Route path="/transaction-history-working">
-          <ProtectedRoute>
-            <TransactionHistoryWorking />
-          </ProtectedRoute>
-        </Route>
-        
-        <Route path="/statements">
-          <ProtectedRoute>
-            <Statements />
-          </ProtectedRoute>
-        </Route>
-        
-        <Route path="/profile">
-          <ProtectedRoute>
-            <Profile />
-          </ProtectedRoute>
-        </Route>
-        
-        <Route component={NotFound} />
-      </Switch>
+    <SecurityWrapper>
+      <ErrorBoundary>
+        <div className="w-full h-full overflow-hidden relative">
+          <Switch>
+            <Route path="/splash" component={Splash} />
+            <Route path="/login" component={Login} />
+            <Route path="/more" component={More} />
+            <Route path="/">
+              {/* Handle root route - always show proper sequence for cold starts */}
+              {!splashShown || splashTransitioning ? (
+                <Splash />
+              ) : (
+                <Login />
+              )}
+            </Route>
+          <Route path="/dashboard">
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/payments">
+            <ProtectedRoute>
+              <Payments />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/apply">
+            <ProtectedRoute>
+              <Apply />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/iban-transfer">
+            <ProtectedRoute>
+              <IbanTransfer />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/uk-transfer">
+            <ProtectedRoute>
+              <UkTransfer />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/internal-transfer">
+            <ProtectedRoute>
+              <InternalTransfer />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/transfer">
+            <ProtectedRoute>
+              <Transfer />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/bills">
+            <ProtectedRoute>
+              <BillPay />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/transactions">
+            <ProtectedRoute>
+              <Transactions />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/cards">
+            <ProtectedRoute>
+              <Cards />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/insights">
+            <ProtectedRoute>
+              <Insights />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/statements">
+            <ProtectedRoute>
+              <Statements />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/transactions/:accountId">
+            <ProtectedRoute>
+              <TransactionHistoryWorking />
+            </ProtectedRoute>
+          </Route>
 
-      {!hideBottomBar && <BottomNavigation />}
-      
-      {showLiveChat && (
-        <LiveChat 
-          onClose={() => setShowLiveChat(false)}
-          isOpen={showLiveChat}
-        />
-      )}
-    </div>
+          <Route path="/profile">
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          </Route>
+          <Route component={NotFound} />
+        </Switch>
+        <BottomNavigation />
+
+        {/* Global Persistent Live Chat - stays active across all navigation */}
+        <LiveChat isOpen={showLiveChat} onClose={() => setShowLiveChat(false)} />
+
+        </div>
+      </ErrorBoundary>
+    </SecurityWrapper>
   );
 }
 
-export default function App() {
+function App() {
   return (
-    <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <AuthProvider>
-            <PermanentAuthProvider>
-              <BiometricAuthProvider>
-                <SecurityWrapper>
-                  <AppRoutes />
-                  <Toaster />
-                </SecurityWrapper>
-              </BiometricAuthProvider>
-            </PermanentAuthProvider>
-          </AuthProvider>
-        </TooltipProvider>
-      </QueryClientProvider>
-    </ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <AuthProvider>
+          <Toaster />
+          <AppRoutes />
+        </AuthProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
   );
 }
+
+export default App;

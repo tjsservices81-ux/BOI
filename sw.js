@@ -1,83 +1,50 @@
-// OFFLINE FUNCTIONALITY: Complete offline support for Bank of Ireland app
-const CACHE_NAME = 'boi-bank-offline-v2';
-const urlsToCache = [
-  '/',
-  '/login',
-  '/dashboard',
-  '/biometric',
-  '/splash',
-  '/boi_logo.svg',
-  '/background.jpg',
-  '/Icons_Fingerprint.svg',
-  '/face-id-seeklogo.svg',
-  '/BOI_logo.png'
-];
+// Service Worker for additional security measures
+const CACHE_NAME = 'boi-mobile-secure-v1';
 
-self.addEventListener('install', function(event) {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(function(cache) {
-        console.log('Caching assets for complete offline functionality');
-        return cache.addAll(urlsToCache);
-      })
-  );
+// Security headers for all responses
+const securityHeaders = {
+  'X-Frame-Options': 'DENY',
+  'X-Content-Type-Options': 'nosniff',
+  'X-XSS-Protection': '1; mode=block',
+  'Referrer-Policy': 'no-referrer',
+  'Cache-Control': 'no-store, no-cache, must-revalidate, private',
+  'Pragma': 'no-cache',
+  'Expires': '0',
+  'Cross-Origin-Embedder-Policy': 'require-corp',
+  'Cross-Origin-Opener-Policy': 'same-origin',
+  'Cross-Origin-Resource-Policy': 'same-origin'
+};
+
+self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-self.addEventListener('activate', function(event) {
-  event.waitUntil(
-    caches.keys().then(function(cacheNames) {
-      return Promise.all(
-        cacheNames.map(function(cacheName) {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
-  );
+self.addEventListener('activate', (event) => {
+  event.waitUntil(clients.claim());
 });
 
-// OFFLINE FUNCTIONALITY: Full offline operation with cached responses
-self.addEventListener('fetch', function(event) {
+// Intercept all fetch requests to add security headers
+self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event.request)
-      .then(function(response) {
-        // Return cached version immediately if available
-        if (response) {
-          return response;
-        }
-
-        // For API auth status checks, provide offline-compatible responses
-        if (event.request.url.includes('/api/auth/status')) {
-          return fetch(event.request).catch(() => {
-            return new Response(JSON.stringify({
-              isLoggedIn: true,
-              needsBiometric: true,
-              offline: true,
-              user: null
-            }), {
-              headers: { 'Content-Type': 'application/json' }
-            });
-          });
-        }
-
-        // For other API requests, try network then provide offline fallback
-        if (event.request.url.includes('/api/')) {
-          return fetch(event.request).catch(() => {
-            return new Response(JSON.stringify({
-              error: 'Offline mode - limited functionality',
-              offline: true
-            }), {
-              headers: { 'Content-Type': 'application/json' },
-              status: 503
-            });
-          });
-        }
-
-        // For page requests, try network with cache fallback
-        return fetch(event.request).catch(() => {
-          return caches.match('/');
+    fetch(event.request)
+      .then((response) => {
+        // Clone the response to modify headers
+        const modifiedResponse = new Response(response.body, {
+          status: response.status,
+          statusText: response.statusText,
+          headers: {
+            ...Object.fromEntries(response.headers.entries()),
+            ...securityHeaders
+          }
+        });
+        
+        return modifiedResponse;
+      })
+      .catch(() => {
+        // Return a secure error response
+        return new Response('Security: Access Denied', {
+          status: 403,
+          headers: securityHeaders
         });
       })
   );

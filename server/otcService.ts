@@ -233,8 +233,13 @@ class OTCService {
   }
 
   storeOTC(customerNumber: string, code: string, accountData: any): void {
-    // Store OTC without expiry for permanent authentication
-    this.otcStorage.set(customerNumber, { code, expires: Number.MAX_SAFE_INTEGER, accountData });
+    const expires = Date.now() + (10 * 60 * 1000); // 10 minutes expiry
+    this.otcStorage.set(customerNumber, { code, expires, accountData });
+    
+    // Clean up expired OTCs
+    setTimeout(() => {
+      this.otcStorage.delete(customerNumber);
+    }, 10 * 60 * 1000);
   }
 
   validateOTC(customerNumber: string, code: string): { isValid: boolean; accountData?: any } {
@@ -244,11 +249,17 @@ class OTCService {
       return { isValid: false };
     }
     
+    if (Date.now() > stored.expires) {
+      this.otcStorage.delete(customerNumber);
+      return { isValid: false };
+    }
+    
     if (stored.code !== code) {
       return { isValid: false };
     }
     
-    // Keep OTC for reuse - do not delete after validation for permanent access
+    // Remove OTC after successful validation
+    this.otcStorage.delete(customerNumber);
     return { isValid: true, accountData: stored.accountData };
   }
 

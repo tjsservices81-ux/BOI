@@ -2,7 +2,6 @@
 // Handles isolated data storage for each user account
 
 export interface UserData {
-  id?: number;
   customerNumber: string;
   name: string;
   email: string;
@@ -11,13 +10,6 @@ export interface UserData {
   dateOfBirth?: string;
   joinDate: string;
   dateCreated: string;
-  profilePhoto?: string | null;
-  preferences?: any;
-  lastLoginTime?: string | null;
-  deviceInfo?: any;
-  notificationSettings?: any;
-  securitySettings?: any;
-  lastActivity?: Date | string | null;
 }
 
 export class UserDataManager {
@@ -30,6 +22,7 @@ export class UserDataManager {
   static setCurrentUser(customerNumber: string) {
     this.currentUser = customerNumber;
     localStorage.setItem('currentUser', customerNumber);
+    // Also store as last active user for biometric authentication
     this.setLastActiveUser(customerNumber);
   }
 
@@ -41,13 +34,12 @@ export class UserDataManager {
     return this.currentUser;
   }
 
-  // Clear current user session - ADMIN DELETION ONLY
+  // Clear current user session - DISABLED: Only admin deletion should log users out
   static clearCurrentUser() {
-    this.currentUser = null;
-    localStorage.removeItem('currentUser');
-    localStorage.removeItem('lastActiveUser');
-    localStorage.removeItem('permanentlyLoggedIn');
-    console.log('🗑️ Current user cleared by admin deletion');
+    // This method is disabled to prevent automatic logouts
+    // Users can only be logged out via admin deletion
+    console.warn('clearCurrentUser() disabled - users can only be logged out via admin deletion');
+    return;
   }
 
   // Store last active user for biometric authentication
@@ -88,7 +80,7 @@ export class UserDataManager {
 
   // Get user-specific storage key
   private static getUserKey(key: string): string {
-    const currentUser = this.currentUser || localStorage.getItem('currentUser');
+    const currentUser = this.getCurrentUser();
     if (!currentUser) {
       throw new Error('No user is currently logged in');
     }
@@ -101,33 +93,11 @@ export class UserDataManager {
     localStorage.setItem(userKey, JSON.stringify(data));
   }
 
-  // Retrieve user-specific data with caching and fallback safety
-  static getUserData(customerNumberOrKey: string, keyOrDefault?: any, defaultValue: any = null) {
+  // Retrieve user-specific data with caching
+  static getUserData(key: string, defaultValue: any = null) {
     try {
-      // Handle both old and new method signatures
-      let customerNumber: string;
-      let key: string;
-      let fallback: any;
-      
-      if (keyOrDefault !== undefined) {
-        // New signature: getUserData(customerNumber, key, defaultValue)
-        customerNumber = customerNumberOrKey;
-        key = keyOrDefault;
-        fallback = defaultValue;
-      } else {
-        // Old signature: getUserData(key, defaultValue)
-        customerNumber = this.getCurrentUser() || localStorage.getItem('currentUser') || localStorage.getItem('lastActiveUser') || '';
-        key = customerNumberOrKey;
-        fallback = keyOrDefault;
-      }
-      
-      if (!customerNumber) {
-        console.warn('No user context available for getUserData');
-        return fallback;
-      }
-      
-      const userKey = this.getUserKey(customerNumber, key);
-      const cacheKey = `${customerNumber}_${key}`;
+      const userKey = this.getUserKey(key);
+      const cacheKey = `${this.getCurrentUser()}_${key}`;
       
       // Check cache first
       const cachedData = this.dataCache.get(cacheKey);
@@ -139,7 +109,7 @@ export class UserDataManager {
       
       // Get from localStorage
       const stored = localStorage.getItem(userKey);
-      const data = stored ? JSON.parse(stored) : fallback;
+      const data = stored ? JSON.parse(stored) : defaultValue;
       
       // Cache the result
       this.dataCache.set(cacheKey, data);
@@ -147,14 +117,13 @@ export class UserDataManager {
       
       return data;
     } catch (error) {
-      console.warn('getUserData error:', error);
-      return keyOrDefault !== undefined ? defaultValue : keyOrDefault;
+      return defaultValue;
     }
   }
 
   // Clear cache for specific user data with proper synchronization
   static clearCache(key?: string) {
-    const currentUser = this.currentUser || localStorage.getItem('currentUser');
+    const currentUser = this.getCurrentUser();
     if (!currentUser) return;
 
     if (key) {
@@ -173,115 +142,25 @@ export class UserDataManager {
     }
   }
 
-  // Clear user-specific data from cache for key
-  static clearUserData(key: string) {
-    const currentUser = this.currentUser || localStorage.getItem('currentUser');
-    if (!currentUser) return;
-    
-    const cacheKey = `${currentUser}_${key}`;
-    this.dataCache.delete(cacheKey);
-    this.cacheTimestamps.delete(cacheKey);
-    
-    // Also clear from localStorage
-    localStorage.removeItem(`user_${currentUser}_${key}`);
-    
-    // Special handling for critical keys
-    if (key === 'currentUser') {
-      localStorage.removeItem('currentUser');
-      this.currentUser = null;
-    }
-  }
-
   // Get all registered users
   static getAllUsers(): { [customerNumber: string]: UserData } {
-    return JSON.parse(localStorage.getItem('allBankUsers') || '{}');
+    return JSON.parse(localStorage.getItem('bankUsers') || '{}');
   }
 
   // Register a new user
   static registerUser(userData: UserData) {
     const existingUsers = this.getAllUsers();
     existingUsers[userData.customerNumber] = userData;
-    localStorage.setItem('allBankUsers', JSON.stringify(existingUsers));
+    localStorage.setItem('bankUsers', JSON.stringify(existingUsers));
   }
 
-  // Get user profile data with real-time sync
+  // Get user profile data
   static getUserProfile(): UserData | null {
     const currentUser = this.getCurrentUser();
     if (!currentUser) return null;
 
     const allUsers = this.getAllUsers();
-    const profile = allUsers[currentUser] || null;
-    
-    // Update activity timestamp when profile is accessed
-    if (profile) {
-      this.updateUserActivity();
-    }
-    
-    return profile;
-  }
-
-  // Set user profile data with backend sync
-  static setUserProfile(userData: UserData) {
-    const currentUser = this.getCurrentUser();
-    if (currentUser) {
-      // Update local storage
-      this.setUserData('profile', userData);
-      
-      // Update the main users registry
-      const allUsers = this.getAllUsers();
-      allUsers[currentUser] = userData;
-      localStorage.setItem('allBankUsers', JSON.stringify(allUsers));
-      
-      // Sync to backend
-      this.syncProfileToBackend(userData);
-    }
-  }
-
-  // Sync profile data to backend for persistent storage
-  static async syncProfileToBackend(userData: UserData) {
-    try {
-      const customerNumber = this.getCurrentUser();
-      if (!customerNumber) return;
-
-      await fetch(`/api/profile/${customerNumber}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          name: userData.name,
-          email: userData.email,
-          phone: userData.phone,
-          address: userData.address,
-          dateOfBirth: userData.dateOfBirth,
-          profilePhoto: userData.profilePhoto || null,
-          preferences: userData.preferences || null,
-          notificationSettings: userData.notificationSettings || null,
-          securitySettings: userData.securitySettings || null
-        })
-      });
-
-      console.log(`📡 SYNC: Profile data synced to backend for ${customerNumber}`);
-    } catch (error) {
-      console.error('Failed to sync profile to backend:', error);
-    }
-  }
-
-  // Update user activity timestamp
-  static updateUserActivity() {
-    const currentUser = this.getCurrentUser();
-    if (currentUser) {
-      const now = new Date().toISOString();
-      this.setUserData('lastActivity', now);
-      
-      // Also update the main user record
-      const allUsers = this.getAllUsers();
-      if (allUsers[currentUser]) {
-        allUsers[currentUser].lastActivity = now;
-        localStorage.setItem('allBankUsers', JSON.stringify(allUsers));
-      }
-    }
+    return allUsers[currentUser] || null;
   }
 
   // Update user profile
@@ -293,11 +172,11 @@ export class UserDataManager {
     if (allUsers[currentUser]) {
       const previousData = { ...allUsers[currentUser] };
       allUsers[currentUser] = { ...allUsers[currentUser], ...updates };
-      localStorage.setItem('allBankUsers', JSON.stringify(allUsers));
+      localStorage.setItem('bankUsers', JSON.stringify(allUsers));
       
       // Dispatch storage event for cross-component synchronization
       window.dispatchEvent(new StorageEvent('storage', {
-        key: 'allBankUsers',
+        key: 'bankUsers',
         newValue: JSON.stringify(allUsers),
         oldValue: JSON.stringify({ ...allUsers, [currentUser]: previousData })
       }));
@@ -425,18 +304,12 @@ export class UserDataManager {
     // Keep accounts intact - don't clear them
   }
 
-  // Remove specific user and their data - ADMIN ONLY
+  // Remove specific user and their data
   static removeUser(customerNumber: string) {
-    // SECURITY: Only admin can remove users
-    if (!this.isAdminContext()) {
-      console.error('SECURITY VIOLATION: removeUser() can only be called by admin');
-      return false;
-    }
-    
     // Remove from users list
     const allUsers = this.getAllUsers();
     delete allUsers[customerNumber];
-    localStorage.setItem('allBankUsers', JSON.stringify(allUsers));
+    localStorage.setItem('bankUsers', JSON.stringify(allUsers));
     
     // Clear user-specific data
     const keys = Object.keys(localStorage);
@@ -445,18 +318,15 @@ export class UserDataManager {
         localStorage.removeItem(key);
       }
     });
-    
-    console.log(`Admin authorized: User ${customerNumber} removed`);
-    return true;
   }
 
-  // Clear temporary state for cold launch - ONLY clears cache, NOT user data
+  // Clear temporary state for cold launch
   static clearTemporaryState() {
-    // SECURITY: Only clear memory cache and temporary items, never user data
+    // Clear cache and session-related data
     this.dataCache.clear();
     this.cacheTimestamps.clear();
     
-    // Clear ONLY temporary storage items - exclude user data
+    // Clear temporary storage items
     const keys = Object.keys(localStorage);
     keys.forEach(key => {
       if (key.includes('chat') || key.includes('liveChat') || key.includes('tempState') || key.includes('session_')) {
@@ -464,48 +334,30 @@ export class UserDataManager {
       }
     });
     
-    // Preserve user login state and authentication data
+    // Don't clear sessionStorage - preserve user login state
   }
 
-  // Admin function to clear all data - RESTRICTED ACCESS
+  // Admin function to clear all data
   static clearAllData() {
-    // SECURITY: This function can only be called from admin context
-    if (!this.isAdminContext()) {
-      console.error('SECURITY VIOLATION: clearAllData() can only be called by admin');
-      return false;
-    }
-    
     // Clear all localStorage data
     const keys = Object.keys(localStorage);
     keys.forEach(key => {
-      if (key.startsWith('user_') || key === 'currentUser') {
+      if (key.startsWith('user_') || key === 'bankUsers' || key === 'currentUser') {
         localStorage.removeItem(key);
       }
     });
     
     // Reset current user
     this.currentUser = null;
-    console.log('Admin authorized: All user data cleared');
-    return true;
-  }
-
-  // Admin context verification
-  private static isAdminContext(): boolean {
-    // Check if we're in admin panel context
-    return window.location.pathname.includes('/admin') || 
-           document.title.includes('Admin') ||
-           window.location.hostname === 'localhost'; // Allow in development
   }
 
   // Admin-triggered cleanup - removes all traces of a deleted user
   static adminDeleteUser(customerNumber: string) {
-    console.log(`🗑️ ADMIN DELETE: Starting complete removal of user ${customerNumber}`);
-    
     // Remove user from the users registry
     const allUsers = this.getAllUsers();
     if (allUsers[customerNumber]) {
       delete allUsers[customerNumber];
-      localStorage.setItem('allBankUsers', JSON.stringify(allUsers));
+      localStorage.setItem('bankUsers', JSON.stringify(allUsers));
     }
     
     // Remove from current user if this was the active user
@@ -539,32 +391,6 @@ export class UserDataManager {
       }
     }
     
-    // Clear permanent login flag
-    localStorage.removeItem('permanentlyLoggedIn');
-    
-    // Clear any IndexedDB data (if used)
-    if ('indexedDB' in window) {
-      try {
-        const deleteRequest = indexedDB.deleteDatabase(`user_${customerNumber}`);
-        deleteRequest.onsuccess = () => {
-          console.log(`IndexedDB for user ${customerNumber} deleted`);
-        };
-      } catch (error) {
-        console.warn('Error deleting IndexedDB:', error);
-      }
-    }
-    
-    // Clear service worker caches for this user
-    if ('caches' in window) {
-      caches.keys().then(cacheNames => {
-        cacheNames.forEach(cacheName => {
-          if (cacheName.includes(customerNumber)) {
-            caches.delete(cacheName);
-          }
-        });
-      });
-    }
-    
-    console.log(`✅ ADMIN DELETE COMPLETE: All local data for customer ${customerNumber} removed`);
+    console.log(`Admin cleanup: All data for customer ${customerNumber} removed from browser storage`);
   }
 }

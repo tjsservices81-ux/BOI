@@ -2,44 +2,20 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     
     <!-- Security Headers -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:; connect-src 'self' wss: https:;">
     <meta name="referrer" content="no-referrer">
     <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
     
-    <!-- Cross-platform PWA Configuration -->
+    <!-- iOS Web App Configuration -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="BOI Mobile" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="application-name" content="BOI Mobile" />
-    <meta name="theme-color" content="#126987" />
-    <meta name="msapplication-TileColor" content="#126987" />
-    <meta name="msapplication-navbutton-color" content="#126987" />
-    
-    <!-- Android Chrome specific -->
-    <meta name="format-detection" content="telephone=no, date=no, address=no, email=no, url=no" />
-    <meta name="screen-orientation" content="portrait" />
-    <meta name="full-screen" content="yes" />
-    <meta name="browsermode" content="application" />
-    
-    <!-- Android specific PWA enhancements -->
-    <meta name="mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="mobile-web-app-title" content="BOI Mobile" />
-    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#126987" />
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#126987" />
-    
-    <!-- Chrome Mobile specific -->
-    <meta name="google" content="notranslate" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="mobile-web-app-status-bar-style" content="black-translucent" />
-    
-    <!-- Samsung Internet specific -->
-    <meta name="mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="mobile-web-app-title" content="BOI Mobile" />
-    <meta name="supported-color-schemes" content="light" />
+    <meta name="theme-color" content="#000DFF" />
     
     <!-- Critical font preloading for instant rendering -->
     <link rel="preload" href="/OpenSans-Regular-webfont.woff2" as="font" type="font/woff2" crossorigin>
@@ -135,77 +111,6 @@
           });
         });
 
-        // Android-specific viewport and keyboard handling
-        function setupAndroidOptimizations() {
-          const isAndroid = /Android/i.test(navigator.userAgent);
-          const isSamsung = /SamsungBrowser/i.test(navigator.userAgent);
-          const isChrome = /Chrome/i.test(navigator.userAgent) && !isSamsung;
-          
-          if (isAndroid) {
-            // Set viewport height variable for Android
-            function setViewportHeight() {
-              const vh = window.innerHeight * 0.01;
-              document.documentElement.style.setProperty('--vh', `${vh}px`);
-              document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`);
-            }
-            
-            setViewportHeight();
-            window.addEventListener('resize', setViewportHeight);
-            window.addEventListener('orientationchange', () => {
-              setTimeout(setViewportHeight, 100);
-            });
-            
-            // Android keyboard handling
-            let initialHeight = window.innerHeight;
-            window.addEventListener('resize', function() {
-              const currentHeight = window.innerHeight;
-              const heightDifference = initialHeight - currentHeight;
-              
-              if (heightDifference > 150) {
-                // Keyboard is likely open
-                document.body.classList.add('keyboard-visible');
-                document.documentElement.style.setProperty('--keyboard-height', `${heightDifference}px`);
-              } else {
-                // Keyboard is likely closed
-                document.body.classList.remove('keyboard-visible');
-                document.documentElement.style.setProperty('--keyboard-height', '0px');
-              }
-            });
-            
-            // Samsung Internet specific fixes
-            if (isSamsung) {
-              document.body.classList.add('samsung-browser');
-              // Fix Samsung Internet button rendering
-              const style = document.createElement('style');
-              style.textContent = `
-                button, input[type="submit"], input[type="button"] {
-                  -webkit-appearance: none !important;
-                  appearance: none !important;
-                  border-radius: 8px !important;
-                }
-              `;
-              document.head.appendChild(style);
-            }
-            
-            // Chrome Mobile specific fixes
-            if (isChrome) {
-              document.body.classList.add('chrome-mobile');
-              // Fix Chrome mobile autofill
-              const style = document.createElement('style');
-              style.textContent = `
-                input:-webkit-autofill {
-                  -webkit-box-shadow: 0 0 0 30px white inset !important;
-                  -webkit-text-fill-color: #000 !important;
-                  background-clip: content-box !important;
-                }
-              `;
-              document.head.appendChild(style);
-            }
-          }
-        }
-        
-        setupAndroidOptimizations();
-        
         // Hide URL bar on mobile
         if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
           setTimeout(function() {
