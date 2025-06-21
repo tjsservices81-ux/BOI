@@ -196,7 +196,11 @@ function AppRoutes() {
             }
           } catch (error) {
             console.error('Failed to check authentication status:', error);
-            localStorage.removeItem('currentUser');
+            try {
+              UserDataManager.clearUserData('currentUser');
+            } catch (clearError) {
+              localStorage.removeItem('currentUser');
+            }
           }
           
           setSplashShown(true);

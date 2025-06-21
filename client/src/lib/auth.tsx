@@ -119,7 +119,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = (userData: User) => {
     console.log('🔐 AuthContext login() called with:', userData);
     setUser(userData);
-    UserDataManager.setUserData('currentUser', JSON.stringify(userData));
+    // Set current user identifier for UserDataManager
+    const userIdentifier = (userData as any).customerNumber || userData.id.toString();
+    UserDataManager.setCurrentUser(userIdentifier);
     console.log('✅ User session saved to localStorage');
     
     // Emit global login event for navigation handlers

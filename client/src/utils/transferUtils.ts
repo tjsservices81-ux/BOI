@@ -1,4 +1,4 @@
-// Simple localStorage-based transfer utilities
+// Simple UserDataManager-based transfer utilities
 import { UserDataManager } from './userDataManager';
 
 export interface Account {

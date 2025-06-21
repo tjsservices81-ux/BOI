@@ -247,7 +247,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
         clearInterval(endChatTimerRef.current);
         endChatTimerRef.current = null;
       }
-      // Note: We don't clear localStorage here to preserve chat during page refreshes
+      // Note: We don't clear UserDataManager here to preserve chat during page refreshes
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);

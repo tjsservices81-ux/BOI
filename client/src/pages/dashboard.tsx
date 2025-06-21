@@ -28,9 +28,9 @@ export default function Dashboard() {
     const cachedUser = UserDataManager.getCurrentUser();
     
     if (cachedUser) {
-      console.log('📊 Dashboard: User data found in localStorage:', JSON.parse(cachedUser));
+      console.log('📊 Dashboard: User data found in UserDataManager:', JSON.parse(cachedUser));
     } else {
-      console.log('📊 Dashboard: No user data in localStorage');
+      console.log('📊 Dashboard: No user data in UserDataManager');
     }
     
     console.log('📊 Dashboard: Loading animation removed for instant accounts access');
@@ -227,7 +227,7 @@ export default function Dashboard() {
     };
   }, [accounts]);
 
-  // Store accounts in localStorage for transfer forms to access
+  // Store accounts in UserDataManager for transfer forms to access
   useEffect(() => {
     UserDataManager.setUserData('bankAccounts', accounts);
   }, [accounts]);
