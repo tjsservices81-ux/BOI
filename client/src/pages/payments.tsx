@@ -214,6 +214,14 @@ export default function Payments() {
 
 
 
+        {/* Debug info - temporary */}
+        <div className="bg-yellow-100 p-2 rounded text-xs mb-4">
+          Profile: {profileData ? 'Loaded' : 'Not loaded'}<br/>
+          Card: {profileData?.showCardTransfer?.toString()}<br/>
+          Email: {profileData?.showEmailTransfer?.toString()}<br/>
+          Options: {paymentOptions.length}
+        </div>
+
         {/* Payment Options */}
         <div className="space-y-4 mb-8">
           {paymentOptions.map((option, index) => (
