@@ -70,9 +70,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log(`Manifest requested - Access code: ${accessCode || 'none'}, Start URL: ${startUrl}`);
     
     const manifest = {
-      "name": "Bank of Ireland Mobile",
-      "short_name": "BOI Mobile", 
-      "description": "Bank of Ireland Mobile Banking Application",
+      "name": "MyBOI App",
+      "short_name": "MyBOI", 
+      "description": "MyBOI Mobile Banking Application",
       "start_url": startUrl,
       "display": "standalone",
       "orientation": "portrait-primary",
