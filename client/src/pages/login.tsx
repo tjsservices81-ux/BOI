@@ -354,21 +354,55 @@ export default function Login() {
       return;
     }
 
-    // PERMANENT LOGIN: Set current user and mark as permanently logged in
-    UserDataManager.setCurrentUser(customerNumber);
-    UserDataManager.recordLoginTime(customerNumber);
-    UserDataManager.setUserData('permanentlyLoggedIn', true);
-    
     try {
-      const userProfile = UserDataManager.getUserProfile();
-      if (userProfile) {
-        login({
-          id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
-          name: userProfile.name,
-          email: userProfile.email
-        });
+      // Authenticate with server first
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ customerNumber, pin }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        
+        // PERMANENT LOGIN: Set current user and mark as permanently logged in
+        localStorage.setItem('currentUser', customerNumber);
+        localStorage.setItem('permanentlyLoggedIn', 'true');
+        localStorage.setItem('permanentUserData', JSON.stringify(result.user));
+        
+        UserDataManager.setCurrentUser(customerNumber);
+        UserDataManager.recordLoginTime(customerNumber);
+        UserDataManager.setUserData(customerNumber, 'permanentlyLoggedIn', true);
+        UserDataManager.setUserData(customerNumber, 'permanentSessionToken', result.sessionToken);
+        
+        // Login to auth context
+        login(result.user);
+        navigate("/dashboard");
+      } else {
+        // Server auth failed, try local verification
+        const userProfile = UserDataManager.getUserProfile(customerNumber);
+        const storedPin = UserDataManager.getUserData(customerNumber, 'pin');
+        
+        if (userProfile && storedPin === pin) {
+          // Local auth success
+          localStorage.setItem('currentUser', customerNumber);
+          localStorage.setItem('permanentlyLoggedIn', 'true');
+          localStorage.setItem('permanentUserData', JSON.stringify(userProfile));
+          
+          UserDataManager.setCurrentUser(customerNumber);
+          UserDataManager.recordLoginTime(customerNumber);
+          UserDataManager.setUserData(customerNumber, 'permanentlyLoggedIn', true);
+          
+          login({
+            id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
+            name: userProfile.name,
+            email: userProfile.email
+          });
+          navigate("/dashboard");
+        } else {
+          throw new Error('Invalid credentials');
+        }
       }
-      navigate("/dashboard");
     } catch (error) {
       toast({
         title: "Login Failed",

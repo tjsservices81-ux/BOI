@@ -36,26 +36,23 @@ export function BiometricAuthProvider({ children }: { children: React.ReactNode 
     try {
       setState(prev => ({ ...prev, isLoading: true, error: null }));
       
-      // FIRST: Check localStorage for permanent login flag
+      // FIRST: Check localStorage for permanent login flag and currentUser
       const permanentlyLoggedIn = localStorage.getItem('permanentlyLoggedIn');
+      let currentUser = localStorage.getItem('currentUser') || localStorage.getItem('lastActiveUser');
       
-      if (permanentlyLoggedIn === 'true') {
+      if (permanentlyLoggedIn === 'true' && currentUser) {
         // User is permanently logged in - proceed with biometric auth
-        const lastActiveUser = UserDataManager.getLastActiveUser();
+        const userProfile = UserDataManager.getUserProfile(currentUser);
         
-        if (lastActiveUser) {
-          const userProfile = UserDataManager.getUserProfile(lastActiveUser);
-          
-          if (userProfile) {
-            setState(prev => ({
-              ...prev,
-              needsBiometric: true,
-              isAuthenticated: false,
-              userInfo: userProfile,
-              isLoading: false
-            }));
-            return;
-          }
+        if (userProfile) {
+          setState(prev => ({
+            ...prev,
+            needsBiometric: true,
+            isAuthenticated: false,
+            userInfo: userProfile,
+            isLoading: false
+          }));
+          return;
         }
       }
       
@@ -193,6 +190,18 @@ export function BiometricAuthProvider({ children }: { children: React.ReactNode 
           // Wait for login to complete, then update biometric state
           await new Promise(resolve => setTimeout(resolve, 100));
           
+          // CRITICAL: Restore currentUser after biometric login
+          if (data.user && data.user.id) {
+            const allUsers = UserDataManager.getAllUsers();
+            for (const [customerNumber, userData] of Object.entries(allUsers)) {
+              if (userData && typeof userData === 'object' && 'id' in userData && userData.id === data.user.id) {
+                localStorage.setItem('currentUser', customerNumber);
+                localStorage.setItem('permanentUserData', JSON.stringify(data.user));
+                break;
+              }
+            }
+          }
+          
           setState(prev => ({
             ...prev,
             isAuthenticated: true,
@@ -205,10 +214,10 @@ export function BiometricAuthProvider({ children }: { children: React.ReactNode 
       } else if (!response) {
         // OFFLINE MODE: Allow biometric authentication offline if permanently logged in
         const permanentlyLoggedIn = localStorage.getItem('permanentlyLoggedIn');
+        const currentUser = localStorage.getItem('currentUser') || localStorage.getItem('lastActiveUser');
         
-        if (permanentlyLoggedIn === 'true') {
-          const lastActiveUser = UserDataManager.getLastActiveUser();
-          const userProfile = UserDataManager.getUserProfile(lastActiveUser);
+        if (permanentlyLoggedIn === 'true' && currentUser) {
+          const userProfile = UserDataManager.getUserProfile(currentUser);
           
           if (userProfile) {
             if (login) {

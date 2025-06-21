@@ -1,18 +1,18 @@
 {
   "users": [
     [
-      70,
+      72,
       {
-        "id": 70,
-        "customerNumber": "BOI078639554",
+        "id": 72,
+        "customerNumber": "BOI816723842",
         "pin": "000000",
-        "name": "Jajjsjsjs",
-        "email": "shshsh@gmail.com",
-        "phone": "764664",
+        "name": "John",
+        "email": "john@gmail.com",
+        "phone": "464664646",
         "address": null,
         "dateOfBirth": null,
-        "joinDate": "2025-06-21T04:06:18.674Z",
-        "dateCreated": "2025-06-21T04:06:18.776Z",
+        "joinDate": "2025-06-21T04:17:55.677Z",
+        "dateCreated": "2025-06-21T04:17:55.745Z",
         "isDisabled": false,
         "profilePhoto": null,
         "preferences": null,
@@ -20,22 +20,22 @@
         "deviceInfo": null,
         "notificationSettings": null,
         "securitySettings": null,
-        "lastActivity": "2025-06-21T04:06:18.776Z"
+        "lastActivity": "2025-06-21T04:17:55.745Z"
       }
     ],
     [
-      71,
+      73,
       {
-        "id": 71,
-        "customerNumber": "BOI516557182",
+        "id": 73,
+        "customerNumber": "BOI638844107",
         "pin": "000000",
-        "name": "Shshshsh",
-        "email": "ansnha@gmail.com",
-        "phone": "46464664",
+        "name": "Shhshsjs",
+        "email": "sbshsh@gmail.com",
+        "phone": "46646464",
         "address": null,
         "dateOfBirth": null,
-        "joinDate": "2025-06-21T04:08:23.936Z",
-        "dateCreated": "2025-06-21T04:08:24.009Z",
+        "joinDate": "2025-06-21T04:19:19.438Z",
+        "dateCreated": "2025-06-21T04:19:19.509Z",
         "isDisabled": false,
         "profilePhoto": null,
         "preferences": null,
@@ -43,28 +43,73 @@
         "deviceInfo": null,
         "notificationSettings": null,
         "securitySettings": null,
-        "lastActivity": "2025-06-21T04:08:24.009Z"
+        "lastActivity": "2025-06-21T04:19:19.509Z"
+      }
+    ],
+    [
+      74,
+      {
+        "id": 74,
+        "customerNumber": "12345678",
+        "pin": "000000",
+        "name": "John",
+        "email": "hahs@gmail.com",
+        "phone": "494949",
+        "address": "Shs",
+        "dateOfBirth": "",
+        "joinDate": "2025-06-21T04:19:52.330Z",
+        "dateCreated": "2025-06-21T04:19:52.340Z",
+        "isDisabled": false,
+        "profilePhoto": null,
+        "preferences": null,
+        "lastLoginTime": null,
+        "deviceInfo": null,
+        "notificationSettings": null,
+        "securitySettings": null,
+        "lastActivity": "2025-06-21T04:19:52.463Z"
       }
     ]
   ],
   "accounts": [
     [
-      50,
+      52,
       {
-        "id": 50,
+        "id": 52,
         "displayName": "Current Account",
-        "userId": 70,
+        "userId": 72,
         "accountType": "Current Account",
         "accountNumber": "****2091",
         "balance": "0.00"
       }
     ],
     [
-      51,
+      53,
       {
-        "id": 51,
+        "id": 53,
         "displayName": "Savings Account",
-        "userId": 70,
+        "userId": 72,
+        "accountType": "Savings Account",
+        "accountNumber": "****0978",
+        "balance": "0.00"
+      }
+    ],
+    [
+      54,
+      {
+        "id": 54,
+        "displayName": "Current Account",
+        "userId": 73,
+        "accountType": "Current Account",
+        "accountNumber": "****2091",
+        "balance": "0.00"
+      }
+    ],
+    [
+      55,
+      {
+        "id": 55,
+        "displayName": "Savings Account",
+        "userId": 73,
         "accountType": "Savings Account",
         "accountNumber": "****0978",
         "balance": "0.00"
@@ -80,7 +125,7 @@
   "chatSessions": [],
   "counters": {
     "currentUserId": 35,
-    "currentAccountId": 52,
+    "currentAccountId": 56,
     "currentTransactionId": 49,
     "currentPayeeId": 25,
     "currentScheduledPaymentId": 1,

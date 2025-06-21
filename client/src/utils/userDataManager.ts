@@ -101,11 +101,33 @@ export class UserDataManager {
     localStorage.setItem(userKey, JSON.stringify(data));
   }
 
-  // Retrieve user-specific data with caching
-  static getUserData(key: string, defaultValue: any = null) {
+  // Retrieve user-specific data with caching and fallback safety
+  static getUserData(customerNumberOrKey: string, keyOrDefault?: any, defaultValue: any = null) {
     try {
-      const userKey = this.getUserKey(key);
-      const cacheKey = `${this.currentUser || localStorage.getItem('currentUser')}_${key}`;
+      // Handle both old and new method signatures
+      let customerNumber: string;
+      let key: string;
+      let fallback: any;
+      
+      if (keyOrDefault !== undefined) {
+        // New signature: getUserData(customerNumber, key, defaultValue)
+        customerNumber = customerNumberOrKey;
+        key = keyOrDefault;
+        fallback = defaultValue;
+      } else {
+        // Old signature: getUserData(key, defaultValue)
+        customerNumber = this.getCurrentUser() || localStorage.getItem('currentUser') || localStorage.getItem('lastActiveUser') || '';
+        key = customerNumberOrKey;
+        fallback = keyOrDefault;
+      }
+      
+      if (!customerNumber) {
+        console.warn('No user context available for getUserData');
+        return fallback;
+      }
+      
+      const userKey = this.getUserKey(customerNumber, key);
+      const cacheKey = `${customerNumber}_${key}`;
       
       // Check cache first
       const cachedData = this.dataCache.get(cacheKey);
@@ -117,7 +139,7 @@ export class UserDataManager {
       
       // Get from localStorage
       const stored = localStorage.getItem(userKey);
-      const data = stored ? JSON.parse(stored) : defaultValue;
+      const data = stored ? JSON.parse(stored) : fallback;
       
       // Cache the result
       this.dataCache.set(cacheKey, data);
@@ -125,7 +147,8 @@ export class UserDataManager {
       
       return data;
     } catch (error) {
-      return defaultValue;
+      console.warn('getUserData error:', error);
+      return keyOrDefault !== undefined ? defaultValue : keyOrDefault;
     }
   }
 
