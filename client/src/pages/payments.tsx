@@ -213,15 +213,19 @@ export default function Payments() {
           </p>
         </div>
 
-        {/* Debug info for transfer options */}
-        {profileData && (
-          <div className="bg-yellow-100 p-3 rounded-lg mb-4 text-sm">
-            <strong>Debug Info:</strong><br/>
-            Card Transfer: {profileData.showCardTransfer ? '✅ Enabled' : '❌ Disabled'}<br/>
-            Email Transfer: {profileData.showEmailTransfer ? '✅ Enabled' : '❌ Disabled'}<br/>
-            Total Options: {paymentOptions.length}
-          </div>
-        )}
+        {/* Debug info for transfer options - Always show */}
+        <div className="bg-yellow-100 p-3 rounded-lg mb-4 text-sm">
+          <strong>Debug Info:</strong><br/>
+          Profile Data: {profileData ? 'Loaded' : 'Not loaded'}<br/>
+          {profileData && (
+            <>
+              Card Transfer: {profileData.showCardTransfer ? '✅ Enabled' : '❌ Disabled'}<br/>
+              Email Transfer: {profileData.showEmailTransfer ? '✅ Enabled' : '❌ Disabled'}<br/>
+            </>
+          )}
+          Total Options: {paymentOptions.length}<br/>
+          Raw Profile: {JSON.stringify(profileData)}
+        </div>
 
         {/* Payment Options */}
         <div className="space-y-4 mb-8">
