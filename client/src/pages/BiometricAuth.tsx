@@ -13,7 +13,10 @@ export default function BiometricAuth() {
 
   useEffect(() => {
     if (state.isAuthenticated) {
-      setLocation('/dashboard');
+      // Add small delay to allow animation to complete before redirect
+      setTimeout(() => {
+        setLocation('/dashboard');
+      }, 100);
     } else if (!state.needsBiometric && !state.isLoading) {
       setLocation('/login');
     }
@@ -23,11 +26,7 @@ export default function BiometricAuth() {
     setIsAuthenticating(true);
     try {
       const success = await authenticateWithBiometric();
-      if (success) {
-        // Recheck auth status to ensure proper state transition
-        await checkAuthenticationStatus();
-        setLocation('/dashboard');
-      }
+      // Let useEffect handle navigation after state updates
     } catch (error) {
       console.error('Biometric authentication error:', error);
     } finally {
