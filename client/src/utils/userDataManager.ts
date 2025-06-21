@@ -143,7 +143,7 @@ export class UserDataManager {
 
   // Clear user-specific data from cache for key
   static clearUserData(key: string) {
-    const currentUser = this.getCurrentUser();
+    const currentUser = this.currentUser || localStorage.getItem('currentUser');
     if (!currentUser) return;
     
     const cacheKey = `${currentUser}_${key}`;
@@ -152,6 +152,12 @@ export class UserDataManager {
     
     // Also clear from localStorage
     localStorage.removeItem(`user_${currentUser}_${key}`);
+    
+    // Special handling for critical keys
+    if (key === 'currentUser') {
+      localStorage.removeItem('currentUser');
+      this.currentUser = null;
+    }
   }
 
   // Get all registered users
