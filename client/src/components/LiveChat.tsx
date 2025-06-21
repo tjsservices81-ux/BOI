@@ -261,7 +261,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   useEffect(() => {
     if (currentUser) {
       // Simply mark that navigation is active without clearing chat
-      sessionStorage.setItem('app_navigation_active', 'true');
+      localStorage.setItem('app_navigation_active', 'true');
     }
   }, [currentUser]);
 

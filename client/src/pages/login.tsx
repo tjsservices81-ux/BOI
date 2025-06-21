@@ -109,15 +109,13 @@ export default function Login() {
   useEffect(() => {
     setAssetsLoaded(true);
     
-    // For cold starts, clear all auth state and require fresh login
-    const wasColdStart = sessionStorage.getItem('app_cold_start') === 'true' || 
-                        !sessionStorage.getItem('splashShown');
+    // Check if this is a fresh app installation (no permanent login state)
+    const hasPermanentLogin = localStorage.getItem('bankingUser') || localStorage.getItem('lastActiveUser');
     
-    if (wasColdStart) {
-      // Cold start - clear all authentication data
-      UserDataManager.clearCurrentUser();
-      localStorage.removeItem('bankingUser');
-      localStorage.removeItem('lastActiveUser');
+    // Only clear auth data if no permanent login exists and user explicitly logged out
+    if (!hasPermanentLogin && localStorage.getItem('explicit_logout') === 'true') {
+      localStorage.removeItem('explicit_logout');
+      // Auth data already cleared
     }
     
     // Clear form fields regardless
