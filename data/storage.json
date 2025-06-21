@@ -1,22 +1,6 @@
 {
   "users": [
     [
-      68,
-      {
-        "id": 68,
-        "customerNumber": "BOI650713408",
-        "pin": "000000",
-        "name": "Ahajaj10831",
-        "email": "anahaj@gmail.com",
-        "phone": "4245545454",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "2025-06-21T03:21:27.375Z",
-        "dateCreated": "2025-06-21T03:21:27.816Z",
-        "isDisabled": false
-      }
-    ],
-    [
       69,
       {
         "id": 69,
@@ -33,30 +17,7 @@
       }
     ]
   ],
-  "accounts": [
-    [
-      48,
-      {
-        "id": 48,
-        "displayName": "Current Account",
-        "userId": 68,
-        "accountType": "Current Account",
-        "accountNumber": "****2091",
-        "balance": "0.00"
-      }
-    ],
-    [
-      49,
-      {
-        "id": 49,
-        "displayName": "Savings Account",
-        "userId": 68,
-        "accountType": "Savings Account",
-        "accountNumber": "****0978",
-        "balance": "0.00"
-      }
-    ]
-  ],
+  "accounts": [],
   "transactions": [],
   "payees": [],
   "scheduledPayments": [],
