@@ -214,6 +214,8 @@ export default function Dashboard() {
 
     const handleCurrencyChange = (event: any) => {
       setCurrentCurrency(event.detail.currency);
+      // Force re-render of accounts to update currency display
+      setAccounts(prev => [...prev]);
     };
 
     window.addEventListener('balanceUpdate', handleBalanceUpdate as EventListener);

@@ -38,6 +38,8 @@ export default function Transfer() {
     const handleCurrencyChange = (event: any) => {
       const { currency } = event.detail;
       setCurrentCurrency(currency);
+      // Trigger re-render by forcing queryClient invalidation
+      queryClient.invalidateQueries({ queryKey: ['/api/accounts'] });
     };
 
     window.addEventListener('currencyChanged', handleCurrencyChange);

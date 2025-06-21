@@ -98,6 +98,9 @@ export default function UkTransfer() {
       console.log(`UK Transfer: Currency changed to ${currency}`);
       setCurrentCurrency(currency);
       
+      // Force re-render of accounts to update currency display
+      setAccounts(prev => [...prev]);
+      
       // Update timing text and currency conversion visibility instantly
       if (currency === 'GBP') {
         setGbpAmount('0.00'); // Hide conversion for GBP
