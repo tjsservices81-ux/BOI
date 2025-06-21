@@ -9,13 +9,12 @@ const FALLBACK_CACHE = 'boi-fallback-v1.0.0';
 // Critical assets that must be cached for PWA to work
 const CRITICAL_ASSETS = [
   '/',
-  '/client/index.html',
-  '/client/src/main.tsx',
-  '/client/src/App.tsx',
-  '/client/src/index.css',
   '/manifest.json',
   '/boi_app_icon.png',
-  '/boi_logo.svg'
+  '/boi_logo.svg',
+  '/IMG_0633_1749764752035.jpeg',
+  '/Icons_Fingerprint.svg',
+  '/icon_HID.svg'
 ];
 
 // Assets to cache for better performance
