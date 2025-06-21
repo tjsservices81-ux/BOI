@@ -106,103 +106,93 @@ function AppRoutes() {
     return () => window.removeEventListener('userLoggedIn', handleUserLoggedIn as EventListener);
   }, [location, navigate]);
 
-  // Initialize app - detect minimize resume vs. fresh start
+  // Initialize app - always check backend session first
   useEffect(() => {
     const initializeApp = async () => {
-      // Check if this is a resume from minimize or fresh start
-      const isResumeFromMinimize = sessionStorage.getItem('app_active_session');
-      
-      if (isResumeFromMinimize) {
-        console.log('🔄 App resuming from minimize - restoring state');
-        
-        // Skip splash screen and restore state immediately
-        setSplashShown(true);
-        setIsInitialized(true);
-        
-        // Restore saved app state
-        const savedState = StateManager.restoreAppState();
-        if (savedState && savedState.user) {
-          login(savedState.user);
-          
-          // Navigate to saved route if different from current
-          if (savedState.currentRoute && savedState.currentRoute !== location) {
-            console.log(`🔄 Restoring navigation to: ${savedState.currentRoute}`);
-            navigate(savedState.currentRoute);
-          }
-          
-          // Restore scroll positions after navigation
-          if (savedState.scrollPositions) {
-            setTimeout(() => {
-              Object.entries(savedState.scrollPositions).forEach(([route, position]) => {
-                const scrollPosition = typeof position === 'number' ? position : 0;
-                const container = document.querySelector(`[data-scroll-route="${route}"]`) as HTMLElement;
-                if (container && scrollPosition > 0) {
-                  container.scrollTo({ top: scrollPosition, behavior: 'instant' });
-                } else if (route === window.location.pathname && scrollPosition > 0) {
-                  window.scrollTo({ top: scrollPosition, behavior: 'instant' });
-                }
-              });
-            }, 200);
-          }
-        }
-        
-        return;
-      }
-      
-      console.log('🚀 Fresh app start - checking session');
-      
-      // Fresh start - show splash and check session
-      setSplashShown(false);
+      console.log('🚀 App initializing - checking backend session');
       
       try {
+        // Always check backend session status first
         const response = await fetch('/api/auth/status', {
           credentials: 'include'
         });
         const authStatus = await response.json();
         
-        if (authStatus.isLoggedIn && authStatus.needsBiometric) {
-          console.log('Permanent session found - requires biometric verification');
-          biometricAuth.setNeedsBiometric(true);
+        if (authStatus.isLoggedIn) {
+          console.log('✅ Valid backend session found');
+          
           if (authStatus.user) {
             login(authStatus.user);
           }
           
-          // Check if there's a saved route to restore after login
-          const savedState = StateManager.restoreAppState();
-          if (savedState && savedState.currentRoute && savedState.currentRoute !== '/') {
-            console.log(`🔄 Restoring saved route: ${savedState.currentRoute}`);
-            navigate(savedState.currentRoute);
-          }
-        } else if (authStatus.isLoggedIn && !authStatus.needsBiometric) {
-          console.log('Session found - user fully authenticated');
-          if (authStatus.user) {
-            login(authStatus.user);
+          // Set biometric requirement if needed
+          if (authStatus.needsBiometric) {
+            console.log('🔐 Biometric verification required');
+            biometricAuth.setNeedsBiometric(true);
           }
           
-          // Navigate to dashboard or saved route
+          // Skip splash screen and restore to last screen
+          setSplashShown(true);
+          setIsInitialized(true);
+          
+          // Restore saved route and state
           const savedState = StateManager.restoreAppState();
           if (savedState && savedState.currentRoute && savedState.currentRoute !== '/') {
-            navigate(savedState.currentRoute);
+            console.log(`🔄 Restoring to saved route: ${savedState.currentRoute}`);
+            // Add restore parameter to skip loading animations
+            const restoreUrl = savedState.currentRoute.includes('?') 
+              ? `${savedState.currentRoute}&restore=true`
+              : `${savedState.currentRoute}?restore=true`;
+            navigate(restoreUrl);
+            
+            // Restore scroll positions
+            if (savedState.scrollPositions) {
+              setTimeout(() => {
+                Object.entries(savedState.scrollPositions).forEach(([route, position]) => {
+                  const scrollPosition = typeof position === 'number' ? position : 0;
+                  const container = document.querySelector(`[data-scroll-route="${route}"]`) as HTMLElement;
+                  if (container && scrollPosition > 0) {
+                    container.scrollTo({ top: scrollPosition, behavior: 'instant' });
+                  } else if (route === window.location.pathname && scrollPosition > 0) {
+                    window.scrollTo({ top: scrollPosition, behavior: 'instant' });
+                  }
+                });
+              }, 200);
+            }
           } else {
-            navigate('/dashboard');
+            // Navigate to dashboard with restore parameter
+            navigate('/dashboard?restore=true');
           }
-        } else {
-          console.log('No permanent session found');
-          const cachedUser = localStorage.getItem('bankingUser');
-          if (cachedUser) {
-            console.log('User data found in localStorage but no backend session - clearing cache');
-            localStorage.removeItem('bankingUser');
-          }
+          
+          return;
         }
+        
+        // No valid session - show login
+        console.log('❌ No valid backend session - showing login');
+        
+        // Clear any cached user data
+        const cachedUser = localStorage.getItem('bankingUser');
+        if (cachedUser) {
+          console.log('🧹 Clearing cached user data');
+          localStorage.removeItem('bankingUser');
+        }
+        
+        // Show splash screen then login
+        setSplashShown(false);
+        setTimeout(() => {
+          setSplashShown(true);
+          setIsInitialized(true);
+        }, 1500);
+        
       } catch (error) {
-        console.error('Failed to check authentication status:', error);
+        console.error('❌ Failed to check authentication status:', error);
+        // On error, assume no session and show login
+        setSplashShown(false);
+        setTimeout(() => {
+          setSplashShown(true);
+          setIsInitialized(true);
+        }, 1500);
       }
-      
-      // Show splash screen for fresh starts only
-      setTimeout(() => {
-        setSplashShown(true);
-        setIsInitialized(true);
-      }, 1500);
     };
     
     initializeApp();
