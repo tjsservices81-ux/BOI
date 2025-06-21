@@ -28,46 +28,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     const initializeAuth = async () => {
       try {
-        // Check for cached user first through UserDataManager
+        // PERMANENT LOGIN: Check for permanent user session - users stay logged in forever
         const cachedUser = UserDataManager.getCurrentUser();
-        if (cachedUser && isMounted) {
-          const userProfile = UserDataManager.getUserProfile();
-          if (userProfile) {
-            try {
-              // Validate user still exists on server for bulletproof authentication
-              const response = await fetch('/api/auth/status', {
-                credentials: 'include'
-              });
-              
-              if (response.ok) {
-                const authData = await response.json();
-                if (authData.isLoggedIn && authData.user) {
-                  // Server confirms user exists - maintain session
-                  setUser({
-                    id: userProfile.id || parseInt(userProfile.customerNumber) || 0,
-                    name: userProfile.name,
-                    email: userProfile.email
-                  });
-                } else {
-                  // Server indicates no valid session - user was deleted
-                  console.log('Clearing stale user data');
-                  UserDataManager.clearCache();
-                  setUser(null);
-                }
-              } else {
-                // SECURITY: Preserve user session during server errors
-                console.log('Server error during auth check - preserving user session');
-                setUser({
-                  id: userProfile.id || parseInt(userProfile.customerNumber) || 0,
-                  name: userProfile.name,
-                  email: userProfile.email
-                });
-              }
-            } catch (error) {
-              UserDataManager.clearCache();
-              setUser(null);
-            }
-          }
+        const userProfile = UserDataManager.getUserProfile();
+        const isPermanentlyLoggedIn = UserDataManager.getUserData('permanentlyLoggedIn', false);
+        
+        if (cachedUser && userProfile && isPermanentlyLoggedIn && isMounted) {
+          // User has permanent session - they stay logged in forever unless admin deletes
+          console.log('🔐 PERMANENT SESSION: User stays logged in forever unless admin deletes');
+          setUser({
+            id: userProfile.id || parseInt(userProfile.customerNumber) || 0,
+            name: userProfile.name,
+            email: userProfile.email
+          });
         }
         
         if (isMounted) {
