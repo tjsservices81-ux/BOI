@@ -92,30 +92,7 @@ export function BiometricAuthProvider({ children }: { children: React.ReactNode 
     try {
       setState(prev => ({ ...prev, isLoading: true, error: null }));
       
-      // Check if Web Authentication API is available
-      if (!window.PublicKeyCredential) {
-        // Fallback: simulate biometric with user confirmation
-        const userConfirmed = window.confirm(
-          "Biometric authentication is not available. Would you like to proceed with PIN verification instead?"
-        );
-        
-        if (userConfirmed) {
-          setState(prev => ({
-            ...prev,
-            isAuthenticated: true,
-            needsBiometric: false,
-            isLoading: false
-          }));
-          return true;
-        } else {
-          setState(prev => ({
-            ...prev,
-            error: 'Biometric authentication cancelled',
-            isLoading: false
-          }));
-          return false;
-        }
-      }
+      // Always use backend verification - remove fallback path that bypasses server
 
       // Simulate biometric scan time then verify with backend
       await new Promise(resolve => setTimeout(resolve, 1500));

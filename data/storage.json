@@ -127,6 +127,22 @@
         "dateCreated": "2025-06-21T00:15:40.572Z",
         "isDisabled": false
       }
+    ],
+    [
+      63,
+      {
+        "id": 63,
+        "customerNumber": "BOI375942689",
+        "pin": "000000",
+        "name": "Hhhh",
+        "email": "fttt@gmail.com",
+        "phone": "66464",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-06-21T00:18:36.009Z",
+        "dateCreated": "2025-06-21T00:18:38.473Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [

@@ -24,9 +24,8 @@ export default function BiometricAuth() {
     try {
       const success = await authenticateWithBiometric();
       if (success) {
-        // Recheck auth status to ensure proper state transition
-        await checkAuthenticationStatus();
-        setLocation('/dashboard');
+        // Navigation handled by useEffect, don't duplicate
+        console.log('Biometric authentication successful');
       }
     } catch (error) {
       console.error('Biometric authentication error:', error);
