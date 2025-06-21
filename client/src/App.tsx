@@ -154,6 +154,14 @@ function AppRoutes() {
     
     const initializeApp = async () => {
       try {
+        // Check device verification status first
+        const otcVerified = localStorage.getItem('otcVerified');
+        if (!otcVerified) {
+          setShowOTCVerification(true);
+          setIsInitialized(true);
+          return;
+        }
+        
         // Initialize platform-specific handlers first
         PlatformDetection.setupPlatformSpecificHandlers();
         
@@ -409,6 +417,18 @@ function AppRoutes() {
     window.addEventListener('focus', handleFocusRestore);
     return () => window.removeEventListener('focus', handleFocusRestore);
   }, [location]);
+
+  // Handle OTC verification completion
+  const handleOTCVerificationComplete = () => {
+    setShowOTCVerification(false);
+    // Continue with normal app initialization after device verification
+    window.location.reload();
+  };
+
+  // Show OTC verification screen for first-time devices
+  if (showOTCVerification) {
+    return <OTCVerification onVerificationComplete={handleOTCVerificationComplete} />;
+  }
 
   // Prevent flash during initialization
   if (!isInitialized) {
