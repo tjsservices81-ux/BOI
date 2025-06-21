@@ -229,6 +229,37 @@
           configurable: false
         });
       }
+
+      // Android-only fix for transfer button and processing screen visibility
+      document.addEventListener('DOMContentLoaded', () => {
+        const isAndroid = /Android/i.test(navigator.userAgent);
+        if (!isAndroid) return; // Only run on Android
+
+        const fixAndroidVisibility = () => {
+          // Fix Confirm Transfer button
+          const confirmBtn = document.querySelector('#confirmTransferBtn');
+          if (confirmBtn && getComputedStyle(confirmBtn).visibility === 'hidden') {
+            confirmBtn.style.visibility = 'visible';
+            confirmBtn.style.opacity = '1';
+            confirmBtn.style.zIndex = '1000';
+            confirmBtn.style.position = 'relative';
+          }
+
+          // Fix Transfer Processing screen
+          const progressScreen = document.querySelector('#transferProgressScreen');
+          if (progressScreen && getComputedStyle(progressScreen).display === 'none') {
+            progressScreen.style.display = 'block';
+            progressScreen.style.visibility = 'visible';
+            progressScreen.style.opacity = '1';
+            progressScreen.style.zIndex = '999';
+            progressScreen.style.transform = 'translateY(0)';
+          }
+        };
+
+        // Run immediately and then at regular intervals
+        fixAndroidVisibility();
+        setInterval(fixAndroidVisibility, 100);
+      });
     </script>
     <script type="module" src="/src/main.tsx"></script>
     <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->

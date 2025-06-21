@@ -93,6 +93,39 @@ function AppRoutes() {
     return () => window.removeEventListener('openLiveChat', handleOpenLiveChat);
   }, []);
 
+  // Android-only fix for transfer button and processing screen visibility
+  useEffect(() => {
+    const isAndroid = /Android/i.test(navigator.userAgent);
+    if (!isAndroid) return; // Only run on Android
+
+    const fixAndroidVisibility = () => {
+      // Fix Confirm Transfer button
+      const confirmBtn = document.querySelector('#confirmTransferBtn');
+      if (confirmBtn && getComputedStyle(confirmBtn).visibility === 'hidden') {
+        (confirmBtn as HTMLElement).style.visibility = 'visible';
+        (confirmBtn as HTMLElement).style.opacity = '1';
+        (confirmBtn as HTMLElement).style.zIndex = '1000';
+        (confirmBtn as HTMLElement).style.position = 'relative';
+      }
+
+      // Fix Transfer Processing screen
+      const progressScreen = document.querySelector('#transferProgressScreen');
+      if (progressScreen && getComputedStyle(progressScreen).display === 'none') {
+        (progressScreen as HTMLElement).style.display = 'block';
+        (progressScreen as HTMLElement).style.visibility = 'visible';
+        (progressScreen as HTMLElement).style.opacity = '1';
+        (progressScreen as HTMLElement).style.zIndex = '999';
+        (progressScreen as HTMLElement).style.transform = 'translateY(0)';
+      }
+    };
+
+    // Run immediately and then at intervals
+    fixAndroidVisibility();
+    const intervalId = setInterval(fixAndroidVisibility, 200);
+
+    return () => clearInterval(intervalId);
+  }, []);
+
   // Centralized theme color management
   const updateThemeColor = (color: string) => {
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
