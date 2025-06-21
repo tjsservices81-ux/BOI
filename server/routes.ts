@@ -94,8 +94,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { customCode, expiryHours } = req.body;
       
-      const newOtc = await launchOtcService.generateNewCode(customCode, expiryHours);
-      const expiresAt = await launchOtcService.getExpirationTime();
+      const newOtc = await launchScreenOtc.generateNewCode(customCode, expiryHours);
+      const expiresAt = await launchScreenOtc.getExpirationTime();
       
       console.log(`🔄 ADMIN OTC GENERATION: New code ${newOtc} expires at ${expiresAt}`);
       
