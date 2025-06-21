@@ -56,20 +56,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if device session is blocked - return error without destroying session
       if (req.session.sessionId && isDeviceBlocked(req.session.sessionId)) {
         console.log(`🚫 BLOCKED DEVICE ACCESS ATTEMPT: Session ${req.session.sessionId}`);
-        return res.status(403).json({ message: "Device access has been blocked by administrator" });
+        return res.status(403).json({ error: "Device access has been blocked by administrator" });
       }
       
       // Check if device is in panic mode - return error without destroying session
       if (req.session.sessionId && isDeviceInPanicMode(req.session.sessionId)) {
         console.log(`🚨 PANIC MODE ACCESS ATTEMPT: Session ${req.session.sessionId}`);
-        return res.status(403).json({ message: "System temporarily unavailable" });
+        return res.status(403).json({ error: "System temporarily unavailable" });
       }
       
       // Refresh session on each authenticated request
       req.session.touch();
       return next();
     }
-    return res.status(401).json({ message: "Not authenticated" });
+    return res.status(401).json({ error: "Not authenticated" });
   };
 
   // User registration endpoint
