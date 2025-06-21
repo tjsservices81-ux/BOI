@@ -27,18 +27,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     const initializeAuth = async () => {
       try {
-        // Always check for cached user - no cold start detection
-        // Users stay logged in permanently until admin deletion
+        // Check for cached user first
         const cachedUser = localStorage.getItem('bankingUser');
         if (cachedUser && isMounted) {
           try {
             const parsedUser = JSON.parse(cachedUser);
-            setUser(parsedUser);
+            
+            // CRITICAL: Validate user still exists on server
+            const response = await fetch('/api/auth/status', {
+              credentials: 'include'
+            });
+            
+            if (response.ok) {
+              const authData = await response.json();
+              if (authData.isLoggedIn && authData.user) {
+                // Server confirms user exists - keep cached data
+                setUser(parsedUser);
+              } else {
+                // Server says no valid session - user was deleted
+                console.log('🧹 Clearing stale user data from localStorage');
+                localStorage.removeItem('bankingUser');
+                setUser(null);
+              }
+            } else {
+              // Server error - clear cached data to be safe
+              console.log('Clearing stale user data from localStorage');
+              localStorage.removeItem('bankingUser');
+              setUser(null);
+            }
           } catch (error) {
             localStorage.removeItem('bankingUser');
             setUser(null);
           }
         }
+        
         if (isMounted) {
           setIsLoading(false);
           setIsInitialized(true);

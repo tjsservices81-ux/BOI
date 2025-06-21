@@ -587,6 +587,22 @@ router.get('/panel', adminAuth, async (req, res) => {
                   localStorage.removeItem('lastActiveUser');
                 }
                 
+                // CRITICAL: Clear authentication localStorage to force immediate logout
+                const authUser = localStorage.getItem('bankingUser');
+                if (authUser) {
+                  try {
+                    const parsedUser = JSON.parse(authUser);
+                    // Check if the authenticated user matches the deleted customer
+                    if (parsedUser.id && parsedUser.id.toString().includes(currentCustomerNumber.replace(/\D/g, ''))) {
+                      localStorage.removeItem('bankingUser');
+                      console.log('🚫 Cleared authentication data for deleted user');
+                    }
+                  } catch (e) {
+                    // If parsing fails, clear it anyway for safety
+                    localStorage.removeItem('bankingUser');
+                  }
+                }
+                
                 console.log(\`🧹 Admin cleanup: Removed all browser data for customer \${currentCustomerNumber}\`);
               } catch (cleanupError) {
                 console.error('Error during frontend cleanup:', cleanupError);
