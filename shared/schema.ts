@@ -14,8 +14,6 @@ export const users = pgTable("users", {
   joinDate: text("join_date").notNull().default("Member since 2018"),
   dateCreated: timestamp("date_created").notNull().defaultNow(),
   isDisabled: boolean("is_disabled").notNull().default(false),
-  showCardTransfer: boolean("show_card_transfer").notNull().default(true),
-  showEmailTransfer: boolean("show_email_transfer").notNull().default(true),
 });
 
 export const accounts = pgTable("accounts", {

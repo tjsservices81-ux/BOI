@@ -11,6 +11,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import { StateManager } from "@/utils/stateManager";
 import { AppLifecycle } from "@/utils/appLifecycle";
 import { PlatformDetection } from "@/utils/platformDetection";
+import { offlineManager } from "@/utils/offlineManager";
 import LiveChat from "@/components/LiveChat";
 
 

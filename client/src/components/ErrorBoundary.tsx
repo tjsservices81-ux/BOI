@@ -21,15 +21,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.warn('ErrorBoundary caught an error:', error, errorInfo);
-    
-    // Handle specific errors silently
-    if (error.message?.includes('showAdminLogin') || 
-        error.message?.includes('OfflineManager') ||
-        error.message?.includes('Can\'t find variable')) {
-      // These are non-critical errors, continue silently
-      this.resetError();
-    }
+    console.error('ErrorBoundary caught an error:', error, errorInfo);
   }
 
   resetError = () => {

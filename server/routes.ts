@@ -408,9 +408,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         phone: z.string().optional(),
         address: z.string().optional(),
         dateOfBirth: z.string().optional(),
-        joinDate: z.string().optional(),
-        showCardTransfer: z.boolean().optional(),
-        showEmailTransfer: z.boolean().optional()
+        joinDate: z.string().optional()
       });
       
       const updates = profileUpdateSchema.parse(req.body);

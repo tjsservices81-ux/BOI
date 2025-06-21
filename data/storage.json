@@ -1,24 +1,5 @@
 {
-  "users": [
-    [
-      31,
-      {
-        "id": 31,
-        "customerNumber": "BOI327149991",
-        "pin": "000000",
-        "name": "John",
-        "email": "ahaja@gmail.com",
-        "phone": "4212545454",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "2025-06-21T12:02:49.897Z",
-        "dateCreated": "2025-06-21T12:02:49.897Z",
-        "isDisabled": false,
-        "showCardTransfer": true,
-        "showEmailTransfer": true
-      }
-    ]
-  ],
+  "users": [],
   "accounts": [],
   "transactions": [],
   "payees": [],
@@ -28,7 +9,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 32,
+    "currentUserId": 31,
     "currentAccountId": 37,
     "currentTransactionId": 49,
     "currentPayeeId": 25,

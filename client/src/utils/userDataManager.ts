@@ -1,5 +1,6 @@
-// User Data Management System
+// User Data Management System with Offline Support
 // Handles isolated data storage for each user account
+import { offlineManager } from './offlineManager';
 
 export interface UserData {
   customerNumber: string;

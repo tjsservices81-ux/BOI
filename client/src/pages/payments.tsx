@@ -1,14 +1,9 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, User, ArrowUpDown, Globe, MapPin, Clock, Users, X, Trash2, CreditCard, Mail } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, ArrowUpDown, Globe, MapPin, Clock, Users, X, Trash2 } from "lucide-react";
 import { UserDataManager } from "../utils/userDataManager";
-import { useAuth } from "@/lib/auth";
 
 export default function Payments() {
-  const authHook = useAuth();
-  const user = authHook?.user || null;
-  
   const [, navigate] = useLocation() || ['/', () => {}];
   const [selectedPaymentType, setSelectedPaymentType] = useState<string | null>(null);
   const [recentPayments, setRecentPayments] = useState<any[]>([]);
@@ -16,40 +11,7 @@ export default function Payments() {
   const [recentPayees, setRecentPayees] = useState<any[]>([]);
   const [deleteConfirm, setDeleteConfirm] = useState<{name: string, accountInfo: string} | null>(null);
 
-  // State for profile data
-  const [profileData, setProfileData] = useState<any>(null);
-
-  // Load profile data directly like App Control page
-  useEffect(() => {
-    const loadProfileData = async () => {
-      const currentCustomerNumber = UserDataManager.getCurrentUser();
-      console.log('PAYMENTS DEBUG - Current customer number:', currentCustomerNumber);
-      
-      if (!currentCustomerNumber) {
-        console.log('PAYMENTS DEBUG - No customer number found');
-        return;
-      }
-
-      try {
-        console.log('PAYMENTS DEBUG - Fetching profile for:', currentCustomerNumber);
-        const response = await fetch(`/api/profile/${currentCustomerNumber}`);
-        if (response.ok) {
-          const userData = await response.json();
-          console.log('PAYMENTS DEBUG - Profile data received:', userData);
-          setProfileData(userData);
-        } else {
-          console.log('PAYMENTS DEBUG - API response not ok:', response.status);
-        }
-      } catch (error) {
-        console.error('PAYMENTS DEBUG - Error loading profile:', error);
-      }
-    };
-
-    loadProfileData();
-  }, []);
-
-  // Base payment options (always available)
-  const basePaymentOptions = [
+  const paymentOptions = [
     {
       id: 'iban',
       title: 'SEPA Transfer',
@@ -75,39 +37,6 @@ export default function Payments() {
       popular: false
     }
   ];
-
-  // Create payment options dynamically based on profile data
-  const paymentOptions = React.useMemo(() => {
-    const conditionalPaymentOptions = [];
-    
-
-    
-    if (profileData?.showCardTransfer === true) {
-      conditionalPaymentOptions.push({
-        id: 'card',
-        title: 'Card Transfer',
-        subtitle: 'Transfer to another card',
-        icon: <CreditCard className="w-6 h-6 text-blue-600" />,
-        description: 'Send money directly to a debit or credit card',
-        popular: false
-      });
-    }
-    
-    if (profileData?.showEmailTransfer === true) {
-      conditionalPaymentOptions.push({
-        id: 'email',
-        title: 'Email Transfer',
-        subtitle: 'Send money via email',
-        icon: <Mail className="w-6 h-6 text-green-600" />,
-        description: 'Send money to an email address',
-        popular: false
-      });
-    }
-
-
-
-    return [...basePaymentOptions, ...conditionalPaymentOptions];
-  }, [profileData]);
 
   // Load recent payments and payees using UserDataManager
   useEffect(() => {
@@ -208,11 +137,6 @@ export default function Payments() {
 
       {/* Content */}
       <div className="flex-1 bg-gray-50 px-4 py-6 pb-32 ios-scroll overflow-y-auto">
-        {/* Component Test */}
-        <div className="bg-red-100 p-4 rounded mb-4">
-          <strong>PAYMENTS PAGE LOADED</strong>
-        </div>
-
         {/* Header Section */}
         <div className="mb-6">
           <h1 className="text-2xl font-semibold text-gray-900 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -221,23 +145,6 @@ export default function Payments() {
           <p className="text-gray-600 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
             Choose how you'd like to send your payment
           </p>
-        </div>
-
-
-
-        {/* Debug info - temporary */}
-        <div className="bg-yellow-100 p-3 rounded text-sm mb-4">
-          <strong>Debug Info:</strong><br/>
-          Current User: {UserDataManager.getCurrentUser() || 'None'}<br/>
-          Profile: {profileData ? 'Loaded' : 'Not loaded'}<br/>
-          {profileData && (
-            <>
-              Card: {profileData.showCardTransfer?.toString()}<br/>
-              Email: {profileData.showEmailTransfer?.toString()}<br/>
-              Customer: {profileData.customerNumber}<br/>
-            </>
-          )}
-          Options: {paymentOptions.length}
         </div>
 
         {/* Payment Options */}
@@ -249,8 +156,6 @@ export default function Payments() {
                 if (option.id === 'iban') navigate('/iban-transfer');
                 else if (option.id === 'domestic') navigate('/uk-transfer');
                 else if (option.id === 'internal') navigate('/internal-transfer');
-                else if (option.id === 'card') navigate('/transfer?type=card');
-                else if (option.id === 'email') navigate('/transfer?type=email');
                 else setSelectedPaymentType(option.id);
               }}
               className="w-full bg-white rounded-2xl p-5 shadow-sm active:scale-98 transition-all duration-200 border-2 border-transparent hover:border-[#126987]/20 stagger-item card-interactive"

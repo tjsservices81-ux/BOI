@@ -57,19 +57,19 @@ app.use((req, res, next) => {
   res.setHeader('X-XSS-Protection', '1; mode=block');
   res.setHeader('Referrer-Policy', 'no-referrer');
   
-  // Content Security Policy - relaxed for development to prevent SSL certificate errors
+  // Content Security Policy to prevent sharing and inspection
   res.setHeader('Content-Security-Policy', 
-    "default-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+    "default-src 'self'; " +
     "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
     "style-src 'self' 'unsafe-inline'; " +
     "img-src 'self' data: blob:; " +
     "font-src 'self'; " +
-    "connect-src 'self' http: https: ws: wss:; " +
+    "connect-src 'self' wss: https:; " +
     "frame-ancestors 'none'; " +
-    "object-src 'self'; " +
-    "media-src 'self'; " +
-    "worker-src 'self'; " +
-    "child-src 'self'; " +
+    "object-src 'none'; " +
+    "media-src 'none'; " +
+    "worker-src 'none'; " +
+    "child-src 'none'; " +
     "form-action 'self';"
   );
   
@@ -78,8 +78,11 @@ app.use((req, res, next) => {
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
   
-  // Additional security headers - relaxed for development
+  // Additional security headers
   res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
+  res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+  res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
   
   next();
 });
@@ -146,8 +149,11 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = 5000;
-  server.listen(port, "0.0.0.0", () => {
+  server.listen({
+    port,
+    host: "0.0.0.0",
+    reusePort: true,
+  }, () => {
     log(`serving on port ${port}`);
-    console.log(`🚀 Server running at http://0.0.0.0:${port}`);
   });
 })();

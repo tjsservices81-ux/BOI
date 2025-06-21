@@ -14,10 +14,6 @@ export default function Profile() {
   const [tapCount, setTapCount] = useState(0);
   const [lastTapTime, setLastTapTime] = useState(0);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
-  const [profilePicTapCount, setProfilePicTapCount] = useState(0);
-  const [showTransferToggles, setShowTransferToggles] = useState(false);
-  const [showCardTransfer, setShowCardTransfer] = useState(true);
-  const [showEmailTransfer, setShowEmailTransfer] = useState(true);
   // isSigningOut removed - users can only be logged out via admin deletion
   const [accounts, setAccounts] = useState<any[]>([]);
   const [editingAccount, setEditingAccount] = useState<any>(null);
@@ -111,10 +107,6 @@ export default function Profile() {
               joinDate: userData.joinDate || ""
             });
             
-            // Set transfer toggle states
-            setShowCardTransfer(userData.showCardTransfer ?? true);
-            setShowEmailTransfer(userData.showEmailTransfer ?? true);
-            
             // Update UserDataManager with fresh data (silent update to prevent loops)
             const allUsers = JSON.parse(localStorage.getItem('bankUsers') || '{}');
             if (allUsers[userData.customerNumber]) {
@@ -171,22 +163,6 @@ export default function Profile() {
   const userDetails = profileData;
 
   const handleProfilePictureTap = () => {
-    // Handle transfer toggles (5 taps)
-    const newProfileTapCount = profilePicTapCount + 1;
-    setProfilePicTapCount(newProfileTapCount);
-    
-    if (newProfileTapCount === 5) {
-      setShowTransferToggles(true);
-      setProfilePicTapCount(0);
-      return;
-    }
-    
-    // Reset profile tap count after 3 seconds
-    setTimeout(() => {
-      setProfilePicTapCount(0);
-    }, 3000);
-
-    // Handle App Control (legacy - double tap)
     const currentTime = Date.now();
     const timeSinceLastTap = currentTime - lastTapTime;
     
@@ -201,21 +177,21 @@ export default function Profile() {
     setTapCount(newTapCount);
     setLastTapTime(currentTime);
     
-    console.log(`App Control access tap: ${newTapCount}/5`);
+    console.log(`Admin access tap: ${newTapCount}/5`);
     
-    // Open App Control immediately when 5 taps are reached
+    // Open admin panel immediately when 5 taps are reached
     if (newTapCount >= 5) {
-      console.log('Opening App Control...');
+      console.log('Opening admin panel...');
       
-      // Force the App Control to open with multiple fallbacks
+      // Force the admin panel to open with multiple fallbacks
       setShowAdminPanel(true);
       setTapCount(0);
       setLastTapTime(0);
       
       // Additional fallback: Force re-render if panel doesn't appear
       setTimeout(() => {
-        if (!document.querySelector('.app-control')) {
-          console.log('App Control not found, forcing re-render...');
+        if (!document.querySelector('.admin-panel')) {
+          console.log('Admin panel not found, forcing re-render...');
           setShowAdminPanel(false);
           setTimeout(() => setShowAdminPanel(true), 50);
         }
@@ -223,16 +199,16 @@ export default function Profile() {
     }
   };
 
-  // App Control functions - Load accounts when panel opens and on changes
+  // Admin panel functions - Load accounts when panel opens and on changes
   useEffect(() => {
     if (showAdminPanel) {
       try {
         const storedAccounts = UserDataManager.getUserAccounts();
-        console.log('Loading accounts for App Control:', storedAccounts);
+        console.log('Loading accounts for admin panel:', storedAccounts);
         setAccounts(storedAccounts);
         loadChatResponses();
       } catch (error) {
-        console.error('Error initializing App Control:', error);
+        console.error('Error initializing admin panel:', error);
         // Set default empty accounts if there's an error
         setAccounts([]);
         setChatResponses([]);
@@ -488,68 +464,6 @@ export default function Profile() {
       setTimeout(() => {
         setIsUpdatingProfile(false);
       }, 1000); // Small delay to ensure no immediate reloads
-    }
-  };
-
-
-
-  const updateTransferToggle = async (toggleType: 'card' | 'email', value: boolean) => {
-    const currentCustomerNumber = UserDataManager.getCurrentUser();
-    if (!currentCustomerNumber) return;
-
-    // Update local state immediately for responsive UI
-    if (toggleType === 'card') {
-      setShowCardTransfer(value);
-    } else {
-      setShowEmailTransfer(value);
-    }
-
-    try {
-      const updateData = {
-        [toggleType === 'card' ? 'showCardTransfer' : 'showEmailTransfer']: value
-      };
-
-      console.log('Updating transfer toggle:', toggleType, value);
-      
-      const response = await fetch(`/api/profile/${currentCustomerNumber}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updateData)
-      });
-
-      if (response.ok) {
-        const updatedData = await response.json();
-        console.log('Toggle update successful:', updatedData);
-        
-        // Update local storage with the confirmed values
-        const allUsers = JSON.parse(localStorage.getItem('bankUsers') || '{}');
-        if (allUsers[currentCustomerNumber]) {
-          allUsers[currentCustomerNumber] = {
-            ...allUsers[currentCustomerNumber],
-            showCardTransfer: updatedData.showCardTransfer ?? true,
-            showEmailTransfer: updatedData.showEmailTransfer ?? true
-          };
-          localStorage.setItem('bankUsers', JSON.stringify(allUsers));
-        }
-      } else {
-        console.error('Failed to update transfer toggle - reverting state');
-        // Revert the toggle state on failure
-        if (toggleType === 'card') {
-          setShowCardTransfer(!value);
-        } else {
-          setShowEmailTransfer(!value);
-        }
-      }
-    } catch (error) {
-      console.error('Error updating transfer toggle:', error);
-      // Revert the toggle state on error
-      if (toggleType === 'card') {
-        setShowCardTransfer(!value);
-      } else {
-        setShowEmailTransfer(!value);
-      }
     }
   };
 
@@ -1191,8 +1105,6 @@ export default function Profile() {
             </div>
           </div>
 
-
-
           {/* Actions */}
           <div className="space-y-4">
             <div className="w-full flex items-center space-x-4 p-4 bg-gray-100 border border-gray-200 rounded-xl opacity-50">
@@ -1216,10 +1128,10 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* App Control Modal */}
+      {/* Admin Panel Modal */}
       {showAdminPanel && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000] p-4 modal-overlay app-control"
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000] p-4 modal-overlay admin-panel"
           onClick={() => setShowAdminPanel(false)}
         >
           <div 
@@ -1229,7 +1141,7 @@ export default function Profile() {
             <div className="p-6 pb-12">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  App Control
+                  Admin Panel
                 </h2>
                 <button
                   onClick={() => setShowAdminPanel(false)}
@@ -1263,63 +1175,6 @@ export default function Profile() {
                       </p>
                     </div>
                   </button>
-                </div>
-
-                {/* Transfer Settings Section */}
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Transfer Settings
-                  </h3>
-                  
-                  <div className="space-y-3">
-                    {/* Card Transfer Toggle */}
-                    <div className="flex items-center justify-between p-3 bg-white rounded-lg border">
-                      <div className="flex items-center space-x-3">
-                        <CreditCard className="w-5 h-5 text-blue-600" />
-                        <div>
-                          <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                            Card Transfer
-                          </p>
-                          <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                            Enable card-to-card transfers
-                          </p>
-                        </div>
-                      </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          className="sr-only peer"
-                          checked={showCardTransfer}
-                          onChange={(e) => updateTransferToggle('card', e.target.checked)}
-                        />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                      </label>
-                    </div>
-
-                    {/* Email Transfer Toggle */}
-                    <div className="flex items-center justify-between p-3 bg-white rounded-lg border">
-                      <div className="flex items-center space-x-3">
-                        <Mail className="w-5 h-5 text-green-600" />
-                        <div>
-                          <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                            Email Transfer
-                          </p>
-                          <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                            Enable email money transfers
-                          </p>
-                        </div>
-                      </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          className="sr-only peer"
-                          checked={showEmailTransfer}
-                          onChange={(e) => updateTransferToggle('email', e.target.checked)}
-                        />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
-                      </label>
-                    </div>
-                  </div>
                 </div>
 
                 {/* Account Management Section */}
