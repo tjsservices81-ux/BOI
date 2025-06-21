@@ -648,7 +648,12 @@ class MemStorage implements IStorage {
         ];
 
         for (const transactionData of sampleTransactions) {
-          await this.createTransaction(transactionData);
+          await this.createTransaction({
+            ...transactionData,
+            category: transactionData.type === "credit" ? "Income" : "General",
+            paymentMethod: transactionData.type === "credit" ? "Bank Transfer" : "Card",
+            timestamp: transactionData.date || new Date()
+          });
         }
       }
 
@@ -671,7 +676,10 @@ class MemStorage implements IStorage {
       ];
 
       for (const payeeData of samplePayees) {
-        await this.createPayee(payeeData);
+        await this.createPayee({
+          ...payeeData,
+          category: payeeData.type
+        });
       }
     }
 
