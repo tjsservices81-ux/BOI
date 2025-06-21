@@ -33,7 +33,8 @@ export default function Profile() {
     phone: '',
     address: '',
     dateOfBirth: '',
-    joinDate: ''
+    joinDate: '',
+    currency: 'EUR'
   });
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
@@ -68,7 +69,8 @@ export default function Profile() {
           address: cachedUser.address || "",
           dateOfBirth: cachedUser.dateOfBirth || "",
           customerNumber: currentCustomerNumber,
-          joinDate: cachedUser.joinDate || ""
+          joinDate: cachedUser.joinDate || "",
+          currency: cachedUser.currency || "EUR"
         };
       }
     }
@@ -79,7 +81,8 @@ export default function Profile() {
       address: "",
       dateOfBirth: "",
       customerNumber: currentCustomerNumber || "",
-      joinDate: ""
+      joinDate: "",
+      currency: "EUR"
     };
   });
 
@@ -104,7 +107,8 @@ export default function Profile() {
               address: userData.address || "",
               dateOfBirth: userData.dateOfBirth || "",
               customerNumber: userData.customerNumber,
-              joinDate: userData.joinDate || ""
+              joinDate: userData.joinDate || "",
+              currency: userData.currency || "EUR"
             });
             
             // Update UserDataManager with fresh data (silent update to prevent loops)
@@ -117,7 +121,8 @@ export default function Profile() {
                 phone: userData.phone || "",
                 dateOfBirth: userData.dateOfBirth || "",
                 address: userData.address || "",
-                joinDate: userData.joinDate || ""
+                joinDate: userData.joinDate || "",
+                currency: userData.currency || "EUR"
               };
               localStorage.setItem('bankUsers', JSON.stringify(allUsers));
             }
@@ -371,7 +376,8 @@ export default function Profile() {
       phone: profileData.phone,
       address: profileData.address,
       dateOfBirth: profileData.dateOfBirth,
-      joinDate: profileData.joinDate
+      joinDate: profileData.joinDate,
+      currency: profileData.currency
     });
     setShowEditProfile(true);
   };
@@ -402,7 +408,8 @@ export default function Profile() {
         phone: editProfileData.phone?.trim() || '',
         address: editProfileData.address?.trim() || '',
         dateOfBirth: editProfileData.dateOfBirth || '',
-        joinDate: editProfileData.joinDate?.trim() || ''
+        joinDate: editProfileData.joinDate?.trim() || '',
+        currency: editProfileData.currency
       };
       
       console.log('Sending profile update:', updateData);
@@ -1399,6 +1406,26 @@ export default function Profile() {
               </div>
 
               <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Currency Display
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setEditProfileData({ 
+                      ...editProfileData, 
+                      currency: editProfileData.currency === 'EUR' ? 'GBP' : 'EUR' 
+                    })}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white hover:bg-gray-50 transition-colors flex items-center justify-between"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  >
+                    <span>Currency: {editProfileData.currency === 'EUR' ? 'EUR (€)' : 'GBP (£)'}</span>
+                    <span className="text-blue-600 font-semibold">
+                      {editProfileData.currency === 'EUR' ? '€' : '£'}
+                    </span>
+                  </button>
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     Name *
