@@ -600,11 +600,11 @@ router.get('/panel', adminAuth, async (req, res) => {
                     }
                   } catch (e) {
                     // If parsing fails, clear it anyway for safety
-                    localStorage.removeItem('bankingUser');
+                    localStorage.removeItem('currentUser');
                   }
                 }
                 
-                console.log(\`🧹 Admin cleanup: Removed all browser data for customer \${currentCustomerNumber}\`);
+                console.log('Admin cleanup: Removed all browser data for customer ' + currentCustomerNumber);
               } catch (cleanupError) {
                 console.error('Error during frontend cleanup:', cleanupError);
               }

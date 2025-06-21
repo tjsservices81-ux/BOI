@@ -355,7 +355,7 @@ export class UserDataManager {
     // Clear all localStorage data
     const keys = Object.keys(localStorage);
     keys.forEach(key => {
-      if (key.startsWith('user_') || key === 'bankUsers' || key === 'currentUser') {
+      if (key.startsWith('user_') || key === 'currentUser') {
         localStorage.removeItem(key);
       }
     });

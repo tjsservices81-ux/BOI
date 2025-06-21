@@ -4,7 +4,8 @@ import {
   type User, type Account, type Transaction, type Payee, type ScheduledPayment, type Statement,
   type ChatMessage, type ChatResponse, type ChatSession,
   type InsertUser, type InsertAccount, type InsertTransaction, type InsertPayee,
-  type InsertChatMessage, type InsertChatResponse, type InsertChatSession
+  type InsertChatMessage, type InsertChatResponse, type InsertChatSession,
+  type InsertPermanentUserSession
 } from "@shared/schema";
 import { PersistentDataManager } from "./persistentStorage";
 import { db } from "./db";

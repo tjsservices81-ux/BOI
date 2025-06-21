@@ -113,10 +113,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Apply permanent authentication security middleware to protected routes (excluding login)
+  // Apply permanent authentication security middleware to protected routes (excluding login and status)
   app.use('/api/accounts', PermanentAuthManager.createAuthMiddleware());
   app.use('/api/transfers', PermanentAuthManager.createAuthMiddleware());
-  app.use('/api/auth/status', PermanentAuthManager.createAuthMiddleware());
   app.use('/api/auth/logout', PermanentAuthManager.createAuthMiddleware());
 
   // Authentication endpoints
@@ -1190,7 +1189,7 @@ No transfers found yet on your account.`;
       res.json({ success: true });
     } catch (error) {
       console.error('Failed to disable user:', error);
-      res.status(500).json({ success: false, message: "Failed to disable user" });
+      res.status(500).json({ error: "Failed to disable user" });
     }
   });
 
@@ -1202,7 +1201,7 @@ No transfers found yet on your account.`;
       res.json({ success: true });
     } catch (error) {
       console.error('Failed to enable user:', error);
-      res.status(500).json({ success: false, message: "Failed to enable user" });
+      res.status(500).json({ error: "Failed to enable user" });
     }
   });
 
