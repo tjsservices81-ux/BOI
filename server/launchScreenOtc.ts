@@ -120,7 +120,7 @@ class LaunchScreenOTCService {
     console.log('═══════════════════════════════════════');
     console.log(`📧 Access Code: ${code}`);
     console.log(`⏰ Valid Until: ${expiresAt.toLocaleString()}`);
-    console.log(`🌐 App: Bank of Ireland Mobile Banking`);
+    console.log(`🌐 App: WHERE Mobile Banking`);
     console.log('═══════════════════════════════════════');
     console.log('');
   }

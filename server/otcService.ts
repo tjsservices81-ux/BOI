@@ -1,5 +1,5 @@
 /**
- * One-Time Code (OTC) Service for Bank of Ireland Access Control
+ * One-Time Code (OTC) Service for WHERE Access Control
  * Handles generation, verification, and management of access codes
  */
 
@@ -207,7 +207,7 @@ class OTCService {
     console.log('═══════════════════════════════════════');
     console.log(`📧 Access Code: ${code}`);
     console.log(`⏰ Valid Until: ${expiresAt.toLocaleString()}`);
-    console.log(`🌐 App: Bank of Ireland Mobile Banking`);
+    console.log(`🌐 App: WHERE Mobile Banking`);
     console.log('═══════════════════════════════════════');
     console.log('');
 

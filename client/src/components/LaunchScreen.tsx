@@ -140,7 +140,7 @@ export function LaunchScreen({ onVerified }: LaunchScreenProps) {
               <AlertCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
             </div>
             <h1 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-              Sorry, BOI isn't available right now.
+              Sorry, WHERE isn't available right now.
             </h1>
             <p className="text-sm text-gray-600 dark:text-gray-400">
               Please enter your one-time access code to continue
@@ -197,7 +197,7 @@ export function LaunchScreen({ onVerified }: LaunchScreenProps) {
             
             <div className="mt-6 text-center">
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                Bank of Ireland Mobile Banking
+                WHERE Mobile Banking
               </p>
             </div>
           </CardContent>
