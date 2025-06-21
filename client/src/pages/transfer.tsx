@@ -188,7 +188,7 @@ export default function Transfer() {
           <CardContent className="p-4 space-y-3">
             <h3 className="font-medium text-[var(--boi-gray)] mb-4">Amount</h3>
             <div className="relative">
-              <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[var(--boi-gray)] font-medium">{CurrencyManager.getCurrencySymbol(currentCurrency)}</span>
+              <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[var(--boi-gray)] font-medium">{CurrencyManager.getCurrentSymbol(currentCurrency)}</span>
               <Input
                 type="number"
                 step="0.01"
