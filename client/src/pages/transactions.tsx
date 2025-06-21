@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useLocation } from "wouter";
+import { formatAmount } from "../utils/currencyUtils";
 
 interface Transaction {
   id: string;
@@ -126,7 +127,7 @@ export default function Transactions() {
               <p className="text-white/60 text-xs mt-1 boi-regular-font">{getBalanceLabel()}</p>
             </div>
             <div className="text-right">
-              <p className="text-white text-2xl font-semibold boi-semibold-font">€{balance.toFixed(2)}</p>
+              <p className="text-white text-2xl font-semibold boi-semibold-font">{formatAmount(balance.toString())}</p>
             </div>
           </div>
         </div>
@@ -145,7 +146,7 @@ export default function Transactions() {
                 key={transaction.id}
                 className="px-4 py-4 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer haptic-feedback stagger-item"
                 style={{ animationDelay: `${index * 0.05}s` }}
-                onClick={() => alert(`Transaction details: ${transaction.description}\nAmount: €${Math.abs(transaction.amount).toFixed(2)}\nDate: ${transaction.date}\nBalance after: €${transaction.balance.toFixed(2)}`)}
+                onClick={() => alert(`Transaction details: ${transaction.description}\nAmount: ${formatAmount(Math.abs(transaction.amount).toString())}\nDate: ${transaction.date}\nBalance after: ${formatAmount(transaction.balance.toString())}`)}
               >
                 <div className="flex justify-between items-start">
                   {/* Left side - Transaction info */}
@@ -165,7 +166,7 @@ export default function Transactions() {
                         ? 'text-green-600' 
                         : 'text-gray-900'
                     }`}>
-                      {transaction.type === 'credit' ? '+' : ''}€{transaction.amount.toFixed(2)}
+                      {transaction.type === 'credit' ? '+' : ''}{formatAmount(transaction.amount.toString())}
                     </p>
                   </div>
                 </div>

@@ -219,8 +219,8 @@ export default function Transfer() {
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
-            <p className="font-medium mb-1">Security Notice</p>
-            <p className="text-sm">Transfers are processed securely with 256-bit encryption. Large transfers may require additional verification.</p>
+            <p className="font-medium mb-1">Transfer Timing</p>
+            <p className="text-sm">{getTransferTiming()}</p>
           </AlertDescription>
         </Alert>
       </form>
