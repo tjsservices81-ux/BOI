@@ -1,5 +1,5 @@
 /**
- * Launch Screen OTC Service for Bank of Ireland Access Control
+ * Launch Screen OTC Service for WHERE Access Control
  * Separate from the existing account creation OTC service
  */
 
@@ -120,7 +120,7 @@ class LaunchScreenOTCService {
     console.log('═══════════════════════════════════════');
     console.log(`📧 Access Code: ${code}`);
     console.log(`⏰ Valid Until: ${expiresAt.toLocaleString()}`);
-    console.log(`🌐 App: WHERE Mobile Banking`);
+    console.log(`🌐 App: WHERE`);
     console.log('═══════════════════════════════════════');
     console.log('');
   }

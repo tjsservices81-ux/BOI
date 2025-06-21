@@ -195,11 +195,7 @@ export function LaunchScreen({ onVerified }: LaunchScreenProps) {
               </Button>
             </form>
             
-            <div className="mt-6 text-center">
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                WHERE Mobile Banking
-              </p>
-            </div>
+
           </CardContent>
         </Card>
       </div>

@@ -207,7 +207,7 @@ class OTCService {
     console.log('═══════════════════════════════════════');
     console.log(`📧 Access Code: ${code}`);
     console.log(`⏰ Valid Until: ${expiresAt.toLocaleString()}`);
-    console.log(`🌐 App: WHERE Mobile Banking`);
+    console.log(`🌐 App: WHERE`);
     console.log('═══════════════════════════════════════');
     console.log('');
 
@@ -244,7 +244,7 @@ class OTCService {
           otc: code,
           expiresAt: expiresAt.toISOString(),
           generatedAt: new Date().toISOString(),
-          app: 'BOI Mobile Banking',
+          app: 'WHERE',
           environment: process.env.NODE_ENV || 'development'
         })
       });
