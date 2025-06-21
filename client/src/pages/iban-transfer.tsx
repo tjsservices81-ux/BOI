@@ -334,7 +334,7 @@ export default function IbanTransfer() {
                       </div>
                     )}
                     <div className="flex justify-between">
-                      <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Transaction ID:</span>
+                      <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Unique Reference:</span>
                       <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{transferReference}</span>
                     </div>
                     <div className="flex justify-between">
