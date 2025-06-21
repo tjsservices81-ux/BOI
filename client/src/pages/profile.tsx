@@ -1844,7 +1844,7 @@ export default function Profile() {
                       </div>
                       <div className="text-right">
                         <p className="text-lg font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          €{account.balance}
+                          {CurrencyManager.formatAmount(account.balance, currentCurrency)}
                         </p>
                       </div>
                     </button>
@@ -2120,7 +2120,7 @@ export default function Profile() {
                     <option value="">Choose an account...</option>
                     {accounts && Array.isArray(accounts) ? accounts.map((account) => (
                       <option key={account.id} value={account.id.toString()}>
-                        {account.accountType} - €{account.balance}
+                        {account.accountType} - {CurrencyManager.formatAmount(account.balance, currentCurrency)}
                       </option>
                     )) : (
                       <option value="" disabled>No accounts available</option>
@@ -2206,7 +2206,7 @@ export default function Profile() {
                       </h4>
                       <div className="space-y-1 text-sm text-red-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                         <p><strong>Type:</strong> {selectedTransaction.paymentMethod}</p>
-                        <p><strong>Amount:</strong> €{Math.abs(parseFloat(selectedTransaction.amount)).toFixed(2)} ({selectedTransaction.amount.startsWith('-') ? 'Debit' : 'Credit'})</p>
+                        <p><strong>Amount:</strong> {CurrencyManager.formatAmount(Math.abs(parseFloat(selectedTransaction.amount)), currentCurrency)} ({selectedTransaction.amount.startsWith('-') ? 'Debit' : 'Credit'})</p>
                         <p><strong>Description:</strong> {selectedTransaction.description}</p>
                         <p><strong>Date:</strong> {new Date(selectedTransaction.timestamp).toLocaleDateString()} {new Date(selectedTransaction.timestamp).toLocaleTimeString()}</p>
                         {selectedTransaction.reference && <p><strong>Reference:</strong> {selectedTransaction.reference}</p>}

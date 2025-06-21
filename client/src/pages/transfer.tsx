@@ -128,7 +128,7 @@ export default function Transfer() {
                       <div>
                         <p className="font-medium text-[var(--boi-gray)]">{selectedAccount.displayName}</p>
                         <p className="text-sm text-[var(--boi-light-gray)]">
-                          Available: €{parseFloat(selectedAccount.balance).toFixed(2)}
+                          Available: {CurrencyManager.formatAmount(selectedAccount.balance, currentCurrency)}
                         </p>
                       </div>
                     </div>
