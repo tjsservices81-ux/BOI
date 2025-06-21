@@ -23,6 +23,8 @@
     <link rel="preload" href="/OpenSans-Semibold-webfont.woff2" as="font" type="font/woff2" crossorigin>
     
     <!-- Critical asset preloading -->
+    <link rel="preload" href="/src/main.tsx" as="script">
+    <link rel="preload" href="/src/index.css" as="style">
     <link rel="preload" href="/boi_logo.svg" as="image">
     <link rel="preload" href="/IMG_0633_1749764752035.jpeg" as="image">
     <link rel="preload" href="/icon_HID.svg" as="image">
@@ -61,32 +63,21 @@
     <title>Bank of Ireland</title>
   </head>
   <body style="background: transparent !important;">
-    <!-- PWA Loading Screen -->
-    <div id="pwa-loading" style="
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: linear-gradient(135deg, #126987 0%, #0e5a75 100%);
-      display: flex; align-items: center; justify-content: center;
-      flex-direction: column; color: white; z-index: 9999;
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    <div id="loading-screen" style="
+      position:fixed;
+      top:0;
+      left:0;
+      width:100vw;
+      height:100vh;
+      background:white;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:18px;
+      font-family:sans-serif;
+      z-index:9999;
     ">
-      <img src="/boi_app_icon.png" alt="BOI" style="width: 80px; height: 80px; margin-bottom: 20px;">
-      <div style="font-size: 24px; font-weight: bold; margin-bottom: 10px;">Bank of Ireland</div>
-      <div id="loading-message" style="font-size: 14px; margin-bottom: 20px;">Loading your banking app...</div>
-      <div style="
-        width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.3);
-        border-radius: 50%; border-top-color: white;
-        animation: spin 1s linear infinite;
-      "></div>
-      <div id="error-message" style="
-        display: none; text-align: center; max-width: 300px;
-        margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.1);
-        border-radius: 8px; line-height: 1.4;
-      "></div>
-      <button id="retry-button" style="
-        display: none; margin-top: 15px; padding: 12px 24px;
-        background: white; color: #126987; border: none;
-        border-radius: 6px; font-weight: 600; cursor: pointer;
-      " onclick="retryAppLoad()">Retry</button>
+      Loading... please wait
     </div>
     
     <div id="root" style="background: transparent !important;"></div>
@@ -477,6 +468,18 @@
           configurable: false
         });
       }
+
+      // Simple, reliable loading screen management
+      window.addEventListener('load', function () {
+        const loader = document.getElementById('loading-screen');
+        if (loader) loader.style.display = 'none';
+      });
+
+      // Optional: Fallback timeout in case window.onload fails
+      setTimeout(() => {
+        const loader = document.getElementById('loading-screen');
+        if (loader) loader.style.display = 'none';
+      }, 10000); // Hide after 10 seconds max
     </script>
     <script type="module" src="/src/main.tsx"></script>
     <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
