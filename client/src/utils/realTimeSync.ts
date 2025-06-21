@@ -60,7 +60,7 @@ export class RealTimeSync {
     window.addEventListener('transactionUpdate', this.handleTransactionUpdate as EventListener);
     
     // Sync on balance updates
-    window.addEventListener('balanceUpdate', this.handleBalanceUpdate as EventListener);
+    window.addEventListener('balanceUpdate', this.handleBalanceUpdate as any);
     
     // Sync on page visibility changes
     document.addEventListener('visibilitychange', this.handleVisibilityChange);

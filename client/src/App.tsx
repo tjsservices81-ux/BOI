@@ -13,6 +13,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import { StateManager } from "@/utils/stateManager";
 import { AppLifecycle } from "@/utils/appLifecycle";
 import { UserDataManager } from "./utils/userDataManager";
+import { RealTimeSync } from "./utils/realTimeSync";
 import LiveChat from "@/components/LiveChat";
 
 import Splash from "@/pages/splash";

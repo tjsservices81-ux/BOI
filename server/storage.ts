@@ -309,7 +309,8 @@ class DatabaseStorage implements IStorage {
         this.users.set(user.id, user);
         
         // Persist to file
-        await this.persistentManager.saveData();
+        // Save updated data
+        await this.saveData();
         
         return user;
       }
@@ -455,7 +456,7 @@ class DatabaseStorage implements IStorage {
         }
         
         // Persist updated data
-        this.persistentDataManager.persistData();
+        await this.saveData();
         
         console.log(`🗑️ PERMANENT DELETE: Completely removed user ${customerNumber} and all associated data`);
         return true;
