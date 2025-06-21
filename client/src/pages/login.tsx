@@ -65,6 +65,18 @@ export default function Login() {
 
   // Handle logo tap for account creation access (only available before login)
   const handleLogoTap = () => {
+    // Check if user is already logged in
+    const cachedUser = localStorage.getItem('bankingUser');
+    if (cachedUser) {
+      // User is already logged in - show warning toast and return
+      toast({
+        title: "⚠️ You're already signed in.",
+        duration: 2500,
+        variant: "default",
+      });
+      return;
+    }
+    
     const currentTime = Date.now();
     const timeSinceLastTap = currentTime - lastLogoTapTime;
     
