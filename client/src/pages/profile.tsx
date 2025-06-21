@@ -1555,15 +1555,13 @@ export default function Profile() {
                     setEditingAccount(null);
                     setNewBalance('');
                   }}
-                  className="flex-1 py-3 bg-gray-200 text-gray-800 rounded-xl font-semibold hover:bg-gray-300 transition-colors"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  className="button-unified unified-font flex-1 bg-gray-200 text-gray-800 hover:bg-gray-300"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={updateBalance}
-                  className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  className="button-unified unified-font flex-1 bg-blue-600 text-white hover:bg-blue-700"
                 >
                   Update Balance
                 </button>
@@ -1599,8 +1597,7 @@ export default function Profile() {
                     type="text"
                     value={newAccountData.displayName}
                     onChange={(e) => setNewAccountData({ ...newAccountData, displayName: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                    className="input-unified unified-font"
                     placeholder="Enter account name"
                   />
                 </div>

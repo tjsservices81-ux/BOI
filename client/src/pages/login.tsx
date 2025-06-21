@@ -1078,19 +1078,18 @@ export default function Login() {
                 <button 
                   onClick={handleLoginButton}
                   disabled={isLoading}
-                  className={`w-full py-2.5 ios-button font-semibold text-sm mb-3 transition-all duration-200 ${
+                  className={`button-unified unified-font w-full text-sm mb-3 ${
                     biometricVerified || pinVerified 
-                      ? 'bg-[#126987] text-white hover:bg-[#3a5a65] active:scale-95' 
+                      ? 'bg-[#126987] text-white hover:bg-[#3a5a65]' 
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   } disabled:opacity-50`}
-                  style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}
                 >
                   {isLoading ? "Logging in..." : "Log in"}
                 </button>
 
                 {/* Forgot PIN */}
                 <div className="text-center mb-3">
-                  <button className="text-[#126987] text-xs flex items-center justify-center space-x-1 active:scale-95 transition-transform" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
+                  <button className="text-[#126987] text-xs flex items-center justify-center space-x-1 button-unified unified-font">
                     <span>Forgot your PIN?</span>
                     <ExternalLink className="w-2.5 h-2.5" />
                   </button>
@@ -1110,7 +1109,7 @@ export default function Login() {
 
               {/* PIN Option Card - separate gray card */}
               <button 
-                className="w-full bg-gray-50 border border-gray-200 ios-card p-3 flex items-center space-x-3 hover:bg-gray-100 active:scale-98 transition-all duration-150"
+                className="button-unified w-full bg-gray-50 border border-gray-200 p-3 flex items-center space-x-3 hover:bg-gray-100"
                 onClick={() => {
                   console.log("PIN button clicked, current showPinLogin:", showPinLogin);
                   setShowPinLogin(!showPinLogin);
@@ -1205,14 +1204,14 @@ export default function Login() {
         <div className="fixed bottom-0 left-0 right-0 bg-[#126987]/95 backdrop-blur-sm px-4 py-3 ios-safe-bottom">
           <div className="flex justify-evenly items-center w-full max-w-xs mx-auto">
             <button 
-              className="flex flex-col items-center space-y-1 py-2 transition-opacity duration-150 hover:opacity-80"
+              className="button-unified flex flex-col items-center space-y-1 py-2 hover:opacity-80"
               onClick={handleATMLocatorOpen}
               disabled={isNavigating || isLoading}
             >
               <MapPin className="w-5 h-5 text-white" />
               <span className="text-white text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>ATM/Branch</span>
             </button>
-            <button className="flex flex-col items-center space-y-1 py-2 transition-opacity duration-150 hover:opacity-80">
+            <button className="button-unified flex flex-col items-center space-y-1 py-2 hover:opacity-80">
               <Shield className="w-5 h-5 text-white" />
               <span className="text-white text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Security</span>
             </button>
@@ -1238,7 +1237,7 @@ export default function Login() {
               </h3>
               <button 
                 onClick={() => setShowMoreMenu(false)}
-                className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+                className="button-unified w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200"
               >
                 <span className="text-gray-600 text-lg">×</span>
               </button>
@@ -1288,8 +1287,7 @@ export default function Login() {
             
             <button 
               onClick={() => setShowMoreMenu(false)}
-              className="w-full mt-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
-              style={{ fontFamily: 'OpenSans, sans-serif' }}
+              className="button-unified unified-font w-full mt-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200"
             >
               Close
             </button>
