@@ -1,26 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { useBiometricAuth } from '@/lib/biometricAuth';
 import { useLocation } from 'wouter';
+import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Fingerprint, Shield, AlertCircle, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function BiometricAuth() {
-  const { state, authenticateWithBiometric, checkAuthenticationStatus } = useBiometricAuth();
+  const { state, authenticateWithBiometric } = useBiometricAuth();
   const [, setLocation] = useLocation();
+  const { user } = useAuth(); // Access main auth context
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
   useEffect(() => {
-    if (state.isAuthenticated) {
-      // Add small delay to allow animation to complete before redirect
+    // Navigate to dashboard when user is authenticated in main auth context
+    if (user && state.isAuthenticated) {
       setTimeout(() => {
         setLocation('/dashboard');
       }, 100);
     } else if (!state.needsBiometric && !state.isLoading) {
       setLocation('/login');
     }
-  }, [state.isAuthenticated, state.needsBiometric, state.isLoading, setLocation]);
+  }, [user, state.isAuthenticated, state.needsBiometric, state.isLoading, setLocation]);
 
   const handleBiometricAuth = async () => {
     setIsAuthenticating(true);

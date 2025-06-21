@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useAuth } from './auth';
 
 interface BiometricAuthState {
   isAuthenticated: boolean;
@@ -19,6 +20,7 @@ interface BiometricAuthContextType {
 const BiometricAuthContext = createContext<BiometricAuthContextType | null>(null);
 
 export function BiometricAuthProvider({ children }: { children: React.ReactNode }) {
+  const { login } = useAuth(); // Access main auth context
   const [state, setState] = useState<BiometricAuthState>({
     isAuthenticated: false,
     needsBiometric: true,
@@ -168,7 +170,14 @@ export function BiometricAuthProvider({ children }: { children: React.ReactNode 
       if (response.ok) {
         const data = await response.json();
         if (data.success) {
-          // Use setTimeout to ensure state update completes before navigation
+          // Call main auth context login to establish shared session
+          login({
+            id: data.user.id,
+            name: data.user.name,
+            email: data.user.email
+          });
+          
+          // Update biometric state after main auth is set
           setTimeout(() => {
             setState(prev => ({
               ...prev,
