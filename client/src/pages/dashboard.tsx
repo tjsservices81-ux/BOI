@@ -114,6 +114,12 @@ export default function Dashboard() {
       }
     };
 
+    // Listen for currency changes to refresh display
+    const handleCurrencyUpdate = () => {
+      // Force re-render of accounts to update currency symbols
+      setAccounts(prev => [...prev]);
+    };
+
     const handleProfileUpdate = async () => {
       // Reload user data when admin updates profile
       const currentUser = UserDataManager.getCurrentUser();

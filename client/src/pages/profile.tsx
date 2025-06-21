@@ -87,8 +87,15 @@ export default function Profile() {
 
   // Currency change handler
   const handleCurrencyChange = (newCurrency: 'EUR' | 'GBP') => {
+    console.log('Currency change requested:', newCurrency);
+    
+    // Save the currency preference
     setCurrencyPreference(newCurrency);
     setCurrentCurrency(newCurrency);
+    
+    // Verify the currency was saved
+    const savedCurrency = getUserCurrency();
+    console.log('Currency saved and verified:', savedCurrency);
     
     // Reload accounts to trigger UI updates
     const freshAccounts = UserDataManager.getUserAccounts();
@@ -97,17 +104,32 @@ export default function Profile() {
     // Dispatch additional events to update other components
     window.dispatchEvent(new CustomEvent('balanceUpdate'));
     window.dispatchEvent(new CustomEvent('accountsUpdate', { detail: { accounts: freshAccounts } }));
+    window.dispatchEvent(new CustomEvent('currencyChanged', { detail: { currency: newCurrency } }));
   };
 
-  // Listen for currency updates
+  // Listen for currency updates and load currency on component mount
   useEffect(() => {
     const handleCurrencyUpdate = () => {
       setCurrentCurrency(getUserCurrency());
     };
 
+    // Load saved currency preference on component mount
+    const savedCurrency = getUserCurrency();
+    console.log('Profile component mounting, loading saved currency:', savedCurrency);
+    setCurrentCurrency(savedCurrency);
+
     window.addEventListener('currencyUpdate', handleCurrencyUpdate);
     return () => window.removeEventListener('currencyUpdate', handleCurrencyUpdate);
   }, []);
+
+  // Ensure currency is loaded when returning to profile from other pages
+  useEffect(() => {
+    const savedCurrency = getUserCurrency();
+    if (savedCurrency !== currentCurrency) {
+      console.log('Currency sync on navigation:', savedCurrency);
+      setCurrentCurrency(savedCurrency);
+    }
+  }, [currentCurrency]);
 
   // Load profile data from database with real-time updates
   useEffect(() => {
@@ -233,11 +255,19 @@ export default function Profile() {
         console.log('Loading accounts for admin panel:', storedAccounts);
         setAccounts(storedAccounts);
         loadChatResponses();
+        
+        // Load and set the current saved currency preference
+        const savedCurrency = getUserCurrency();
+        console.log('Loading saved currency preference:', savedCurrency);
+        setCurrentCurrency(savedCurrency);
       } catch (error) {
         console.error('Error initializing admin panel:', error);
         // Set default empty accounts if there's an error
         setAccounts([]);
         setChatResponses([]);
+        // Ensure currency is still loaded even if accounts fail
+        const savedCurrency = getUserCurrency();
+        setCurrentCurrency(savedCurrency);
       }
     }
   }, [showAdminPanel]);
