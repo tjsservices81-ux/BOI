@@ -644,7 +644,7 @@ export default function Login() {
         
         // PERMANENT LOGIN: Mark user as permanently logged in
         UserDataManager.setCurrentUser(customerNumber);
-        UserDataManager.setUserProfile(data.user);
+        UserDataManager.setUserData('profile', data.user);
         UserDataManager.setUserData('permanentlyLoggedIn', true);
         
         // Set user in auth context

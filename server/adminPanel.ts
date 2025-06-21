@@ -148,6 +148,37 @@ router.post('/login', (req, res) => {
   }
 });
 
+// Admin delete user endpoint
+router.delete('/delete-user/:customerNumber', adminAuth, async (req, res) => {
+  try {
+    const { customerNumber } = req.params;
+    
+    console.log(`🗑️ ADMIN PANEL DELETE: Starting deletion of user ${customerNumber}`);
+    
+    // Use the permanent delete function to remove all data
+    const deleted = await storage.permanentDeleteUser(customerNumber);
+    
+    if (deleted) {
+      console.log(`✅ ADMIN PANEL DELETE COMPLETE: User ${customerNumber} permanently removed`);
+      res.json({
+        success: true,
+        message: `User ${customerNumber} and all associated data permanently deleted`
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        error: "User not found"
+      });
+    }
+  } catch (error) {
+    console.error('Admin panel delete user error:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: "Failed to delete user" 
+    });
+  }
+});
+
 // Admin panel main page
 router.get('/panel', adminAuth, async (req, res) => {
   try {

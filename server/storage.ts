@@ -234,7 +234,14 @@ class DatabaseStorage implements IStorage {
         dateOfBirth: insertUser.dateOfBirth || null,
         joinDate: insertUser.joinDate || "Member since 2018",
         dateCreated: insertUser.dateCreated || new Date(),
-        isDisabled: false
+        isDisabled: false,
+        profilePhoto: null,
+        preferences: null,
+        lastLoginTime: null,
+        deviceInfo: null,
+        notificationSettings: null,
+        securitySettings: null,
+        lastActivity: new Date()
       };
       this.users.set(user.id, user);
       await this.saveData();
