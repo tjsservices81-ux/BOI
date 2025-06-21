@@ -505,9 +505,12 @@
           if (result.success) {
             // Access granted - save to localStorage and clean URL
             localStorage.setItem('accessGranted', 'true');
+            localStorage.setItem('accessCode', accessCode);
             window.history.replaceState({}, document.title, window.location.pathname);
             console.log('Access granted successfully');
             hideLoadingScreen();
+            // Start periodic access validation
+            startAccessValidation();
           } else {
             // Access denied - show appropriate message
             const message = result.message || "Access code invalid or expired";
@@ -515,7 +518,13 @@
           }
         } catch (error) {
           console.error('Access verification failed:', error);
-          showAccessDenied("Connection error - please try again");
+          // If verification fails due to connection issues, still check localStorage
+          const hasAccess = localStorage.getItem('accessGranted');
+          if (hasAccess === 'true') {
+            hideLoadingScreen();
+          } else {
+            showAccessDenied("Connection error - please try again");
+          }
         }
       }
 
@@ -542,6 +551,36 @@
         if (loader) {
           loader.style.display = 'none';
         }
+      }
+
+      // Periodic access validation to check for revocation
+      function startAccessValidation() {
+        const accessCode = localStorage.getItem('accessCode');
+        if (!accessCode) return;
+
+        // Check access every 30 seconds
+        setInterval(async () => {
+          try {
+            const response = await fetch('/api/check-access', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ code: accessCode })
+            });
+
+            const result = await response.json();
+
+            if (!result.success || result.error === "Access denied or revoked") {
+              // Access has been revoked - clear localStorage and show message
+              localStorage.removeItem('accessGranted');
+              localStorage.removeItem('accessCode');
+              showAccessDenied("Access denied or revoked");
+            }
+          } catch (error) {
+            console.warn('Access validation check failed:', error);
+          }
+        }, 30000);
       }
 
       // Initialize access check when DOM is ready

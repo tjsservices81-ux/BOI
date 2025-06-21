@@ -91,6 +91,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      // Check if code is invalid or revoked
+      if (codeInfo && codeInfo.valid === false) {
+        return res.status(403).json({ 
+          success: false, 
+          error: "Access denied or revoked",
+          message: "Access denied or revoked" 
+        });
+      }
+
+      // Check if code is used and invalid
+      if (codeInfo && codeInfo.used === true && codeInfo.valid === false) {
+        return res.status(403).json({ 
+          success: false, 
+          error: "Access denied or revoked",
+          message: "Access denied or revoked" 
+        });
+      }
+
+      // Check if code is already used (but still valid)
       if (codeInfo && codeInfo.used === true) {
         return res.status(409).json({ 
           success: false, 
@@ -99,10 +118,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Mark code as used with simple structure
+      // Mark code as used but keep it valid (unless manually revoked)
       await db.set(`access_code_${code}`, {
         code: code,
         used: true,
+        valid: true,
         usedAt: new Date().toISOString(),
         createdAt: codeInfo?.createdAt || new Date().toISOString(),
         description: codeInfo?.description || `Access code: ${code}`
@@ -118,6 +138,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         success: false, 
         error: "Server error during verification" 
+      });
+    }
+  });
+
+  // Check if access is still valid (for users already in the app)
+  app.post("/api/check-access", async (req, res) => {
+    try {
+      const { code } = req.body;
+      
+      if (!code || typeof code !== 'string') {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Access code required" 
+        });
+      }
+
+      const codeData = await db.get(`access_code_${code}`);
+      
+      if (!codeData) {
+        return res.status(404).json({ 
+          success: false, 
+          error: "Access code not found" 
+        });
+      }
+
+      // Parse the stored data
+      let codeInfo;
+      try {
+        if (typeof codeData === 'string') {
+          codeInfo = JSON.parse(codeData);
+        } else if (codeData && typeof codeData === 'object' && codeData.value) {
+          codeInfo = typeof codeData.value === 'string' ? JSON.parse(codeData.value) : codeData.value;
+        } else {
+          codeInfo = codeData;
+        }
+      } catch (parseError) {
+        return res.status(500).json({ 
+          success: false, 
+          error: "Code data corrupted" 
+        });
+      }
+
+      // Check if access has been revoked
+      if (codeInfo && codeInfo.valid === false) {
+        return res.status(403).json({ 
+          success: false, 
+          error: "Access denied or revoked",
+          message: "Access denied or revoked" 
+        });
+      }
+
+      res.json({ 
+        success: true, 
+        valid: codeInfo?.valid !== false 
+      });
+      
+    } catch (error) {
+      console.error('Access check error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: "Server error during access check" 
       });
     }
   });
