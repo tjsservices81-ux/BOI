@@ -249,7 +249,7 @@ input[type="text"], input[type="email"], input[type="password"], textarea {
 
 /* Critical performance optimizations + Security */
 * {
-  -webkit-tap-highlight-color: transparent;
+  -webkit-tap-highlight-color: transparent !important;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -258,6 +258,213 @@ input[type="text"], input[type="email"], input[type="password"], textarea {
   /* Prevent layout shifts */
   box-sizing: border-box;
   touch-action: manipulation;
+  /* Android specific transparency prevention */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+/* Prevent transparency on touch for all interactive elements */
+button, 
+.card-interactive,
+[role="button"],
+.bg-blue-50,
+.bg-green-50,
+.bg-red-50,
+.bg-purple-50,
+.bg-gray-50,
+.bg-yellow-50,
+.bg-orange-50,
+.bg-pink-50,
+.bg-indigo-50,
+div,
+span,
+p {
+  -webkit-tap-highlight-color: transparent !important;
+  opacity: 1 !important;
+  background-clip: padding-box !important;
+  -webkit-background-clip: padding-box !important;
+  /* Android specific fixes */
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  -webkit-transform: translateZ(0) !important;
+  transform: translateZ(0) !important;
+  will-change: auto !important;
+  backface-visibility: hidden !important;
+  -webkit-backface-visibility: hidden !important;
+}
+
+/* Force solid backgrounds on tap/hover states */
+button:active,
+button:focus,
+button:hover,
+.card-interactive:active,
+.card-interactive:focus,
+.card-interactive:hover,
+[role="button"]:active,
+[role="button"]:focus,
+[role="button"]:hover {
+  opacity: 1 !important;
+  background-color: inherit !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+/* Fix transparency for account cards and quick actions */
+.account-card,
+.quick-action,
+.dashboard-card,
+.payment-option,
+.transfer-option,
+.list-item,
+.menu-item,
+.option-item {
+  -webkit-tap-highlight-color: transparent !important;
+  opacity: 1 !important;
+  background-clip: padding-box !important;
+  -webkit-background-clip: padding-box !important;
+}
+
+.account-card:active,
+.quick-action:active,
+.dashboard-card:active,
+.payment-option:active,
+.transfer-option:active,
+.list-item:active,
+.menu-item:active,
+.option-item:active {
+  opacity: 1 !important;
+  background-color: inherit !important;
+  transform: scale(0.98) !important;
+}
+
+/* Fix navigation and bottom bar transparency */
+.bottom-navigation,
+.bottom-navigation button,
+.bottom-nav-container,
+.ios-safe-bottom {
+  -webkit-tap-highlight-color: transparent !important;
+  opacity: 1 !important;
+  background-clip: padding-box !important;
+  -webkit-background-clip: padding-box !important;
+}
+
+/* Ensure all modal overlays maintain opacity */
+.modal-overlay,
+.fixed.inset-0 {
+  opacity: 1 !important;
+  background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Comprehensive background color preservation for iOS */
+.bg-white:active,
+.bg-gray-50:active,
+.bg-gray-100:active,
+.bg-blue-50:active,
+.bg-blue-100:active,
+.bg-green-50:active,
+.bg-green-100:active,
+.bg-red-50:active,
+.bg-red-100:active,
+.bg-purple-50:active,
+.bg-purple-100:active,
+.bg-yellow-50:active,
+.bg-yellow-100:active,
+.bg-orange-50:active,
+.bg-orange-100:active,
+.bg-pink-50:active,
+.bg-pink-100:active,
+.bg-indigo-50:active,
+.bg-indigo-100:active {
+  opacity: 1 !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+/* Specific background colors to prevent iOS transparency */
+.bg-white { background-color: rgb(255 255 255) !important; }
+.bg-gray-50 { background-color: rgb(249 250 251) !important; }
+.bg-gray-100 { background-color: rgb(243 244 246) !important; }
+.bg-blue-50 { background-color: rgb(239 246 255) !important; }
+.bg-blue-100 { background-color: rgb(219 234 254) !important; }
+.bg-green-50 { background-color: rgb(240 253 244) !important; }
+.bg-green-100 { background-color: rgb(220 252 231) !important; }
+.bg-red-50 { background-color: rgb(254 242 242) !important; }
+.bg-red-100 { background-color: rgb(254 226 226) !important; }
+.bg-purple-50 { background-color: rgb(250 245 255) !important; }
+.bg-purple-100 { background-color: rgb(243 232 255) !important; }
+.bg-yellow-50 { background-color: rgb(254 252 232) !important; }
+.bg-yellow-100 { background-color: rgb(254 249 195) !important; }
+.bg-orange-50 { background-color: rgb(255 247 237) !important; }
+.bg-orange-100 { background-color: rgb(254 215 170) !important; }
+
+/* Cards and rounded elements */
+.rounded-xl,
+.rounded-2xl,
+.rounded-lg,
+.rounded-full {
+  background-clip: padding-box !important;
+  -webkit-background-clip: padding-box !important;
+}
+
+/* Profile and dashboard specific elements */
+.profile-card,
+.balance-card,
+.transaction-item,
+.payee-item {
+  -webkit-tap-highlight-color: transparent !important;
+  opacity: 1 !important;
+  background-clip: padding-box !important;
+}
+
+/* Android WebView specific transparency fixes */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  button,
+  div,
+  span,
+  .bg-blue-50,
+  .bg-green-50,
+  .bg-red-50,
+  .bg-purple-50,
+  .bg-gray-50,
+  .bg-white {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0) !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    touch-action: manipulation !important;
+    opacity: 1 !important;
+    background-attachment: scroll !important;
+    background-repeat: no-repeat !important;
+    background-size: 100% 100% !important;
+    -webkit-transform: translate3d(0, 0, 0) !important;
+    transform: translate3d(0, 0, 0) !important;
+  }
+  
+  button:active,
+  div:active,
+  .bg-blue-50:active,
+  .bg-green-50:active,
+  .bg-red-50:active,
+  .bg-purple-50:active,
+  .bg-gray-50:active,
+  .bg-white:active {
+    opacity: 1 !important;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0) !important;
+    background-color: inherit !important;
+    transform: scale(0.98) translate3d(0, 0, 0) !important;
+    -webkit-transform: scale(0.98) translate3d(0, 0, 0) !important;
+  }
+}
+
+/* Force hardware acceleration on Android */
+.android-no-highlight {
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0) !important;
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  touch-action: manipulation !important;
+  opacity: 1 !important;
+  will-change: transform !important;
+  -webkit-transform: translateZ(0) !important;
+  transform: translateZ(0) !important;
 }
 
 /* Allow text selection in form inputs */
@@ -932,11 +1139,67 @@ input, textarea, select {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   touch-action: none;
-  /* Light background for admin panel */
-  background-color: rgba(255, 255, 255, 0.95) !important;
+  /* Ensure solid background - override any transparency */
+  background-color: rgba(0, 0, 0, 0.5) !important;
+  backdrop-filter: blur(2px);
 }
 
-/* Remove global opacity changes that affected iOS */
+/* Prevent any elements inside admin panel from being transparent */
+.admin-panel * {
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  touch-action: manipulation !important;
+}
+
+/* Force solid backgrounds on all admin panel elements */
+.admin-panel button,
+.admin-panel div,
+.admin-panel .bg-blue-50,
+.admin-panel .bg-green-50,
+.admin-panel .bg-red-50,
+.admin-panel .bg-purple-50,
+.admin-panel .bg-gray-50,
+.admin-panel .bg-white {
+  opacity: 1 !important;
+  background-clip: padding-box !important;
+  -webkit-background-clip: padding-box !important;
+  will-change: auto !important;
+}
+
+/* Specific background colors to prevent transparency */
+.admin-panel .bg-blue-50 {
+  background-color: rgb(239 246 255) !important;
+  border-color: rgb(191 219 254) !important;
+}
+.admin-panel .bg-green-50 {
+  background-color: rgb(240 253 244) !important;
+  border-color: rgb(187 247 208) !important;
+}
+.admin-panel .bg-red-50 {
+  background-color: rgb(254 242 242) !important;
+  border-color: rgb(254 202 202) !important;
+}
+.admin-panel .bg-purple-50 {
+  background-color: rgb(250 245 255) !important;
+  border-color: rgb(221 214 254) !important;
+}
+.admin-panel .bg-gray-50 {
+  background-color: rgb(249 250 251) !important;
+  border-color: rgb(229 231 235) !important;
+}
+.admin-panel .bg-white {
+  background-color: rgb(255 255 255) !important;
+}
+
+/* Prevent button state transparency issues */
+.admin-panel button:active,
+.admin-panel button:focus,
+.admin-panel button:hover {
+  opacity: 1 !important;
+  background-color: inherit !important;
+  transform: scale(0.98) !important;
+}
 
 /* Admin panel content should be above everything */
 .admin-panel .modal-content {
