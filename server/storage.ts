@@ -91,6 +91,7 @@ class DatabaseStorage implements IStorage {
   private currentStatementId: number = 1;
   private currentChatMessageId: number = 1;
   private currentChatResponseId: number = 1;
+  private currentChatSessionId: number = 1;
 
   private persistentManager: PersistentDataManager;
 
@@ -444,8 +445,12 @@ class DatabaseStorage implements IStorage {
 
   async createChatSession(insertSession: InsertChatSession): Promise<ChatSession> {
     const session: ChatSession = {
+      id: this.currentChatSessionId++,
       ...insertSession,
-      startedAt: insertSession.startedAt || new Date()
+      startedAt: insertSession.startedAt || new Date(),
+      userId: insertSession.userId || null,
+      isActive: insertSession.isActive !== undefined ? insertSession.isActive : true,
+      endedAt: insertSession.endedAt || null
     };
     this.chatSessions.set(session.sessionId, session);
     return session;
@@ -467,7 +472,10 @@ class DatabaseStorage implements IStorage {
   async createChatResponse(insertResponse: InsertChatResponse): Promise<ChatResponse> {
     const response: ChatResponse = {
       id: this.currentChatResponseId++,
-      ...insertResponse
+      ...insertResponse,
+      isActive: insertResponse.isActive !== undefined ? insertResponse.isActive : true,
+      createdAt: insertResponse.createdAt || new Date(),
+      updatedAt: insertResponse.updatedAt || new Date()
     };
     this.chatResponses.set(response.id, response);
     return response;
@@ -763,7 +771,13 @@ class DatabaseStorage implements IStorage {
       ];
 
       for (const accountData of sampleAccounts) {
-        const account = await this.createAccount(accountData);
+        const account = await this.createAccount({
+          userId: accountData.userId,
+          accountType: accountData.type,
+          accountNumber: accountData.accountNumber,
+          balance: accountData.balance,
+          displayName: accountData.type
+        });
 
         // Create sample transactions
         const sampleTransactions = [
@@ -790,7 +804,16 @@ class DatabaseStorage implements IStorage {
         ];
 
         for (const transactionData of sampleTransactions) {
-          await this.createTransaction(transactionData);
+          await this.createTransaction({
+            accountId: transactionData.accountId,
+            type: transactionData.type,
+            amount: transactionData.amount,
+            description: transactionData.description,
+            category: "Banking",
+            paymentMethod: "Card",
+            timestamp: transactionData.date,
+            reference: transactionData.reference
+          });
         }
       }
 
@@ -813,7 +836,12 @@ class DatabaseStorage implements IStorage {
       ];
 
       for (const payeeData of samplePayees) {
-        await this.createPayee(payeeData);
+        await this.createPayee({
+          userId: payeeData.userId,
+          name: payeeData.name,
+          category: payeeData.type,
+          iban: payeeData.accountNumber
+        });
       }
     }
 

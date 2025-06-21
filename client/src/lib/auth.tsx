@@ -28,7 +28,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const initializeAuth = async () => {
       try {
         // Check for cached user first
-        const cachedUser = localStorage.getItem('bankingUser');
+        const cachedUser = localStorage.getItem('currentUser');
         if (cachedUser && isMounted) {
           try {
             const parsedUser = JSON.parse(cachedUser);
@@ -46,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               } else {
                 // Server says no valid session - user was deleted
                 console.log('🧹 Clearing stale user data from localStorage');
-                localStorage.removeItem('bankingUser');
+                localStorage.removeItem('currentUser');
                 setUser(null);
               }
             } else {
