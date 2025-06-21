@@ -1,5 +1,6 @@
 // App lifecycle management for state preservation
 import { StateManager } from './stateManager';
+import { UserDataManager } from './userDataManager';
 
 export class AppLifecycle {
   private static isInitialized = false;
