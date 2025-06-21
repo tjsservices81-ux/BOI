@@ -1,5 +1,6 @@
-// Simple localStorage-based transfer utilities
+// Enhanced transfer utilities with offline support
 import { UserDataManager } from './userDataManager';
+import { offlineManager } from './offlineManager';
 
 export interface Account {
   id: string;
