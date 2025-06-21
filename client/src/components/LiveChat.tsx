@@ -519,10 +519,10 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       category: 'atm_issues',
       triggers: ['atm not working', 'atm problem', 'withdrawal issue', 'atm fee', 'atm limit', 'cash machine', 'atm charges', 'daily limit', 'atm declined'],
       responses: [
-        "ATM issues can be really inconvenient! Your daily withdrawal limit is typically £300, and there's no charge for using Bank of Ireland ATMs. If your card was declined, try a different ATM first - sometimes it's just a machine issue. If problems persist, I can help check your account status.",
-        "I can help with ATM troubles. Bank of Ireland ATMs are free to use, and your daily limit is usually £300. If you're getting declined, it might be a network issue with that particular machine. Try another ATM, and if it still doesn't work, let me know - we can check if there's an issue with your card.",
-        "ATM problems are frustrating when you need cash! Your standard daily limit is £300, and you won't be charged for using our ATMs. If a withdrawal failed, try a different machine first - sometimes it's just a connectivity issue. Still having trouble? I can look into your account for any restrictions.",
-        "Let me help with that ATM issue. You can withdraw up to £300 daily from Bank of Ireland ATMs without charges. If your transaction was declined, it could be a temporary machine problem - try another ATM. If it happens again, there might be a card restriction I can help investigate."
+        `ATM issues can be really inconvenient! Your daily withdrawal limit is typically ${currencySymbol}${amounts.dailyATMLimit}, and there's no charge for using Bank of Ireland ATMs. If your card was declined, try a different ATM first - sometimes it's just a machine issue. If problems persist, I can help check your account status.`,
+        `I can help with ATM troubles. Bank of Ireland ATMs are free to use, and your daily limit is usually ${currencySymbol}${amounts.dailyATMLimit}. If you're getting declined, it might be a network issue with that particular machine. Try another ATM, and if it still doesn't work, let me know - we can check if there's an issue with your card.`,
+        `ATM problems are frustrating when you need cash! Your standard daily limit is ${currencySymbol}${amounts.dailyATMLimit}, and you won't be charged for using our ATMs. If a withdrawal failed, try a different machine first - sometimes it's just a connectivity issue. Still having trouble? I can look into your account for any restrictions.`,
+        `Let me help with that ATM issue. You can withdraw up to ${currencySymbol}${amounts.dailyATMLimit} daily from Bank of Ireland ATMs without charges. If your transaction was declined, it could be a temporary machine problem - try another ATM. If it happens again, there might be a card restriction I can help investigate.`
       ]
     },
     {
@@ -530,10 +530,10 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       category: 'fees_charges',
       triggers: ['fees', 'charges', 'cost', 'how much', 'price', 'overdraft', 'overdraft fee', 'monthly fee', 'account fee', 'maintenance fee'],
       responses: [
-        "I can explain our fee structure. Current accounts have no monthly maintenance fee if you keep a minimum £3,000 balance, otherwise it's £5 monthly. Overdraft rates are 19.9% APR up to £2,000. International transfers are £2-15 depending on amount and destination. What specific fees were you asking about?",
-        "Our fees are quite competitive! No monthly charges on current accounts with £3,000+ balance, £5 monthly otherwise. Overdrafts are 19.9% APR (much better than most banks). UK transfers are free, international ones £2-15. Unpaid item fees are £10. Which fees concern you?",
-        "Let me break down the main fees: Current accounts are free with £3,000 balance, £5/month below that. Overdraft is 19.9% APR up to £2,000 limit. ATM withdrawals abroad are €2.50. Standing orders and direct debits are free. What particular charges are you concerned about?",
-        "Happy to clarify our charges! Account maintenance is £5 monthly unless you keep £3,000+ (then it's free). Arranged overdraft is 19.9% APR, unpaid items £10. International payments vary £2-15 by destination. No charges for UK payments or most online banking. Need details on any specific fee?"
+        `I can explain our fee structure. Current accounts have no monthly maintenance fee if you keep a minimum ${currencySymbol}${amounts.minBalance} balance, otherwise it's ${currencySymbol}${amounts.monthlyFee} monthly. Overdraft rates are 19.9% APR up to ${currencySymbol}${amounts.overdraftLimit}. International transfers are ${amounts.transferFeeRange} depending on amount and destination. What specific fees were you asking about?`,
+        `Our fees are quite competitive! No monthly charges on current accounts with ${currencySymbol}${amounts.minBalance}+ balance, ${currencySymbol}${amounts.monthlyFee} monthly otherwise. Overdrafts are 19.9% APR (much better than most banks). UK transfers are free, international ones ${amounts.transferFeeRange}. Unpaid item fees are ${currencySymbol}${amounts.unpaidItemFee}. Which fees concern you?`,
+        `Let me break down the main fees: Current accounts are free with ${currencySymbol}${amounts.minBalance} balance, ${currencySymbol}${amounts.monthlyFee}/month below that. Overdraft is 19.9% APR up to ${currencySymbol}${amounts.overdraftLimit} limit. ATM withdrawals abroad are ${amounts.atmFeeAbroad}. Standing orders and direct debits are free. What particular charges are you concerned about?`,
+        `Happy to clarify our charges! Account maintenance is ${currencySymbol}${amounts.monthlyFee} monthly unless you keep ${currencySymbol}${amounts.minBalance}+ (then it's free). Arranged overdraft is 19.9% APR, unpaid items ${currencySymbol}${amounts.unpaidItemFee}. International payments vary ${amounts.transferFeeRange} by destination. No charges for UK payments or most online banking. Need details on any specific fee?`
       ]
     },
     {
@@ -583,10 +583,10 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       category: 'account_opening',
       triggers: ['open account', 'new account', 'account opening', 'create account', 'apply for account', 'student account', 'business account'],
       responses: [
-        "I'd be happy to help with opening a new account! We offer current accounts, savings accounts, student accounts, and business accounts. You'll need photo ID and proof of address from the last 3 months. Would you like to know about a specific type of account, or shall I arrange for a specialist to call you?",
-        "Great choice in choosing Bank of Ireland for a new account! We have several options - current accounts (free with £3,000 balance), savings accounts with competitive rates, and specialized accounts for students and businesses. What type of account interests you most?",
-        "Opening an account is straightforward! You'll need valid photo ID and a recent utility bill or bank statement for proof of address. We offer current accounts, savings, student accounts with perks, and business accounts. Which would suit your needs best?",
-        "I can definitely help with account opening! Our current accounts are popular (no fees with £3,000+ balance), or we have savings accounts with great rates. For students, we have special accounts with overdraft facilities. What are you looking for?"
+        `I'd be happy to help with opening a new account! We offer current accounts, savings accounts, student accounts, and business accounts. You'll need photo ID and proof of address from the last 3 months. Would you like to know about a specific type of account, or shall I arrange for a specialist to call you?`,
+        `Great choice in choosing Bank of Ireland for a new account! We have several options - current accounts (free with ${currencySymbol}${amounts.minBalance} balance), savings accounts with competitive rates, and specialized accounts for students and businesses. What type of account interests you most?`,
+        `Opening an account is straightforward! You'll need valid photo ID and a recent utility bill or bank statement for proof of address. We offer current accounts, savings, student accounts with perks, and business accounts. Which would suit your needs best?`,
+        `I can definitely help with account opening! Our current accounts are popular (no fees with ${currencySymbol}${amounts.minBalance}+ balance), or we have savings accounts with great rates. For students, we have special accounts with overdraft facilities. What are you looking for?`
       ]
     },
     {
@@ -594,10 +594,10 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       category: 'mortgage_loans',
       triggers: ['mortgage', 'home loan', 'loan', 'personal loan', 'car loan', 'credit', 'borrowing', 'interest rate'],
       responses: [
-        "I can provide some initial information about our lending products. We offer mortgages from 3.2% APR, personal loans £1,000-£25,000, and car finance options. For detailed rates and applications, let me connect you with our lending specialist who can assess your specific needs and provide accurate quotes.",
-        "We have several lending options available! Mortgages start from 3.2% APR depending on deposit and circumstances. Personal loans range £1,000-£25,000 with competitive rates. For the best advice and rates specific to your situation, let me escalate this to our lending team who can help properly.",
-        "Happy to discuss our loan products! We offer mortgages (rates from 3.2% APR), personal loans up to £25,000, car finance, and business loans. However, for accurate rates and to discuss your specific requirements, let me escalate that to a specialist who'll assist you shortly.",
-        "Our lending products include mortgages from 3.2% APR, personal loans £1,000-£25,000, and various credit options. Given the complexity of lending decisions, let me escalate that to a specialist who'll assist you shortly with detailed information and applications."
+        `I can provide some initial information about our lending products. We offer mortgages from 3.2% APR, personal loans ${currencySymbol}${amounts.personalLoanMin}-${currencySymbol}${amounts.personalLoanMax}, and car finance options. For detailed rates and applications, let me connect you with our lending specialist who can assess your specific needs and provide accurate quotes.`,
+        `We have several lending options available! Mortgages start from 3.2% APR depending on deposit and circumstances. Personal loans range ${currencySymbol}${amounts.personalLoanMin}-${currencySymbol}${amounts.personalLoanMax} with competitive rates. For the best advice and rates specific to your situation, let me escalate this to our lending team who can help properly.`,
+        `Happy to discuss our loan products! We offer mortgages (rates from 3.2% APR), personal loans up to ${currencySymbol}${amounts.personalLoanMax}, car finance, and business loans. However, for accurate rates and to discuss your specific requirements, let me escalate that to a specialist who'll assist you shortly.`,
+        `Our lending products include mortgages from 3.2% APR, personal loans ${currencySymbol}${amounts.personalLoanMin}-${currencySymbol}${amounts.personalLoanMax}, and various credit options. Given the complexity of lending decisions, let me escalate that to a specialist who'll assist you shortly with detailed information and applications.`
       ]
     },
     {
