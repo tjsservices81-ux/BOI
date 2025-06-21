@@ -86,21 +86,27 @@ export default function Profile() {
     };
   });
 
-  // Isolated admin currency handler
   const handleAdminCurrencyChange = async (newCurrency: 'EUR' | 'GBP') => {
+    // Immediate state updates
     setAdminCurrency(newCurrency);
+    setCurrentCurrency(newCurrency);
+    
+    // Immediate storage saves
     UserDataManager.setUserData('primaryCurrency', newCurrency);
     setCurrencyPreference(newCurrency);
     
+    // Database save
     const currentUser = UserDataManager.getCurrentUser();
     if (currentUser) {
-      await fetch(`/api/profile/${currentUser}`, {
+      fetch(`/api/profile/${currentUser}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ primaryCurrency: newCurrency }),
       });
     }
     
+    // Update all components immediately
+    window.dispatchEvent(new CustomEvent('currencyUpdate'));
     window.dispatchEvent(new CustomEvent('currencyChanged', { detail: { currency: newCurrency } }));
   };
 
@@ -1228,7 +1234,6 @@ export default function Profile() {
                       onChange={(e) => {
                         handleAdminCurrencyChange(e.target.value as 'EUR' | 'GBP');
                       }}
-                      onClick={() => console.log('Dropdown clicked, current value:', adminCurrency)}
                       className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-gray-900"
                       style={{ fontFamily: 'OpenSans, sans-serif' }}
                     >
