@@ -68,7 +68,7 @@ function ProtectedRoute({ children, fallback }: { children: React.ReactNode; fal
   return <>{children}</>;
 }
 
-function AppRoutes() {
+function AppRoutes(): JSX.Element {
   const authHook = useAuth();
   const biometricAuth = useBiometricAuth();
   const locationHook = useLocation();
@@ -195,10 +195,7 @@ function AppRoutes() {
                 UserDataManager.clearUserData('currentUser');
                 console.log('Clearing stale user data from UserDataManager');
               } catch (error) {
-                  UserDataManager.clearUserData('currentUser');
-                } catch (clearError) {
-                  console.warn('Failed to clear user data via UserDataManager');
-                }
+                console.warn('clearAppState() disabled - users can only be logged out via admin deletion');
               }
               
               // Clear saved state since session is invalid
@@ -206,11 +203,7 @@ function AppRoutes() {
             }
           } catch (error) {
             console.error('Failed to check authentication status:', error);
-            try {
-              UserDataManager.clearUserData('currentUser');
-            } catch (clearError) {
-              console.warn('Failed to clear user data via UserDataManager:', clearError);
-            }
+            console.warn('clearAppState() disabled - users can only be logged out via admin deletion');
           }
           
           setSplashShown(true);
@@ -229,7 +222,7 @@ function AppRoutes() {
     };
     
     initializeApp();
-  }, []);
+  }, [login, navigate, biometricAuth]);
 
   // Global authentication state handler - ensures proper dashboard navigation
   useEffect(() => {
