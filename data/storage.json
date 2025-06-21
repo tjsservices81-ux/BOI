@@ -1,173 +1,23 @@
 {
   "users": [
     [
-      31,
+      1,
       {
-        "id": 31,
-        "customerNumber": "BOI327149991",
-        "pin": "000000",
-        "name": "User",
-        "email": "user@example.com",
-        "phone": null,
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "2025-06-21T12:43:19.683Z",
-        "dateCreated": "2025-06-21T12:43:19.683Z",
-        "isDisabled": false
-      }
-    ],
-    [
-      32,
-      {
-        "id": 32,
-        "customerNumber": "BOI560715829",
-        "pin": "000000",
-        "name": "Hhhh",
-        "email": "hhh@gmail.com",
-        "phone": "555",
-        "address": "",
-        "dateOfBirth": "",
-        "joinDate": "2025-06-21T12:44:18.970Z",
-        "dateCreated": "2025-06-21T12:44:18.971Z",
-        "isDisabled": false,
-        "currency": "EUR"
-      }
-    ],
-    [
-      33,
-      {
-        "id": 33,
-        "customerNumber": "BOI185491826",
-        "pin": "000000",
-        "name": "Hhh",
-        "email": "huh@gmail.com",
-        "phone": "49844964",
-        "address": "",
-        "dateOfBirth": "",
-        "joinDate": "2025-06-21T13:03:17.866Z",
-        "dateCreated": "2025-06-21T13:03:17.867Z",
-        "isDisabled": false,
-        "currency": "GBP"
-      }
-    ],
-    [
-      34,
-      {
-        "id": 34,
-        "customerNumber": "BOI993691886",
-        "pin": "000000",
-        "name": "User",
-        "email": "user@example.com",
-        "phone": "",
-        "address": "",
-        "dateOfBirth": "",
-        "joinDate": "2025-06-21T08:48:15.511Z",
-        "dateCreated": "2025-06-21T13:47:40.012Z",
-        "isDisabled": false,
-        "currency": "GBP"
-      }
-    ],
-    [
-      35,
-      {
-        "id": 35,
-        "customerNumber": "24341999",
-        "pin": "1234",
-        "name": "Test User",
-        "email": "test@example.com",
-        "phone": null,
-        "address": null,
-        "dateOfBirth": "1990-01-01",
-        "joinDate": "Member since 2018",
-        "dateCreated": "2025-06-21T21:32:13.045Z",
-        "isDisabled": false
-      }
-    ],
-    [
-      36,
-      {
-        "id": 36,
-        "customerNumber": "20668271",
+        "id": 1,
+        "customerNumber": "25781215",
         "pin": "9999",
-        "name": "Permanent SessionTest",
-        "email": "permanenttest@example.com",
+        "name": "Test User",
+        "email": "fresh@test.com",
         "phone": null,
         "address": null,
         "dateOfBirth": "1990-01-01",
         "joinDate": "Member since 2018",
-        "dateCreated": "2025-06-21T21:37:37.873Z",
+        "dateCreated": "2025-06-21T22:06:15.234Z",
         "isDisabled": false
       }
     ]
   ],
-  "accounts": [
-    [
-      37,
-      {
-        "id": 37,
-        "userId": 32,
-        "accountType": "current",
-        "accountNumber": "****2091",
-        "balance": "0.00",
-        "displayName": "Current Account"
-      }
-    ],
-    [
-      38,
-      {
-        "id": 38,
-        "userId": 32,
-        "accountType": "credit",
-        "accountNumber": "****1820",
-        "balance": "0.00",
-        "displayName": "Credit Card"
-      }
-    ],
-    [
-      39,
-      {
-        "id": 39,
-        "userId": 32,
-        "accountType": "savings",
-        "accountNumber": "****0978",
-        "balance": "0.00",
-        "displayName": "Savings Account"
-      }
-    ],
-    [
-      40,
-      {
-        "id": 40,
-        "userId": 33,
-        "accountType": "current",
-        "accountNumber": "****2091",
-        "balance": "0.00",
-        "displayName": "Current Account"
-      }
-    ],
-    [
-      41,
-      {
-        "id": 41,
-        "userId": 33,
-        "accountType": "credit",
-        "accountNumber": "****1820",
-        "balance": "0.00",
-        "displayName": "Credit Card"
-      }
-    ],
-    [
-      42,
-      {
-        "id": 42,
-        "userId": 33,
-        "accountType": "savings",
-        "accountNumber": "****0978",
-        "balance": "0.00",
-        "displayName": "Savings Account"
-      }
-    ]
-  ],
+  "accounts": [],
   "transactions": [],
   "payees": [],
   "scheduledPayments": [],
@@ -176,10 +26,10 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 37,
-    "currentAccountId": 43,
-    "currentTransactionId": 49,
-    "currentPayeeId": 25,
+    "currentUserId": 2,
+    "currentAccountId": 1,
+    "currentTransactionId": 1,
+    "currentPayeeId": 1,
     "currentScheduledPaymentId": 1,
     "currentStatementId": 1,
     "currentChatMessageId": 1,
