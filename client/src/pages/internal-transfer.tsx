@@ -20,7 +20,7 @@ const internalTransferSchema = z.object({
     .refine((val) => {
       const num = parseFloat(val);
       return num <= 50000;
-    }, "Maximum transfer amount is £50,000/€50,000"),
+    }, `Maximum transfer amount is ${CurrencyManager.getCurrentSymbol()}50,000`),
   reference: z.string().max(140, "Reference cannot exceed 140 characters").optional()
 });
 

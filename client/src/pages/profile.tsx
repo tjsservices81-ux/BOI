@@ -2166,7 +2166,7 @@ export default function Profile() {
                               <p className={`font-bold text-lg ${
                                 transaction.amount.startsWith('-') ? 'text-red-600' : 'text-green-600'
                               }`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                                €{Math.abs(parseFloat(transaction.amount)).toFixed(2)}
+                                {CurrencyManager.formatAmount(Math.abs(parseFloat(transaction.amount)).toFixed(2))}
                               </p>
                               <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                                 {transaction.amount.startsWith('-') ? 'Debit' : 'Credit'}
