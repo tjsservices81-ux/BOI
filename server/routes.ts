@@ -37,6 +37,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     rolling: true, // Refresh session on each request
   }));
 
+  // Health check endpoint for connectivity testing
+  app.get("/api/health", (req, res) => {
+    res.json({ 
+      status: "ok", 
+      timestamp: new Date().toISOString(),
+      server: "Bank of Ireland API"
+    });
+  });
+
   // Add session tracking middleware
   app.use(sessionTrackingMiddleware);
 

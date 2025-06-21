@@ -80,6 +80,17 @@ export class UserDataManager {
     localStorage.setItem(loginKey, Date.now().toString());
   }
 
+  // Get user profile by customer number
+  static getUserProfileByCustomerNumber(customerNumber: string): UserData | null {
+    try {
+      const allUsers = this.getAllUsers();
+      return allUsers[customerNumber] || null;
+    } catch (error) {
+      console.error('Error getting user profile by customer number:', error);
+      return null;
+    }
+  }
+
   // Get user-specific storage key
   private static getUserKey(key: string): string {
     const currentUser = this.getCurrentUser();

@@ -105,6 +105,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     // Logout disabled - users can only be logged out via admin deletion
     console.warn('logout() disabled - users can only be logged out via admin deletion');
+    
+    // Clear offline login permissions on logout attempt
+    try {
+      const { SecureAuthManager } = await import('../utils/secureAuthManager');
+      SecureAuthManager.clearOfflineLoginPermissions();
+    } catch (error) {
+      console.error('Failed to clear offline permissions:', error);
+    }
+    
     return;
   };
 

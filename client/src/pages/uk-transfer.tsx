@@ -721,12 +721,13 @@ export default function UkTransfer() {
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div className="grid grid-cols-2 gap-4 android-form-grid">
               <div className="bg-gray-50 rounded-lg p-4">
                 <label className="block text-sm font-semibold text-gray-800 mb-3" style={{ 
                   fontFamily: 'OpenSans, sans-serif',
                   whiteSpace: 'nowrap',
-                  fontSize: '0.875rem'
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis'
                 }}>
                   Sort Code
                 </label>
@@ -821,7 +822,8 @@ export default function UkTransfer() {
                 <label className="block text-sm font-semibold text-gray-800 mb-3" style={{ 
                   fontFamily: 'OpenSans, sans-serif',
                   whiteSpace: 'nowrap',
-                  fontSize: '0.875rem'
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis'
                 }}>
                   Account Number
                 </label>
