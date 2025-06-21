@@ -58,7 +58,7 @@ export default function Profile() {
     const currentCustomerNumber = UserDataManager.getCurrentUser();
     // Try to get cached data first to prevent flash
     if (currentCustomerNumber) {
-      const allUsers = JSON.parse(localStorage.getItem('bankUsers') || '{}');
+      const allUsers = UserDataManager.getAllUsers();
       const cachedUser = allUsers[currentCustomerNumber];
       if (cachedUser) {
         return {

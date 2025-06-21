@@ -170,7 +170,7 @@ export class UserDataManager {
     if (allUsers[currentUser]) {
       const previousData = { ...allUsers[currentUser] };
       allUsers[currentUser] = { ...allUsers[currentUser], ...updates };
-      localStorage.setItem('bankUsers', JSON.stringify(allUsers));
+      localStorage.setItem('allBankUsers', JSON.stringify(allUsers));
       
       // Dispatch storage event for cross-component synchronization
       window.dispatchEvent(new StorageEvent('storage', {
@@ -313,7 +313,7 @@ export class UserDataManager {
     // Remove from users list
     const allUsers = this.getAllUsers();
     delete allUsers[customerNumber];
-    localStorage.setItem('bankUsers', JSON.stringify(allUsers));
+    localStorage.setItem('allBankUsers', JSON.stringify(allUsers));
     
     // Clear user-specific data
     const keys = Object.keys(localStorage);
@@ -380,7 +380,7 @@ export class UserDataManager {
     const allUsers = this.getAllUsers();
     if (allUsers[customerNumber]) {
       delete allUsers[customerNumber];
-      localStorage.setItem('bankUsers', JSON.stringify(allUsers));
+      localStorage.setItem('allBankUsers', JSON.stringify(allUsers));
     }
     
     // Remove from current user if this was the active user
