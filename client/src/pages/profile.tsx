@@ -186,7 +186,7 @@ export default function Profile() {
       setProfilePicTapCount(0);
     }, 3000);
 
-    // Handle admin panel (legacy - double tap)
+    // Handle App Control (legacy - double tap)
     const currentTime = Date.now();
     const timeSinceLastTap = currentTime - lastTapTime;
     
@@ -201,21 +201,21 @@ export default function Profile() {
     setTapCount(newTapCount);
     setLastTapTime(currentTime);
     
-    console.log(`Admin access tap: ${newTapCount}/5`);
+    console.log(`App Control access tap: ${newTapCount}/5`);
     
-    // Open admin panel immediately when 5 taps are reached
+    // Open App Control immediately when 5 taps are reached
     if (newTapCount >= 5) {
-      console.log('Opening admin panel...');
+      console.log('Opening App Control...');
       
-      // Force the admin panel to open with multiple fallbacks
+      // Force the App Control to open with multiple fallbacks
       setShowAdminPanel(true);
       setTapCount(0);
       setLastTapTime(0);
       
       // Additional fallback: Force re-render if panel doesn't appear
       setTimeout(() => {
-        if (!document.querySelector('.admin-panel')) {
-          console.log('Admin panel not found, forcing re-render...');
+        if (!document.querySelector('.app-control')) {
+          console.log('App Control not found, forcing re-render...');
           setShowAdminPanel(false);
           setTimeout(() => setShowAdminPanel(true), 50);
         }
@@ -223,16 +223,16 @@ export default function Profile() {
     }
   };
 
-  // Admin panel functions - Load accounts when panel opens and on changes
+  // App Control functions - Load accounts when panel opens and on changes
   useEffect(() => {
     if (showAdminPanel) {
       try {
         const storedAccounts = UserDataManager.getUserAccounts();
-        console.log('Loading accounts for admin panel:', storedAccounts);
+        console.log('Loading accounts for App Control:', storedAccounts);
         setAccounts(storedAccounts);
         loadChatResponses();
       } catch (error) {
-        console.error('Error initializing admin panel:', error);
+        console.error('Error initializing App Control:', error);
         // Set default empty accounts if there's an error
         setAccounts([]);
         setChatResponses([]);
@@ -1198,10 +1198,10 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* Admin Panel Modal */}
+      {/* App Control Modal */}
       {showAdminPanel && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000] p-4 modal-overlay admin-panel"
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000] p-4 modal-overlay app-control"
           onClick={() => setShowAdminPanel(false)}
         >
           <div 
@@ -1211,7 +1211,7 @@ export default function Profile() {
             <div className="p-6 pb-12">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Admin Panel
+                  App Control
                 </h2>
                 <button
                   onClick={() => setShowAdminPanel(false)}
