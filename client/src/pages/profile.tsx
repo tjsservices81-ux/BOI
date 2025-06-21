@@ -1152,10 +1152,27 @@ export default function Profile() {
         <div 
           className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000] p-4 modal-overlay admin-panel"
           onClick={() => setShowAdminPanel(false)}
+          style={{ 
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 99999,
+            transform: 'translateZ(0)',
+            willChange: 'transform',
+            isolation: 'isolate'
+          }}
         >
           <div 
             className="bg-white rounded-2xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto modal-content"
             onClick={(e) => e.stopPropagation()}
+            style={{
+              position: 'relative',
+              zIndex: 100000,
+              transform: 'translate3d(0, 0, 999px)',
+              backfaceVisibility: 'hidden'
+            }}
           >
             <div className="p-6 pb-12">
               <div className="flex items-center justify-between mb-6">
