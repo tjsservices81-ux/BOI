@@ -28,7 +28,7 @@ export default function SpendingInsights() {
       const debits = transactions.filter((tx: any) => tx.type === 'debit');
       const amounts = debits.map((tx: any) => Math.abs(parseFloat(tx.amount)));
       
-      const totalSpent = amounts.reduce((sum, amount) => sum + amount, 0);
+      const totalSpent = amounts.reduce((sum: number, amount: number) => sum + amount, 0);
       const averageTransaction = totalSpent / amounts.length;
       const largestTransaction = Math.max(...amounts);
 

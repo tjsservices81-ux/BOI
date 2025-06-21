@@ -174,7 +174,8 @@ class MemStorage implements IStorage {
       dateOfBirth: insertUser.dateOfBirth || null,
       joinDate: insertUser.joinDate || "Member since 2018",
       dateCreated: insertUser.dateCreated || new Date(),
-      isDisabled: false
+      isDisabled: false,
+      primaryCurrency: insertUser.primaryCurrency || "EUR"
     };
     this.users.set(user.id, user);
     await this.saveData(); // Persist data immediately
@@ -285,7 +286,14 @@ class MemStorage implements IStorage {
   async createTransaction(insertTransaction: InsertTransaction): Promise<Transaction> {
     const transaction: Transaction = {
       id: this.currentTransactionId++,
-      ...insertTransaction
+      ...insertTransaction,
+      recipientName: insertTransaction.recipientName || null,
+      iban: insertTransaction.iban || null,
+      bicCode: insertTransaction.bicCode || null,
+      reference: insertTransaction.reference || null,
+      exchangeRate: insertTransaction.exchangeRate || null,
+      convertedCurrency: insertTransaction.convertedCurrency || null,
+      timestamp: insertTransaction.timestamp || new Date()
     };
     this.transactions.set(transaction.id, transaction);
     return transaction;
@@ -298,7 +306,9 @@ class MemStorage implements IStorage {
   async createPayee(insertPayee: InsertPayee): Promise<Payee> {
     const payee: Payee = {
       id: this.currentPayeeId++,
-      ...insertPayee
+      ...insertPayee,
+      iban: insertPayee.iban || null,
+      lastAmount: insertPayee.lastAmount || null
     };
     this.payees.set(payee.id, payee);
     return payee;
@@ -320,6 +330,8 @@ class MemStorage implements IStorage {
     const message: ChatMessage = {
       id: this.currentChatMessageId++,
       ...insertMessage,
+      userId: insertMessage.userId || null,
+      agentName: insertMessage.agentName || null,
       timestamp: insertMessage.timestamp || new Date()
     };
     this.chatMessages.set(message.id, message);
