@@ -110,6 +110,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin endpoint to configure email delivery
+  app.post("/api/admin/configure-email", async (req, res) => {
+    try {
+      const { adminEmail } = req.body;
+      
+      if (!adminEmail || !adminEmail.includes('@')) {
+        return res.status(400).json({ error: "Valid email address required" });
+      }
+      
+      // Store admin email in environment (temporary - in production this would be in database)
+      process.env.ADMIN_EMAIL = adminEmail;
+      
+      console.log(`📧 ADMIN EMAIL CONFIGURED: ${adminEmail}`);
+      
+      res.json({ 
+        message: "Email configured successfully",
+        email: adminEmail
+      });
+    } catch (error) {
+      console.error('Email configuration error:', error);
+      res.status(500).json({ error: "Email configuration failed" });
+    }
+  });
+
+  // Admin endpoint to send current OTC via email
+  app.post("/api/admin/send-current-otc-email", async (req, res) => {
+    try {
+      const currentOtc = await launchScreenOtc.getCurrentCode();
+      const expiresAt = await launchScreenOtc.getExpirationTime();
+      
+      if (!currentOtc) {
+        return res.status(404).json({ error: "No active OTC found" });
+      }
+      
+      // Send email manually
+      await launchScreenOtc.sendEmailToAdmin(currentOtc, new Date(expiresAt));
+      
+      console.log(`📧 MANUAL OTC EMAIL SENT: ${currentOtc}`);
+      
+      res.json({ 
+        message: "Current OTC sent via email",
+        otc: currentOtc
+      });
+    } catch (error) {
+      console.error('Manual OTC email error:', error);
+      res.status(500).json({ error: "Failed to send OTC email" });
+    }
+  });
+
   // Add session tracking middleware
   app.use(sessionTrackingMiddleware);
 
