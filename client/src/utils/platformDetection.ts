@@ -134,7 +134,7 @@ export class PlatformDetection {
     
     // Handle app state transitions
     document.addEventListener('webkitvisibilitychange', () => {
-      if (document.webkitHidden) {
+      if ((document as any).webkitHidden) {
         console.log('Mobile app hidden (webkit)');
         localStorage.setItem('app_background_time', Date.now().toString());
       } else {

@@ -50,10 +50,8 @@ export default function Splash() {
     // Navigate to login after splash duration (8 seconds total)
     const finalTimer = setTimeout(() => {
       setIsVisible(false);
-      // Mark splash as shown in session storage
-      sessionStorage.setItem('splashShown', 'true');
-      // Clear the cold start flag to allow normal auth flow
-      sessionStorage.removeItem('app_cold_start');
+      // Mark splash as completed in localStorage for proper state tracking
+      localStorage.setItem('splash_completed', 'true');
       // Dispatch event to notify App.tsx that splash is complete
       window.dispatchEvent(new CustomEvent('splashComplete'));
       setTimeout(() => {
