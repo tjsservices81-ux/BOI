@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight, User, ArrowUpDown, Globe, MapPin, Clock, Users, X, Trash2, CreditCard, Mail } from "lucide-react";
@@ -66,38 +66,43 @@ export default function Payments() {
     }
   ];
 
-  // Additional payment options based on user toggles
-  const conditionalPaymentOptions = [];
-  
-  // Debug logging
-  console.log('Profile data in payments:', profileData);
-  console.log('Show card transfer:', profileData?.showCardTransfer);
-  console.log('Show email transfer:', profileData?.showEmailTransfer);
-  
-  if (profileData?.showCardTransfer === true) {
-    conditionalPaymentOptions.push({
-      id: 'card',
-      title: 'Card Transfer',
-      subtitle: 'Transfer to another card',
-      icon: <CreditCard className="w-6 h-6 text-blue-600" />,
-      description: 'Send money directly to a debit or credit card',
-      popular: false
-    });
-  }
-  
-  if (profileData?.showEmailTransfer === true) {
-    conditionalPaymentOptions.push({
-      id: 'email',
-      title: 'Email Transfer',
-      subtitle: 'Send money via email',
-      icon: <Mail className="w-6 h-6 text-green-600" />,
-      description: 'Send money to an email address',
-      popular: false
-    });
-  }
+  // Create payment options dynamically based on profile data
+  const paymentOptions = React.useMemo(() => {
+    const conditionalPaymentOptions = [];
+    
+    // Debug logging
+    console.log('Profile data in payments:', profileData);
+    console.log('Show card transfer:', profileData?.showCardTransfer);
+    console.log('Show email transfer:', profileData?.showEmailTransfer);
+    
+    if (profileData?.showCardTransfer === true) {
+      conditionalPaymentOptions.push({
+        id: 'card',
+        title: 'Card Transfer',
+        subtitle: 'Transfer to another card',
+        icon: <CreditCard className="w-6 h-6 text-blue-600" />,
+        description: 'Send money directly to a debit or credit card',
+        popular: false
+      });
+    }
+    
+    if (profileData?.showEmailTransfer === true) {
+      conditionalPaymentOptions.push({
+        id: 'email',
+        title: 'Email Transfer',
+        subtitle: 'Send money via email',
+        icon: <Mail className="w-6 h-6 text-green-600" />,
+        description: 'Send money to an email address',
+        popular: false
+      });
+    }
 
-  // Combine all payment options
-  const paymentOptions = [...basePaymentOptions, ...conditionalPaymentOptions];
+    // Debug the final options count
+    console.log('Final conditional options count:', conditionalPaymentOptions.length);
+    console.log('Final conditional options:', conditionalPaymentOptions);
+
+    return [...basePaymentOptions, ...conditionalPaymentOptions];
+  }, [profileData]);
 
   // Load recent payments and payees using UserDataManager
   useEffect(() => {
@@ -207,6 +212,16 @@ export default function Payments() {
             Choose how you'd like to send your payment
           </p>
         </div>
+
+        {/* Debug info for transfer options */}
+        {profileData && (
+          <div className="bg-yellow-100 p-3 rounded-lg mb-4 text-sm">
+            <strong>Debug Info:</strong><br/>
+            Card Transfer: {profileData.showCardTransfer ? '✅ Enabled' : '❌ Disabled'}<br/>
+            Email Transfer: {profileData.showEmailTransfer ? '✅ Enabled' : '❌ Disabled'}<br/>
+            Total Options: {paymentOptions.length}
+          </div>
+        )}
 
         {/* Payment Options */}
         <div className="space-y-4 mb-8">
