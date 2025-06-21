@@ -1128,6 +1128,57 @@ No transfers found yet on your account.`;
     }
   });
 
+  // OTC device verification endpoint
+  app.post("/api/send-otc", async (req, res) => {
+    try {
+      const otcSchema = z.object({
+        email: z.string().email(),
+        code: z.string().length(6),
+        deviceInfo: z.object({
+          userAgent: z.string(),
+          timestamp: z.string(),
+          platform: z.string()
+        })
+      });
+
+      const { email, code, deviceInfo } = otcSchema.parse(req.body);
+      
+      console.log(`📧 OTC Code Generated: ${code} for device verification`);
+      console.log(`Device Info:`, deviceInfo);
+      
+      // Send email using existing email service
+      const emailSent = await otcService.sendOTCEmail(email, code, {
+        deviceInfo: deviceInfo.userAgent,
+        timestamp: deviceInfo.timestamp,
+        platform: deviceInfo.platform
+      });
+
+      if (emailSent) {
+        res.json({ 
+          success: true, 
+          message: "OTC code sent successfully" 
+        });
+      } else {
+        res.status(500).json({ 
+          success: false, 
+          message: "Failed to send OTC code" 
+        });
+      }
+    } catch (error) {
+      console.error('OTC generation error:', error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          success: false,
+          message: error.errors[0].message 
+        });
+      }
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to generate OTC code" 
+      });
+    }
+  });
+
   // User validation endpoint for login security
   app.get("/api/auth/validate/:customerNumber", async (req, res) => {
     try {

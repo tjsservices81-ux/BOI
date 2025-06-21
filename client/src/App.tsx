@@ -12,6 +12,7 @@ import { StateManager } from "@/utils/stateManager";
 import { AppLifecycle } from "@/utils/appLifecycle";
 import { PlatformDetection } from "@/utils/platformDetection";
 import LiveChat from "@/components/LiveChat";
+import OTCVerification from "@/components/OTCVerification";
 
 
 
@@ -123,6 +124,7 @@ function AppRoutes() {
   const [isInitialized, setIsInitialized] = useState(false);
   const [splashTransitioning, setSplashTransitioning] = useState(false);
   const [isRestoringState, setIsRestoringState] = useState(true);
+  const [showOTCVerification, setShowOTCVerification] = useState(false);
   
   // Global Live Chat state - persistent across all navigation
   const [showLiveChat, setShowLiveChat] = useState(false);

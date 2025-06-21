@@ -263,6 +263,66 @@ class OTCService {
     return { isValid: true, accountData: stored.accountData };
   }
 
+  async sendOTCEmail(email: string, code: string, deviceInfo: any): Promise<boolean> {
+    if (!this.transporter) {
+      console.log('No SMTP transporter available - device verification email cannot be sent');
+      console.log(`Device OTC Code: ${code} for ${email}`);
+      console.log('Device Info:', deviceInfo);
+      return false;
+    }
+
+    try {
+      const mailOptions = {
+        from: `"Bank of Ireland" <${process.env.SMTP_USER}>`,
+        to: email,
+        subject: 'Bank of Ireland - Device Verification Code',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="background-color: #126987; color: white; padding: 20px; border-radius: 8px 8px 0 0;">
+              <h2 style="margin: 0; font-size: 24px;">Bank of Ireland</h2>
+              <p style="margin: 5px 0 0 0; font-size: 16px;">Device Verification Required</p>
+            </div>
+            
+            <div style="background-color: #f8f9fa; padding: 30px; border: 1px solid #dee2e6; border-top: none;">
+              <h3 style="color: #dc3545; margin-top: 0;">New Device Access Request</h3>
+              <p>A new device is attempting to access the Bank of Ireland mobile application and requires verification.</p>
+              
+              <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <h4 style="color: #856404; margin-top: 0;">Verification Code</h4>
+                <p style="font-size: 32px; font-weight: bold; color: #856404; letter-spacing: 4px; margin: 10px 0; text-align: center;">${code}</p>
+                <p style="color: #856404; font-size: 14px; text-align: center; margin-bottom: 0;">Provide this code to authorize the device</p>
+              </div>
+              
+              <div style="background-color: white; border: 1px solid #dee2e6; padding: 25px; border-radius: 8px; margin: 20px 0;">
+                <h4 style="color: #126987; margin-top: 0;">Device Information</h4>
+                <p><strong>Platform:</strong> ${deviceInfo.platform}</p>
+                <p><strong>Timestamp:</strong> ${new Date(deviceInfo.timestamp).toLocaleString()}</p>
+                <p><strong>User Agent:</strong> ${deviceInfo.deviceInfo}</p>
+              </div>
+              
+              <div style="background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                <p style="color: #721c24; margin: 0; font-size: 14px;">
+                  <strong>Security Notice:</strong> Only provide this code if you recognize this device access request.
+                </p>
+              </div>
+            </div>
+            
+            <div style="background-color: #126987; color: white; padding: 15px; border-radius: 0 0 8px 8px; text-align: center;">
+              <p style="margin: 0; font-size: 14px;">Bank of Ireland - Security Verification</p>
+            </div>
+          </div>
+        `
+      };
+
+      await this.transporter.sendMail(mailOptions);
+      console.log(`Device verification email sent to: ${email}`);
+      return true;
+    } catch (error) {
+      console.error('Failed to send device verification email:', error);
+      return false;
+    }
+  }
+
   async processNewAccount(accountData: OTCRequest['accountData']): Promise<string> {
     const otc = this.generateOTC();
     
