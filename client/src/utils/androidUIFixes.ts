@@ -217,6 +217,28 @@ export class AndroidUIFixes {
         opacity: 1 !important;
         color: #9ca3af !important;
       }
+
+      /* Android form grid fixes for UK transfer */
+      .android-form-grid {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 1rem !important;
+        align-items: start !important;
+      }
+
+      .android-form-grid .bg-gray-50 {
+        min-height: 110px !important;
+        display: flex !important;
+        flex-direction: column !important;
+      }
+
+      .android-form-grid label {
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        line-height: 1.2 !important;
+        margin-bottom: 0.75rem !important;
+      }
     `;
     
     document.head.appendChild(style);
