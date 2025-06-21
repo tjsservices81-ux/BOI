@@ -165,6 +165,12 @@ export default function Login() {
   };
 
   const handleLogoTap = () => {
+    // Check if user is authenticated - if so, disable the 5-tap trigger
+    const currentUser = UserDataManager.getCurrentUser();
+    if (currentUser) {
+      return; // Do nothing if user is logged in
+    }
+    
     const newTapCount = logoTapCount + 1;
     setLogoTapCount(newTapCount);
     
