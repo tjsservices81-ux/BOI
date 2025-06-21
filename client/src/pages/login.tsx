@@ -42,8 +42,6 @@ export default function Login() {
   const [locationError, setLocationError] = useState<string | null>(null);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [nearbyATMs, setNearbyATMs] = useState<any[]>([]);
-  const [connectionStatus, setConnectionStatus] = useState<string>('');
-  const [offlineStatus, setOfflineStatus] = useState<{hasOfflineAccess: boolean; timeRemaining?: string} | null>(null);
   
   // Input refs for proper focus management in PWA
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -60,27 +58,6 @@ export default function Login() {
   
   const toastHook = useToast();
   const toast = toastHook?.toast || (() => {});
-
-  // Check connection status and offline login availability
-  const checkConnectionAndOfflineStatus = async () => {
-    try {
-      const { SecureAuthManager } = await import('../utils/secureAuthManager');
-      
-      // Check internet connectivity
-      const hasInternet = await SecureAuthManager.hasInternetConnection();
-      setConnectionStatus(hasInternet ? 'online' : 'offline');
-      
-      // Check offline login status for current user
-      const currentUser = UserDataManager.getCurrentUser();
-      if (currentUser) {
-        const offlineStatus = SecureAuthManager.getOfflineLoginStatus(currentUser);
-        setOfflineStatus(offlineStatus);
-      }
-    } catch (error) {
-      console.error('Error checking connection status:', error);
-      setConnectionStatus('unknown');
-    }
-  };
 
   // Validate users against server and clean up deleted ones
   const validateAndCleanUsers = async () => {
@@ -452,158 +429,133 @@ export default function Login() {
       return;
     }
 
-    // Get current user for authentication
-    const currentUser = UserDataManager.getCurrentUser();
-    if (!currentUser) {
-      toast({
-        title: "Authentication Error",
-        description: "No user selected for login",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsLoginAnimating(true);
     setLoginProgress(0);
 
     try {
-      // Stage 1: Checking connection (1 second)
-      setLoginStage('Checking connection...');
+      // Stage 1: Authenticating (2 seconds)
+      setLoginStage('Authenticating...');
       const progressInterval = setInterval(() => {
         setLoginProgress(prev => {
-          if (prev < 20) return prev + 2;
+          if (prev < 25) return prev + 1.25;
           return prev;
         });
       }, 100);
 
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Validate user existence on server during authentication stage
+      const targetCustomerNumber = customerNumber || UserDataManager.getLastActiveUser() || Object.keys(UserDataManager.getAllUsers())[0];
+      if (targetCustomerNumber) {
+        try {
+          const response = await fetch(`/api/auth/validate/${targetCustomerNumber}`);
+          const validation = await response.json();
+          
+          if (!validation.success) {
+            clearInterval(progressInterval);
+            setIsLoginAnimating(false);
+            setLoginProgress(0);
+            setLoginStage('');
+            
+            // Server validation failed - preserve local data for offline use
+            // Don't delete user data, just show warning about server sync
+            setBiometricVerified(false);
+            setPinVerified(false);
+            
+            toast({
+              title: "Server Sync Issue",
+              description: "Account exists locally but server validation failed. You can still access your data offline.",
+              variant: "default",
+            });
+            
+            // Continue with offline login using local data
+            console.warn('Server validation failed, continuing with offline mode for user:', targetCustomerNumber);
+          }
+        } catch (error) {
+          console.error('Failed to validate user during login:', error);
+          // Continue with offline login if server is unreachable
+        }
+      }
+
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Stage 2: Verifying credentials (1.5 seconds)
+      setLoginStage('Verifying credentials...');
+      setLoginProgress(25);
+      const verifyInterval = setInterval(() => {
+        setLoginProgress(prev => {
+          if (prev < 50) return prev + 1.67;
+          return prev;
+        });
+      }, 100);
+
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      // Stage 3: Securing connection (1.5 seconds)
+      setLoginStage('Securing connection...');
+      setLoginProgress(50);
+      const secureInterval = setInterval(() => {
+        setLoginProgress(prev => {
+          if (prev < 75) return prev + 1.67;
+          return prev;
+        });
+      }, 100);
+
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      // Stage 4: Loading dashboard (1.5 seconds)
+      setLoginStage('Loading dashboard...');
+      setLoginProgress(75);
+      const finalInterval = setInterval(() => {
+        setLoginProgress(prev => {
+          if (prev < 95) return prev + 1.33;
+          return prev;
+        });
+      }, 100);
+
       clearInterval(progressInterval);
+      clearInterval(verifyInterval);
+      clearInterval(secureInterval);
 
-      // Stage 2: Authenticating with secure manager (3 seconds)
-      setLoginStage('Authenticating...');
-      setLoginProgress(20);
-      const authInterval = setInterval(() => {
-        setLoginProgress(prev => {
-          if (prev < 70) return prev + 1.67;
-          return prev;
-        });
-      }, 100);
-
-      // Verify user exists locally (biometric already authenticated the user)
-      if (!UserDataManager.userExists(currentUser)) {
-        clearInterval(authInterval);
-        throw new Error('User not found in local storage');
-      }
-
-      // Enhanced authentication with offline support
-      const { SecureAuthManager } = await import('../utils/secureAuthManager');
-      const { OfflineAuthManager } = await import('../utils/offlineAuthManager');
-      
-      // Check connection status
-      const hasConnection = await SecureAuthManager.hasInternetConnection();
-      
-      let authResult;
-      
-      if (hasConnection) {
-        // Online authentication - store data for offline access
-        const userProfile = UserDataManager.getUserProfile();
-        if (userProfile) {
-          await OfflineAuthManager.recordOnlineLogin(currentUser, userProfile);
-        }
-        
-        authResult = {
-          success: true,
-          isOffline: false,
-          user: userProfile,
-          timeRemaining: null
-        };
-      } else {
-        // Offline authentication - use cached data
-        const offlineAuth = await OfflineAuthManager.authenticateOffline(currentUser);
-        
-        if (!offlineAuth.success) {
-          clearInterval(authInterval);
-          throw new Error(offlineAuth.message || 'Offline authentication failed');
-        }
-        
-        authResult = {
-          success: true,
-          isOffline: true,
-          user: offlineAuth.user,
-          timeRemaining: offlineAuth.timeRemaining,
-          message: offlineAuth.message
-        };
+      // Verify user is authenticated through UserDataManager
+      const currentUser = UserDataManager.getCurrentUser();
+      if (!currentUser || !UserDataManager.userExists(currentUser)) {
+        throw new Error("No valid user session found");
       }
       
-      clearInterval(authInterval);
-
-      // Stage 3: Loading user data (1.5 seconds)
-      setLoginStage(authResult.isOffline ? 'Loading offline data...' : 'Loading account data...');
-      setLoginProgress(70);
-      const loadInterval = setInterval(() => {
-        setLoginProgress(prev => {
-          if (prev < 90) return prev + 1.33;
-          return prev;
-        });
-      }, 100);
-
       // Record login time and authenticate through auth context
       UserDataManager.recordLoginTime(currentUser);
       const userProfile = UserDataManager.getUserProfile();
-      
-      if (!userProfile) {
-        clearInterval(loadInterval);
-        throw new Error('Unable to load user profile');
+      if (userProfile) {
+        login({
+          id: parseInt(currentUser.replace(/\D/g, '')) || 1,
+          name: userProfile.name,
+          email: userProfile.email
+        });
       }
-
-      login({
-        id: parseInt(currentUser.replace(/\D/g, '')) || 1,
-        name: userProfile.name,
-        email: userProfile.email
-      });
       
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      clearInterval(loadInterval);
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Stage 4: Final completion (1 second)
+      // Final completion (0.5 seconds)
       setLoginStage('Welcome to Bank of Ireland');
-      setLoginProgress(90);
+      setLoginProgress(95);
       const completeInterval = setInterval(() => {
         setLoginProgress(prev => {
-          if (prev < 100) return prev + 2;
+          if (prev < 100) return prev + 1;
           return prev;
         });
       }, 100);
       
       await new Promise(resolve => setTimeout(resolve, 500));
       setLoginProgress(100);
+      clearInterval(finalInterval);
       clearInterval(completeInterval);
-
-      // Show offline notice if applicable
-      if (authResult.isOffline) {
-        toast({
-          title: "Offline Mode",
-          description: authResult.message || `Offline access (${authResult.timeRemaining || 'Limited time'})`,
-          variant: "default",
-        });
-      }
 
       await new Promise(resolve => setTimeout(resolve, 300));
       navigate("/dashboard");
     } catch (error) {
       setIsLoginAnimating(false);
-      setLoginProgress(0);
-      setLoginStage('');
-      
-      // Reset biometric verification state on error
-      setBiometricVerified(false);
-      setPinVerified(false);
-      
-      const errorMessage = error instanceof Error ? error.message : 'Authentication failed';
-      
       toast({
         title: "Login Failed",
-        description: errorMessage,
+        description: "Please try again",
         variant: "destructive",
       });
     }
@@ -1032,31 +984,6 @@ export default function Login() {
             <div className="w-full max-w-xs mx-auto space-y-3">
               {/* Main White Login Card */}
               <div className="bg-white ios-card p-4">
-                {/* Connection Status Indicator */}
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-lg font-semibold text-gray-800" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
-                    Welcome back
-                  </h3>
-                  <div className="flex items-center space-x-2">
-                    <div className={`w-2 h-2 rounded-full ${connectionStatus === 'online' ? 'bg-green-500' : connectionStatus === 'offline' ? 'bg-red-500' : 'bg-yellow-500'}`}></div>
-                    <span className="text-xs text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      {connectionStatus === 'online' ? 'Online' : connectionStatus === 'offline' ? 'Offline' : 'Checking...'}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Offline Status Notice */}
-                {connectionStatus === 'offline' && offlineStatus && (
-                  <div className={`p-3 rounded-lg border mb-4 ${offlineStatus.hasOfflineAccess ? 'bg-yellow-50 border-yellow-200' : 'bg-red-50 border-red-200'}`}>
-                    <p className="text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      {offlineStatus.hasOfflineAccess 
-                        ? `Offline mode active (${offlineStatus.timeRemaining} remaining)`
-                        : 'Offline login expired. Please reconnect to the internet to log in again.'
-                      }
-                    </p>
-                  </div>
-                )}
-                
                 {/* Biometric Section */}
                 <div className="text-center mb-6">
                   <div 

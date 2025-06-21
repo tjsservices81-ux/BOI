@@ -1,58 +1,44 @@
 {
-  "name": "Bank of Ireland Mobile Banking",
-  "short_name": "BOI Banking",
-  "description": "Secure mobile banking application with offline capabilities",
+  "name": "Bank of Ireland Mobile",
+  "short_name": "BOI Mobile",
+  "description": "Bank of Ireland Mobile Banking Application",
   "start_url": "/",
   "display": "standalone",
-  "orientation": "portrait",
-  "theme_color": "#1a472a",
-  "background_color": "#ffffff",
-  "categories": ["finance", "banking"],
+  "orientation": "portrait-primary",
+  "theme_color": "#126987",
+  "background_color": "#126987",
   "scope": "/",
   "lang": "en-IE",
-  "dir": "ltr",
   "icons": [
     {
-      "src": "/boi_logo.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "/boi_app_icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/boi_app_icon.png", 
-      "sizes": "192x192",
+      "src": "/boi_app_icon.png",
+      "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["finance", "banking"],
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "Make Transfer",
+      "short_name": "Transfer",
+      "description": "Send money quickly",
+      "url": "/uk-transfer",
+      "icons": [{ "src": "/boi_app_icon.png", "sizes": "96x96" }]
     },
     {
-      "src": "/boi_app_icon.png",
-      "sizes": "512x512", 
-      "type": "image/png",
-      "purpose": "any"
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "/Welcome_placeholder_mobile.png",
-      "sizes": "360x640",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Banking Dashboard"
-    }
-  ],
-  "serviceworker": {
-    "src": "/sw.js",
-    "scope": "/",
-    "update_via_cache": "none"
-  },
-  "prefer_related_applications": false,
-  "edge_side_panel": {
-    "preferred_width": 400
-  },
-  "protocol_handlers": [
-    {
-      "protocol": "web+banking",
-      "url": "/?action=%s"
+      "name": "View Accounts",
+      "short_name": "Accounts",
+      "description": "Check your balances",
+      "url": "/dashboard",
+      "icons": [{ "src": "/boi_app_icon.png", "sizes": "96x96" }]
     }
   ]
 }

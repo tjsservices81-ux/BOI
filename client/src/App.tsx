@@ -40,28 +40,27 @@ function ProtectedRoute({ children, fallback }: { children: React.ReactNode; fal
   const user = authHook?.user || null;
   const isLoading = authHook?.isLoading || false;
   
-  // If user exists, allow immediate access regardless of initialization state
-  if (user && !isLoading) {
-    return <>{children}</>;
-  }
+  // Check if app is still in initialization phase
+  const appSessionActive = localStorage.getItem('app_session_active');
+  const splashCompleted = localStorage.getItem('splash_completed');
   
-  // Show loading only while authentication is actively loading
-  if (isLoading) {
+  // SECURITY FIX: Show loading state instead of null during initialization
+  if (!appSessionActive || !splashCompleted) {
     return (
       <div className="w-full h-full flex items-center justify-center bg-[#126987]">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-white font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-            Loading...
-          </p>
-        </div>
+        <div className="text-white">Loading...</div>
       </div>
     );
   }
   
-  // No user and not loading - redirect to login
-  if (!user) {
+  // Normal protection logic after initialization
+  if (!user && !isLoading) {
     return fallback ? <>{fallback}</> : <Redirect to="/login" />;
+  }
+  
+  // Show nothing while loading to prevent flash
+  if (isLoading) {
+    return null;
   }
   
   return <>{children}</>;
@@ -111,13 +110,11 @@ function AppRoutes() {
       // Apply Android UI fixes to match iOS
       const { AndroidUIFixes } = await import('./utils/androidUIFixes');
       const { AndroidPerformanceOptimizer } = await import('./utils/androidPerformanceOptimizer');
-      const { AndroidTransferFixes } = await import('./utils/androidTransferFixes');
       
       AndroidUIFixes.initialize();
       AndroidUIFixes.fixAccountCardStyling();
       AndroidUIFixes.removeAndroidRippleEffect();
       AndroidPerformanceOptimizer.initialize();
-      AndroidTransferFixes.initialize();
       
       // Initialize cache persistence system
       const { UserDataManager } = await import('./utils/userDataManager');
@@ -131,8 +128,10 @@ function AppRoutes() {
         // COLD START: App was fully closed/terminated - always show splash sequence
         console.log('Cold start detected - showing splash sequence');
         
-        // Reset splash flags but keep session active
+        // Reset all splash-related flags for fresh start
         setSplashShown(false);
+        localStorage.removeItem('splash_completed');
+        localStorage.removeItem('app_background_time');
         localStorage.setItem('app_session_active', 'true');
         
         // Restore user session silently in background (permanent login)
@@ -310,9 +309,15 @@ function AppRoutes() {
   // Listen for splash completion and mark it properly
   useEffect(() => {
     const handleSplashComplete = () => {
+      setSplashTransitioning(true);
       // Mark splash as completed in localStorage for proper state tracking
       localStorage.setItem('splash_completed', 'true');
-      setSplashShown(true);
+      
+      // Small delay to prevent flash, then complete transition
+      setTimeout(() => {
+        setSplashShown(true);
+        setSplashTransitioning(false);
+      }, 100);
       
       restoreThemeForCurrentScreen();
     };
@@ -350,21 +355,21 @@ function AppRoutes() {
             <Route path="/more" component={More} />
             <Route path="/">
               {(() => {
-                // Check if this is a cold start
+                // Proper cold/warm start detection for root route
                 const appSessionActive = localStorage.getItem('app_session_active');
                 const splashCompleted = localStorage.getItem('splash_completed');
                 
-                // Show splash only for fresh cold starts
-                if (!splashCompleted && !splashShown) {
+                // Force splash for cold starts (no active session or incomplete splash)
+                if (!appSessionActive || (!splashShown && !splashCompleted)) {
                   return <Splash />;
                 }
                 
-                // If user is authenticated and splash is done, go to dashboard
+                // For warm starts with user authenticated, go directly to dashboard
                 if (user && splashCompleted) {
                   return <Redirect to="/dashboard" />;
                 }
                 
-                // Default: show login
+                // Default: show login after splash completion
                 return <Login />;
               })()}
             </Route>

@@ -414,23 +414,7 @@ export default function UkTransfer() {
           <button
             onClick={executeTransfer}
             className="w-full bg-[#126987] text-white py-4 rounded-xl font-semibold active:scale-98 transition-transform"
-            style={{ 
-              fontFamily: 'OpenSans, sans-serif',
-              WebkitTapHighlightColor: 'transparent',
-              outline: 'none',
-              position: 'relative',
-              zIndex: 999,
-              minHeight: '56px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              border: 'none',
-              cursor: 'pointer',
-              touchAction: 'manipulation',
-              userSelect: 'none',
-              WebkitUserSelect: 'none',
-              WebkitTouchCallout: 'none'
-            }}
+            style={{ fontFamily: 'OpenSans, sans-serif' }}
           >
             Confirm Transfer
           </button>
@@ -466,7 +450,7 @@ export default function UkTransfer() {
               </>
             )}
 
-            {/* Enhanced Android-compatible processing animation */}
+            {/* Full-screen professional processing animation */}
             {!showReference ? (
               <div style={{ 
                 position: 'fixed', 
@@ -475,36 +459,16 @@ export default function UkTransfer() {
                 right: 0, 
                 bottom: 0, 
                 background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
-                zIndex: 9999,
+                zIndex: 1000,
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                WebkitBackfaceVisibility: 'hidden',
-                backfaceVisibility: 'hidden',
-                transform: 'translateZ(0)',
-                WebkitTransform: 'translateZ(0)'
+                justifyContent: 'center'
               }}>
-                <div className="text-center space-y-8 px-8 max-w-md w-full" style={{
-                  WebkitBackfaceVisibility: 'hidden',
-                  backfaceVisibility: 'hidden'
-                }}>
-                  {/* Enhanced Android-compatible logo spinner */}
+                <div className="text-center space-y-8 px-8 max-w-md w-full">
+                  {/* Bank of Ireland Professional Logo Area */}
                   <div className="mb-8">
-                    <div className="w-20 h-20 bg-[#126987] rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl" style={{
-                      WebkitBackfaceVisibility: 'hidden',
-                      backfaceVisibility: 'hidden'
-                    }}>
-                      <div 
-                        className="w-12 h-12 border-4 border-white border-t-transparent rounded-full" 
-                        style={{
-                          animation: 'spin 1s linear infinite',
-                          WebkitAnimation: 'spin 1s linear infinite',
-                          WebkitBackfaceVisibility: 'hidden',
-                          backfaceVisibility: 'hidden',
-                          transform: 'translateZ(0)',
-                          WebkitTransform: 'translateZ(0)'
-                        }}
-                      ></div>
+                    <div className="w-20 h-20 bg-[#126987] rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
+                      <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
                     </div>
                   </div>
                   
@@ -518,40 +482,17 @@ export default function UkTransfer() {
                     </p>
                   </div>
                   
-                  {/* Enhanced Android-compatible progress indicator */}
+                  {/* Professional Progress Indicator */}
                   <div className="space-y-6">
-                    <div className="w-full bg-white rounded-full h-4 overflow-hidden shadow-inner border border-gray-200" style={{
-                      WebkitBackfaceVisibility: 'hidden',
-                      backfaceVisibility: 'hidden'
-                    }}>
+                    <div className="w-full bg-white rounded-full h-4 overflow-hidden shadow-inner border border-gray-200">
                       <div 
-                        className="bg-gradient-to-r from-[#126987] via-[#5a7b85] to-[#126987] h-4 rounded-full shadow-sm relative"
-                        style={{ 
-                          width: `${animationProgress}%`,
-                          transition: 'width 0.3s ease-out',
-                          WebkitTransition: 'width 0.3s ease-out',
-                          WebkitBackfaceVisibility: 'hidden',
-                          backfaceVisibility: 'hidden',
-                          transform: 'translateZ(0)',
-                          WebkitTransform: 'translateZ(0)'
-                        }}
+                        className="bg-gradient-to-r from-[#126987] via-[#5a7b85] to-[#126987] h-4 rounded-full transition-all duration-300 ease-out shadow-sm relative"
+                        style={{ width: `${animationProgress}%` }}
                       >
-                        <div 
-                          className="absolute inset-0 bg-white opacity-20 rounded-full"
-                          style={{
-                            animation: 'pulse 2s infinite',
-                            WebkitAnimation: 'pulse 2s infinite',
-                            WebkitBackfaceVisibility: 'hidden',
-                            backfaceVisibility: 'hidden'
-                          }}
-                        ></div>
+                        <div className="absolute inset-0 bg-white opacity-20 rounded-full animate-pulse"></div>
                       </div>
                     </div>
-                    <p className="text-xl font-semibold text-[#126987]" style={{ 
-                      fontFamily: 'OpenSans, sans-serif',
-                      WebkitBackfaceVisibility: 'hidden',
-                      backfaceVisibility: 'hidden'
-                    }}>
+                    <p className="text-xl font-semibold text-[#126987]" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                       {Math.round(animationProgress)}% Complete
                     </p>
                   </div>
