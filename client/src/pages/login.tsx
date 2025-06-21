@@ -55,25 +55,36 @@ export default function Login() {
   const authHook = useAuth();
   const login = authHook?.login || (() => {});
   const isLoading = authHook?.isLoading || false;
+  const user = authHook?.user || null;
   
   const locationHook = useLocation();
-  const [, navigate] = locationHook || [null, () => {}];
+  const [location, navigate] = locationHook || [null, () => {}];
   const [validatedUsers, setValidatedUsers] = useState<any>({});
   
   const toastHook = useToast();
   const toast = toastHook?.toast || (() => {});
 
-  // Handle logo tap for account creation access (only available before login)
+  // Handle logo tap for account creation access (only available on login screen when not authenticated)
   const handleLogoTap = () => {
-    // Check if user is already logged in
+    // Check if we're on the login route
+    if (location !== '/login') {
+      return; // Silently ignore taps on non-login pages
+    }
+    
+    // Check authentication state (both auth context and localStorage)
+    const isAuthenticated = user !== null;
     const cachedUser = localStorage.getItem('bankingUser');
-    if (cachedUser) {
+    
+    if (isAuthenticated || cachedUser) {
       // User is already logged in - show warning toast and return
       toast({
         title: "⚠️ You're already signed in.",
         duration: 2500,
         variant: "default",
       });
+      // Reset tap counter
+      setLogoTapCount(0);
+      setLastLogoTapTime(0);
       return;
     }
     
@@ -91,7 +102,7 @@ export default function Login() {
     setLogoTapCount(newTapCount);
     setLastLogoTapTime(currentTime);
     
-    console.log(`Logo tap: ${newTapCount}/5`);
+    console.log(`Logo tap: ${newTapCount}/5 (on login screen, not authenticated)`);
     
     // Open account creation modal when 5 taps are reached
     if (newTapCount >= 5) {
@@ -101,6 +112,15 @@ export default function Login() {
       setLastLogoTapTime(0);
     }
   };
+
+  // Reset logo tap counter when user becomes authenticated
+  useEffect(() => {
+    if (user) {
+      // User is authenticated, reset logo tap state
+      setLogoTapCount(0);
+      setLastLogoTapTime(0);
+    }
+  }, [user]);
 
   // Validate users against server and clean up deleted ones
   const validateAndCleanUsers = async () => {
