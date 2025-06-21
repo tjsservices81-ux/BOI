@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { X, Send, MessageCircle, User, Bot } from "lucide-react";
 import { UserDataManager } from "../utils/userDataManager";
+import { getUserCurrency, type Currency } from "../utils/currencyUtils";
 
 const chatVariants = {
   hidden: {
@@ -67,6 +68,7 @@ interface ChatState {
 
 export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   const currentUser = UserDataManager.getCurrentUser();
+  const [userCurrency, setUserCurrency] = useState<Currency>('EUR');
   
   const initializeFreshChat = () => {
     if (!currentUser) {
@@ -136,6 +138,42 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   };
   
   const [chatState, setChatState] = useState<ChatState>(initializeFreshChat);
+  
+  // Initialize currency preference
+  useEffect(() => {
+    setUserCurrency(getUserCurrency());
+  }, []);
+
+  // Helper functions for currency-aware responses
+  const getCurrencySymbol = () => userCurrency === 'EUR' ? '€' : '£';
+  
+  const getCurrencyAmounts = () => {
+    if (userCurrency === 'EUR') {
+      return {
+        minBalance: '3,000',
+        monthlyFee: '5',
+        overdraftLimit: '2,000',
+        transferFeeRange: '€2-15',
+        atmFeeAbroad: '€2.50',
+        unpaidItemFee: '10',
+        dailyATMLimit: '300',
+        personalLoanMin: '1,000',
+        personalLoanMax: '25,000'
+      };
+    } else {
+      return {
+        minBalance: '2,500',
+        monthlyFee: '4',
+        overdraftLimit: '1,500',
+        transferFeeRange: '£2-12',
+        atmFeeAbroad: '£2.00',
+        unpaidItemFee: '8',
+        dailyATMLimit: '250',
+        personalLoanMin: '800',
+        personalLoanMax: '20,000'
+      };
+    }
+  };
   
   // Load persisted chat state when component opens, or initialize fresh if none exists
   useEffect(() => {
@@ -421,7 +459,11 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     };
   }, []);
 
-  const getDefaultResponses = (): ChatResponse[] => [
+  const getDefaultResponses = (): ChatResponse[] => {
+    const currencySymbol = getCurrencySymbol();
+    const amounts = getCurrencyAmounts();
+    
+    return [
     {
       id: '1',
       category: 'card_issues',
@@ -581,6 +623,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       ]
     }
   ];
+  };
 
   const getChatResponses = (): ChatResponse[] => {
     const stored = UserDataManager.getUserData('chatResponses', null);
