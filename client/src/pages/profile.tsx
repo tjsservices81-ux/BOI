@@ -19,7 +19,8 @@ export default function Profile() {
   const [accounts, setAccounts] = useState<any[]>([]);
   const [editingAccount, setEditingAccount] = useState<any>(null);
   const [newBalance, setNewBalance] = useState('');
-  const [currentCurrency, setCurrentCurrency] = useState<'EUR' | 'GBP'>(() => getUserCurrency());
+  const [currentCurrency, setCurrentCurrency] = useState<'EUR' | 'GBP'>('EUR');
+  const [adminCurrency, setAdminCurrency] = useState<'EUR' | 'GBP'>('EUR');
 
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [showAddTransaction, setShowAddTransaction] = useState(false);
@@ -85,62 +86,29 @@ export default function Profile() {
     };
   });
 
-  // Currency change handler with immediate state locking
-  const handleCurrencyChange = async (newCurrency: 'EUR' | 'GBP') => {
-    // Prevent any other state updates during currency change
-    setIsUpdatingProfile(true);
-    
-    // Immediately update state and prevent further changes
-    setCurrentCurrency(newCurrency);
-    
-    // Save to localStorage immediately
+  // Isolated admin currency handler
+  const handleAdminCurrencyChange = async (newCurrency: 'EUR' | 'GBP') => {
+    setAdminCurrency(newCurrency);
     UserDataManager.setUserData('primaryCurrency', newCurrency);
     setCurrencyPreference(newCurrency);
     
-    // Save to database
     const currentUser = UserDataManager.getCurrentUser();
     if (currentUser) {
-      try {
-        await fetch(`/api/profile/${currentUser}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            primaryCurrency: newCurrency
-          }),
-        });
-      } catch (error) {
-        console.warn('Database save failed:', error);
-      }
+      await fetch(`/api/profile/${currentUser}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ primaryCurrency: newCurrency }),
+      });
     }
     
-    // Update accounts display
-    const freshAccounts = UserDataManager.getUserAccounts();
-    setAccounts(freshAccounts);
-    
-    // Dispatch update events
     window.dispatchEvent(new CustomEvent('currencyChanged', { detail: { currency: newCurrency } }));
-    
-    // Release lock after delay
-    setTimeout(() => {
-      setIsUpdatingProfile(false);
-    }, 3000);
   };
 
-  // Listen for currency updates and load currency on component mount
+  // Initialize currencies on mount
   useEffect(() => {
-    const handleCurrencyUpdate = () => {
-      setCurrentCurrency(getUserCurrency());
-    };
-
-    // Load saved currency preference on component mount
     const savedCurrency = getUserCurrency();
-    console.log('Profile component mounting, loading saved currency:', savedCurrency);
     setCurrentCurrency(savedCurrency);
-
-    window.addEventListener('currencyUpdate', handleCurrencyUpdate);
-    return () => window.removeEventListener('currencyUpdate', handleCurrencyUpdate);
+    setAdminCurrency(savedCurrency);
   }, []);
 
   // Remove conflicting currency sync effect that may override user selections
@@ -1252,13 +1220,11 @@ export default function Profile() {
                       Primary Currency
                     </label>
                     <select
-                      value={currentCurrency}
+                      value={adminCurrency}
                       onChange={(e) => {
-                        console.log('Dropdown selection changed to:', e.target.value);
-                        console.log('Current state before change:', currentCurrency);
-                        handleCurrencyChange(e.target.value as 'EUR' | 'GBP');
+                        handleAdminCurrencyChange(e.target.value as 'EUR' | 'GBP');
                       }}
-                      onClick={() => console.log('Dropdown clicked, current value:', currentCurrency)}
+                      onClick={() => console.log('Dropdown clicked, current value:', adminCurrency)}
                       className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-gray-900"
                       style={{ fontFamily: 'OpenSans, sans-serif' }}
                     >
