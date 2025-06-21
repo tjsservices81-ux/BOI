@@ -48,6 +48,9 @@ export default function Profile() {
     category: ''
   });
 
+  // Primary Currency state
+  const [primaryCurrency, setPrimaryCurrency] = useState<'EUR' | 'GBP'>('EUR');
+
   // Delete transaction states
   const [showDeleteTransaction, setShowDeleteTransaction] = useState(false);
   const [selectedAccountId, setSelectedAccountId] = useState('');
@@ -82,6 +85,26 @@ export default function Profile() {
       joinDate: ""
     };
   });
+
+  // Initialize primary currency from user data
+  useEffect(() => {
+    const storedCurrency = UserDataManager.getUserData('primaryCurrency', 'EUR');
+    setPrimaryCurrency(storedCurrency);
+  }, []);
+
+  // Currency change handler with live updates
+  const handleCurrencyChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const newCurrency = event.target.value as 'EUR' | 'GBP';
+    setPrimaryCurrency(newCurrency);
+    
+    // Save to user data
+    UserDataManager.setUserData('primaryCurrency', newCurrency);
+    
+    // Dispatch currency change event for live updates across the app
+    window.dispatchEvent(new CustomEvent('currencyChanged', {
+      detail: { currency: newCurrency }
+    }));
+  };
 
   // Load profile data from database with real-time updates
   useEffect(() => {
@@ -1157,6 +1180,25 @@ export default function Profile() {
                   <h3 className="text-lg font-semibold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     Profile Management
                   </h3>
+                  
+                  {/* Primary Currency Selection */}
+                  <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-xl">
+                    <label className="block text-sm font-medium text-green-900 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Primary Currency
+                    </label>
+                    <select
+                      value={primaryCurrency}
+                      onChange={handleCurrencyChange}
+                      className="w-full px-4 py-3 border border-green-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
+                      style={{ fontFamily: 'OpenSans, sans-serif' }}
+                    >
+                      <option value="EUR">Euro (€)</option>
+                      <option value="GBP">Pound Sterling (£)</option>
+                    </select>
+                    <p className="text-xs text-green-600 mt-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Changes apply immediately across the entire app
+                    </p>
+                  </div>
                   
                   {/* Edit Profile */}
                   <button 
