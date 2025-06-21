@@ -42,6 +42,8 @@ export default function Login() {
   const [locationError, setLocationError] = useState<string | null>(null);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [nearbyATMs, setNearbyATMs] = useState<any[]>([]);
+  const [connectionStatus, setConnectionStatus] = useState<string>('');
+  const [offlineStatus, setOfflineStatus] = useState<{hasOfflineAccess: boolean; timeRemaining?: string} | null>(null);
   
   // Input refs for proper focus management in PWA
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -58,6 +60,27 @@ export default function Login() {
   
   const toastHook = useToast();
   const toast = toastHook?.toast || (() => {});
+
+  // Check connection status and offline login availability
+  const checkConnectionAndOfflineStatus = async () => {
+    try {
+      const { SecureAuthManager } = await import('../utils/secureAuthManager');
+      
+      // Check internet connectivity
+      const hasInternet = await SecureAuthManager.hasInternetConnection();
+      setConnectionStatus(hasInternet ? 'online' : 'offline');
+      
+      // Check offline login status for current user
+      const currentUser = UserDataManager.getCurrentUser();
+      if (currentUser) {
+        const offlineStatus = SecureAuthManager.getOfflineLoginStatus(currentUser);
+        setOfflineStatus(offlineStatus);
+      }
+    } catch (error) {
+      console.error('Error checking connection status:', error);
+      setConnectionStatus('unknown');
+    }
+  };
 
   // Validate users against server and clean up deleted ones
   const validateAndCleanUsers = async () => {
