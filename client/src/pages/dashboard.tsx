@@ -194,6 +194,10 @@ export default function Dashboard() {
       }
     };
 
+    const handleCurrencyChange = (event: any) => {
+      setCurrentCurrency(event.detail.currency);
+    };
+
     window.addEventListener('balanceUpdate', handleBalanceUpdate as EventListener);
     window.addEventListener('adminProfileUpdate', handleProfileUpdate as EventListener);
     window.addEventListener('userProfileUpdate', handleProfileUpdate as EventListener);
@@ -202,6 +206,7 @@ export default function Dashboard() {
     window.addEventListener('transactionDeleted', handleTransactionDeleted as EventListener);
     window.addEventListener('transactionUpdate', handleTransactionDeleted as EventListener);
     window.addEventListener('forceRefresh', handleForceRefresh as EventListener);
+    window.addEventListener('currencyChanged', handleCurrencyChange as EventListener);
     
     return () => {
       window.removeEventListener('balanceUpdate', handleBalanceUpdate as EventListener);
@@ -212,6 +217,7 @@ export default function Dashboard() {
       window.removeEventListener('transactionDeleted', handleTransactionDeleted as EventListener);
       window.removeEventListener('transactionUpdate', handleTransactionDeleted as EventListener);
       window.removeEventListener('forceRefresh', handleForceRefresh as EventListener);
+      window.removeEventListener('currencyChanged', handleCurrencyChange as EventListener);
     };
   }, [accounts]);
 
@@ -323,7 +329,7 @@ export default function Dashboard() {
                     <p className="text-xs text-gray-500 mt-0.5 boi-regular-font">{account.accountNumber}</p>
                   </div>
                   <div className="flex items-center">
-                    <p className="text-lg font-semibold text-[#126987] boi-semibold-font">€{parseFloat(account.balance).toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                    <p className="text-lg font-semibold text-[#126987] boi-semibold-font">{CurrencyManager.formatAmount(account.balance)}</p>
                     <ChevronRight className="h-4 w-4 ml-3 text-gray-400" />
                   </div>
                 </div>
