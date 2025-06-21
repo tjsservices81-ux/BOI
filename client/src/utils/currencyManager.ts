@@ -47,7 +47,7 @@ export class CurrencyManager {
     UserDataManager.setUserData('primaryCurrency', currency);
     
     // Trigger instant global update event FIRST
-    this.triggerGlobalCurrencyUpdate(currency);
+    CurrencyManager.triggerGlobalCurrencyUpdate(currency);
     
     // Save to database for persistence across sessions
     try {
