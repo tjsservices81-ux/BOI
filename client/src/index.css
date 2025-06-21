@@ -258,6 +258,10 @@ input[type="text"], input[type="email"], input[type="password"], textarea {
   /* Prevent layout shifts */
   box-sizing: border-box;
   touch-action: manipulation;
+  /* Android specific transparency prevention */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
 }
 
 /* Prevent transparency on touch for all interactive elements */
@@ -272,11 +276,23 @@ button,
 .bg-yellow-50,
 .bg-orange-50,
 .bg-pink-50,
-.bg-indigo-50 {
+.bg-indigo-50,
+div,
+span,
+p {
   -webkit-tap-highlight-color: transparent !important;
   opacity: 1 !important;
   background-clip: padding-box !important;
   -webkit-background-clip: padding-box !important;
+  /* Android specific fixes */
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+  -webkit-transform: translateZ(0) !important;
+  transform: translateZ(0) !important;
+  will-change: auto !important;
+  backface-visibility: hidden !important;
+  -webkit-backface-visibility: hidden !important;
 }
 
 /* Force solid backgrounds on tap/hover states */
@@ -398,6 +414,57 @@ button:hover,
   -webkit-tap-highlight-color: transparent !important;
   opacity: 1 !important;
   background-clip: padding-box !important;
+}
+
+/* Android WebView specific transparency fixes */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  button,
+  div,
+  span,
+  .bg-blue-50,
+  .bg-green-50,
+  .bg-red-50,
+  .bg-purple-50,
+  .bg-gray-50,
+  .bg-white {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0) !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    touch-action: manipulation !important;
+    opacity: 1 !important;
+    background-attachment: scroll !important;
+    background-repeat: no-repeat !important;
+    background-size: 100% 100% !important;
+    -webkit-transform: translate3d(0, 0, 0) !important;
+    transform: translate3d(0, 0, 0) !important;
+  }
+  
+  button:active,
+  div:active,
+  .bg-blue-50:active,
+  .bg-green-50:active,
+  .bg-red-50:active,
+  .bg-purple-50:active,
+  .bg-gray-50:active,
+  .bg-white:active {
+    opacity: 1 !important;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0) !important;
+    background-color: inherit !important;
+    transform: scale(0.98) translate3d(0, 0, 0) !important;
+    -webkit-transform: scale(0.98) translate3d(0, 0, 0) !important;
+  }
+}
+
+/* Force hardware acceleration on Android */
+.android-no-highlight {
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0) !important;
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  touch-action: manipulation !important;
+  opacity: 1 !important;
+  will-change: transform !important;
+  -webkit-transform: translateZ(0) !important;
+  transform: translateZ(0) !important;
 }
 
 /* Allow text selection in form inputs */
