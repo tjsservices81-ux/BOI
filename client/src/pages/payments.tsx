@@ -17,16 +17,26 @@ export default function Payments() {
   const [deleteConfirm, setDeleteConfirm] = useState<{name: string, accountInfo: string} | null>(null);
 
   // Fetch user profile data to check transfer toggle settings
-  const { data: profileData } = useQuery({
+  const { data: profileData, refetch } = useQuery({
     queryKey: ["/api/profile"],
     queryFn: async () => {
       const currentCustomerNumber = UserDataManager.getCurrentUser();
+      console.log('Current customer number:', currentCustomerNumber);
       if (!currentCustomerNumber) return null;
       const response = await fetch(`/api/profile/${currentCustomerNumber}`);
-      return response.ok ? response.json() : null;
+      const data = response.ok ? await response.json() : null;
+      console.log('Fetched profile data:', data);
+      return data;
     },
     enabled: true,
+    refetchOnWindowFocus: true,
+    staleTime: 0, // Always fetch fresh data
   });
+
+  // Force refresh profile data when page loads
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
 
   // Base payment options (always available)
   const basePaymentOptions = [
