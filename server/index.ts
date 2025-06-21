@@ -15,6 +15,7 @@ import { setupVite, serveStatic, log } from "./vite";
 import { panicModeMiddleware } from "./panicMode";
 import adminRoutes from "./adminPanel";
 import session from "express-session";
+import connectPgSimple from "connect-pg-simple";
 
 const app = express();
 
@@ -24,16 +25,21 @@ app.use(panicModeMiddleware);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Configure session middleware before admin routes - NO EXPIRY
+// Configure persistent PostgreSQL session store - NO EXPIRY
+const PgSession = connectPgSimple(session);
 app.use(session({
   secret: process.env.SESSION_SECRET || 'banking-app-secret-key-for-dev',
-  store: new session.MemoryStore(),
+  store: new PgSession({
+    conString: process.env.DATABASE_URL,
+    tableName: 'user_sessions',
+    createTableIfMissing: true
+  }),
   resave: false,
   saveUninitialized: false,
   cookie: {
     secure: false,
     httpOnly: true,
-    maxAge: null, // No expiry - users stay logged in permanently
+    // No maxAge property - users stay logged in permanently
     sameSite: 'lax'
   },
   rolling: false // No rolling sessions to prevent timeout resets

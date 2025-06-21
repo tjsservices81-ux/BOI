@@ -97,6 +97,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = (userData: User) => {
     setUser(userData);
     localStorage.setItem('bankingUser', JSON.stringify(userData));
+    // Reset parse failure counter on successful login
+    localStorage.removeItem('bankingUser_parseFailures');
   };
 
   const logout = async () => {

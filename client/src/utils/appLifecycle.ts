@@ -44,8 +44,8 @@ export class AppLifecycle {
     // Always restore state regardless of background duration
     // Users stay logged in permanently unless admin deletes account
     
-    // Check if page was unloaded/refreshed (indicates force close or refresh)
-    if (!sessionStorage.getItem('app_active_session')) {
+    // Check if app was properly closed (indicates force close or refresh)
+    if (!localStorage.getItem('app_active_session')) {
       this.isAppTerminated = true;
       // Don't clear app state - preserve user login
       return;
@@ -70,19 +70,19 @@ export class AppLifecycle {
   }
 
   static handleBeforeUnload() {
-    // Clear session marker to detect force close
-    sessionStorage.removeItem('app_active_session');
+    // Clear active marker to detect force close
+    localStorage.removeItem('app_active_session');
     this.saveCurrentState();
   }
 
   static handlePageHide() {
-    sessionStorage.removeItem('app_active_session');
+    localStorage.removeItem('app_active_session');
     this.saveCurrentState();
   }
 
   static handlePageShow(event: PageTransitionEvent) {
-    // Set session marker to indicate active session
-    sessionStorage.setItem('app_active_session', 'true');
+    // Set active marker to indicate active session
+    localStorage.setItem('app_active_session', 'true');
     
     if (event.persisted && !this.isAppTerminated) {
       // Page was restored from cache and not terminated
@@ -92,7 +92,7 @@ export class AppLifecycle {
 
   static handleFocus() {
     this.lastActiveTime = Date.now();
-    sessionStorage.setItem('app_active_session', 'true');
+    localStorage.setItem('app_active_session', 'true');
   }
 
   static handleBlur() {
@@ -110,7 +110,7 @@ export class AppLifecycle {
     // Only clear temporary session data, preserve user login
     localStorage.removeItem('app_session_state');
     localStorage.removeItem('app_background_time');
-    sessionStorage.removeItem('app_active_session');
+    localStorage.removeItem('app_active_session');
     // Don't call StateManager.clearAppState() - preserve user login
   }
 

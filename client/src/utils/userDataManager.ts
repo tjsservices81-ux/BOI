@@ -382,11 +382,10 @@ export class UserDataManager {
       }
     }
     
-    // Clear sessionStorage entries
-    const sessionKeys = Object.keys(sessionStorage);
-    for (const key of sessionKeys) {
-      if (key.includes(customerNumber)) {
-        sessionStorage.removeItem(key);
+    // Clear any temporary localStorage entries with customer reference
+    for (const key of allKeys) {
+      if (key.includes('temp_') && key.includes(customerNumber)) {
+        localStorage.removeItem(key);
       }
     }
     
