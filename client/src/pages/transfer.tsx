@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { CurrencyManager } from "@/utils/currencyManager";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,21 @@ export default function Transfer() {
   const [iban, setIban] = useState("");
   const [amount, setAmount] = useState("");
   const [reference, setReference] = useState("");
+  const [currentCurrency, setCurrentCurrency] = useState(CurrencyManager.getCurrentCurrency());
+
+  // Listen for real-time currency changes
+  useEffect(() => {
+    const handleCurrencyChange = (event: any) => {
+      const { currency } = event.detail;
+      setCurrentCurrency(currency);
+    };
+
+    window.addEventListener('currencyChanged', handleCurrencyChange);
+    
+    return () => {
+      window.removeEventListener('currencyChanged', handleCurrencyChange);
+    };
+  }, []);
 
   const { data: accounts = [] } = useQuery<Account[]>({
     queryKey: ["/api/accounts", user?.id],
@@ -126,7 +142,7 @@ export default function Transfer() {
                       <PiggyBank className="text-[var(--boi-green)] mr-3" />
                       <div>
                         <p className="font-medium">{account.displayName}</p>
-                        <p className="text-sm text-gray-500">€{parseFloat(account.balance).toFixed(2)}</p>
+                        <p className="text-sm text-gray-500">{CurrencyManager.formatAmount(account.balance, currentCurrency)}</p>
                       </div>
                     </div>
                   </SelectItem>
