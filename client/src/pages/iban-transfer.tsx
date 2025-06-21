@@ -289,8 +289,8 @@ export default function IbanTransfer() {
                 <div className="text-center max-w-sm w-full">
                   {/* Bank of Ireland Professional Logo Area */}
                   <div className="mb-6">
-                    <div className="w-20 h-20 bg-[#126987] rounded-full flex items-center justify-center mx-auto mb-4 shadow-xl">
-                      <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <div className="w-20 h-20 bg-[#126987] rounded-full flex items-center justify-center mx-auto mb-4 shadow-xl" style={{ background: '#126987' }}>
+                      <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin" style={{ background: 'transparent' }}></div>
                     </div>
                   </div>
                   
