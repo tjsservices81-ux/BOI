@@ -542,9 +542,16 @@
         const loader = document.getElementById('loading-screen');
         
         try {
+          // Debug URL and localStorage
+          console.log('Current URL:', window.location.href);
+          console.log('URL search params:', window.location.search);
+          
           // Check if user already has access granted
           const hasAccess = localStorage.getItem('accessGranted');
+          console.log('Stored access:', hasAccess);
+          
           if (hasAccess === 'true') {
+            console.log('Using stored access - skipping verification');
             hideLoadingScreen();
             return;
           }
@@ -552,20 +559,28 @@
           // Check for access code in URL
           const urlParams = new URLSearchParams(window.location.search);
           const accessCode = urlParams.get('access');
+          console.log('Access code from URL:', accessCode);
           
-          if (!accessCode) {
-            // No access code and no stored access - show "Not available"
+          // Also check localStorage for previously stored code
+          const storedCode = localStorage.getItem('accessCode');
+          console.log('Stored access code:', storedCode);
+          
+          const codeToCheck = accessCode || storedCode;
+          
+          if (!codeToCheck) {
+            console.log('No access code found - denying access');
             showAccessDenied("Not available");
             return;
           }
 
-          // Verify access code with backend
-          const response = await fetch('/api/verify-code', {
+          // Check access code with backend (non-consuming check)
+          console.log('Checking access code:', codeToCheck);
+          const response = await fetch('/api/check-access', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ code: accessCode })
+            body: JSON.stringify({ code: codeToCheck })
           });
 
           const result = await response.json();
