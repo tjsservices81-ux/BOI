@@ -470,28 +470,29 @@ export default function UkTransfer() {
                 zIndex: 1000,
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center'
+                justifyContent: 'center',
+                padding: '2rem'
               }}>
-                <div className="text-center space-y-8 px-8 max-w-md w-full">
+                <div className="text-center max-w-sm w-full" style={{ marginTop: '0', transform: 'translateY(0)' }}>
                   {/* Bank of Ireland Professional Logo Area */}
-                  <div className="mb-8">
-                    <div className="w-20 h-20 bg-[#126987] rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
+                  <div className="mb-6">
+                    <div className="w-20 h-20 bg-[#126987] rounded-full flex items-center justify-center mx-auto mb-4 shadow-xl">
                       <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
                     </div>
                   </div>
                   
                   {/* Professional Transfer Processing Header */}
-                  <div className="space-y-4">
-                    <h1 className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  <div className="mb-6">
+                    <h1 className="text-2xl font-bold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                       Processing Transfer
                     </h1>
-                    <p className="text-lg text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    <p className="text-base text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                       {processingStage}
                     </p>
                   </div>
                   
                   {/* Professional Progress Indicator */}
-                  <div className="space-y-6">
+                  <div className="mb-6">
                     <div className="w-full bg-white rounded-full h-4 overflow-hidden shadow-inner border border-gray-200">
                       <div 
                         className="bg-gradient-to-r from-[#126987] via-[#5a7b85] to-[#126987] h-4 rounded-full transition-all duration-300 ease-out shadow-sm relative"
@@ -500,7 +501,7 @@ export default function UkTransfer() {
                         <div className="absolute inset-0 bg-white opacity-20 rounded-full animate-pulse"></div>
                       </div>
                     </div>
-                    <p className="text-xl font-semibold text-[#126987]" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    <p className="text-lg font-semibold text-[#126987] mt-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                       {Math.round(animationProgress)}% Complete
                     </p>
                   </div>
