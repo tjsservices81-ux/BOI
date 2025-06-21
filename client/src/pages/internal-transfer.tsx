@@ -350,11 +350,23 @@ export default function InternalTransfer() {
               console.log('Button clicked, calling confirmTransfer');
               confirmTransfer();
             }}
-            className="w-full bg-[#126987] text-white py-4 rounded-2xl font-semibold active:scale-98 transition-transform android-no-highlight"
+            className="w-full bg-[#126987] text-white py-4 rounded-2xl font-semibold active:scale-98 transition-transform"
             style={{ 
               fontFamily: 'OpenSans, sans-serif',
               WebkitTapHighlightColor: 'transparent',
-              outline: 'none'
+              outline: 'none',
+              position: 'relative',
+              zIndex: 999,
+              minHeight: '56px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: 'none',
+              cursor: 'pointer',
+              touchAction: 'manipulation',
+              userSelect: 'none',
+              WebkitUserSelect: 'none',
+              WebkitTouchCallout: 'none'
             }}
           >
             Confirm Transfer
