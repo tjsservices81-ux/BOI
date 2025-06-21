@@ -143,6 +143,22 @@
         "dateCreated": "2025-06-21T00:18:38.473Z",
         "isDisabled": false
       }
+    ],
+    [
+      64,
+      {
+        "id": 64,
+        "customerNumber": "BOI266879326",
+        "pin": "000000",
+        "name": "Johj",
+        "email": "hjjj@fmail.com",
+        "phone": "55555",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-06-21T01:34:47.681Z",
+        "dateCreated": "2025-06-21T01:34:48.203Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [
