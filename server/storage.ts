@@ -84,6 +84,7 @@ class MemStorage implements IStorage {
   private currentStatementId: number = 1;
   private currentChatMessageId: number = 1;
   private currentChatResponseId: number = 1;
+  private currentChatSessionId: number = 1;
 
   private persistentManager: PersistentDataManager;
 
@@ -291,6 +292,10 @@ class MemStorage implements IStorage {
       iban: insertTransaction.iban || null,
       bicCode: insertTransaction.bicCode || null,
       reference: insertTransaction.reference || null,
+      recipientAccountNumber: insertTransaction.recipientAccountNumber || null,
+      recipientSortCode: insertTransaction.recipientSortCode || null,
+      recipientIban: insertTransaction.recipientIban || null,
+      convertedAmount: insertTransaction.convertedAmount || null,
       exchangeRate: insertTransaction.exchangeRate || null,
       convertedCurrency: insertTransaction.convertedCurrency || null,
       timestamp: insertTransaction.timestamp || new Date()
@@ -344,7 +349,11 @@ class MemStorage implements IStorage {
 
   async createChatSession(insertSession: InsertChatSession): Promise<ChatSession> {
     const session: ChatSession = {
+      id: this.currentChatSessionId++,
       ...insertSession,
+      userId: insertSession.userId || null,
+      isActive: insertSession.isActive !== undefined ? insertSession.isActive : true,
+      endedAt: insertSession.endedAt || null,
       startedAt: insertSession.startedAt || new Date()
     };
     this.chatSessions.set(session.sessionId, session);
@@ -367,7 +376,10 @@ class MemStorage implements IStorage {
   async createChatResponse(insertResponse: InsertChatResponse): Promise<ChatResponse> {
     const response: ChatResponse = {
       id: this.currentChatResponseId++,
-      ...insertResponse
+      ...insertResponse,
+      isActive: insertResponse.isActive !== undefined ? insertResponse.isActive : true,
+      createdAt: insertResponse.createdAt || new Date(),
+      updatedAt: insertResponse.updatedAt || new Date()
     };
     this.chatResponses.set(response.id, response);
     return response;
@@ -605,7 +617,11 @@ class MemStorage implements IStorage {
       ];
 
       for (const accountData of sampleAccounts) {
-        const account = await this.createAccount(accountData);
+        const account = await this.createAccount({
+          ...accountData,
+          displayName: accountData.type,
+          accountType: accountData.type
+        });
 
         // Create sample transactions
         const sampleTransactions = [
