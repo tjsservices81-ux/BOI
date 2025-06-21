@@ -51,6 +51,7 @@ export default function Profile() {
 
   // Primary Currency state
   const [primaryCurrency, setPrimaryCurrency] = useState<'EUR' | 'GBP'>('EUR');
+  const [currentCurrency, setCurrentCurrency] = useState(CurrencyManager.getCurrentCurrency());
 
   // Delete transaction states
   const [showDeleteTransaction, setShowDeleteTransaction] = useState(false);
@@ -87,10 +88,24 @@ export default function Profile() {
     };
   });
 
-  // Initialize primary currency from user data
+  // Initialize primary currency from user data and set up currency change listener
   useEffect(() => {
     const storedCurrency = UserDataManager.getUserData('primaryCurrency', 'EUR');
     setPrimaryCurrency(storedCurrency);
+    setCurrentCurrency(storedCurrency);
+    
+    // Listen for currency changes from other sources
+    const handleCurrencyChange = (event: any) => {
+      const { currency } = event.detail;
+      setCurrentCurrency(currency);
+      setPrimaryCurrency(currency);
+    };
+    
+    window.addEventListener('currencyChanged', handleCurrencyChange);
+    
+    return () => {
+      window.removeEventListener('currencyChanged', handleCurrencyChange);
+    };
   }, []);
 
   // Currency change handler with live updates and database persistence
@@ -290,7 +305,7 @@ export default function Profile() {
     {
       id: '2',
       triggers: ['transfer money', 'send money', 'make transfer', 'how to transfer'],
-      response: "You can transfer money by tapping 'Payments' in the bottom menu. Choose 'UK Transfer' (using sort code and account number, takes up to 24 hours) or 'IBAN Transfer' for SEPA transfers (using IBAN and BIC, takes 1 business day). Would you like specific help with either option?"
+      response: `You can transfer money by tapping 'Payments' in the bottom menu. Choose 'UK Transfer' (using sort code and account number, ${CurrencyManager.getTransferTiming('UK')}) or 'IBAN Transfer' for SEPA transfers (using IBAN and BIC, ${CurrencyManager.getTransferTiming('SEPA')}). Would you like specific help with either option?`
     },
     {
       id: '3',
@@ -320,7 +335,7 @@ export default function Profile() {
     {
       id: '9',
       triggers: ['how long', 'transfer time', 'when arrive', 'delivery time', 'processing time'],
-      response: "Transfer timing depends on the type: UK transfers (using sort code and account number) take up to 24 hours to arrive. SEPA transfers (using IBAN and BIC) take 1 business day to reach the recipient's account."
+      response: `Transfer timing depends on the type: UK transfers (using sort code and account number) ${CurrencyManager.getTransferTiming('UK')} SEPA transfers (using IBAN and BIC) ${CurrencyManager.getTransferTiming('SEPA')}`
     },
     {
       id: '8',
@@ -1342,7 +1357,7 @@ export default function Profile() {
                       Primary Currency
                     </label>
                     <select
-                      value={CurrencyManager.getCurrentCurrency()}
+                      value={currentCurrency}
                       onChange={async (e) => {
                         const newCurrency = e.target.value as 'EUR' | 'GBP';
                         const currencyName = newCurrency === 'EUR' ? 'Euro (€)' : 'Pound Sterling (£)';
@@ -1352,6 +1367,11 @@ export default function Profile() {
                         
                         try {
                           console.log(`Attempting to save currency: ${newCurrency}`);
+                          
+                          // Update local state immediately
+                          setCurrentCurrency(newCurrency);
+                          
+                          // Save through CurrencyManager
                           await CurrencyManager.setCurrency(newCurrency);
                           
                           // Dispatch currency change event
@@ -1364,6 +1384,8 @@ export default function Profile() {
                           
                         } catch (error) {
                           console.error('Currency save error:', error);
+                          // Revert local state on error
+                          setCurrentCurrency(CurrencyManager.getCurrentCurrency());
                           alert('✗ Failed to save currency preference. Please try again.');
                         }
                       }}

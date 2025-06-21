@@ -168,6 +168,11 @@ export class CurrencyManager {
             // Set currency without triggering database save to avoid recursion
             UserDataManager.setUserData('primaryCurrency', userData.primaryCurrency);
             this.notifyListeners(userData.primaryCurrency);
+            
+            // Trigger currency change event for UI components
+            window.dispatchEvent(new CustomEvent('currencyChanged', {
+              detail: { currency: userData.primaryCurrency }
+            }));
           }
         } else {
           console.log('Failed to load user currency preference');
