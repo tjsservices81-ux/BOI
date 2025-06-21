@@ -31,8 +31,7 @@ export default function Login() {
     phone: '',
     customerNumber: ''
   });
-  const [logoTapCount, setLogoTapCount] = useState(0);
-  const [showAdminLogin, setShowAdminLogin] = useState(false);
+
   const [showOtcVerification, setShowOtcVerification] = useState(false);
   const [otcCode, setOtcCode] = useState('');
   const [generatedOtc, setGeneratedOtc] = useState('');
@@ -146,16 +145,9 @@ export default function Login() {
     setPin('');
     setBiometricVerified(false);
     setPinVerified(false);
-    setLogoTapCount(0);
-    setShowAdminLogin(false);
   }, []);
 
-  // Validate users when Admin Access dialog opens
-  useEffect(() => {
-    if (showAdminLogin) {
-      validateAndCleanUsers();
-    }
-  }, [showAdminLogin]);
+
 
   const handleNavigation = (path: string) => {
     setIsNavigating(true);
@@ -164,24 +156,7 @@ export default function Login() {
     }, 150);
   };
 
-  const handleLogoTap = () => {
-    const newTapCount = logoTapCount + 1;
-    setLogoTapCount(newTapCount);
-    
-    if (newTapCount === 5) {
-      setShowAdminLogin(true);
-      setLogoTapCount(0);
-      return;
-    }
-    
-    // Reset tap count after 3 seconds of inactivity with cleanup
-    const timeoutId = setTimeout(() => {
-      setLogoTapCount(0);
-    }, 3000);
-    
-    // Store timeout ID for potential cleanup
-    return () => clearTimeout(timeoutId);
-  };
+
 
   const generateCustomerNumber = () => {
     return 'BOI' + Math.random().toString().substring(2, 11);
@@ -1017,12 +992,7 @@ export default function Login() {
         {/* Header */}
         <div className="flex items-center justify-center pt-12 pb-6 flex-shrink-0">
           <div className="flex items-center">
-            <button 
-              onClick={handleLogoTap}
-              className="active:scale-95 transition-transform"
-            >
-              <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-8 filter brightness-0 invert" />
-            </button>
+            <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-8 filter brightness-0 invert" />
           </div>
         </div>
 
@@ -1488,92 +1458,7 @@ export default function Login() {
         </div>
       )}
 
-      {/* Admin Login Modal */}
-      {showAdminLogin && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-sm p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Admin Access
-              </h2>
-              <button 
-                onClick={() => setShowAdminLogin(false)}
-                className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center active:scale-95 transition-transform"
-              >
-                <span className="text-gray-600 text-lg">×</span>
-              </button>
-            </div>
 
-            <div className="space-y-4">
-              <div className="text-center mb-4">
-                <h3 className="text-lg font-semibold text-gray-800 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Quick Account Access
-                </h3>
-                <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Sign in to any registered account
-                </p>
-              </div>
-              
-              {/* Account List */}
-              <div className="max-h-60 overflow-y-auto space-y-2">
-                {Object.entries(validatedUsers).map(([customerNumber, userData]: [string, any]) => (
-                  <div
-                    key={customerNumber}
-                    className="bg-gray-50 rounded-xl p-3 border"
-                  >
-                    <button
-                      onClick={() => {
-                        UserDataManager.initializeFreshAccount(customerNumber);
-                        UserDataManager.recordLoginTime(customerNumber);
-                        login({
-                          id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
-                          name: userData.name,
-                          email: userData.email
-                        });
-                        setShowAdminLogin(false);
-                        setCustomerNumber(customerNumber);
-                        setBiometricVerified(true);
-                        navigate('/dashboard');
-                      }}
-                      className="w-full text-left hover:bg-gray-100 rounded-lg p-3 active:scale-98 transition-all"
-                    >
-                      <div className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        {userData.name}
-                      </div>
-                      <div className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        {customerNumber}
-                      </div>
-                    </button>
-                  </div>
-                ))}
-                
-                {Object.keys(validatedUsers).length === 0 && (
-                  <div className="text-center py-8 text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    No accounts registered yet
-                  </div>
-                )}
-              </div>
-              
-              {/* Admin Actions */}
-              <div className="border-t pt-4 mt-4 space-y-3">
-                <button
-                  onClick={() => {
-                    setShowAdminLogin(false);
-                    resetSignUpForm();
-                    setShowSignUp(true);
-                  }}
-                  className="w-full p-3 bg-green-50 text-green-600 rounded-xl font-medium active:scale-98 transition-transform"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                >
-                  Create New Account
-                </button>
-                
-
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* OTC Verification Modal */}
       {showOtcVerification && (
