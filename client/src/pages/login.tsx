@@ -25,6 +25,7 @@ export default function Login() {
   const [loginStage, setLoginStage] = useState('');
   const [assetsLoaded, setAssetsLoaded] = useState(false);
   const [showSignUp, setShowSignUp] = useState(false);
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [newUserData, setNewUserData] = useState({
     name: '',
     email: '',
@@ -42,6 +43,10 @@ export default function Login() {
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [nearbyATMs, setNearbyATMs] = useState<any[]>([]);
   
+  // Logo tap functionality for account creation access
+  const [logoTapCount, setLogoTapCount] = useState(0);
+  const [lastLogoTapTime, setLastLogoTapTime] = useState(0);
+  
   // Input refs for proper focus management in PWA
   const nameInputRef = useRef<HTMLInputElement>(null);
   const emailInputRef = useRef<HTMLInputElement>(null);
@@ -57,6 +62,33 @@ export default function Login() {
   
   const toastHook = useToast();
   const toast = toastHook?.toast || (() => {});
+
+  // Handle logo tap for account creation access (only available before login)
+  const handleLogoTap = () => {
+    const currentTime = Date.now();
+    const timeSinceLastTap = currentTime - lastLogoTapTime;
+    
+    // Reset tap count if more than 2 seconds have passed since last tap
+    let newTapCount;
+    if (timeSinceLastTap > 2000) {
+      newTapCount = 1;
+    } else {
+      newTapCount = logoTapCount + 1;
+    }
+    
+    setLogoTapCount(newTapCount);
+    setLastLogoTapTime(currentTime);
+    
+    console.log(`Logo tap: ${newTapCount}/5`);
+    
+    // Open account creation modal when 5 taps are reached
+    if (newTapCount >= 5) {
+      console.log('Opening account creation...');
+      setShowSignUp(true);
+      setLogoTapCount(0);
+      setLastLogoTapTime(0);
+    }
+  };
 
   // Validate users against server and clean up deleted ones
   const validateAndCleanUsers = async () => {
@@ -965,7 +997,19 @@ export default function Login() {
         {/* Header */}
         <div className="flex items-center justify-center pt-12 pb-6 flex-shrink-0">
           <div className="flex items-center">
-            <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-8 filter brightness-0 invert" />
+            <img 
+              src="/boi_logo.svg" 
+              alt="Bank of Ireland" 
+              className="h-8 filter brightness-0 invert cursor-pointer" 
+              onClick={handleLogoTap}
+              style={{
+                touchAction: 'manipulation',
+                userSelect: 'none',
+                WebkitUserSelect: 'none',
+                WebkitTouchCallout: 'none',
+                WebkitTapHighlightColor: 'transparent'
+              }}
+            />
           </div>
         </div>
 

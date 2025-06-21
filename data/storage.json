@@ -127,6 +127,22 @@
         "dateCreated": "2025-06-21T00:15:40.572Z",
         "isDisabled": false
       }
+    ],
+    [
+      63,
+      {
+        "id": 63,
+        "customerNumber": "BOI375942689",
+        "pin": "000000",
+        "name": "Make",
+        "email": "make@gmail.com",
+        "phone": "6464646464",
+        "address": "",
+        "dateOfBirth": "",
+        "joinDate": "2025-06-21T00:18:36.009Z",
+        "dateCreated": "2025-06-21T00:18:38.473Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [
