@@ -72,7 +72,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const manifest = {
       "name": "BOI Mobile",
       "short_name": "BOI Mobile", 
-      "description": "BOI Mobile Application",
+      "description": "BOI Mobile Banking Application",
       "start_url": startUrl,
       "display": "standalone",
       "orientation": "portrait-primary",
@@ -82,13 +82,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       "lang": "en-IE",
       "icons": [
         {
-          "src": "/icons/boi-icon-192.png",
+          "src": "/boi_app_icon.png",
           "sizes": "192x192",
           "type": "image/png",
           "purpose": "any maskable"
         },
         {
-          "src": "/icons/boi-icon-512.png", 
+          "src": "/boi_app_icon.png", 
           "sizes": "512x512",
           "type": "image/png",
           "purpose": "any maskable"
