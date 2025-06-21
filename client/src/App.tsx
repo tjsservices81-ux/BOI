@@ -93,39 +93,6 @@ function AppRoutes() {
     return () => window.removeEventListener('openLiveChat', handleOpenLiveChat);
   }, []);
 
-  // Android-only fix for transfer button and processing screen visibility
-  useEffect(() => {
-    const isAndroid = /Android/i.test(navigator.userAgent);
-    if (!isAndroid) return; // Only run on Android
-
-    const fixAndroidVisibility = () => {
-      // Fix Confirm Transfer button
-      const confirmBtn = document.querySelector('#confirmTransferBtn');
-      if (confirmBtn && getComputedStyle(confirmBtn).visibility === 'hidden') {
-        (confirmBtn as HTMLElement).style.visibility = 'visible';
-        (confirmBtn as HTMLElement).style.opacity = '1';
-        (confirmBtn as HTMLElement).style.zIndex = '1000';
-        (confirmBtn as HTMLElement).style.position = 'relative';
-      }
-
-      // Fix Transfer Processing screen
-      const progressScreen = document.querySelector('#transferProgressScreen');
-      if (progressScreen && getComputedStyle(progressScreen).display === 'none') {
-        (progressScreen as HTMLElement).style.display = 'block';
-        (progressScreen as HTMLElement).style.visibility = 'visible';
-        (progressScreen as HTMLElement).style.opacity = '1';
-        (progressScreen as HTMLElement).style.zIndex = '999';
-        (progressScreen as HTMLElement).style.transform = 'translateY(0)';
-      }
-    };
-
-    // Run immediately and then at intervals
-    fixAndroidVisibility();
-    const intervalId = setInterval(fixAndroidVisibility, 200);
-
-    return () => clearInterval(intervalId);
-  }, []);
-
   // Centralized theme color management
   const updateThemeColor = (color: string) => {
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
@@ -144,11 +111,13 @@ function AppRoutes() {
       // Apply Android UI fixes to match iOS
       const { AndroidUIFixes } = await import('./utils/androidUIFixes');
       const { AndroidPerformanceOptimizer } = await import('./utils/androidPerformanceOptimizer');
+      const { AndroidTransferFixes } = await import('./utils/androidTransferFixes');
       
       AndroidUIFixes.initialize();
       AndroidUIFixes.fixAccountCardStyling();
       AndroidUIFixes.removeAndroidRippleEffect();
       AndroidPerformanceOptimizer.initialize();
+      AndroidTransferFixes.initialize();
       
       // Initialize cache persistence system
       const { UserDataManager } = await import('./utils/userDataManager');
@@ -162,10 +131,8 @@ function AppRoutes() {
         // COLD START: App was fully closed/terminated - always show splash sequence
         console.log('Cold start detected - showing splash sequence');
         
-        // Reset all splash-related flags for fresh start
+        // Reset splash flags but keep session active
         setSplashShown(false);
-        localStorage.removeItem('splash_completed');
-        localStorage.removeItem('app_background_time');
         localStorage.setItem('app_session_active', 'true');
         
         // Restore user session silently in background (permanent login)
@@ -343,15 +310,9 @@ function AppRoutes() {
   // Listen for splash completion and mark it properly
   useEffect(() => {
     const handleSplashComplete = () => {
-      setSplashTransitioning(true);
       // Mark splash as completed in localStorage for proper state tracking
       localStorage.setItem('splash_completed', 'true');
-      
-      // Small delay to prevent flash, then complete transition
-      setTimeout(() => {
-        setSplashShown(true);
-        setSplashTransitioning(false);
-      }, 100);
+      setSplashShown(true);
       
       restoreThemeForCurrentScreen();
     };
@@ -389,21 +350,21 @@ function AppRoutes() {
             <Route path="/more" component={More} />
             <Route path="/">
               {(() => {
-                // Proper cold/warm start detection for root route
+                // Check if this is a cold start
                 const appSessionActive = localStorage.getItem('app_session_active');
                 const splashCompleted = localStorage.getItem('splash_completed');
                 
-                // Force splash for cold starts (no active session or incomplete splash)
-                if (!appSessionActive || (!splashShown && !splashCompleted)) {
+                // Show splash only for fresh cold starts
+                if (!splashCompleted && !splashShown) {
                   return <Splash />;
                 }
                 
-                // For warm starts with user authenticated, go directly to dashboard
+                // If user is authenticated and splash is done, go to dashboard
                 if (user && splashCompleted) {
                   return <Redirect to="/dashboard" />;
                 }
                 
-                // Default: show login after splash completion
+                // Default: show login
                 return <Login />;
               })()}
             </Route>
