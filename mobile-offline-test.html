@@ -100,10 +100,10 @@
         function updateConnectionStatus() {
             const isOnline = navigator.onLine;
             const statusEl = document.getElementById('connectionStatus');
-            const textEl = document.getElementById('statusText');
+            
+            if (!statusEl) return; // Safety check
             
             statusEl.className = `status ${isOnline ? 'online' : 'offline'}`;
-            textEl.textContent = isOnline ? 'ONLINE' : 'OFFLINE';
             
             if (!isOnline) {
                 statusEl.innerHTML = '<span class="icon">📵</span><strong>Status:</strong> OFFLINE - Test offline features now!';
