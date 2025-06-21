@@ -733,25 +733,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Create default accounts for the new user
           const defaultAccounts = [
             {
+              displayName: "Current Account",
               userId: newUser.id,
-              accountType: "current" as const,
+              accountType: "Current Account",
               accountNumber: "****2091",
-              balance: "0.00",
-              displayName: "Current Account"
+              balance: "0.00"
             },
             {
+              displayName: "Savings Account", 
               userId: newUser.id,
-              accountType: "credit" as const,
-              accountNumber: "****1820",
-              balance: "0.00",
-              displayName: "Credit Card"
-            },
-            {
-              userId: newUser.id,
-              accountType: "savings" as const,
+              accountType: "Savings Account",
               accountNumber: "****0978",
-              balance: "0.00",
-              displayName: "Savings Account"
+              balance: "0.00"
             }
           ];
 

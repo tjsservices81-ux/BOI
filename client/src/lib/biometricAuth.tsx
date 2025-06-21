@@ -38,12 +38,21 @@ export function BiometricAuthProvider({ children }: { children: React.ReactNode 
 
       if (response.ok) {
         const data = await response.json();
-        if (data.isLoggedIn) {
-          // User has valid permanent session but needs biometric verification
+        if (data.isLoggedIn && data.needsBiometric) {
+          // User has valid permanent session and needs biometric verification
           setState(prev => ({
             ...prev,
             needsBiometric: true,
             isAuthenticated: false,
+            userInfo: data.user,
+            isLoading: false
+          }));
+        } else if (data.isLoggedIn && !data.needsBiometric) {
+          // User is already fully authenticated
+          setState(prev => ({
+            ...prev,
+            needsBiometric: false,
+            isAuthenticated: true,
             userInfo: data.user,
             isLoading: false
           }));
@@ -71,6 +80,8 @@ export function BiometricAuthProvider({ children }: { children: React.ReactNode 
       setState(prev => ({
         ...prev,
         error: 'Failed to check authentication status',
+        needsBiometric: false,
+        isAuthenticated: false,
         isLoading: false
       }));
     }

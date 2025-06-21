@@ -7,21 +7,25 @@ import { Fingerprint, Shield, AlertCircle, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function BiometricAuth() {
-  const { state, authenticateWithBiometric } = useBiometricAuth();
+  const { state, authenticateWithBiometric, checkAuthenticationStatus } = useBiometricAuth();
   const [, setLocation] = useLocation();
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
   useEffect(() => {
     if (state.isAuthenticated) {
       setLocation('/dashboard');
+    } else if (!state.needsBiometric && !state.isLoading) {
+      setLocation('/login');
     }
-  }, [state.isAuthenticated, setLocation]);
+  }, [state.isAuthenticated, state.needsBiometric, state.isLoading, setLocation]);
 
   const handleBiometricAuth = async () => {
     setIsAuthenticating(true);
     try {
       const success = await authenticateWithBiometric();
       if (success) {
+        // Recheck auth status to ensure proper state transition
+        await checkAuthenticationStatus();
         setLocation('/dashboard');
       }
     } catch (error) {
@@ -44,8 +48,7 @@ export default function BiometricAuth() {
   }
 
   if (!state.needsBiometric) {
-    setLocation('/login');
-    return null;
+    return null; // Let useEffect handle navigation
   }
 
   return (
