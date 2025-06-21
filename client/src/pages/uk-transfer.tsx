@@ -7,6 +7,7 @@ import { z } from "zod";
 import { validateUKSortCode, formatSortCode, validateUKAccountNumber } from "../utils/bankValidation";
 import { getAccounts, processTransfer, processSecureTransfer, checkTransferConfirmation, processConfirmedTransfer, generateReference } from "../utils/transferUtils";
 import { UserDataManager } from "../utils/userDataManager";
+import { formatCurrency, getUserCurrency, type Currency } from "../utils/currencyUtils";
 
 // Known sort codes for bank identification
 const knownSortCodes: Record<string, string> = {
@@ -88,6 +89,7 @@ export default function UkTransfer() {
   const [exchangeRate, setExchangeRate] = useState<number>(0.85); // EUR to GBP rate
   const [gbpAmount, setGbpAmount] = useState<string>('0.00');
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('left');
+  const [userCurrency, setUserCurrency] = useState<Currency>('EUR');
 
   const form = useForm<UkTransferData>({
     resolver: zodResolver(ukTransferSchema),
@@ -146,6 +148,9 @@ export default function UkTransfer() {
     };
     
     loadAccounts();
+    
+    // Load user's currency preference
+    setUserCurrency(getUserCurrency());
     
     // Listen for account updates from admin panel
     const handleAccountsUpdate = (event: CustomEvent) => {
@@ -695,7 +700,7 @@ export default function UkTransfer() {
                 <option value="">Select account</option>
                 {accounts.map(account => (
                   <option key={account.id} value={account.id}>
-                    {account.displayName} {account.accountNumber} - €{account.balance}
+                    {account.displayName} {account.accountNumber} - {formatCurrency(account.balance, userCurrency)}
                   </option>
                 ))}
               </select>
@@ -842,7 +847,7 @@ export default function UkTransfer() {
 
             <div className="bg-gray-50 rounded-lg p-4">
               <label className="block text-sm font-semibold text-gray-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Amount (EUR)
+                Amount ({userCurrency})
               </label>
               <input
                 type="text"
