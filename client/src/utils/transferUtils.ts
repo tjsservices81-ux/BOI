@@ -1,6 +1,5 @@
-// Enhanced transfer utilities with offline support
+// Transfer utilities
 import { UserDataManager } from './userDataManager';
-import OfflineBanking from './offlineBanking';
 
 export interface Account {
   id: string;
@@ -230,30 +229,7 @@ export const processConfirmedTransfer = async (
 ): Promise<boolean> => {
   console.log('Processing confirmed transfer:', { transferId, fromAccountId, amount, recipientName, transferType, reference });
   
-  // Check if offline and use offline banking system
-  if (OfflineBanking.isOffline() || !(navigator.onLine)) {
-    console.log('Processing transfer offline...');
-    
-    const offlineResult = await OfflineBanking.processTransferOffline({
-      fromAccount: fromAccountId,
-      amount: amount.toString(),
-      recipientName,
-      transferType,
-      reference,
-      exchangeRate,
-      ...recipientDetails
-    });
-    
-    if (offlineResult.success) {
-      console.log(`Offline transfer ${transferId} queued successfully with reference: ${offlineResult.reference}`);
-      return true;
-    }
-    
-    console.error(`Offline transfer ${transferId} failed`);
-    return false;
-  }
-  
-  // Execute the actual transfer logic for online mode
+  // Execute the transfer logic
   const success = processTransfer(fromAccountId, amount, recipientName, transferType, reference, exchangeRate, recipientDetails);
   
   if (success) {

@@ -495,45 +495,20 @@ export default function Login() {
         throw new Error('User not found in local storage');
       }
 
-      // Enhanced authentication with offline support
-      const { SecureAuthManager } = await import('../utils/secureAuthManager');
-      const { OfflineAuthManager } = await import('../utils/offlineAuthManager');
+      // Online authentication
+      const userProfile = UserDataManager.getUserProfile();
       
-      // Check connection status
-      const hasConnection = await SecureAuthManager.hasInternetConnection();
-      
-      let authResult;
-      
-      if (hasConnection) {
-        // Online authentication - store data for offline access
-        const userProfile = UserDataManager.getUserProfile();
-        if (userProfile) {
-          await OfflineAuthManager.recordOnlineLogin(currentUser, userProfile);
-        }
-        
-        authResult = {
-          success: true,
-          isOffline: false,
-          user: userProfile,
-          timeRemaining: null
-        };
-      } else {
-        // Offline authentication - use cached data
-        const offlineAuth = await OfflineAuthManager.authenticateOffline(currentUser);
-        
-        if (!offlineAuth.success) {
-          clearInterval(authInterval);
-          throw new Error(offlineAuth.message || 'Offline authentication failed');
-        }
-        
-        authResult = {
-          success: true,
-          isOffline: true,
-          user: offlineAuth.user,
-          timeRemaining: offlineAuth.timeRemaining,
-          message: offlineAuth.message
-        };
+      if (!userProfile) {
+        clearInterval(authInterval);
+        throw new Error('Unable to load user profile');
       }
+        
+      const authResult = {
+        success: true,
+        isOffline: false,
+        user: userProfile,
+        timeRemaining: null
+      };
       
       clearInterval(authInterval);
 
