@@ -87,13 +87,20 @@ export default function Profile() {
 
   // Currency change handler
   const handleCurrencyChange = async (newCurrency: 'EUR' | 'GBP') => {
+    console.log('=== CURRENCY CHANGE START ===');
     console.log('Currency change requested:', newCurrency);
+    console.log('Current currency state before change:', currentCurrency);
+    console.log('Show admin panel state:', showAdminPanel);
+    console.log('Is updating profile state:', isUpdatingProfile);
     
     // Set updating flag to prevent polling from overriding
     setIsUpdatingProfile(true);
+    console.log('Set isUpdatingProfile to true');
     
     // Immediately update local state first
+    console.log('Setting currentCurrency state to:', newCurrency);
     setCurrentCurrency(newCurrency);
+    console.log('State update called for currentCurrency');
     
     // Save the currency preference to persistent storage
     setCurrencyPreference(newCurrency);
@@ -1281,7 +1288,12 @@ export default function Profile() {
                     </label>
                     <select
                       value={currentCurrency}
-                      onChange={(e) => handleCurrencyChange(e.target.value as 'EUR' | 'GBP')}
+                      onChange={(e) => {
+                        console.log('Dropdown selection changed to:', e.target.value);
+                        console.log('Current state before change:', currentCurrency);
+                        handleCurrencyChange(e.target.value as 'EUR' | 'GBP');
+                      }}
+                      onClick={() => console.log('Dropdown clicked, current value:', currentCurrency)}
                       className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-gray-900"
                       style={{ fontFamily: 'OpenSans, sans-serif' }}
                     >
