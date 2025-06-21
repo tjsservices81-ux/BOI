@@ -1525,18 +1525,49 @@ export default function Login() {
                     className="bg-gray-50 rounded-xl p-3 border"
                   >
                     <button
-                      onClick={() => {
-                        UserDataManager.initializeFreshAccount(customerNumber);
-                        UserDataManager.recordLoginTime(customerNumber);
-                        login({
-                          id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
-                          name: userData.name,
-                          email: userData.email
-                        });
-                        setShowAdminLogin(false);
-                        setCustomerNumber(customerNumber);
-                        setBiometricVerified(true);
-                        navigate('/dashboard');
+                      onClick={async () => {
+                        // SECURITY: Must validate user exists on server before allowing login
+                        try {
+                          const validateResponse = await fetch(`/api/auth/validate/${customerNumber}`, {
+                            credentials: 'include'
+                          });
+                          
+                          if (!validateResponse.ok) {
+                            toast({
+                              title: "Account Unavailable",
+                              description: "This account no longer exists or has been disabled.",
+                              variant: "destructive",
+                            });
+                            return;
+                          }
+                          
+                          const validationData = await validateResponse.json();
+                          if (!validationData.success || !validationData.exists) {
+                            toast({
+                              title: "Account No Longer Exists",
+                              description: "This account has been removed by an administrator.",
+                              variant: "destructive",
+                            });
+                            return;
+                          }
+                          
+                          // Only proceed if user exists on server
+                          UserDataManager.initializeFreshAccount(customerNumber);
+                          UserDataManager.recordLoginTime(customerNumber);
+                          setShowAdminLogin(false);
+                          setCustomerNumber(customerNumber);
+                          setBiometricVerified(true);
+                          
+                          // Navigate to PIN entry instead of bypassing authentication
+                          // User must still go through proper login flow
+                        } catch (error) {
+                          console.error('Error validating user:', error);
+                          toast({
+                            title: "Validation Failed",
+                            description: "Unable to verify account status. Please try again.",
+                            variant: "destructive",
+                          });
+                        }
                       }}
                       className="w-full text-left hover:bg-gray-100 rounded-lg p-3 active:scale-98 transition-all"
                     >

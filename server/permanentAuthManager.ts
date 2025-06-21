@@ -59,41 +59,66 @@ export class PermanentAuthManager {
     return null;
   }
 
-  // Validate permanent session - NO expiry checks
+  // Validate permanent session - checks for deleted users
   async validatePermanentSession(sessionToken: string): Promise<User | null> {
     try {
       console.log(`🔍 VALIDATING PERMANENT SESSION: ${sessionToken.substring(0, 20)}...`);
       
+      // First check if session exists and is active
       const sessionResult = await db
-        .select({
-          session: permanentUserSessions,
-          user: users
-        })
+        .select()
         .from(permanentUserSessions)
-        .innerJoin(users, eq(permanentUserSessions.userId, users.id))
         .where(
           and(
             eq(permanentUserSessions.sessionToken, sessionToken),
             eq(permanentUserSessions.isActive, true)
-            // Removed isDisabled check - users stay logged in unless manually deleted
           )
         )
         .limit(1);
 
-      console.log(`🔍 SESSION QUERY RESULT: Found ${sessionResult.length} matching sessions`);
-
       if (sessionResult.length === 0) {
-        console.log('❌ NO MATCHING SESSION FOUND');
+        console.log('❌ NO ACTIVE SESSION FOUND');
         return null;
       }
 
-      // Update last activity - session NEVER expires
+      const session = sessionResult[0];
+
+      // CRITICAL: Check if user still exists in database
+      const userResult = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, session.userId))
+        .limit(1);
+
+      if (userResult.length === 0) {
+        console.log(`❌ USER ${session.userId} NO LONGER EXISTS - REVOKING SESSION`);
+        // User was deleted - immediately revoke session
+        await db.update(permanentUserSessions)
+          .set({ isActive: false })
+          .where(eq(permanentUserSessions.sessionToken, sessionToken));
+        return null;
+      }
+
+      // CRITICAL: Also check storage layer for user existence
+      const { storage } = await import('./storage');
+      const storageUser = await storage.getUser(session.userId);
+      
+      if (!storageUser) {
+        console.log(`❌ USER ${session.userId} NOT IN STORAGE - DELETED BY ADMIN`);
+        // User was deleted from storage - revoke session
+        await db.update(permanentUserSessions)
+          .set({ isActive: false })
+          .where(eq(permanentUserSessions.sessionToken, sessionToken));
+        return null;
+      }
+
+      // Update last activity only if user exists
       await db.update(permanentUserSessions)
         .set({ lastActivity: new Date() })
         .where(eq(permanentUserSessions.sessionToken, sessionToken));
 
-      console.log(`✅ PERMANENT SESSION VALIDATED: User ${sessionResult[0].user.id} authenticated`);
-      return sessionResult[0].user;
+      console.log(`✅ PERMANENT SESSION VALIDATED: User ${userResult[0].id} authenticated`);
+      return userResult[0];
     } catch (error) {
       console.error('Error validating permanent session:', error);
       return null;

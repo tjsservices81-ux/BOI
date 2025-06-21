@@ -50,58 +50,21 @@ export function BiometricAuthProvider({ children }: { children: React.ReactNode 
             isLoading: false
           }));
         } else if (data.isLoggedIn && !data.needsBiometric) {
-          // User is already fully authenticated - check admin status separately
-          const adminCheckResponse = await fetch(`/api/admin/users`, {
-            credentials: 'include'
+          // User has valid backend session - trust the backend validation
+          // Backend already validates user existence during session validation
+          login({
+            id: data.user.id,
+            name: data.user.name,
+            email: data.user.email
           });
           
-          if (adminCheckResponse.ok) {
-            const adminData = await adminCheckResponse.json();
-            const userExists = adminData.users?.find((u: any) => u.customerNumber === data.user?.customerNumber);
-            
-            if (userExists && !userExists.isDisabled) {
-              // User exists and is not disabled - set main auth context
-              login({
-                id: data.user.id,
-                name: data.user.name,
-                email: data.user.email
-              });
-              
-              setState(prev => ({
-                ...prev,
-                needsBiometric: false,
-                isAuthenticated: true,
-                userInfo: data.user,
-                isLoading: false
-              }));
-            } else {
-              // User disabled by admin - force logout
-              setState(prev => ({
-                ...prev,
-                needsBiometric: false,
-                isAuthenticated: false,
-                userInfo: null,
-                error: 'Account access has been restricted',
-                isLoading: false
-              }));
-            }
-          } else {
-            // Admin check failed - allow login but log warning
-            console.warn('Admin status check failed, allowing login');
-            login({
-              id: data.user.id,
-              name: data.user.name,
-              email: data.user.email
-            });
-            
-            setState(prev => ({
-              ...prev,
-              needsBiometric: false,
-              isAuthenticated: true,
-              userInfo: data.user,
-              isLoading: false
-            }));
-          }
+          setState(prev => ({
+            ...prev,
+            needsBiometric: false,
+            isAuthenticated: true,
+            userInfo: data.user,
+            isLoading: false
+          }));
         } else {
           // No valid session - redirect to login
           setState(prev => ({

@@ -738,12 +738,25 @@ router.post('/delete-user', adminAuth, async (req, res) => {
     // Import required modules
     const { storage } = await import('./storage');
     const { invalidateAllUserSessions } = await import('./sessionManager');
+    const { PermanentAuthManager } = await import('./permanentAuthManager');
+    const { db } = await import('./db');
+    const { permanentUserSessions } = await import('@shared/schema');
+    const { eq } = await import('drizzle-orm');
     
     // First, verify user exists
     const user = await storage.getUserByCustomerNumber(customerNumber);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
+    
+    // CRITICAL: Revoke ALL permanent sessions for this user FIRST
+    await db.update(permanentUserSessions)
+      .set({ isActive: false })
+      .where(eq(permanentUserSessions.userId, user.id));
+    
+    // Also delete permanent sessions entirely for security
+    await db.delete(permanentUserSessions)
+      .where(eq(permanentUserSessions.userId, user.id));
     
     // Delete user from database (this includes all accounts, transactions, payees, etc.)
     const userDeleted = await storage.deleteUser(customerNumber);
@@ -755,16 +768,19 @@ router.post('/delete-user', adminAuth, async (req, res) => {
       // Remove all device sessions for this customer
       await deleteAllUserSessions(customerNumber);
       
-      console.log(`Admin successfully deleted user account: ${customerNumber}`);
-      console.log(`Database deletion: ${userDeleted ? 'SUCCESS' : 'FAILED'}`);
-      console.log(`Invalidated ${invalidatedSessions.length} active sessions`);
+      console.log(`🗑️ ADMIN DELETION COMPLETE: ${customerNumber}`);
+      console.log(`✅ Database deletion: ${userDeleted ? 'SUCCESS' : 'FAILED'}`);
+      console.log(`✅ Permanent sessions revoked and deleted`);
+      console.log(`✅ Invalidated ${invalidatedSessions.length} active sessions`);
+      console.log(`🚫 User can NO LONGER access the app from any device`);
       
       res.json({ 
         success: true, 
         message: 'User account permanently deleted and logged out from all devices',
         details: {
           userDeleted: true,
-          sessionsInvalidated: invalidatedSessions.length
+          sessionsInvalidated: invalidatedSessions.length,
+          permanentSessionsRevoked: true
         }
       });
     } else {
