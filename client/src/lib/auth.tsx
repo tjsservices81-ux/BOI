@@ -35,7 +35,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const parsedUser = JSON.parse(cachedUser);
             setUser(parsedUser);
           } catch (error) {
-            localStorage.removeItem('bankingUser');
+            console.error('Failed to parse cached user, keeping data for retry:', error);
+            // Don't remove localStorage data on single parse failure
+            // Only clear if repeatedly failing to prevent permanent data loss
+            const parseFailures = parseInt(localStorage.getItem('bankingUser_parseFailures') || '0');
+            if (parseFailures >= 3) {
+              localStorage.removeItem('bankingUser');
+              localStorage.removeItem('bankingUser_parseFailures');
+            } else {
+              localStorage.setItem('bankingUser_parseFailures', (parseFailures + 1).toString());
+            }
             setUser(null);
           }
         }

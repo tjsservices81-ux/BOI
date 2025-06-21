@@ -90,15 +90,15 @@ function AppRoutes() {
   // Initialize app state with persistence support
   useEffect(() => {
     const initializeApp = async () => {
-      // Check if sessionStorage was cleared (indicates fresh app start)
-      const wasAppActive = sessionStorage.getItem('app_was_active');
+      // Check persistent app state - no session dependency
+      const wasAppActive = localStorage.getItem('app_was_active');
       const lastBackgroundTime = localStorage.getItem('app_background_time');
       
       if (!wasAppActive) {
         // Fresh app start - show splash but keep user logged in
         setSplashShown(false);
         localStorage.removeItem('app_background_time');
-        sessionStorage.setItem('app_was_active', 'true');
+        localStorage.setItem('app_was_active', 'true');
         
         // Always try to restore user session
         try {
@@ -181,15 +181,14 @@ function AppRoutes() {
     };
 
     const handleBeforeUnload = () => {
-      // Clear session marker to detect force close
-      sessionStorage.removeItem('app_was_active');
+      // Save state but keep user logged in permanently
       if (user) {
         StateManager.handleVisibilityChange(location, user);
       }
     };
 
     const handlePageHide = () => {
-      sessionStorage.removeItem('app_was_active');
+      // Save state but keep user logged in permanently
       if (user) {
         StateManager.handleVisibilityChange(location, user);
       }
@@ -216,8 +215,8 @@ function AppRoutes() {
       if (document.hidden) {
         isAppVisible = false;
         // App is being backgrounded - just track state, don't set reload timers
-        sessionStorage.setItem('app_backgrounded', Date.now().toString());
-        sessionStorage.setItem('current_location', location);
+        localStorage.setItem('app_backgrounded', Date.now().toString());
+        localStorage.setItem('current_location', location);
       } else {
         // App is being foregrounded - restore state without any reloading
         if (!isAppVisible) {

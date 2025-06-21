@@ -16,7 +16,7 @@ export class UserDataManager {
   private static currentUser: string | null = null;
   private static dataCache: Map<string, any> = new Map();
   private static cacheTimestamps: Map<string, number> = new Map();
-  private static readonly CACHE_DURATION = 30000; // 30 seconds
+  private static readonly CACHE_DURATION = null; // No cache expiration - permanent storage
 
   // Set the current active user
   static setCurrentUser(customerNumber: string) {
@@ -99,11 +99,10 @@ export class UserDataManager {
       const userKey = this.getUserKey(key);
       const cacheKey = `${this.getCurrentUser()}_${key}`;
       
-      // Check cache first
+      // Check cache first - no expiration since CACHE_DURATION is null
       const cachedData = this.dataCache.get(cacheKey);
-      const cacheTime = this.cacheTimestamps.get(cacheKey);
       
-      if (cachedData !== undefined && cacheTime && (Date.now() - cacheTime) < this.CACHE_DURATION) {
+      if (cachedData !== undefined) {
         return cachedData;
       }
       
