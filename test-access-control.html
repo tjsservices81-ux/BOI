@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Access Control Test - Bank of Ireland</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .test-section { background: white; margin: 20px 0; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .status { padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .pass { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .fail { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .test-link { display: block; margin: 10px 0; padding: 10px; background: #e9ecef; text-decoration: none; color: #495057; border-radius: 4px; }
+        .test-link:hover { background: #dee2e6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Bank of Ireland - Access Control Test</h1>
+        
+        <div class="test-section">
+            <h2>Test Links</h2>
+            <p>Click these links to test the access control system:</p>
+            
+            <a href="/?access=myboicode" class="test-link" target="_blank">
+                ✅ Valid Access: ?access=myboicode
+            </a>
+            
+            <a href="/?access=123abc" class="test-link" target="_blank">
+                ✅ Valid Access: ?access=123abc
+            </a>
+            
+            <a href="/?access=code456" class="test-link" target="_blank">
+                ✅ Valid Access: ?access=code456
+            </a>
+            
+            <a href="/?access=wrongcode" class="test-link" target="_blank">
+                ❌ Invalid Access: ?access=wrongcode
+            </a>
+            
+            <a href="/" class="test-link" target="_blank">
+                ❌ No Access Code
+            </a>
+        </div>
+
+        <div class="test-section">
+            <h2>Expected Behavior</h2>
+            <div class="status pass">
+                <strong>Valid Codes:</strong> Should show full Bank of Ireland app, store access in localStorage, and clean URL
+            </div>
+            <div class="status fail">
+                <strong>Invalid/No Codes:</strong> Should show "Not available" message on gray background
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>Testing Instructions</h2>
+            <ol>
+                <li>Click a valid access link above (e.g., myboicode)</li>
+                <li>Verify the full banking app loads properly</li>
+                <li>Check that URL is cleaned (no ?access= parameter)</li>
+                <li>Close and reopen the app - should load without access code</li>
+                <li>Test invalid codes show "Not available"</li>
+            </ol>
+        </div>
+
+        <div class="test-section">
+            <h2>Clear Access Test</h2>
+            <p>To test fresh access (clear localStorage):</p>
+            <button onclick="clearAccess()">Clear Stored Access</button>
+            <div id="clear-status"></div>
+        </div>
+    </div>
+
+    <script>
+        function clearAccess() {
+            localStorage.removeItem('accessGranted');
+            document.getElementById('clear-status').innerHTML = '<div class="status pass">Access cleared! Try the test links again.</div>';
+        }
+    </script>
+</body>
+</html>
