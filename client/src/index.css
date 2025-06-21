@@ -1149,6 +1149,238 @@ button[type="submit"] {
   -webkit-backface-visibility: hidden;
 }
 
+/* Android Processing Transfer Screen Optimization */
+@media screen and (min-width: 1px) {
+  /* Android Chrome and WebView specific */
+  @supports (-webkit-appearance: none) and (not (-webkit-touch-callout: none)) {
+    .android-processing-screen {
+      /* Force consistent rendering on Android */
+      -webkit-font-smoothing: antialiased !important;
+      -moz-osx-font-smoothing: grayscale !important;
+      text-rendering: optimizeLegibility !important;
+      font-feature-settings: 'kern' 1 !important;
+    }
+    
+    .android-processing-content {
+      /* Android-specific layout optimization */
+      contain: layout style paint !important;
+      will-change: transform !important;
+      transform: translateZ(0) !important;
+      backface-visibility: hidden !important;
+    }
+    
+    .android-title {
+      /* Exact iOS font matching for Android */
+      font-size: 3rem !important;
+      font-weight: 700 !important;
+      line-height: 1.1 !important;
+      letter-spacing: -0.025em !important;
+      color: #111827 !important;
+      text-align: center !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      /* Android text optimization */
+      -webkit-font-smoothing: antialiased !important;
+      -moz-osx-font-smoothing: grayscale !important;
+      text-rendering: optimizeLegibility !important;
+      font-synthesis: none !important;
+    }
+    
+    .android-stage {
+      /* Consistent secondary text styling */
+      font-size: 1.125rem !important;
+      font-weight: 400 !important;
+      line-height: 1.4 !important;
+      color: #6b7280 !important;
+      text-align: center !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      /* Android text optimization */
+      -webkit-font-smoothing: antialiased !important;
+      -moz-osx-font-smoothing: grayscale !important;
+    }
+    
+    .android-spinner {
+      /* Perfect spinner rendering on Android */
+      width: 80px !important;
+      height: 80px !important;
+      border-radius: 50% !important;
+      background-color: #126987 !important;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+      /* Android animation optimization */
+      -webkit-transform: translateZ(0) !important;
+      transform: translateZ(0) !important;
+      backface-visibility: hidden !important;
+      will-change: transform !important;
+    }
+    
+    .android-spinner-inner {
+      /* Smooth spinner animation on Android */
+      width: 48px !important;
+      height: 48px !important;
+      border: 4px solid white !important;
+      border-top: 4px solid transparent !important;
+      border-radius: 50% !important;
+      -webkit-animation: spin 1s linear infinite !important;
+      animation: spin 1s linear infinite !important;
+      will-change: transform !important;
+    }
+    
+    .android-progress-track {
+      /* Exact progress bar styling for Android */
+      width: 100% !important;
+      height: 16px !important;
+      background-color: white !important;
+      border-radius: 8px !important;
+      overflow: hidden !important;
+      box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06) !important;
+      border: 1px solid rgba(229, 231, 235, 0.8) !important;
+      /* Android progress bar fixes */
+      -webkit-appearance: none !important;
+      appearance: none !important;
+      position: relative !important;
+    }
+    
+    .android-progress-fill {
+      /* Smooth progress bar fill on Android */
+      height: 16px !important;
+      background: linear-gradient(to right, #126987, #5a7b85, #126987) !important;
+      border-radius: 8px !important;
+      transition: width 300ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important;
+      position: relative !important;
+      /* Android rendering optimization */
+      -webkit-transform: translateZ(0) !important;
+      transform: translateZ(0) !important;
+      backface-visibility: hidden !important;
+      will-change: width !important;
+    }
+    
+    .android-percentage {
+      /* Consistent percentage text on Android */
+      font-size: 1.25rem !important;
+      font-weight: 600 !important;
+      color: #126987 !important;
+      line-height: 1.2 !important;
+      margin: 0 !important;
+      text-align: center !important;
+      /* Android text rendering */
+      -webkit-font-smoothing: antialiased !important;
+      -moz-osx-font-smoothing: grayscale !important;
+    }
+    
+    .android-security {
+      /* Perfect security notice styling on Android */
+      background: rgba(255, 255, 255, 0.9) !important;
+      border-radius: 12px !important;
+      padding: 1.5rem !important;
+      border: 1px solid rgba(229, 231, 235, 0.8) !important;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+      /* Android backdrop filter fallback */
+      -webkit-backdrop-filter: blur(12px) !important;
+      backdrop-filter: blur(12px) !important;
+    }
+    
+    .android-indicator {
+      /* Consistent security indicator layout */
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 0.75rem !important;
+      margin-bottom: 0.75rem !important;
+    }
+    
+    .android-dot {
+      /* Perfect green dot animation on Android */
+      width: 12px !important;
+      height: 12px !important;
+      background-color: #10b981 !important;
+      border-radius: 50% !important;
+      -webkit-animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite !important;
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite !important;
+    }
+    
+    .android-label {
+      /* Consistent security label styling */
+      font-size: 0.875rem !important;
+      font-weight: 600 !important;
+      color: #374151 !important;
+      line-height: 1.25 !important;
+      /* Android text rendering */
+      -webkit-font-smoothing: antialiased !important;
+      -moz-osx-font-smoothing: grayscale !important;
+    }
+    
+    .android-description {
+      /* Consistent description text */
+      font-size: 0.75rem !important;
+      color: #6b7280 !important;
+      line-height: 1.5 !important;
+      margin: 0 !important;
+      text-align: center !important;
+      /* Android text rendering */
+      -webkit-font-smoothing: antialiased !important;
+      -moz-osx-font-smoothing: grayscale !important;
+    }
+  }
+}
+
+/* Mobile Android specific optimizations */
+@media (max-width: 768px) {
+  .android-processing-screen {
+    /* Force full viewport on mobile Android */
+    height: 100vh !important;
+    height: 100dvh !important;
+    width: 100vw !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+  }
+  
+  .android-processing-content {
+    /* Mobile Android spacing adjustments */
+    padding: 2rem 1.5rem !important;
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+  
+  .android-title {
+    /* Responsive title sizing for mobile Android */
+    font-size: 2.5rem !important;
+    line-height: 1.1 !important;
+  }
+  
+  .android-stage {
+    /* Responsive stage text for mobile Android */
+    font-size: 1rem !important;
+    line-height: 1.4 !important;
+  }
+}
+
+/* Android Hardware Acceleration for Animations */
+@media screen and (-webkit-min-device-pixel-ratio: 1) {
+  .android-spinner,
+  .android-progress-fill,
+  .android-shimmer,
+  .android-dot {
+    /* Force hardware acceleration on Android */
+    -webkit-transform: translateZ(0) !important;
+    transform: translateZ(0) !important;
+    backface-visibility: hidden !important;
+    -webkit-backface-visibility: hidden !important;
+    will-change: transform !important;
+  }
+  
+  .android-spinner-inner {
+    /* Optimize spinner animation for Android Chrome */
+    -webkit-transform: translateZ(0) rotate(0deg) !important;
+    transform: translateZ(0) rotate(0deg) !important;
+    will-change: transform !important;
+  }
+}
+
 /* Splash screen specific animations */
 .splash-logo-enter {
   animation: logoFadeIn 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
