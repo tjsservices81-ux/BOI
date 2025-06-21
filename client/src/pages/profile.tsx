@@ -219,8 +219,8 @@ export default function Profile() {
         loadChatResponses();
         
         // Hide navigation bar on Android/iOS
-        const bottomNav = document.querySelector('.bottom-navigation');
-        if (bottomNav) {
+        const bottomNav = document.querySelector('.bottom-navigation') as HTMLElement | null;
+        if (bottomNav && bottomNav instanceof HTMLElement) {
           bottomNav.style.display = 'none';
         }
         document.body.style.overflow = 'hidden';
@@ -232,8 +232,8 @@ export default function Profile() {
       }
     } else {
       // Show navigation bar when admin panel closes
-      const bottomNav = document.querySelector('.bottom-navigation');
-      if (bottomNav) {
+      const bottomNav = document.querySelector('.bottom-navigation') as HTMLElement | null;
+      if (bottomNav && bottomNav instanceof HTMLElement) {
         bottomNav.style.display = '';
       }
       document.body.style.overflow = '';
@@ -1165,11 +1165,17 @@ export default function Profile() {
       {showAdminPanel && (
         <div 
           className="admin-panel bg-black bg-opacity-50 flex items-center justify-center p-4"
-          onClick={() => setShowAdminPanel(false)}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowAdminPanel(false);
+            }
+          }}
         >
           <div 
             className="bg-white rounded-2xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto modal-content"
             onClick={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
+            onTouchEnd={(e) => e.stopPropagation()}
           >
             <div className="p-6 pb-12">
               <div className="flex items-center justify-between mb-6">
