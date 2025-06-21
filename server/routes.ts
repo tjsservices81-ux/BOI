@@ -54,14 +54,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     if (req.session && req.session.userId) {
       // Check if device session is blocked - return error without destroying session
-      if (req.session.deviceSessionId && isDeviceBlocked(req.session.deviceSessionId)) {
-        console.log(`🚫 BLOCKED DEVICE ACCESS ATTEMPT: Session ${req.session.deviceSessionId}`);
+      if (req.session.sessionId && isDeviceBlocked(req.session.sessionId)) {
+        console.log(`🚫 BLOCKED DEVICE ACCESS ATTEMPT: Session ${req.session.sessionId}`);
         return res.status(403).json({ message: "Device access has been blocked by administrator" });
       }
       
       // Check if device is in panic mode - return error without destroying session
-      if (req.session.deviceSessionId && isDeviceInPanicMode(req.session.deviceSessionId)) {
-        console.log(`🚨 PANIC MODE ACCESS ATTEMPT: Session ${req.session.deviceSessionId}`);
+      if (req.session.sessionId && isDeviceInPanicMode(req.session.sessionId)) {
+        console.log(`🚨 PANIC MODE ACCESS ATTEMPT: Session ${req.session.sessionId}`);
         return res.status(403).json({ message: "System temporarily unavailable" });
       }
       
@@ -212,7 +212,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Check if the authorized device is in panic mode
       const existingSession = getUserDeviceSession(user.id);
-      if (existingSession && existingSession.deviceSessionId && isDeviceInPanicMode(existingSession.deviceSessionId)) {
+      if (existingSession && existingSession.sessionId && isDeviceInPanicMode(existingSession.sessionId)) {
         console.log(`🚨 PANIC MODE LOGIN BLOCKED: User ${user.id} attempted login, but device ${existingSession.deviceModel} is in panic mode`);
         return res.status(503).json({ 
           message: "System temporarily unavailable. Please try again later." 
@@ -220,7 +220,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Create device session only after confirming no existing session
-      const deviceSessionId = addDeviceSession({
+      const sessionId = addDeviceSession({
         deviceModel,
         ipAddress,
         userAgent,
@@ -230,7 +230,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Lock this account to the current device permanently
       setUserDeviceSession({
         userId: user.id,
-        deviceSessionId,
+        sessionId,
         deviceModel,
         ipAddress,
         loginTime: new Date().toISOString(),
@@ -254,12 +254,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       (req as any).session.userId = user.id;
       (req as any).session.user = { id: user.id, name: user.name, email: user.email };
       (req as any).session.permanentSessionToken = sessionToken;
-      (req as any).session.deviceSessionId = deviceSessionId;
+      (req as any).session.sessionId = sessionId;
 
       // Register session for tracking and invalidation
       addUserSession(req.sessionID, user.customerNumber, user.id);
 
-      console.log(`📱 NEW DEVICE SESSION: ${deviceModel} (${ipAddress}) - Session: ${deviceSessionId}`);
+      console.log(`📱 NEW DEVICE SESSION: ${deviceModel} (${ipAddress}) - Session: ${sessionId}`);
       console.log(`🔒 ACCOUNT LOCKED TO DEVICE: User ${user.id} locked to ${deviceModel}`);
       console.log(`💾 PERMANENT SESSION CREATED: Token stored in database - NEVER EXPIRES`);
 

@@ -2,6 +2,7 @@
 // Ensures users NEVER get logged out unless manually deleted by admin
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { UserDataManager } from '../utils/userDataManager';
 
 interface User {
   id: number;
@@ -67,9 +68,9 @@ export function PermanentAuthProvider({ children }: { children: ReactNode }) {
     setUser(userData);
     setSessionToken(newSessionToken);
     
-    // Store permanently in localStorage - NEVER expires
-    localStorage.setItem('permanentSessionToken', newSessionToken);
-    localStorage.setItem('permanentUserData', JSON.stringify(userData));
+    // Store permanently via UserDataManager - NEVER expires
+    UserDataManager.setUserData('permanentSessionToken', newSessionToken);
+    UserDataManager.setUserData('permanentUserData', userData);
     
     console.log('💾 PERMANENT SESSION SAVED: User will stay logged in forever');
   };

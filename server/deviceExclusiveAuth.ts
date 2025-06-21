@@ -3,7 +3,7 @@
 
 interface UserDeviceSession {
   userId: number;
-  deviceSessionId: string;
+  sessionId: string;
   deviceModel: string;
   ipAddress: string;
   loginTime: string;
@@ -38,7 +38,7 @@ export function isCurrentDeviceAuthorized(userId: number, currentUserAgent: stri
 
 export function setUserDeviceSession(userSession: UserDeviceSession): void {
   userDeviceSessions.set(userSession.userId, userSession);
-  console.log(`🔒 PERMANENT DEVICE LOCK: User ${userSession.userId} permanently locked to device ${userSession.deviceModel} (${userSession.deviceSessionId})`);
+  console.log(`🔒 PERMANENT DEVICE LOCK: User ${userSession.userId} permanently locked to device ${userSession.deviceModel} (${userSession.sessionId})`);
 }
 
 export function removeUserDeviceSession(userId: number): void {
