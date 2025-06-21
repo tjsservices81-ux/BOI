@@ -164,6 +164,16 @@ export default function Profile() {
               joinDate: userData.joinDate || ""
             });
             
+            // Update currency state if available in profile data
+            if (userData.primaryCurrency) {
+              console.log(`Loading saved currency from profile: ${userData.primaryCurrency}`);
+              setCurrentCurrency(userData.primaryCurrency);
+              setPrimaryCurrency(userData.primaryCurrency);
+              
+              // Update CurrencyManager with database value
+              UserDataManager.setUserData('primaryCurrency', userData.primaryCurrency);
+            }
+            
             // Update UserDataManager with fresh data (silent update to prevent loops)
             const allUsers = JSON.parse(localStorage.getItem('bankUsers') || '{}');
             if (allUsers[userData.customerNumber]) {
@@ -1362,31 +1372,23 @@ export default function Profile() {
                         const newCurrency = e.target.value as 'EUR' | 'GBP';
                         const currencyName = newCurrency === 'EUR' ? 'Euro (€)' : 'Pound Sterling (£)';
                         
-                        // Show immediate feedback
-                        alert(`Saving currency preference to ${currencyName}...`);
-                        
                         try {
-                          console.log(`Attempting to save currency: ${newCurrency}`);
+                          console.log(`Saving currency: ${newCurrency}`);
                           
-                          // Update local state immediately
+                          // Update local state immediately for responsive UI
                           setCurrentCurrency(newCurrency);
+                          setPrimaryCurrency(newCurrency);
                           
-                          // Save through CurrencyManager
+                          // Save through CurrencyManager (this handles database persistence)
                           await CurrencyManager.setCurrency(newCurrency);
                           
-                          // Dispatch currency change event
-                          window.dispatchEvent(new CustomEvent('currencyChanged', {
-                            detail: { currency: newCurrency }
-                          }));
-                          
-                          // Show success notification
-                          alert(`✓ Currency successfully changed to ${currencyName} and saved!`);
+                          console.log(`✓ Currency saved: ${currencyName}`);
                           
                         } catch (error) {
                           console.error('Currency save error:', error);
                           // Revert local state on error
                           setCurrentCurrency(CurrencyManager.getCurrentCurrency());
-                          alert('✗ Failed to save currency preference. Please try again.');
+                          setPrimaryCurrency(CurrencyManager.getCurrentCurrency());
                         }
                       }}
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
