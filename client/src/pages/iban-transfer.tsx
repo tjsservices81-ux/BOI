@@ -200,19 +200,20 @@ export default function IbanTransfer() {
         if (newProgress >= 100) {
           clearInterval(interval);
           
-          // Process the transfer using the user's payment reference
+          // Process the transfer using both generated and user's payment reference
           const transferSuccess = processConfirmedTransfer(
             `IBAN_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             formData.fromAccount,
             parseFloat(formData.amount),
             formData.recipientName,
             'IBAN',
-            formData.reference, // Use the user's input reference
+            ref, // Use the generated reference for system tracking
             undefined, // No exchange rate for IBAN transfers
             {
               iban: formData.iban,
               bicCode: formData.bicCode
-            }
+            },
+            formData.reference // Pass user's payment reference separately
           );
           
           if (transferSuccess) {

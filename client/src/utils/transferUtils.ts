@@ -17,6 +17,7 @@ export interface Transaction {
   type: 'debit' | 'credit';
   paymentMethod: string;
   reference?: string;
+  userPaymentReference?: string;
   recipientName?: string;
   iban?: string;
   bicCode?: string;
@@ -114,7 +115,8 @@ export const processTransfer = (
   transferType: 'UK' | 'IBAN',
   reference: string,
   exchangeRate?: number,
-  recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string; bicCode?: string }
+  recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string; bicCode?: string },
+  userPaymentReference?: string
 ): boolean => {
   console.log('Processing transfer:', { fromAccountId, amount, recipientName, transferType, reference });
   
@@ -170,7 +172,8 @@ export const processTransfer = (
     category: 'transfer',
     type: 'debit',
     paymentMethod: `${transferType === 'IBAN' ? 'SEPA' : transferType} Transfer`,
-    reference,
+    reference, // System-generated reference for tracking
+    userPaymentReference: userPaymentReference || '', // User's typed payment reference
     recipientName,
     timestamp: new Date().toISOString(),
     ...(transferType === 'UK' && exchangeRate && {
@@ -225,12 +228,13 @@ export const processConfirmedTransfer = (
   transferType: 'UK' | 'IBAN',
   reference: string,
   exchangeRate?: number,
-  recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string; bicCode?: string }
+  recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string; bicCode?: string },
+  userPaymentReference?: string
 ): boolean => {
-  console.log('Processing confirmed transfer:', { transferId, fromAccountId, amount, recipientName, transferType, reference });
+  console.log('Processing confirmed transfer:', { transferId, fromAccountId, amount, recipientName, transferType, reference, userPaymentReference });
   
   // Execute the actual transfer logic that was previously in processTransfer
-  const success = processTransfer(fromAccountId, amount, recipientName, transferType, reference, exchangeRate, recipientDetails);
+  const success = processTransfer(fromAccountId, amount, recipientName, transferType, reference, exchangeRate, recipientDetails, userPaymentReference);
   
   if (success) {
     console.log(`Transfer ${transferId} completed successfully`);
