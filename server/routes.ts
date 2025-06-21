@@ -5,7 +5,8 @@ import { loginSchema, transferSchema } from "@shared/schema";
 import { z } from "zod";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
-import { otcService } from "./otcService";
+import { otcService as accountOtcService } from "./otcService";
+import { launchOtcService } from "./otcService";
 import { transferSecurityService } from "./security/transferSecurity";
 import { generateChatResponse } from "./openai";
 import { isDeviceBlocked, addDeviceSession, isDeviceInPanicMode, isCustomerInPanicMode } from "./deviceSessions";
@@ -44,6 +45,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
       timestamp: new Date().toISOString(),
       server: "Bank of Ireland API"
     });
+  });
+
+  // OTC verification endpoint
+  app.post("/api/verify-otc", async (req, res) => {
+    try {
+      const { otc } = req.body;
+      
+      if (!otc || typeof otc !== 'string') {
+        return res.status(400).json({ verified: false, message: "Invalid code format" });
+      }
+
+      const verified = await otcService.verifyCode(otc.trim().toUpperCase());
+      
+      if (verified) {
+        console.log(`✅ OTC VERIFICATION SUCCESS: ${otc}`);
+        res.json({ verified: true, message: "Access granted" });
+      } else {
+        console.log(`❌ OTC VERIFICATION FAILED: ${otc}`);
+        res.status(401).json({ verified: false, message: "Invalid access code" });
+      }
+    } catch (error) {
+      console.error('OTC verification error:', error);
+      res.status(500).json({ verified: false, message: "Verification service error" });
+    }
+  });
+
+  // Admin endpoint to get current OTC (hidden method)
+  app.get("/api/admin/current-otc", async (req, res) => {
+    try {
+      const currentOtc = await otcService.getCurrentCode();
+      const expiresAt = await otcService.getExpirationTime();
+      
+      console.log(`🔐 ADMIN OTC REQUEST: ${req.ip} - Code: ${currentOtc}`);
+      
+      res.json({ 
+        otc: currentOtc, 
+        expiresAt,
+        generatedAt: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Admin OTC request error:', error);
+      res.status(500).json({ error: "OTC service error" });
+    }
+  });
+
+  // Admin endpoint to generate new OTC
+  app.post("/api/admin/generate-otc", async (req, res) => {
+    try {
+      const { customCode, expiryHours } = req.body;
+      
+      const newOtc = await otcService.generateNewCode(customCode, expiryHours);
+      const expiresAt = await otcService.getExpirationTime();
+      
+      console.log(`🔄 ADMIN OTC GENERATION: New code ${newOtc} expires at ${expiresAt}`);
+      
+      res.json({ 
+        otc: newOtc, 
+        expiresAt,
+        message: "New OTC generated successfully"
+      });
+    } catch (error) {
+      console.error('Admin OTC generation error:', error);
+      res.status(500).json({ error: "OTC generation failed" });
+    }
   });
 
   // Add session tracking middleware
