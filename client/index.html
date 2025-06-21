@@ -552,7 +552,13 @@
           
           if (hasAccess === 'true') {
             console.log('Using stored access - skipping verification');
+            localStorage.setItem('app_session_active', 'true');
+            localStorage.setItem('splash_completed', 'true');
             hideLoadingScreen();
+            // Force navigation to dashboard for stored access
+            setTimeout(() => {
+              window.location.href = '/dashboard';
+            }, 500);
             return;
           }
 
@@ -588,12 +594,19 @@
           if (result.success) {
             // Access granted - save to localStorage and clean URL
             localStorage.setItem('accessGranted', 'true');
-            localStorage.setItem('accessCode', accessCode);
+            localStorage.setItem('accessCode', codeToCheck);
+            localStorage.setItem('app_session_active', 'true');
+            localStorage.setItem('splash_completed', 'true');
             window.history.replaceState({}, document.title, window.location.pathname);
             console.log('Access granted successfully');
             hideLoadingScreen();
             // Start periodic access validation
             startAccessValidation();
+            
+            // Force navigation to main app after brief delay
+            setTimeout(() => {
+              window.location.href = '/dashboard';
+            }, 500);
           } else {
             // Access denied - show appropriate message
             const message = result.message || "Access code invalid or expired";
