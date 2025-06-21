@@ -759,12 +759,23 @@ router.post('/delete-user', adminAuth, async (req, res) => {
       console.log(`Database deletion: ${userDeleted ? 'SUCCESS' : 'FAILED'}`);
       console.log(`Invalidated ${invalidatedSessions.length} active sessions`);
       
+      // CRITICAL FIX: Signal frontend to clear new cold/warm start localStorage keys
+      // This ensures deleted users don't retain session markers
       res.json({ 
         success: true, 
         message: 'User account permanently deleted and logged out from all devices',
+        clearStorageKeys: [
+          'app_session_active',
+          'splash_completed', 
+          'app_background_time',
+          'bankingUser',
+          'currentUser',
+          'lastActiveUser',
+          'userDataManager_cache'
+        ],
         details: {
           userDeleted: true,
-          sessionsInvalidated: invalidatedSessions.length
+          sessionsInvalidated: invalidatedSessionsions.length
         }
       });
     } else {

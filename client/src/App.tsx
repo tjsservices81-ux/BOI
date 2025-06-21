@@ -44,9 +44,13 @@ function ProtectedRoute({ children, fallback }: { children: React.ReactNode; fal
   const appSessionActive = localStorage.getItem('app_session_active');
   const splashCompleted = localStorage.getItem('splash_completed');
   
-  // Don't redirect during cold start initialization - let splash/login flow complete
+  // SECURITY FIX: Show loading state instead of null during initialization
   if (!appSessionActive || !splashCompleted) {
-    return null;
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-[#126987]">
+        <div className="text-white">Loading...</div>
+      </div>
+    );
   }
   
   // Normal protection logic after initialization
@@ -122,10 +126,16 @@ function AppRoutes() {
         localStorage.setItem('app_session_active', 'true');
         
         // Restore user session silently in background (permanent login)
+        // COORDINATION FIX: Only restore if auth context hasn't already initialized user
         try {
-          const savedState = StateManager.restoreAppState(true); // Pass isColdStart flag
-          if (savedState && savedState.user && !user) {
-            login(savedState.user);
+          const savedState = StateManager.restoreAppState(true);
+          if (savedState && savedState.user && !user && !isLoading) {
+            // Prevent race condition with auth.tsx initialization
+            setTimeout(() => {
+              if (!user) { // Double-check user isn't set by auth context
+                login(savedState.user);
+              }
+            }, 100);
           }
         } catch (error) {
           console.error('Failed to restore user session:', error);
@@ -140,14 +150,18 @@ function AppRoutes() {
         try {
           const savedState = StateManager.restoreAppState(false); // Pass isWarmStart flag
           
-          if (savedState && savedState.user && !user) {
-            // Restore user session
-            login(savedState.user);
-            
-            // Restore exact route for warm start
-            if (savedState.currentRoute && savedState.currentRoute !== '/login' && savedState.currentRoute !== '/splash') {
-              navigate(savedState.currentRoute);
-            }
+          if (savedState && savedState.user && !user && !isLoading) {
+            // COORDINATION FIX: Prevent race condition with auth context
+            setTimeout(() => {
+              if (!user) { // Double-check user isn't set by auth context
+                login(savedState.user);
+                
+                // Restore exact route for warm start
+                if (savedState.currentRoute && savedState.currentRoute !== '/login' && savedState.currentRoute !== '/splash') {
+                  navigate(savedState.currentRoute);
+                }
+              }
+            }, 100);
             
             // Skip splash entirely for warm starts
             setSplashShown(true);
