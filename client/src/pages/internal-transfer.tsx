@@ -28,7 +28,7 @@ type InternalTransferData = z.infer<typeof internalTransferSchema>;
 export default function InternalTransfer() {
   const locationHook = useLocation();
   const [, navigate] = locationHook || [null, () => {}];
-  const [step, setStep] = useState<'form' | 'confirm' | 'success' | 'cancelled'>('form');
+  const [step, setStep] = useState<'form' | 'confirm' | 'processing' | 'success' | 'cancelled'>('form');
   const [transferReference, setTransferReference] = useState<string>('');
   const [formData, setFormData] = useState<InternalTransferData | null>(null);
   const [accounts, setAccounts] = useState<any[]>([]);
@@ -64,6 +64,35 @@ export default function InternalTransfer() {
       setSelectedToAccount(account);
     }
   }, [form.watch('fromAccount'), form.watch('toAccount'), accounts]);
+
+  // Android-only fix for transfer button and processing screen visibility
+  useEffect(() => {
+    const isAndroid = /Android/i.test(navigator.userAgent);
+    if (!isAndroid) return; // Only run on Android
+
+    const intervalId = setInterval(() => {
+      // Fix Confirm Transfer button
+      const confirmBtn = document.querySelector('#confirmTransferBtn');
+      if (confirmBtn && getComputedStyle(confirmBtn).visibility === 'hidden') {
+        (confirmBtn as HTMLElement).style.visibility = 'visible';
+        (confirmBtn as HTMLElement).style.opacity = '1';
+        (confirmBtn as HTMLElement).style.zIndex = '1000';
+        (confirmBtn as HTMLElement).style.position = 'relative';
+      }
+
+      // Fix Transfer Processing screen
+      const progressScreen = document.querySelector('#transferProgressScreen');
+      if (progressScreen && getComputedStyle(progressScreen).display === 'none') {
+        (progressScreen as HTMLElement).style.display = 'block';
+        (progressScreen as HTMLElement).style.visibility = 'visible';
+        (progressScreen as HTMLElement).style.opacity = '1';
+        (progressScreen as HTMLElement).style.zIndex = '999';
+        (progressScreen as HTMLElement).style.transform = 'translateY(0)';
+      }
+    }, 100);
+
+    return () => clearInterval(intervalId);
+  }, [step]);
 
   const onSubmit = (data: InternalTransferData) => {
     // Validate that from and to accounts are different
@@ -129,79 +158,169 @@ export default function InternalTransfer() {
     const reference = generateReference();
     setTransferReference(reference);
 
-    const transferAmount = parseFloat(formData.amount);
-    const timestamp = new Date().toISOString();
+    // Start processing
+    setStep('processing');
 
-    // Create debit transaction for source account
-    const debitTransaction = {
-      id: Date.now(),
-      accountId: fromAccount.id,
-      amount: `-${transferAmount.toFixed(2)}`,
-      description: `Internal Transfer to ${toAccount.displayName}`,
-      timestamp,
-      category: 'transfer',
-      type: 'debit',
-      paymentMethod: 'Internal Transfer',
-      reference,
-      recipientName: toAccount.displayName,
-      recipientAccount: toAccount.accountNumber,
-      fromAccountId: fromAccount.id,
-      toAccountId: toAccount.id
-    };
+    // Simulate processing time for better UX
+    setTimeout(() => {
+      const transferAmount = parseFloat(formData.amount);
+      const timestamp = new Date().toISOString();
 
-    // Create credit transaction for destination account
-    const creditTransaction = {
-      id: Date.now() + 1,
-      accountId: toAccount.id,
-      amount: `+${transferAmount.toFixed(2)}`,
-      description: `Internal Transfer from ${fromAccount.displayName}`,
-      timestamp,
-      category: 'transfer',
-      type: 'credit',
-      paymentMethod: 'Internal Transfer',
-      reference,
-      recipientName: fromAccount.displayName,
-      recipientAccount: fromAccount.accountNumber,
-      fromAccountId: fromAccount.id,
-      toAccountId: toAccount.id
-    };
+      // Create debit transaction for source account
+      const debitTransaction = {
+        id: Date.now(),
+        accountId: fromAccount.id,
+        amount: `-${transferAmount.toFixed(2)}`,
+        description: `Internal Transfer to ${toAccount.displayName}`,
+        timestamp,
+        category: 'transfer',
+        type: 'debit',
+        paymentMethod: 'Internal Transfer',
+        reference,
+        recipientName: toAccount.displayName,
+        recipientAccount: toAccount.accountNumber,
+        fromAccountId: fromAccount.id,
+        toAccountId: toAccount.id
+      };
 
-    // Update account balances
-    const currentAccounts = UserDataManager.getUserData('bankAccounts', []);
-    const updatedAccounts = currentAccounts.map((acc: any) => {
-      if (acc.id.toString() === fromAccount.id.toString()) {
-        const currentBalance = typeof acc.balance === 'string' ? parseFloat(acc.balance) : acc.balance;
-        return { ...acc, balance: (currentBalance - transferAmount).toFixed(2) };
-      }
-      if (acc.id.toString() === toAccount.id.toString()) {
-        const currentBalance = typeof acc.balance === 'string' ? parseFloat(acc.balance) : acc.balance;
-        return { ...acc, balance: (currentBalance + transferAmount).toFixed(2) };
-      }
-      return acc;
-    });
-    UserDataManager.setUserData('bankAccounts', updatedAccounts);
+      // Create credit transaction for destination account
+      const creditTransaction = {
+        id: Date.now() + 1,
+        accountId: toAccount.id,
+        amount: `+${transferAmount.toFixed(2)}`,
+        description: `Internal Transfer from ${fromAccount.displayName}`,
+        timestamp,
+        category: 'transfer',
+        type: 'credit',
+        paymentMethod: 'Internal Transfer',
+        reference,
+        recipientName: fromAccount.displayName,
+        recipientAccount: fromAccount.accountNumber,
+        fromAccountId: fromAccount.id,
+        toAccountId: toAccount.id
+      };
 
-    // Add transactions
-    const currentTransactions = UserDataManager.getUserData('bankTransactions', []);
-    const updatedTransactions = [...currentTransactions, debitTransaction, creditTransaction];
-    UserDataManager.setUserData('bankTransactions', updatedTransactions);
+      // Update account balances
+      const currentAccounts = UserDataManager.getUserData('bankAccounts', []);
+      const updatedAccounts = currentAccounts.map((acc: any) => {
+        if (acc.id.toString() === fromAccount.id.toString()) {
+          const currentBalance = typeof acc.balance === 'string' ? parseFloat(acc.balance) : acc.balance;
+          return { ...acc, balance: (currentBalance - transferAmount).toFixed(2) };
+        }
+        if (acc.id.toString() === toAccount.id.toString()) {
+          const currentBalance = typeof acc.balance === 'string' ? parseFloat(acc.balance) : acc.balance;
+          return { ...acc, balance: (currentBalance + transferAmount).toFixed(2) };
+        }
+        return acc;
+      });
+      UserDataManager.setUserData('bankAccounts', updatedAccounts);
 
-    // Dispatch update events with updated data
-    window.dispatchEvent(new CustomEvent('transactionUpdate'));
-    window.dispatchEvent(new CustomEvent('balanceUpdate', {
-      detail: { accounts: updatedAccounts }
-    }));
-    window.dispatchEvent(new CustomEvent('accountsUpdate', {
-      detail: { accounts: updatedAccounts, source: 'internal-transfer' }
-    }));
+      // Add transactions
+      const currentTransactions = UserDataManager.getUserData('bankTransactions', []);
+      const updatedTransactions = [...currentTransactions, debitTransaction, creditTransaction];
+      UserDataManager.setUserData('bankTransactions', updatedTransactions);
 
-    setStep('success');
+      // Dispatch update events with updated data
+      window.dispatchEvent(new CustomEvent('transactionUpdate'));
+      window.dispatchEvent(new CustomEvent('balanceUpdate', {
+        detail: { accounts: updatedAccounts }
+      }));
+      window.dispatchEvent(new CustomEvent('accountsUpdate', {
+        detail: { accounts: updatedAccounts, source: 'internal-transfer' }
+      }));
+
+      setStep('success');
+    }, 2000);
   };
 
   const formatAmount = (amount: string) => {
     const num = parseFloat(amount);
     return isNaN(num) ? '0.00' : num.toFixed(2);
   };
+
+  if (step === 'processing') {
+    return (
+      <div 
+        id="transferProgressScreen"
+        className="h-screen flex flex-col bg-white page-slide-in-right"
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          backgroundColor: '#f9fafb',
+          visibility: 'visible',
+          opacity: 1,
+          zIndex: 999,
+          transform: 'translateY(0)'
+        }}
+      >
+        <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
+          <span className="font-semibold text-sm text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+            Processing Transfer
+          </span>
+        </div>
+
+        <div className="flex-1 flex items-center justify-center p-6">
+          <div className="text-center max-w-sm">
+            {/* Android-optimized spinner */}
+            <div className="w-24 h-24 mx-auto mb-8 flex items-center justify-center">
+              <div 
+                className="w-16 h-16 border-4 border-[#126987] border-t-transparent rounded-full"
+                style={{
+                  animation: 'spin 1s linear infinite',
+                  WebkitAnimation: 'spin 1s linear infinite',
+                  WebkitBackfaceVisibility: 'hidden',
+                  backfaceVisibility: 'hidden',
+                  transform: 'translateZ(0)',
+                  WebkitTransform: 'translateZ(0)'
+                }}
+              ></div>
+            </div>
+            
+            <h2 className="text-3xl font-bold text-gray-900 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              Processing Transfer
+            </h2>
+            <p className="text-lg text-gray-600 mb-8" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              Transferring €{formatAmount(formData?.amount || '0')} between your accounts...
+            </p>
+            
+            {/* Enhanced Android-compatible progress indicator */}
+            <div className="space-y-6">
+              <div className="w-full bg-white rounded-full h-4 overflow-hidden shadow-inner border border-gray-200" style={{
+                WebkitBackfaceVisibility: 'hidden',
+                backfaceVisibility: 'hidden'
+              }}>
+                <div 
+                  className="bg-gradient-to-r from-[#126987] via-[#5a7b85] to-[#126987] h-4 rounded-full shadow-sm relative"
+                  style={{
+                    width: '100%',
+                    animation: 'pulse 2s ease-in-out infinite',
+                    WebkitAnimation: 'pulse 2s ease-in-out infinite'
+                  }}
+                ></div>
+              </div>
+              
+              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-gray-200 shadow-lg">
+                <div className="flex items-center justify-center space-x-3 mb-3">
+                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-sm font-semibold text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Secure Connection Active
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500 leading-relaxed" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Your internal transfer is being processed securely with Bank of Ireland's internal network
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (step === 'success') {
     return (
@@ -346,6 +465,7 @@ export default function InternalTransfer() {
           </div>
 
           <button
+            id="confirmTransferBtn"
             onClick={() => {
               console.log('Button clicked, calling confirmTransfer');
               confirmTransfer();
@@ -356,7 +476,7 @@ export default function InternalTransfer() {
               WebkitTapHighlightColor: 'transparent',
               outline: 'none',
               position: 'relative',
-              zIndex: 999,
+              zIndex: 1000,
               minHeight: '56px',
               display: 'flex',
               alignItems: 'center',
@@ -366,7 +486,9 @@ export default function InternalTransfer() {
               touchAction: 'manipulation',
               userSelect: 'none',
               WebkitUserSelect: 'none',
-              WebkitTouchCallout: 'none'
+              WebkitTouchCallout: 'none',
+              visibility: 'visible',
+              opacity: 1
             }}
           >
             Confirm Transfer
