@@ -49,7 +49,7 @@ export class CurrencyManager {
     
     // Save to database for persistence across sessions
     try {
-      const customerNumber = UserDataManager.getUserData('customerNumber');
+      const customerNumber = UserDataManager.getCurrentUser();
       if (customerNumber) {
         const response = await fetch(`/api/profile/${customerNumber}`, {
           method: 'PUT',
@@ -152,7 +152,7 @@ export class CurrencyManager {
   // Load user currency preference from database
   static async loadUserCurrencyPreference(): Promise<void> {
     try {
-      const currentUser = localStorage.getItem('currentUser');
+      const currentUser = UserDataManager.getCurrentUser();
       if (currentUser) {
         const response = await fetch(`/api/profile/${currentUser}`);
         if (response.ok) {
