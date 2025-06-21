@@ -50,9 +50,11 @@ function ProtectedRoute({ children, fallback }: { children: React.ReactNode; fal
     const checkInitialization = () => {
       const appSessionActive = localStorage.getItem('app_session_active');
       const splashCompleted = localStorage.getItem('splash_completed');
+      const accessGranted = localStorage.getItem('accessGranted');
+      const bankingUser = localStorage.getItem('bankingUser');
       
-      // Mark as initialized if both conditions are met OR if we have a user
-      if ((appSessionActive && splashCompleted) || user) {
+      // Mark as initialized if any of these conditions are met
+      if ((appSessionActive && splashCompleted) || user || (accessGranted === 'true') || bankingUser) {
         setInitializationComplete(true);
         if (initCheckInterval) {
           clearInterval(initCheckInterval);
@@ -64,15 +66,25 @@ function ProtectedRoute({ children, fallback }: { children: React.ReactNode; fal
     checkInitialization();
     initCheckInterval = setInterval(checkInitialization, 100);
     
-    // Fallback timeout after 4 seconds - force navigation to login
+    // Fallback timeout after 8 seconds - but check for valid access first
     timeoutId = setTimeout(() => {
-      console.warn('ProtectedRoute: Initialization timeout reached, forcing login redirect');
-      setLoadingTimeout(true);
-      setInitializationComplete(true);
+      const hasAccess = localStorage.getItem('accessGranted');
+      const bankingUser = localStorage.getItem('bankingUser');
+      
+      if (hasAccess === 'true' || bankingUser) {
+        // Valid access exists - mark as initialized without forcing login
+        console.log('ProtectedRoute: Valid access found, proceeding without login redirect');
+        setInitializationComplete(true);
+      } else {
+        console.warn('ProtectedRoute: Initialization timeout reached, forcing login redirect');
+        setLoadingTimeout(true);
+        setInitializationComplete(true);
+      }
+      
       if (initCheckInterval) {
         clearInterval(initCheckInterval);
       }
-    }, 4000);
+    }, 8000);
     
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
