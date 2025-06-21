@@ -4,6 +4,7 @@ import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin
 import { UserDataManager } from "@/utils/userDataManager";
 import { useAuth } from "@/lib/auth";
 import { motion, AnimatePresence } from "framer-motion";
+import { getUserCurrency, setCurrencyPreference, getCurrencySymbol } from "@/utils/currencyUtils";
 
 export default function Profile() {
   const locationHook = useLocation();
@@ -18,6 +19,7 @@ export default function Profile() {
   const [accounts, setAccounts] = useState<any[]>([]);
   const [editingAccount, setEditingAccount] = useState<any>(null);
   const [newBalance, setNewBalance] = useState('');
+  const [currentCurrency, setCurrentCurrency] = useState<'EUR' | 'GBP'>(() => getUserCurrency());
 
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [showAddTransaction, setShowAddTransaction] = useState(false);
@@ -82,6 +84,30 @@ export default function Profile() {
       joinDate: ""
     };
   });
+
+  // Currency change handler
+  const handleCurrencyChange = (newCurrency: 'EUR' | 'GBP') => {
+    setCurrencyPreference(newCurrency);
+    setCurrentCurrency(newCurrency);
+    
+    // Reload accounts to trigger UI updates
+    const freshAccounts = UserDataManager.getUserAccounts();
+    setAccounts(freshAccounts);
+    
+    // Dispatch additional events to update other components
+    window.dispatchEvent(new CustomEvent('balanceUpdate'));
+    window.dispatchEvent(new CustomEvent('accountsUpdate', { detail: { accounts: freshAccounts } }));
+  };
+
+  // Listen for currency updates
+  useEffect(() => {
+    const handleCurrencyUpdate = () => {
+      setCurrentCurrency(getUserCurrency());
+    };
+
+    window.addEventListener('currencyUpdate', handleCurrencyUpdate);
+    return () => window.removeEventListener('currencyUpdate', handleCurrencyUpdate);
+  }, []);
 
   // Load profile data from database with real-time updates
   useEffect(() => {
@@ -1161,7 +1187,7 @@ export default function Profile() {
                   {/* Edit Profile */}
                   <button 
                     onClick={startEditingProfile}
-                    className="w-full flex items-center space-x-3 p-4 bg-blue-50 border border-blue-200 rounded-xl active:scale-98 transition-transform"
+                    className="w-full flex items-center space-x-3 p-4 bg-blue-50 border border-blue-200 rounded-xl active:scale-98 transition-transform mb-3"
                   >
                     <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                       <Edit3 className="w-5 h-5 text-blue-600" />
@@ -1175,6 +1201,25 @@ export default function Profile() {
                       </p>
                     </div>
                   </button>
+
+                  {/* Primary Currency Setting */}
+                  <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                    <label className="block text-sm font-semibold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Primary Currency
+                    </label>
+                    <select
+                      value={currentCurrency}
+                      onChange={(e) => handleCurrencyChange(e.target.value as 'EUR' | 'GBP')}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-gray-900"
+                      style={{ fontFamily: 'OpenSans, sans-serif' }}
+                    >
+                      <option value="EUR">Euro (€)</option>
+                      <option value="GBP">Pound Sterling (£)</option>
+                    </select>
+                    <p className="text-xs text-gray-600 mt-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Changes how all amounts are displayed in the app
+                    </p>
+                  </div>
                 </div>
 
                 {/* Account Management Section */}
