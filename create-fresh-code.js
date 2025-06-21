@@ -2,7 +2,7 @@ import Database from '@replit/database';
 const db = new Database();
 
 async function createFreshCode() {
-  const freshCode = 'access' + Date.now();
+  const freshCode = 'vip' + Math.floor(Math.random() * 1000);
   
   await db.set(`access_code_${freshCode}`, {
     code: freshCode,
