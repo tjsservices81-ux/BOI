@@ -445,7 +445,8 @@ export default function Profile() {
           address: updatedData.address || '',
           dateOfBirth: updatedData.dateOfBirth || '',
           customerNumber: updatedData.customerNumber,
-          joinDate: updatedData.joinDate || ''
+          joinDate: updatedData.joinDate || '',
+          currency: updatedData.currency || 'EUR'
         });
         
         alert('Profile updated successfully');

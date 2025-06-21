@@ -5,6 +5,7 @@ import SpendingVisualization from "../components/SpendingVisualization";
 import SpendingInsights from "../components/SpendingInsights";
 import { UserDataManager } from "../utils/userDataManager";
 import { StateManager } from "../utils/stateManager";
+import { formatCurrency, getUserCurrency, type Currency } from "../utils/currencyUtils";
 
 interface Account {
   id: number;

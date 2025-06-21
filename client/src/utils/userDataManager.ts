@@ -10,6 +10,7 @@ export interface UserData {
   dateOfBirth?: string;
   joinDate: string;
   dateCreated: string;
+  currency?: string;
 }
 
 export class UserDataManager {
