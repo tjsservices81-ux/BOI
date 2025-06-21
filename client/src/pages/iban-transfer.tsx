@@ -200,20 +200,19 @@ export default function IbanTransfer() {
         if (newProgress >= 100) {
           clearInterval(interval);
           
-          // Process the transfer using both generated and user's payment reference
+          // Process the transfer using the user's payment reference
           const transferSuccess = processConfirmedTransfer(
             `IBAN_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             formData.fromAccount,
             parseFloat(formData.amount),
             formData.recipientName,
             'IBAN',
-            ref, // Use the generated reference for system tracking
+            formData.reference, // Use the user's input reference
             undefined, // No exchange rate for IBAN transfers
             {
               iban: formData.iban,
               bicCode: formData.bicCode
-            },
-            formData.reference // Pass user's payment reference separately
+            }
           );
           
           if (transferSuccess) {
@@ -327,14 +326,8 @@ export default function IbanTransfer() {
               <>
                 <div className="bg-gray-50 rounded-xl p-4 mb-6 text-left">
                   <div className="space-y-3">
-                    {formData?.reference && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Reference:</span>
-                        <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{formData.reference}</span>
-                      </div>
-                    )}
                     <div className="flex justify-between">
-                      <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Unique Reference:</span>
+                      <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Reference:</span>
                       <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{transferReference}</span>
                     </div>
                     <div className="flex justify-between">

@@ -305,8 +305,7 @@ export default function UkTransfer() {
             {
               accountNumber: formData.accountNumber,
               sortCode: formData.sortCode
-            },
-            formData.reference // Pass user's payment reference
+            }
           );
           
           if (transferSuccess) {
@@ -515,14 +514,8 @@ export default function UkTransfer() {
               <>
                 <div className="bg-gray-50 rounded-xl p-3 mb-4 text-left animate-fade-in">
                   <div className="space-y-3">
-                    {formData?.reference && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Reference:</span>
-                        <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{formData.reference}</span>
-                      </div>
-                    )}
                     <div className="flex justify-between">
-                      <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Transaction ID:</span>
+                      <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Reference:</span>
                       <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{transferReference}</span>
                     </div>
                     <div className="flex justify-between">
