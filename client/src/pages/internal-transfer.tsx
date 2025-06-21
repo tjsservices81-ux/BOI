@@ -6,7 +6,7 @@ import { useLocation } from "wouter";
 import { ChevronLeft, ArrowUpDown, Check, AlertCircle, X } from "lucide-react";
 import { UserDataManager } from "../utils/userDataManager";
 import { generateReference } from "../utils/transferUtils";
-import { getUserCurrency } from "../utils/currencyUtils";
+import { getUserCurrency, formatCurrency, type Currency } from "../utils/currencyUtils";
 
 const internalTransferSchema = z.object({
   fromAccount: z.string().min(1, "Please select a source account"),
