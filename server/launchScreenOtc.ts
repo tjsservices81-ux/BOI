@@ -24,6 +24,8 @@ class LaunchScreenOTCService {
     await this.generateNewCode();
   }
 
+
+
   async generateNewCode(customCode?: string, expiryHours?: number): Promise<string> {
     const expiry = expiryHours || this.defaultExpiryHours;
     

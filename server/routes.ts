@@ -134,6 +134,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Generate new OTC for each login attempt
+  app.post("/api/admin/generate-otc-for-login", async (req, res) => {
+    try {
+      const { reason, timestamp } = req.body;
+      
+      // Generate fresh OTC for this login attempt
+      const newOtc = await launchScreenOtc.generateNewCode();
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      
+      console.log(`🔑 LOGIN ATTEMPT OTC: ${newOtc} (expires: ${expiresAt.toLocaleString()})`);
+      console.log(`📋 Reason: ${reason} at ${timestamp}`);
+      
+      // Send email automatically
+      let emailSent = false;
+      try {
+        await launchScreenOtc.sendEmailToAdmin(newOtc, expiresAt);
+        emailSent = true;
+        console.log(`📧 AUTO EMAIL SENT: ${newOtc}`);
+      } catch (emailError) {
+        console.log(`⚠️ Email failed: ${emailError}`);
+      }
+      
+      res.json({ 
+        success: true,
+        otc: newOtc,
+        expiresAt: expiresAt.toISOString(),
+        emailSent,
+        reason
+      });
+    } catch (error) {
+      console.error('Login OTC generation error:', error);
+      res.status(500).json({ error: "Failed to generate login OTC" });
+    }
+  });
+
   // Admin endpoint to send current OTC via email
   app.post("/api/admin/send-current-otc-email", async (req, res) => {
     try {
