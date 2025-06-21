@@ -47,8 +47,9 @@ export default function TransactionHistoryWorking() {
   };
 
   // Currency change handler
-  const handleCurrencyChange = (event: CustomEvent) => {
-    setCurrentCurrency(event.detail.currency);
+  const handleCurrencyChange = (event: Event) => {
+    const customEvent = event as CustomEvent;
+    setCurrentCurrency(customEvent.detail.currency);
   };
 
   const handleDeleteTransaction = () => {
@@ -96,6 +97,9 @@ export default function TransactionHistoryWorking() {
 
 
   useEffect(() => {
+    // Add currency change event listener
+    window.addEventListener('currencyChanged', handleCurrencyChange as EventListener);
+    
     const loadData = () => {
       // Clear cache to ensure we get fresh data
       UserDataManager.clearCache('bankTransactions');
@@ -183,6 +187,7 @@ export default function TransactionHistoryWorking() {
     window.addEventListener('balanceUpdate', handleTransactionUpdate);
     
     return () => {
+      window.removeEventListener('currencyChanged', handleCurrencyChange as EventListener);
       window.removeEventListener('transactionUpdate', handleTransactionUpdate);
       window.removeEventListener('transactionDeleted', handleTransactionUpdate);
       window.removeEventListener('transactionAdded', handleTransactionUpdate);
@@ -247,7 +252,7 @@ export default function TransactionHistoryWorking() {
           </div>
           <div className="text-right">
             <p className="text-3xl font-bold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              €{parseFloat(balance).toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              {CurrencyManager.formatAmount(balance, currentCurrency)}
             </p>
           </div>
         </div>
@@ -294,7 +299,7 @@ export default function TransactionHistoryWorking() {
                 </div>
                 <div className="text-right">
                   <p className={`font-semibold text-sm ${isDebit ? 'text-gray-900' : 'text-green-600'}`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    €{transaction.amount}
+                    {CurrencyManager.formatAmount(transaction.amount, currentCurrency)}
                   </p>
                 </div>
               </button>
@@ -376,7 +381,7 @@ export default function TransactionHistoryWorking() {
               {/* Amount */}
               <div className="text-center py-4 border-b border-gray-200">
                 <p className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  €{selectedTransaction.amount.replace('-', '')}
+                  {CurrencyManager.formatAmount(selectedTransaction.amount.replace('-', ''), currentCurrency)}
                 </p>
                 <p className="text-sm text-gray-500 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                   {selectedTransaction.type === 'debit' ? 'Sent' : 'Received'}
