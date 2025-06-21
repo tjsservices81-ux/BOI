@@ -1173,70 +1173,7 @@ export default function Profile() {
             </div>
           </div>
 
-          {/* Transfer Toggle Controls - Hidden by default, shown after 5 profile picture taps */}
-          {showTransferToggles && (
-            <div className="space-y-4 mb-8 p-4 bg-blue-50 border border-blue-200 rounded-xl">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Transfer Options
-                </h3>
-                <button
-                  onClick={() => setShowTransferToggles(false)}
-                  className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center active:scale-95 transition-transform"
-                >
-                  <X className="w-4 h-4 text-gray-600" />
-                </button>
-              </div>
-              
-              {/* Card Transfer Toggle */}
-              <div className="flex items-center justify-between p-3 bg-white rounded-lg border">
-                <div className="flex items-center space-x-3">
-                  <CreditCard className="w-5 h-5 text-blue-600" />
-                  <div>
-                    <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Card Transfer
-                    </p>
-                    <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Enable card-to-card transfers
-                    </p>
-                  </div>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="sr-only peer"
-                    checked={showCardTransfer}
-                    onChange={(e) => updateTransferToggle('card', e.target.checked)}
-                  />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                </label>
-              </div>
 
-              {/* Email Transfer Toggle */}
-              <div className="flex items-center justify-between p-3 bg-white rounded-lg border">
-                <div className="flex items-center space-x-3">
-                  <Mail className="w-5 h-5 text-green-600" />
-                  <div>
-                    <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Email Transfer
-                    </p>
-                    <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Enable email money transfers
-                    </p>
-                  </div>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="sr-only peer"
-                    checked={showEmailTransfer}
-                    onChange={(e) => updateTransferToggle('email', e.target.checked)}
-                  />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
-                </label>
-              </div>
-            </div>
-          )}
 
           {/* Actions */}
           <div className="space-y-4">
@@ -1308,6 +1245,63 @@ export default function Profile() {
                       </p>
                     </div>
                   </button>
+                </div>
+
+                {/* Transfer Settings Section */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Transfer Settings
+                  </h3>
+                  
+                  <div className="space-y-3">
+                    {/* Card Transfer Toggle */}
+                    <div className="flex items-center justify-between p-3 bg-white rounded-lg border">
+                      <div className="flex items-center space-x-3">
+                        <CreditCard className="w-5 h-5 text-blue-600" />
+                        <div>
+                          <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                            Card Transfer
+                          </p>
+                          <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                            Enable card-to-card transfers
+                          </p>
+                        </div>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          className="sr-only peer"
+                          checked={showCardTransfer}
+                          onChange={(e) => updateTransferToggle('card', e.target.checked)}
+                        />
+                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                      </label>
+                    </div>
+
+                    {/* Email Transfer Toggle */}
+                    <div className="flex items-center justify-between p-3 bg-white rounded-lg border">
+                      <div className="flex items-center space-x-3">
+                        <Mail className="w-5 h-5 text-green-600" />
+                        <div>
+                          <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                            Email Transfer
+                          </p>
+                          <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                            Enable email money transfers
+                          </p>
+                        </div>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          className="sr-only peer"
+                          checked={showEmailTransfer}
+                          onChange={(e) => updateTransferToggle('email', e.target.checked)}
+                        />
+                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                      </label>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Account Management Section */}
