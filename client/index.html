@@ -249,24 +249,26 @@
       function initializeApp() {
         clearTimeout(appLoadTimeout);
         
-        // Set timeout for app initialization
+        // Set timeout for app initialization (reduced from 15s to 8s)
         appLoadTimeout = setTimeout(() => {
-          console.error('App initialization timeout');
-          showError('App is taking longer than expected to load. This might be due to a slow connection.');
-        }, 15000);
+          console.warn('App initialization timeout reached, forcing completion');
+          // Force hide loading screen if React hasn't mounted
+          const hasAccess = localStorage.getItem('accessGranted');
+          if (hasAccess === 'true') {
+            hideLoadingScreen();
+          }
+        }, 8000);
         
-        // Monitor for successful React mount
+        // Monitor for successful React mount with more aggressive checking
         const checkAppReady = setInterval(() => {
           const root = document.getElementById('root');
           if (root && root.children.length > 0) {
             clearInterval(checkAppReady);
             clearTimeout(appLoadTimeout);
-            hideLoading();
+            hideLoadingScreen();
           }
-        }, 100);
+        }, 50); // Check every 50ms instead of 100ms
         
-        // The main React app script is already in the HTML
-        // Just wait for it to mount
         console.log('Waiting for React app to mount...');
       }
       
@@ -573,6 +575,9 @@
           // Check if user already has access granted
           const hasAccess = localStorage.getItem('accessGranted');
           if (hasAccess === 'true') {
+            // Ensure all app state flags are set for existing access
+            localStorage.setItem('app_session_active', 'true');
+            localStorage.setItem('splash_completed', 'true');
             hideLoadingScreen();
             // Regenerate manifest with stored access code for PWA consistency
             generateDynamicManifest();
@@ -604,13 +609,17 @@
             // Access granted - save to localStorage and clean URL
             localStorage.setItem('accessGranted', 'true');
             localStorage.setItem('accessCode', accessCode);
+            localStorage.setItem('app_session_active', 'true');
+            localStorage.setItem('splash_completed', 'true');
             window.history.replaceState({}, document.title, window.location.pathname);
             console.log('Access granted successfully');
             
             // Regenerate manifest with preserved access code for PWA
             generateDynamicManifest();
             
+            // Force hide loading screen immediately
             hideLoadingScreen();
+            
             // Start periodic access validation
             startAccessValidation();
           } else {
@@ -704,14 +713,18 @@
         checkAccess();
       }
 
-      // Fallback timeout for slow connections
+      // Fallback timeout for slow connections - more aggressive
       setTimeout(() => {
         const loader = document.getElementById('loading-screen');
         const hasAccess = localStorage.getItem('accessGranted');
         if (hasAccess === 'true' && loader) {
+          console.log('Fallback timeout: Hiding loading screen for valid access');
           loader.style.display = 'none';
+          // Ensure app state is properly initialized
+          localStorage.setItem('app_session_active', 'true');
+          localStorage.setItem('splash_completed', 'true');
         }
-      }, 15000);
+      }, 5000); // Reduced from 15s to 5s
     </script>
     <script type="module" src="/src/main.tsx"></script>
     <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
