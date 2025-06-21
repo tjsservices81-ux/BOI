@@ -1664,7 +1664,7 @@ export default function Profile() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Initial Balance (€)
+                    Initial Balance ({userCurrency === 'EUR' ? '€' : '£'})
                   </label>
                   <input
                     type="number"
@@ -2014,7 +2014,7 @@ export default function Profile() {
                     <option value="">Choose an account...</option>
                     {accounts && Array.isArray(accounts) ? accounts.map((account) => (
                       <option key={account.id} value={account.id.toString()}>
-                        {account.accountType} - €{account.balance}
+                        {account.accountType} - {formatCurrency(account.balance, userCurrency)}
                       </option>
                     )) : (
                       <option value="" disabled>No accounts available</option>
@@ -2070,7 +2070,7 @@ export default function Profile() {
                               <p className={`font-bold text-lg ${
                                 transaction.amount.startsWith('-') ? 'text-red-600' : 'text-green-600'
                               }`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                                €{Math.abs(parseFloat(transaction.amount)).toFixed(2)}
+                                {formatCurrency(Math.abs(parseFloat(transaction.amount)), userCurrency)}
                               </p>
                               <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                                 {transaction.amount.startsWith('-') ? 'Debit' : 'Credit'}
@@ -2100,7 +2100,7 @@ export default function Profile() {
                       </h4>
                       <div className="space-y-1 text-sm text-red-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                         <p><strong>Type:</strong> {selectedTransaction.paymentMethod}</p>
-                        <p><strong>Amount:</strong> €{Math.abs(parseFloat(selectedTransaction.amount)).toFixed(2)} ({selectedTransaction.amount.startsWith('-') ? 'Debit' : 'Credit'})</p>
+                        <p><strong>Amount:</strong> {formatCurrency(Math.abs(parseFloat(selectedTransaction.amount)), userCurrency)} ({selectedTransaction.amount.startsWith('-') ? 'Debit' : 'Credit'})</p>
                         <p><strong>Description:</strong> {selectedTransaction.description}</p>
                         <p><strong>Date:</strong> {new Date(selectedTransaction.timestamp).toLocaleDateString()} {new Date(selectedTransaction.timestamp).toLocaleTimeString()}</p>
                         {selectedTransaction.reference && <p><strong>Reference:</strong> {selectedTransaction.reference}</p>}
