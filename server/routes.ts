@@ -11,6 +11,10 @@ import { generateChatResponse } from "./openai";
 import { isDeviceBlocked, addDeviceSession, isDeviceInPanicMode, isCustomerInPanicMode } from "./deviceSessions";
 import { isAccountActiveOnOtherDevice, setUserDeviceSession, removeUserDeviceSession, getUserDeviceSession, isCurrentDeviceAuthorized } from "./deviceExclusiveAuth";
 import { addUserSession, removeUserSession, sessionTrackingMiddleware, isSessionValid } from "./sessionManager";
+import Database from "@replit/database";
+
+// Initialize Replit Database for access codes
+const db = new Database();
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Wait for storage to fully initialize from persistent data
@@ -44,6 +48,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
       timestamp: new Date().toISOString(),
       server: "Bank of Ireland API"
     });
+  });
+
+  // Access code verification endpoint
+  app.post("/api/verify-code", async (req, res) => {
+    try {
+      const { code } = req.body;
+      
+      if (!code || typeof code !== 'string') {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Invalid access code format" 
+        });
+      }
+
+      // Check if code exists and get its status
+      const codeData = await db.get(`access_code_${code}`);
+      
+      if (!codeData) {
+        return res.status(404).json({ 
+          success: false, 
+          error: "Access code not found" 
+        });
+      }
+
+      // Parse the stored data
+      const codeInfo = typeof codeData === 'string' ? JSON.parse(codeData) : codeData;
+      
+      if (codeInfo.used) {
+        return res.status(409).json({ 
+          success: false, 
+          error: "Access code already used",
+          message: "Access expired — this link has already been used." 
+        });
+      }
+
+      // Mark code as used
+      await db.set(`access_code_${code}`, JSON.stringify({
+        ...codeInfo,
+        used: true,
+        usedAt: new Date().toISOString()
+      }));
+
+      res.json({ 
+        success: true, 
+        message: "Access granted" 
+      });
+      
+    } catch (error) {
+      console.error('Access code verification error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: "Server error during verification" 
+      });
+    }
   });
 
   // Add session tracking middleware

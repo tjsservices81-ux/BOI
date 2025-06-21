@@ -469,17 +469,88 @@
         });
       }
 
-      // Simple, reliable loading screen management
-      window.addEventListener('load', function () {
+      // Access control system
+      async function checkAccess() {
         const loader = document.getElementById('loading-screen');
-        if (loader) loader.style.display = 'none';
-      });
+        
+        try {
+          // Check if user already has access granted
+          const hasAccess = localStorage.getItem('accessGranted');
+          if (hasAccess === 'true') {
+            if (loader) loader.style.display = 'none';
+            return;
+          }
 
-      // Optional: Fallback timeout in case window.onload fails
+          // Check for access code in URL
+          const urlParams = new URLSearchParams(window.location.search);
+          const accessCode = urlParams.get('access');
+          
+          if (!accessCode) {
+            // No access code and no stored access - show "Not available"
+            showAccessDenied("Not available");
+            return;
+          }
+
+          // Verify access code with backend
+          const response = await fetch('/api/verify-code', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ code: accessCode })
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            // Access granted - save to localStorage and clean URL
+            localStorage.setItem('accessGranted', 'true');
+            window.history.replaceState({}, document.title, window.location.pathname);
+            if (loader) loader.style.display = 'none';
+          } else {
+            // Access denied - show appropriate message
+            const message = result.message || "Access code invalid or expired";
+            showAccessDenied(message);
+          }
+        } catch (error) {
+          console.error('Access verification failed:', error);
+          showAccessDenied("Connection error - please try again");
+        }
+      }
+
+      function showAccessDenied(message) {
+        const loader = document.getElementById('loading-screen');
+        if (loader) {
+          loader.innerHTML = `
+            <div style="text-align: center; max-width: 400px; padding: 20px;">
+              <div style="font-size: 24px; font-weight: bold; margin-bottom: 20px; color: #dc2626;">
+                Access Restricted
+              </div>
+              <div style="font-size: 16px; line-height: 1.5;">
+                ${message}
+              </div>
+            </div>
+          `;
+          loader.style.background = '#f8f9fa';
+          loader.style.color = '#374151';
+        }
+      }
+
+      // Initialize access check when DOM is ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', checkAccess);
+      } else {
+        checkAccess();
+      }
+
+      // Fallback timeout for slow connections
       setTimeout(() => {
         const loader = document.getElementById('loading-screen');
-        if (loader) loader.style.display = 'none';
-      }, 10000); // Hide after 10 seconds max
+        const hasAccess = localStorage.getItem('accessGranted');
+        if (hasAccess === 'true' && loader) {
+          loader.style.display = 'none';
+        }
+      }, 15000);
     </script>
     <script type="module" src="/src/main.tsx"></script>
     <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
