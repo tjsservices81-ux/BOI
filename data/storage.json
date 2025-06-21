@@ -175,6 +175,22 @@
         "dateCreated": "2025-06-21T01:41:55.825Z",
         "isDisabled": false
       }
+    ],
+    [
+      66,
+      {
+        "id": 66,
+        "customerNumber": "20177508",
+        "pin": "9999",
+        "name": "Test Security",
+        "email": "test@security.com",
+        "phone": null,
+        "address": null,
+        "dateOfBirth": "1990-01-01",
+        "joinDate": "Member since 2018",
+        "dateCreated": "2025-06-21T01:59:01.442Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [

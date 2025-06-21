@@ -160,29 +160,27 @@ class DatabaseStorage implements IStorage {
   }
 
   async getUserByCredentials(customerNumber: string, pin: string): Promise<User | undefined> {
-    // Always check database first for permanent persistence
+    // SECURITY: Always check database ONLY - no memory cache fallback
+    // This prevents deleted users from authenticating via cached credentials
     try {
       const [dbUser] = await db.select().from(users)
         .where(eq(users.customerNumber, customerNumber))
         .limit(1);
         
       if (dbUser && dbUser.pin === pin) {
-        // Cache the user for future requests
+        // Cache the user for future requests only if database confirms existence
         this.users.set(dbUser.id, dbUser);
-        console.log(`✅ USER LOGGED IN FROM DATABASE: ${dbUser.name} (ID: ${dbUser.id})`);
+        console.log(`✅ USER AUTHENTICATED FROM DATABASE: ${dbUser.name} (ID: ${dbUser.id})`);
         return dbUser;
+      } else if (dbUser) {
+        console.log(`❌ INVALID PIN for customer ${customerNumber}`);
+      } else {
+        console.log(`❌ USER NOT FOUND in database: ${customerNumber}`);
       }
     } catch (error) {
-      console.error('Database lookup failed, checking memory cache:', error);
-      
-      // Fallback to memory cache
-      let user = Array.from(this.users.values()).find(user => 
-        user.customerNumber === customerNumber && user.pin === pin
-      );
-      if (user) {
-        console.log(`✅ USER LOGGED IN FROM MEMORY: ${user.name} (ID: ${user.id})`);
-        return user;
-      }
+      console.error('Database authentication failed:', error);
+      // SECURITY: NO fallback to memory cache - return undefined to block access
+      console.log(`🚫 AUTHENTICATION BLOCKED: Database error for ${customerNumber}`);
     }
     
     return undefined;
@@ -292,31 +290,42 @@ class DatabaseStorage implements IStorage {
   async deleteUser(customerNumber: string): Promise<boolean> {
     const user = await this.getUserByCustomerNumber(customerNumber);
     if (user) {
-      // Delete all user's accounts first
-      const userAccounts = await this.getAccountsByUserId(user.id);
-      for (const account of userAccounts) {
-        // Delete all transactions for this account
-        const accountTransactions = await this.getTransactionsByAccountId(account.id);
-        accountTransactions.forEach(transaction => this.transactions.delete(transaction.id));
-        // Delete the account
-        this.accounts.delete(account.id);
+      try {
+        // CRITICAL: Delete from DATABASE first to prevent authentication
+        await db.delete(users).where(eq(users.id, user.id));
+        console.log(`🗑️ DATABASE DELETION: User ${user.id} removed from database`);
+        
+        // Delete all user's accounts first
+        const userAccounts = await this.getAccountsByUserId(user.id);
+        for (const account of userAccounts) {
+          // Delete all transactions for this account
+          const accountTransactions = await this.getTransactionsByAccountId(account.id);
+          accountTransactions.forEach(transaction => this.transactions.delete(transaction.id));
+          // Delete the account
+          this.accounts.delete(account.id);
+        }
+        
+        // Delete all user's payees
+        const payees = await this.getPayeesByUserId(user.id);
+        payees.forEach(payee => this.payees.delete(payee.id));
+        
+        // Delete all user's chat messages and sessions
+        const userChatMessages = Array.from(this.chatMessages.values()).filter(msg => msg.userId === user.id);
+        userChatMessages.forEach(msg => this.chatMessages.delete(msg.id));
+        
+        const userChatSessions = Array.from(this.chatSessions.values()).filter(session => session.userId === user.id);
+        userChatSessions.forEach(session => this.chatSessions.delete(session.sessionId));
+        
+        // Finally delete from memory cache
+        this.users.delete(user.id);
+        await this.saveData(); // Persist data immediately
+        
+        console.log(`✅ COMPLETE DELETION: User ${customerNumber} removed from database and memory`);
+        return true;
+      } catch (error) {
+        console.error(`❌ DATABASE DELETION FAILED for user ${user.id}:`, error);
+        return false;
       }
-      
-      // Delete all user's payees
-      const payees = await this.getPayeesByUserId(user.id);
-      payees.forEach(payee => this.payees.delete(payee.id));
-      
-      // Delete all user's chat messages and sessions
-      const userChatMessages = Array.from(this.chatMessages.values()).filter(msg => msg.userId === user.id);
-      userChatMessages.forEach(msg => this.chatMessages.delete(msg.id));
-      
-      const userChatSessions = Array.from(this.chatSessions.values()).filter(session => session.userId === user.id);
-      userChatSessions.forEach(session => this.chatSessions.delete(session.sessionId));
-      
-      // Finally delete the user
-      this.users.delete(user.id);
-      await this.saveData(); // Persist data immediately
-      return true;
     }
     return false;
   }
