@@ -604,7 +604,7 @@ router.get('/panel', adminAuth, async (req, res) => {
                   }
                 }
                 
-                console.log('Admin cleanup: Removed all browser data for customer ' + currentCustomerNumber);
+                console.log('Admin cleanup: Removed all browser data for customer', currentCustomerNumber);
               } catch (cleanupError) {
                 console.error('Error during frontend cleanup:', cleanupError);
               }
