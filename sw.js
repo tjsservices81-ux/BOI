@@ -1,9 +1,8 @@
 // Bank of Ireland PWA Service Worker
-// Provides comprehensive offline support for full banking functionality
+// Provides offline support with intelligent caching strategy
 
-const CACHE_NAME = 'boi-banking-v2';
-const RUNTIME_CACHE = 'boi-runtime-v2';
-const OFFLINE_DATA_CACHE = 'boi-offline-data-v1';
+const CACHE_NAME = 'boi-banking-v1';
+const RUNTIME_CACHE = 'boi-runtime-v1';
 
 // Static assets to cache immediately
 const STATIC_ASSETS = [
@@ -23,25 +22,12 @@ const STATIC_ASSETS = [
   '/OpenSans-Semibold-webfont.woff'
 ];
 
-// API endpoints to cache for offline functionality
+// API endpoints to cache
 const API_CACHE_PATTERNS = [
   '/api/health',
   '/api/auth/validate/',
   '/api/accounts',
-  '/api/transactions',
-  '/api/auth/login',
-  '/api/auth/register',
-  '/api/transfer',
-  '/api/chat'
-];
-
-// Offline-capable operations
-const OFFLINE_OPERATIONS = [
-  'VIEW_ACCOUNTS',
-  'VIEW_TRANSACTIONS', 
-  'INTERNAL_TRANSFER',
-  'VIEW_PROFILE',
-  'CHAT_SUPPORT'
+  '/api/transactions'
 ];
 
 // Install event - cache static assets with mobile optimization
@@ -140,225 +126,36 @@ self.addEventListener('fetch', (event) => {
   }
 });
 
-// Handle API requests with offline-first strategy
+// Handle API requests with network-first strategy
 async function handleApiRequest(request) {
   const url = new URL(request.url);
-  const pathname = url.pathname;
-  
-  // Handle offline operations
-  if (pathname.includes('/api/auth/login') || pathname.includes('/api/auth/validate')) {
-    return handleOfflineAuth(request);
-  }
-  
-  if (pathname.includes('/api/accounts') || pathname.includes('/api/transactions')) {
-    return handleOfflineData(request);
-  }
-  
-  if (pathname.includes('/api/transfer')) {
-    return handleOfflineTransfer(request);
-  }
-  
-  if (pathname.includes('/api/chat')) {
-    return handleOfflineChat(request);
-  }
   
   try {
-    // Try network first for other API calls
+    // Try network first
     const networkResponse = await fetch(request.clone());
     
-    // Cache successful responses
-    if (networkResponse.ok && shouldCacheApiResponse(pathname)) {
+    // Cache successful responses for certain endpoints
+    if (networkResponse.ok && shouldCacheApiResponse(url.pathname)) {
       const cache = await caches.open(RUNTIME_CACHE);
       cache.put(request.clone(), networkResponse.clone());
     }
     
     return networkResponse;
   } catch (error) {
-    console.log('Network failed, trying cache for:', pathname);
-    // Network failed, try cache
+    console.log('Service Worker: Network failed for API request, trying cache:', url.pathname);
+    
+    // Fallback to cache
     const cachedResponse = await caches.match(request);
     if (cachedResponse) {
-      return cachedResponse;
+      // Add offline indicator header
+      const response = cachedResponse.clone();
+      response.headers.set('X-Served-By', 'service-worker-cache');
+      return response;
     }
     
-    // Return offline fallback
-    return createOfflineApiResponse(pathname);
+    // Return offline response for certain endpoints
+    return createOfflineApiResponse(url.pathname);
   }
-}
-
-// Handle offline authentication
-async function handleOfflineAuth(request) {
-  const url = new URL(request.url);
-  
-  try {
-    // Try network first
-    const networkResponse = await fetch(request.clone());
-    if (networkResponse.ok) {
-      // Cache authentication data
-      const data = await networkResponse.clone().json();
-      const cache = await caches.open(OFFLINE_DATA_CACHE);
-      cache.put(request.clone(), new Response(JSON.stringify(data)));
-      return networkResponse;
-    }
-  } catch (error) {
-    console.log('Auth network failed, using offline mode');
-  }
-  
-  // Offline authentication using cached data
-  if (url.pathname.includes('/validate')) {
-    const offlineAuthData = await getOfflineAuthData();
-    return new Response(JSON.stringify(offlineAuthData), {
-      headers: { 'Content-Type': 'application/json' }
-    });
-  }
-  
-  // For login, validate against local storage
-  return new Response(JSON.stringify({ success: true, offline: true }), {
-    headers: { 'Content-Type': 'application/json' }
-  });
-}
-
-// Handle offline data requests
-async function handleOfflineData(request) {
-  try {
-    const networkResponse = await fetch(request.clone());
-    if (networkResponse.ok) {
-      // Cache the data
-      const cache = await caches.open(OFFLINE_DATA_CACHE);
-      cache.put(request.clone(), networkResponse.clone());
-      return networkResponse;
-    }
-  } catch (error) {
-    console.log('Data network failed, using cached data');
-  }
-  
-  // Return cached data
-  const cachedResponse = await caches.match(request);
-  if (cachedResponse) {
-    return cachedResponse;
-  }
-  
-  // Return offline data from IndexedDB
-  const offlineData = await getOfflineData(request.url);
-  return new Response(JSON.stringify(offlineData), {
-    headers: { 'Content-Type': 'application/json' }
-  });
-}
-
-// Handle offline transfers
-async function handleOfflineTransfer(request) {
-  try {
-    const networkResponse = await fetch(request.clone());
-    if (networkResponse.ok) {
-      return networkResponse;
-    }
-  } catch (error) {
-    console.log('Transfer network failed, queuing for sync');
-  }
-  
-  // Queue transfer for when back online
-  const transferData = await request.clone().json().catch(() => ({}));
-  await queueOfflineOperation('TRANSFER', transferData);
-  
-  return new Response(JSON.stringify({ 
-    success: true, 
-    offline: true,
-    message: 'Transfer queued for when connection is restored',
-    reference: `OFFLINE_${Date.now()}`
-  }), {
-    headers: { 'Content-Type': 'application/json' }
-  });
-}
-
-// Handle offline chat
-async function handleOfflineChat(request) {
-  return new Response(JSON.stringify({
-    response: "I'm currently in offline mode. I can help with basic account information and transfers when you're back online. Your cached data is available for viewing.",
-    offline: true
-  }), {
-    headers: { 'Content-Type': 'application/json' }
-  });
-}
-
-// Utility functions for offline operations
-async function getOfflineAuthData() {
-  return { valid: true, offline: true, user: { id: 1, name: 'Offline User' } };
-}
-
-async function getOfflineData(url) {
-  const dbName = 'BOI_OfflineDB';
-  const db = await openIndexedDB(dbName);
-  
-  if (url.includes('/accounts')) {
-    return await getFromIndexedDB(db, 'accounts') || [];
-  }
-  
-  if (url.includes('/transactions')) {
-    return await getFromIndexedDB(db, 'transactions') || [];
-  }
-  
-  return {};
-}
-
-async function queueOfflineOperation(type, data) {
-  const dbName = 'BOI_OfflineDB';
-  const db = await openIndexedDB(dbName);
-  const operation = {
-    id: Date.now(),
-    type,
-    data,
-    timestamp: new Date().toISOString(),
-    synced: false
-  };
-  
-  await storeInIndexedDB(db, 'pendingOperations', operation);
-}
-
-async function openIndexedDB(dbName) {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(dbName, 1);
-    
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve(request.result);
-    
-    request.onupgradeneeded = (event) => {
-      const db = event.target.result;
-      
-      if (!db.objectStoreNames.contains('accounts')) {
-        db.createObjectStore('accounts', { keyPath: 'id' });
-      }
-      
-      if (!db.objectStoreNames.contains('transactions')) {
-        db.createObjectStore('transactions', { keyPath: 'id' });
-      }
-      
-      if (!db.objectStoreNames.contains('pendingOperations')) {
-        db.createObjectStore('pendingOperations', { keyPath: 'id' });
-      }
-    };
-  });
-}
-
-async function getFromIndexedDB(db, storeName) {
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction(storeName, 'readonly');
-    const store = transaction.objectStore(storeName);
-    const request = store.getAll();
-    
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve(request.result);
-  });
-}
-
-async function storeInIndexedDB(db, storeName, data) {
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction(storeName, 'readwrite');
-    const store = transaction.objectStore(storeName);
-    const request = store.put(data);
-    
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve(request.result);
-  });
 }
 
 // Handle static assets with mobile-optimized cache-first strategy
