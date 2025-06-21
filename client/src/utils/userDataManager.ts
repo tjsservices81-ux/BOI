@@ -172,13 +172,84 @@ export class UserDataManager {
     localStorage.setItem('allBankUsers', JSON.stringify(existingUsers));
   }
 
-  // Get user profile data
+  // Get user profile data with real-time sync
   static getUserProfile(): UserData | null {
     const currentUser = this.getCurrentUser();
     if (!currentUser) return null;
 
     const allUsers = this.getAllUsers();
-    return allUsers[currentUser] || null;
+    const profile = allUsers[currentUser] || null;
+    
+    // Update activity timestamp when profile is accessed
+    if (profile) {
+      this.updateUserActivity();
+    }
+    
+    return profile;
+  }
+
+  // Set user profile data with backend sync
+  static setUserProfile(userData: UserData) {
+    const currentUser = this.getCurrentUser();
+    if (currentUser) {
+      // Update local storage
+      this.setUserData('profile', userData);
+      
+      // Update the main users registry
+      const allUsers = this.getAllUsers();
+      allUsers[currentUser] = userData;
+      localStorage.setItem('allBankUsers', JSON.stringify(allUsers));
+      
+      // Sync to backend
+      this.syncProfileToBackend(userData);
+    }
+  }
+
+  // Sync profile data to backend for persistent storage
+  static async syncProfileToBackend(userData: UserData) {
+    try {
+      const customerNumber = this.getCurrentUser();
+      if (!customerNumber) return;
+
+      await fetch(`/api/profile/${customerNumber}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          name: userData.name,
+          email: userData.email,
+          phone: userData.phone,
+          address: userData.address,
+          dateOfBirth: userData.dateOfBirth,
+          profilePhoto: userData.profilePhoto,
+          preferences: userData.preferences,
+          notificationSettings: userData.notificationSettings,
+          securitySettings: userData.securitySettings
+        })
+      });
+
+      console.log(`📡 SYNC: Profile data synced to backend for ${customerNumber}`);
+    } catch (error) {
+      console.error('Failed to sync profile to backend:', error);
+    }
+  }
+
+  // Update user activity timestamp
+  static updateUserActivity() {
+    const currentUser = this.getCurrentUser();
+    if (currentUser) {
+      const now = new Date().toISOString();
+      this.setUserData('lastActivity', now);
+      
+      // Also update the main user record
+      const allUsers = this.getAllUsers();
+      if (allUsers[currentUser]) {
+        allUsers[currentUser].lastActivity = now;
+        localStorage.setItem('allBankUsers', JSON.stringify(allUsers));
+      }
+    }
   }
 
   // Update user profile
@@ -396,6 +467,8 @@ export class UserDataManager {
 
   // Admin-triggered cleanup - removes all traces of a deleted user
   static adminDeleteUser(customerNumber: string) {
+    console.log(`🗑️ ADMIN DELETE: Starting complete removal of user ${customerNumber}`);
+    
     // Remove user from the users registry
     const allUsers = this.getAllUsers();
     if (allUsers[customerNumber]) {
@@ -434,6 +507,32 @@ export class UserDataManager {
       }
     }
     
-    console.log(`Admin cleanup: All data for customer ${customerNumber} removed from browser storage`);
+    // Clear permanent login flag
+    localStorage.removeItem('permanentlyLoggedIn');
+    
+    // Clear any IndexedDB data (if used)
+    if ('indexedDB' in window) {
+      try {
+        const deleteRequest = indexedDB.deleteDatabase(`user_${customerNumber}`);
+        deleteRequest.onsuccess = () => {
+          console.log(`IndexedDB for user ${customerNumber} deleted`);
+        };
+      } catch (error) {
+        console.warn('Error deleting IndexedDB:', error);
+      }
+    }
+    
+    // Clear service worker caches for this user
+    if ('caches' in window) {
+      caches.keys().then(cacheNames => {
+        cacheNames.forEach(cacheName => {
+          if (cacheName.includes(customerNumber)) {
+            caches.delete(cacheName);
+          }
+        });
+      });
+    }
+    
+    console.log(`✅ ADMIN DELETE COMPLETE: All local data for customer ${customerNumber} removed`);
   }
 }

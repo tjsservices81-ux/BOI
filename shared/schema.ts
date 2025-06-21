@@ -14,6 +14,14 @@ export const users = pgTable("users", {
   joinDate: text("join_date").notNull().default("Member since 2018"),
   dateCreated: timestamp("date_created").notNull().defaultNow(),
   isDisabled: boolean("is_disabled").notNull().default(false),
+  // Profile data fields for persistent storage
+  profilePhoto: text("profile_photo"),
+  preferences: jsonb("preferences"), // User preferences and settings
+  lastLoginTime: timestamp("last_login_time"),
+  deviceInfo: jsonb("device_info"), // Device information
+  notificationSettings: jsonb("notification_settings"),
+  securitySettings: jsonb("security_settings"),
+  lastActivity: timestamp("last_activity").notNull().defaultNow(),
 });
 
 export const accounts = pgTable("accounts", {

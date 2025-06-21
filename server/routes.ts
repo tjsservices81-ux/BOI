@@ -638,17 +638,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         dateOfBirth: z.string().optional(),
         joinDate: z.string().optional(),
         balance: z.string().optional(),
-        sortCode: z.string().optional()
+        sortCode: z.string().optional(),
+        isDisabled: z.boolean().optional()
       });
       
       const updates = adminUpdateSchema.parse(req.body);
       
-      // Update user profile in database
+      // Update user profile in database with admin changes
       let updatedUser = await storage.updateUserProfile(customerNumber, updates);
       
       if (!updatedUser) {
         return res.status(404).json({ error: "User not found" });
       }
+      
+      // If balance was updated, update the user's accounts
+      if (updates.balance) {
+        const userAccounts = await storage.getAccountsByUserId(updatedUser.id);
+        if (userAccounts.length > 0) {
+          await storage.updateAccountBalance(userAccounts[0].id, updates.balance);
+        }
+      }
+      
+      console.log(`🔧 ADMIN UPDATE: Profile modified by admin for ${customerNumber}:`, updates);
       
       // Return success with updated user data
       res.json({
@@ -661,6 +672,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors[0].message });
       }
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Admin delete user endpoint - complete deletion
+  app.delete("/api/admin/user/:customerNumber", async (req, res) => {
+    try {
+      const { customerNumber } = req.params;
+      
+      console.log(`🗑️ ADMIN DELETE: Starting complete deletion of user ${customerNumber}`);
+      
+      // Perform permanent deletion of user and all associated data
+      const deleted = await storage.permanentDeleteUser(customerNumber);
+      
+      if (deleted) {
+        console.log(`✅ ADMIN DELETE COMPLETE: User ${customerNumber} and all data permanently removed`);
+        res.json({
+          success: true,
+          message: `User ${customerNumber} and all associated data permanently deleted`
+        });
+      } else {
+        res.status(404).json({
+          success: false,
+          error: "User not found"
+        });
+      }
+    } catch (error) {
+      console.error('Admin delete user error:', error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Admin panel data endpoint - real-time user data
+  app.get("/api/admin/users", async (req, res) => {
+    try {
+      const allUsers = await storage.getAllUsers();
+      
+      // Get additional data for each user
+      const usersWithData = await Promise.all(allUsers.map(async (user) => {
+        const accounts = await storage.getAccountsByUserId(user.id);
+        const totalBalance = accounts.reduce((sum, account) => sum + parseFloat(account.balance), 0);
+        
+        return {
+          ...user,
+          totalBalance: totalBalance.toFixed(2),
+          accountCount: accounts.length,
+          lastLoginTime: user.lastLoginTime?.toISOString() || null,
+          lastActivity: user.lastActivity?.toISOString() || null
+        };
+      }));
+      
+      res.json({
+        success: true,
+        users: usersWithData,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Admin users fetch error:', error);
       res.status(500).json({ error: "Internal server error" });
     }
   });

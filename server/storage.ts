@@ -12,14 +12,18 @@ import { db } from "./db";
 import { eq } from "drizzle-orm";
 
 export interface IStorage {
-  // User operations
+  // User operations with enhanced data persistence
   getUserByCredentials(customerNumber: string, pin: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   getUser(id: number): Promise<User | undefined>;
   getUserByCustomerNumber(customerNumber: string): Promise<User | undefined>;
   updateUserProfile(customerNumber: string, updates: Partial<User>): Promise<User | undefined>;
+  updateUserActivity(customerNumber: string): Promise<void>;
+  saveUserPreferences(customerNumber: string, preferences: any): Promise<void>;
+  saveUserDeviceInfo(customerNumber: string, deviceInfo: any): Promise<void>;
   getAllUsers(): Promise<User[]>;
   deleteUser(customerNumber: string): Promise<boolean>;
+  permanentDeleteUser(customerNumber: string): Promise<boolean>;
   waitForInitialization(): Promise<void>;
   
   // Account operations
@@ -279,14 +283,182 @@ class DatabaseStorage implements IStorage {
   }
 
   async updateUserProfile(customerNumber: string, updates: Partial<User>): Promise<User | undefined> {
-    const user = await this.getUserByCustomerNumber(customerNumber);
-    if (user) {
-      const updatedUser = { ...user, ...updates };
-      this.users.set(user.id, updatedUser);
-      await this.saveData(); // Persist changes to disk immediately
-      return updatedUser;
+    try {
+      await this.waitForInitialization();
+      
+      // Update in database with enhanced data persistence
+      const result = await db
+        .update(users)
+        .set({ 
+          ...updates,
+          lastActivity: new Date()
+        })
+        .where(eq(users.customerNumber, customerNumber))
+        .returning();
+      
+      if (result.length > 0) {
+        // Update in memory
+        const user = result[0];
+        this.users.set(user.id, user);
+        
+        // Persist to file
+        this.persistentDataManager.persistData();
+        
+        return user;
+      }
+      
+      return undefined;
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+      return undefined;
     }
-    return undefined;
+  }
+
+  async updateUserActivity(customerNumber: string): Promise<void> {
+    try {
+      await this.waitForInitialization();
+      
+      await db
+        .update(users)
+        .set({ lastActivity: new Date() })
+        .where(eq(users.customerNumber, customerNumber));
+      
+      // Update in memory
+      const user = await this.getUserByCustomerNumber(customerNumber);
+      if (user) {
+        user.lastActivity = new Date();
+        this.users.set(user.id, user);
+      }
+      
+      this.persistentDataManager.persistData();
+    } catch (error) {
+      console.error('Error updating user activity:', error);
+    }
+  }
+
+  async saveUserPreferences(customerNumber: string, preferences: any): Promise<void> {
+    try {
+      await this.waitForInitialization();
+      
+      await db
+        .update(users)
+        .set({ 
+          preferences: preferences,
+          lastActivity: new Date()
+        })
+        .where(eq(users.customerNumber, customerNumber));
+      
+      // Update in memory
+      const user = await this.getUserByCustomerNumber(customerNumber);
+      if (user) {
+        user.preferences = preferences;
+        user.lastActivity = new Date();
+        this.users.set(user.id, user);
+      }
+      
+      this.persistentDataManager.persistData();
+    } catch (error) {
+      console.error('Error saving user preferences:', error);
+    }
+  }
+
+  async saveUserDeviceInfo(customerNumber: string, deviceInfo: any): Promise<void> {
+    try {
+      await this.waitForInitialization();
+      
+      await db
+        .update(users)
+        .set({ 
+          deviceInfo: deviceInfo,
+          lastActivity: new Date()
+        })
+        .where(eq(users.customerNumber, customerNumber));
+      
+      // Update in memory
+      const user = await this.getUserByCustomerNumber(customerNumber);
+      if (user) {
+        user.deviceInfo = deviceInfo;
+        user.lastActivity = new Date();
+        this.users.set(user.id, user);
+      }
+      
+      this.persistentDataManager.persistData();
+    } catch (error) {
+      console.error('Error saving device info:', error);
+    }
+  }
+
+  async permanentDeleteUser(customerNumber: string): Promise<boolean> {
+    try {
+      await this.waitForInitialization();
+      
+      // Get user before deletion for cleanup
+      const user = await this.getUserByCustomerNumber(customerNumber);
+      if (!user) {
+        return false;
+      }
+      
+      // Delete all related data in correct order to maintain referential integrity
+      
+      // 1. Delete user transactions (through accounts)
+      const userAccounts = await this.getAccountsByUserId(user.id);
+      for (const account of userAccounts) {
+        await db.delete(transactions).where(eq(transactions.accountId, account.id));
+      }
+      
+      // 2. Delete user accounts
+      await db.delete(accounts).where(eq(accounts.userId, user.id));
+      
+      // 3. Delete user payees
+      await db.delete(payees).where(eq(payees.userId, user.id));
+      
+      // 4. Delete scheduled payments
+      await db.delete(scheduledPayments).where(eq(scheduledPayments.userId, user.id));
+      
+      // 5. Delete statements (through accounts)
+      for (const account of userAccounts) {
+        await db.delete(statements).where(eq(statements.accountId, account.id));
+      }
+      
+      // 6. Delete chat messages
+      await db.delete(chatMessages).where(eq(chatMessages.userId, user.id));
+      
+      // 7. Delete permanent sessions
+      await db.delete(permanentUserSessions).where(eq(permanentUserSessions.userId, user.id));
+      
+      // 8. Finally delete the user
+      const deleteResult = await db.delete(users).where(eq(users.customerNumber, customerNumber));
+      
+      if (deleteResult.rowCount && deleteResult.rowCount > 0) {
+        // Remove from memory
+        this.users.delete(user.id);
+        
+        // Remove related data from memory
+        for (const account of userAccounts) {
+          this.accounts.delete(account.id);
+          const accountTransactions = Array.from(this.transactions.values()).filter(t => t.accountId === account.id);
+          for (const transaction of accountTransactions) {
+            this.transactions.delete(transaction.id);
+          }
+        }
+        
+        const userPayees = Array.from(this.payees.values()).filter(p => p.userId === user.id);
+        for (const payee of userPayees) {
+          this.payees.delete(payee.id);
+        }
+        
+        // Persist updated data
+        this.persistentDataManager.persistData();
+        
+        console.log(`🗑️ PERMANENT DELETE: Completely removed user ${customerNumber} and all associated data`);
+        return true;
+      }
+      
+      return false;
+    } catch (error) {
+      console.error('Error permanently deleting user:', error);
+      return false;
+    }
   }
 
   async getAllUsers(): Promise<User[]> {
