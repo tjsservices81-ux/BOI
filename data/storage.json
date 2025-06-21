@@ -25,15 +25,50 @@
         "name": "Hhhh",
         "email": "hhh@gmail.com",
         "phone": "555",
-        "address": null,
-        "dateOfBirth": null,
+        "address": "",
+        "dateOfBirth": "",
         "joinDate": "2025-06-21T12:44:18.970Z",
         "dateCreated": "2025-06-21T12:44:18.971Z",
-        "isDisabled": false
+        "isDisabled": false,
+        "currency": "GBP"
       }
     ]
   ],
-  "accounts": [],
+  "accounts": [
+    [
+      37,
+      {
+        "id": 37,
+        "userId": 32,
+        "accountType": "current",
+        "accountNumber": "****2091",
+        "balance": "0.00",
+        "displayName": "Current Account"
+      }
+    ],
+    [
+      38,
+      {
+        "id": 38,
+        "userId": 32,
+        "accountType": "credit",
+        "accountNumber": "****1820",
+        "balance": "0.00",
+        "displayName": "Credit Card"
+      }
+    ],
+    [
+      39,
+      {
+        "id": 39,
+        "userId": 32,
+        "accountType": "savings",
+        "accountNumber": "****0978",
+        "balance": "0.00",
+        "displayName": "Savings Account"
+      }
+    ]
+  ],
   "transactions": [],
   "payees": [],
   "scheduledPayments": [],
@@ -43,7 +78,7 @@
   "chatSessions": [],
   "counters": {
     "currentUserId": 33,
-    "currentAccountId": 37,
+    "currentAccountId": 40,
     "currentTransactionId": 49,
     "currentPayeeId": 25,
     "currentScheduledPaymentId": 1,
