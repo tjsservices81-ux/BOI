@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no" />
     
     <!-- Security Headers -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:; connect-src 'self' wss: https:;">
@@ -61,7 +61,85 @@
     <title>Bank of Ireland</title>
   </head>
   <body style="background: transparent !important;">
+    <!-- PWA Loading Screen -->
+    <div id="pwa-loading" style="
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(135deg, #126987 0%, #0e5a75 100%);
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; color: white; z-index: 9999;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    ">
+      <img src="/boi_app_icon.png" alt="BOI" style="width: 80px; height: 80px; margin-bottom: 20px;">
+      <div style="font-size: 24px; font-weight: bold; margin-bottom: 10px;">Bank of Ireland</div>
+      <div id="loading-message" style="font-size: 14px; margin-bottom: 20px;">Loading your banking app...</div>
+      <div style="
+        width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.3);
+        border-radius: 50%; border-top-color: white;
+        animation: spin 1s linear infinite;
+      "></div>
+      <div id="error-message" style="
+        display: none; text-align: center; max-width: 300px;
+        margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.1);
+        border-radius: 8px; line-height: 1.4;
+      "></div>
+      <button id="retry-button" style="
+        display: none; margin-top: 15px; padding: 12px 24px;
+        background: white; color: #126987; border: none;
+        border-radius: 6px; font-weight: 600; cursor: pointer;
+      " onclick="retryAppLoad()">Retry</button>
+    </div>
+    
     <div id="root" style="background: transparent !important;"></div>
+    
+    <style>
+      @keyframes spin { to { transform: rotate(360deg); } }
+      
+      /* Responsive viewport fixes */
+      @media screen and (max-width: 768px) {
+        html { font-size: 16px; }
+        body { 
+          -webkit-text-size-adjust: 100%; 
+          -ms-text-size-adjust: 100%;
+          touch-action: manipulation;
+        }
+      }
+      
+      /* PWA-specific styles */
+      @media all and (display-mode: standalone) {
+        html, body { 
+          height: 100vh;
+          height: calc(var(--vh, 1vh) * 100);
+          padding-top: env(safe-area-inset-top);
+          padding-bottom: env(safe-area-inset-bottom);
+          padding-left: env(safe-area-inset-left);
+          padding-right: env(safe-area-inset-right);
+          overflow-x: hidden;
+        }
+        
+        #root {
+          min-height: 100vh;
+          min-height: calc(var(--vh, 1vh) * 100);
+        }
+      }
+      
+      /* Fix for iOS viewport issues */
+      @supports (-webkit-touch-callout: none) {
+        html, body {
+          height: -webkit-fill-available;
+        }
+        
+        #root {
+          min-height: -webkit-fill-available;
+        }
+      }
+      
+      /* Error state styles */
+      .error-state {
+        background: #dc2626 !important;
+        color: white !important;
+      }
+    </style>
+    
     <script>
       // Set theme color to correct blue immediately before React loads
       const themeColorMeta = document.querySelector('meta[name="theme-color"]');
@@ -129,53 +207,258 @@
 
       // Developer tools detection removed - was causing form interference
 
+      // PWA App Initialization with Error Handling
+      let appLoadTimeout;
+      let retryCount = 0;
+      const maxRetries = 3;
+      
+      function updateLoadingMessage(message) {
+        const loadingMsg = document.getElementById('loading-message');
+        if (loadingMsg) loadingMsg.textContent = message;
+      }
+      
+      function showError(message) {
+        const loadingScreen = document.getElementById('pwa-loading');
+        const errorMsg = document.getElementById('error-message');
+        const retryBtn = document.getElementById('retry-button');
+        
+        if (loadingScreen) loadingScreen.classList.add('error-state');
+        if (errorMsg) {
+          errorMsg.textContent = message;
+          errorMsg.style.display = 'block';
+        }
+        if (retryBtn) retryBtn.style.display = 'block';
+      }
+      
+      function hideLoading() {
+        const loadingScreen = document.getElementById('pwa-loading');
+        if (loadingScreen) {
+          loadingScreen.style.opacity = '0';
+          loadingScreen.style.transition = 'opacity 0.3s ease';
+          setTimeout(() => {
+            loadingScreen.style.display = 'none';
+          }, 300);
+        }
+      }
+      
+      function retryAppLoad() {
+        retryCount++;
+        if (retryCount > maxRetries) {
+          showError('Multiple attempts failed. Please check your connection and refresh the page.');
+          return;
+        }
+        
+        updateLoadingMessage(`Retrying... (${retryCount}/${maxRetries})`);
+        document.getElementById('error-message').style.display = 'none';
+        document.getElementById('retry-button').style.display = 'none';
+        document.getElementById('pwa-loading').classList.remove('error-state');
+        
+        setTimeout(initializeApp, 1000);
+      }
+      
+      function initializeApp() {
+        clearTimeout(appLoadTimeout);
+        
+        // Set timeout for app initialization
+        appLoadTimeout = setTimeout(() => {
+          console.error('App initialization timeout');
+          showError('App is taking longer than expected to load. This might be due to a slow connection.');
+        }, 15000);
+        
+        // Monitor for successful React mount
+        const checkAppReady = setInterval(() => {
+          const root = document.getElementById('root');
+          if (root && root.children.length > 0) {
+            clearInterval(checkAppReady);
+            clearTimeout(appLoadTimeout);
+            hideLoading();
+          }
+        }, 100);
+        
+        // Load main React app - use static script tag approach for better PWA compatibility
+        try {
+          // Check if script is already loaded
+          const existingScript = document.querySelector('script[src="/client/src/main.tsx"]');
+          if (existingScript) {
+            console.log('Main script already exists, checking app mount...');
+            return;
+          }
+          
+          const script = document.createElement('script');
+          script.type = 'module';
+          script.src = '/client/src/main.tsx';
+          script.async = true;
+          
+          script.onload = () => {
+            console.log('Main script loaded successfully');
+          };
+          
+          script.onerror = (error) => {
+            console.error('Script load error:', error);
+            clearTimeout(appLoadTimeout);
+            showError('Failed to load app resources. Please check your connection.');
+          };
+          
+          document.head.appendChild(script);
+        } catch (error) {
+          console.error('Script creation error:', error);
+          clearTimeout(appLoadTimeout);
+          showError('Failed to initialize app. Please refresh the page.');
+        }
+      }
+      
       // Enhanced service worker registration for mobile PWA
       if ('serviceWorker' in navigator) {
-        window.addEventListener('load', async function() {
-          try {
-            // Register service worker with enhanced options for mobile
-            const registration = await navigator.serviceWorker.register('/sw.js', {
-              scope: '/',
-              updateViaCache: 'none'
-            });
-            
-            console.log('✅ Service Worker registered:', registration.scope);
-            
-            // Force immediate activation for better mobile experience
-            if (registration.waiting) {
-              registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-            }
-            
-            // Listen for updates and auto-activate
-            registration.addEventListener('updatefound', () => {
-              const newWorker = registration.installing;
-              if (newWorker) {
-                newWorker.addEventListener('statechange', () => {
-                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                    console.log('🔄 New service worker available');
-                    newWorker.postMessage({ type: 'SKIP_WAITING' });
-                  }
-                });
-              }
-            });
-            
-            // Ensure service worker takes control immediately
-            if (!navigator.serviceWorker.controller) {
-              console.log('📱 Claiming service worker control for mobile');
-              await registration.update();
-            }
-            
-          } catch (error) {
-            console.error('❌ Service worker registration failed:', error);
+        updateLoadingMessage('Preparing offline features...');
+        
+        navigator.serviceWorker.register('/sw.js', {
+          scope: '/',
+          updateViaCache: 'none'
+        }).then(async (registration) => {
+          console.log('Service Worker registered:', registration.scope);
+          
+          // Force immediate activation for better mobile experience
+          if (registration.waiting) {
+            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
           }
+          
+          // Listen for updates and auto-activate
+          registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing;
+            if (newWorker) {
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  console.log('New service worker available');
+                  newWorker.postMessage({ type: 'SKIP_WAITING' });
+                }
+              });
+            }
+          });
+          
+          // Ensure service worker takes control immediately
+          if (!navigator.serviceWorker.controller) {
+            console.log('Claiming service worker control for mobile');
+            await registration.update();
+          }
+          
+          updateLoadingMessage('Loading banking app...');
+          setTimeout(initializeApp, 500);
+          
+        }).catch((error) => {
+          console.error('Service worker registration failed:', error);
+          updateLoadingMessage('Loading banking app...');
+          setTimeout(initializeApp, 500);
         });
         
         // Listen for service worker messages
         navigator.serviceWorker.addEventListener('message', (event) => {
           if (event.data && event.data.type === 'SW_ACTIVATED') {
-            console.log('📱 Service worker activated for offline support');
+            console.log('Service worker activated for offline support');
           }
         });
+      } else {
+        // No service worker support, load app directly
+        updateLoadingMessage('Loading banking app...');
+        setTimeout(initializeApp, 500);
+      }
+      
+      // Handle app visibility changes
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          // App became visible, check if it's working
+          const root = document.getElementById('root');
+          if (!root || root.children.length === 0) {
+            const loadingScreen = document.getElementById('pwa-loading');
+            if (loadingScreen && loadingScreen.style.display === 'none') {
+              // App was supposed to be loaded but root is empty
+              loadingScreen.style.display = 'flex';
+              showError('App lost connection. Refreshing...');
+              setTimeout(() => window.location.reload(), 2000);
+            }
+          }
+        }
+      });
+      
+      // PWA Error Logging and Reporting System
+      function logPWAError(error, context = '') {
+        const isPWA = window.matchMedia('(display-mode: standalone)').matches;
+        const errorData = {
+          timestamp: new Date().toISOString(),
+          isPWA: isPWA,
+          context: context,
+          userAgent: navigator.userAgent,
+          url: window.location.href,
+          error: {
+            message: error.message || error,
+            stack: error.stack,
+            name: error.name
+          }
+        };
+        
+        console.error('PWA Error:', errorData);
+        
+        // Store errors locally for debugging
+        try {
+          const errors = JSON.parse(localStorage.getItem('pwa-errors') || '[]');
+          errors.push(errorData);
+          // Keep only last 50 errors
+          if (errors.length > 50) errors.splice(0, errors.length - 50);
+          localStorage.setItem('pwa-errors', JSON.stringify(errors));
+        } catch (e) {
+          console.error('Failed to store error:', e);
+        }
+        
+        return errorData;
+      }
+      
+      // Global error handler for unhandled errors
+      window.addEventListener('error', (event) => {
+        logPWAError(event.error, 'Global error handler');
+        const loadingScreen = document.getElementById('pwa-loading');
+        if (loadingScreen && loadingScreen.style.display !== 'none') {
+          showError('Error loading app components. Please try again.');
+        }
+      });
+      
+      // Global promise rejection handler
+      window.addEventListener('unhandledrejection', (event) => {
+        logPWAError(event.reason, 'Unhandled promise rejection');
+        const loadingScreen = document.getElementById('pwa-loading');
+        if (loadingScreen && loadingScreen.style.display !== 'none') {
+          showError('Network error occurred. Please check your connection.');
+        }
+      });
+      
+      // PWA-specific event listeners
+      if (window.matchMedia('(display-mode: standalone)').matches) {
+        console.log('Running in PWA mode');
+        
+        // Detect PWA launch
+        window.addEventListener('load', () => {
+          logPWAError({ message: 'PWA launched' }, 'PWA launch event');
+        });
+        
+        // Handle orientation changes
+        window.addEventListener('orientationchange', () => {
+          setTimeout(() => {
+            // Force layout recalculation
+            document.body.style.height = '100vh';
+            window.scrollTo(0, 0);
+          }, 100);
+        });
+        
+        // Handle resize events for different devices
+        window.addEventListener('resize', () => {
+          clearTimeout(window.resizeTimeout);
+          window.resizeTimeout = setTimeout(() => {
+            const vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', vh + 'px');
+          }, 100);
+        });
+        
+        // Set initial viewport height
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', vh + 'px');
       }
 
       // Additional mobile-specific URL hiding
@@ -222,7 +505,7 @@
         });
       }
     </script>
-    <script type="module" src="/src/main.tsx"></script>
+    <script type="module" src="/client/src/main.tsx"></script>
     <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
     <script type="text/javascript" src="https://replit.com/public/js/replit-dev-banner.js"></script>
   </body>
