@@ -142,14 +142,14 @@ export class UserDataManager {
 
   // Get all registered users
   static getAllUsers(): { [customerNumber: string]: UserData } {
-    return JSON.parse(localStorage.getItem('bankUsers') || '{}');
+    return JSON.parse(localStorage.getItem('allBankUsers') || '{}');
   }
 
   // Register a new user
   static registerUser(userData: UserData) {
     const existingUsers = this.getAllUsers();
     existingUsers[userData.customerNumber] = userData;
-    localStorage.setItem('bankUsers', JSON.stringify(existingUsers));
+    localStorage.setItem('allBankUsers', JSON.stringify(existingUsers));
   }
 
   // Get user profile data
@@ -174,7 +174,7 @@ export class UserDataManager {
       
       // Dispatch storage event for cross-component synchronization
       window.dispatchEvent(new StorageEvent('storage', {
-        key: 'bankUsers',
+        key: 'allBankUsers',
         newValue: JSON.stringify(allUsers),
         oldValue: JSON.stringify({ ...allUsers, [currentUser]: previousData })
       }));

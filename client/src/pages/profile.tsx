@@ -108,7 +108,7 @@ export default function Profile() {
             });
             
             // Update UserDataManager with fresh data (silent update to prevent loops)
-            const allUsers = JSON.parse(localStorage.getItem('bankUsers') || '{}');
+            const allUsers = UserDataManager.getAllUsers();
             if (allUsers[userData.customerNumber]) {
               allUsers[userData.customerNumber] = {
                 ...allUsers[userData.customerNumber],
@@ -119,7 +119,7 @@ export default function Profile() {
                 address: userData.address || "",
                 joinDate: userData.joinDate || ""
               };
-              localStorage.setItem('bankUsers', JSON.stringify(allUsers));
+              UserDataManager.setUserData(userData.customerNumber, allUsers[userData.customerNumber]);
             }
           }
         } else {
