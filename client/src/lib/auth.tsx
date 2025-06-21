@@ -86,8 +86,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user]);
 
   const login = (userData: User) => {
+    console.log('🔐 AuthContext login() called with:', userData);
     setUser(userData);
     localStorage.setItem('bankingUser', JSON.stringify(userData));
+    console.log('✅ User session saved to localStorage');
   };
 
   const logout = async () => {

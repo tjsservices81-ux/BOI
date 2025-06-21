@@ -177,16 +177,16 @@ export function BiometricAuthProvider({ children }: { children: React.ReactNode 
             email: data.user.email
           });
           
-          // Update biometric state after main auth is set
-          setTimeout(() => {
-            setState(prev => ({
-              ...prev,
-              isAuthenticated: true,
-              needsBiometric: false,
-              userInfo: data.user,
-              isLoading: false
-            }));
-          }, 50);
+          // Wait for login to complete, then update biometric state
+          await new Promise(resolve => setTimeout(resolve, 100));
+          
+          setState(prev => ({
+            ...prev,
+            isAuthenticated: true,
+            needsBiometric: false,
+            userInfo: data.user,
+            isLoading: false
+          }));
           return true;
         }
       }

@@ -14,12 +14,21 @@ export default function BiometricAuth() {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
   useEffect(() => {
-    // Navigate to dashboard when user is authenticated in main auth context
-    if (user && state.isAuthenticated) {
+    console.log('🔍 BiometricAuth navigation check:', {
+      user: !!user,
+      biometricAuthenticated: state.isAuthenticated,
+      needsBiometric: state.needsBiometric,
+      isLoading: state.isLoading
+    });
+    
+    // Navigate to dashboard when both contexts show authenticated state
+    if (user && state.isAuthenticated && !state.isLoading) {
+      console.log('✅ Both auth contexts ready - navigating to dashboard');
       setTimeout(() => {
         setLocation('/dashboard');
-      }, 100);
-    } else if (!state.needsBiometric && !state.isLoading) {
+      }, 200);
+    } else if (!state.needsBiometric && !state.isLoading && !user) {
+      console.log('❌ No biometric needed and no user - redirecting to login');
       setLocation('/login');
     }
   }, [user, state.isAuthenticated, state.needsBiometric, state.isLoading, setLocation]);
