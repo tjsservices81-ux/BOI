@@ -106,13 +106,54 @@ function AppRoutes() {
     return () => window.removeEventListener('userLoggedIn', handleUserLoggedIn as EventListener);
   }, [location, navigate]);
 
-  // Initialize app - always start with splash and check for permanent session
+  // Initialize app - detect minimize resume vs. fresh start
   useEffect(() => {
     const initializeApp = async () => {
-      // Always start with splash screen on app restart
+      // Check if this is a resume from minimize or fresh start
+      const isResumeFromMinimize = sessionStorage.getItem('app_active_session');
+      
+      if (isResumeFromMinimize) {
+        console.log('🔄 App resuming from minimize - restoring state');
+        
+        // Skip splash screen and restore state immediately
+        setSplashShown(true);
+        setIsInitialized(true);
+        
+        // Restore saved app state
+        const savedState = StateManager.restoreAppState();
+        if (savedState && savedState.user) {
+          login(savedState.user);
+          
+          // Navigate to saved route if different from current
+          if (savedState.currentRoute && savedState.currentRoute !== location) {
+            console.log(`🔄 Restoring navigation to: ${savedState.currentRoute}`);
+            navigate(savedState.currentRoute);
+          }
+          
+          // Restore scroll positions after navigation
+          if (savedState.scrollPositions) {
+            setTimeout(() => {
+              Object.entries(savedState.scrollPositions).forEach(([route, position]) => {
+                const scrollPosition = typeof position === 'number' ? position : 0;
+                const container = document.querySelector(`[data-scroll-route="${route}"]`) as HTMLElement;
+                if (container && scrollPosition > 0) {
+                  container.scrollTo({ top: scrollPosition, behavior: 'instant' });
+                } else if (route === window.location.pathname && scrollPosition > 0) {
+                  window.scrollTo({ top: scrollPosition, behavior: 'instant' });
+                }
+              });
+            }, 200);
+          }
+        }
+        
+        return;
+      }
+      
+      console.log('🚀 Fresh app start - checking session');
+      
+      // Fresh start - show splash and check session
       setSplashShown(false);
       
-      // Check for permanent session but always require biometric verification
       try {
         const response = await fetch('/api/auth/status', {
           credentials: 'include'
@@ -121,14 +162,32 @@ function AppRoutes() {
         
         if (authStatus.isLoggedIn && authStatus.needsBiometric) {
           console.log('Permanent session found - requires biometric verification');
-          // Set biometric requirement
           biometricAuth.setNeedsBiometric(true);
           if (authStatus.user) {
             login(authStatus.user);
           }
+          
+          // Check if there's a saved route to restore after login
+          const savedState = StateManager.restoreAppState();
+          if (savedState && savedState.currentRoute && savedState.currentRoute !== '/') {
+            console.log(`🔄 Restoring saved route: ${savedState.currentRoute}`);
+            navigate(savedState.currentRoute);
+          }
+        } else if (authStatus.isLoggedIn && !authStatus.needsBiometric) {
+          console.log('Session found - user fully authenticated');
+          if (authStatus.user) {
+            login(authStatus.user);
+          }
+          
+          // Navigate to dashboard or saved route
+          const savedState = StateManager.restoreAppState();
+          if (savedState && savedState.currentRoute && savedState.currentRoute !== '/') {
+            navigate(savedState.currentRoute);
+          } else {
+            navigate('/dashboard');
+          }
         } else {
           console.log('No permanent session found');
-          // Check if user exists in localStorage but no backend session
           const cachedUser = localStorage.getItem('bankingUser');
           if (cachedUser) {
             console.log('User data found in localStorage but no backend session - clearing cache');
@@ -139,7 +198,7 @@ function AppRoutes() {
         console.error('Failed to check authentication status:', error);
       }
       
-      // Show splash screen for 1.5 seconds
+      // Show splash screen for fresh starts only
       setTimeout(() => {
         setSplashShown(true);
         setIsInitialized(true);
@@ -161,21 +220,54 @@ function AppRoutes() {
   useEffect(() => {
     const appLifecycle = new AppLifecycle();
     
+    // Set session marker on app focus
+    sessionStorage.setItem('app_active_session', 'true');
+    
     // Save state when app goes to background
     const handleVisibilityChange = () => {
       if (document.hidden) {
+        // Collect current scroll positions
+        const scrollPositions: Record<string, number> = {};
+        
+        // Save scroll positions from all scroll containers
+        document.querySelectorAll('[data-scroll-container]').forEach(element => {
+          const container = element as HTMLElement;
+          const route = container.dataset.scrollRoute;
+          if (route) {
+            scrollPositions[route] = container.scrollTop;
+          }
+        });
+
+        // Save main window scroll if no specific containers
+        if (Object.keys(scrollPositions).length === 0) {
+          scrollPositions[location] = window.scrollY;
+        }
+
+        // App going to background - save complete state
         StateManager.saveAppState({
           user,
           currentRoute: location,
           timestamp: Date.now(),
-          scrollPositions: {},
-          formData: {}
+          scrollPositions,
+          formData: StateManager.getAllFormData()
         });
       }
     };
 
+    // Clear session marker on app termination
+    const handleBeforeUnload = () => {
+      sessionStorage.removeItem('app_active_session');
+    };
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('pagehide', handleBeforeUnload);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('pagehide', handleBeforeUnload);
+    };
   }, [user, location]);
 
   // Route to splash if not initialized

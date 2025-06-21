@@ -27,17 +27,26 @@ export default function Dashboard() {
   useEffect(() => {
     console.log('📊 Dashboard component mounted');
     const cachedUser = localStorage.getItem('bankingUser');
+    const isResumeFromMinimize = sessionStorage.getItem('app_active_session');
+    
     if (cachedUser) {
       console.log('📊 Dashboard: User data found in localStorage:', JSON.parse(cachedUser));
     } else {
       console.log('📊 Dashboard: No user data in localStorage');
     }
     
-    // Simulate dashboard loading completion
-    setTimeout(() => {
+    // Skip loading animation if resuming from minimize
+    if (isResumeFromMinimize) {
+      console.log('📊 Dashboard: Resuming from minimize - skipping loading animation');
       setIsLoading(false);
-      console.log('📊 Dashboard loading complete');
-    }, 1000);
+    } else {
+      // Show loading animation only for fresh app starts
+      console.log('📊 Dashboard: Fresh start - showing loading animation');
+      setTimeout(() => {
+        setIsLoading(false);
+        console.log('📊 Dashboard loading complete');
+      }, 1000);
+    }
   }, []);
 
   // Enhanced navigation with smooth animations
