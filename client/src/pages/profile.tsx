@@ -1344,17 +1344,27 @@ export default function Profile() {
                     <select
                       value={CurrencyManager.getCurrentCurrency()}
                       onChange={async (e) => {
+                        const newCurrency = e.target.value as 'EUR' | 'GBP';
+                        const currencyName = newCurrency === 'EUR' ? 'Euro (€)' : 'Pound Sterling (£)';
+                        
+                        // Show immediate feedback
+                        alert(`Saving currency preference to ${currencyName}...`);
+                        
                         try {
-                          await CurrencyManager.setCurrency(e.target.value as 'EUR' | 'GBP');
+                          console.log(`Attempting to save currency: ${newCurrency}`);
+                          await CurrencyManager.setCurrency(newCurrency);
+                          
+                          // Dispatch currency change event
                           window.dispatchEvent(new CustomEvent('currencyChanged', {
-                            detail: { currency: e.target.value }
+                            detail: { currency: newCurrency }
                           }));
                           
                           // Show success notification
-                          const currencyName = e.target.value === 'EUR' ? 'Euro (€)' : 'Pound Sterling (£)';
-                          alert(`Currency changed to ${currencyName} and saved successfully!`);
+                          alert(`✓ Currency successfully changed to ${currencyName} and saved!`);
+                          
                         } catch (error) {
-                          alert('Failed to save currency preference. Please try again.');
+                          console.error('Currency save error:', error);
+                          alert('✗ Failed to save currency preference. Please try again.');
                         }
                       }}
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
