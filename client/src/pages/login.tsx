@@ -595,7 +595,7 @@ export default function Login() {
 
     try {
       // Verify PIN with database
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch('/api/auth/verify-pin', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

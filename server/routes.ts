@@ -380,15 +380,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Login authentication endpoint
-  app.post("/api/auth/login", async (req, res) => {
+  // PIN verification endpoint (separate from complex login flow)
+  app.post("/api/auth/verify-pin", async (req, res) => {
     try {
-      const loginSchema = z.object({
+      const verifySchema = z.object({
         customerNumber: z.string(),
-        pin: z.string().length(4)
+        pin: z.string().min(4)
       });
 
-      const { customerNumber, pin } = loginSchema.parse(req.body);
+      const { customerNumber, pin } = verifySchema.parse(req.body);
       
       // Find user by customer number and verify PIN
       const user = await storage.getUserByCredentials(customerNumber, pin);
@@ -400,7 +400,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      console.log(`✅ LOGIN SUCCESSFUL: ${user.name} (${user.customerNumber})`);
+      console.log(`✅ PIN VERIFICATION SUCCESSFUL: ${user.name} (${user.customerNumber})`);
       
       res.json({ 
         success: true,
@@ -410,10 +410,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           name: user.name,
           email: user.email
         },
-        message: "Login successful" 
+        message: "PIN verification successful" 
       });
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('PIN verification error:', error);
       if (error instanceof z.ZodError) {
         return res.status(400).json({ 
           success: false,
@@ -422,7 +422,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.status(500).json({ 
         success: false,
-        message: "Login failed" 
+        message: "PIN verification failed" 
       });
     }
   });
