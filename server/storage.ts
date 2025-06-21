@@ -309,7 +309,7 @@ class DatabaseStorage implements IStorage {
         this.users.set(user.id, user);
         
         // Persist to file
-        this.persistentDataManager.persistData();
+        this.persistentManager.persistData();
         
         return user;
       }

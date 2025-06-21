@@ -223,10 +223,10 @@ export class UserDataManager {
           phone: userData.phone,
           address: userData.address,
           dateOfBirth: userData.dateOfBirth,
-          profilePhoto: userData.profilePhoto,
-          preferences: userData.preferences,
-          notificationSettings: userData.notificationSettings,
-          securitySettings: userData.securitySettings
+          profilePhoto: userData.profilePhoto || null,
+          preferences: userData.preferences || null,
+          notificationSettings: userData.notificationSettings || null,
+          securitySettings: userData.securitySettings || null
         })
       });
 
@@ -246,7 +246,11 @@ export class UserDataManager {
       // Also update the main user record
       const allUsers = this.getAllUsers();
       if (allUsers[currentUser]) {
-        allUsers[currentUser].lastActivity = now;
+        if (!allUsers[currentUser].lastActivity) {
+          allUsers[currentUser].lastActivity = now;
+        } else {
+          allUsers[currentUser].lastActivity = now;
+        }
         localStorage.setItem('allBankUsers', JSON.stringify(allUsers));
       }
     }

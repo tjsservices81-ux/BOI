@@ -110,7 +110,20 @@ function AppRoutes(): JSX.Element {
   // Initialize app lifecycle and determine app state
   useEffect(() => {
     AppLifecycle.initialize();
-    AppLifecycle.enableOfflineMode(); // Enable offline functionality
+    
+    // Enable real-time data synchronization for persistent storage
+    RealTimeSync.enable();
+    
+    // Enable offline functionality through service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+        .then(registration => {
+          console.log('🔄 Offline functionality enabled - app works fully offline');
+        })
+        .catch(error => {
+          console.log('Offline mode unavailable - app still functional online');
+        });
+    }
     
     const initializeApp = async () => {
       const { isAppTerminated, wasMinimized } = AppLifecycle.getAppTerminationState();
