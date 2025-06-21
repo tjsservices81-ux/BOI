@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, BarChart3 } from 'lucide-react';
+import { formatAmount } from '../utils/currencyUtils';
 
 interface ChartData {
   date: string;

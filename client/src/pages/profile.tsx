@@ -4,7 +4,7 @@ import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin
 import { UserDataManager } from "@/utils/userDataManager";
 import { useAuth } from "@/lib/auth";
 import { motion, AnimatePresence } from "framer-motion";
-import { getUserCurrency, setCurrencyPreference, getCurrencySymbol } from "@/utils/currencyUtils";
+import { getUserCurrency, setCurrencyPreference, getCurrencySymbol, formatAmount } from "@/utils/currencyUtils";
 
 export default function Profile() {
   const locationHook = useLocation();
@@ -1744,7 +1744,7 @@ export default function Profile() {
                       </div>
                       <div className="text-right">
                         <p className="text-lg font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          €{account.balance}
+                          {formatAmount(account.balance)}
                         </p>
                       </div>
                     </button>

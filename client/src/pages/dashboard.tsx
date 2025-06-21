@@ -322,7 +322,7 @@ export default function Dashboard() {
                     <p className="text-xs text-gray-500 mt-0.5 boi-regular-font">{account.accountNumber}</p>
                   </div>
                   <div className="flex items-center">
-                    <p className="text-lg font-semibold text-[#126987] boi-semibold-font">€{parseFloat(account.balance).toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                    <p className="text-lg font-semibold text-[#126987] boi-semibold-font">{formatAmount(account.balance)}</p>
                     <ChevronRight className="h-4 w-4 ml-3 text-gray-400" />
                   </div>
                 </div>
