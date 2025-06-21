@@ -114,6 +114,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Apply permanent authentication security middleware to protected routes
+  app.use('/api/auth', PermanentAuthManager.createAuthMiddleware());
+  app.use('/api/accounts', PermanentAuthManager.createAuthMiddleware());
+  app.use('/api/transfers', PermanentAuthManager.createAuthMiddleware());
+
   // Authentication endpoints
   app.post("/api/auth/login", async (req, res) => {
     try {
@@ -235,7 +240,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       // Create permanent session in database - NEVER EXPIRES
-      const sessionToken = await permanentAuthManager.createPermanentSession(
+      PermanentAuthManager.createPermanentSession(user.customerNumber);
+      const sessionToken = await storage.createPermanentSession(
         user.id,
         user.customerNumber,
         {
@@ -360,7 +366,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Validate permanent session token directly
-      const user = await permanentAuthManager.validatePermanentSession(sessionToken);
+      const user = await storage.validatePermanentSession(sessionToken);
       
       if (user) {
         console.log(`✅ PERMANENT SESSION VERIFIED: ${user.name} (ID: ${user.id})`);
@@ -401,7 +407,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Validate permanent session
-      const user = await permanentAuthManager.validatePermanentSession(sessionToken);
+      const user = await storage.validatePermanentSession(sessionToken);
       
       if (!user) {
         return res.status(401).json({ success: false, message: 'Invalid session' });

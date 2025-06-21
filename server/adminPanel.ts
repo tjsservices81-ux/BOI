@@ -550,7 +550,7 @@ router.get('/panel', adminAuth, async (req, res) => {
           if (!currentCustomerNumber) return;
           
           try {
-            const response = await fetch('/admin/delete-user', {
+            const response = await fetch('/api/admin/delete-user', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',

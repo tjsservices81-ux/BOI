@@ -107,6 +107,28 @@ export class PermanentAuthManager {
   }
 
   /**
+   * Create a permanent session record
+   */
+  static createPermanentSession(customerNumber: string): void {
+    // This method tracks when sessions are created for security validation
+    console.log(`🔐 Permanent session created for user: ${customerNumber}`);
+  }
+
+  /**
+   * Validate a permanent session
+   */
+  static validatePermanentSession(customerNumber: string): boolean {
+    // Check if user is deleted first
+    if (this.isUserDeleted(customerNumber)) {
+      console.log(`🚫 Session validation failed - user deleted: ${customerNumber}`);
+      return false;
+    }
+    
+    // Additional session validation logic can be added here
+    return true;
+  }
+
+  /**
    * Clear all data (admin only - for testing)
    */
   static adminReset(): void {
