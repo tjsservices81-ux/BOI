@@ -380,6 +380,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create new user with PIN
+  app.post("/api/users/create", async (req, res) => {
+    try {
+      const createUserSchema = z.object({
+        customerNumber: z.string(),
+        name: z.string(),
+        email: z.string().email(),
+        phone: z.string(),
+        pin: z.string().length(4),
+        address: z.string().optional(),
+        dateOfBirth: z.string().optional(),
+        joinDate: z.string().optional(),
+        dateCreated: z.string().optional()
+      });
+
+      const userData = createUserSchema.parse(req.body);
+      
+      // Check if user already exists
+      const existingUser = await storage.getUserByCustomerNumber(userData.customerNumber);
+      if (existingUser) {
+        return res.status(409).json({ message: "User already exists" });
+      }
+
+      // Create user in database with proper date conversion
+      const newUser = await storage.createUser({
+        ...userData,
+        dateCreated: userData.dateCreated ? new Date(userData.dateCreated) : new Date()
+      });
+      
+      console.log(`✅ NEW USER CREATED: ${newUser.name} (${newUser.customerNumber}) with PIN: ${newUser.pin}`);
+      
+      res.status(201).json({ 
+        success: true, 
+        user: newUser,
+        message: "User created successfully" 
+      });
+    } catch (error) {
+      console.error('User creation error:', error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors[0].message });
+      }
+      res.status(500).json({ message: "Failed to create user" });
+    }
+  });
+
   // Get user profile
   app.get("/api/profile/:customerNumber", async (req, res) => {
     try {

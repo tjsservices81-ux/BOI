@@ -6,6 +6,7 @@ export interface UserData {
   name: string;
   email: string;
   phone: string;
+  pin: string;
   address?: string;
   dateOfBirth?: string;
   joinDate: string;
@@ -166,7 +167,29 @@ export class UserDataManager {
   }
 
   // Register a new user
-  static registerUser(userData: UserData) {
+  static async registerUser(userData: UserData) {
+    // Save to database first
+    try {
+      const response = await fetch('/api/users/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to create user in database');
+      }
+
+      console.log('✅ User saved to database successfully');
+    } catch (error) {
+      console.error('Database save failed:', error);
+      // Continue with localStorage save for backward compatibility
+    }
+
+    // Also save to localStorage for immediate availability
     const existingUsers = this.getAllUsers();
     existingUsers[userData.customerNumber] = userData;
     localStorage.setItem('bankUsers', JSON.stringify(existingUsers));

@@ -193,6 +193,11 @@ export default function Login() {
     return 'BOI' + Math.random().toString().substring(2, 11);
   };
 
+  const generateSecurePin = () => {
+    // Generate a secure 4-digit PIN
+    return Math.floor(1000 + Math.random() * 9000).toString();
+  };
+
   const handleSignUp = async () => {
     if (!newUserData.name || !newUserData.email || !newUserData.phone) {
       toast({
@@ -204,9 +209,11 @@ export default function Login() {
     }
 
     const customerNumber = generateCustomerNumber();
+    const generatedPin = generateSecurePin();
     const userData = {
       ...newUserData,
       customerNumber,
+      pin: generatedPin,
       joinDate: new Date().toISOString(),
       dateCreated: new Date().toISOString(),
       address: "New Customer Address",
@@ -294,8 +301,8 @@ export default function Login() {
 
         toast({
           title: "Account Created Successfully",
-          description: `Your customer number is ${pendingAccountData.customerNumber}. Please remember this for future logins.`,
-          duration: 5000,
+          description: `Your customer number is ${pendingAccountData.customerNumber} and your PIN is ${pendingAccountData.pin}. Please save these credentials for login.`,
+          duration: 8000,
         });
 
         // Clean up state
