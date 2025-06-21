@@ -17,16 +17,14 @@ export default function Payments() {
   const [deleteConfirm, setDeleteConfirm] = useState<{name: string, accountInfo: string} | null>(null);
 
   // State for profile data
-  const [profileData, setProfileData] = useState(null);
+  const [profileData, setProfileData] = useState<any>(null);
 
   // Load profile data directly like App Control page
   useEffect(() => {
     const loadProfileData = async () => {
       const currentCustomerNumber = UserDataManager.getCurrentUser();
-      console.log('Loading profile for:', currentCustomerNumber);
       
       if (!currentCustomerNumber) {
-        console.log('No current user found');
         return;
       }
 
@@ -34,10 +32,7 @@ export default function Payments() {
         const response = await fetch(`/api/profile/${currentCustomerNumber}`);
         if (response.ok) {
           const userData = await response.json();
-          console.log('Profile data loaded:', userData);
           setProfileData(userData);
-        } else {
-          console.error('Failed to load profile:', response.status);
         }
       } catch (error) {
         console.error('Error loading profile:', error);
@@ -79,10 +74,7 @@ export default function Payments() {
   const paymentOptions = React.useMemo(() => {
     const conditionalPaymentOptions = [];
     
-    // Debug logging
-    console.log('Profile data in payments:', profileData);
-    console.log('Show card transfer:', profileData?.showCardTransfer);
-    console.log('Show email transfer:', profileData?.showEmailTransfer);
+
     
     if (profileData?.showCardTransfer === true) {
       conditionalPaymentOptions.push({
@@ -106,9 +98,7 @@ export default function Payments() {
       });
     }
 
-    // Debug the final options count
-    console.log('Final conditional options count:', conditionalPaymentOptions.length);
-    console.log('Final conditional options:', conditionalPaymentOptions);
+
 
     return [...basePaymentOptions, ...conditionalPaymentOptions];
   }, [profileData]);
@@ -222,19 +212,7 @@ export default function Payments() {
           </p>
         </div>
 
-        {/* Debug info for transfer options - Always show */}
-        <div className="bg-yellow-100 p-3 rounded-lg mb-4 text-sm">
-          <strong>Debug Info:</strong><br/>
-          Profile Data: {profileData ? 'Loaded' : 'Not loaded'}<br/>
-          {profileData && (
-            <>
-              Card Transfer: {profileData.showCardTransfer ? '✅ Enabled' : '❌ Disabled'}<br/>
-              Email Transfer: {profileData.showEmailTransfer ? '✅ Enabled' : '❌ Disabled'}<br/>
-            </>
-          )}
-          Total Options: {paymentOptions.length}<br/>
-          Raw Profile: {JSON.stringify(profileData)}
-        </div>
+
 
         {/* Payment Options */}
         <div className="space-y-4 mb-8">
