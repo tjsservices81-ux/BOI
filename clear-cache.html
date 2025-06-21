@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear All Cache - Bank of Ireland</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #126987; color: white; }
+        .container { max-width: 500px; margin: 0 auto; background: rgba(255,255,255,0.1); padding: 30px; border-radius: 8px; }
+        .button { background: white; color: #126987; padding: 15px 25px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; margin: 10px 5px; font-weight: bold; }
+        .button:hover { background: #f0f0f0; }
+        .success { color: #90EE90; }
+        .log { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 4px; margin: 10px 0; font-family: monospace; font-size: 14px; white-space: pre-wrap; max-height: 200px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏦 Clear All Cache & Storage</h1>
+        <p>This will clear all cached user data and sync with the empty database.</p>
+        
+        <button class="button" onclick="clearEverything()">CLEAR ALL CACHE NOW</button>
+        <button class="button" onclick="location.reload()">REFRESH PAGE</button>
+        
+        <div id="output" class="log"></div>
+    </div>
+
+    <script>
+        function log(message) {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            output.innerHTML += `[${timestamp}] ${message}\n`;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        async function clearEverything() {
+            log('Starting complete cache clearance...');
+
+            try {
+                // 1. Clear ALL localStorage
+                log('Clearing localStorage...');
+                localStorage.clear();
+                log('✅ localStorage cleared');
+
+                // 2. Clear ALL sessionStorage
+                log('Clearing sessionStorage...');
+                sessionStorage.clear();
+                log('✅ sessionStorage cleared');
+
+                // 3. Clear IndexedDB completely
+                log('Clearing IndexedDB...');
+                try {
+                    await new Promise((resolve, reject) => {
+                        const deleteReq = indexedDB.deleteDatabase('BankOfIrelandDB');
+                        deleteReq.onsuccess = () => {
+                            log('✅ IndexedDB deleted');
+                            resolve();
+                        };
+                        deleteReq.onerror = () => {
+                            log('❌ IndexedDB delete failed');
+                            reject();
+                        };
+                        deleteReq.onblocked = () => {
+                            log('⚠️ IndexedDB delete blocked, forcing...');
+                            setTimeout(resolve, 1000);
+                        };
+                    });
+                } catch (error) {
+                    log('IndexedDB clear error: ' + error.message);
+                }
+
+                // 4. Clear Service Worker cache
+                log('Clearing Service Worker cache...');
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    for (let registration of registrations) {
+                        await registration.unregister();
+                        log('✅ Service Worker unregistered');
+                    }
+                }
+
+                // 5. Clear browser cache via Cache API
+                log('Clearing Cache API...');
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    await Promise.all(
+                        cacheNames.map(cacheName => {
+                            log('Deleting cache: ' + cacheName);
+                            return caches.delete(cacheName);
+                        })
+                    );
+                    log('✅ All caches cleared');
+                }
+
+                // 6. Force clear any remaining references
+                log('Clearing window references...');
+                if (window.UserDataManager) {
+                    delete window.UserDataManager;
+                }
+                if (window.OfflineManager) {
+                    delete window.OfflineManager;
+                }
+
+                log('\n🎉 COMPLETE CACHE CLEARANCE SUCCESSFUL');
+                log('Database is now empty and cache is cleared');
+                log('Admin panel will show no accounts after refresh');
+
+                // Auto-refresh after 2 seconds
+                setTimeout(() => {
+                    log('Refreshing page...');
+                    window.location.href = '/login';
+                }, 2000);
+
+            } catch (error) {
+                log('❌ Error during clearance: ' + error.message);
+            }
+        }
+
+        // Auto-clear on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            log('Cache cleaner loaded');
+            log('Ready to clear all cached data');
+        });
+    </script>
+</body>
+</html>

@@ -92,8 +92,35 @@ export default function Login() {
 
   // Validate users against server and clean up deleted ones
   const validateAndCleanUsers = async () => {
-    const cachedUsers = UserDataManager.getAllUsers();
-    setValidatedUsers(cachedUsers); // Use cached users immediately, validate in background
+    try {
+      // Check server for actual users
+      const response = await fetch('/api/admin/get-all-users');
+      if (response.ok) {
+        const serverUsers = await response.json();
+        const validUsers = {};
+        
+        // Only keep users that exist on server
+        serverUsers.forEach((user: any) => {
+          validUsers[user.customerNumber] = user;
+        });
+        
+        // Update local storage to match server
+        localStorage.setItem('allUsers', JSON.stringify(validUsers));
+        setValidatedUsers(validUsers);
+        
+        console.log(`Synced ${Object.keys(validUsers).length} users from server`);
+      } else {
+        // Server error or no users - clear local cache
+        localStorage.setItem('allUsers', '{}');
+        setValidatedUsers({});
+        console.log('No users found on server, cleared local cache');
+      }
+    } catch (error) {
+      console.error('Failed to validate users:', error);
+      // Fallback to cached users if server unreachable
+      const cachedUsers = UserDataManager.getAllUsers();
+      setValidatedUsers(cachedUsers);
+    }
   };
 
 
@@ -161,6 +188,10 @@ export default function Login() {
   // Validate users when Admin Access dialog opens
   useEffect(() => {
     if (showAdminLogin) {
+      // Force clear cache and validate
+      localStorage.removeItem('allUsers');
+      localStorage.removeItem('currentUser');
+      localStorage.removeItem('lastActiveUser');
       validateAndCleanUsers();
     }
   }, [showAdminLogin]);
