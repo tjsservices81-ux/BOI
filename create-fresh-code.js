@@ -2,7 +2,7 @@ import Database from '@replit/database';
 const db = new Database();
 
 async function createFreshCode() {
-  const freshCode = 'fresh2024';
+  const freshCode = 'access' + Date.now();
   
   await db.set(`access_code_${freshCode}`, {
     code: freshCode,
