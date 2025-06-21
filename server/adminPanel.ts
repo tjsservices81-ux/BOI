@@ -775,7 +775,8 @@ router.post('/delete-user', adminAuth, async (req, res) => {
         ],
         details: {
           userDeleted: true,
-          sessionsInvalidated: invalidatedSessionsions.length
+          sessionsInvalidated: invalidatedSessions.length,
+          storageKeysCleared: 7
         }
       });
     } else {
