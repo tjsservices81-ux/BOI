@@ -912,30 +912,6 @@ input, textarea, select {
   will-change: transform;
 }
 
-/* Admin panel specific - force above all system UI */
-.admin-panel {
-  z-index: 999999 !important;
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  transform: translate3d(0, 0, 1000px) !important;
-  -webkit-transform: translate3d(0, 0, 1000px) !important;
-  will-change: transform !important;
-  isolation: isolate !important;
-  contain: layout style paint !important;
-}
-
-/* Force admin panel content above everything */
-.admin-panel .modal-content {
-  z-index: 9999999 !important;
-  transform: translate3d(0, 0, 1001px) !important;
-  -webkit-transform: translate3d(0, 0, 1001px) !important;
-  backface-visibility: hidden !important;
-  -webkit-backface-visibility: hidden !important;
-}
-
 /* Prevent any delayed icon loading in lists */
 .list-item svg, .menu-item svg, .option-item svg {
   opacity: 1;

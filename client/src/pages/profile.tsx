@@ -176,48 +176,34 @@ export default function Profile() {
     const currentTime = Date.now();
     const timeSinceLastTap = currentTime - lastTapTime;
     
-    console.log('Profile picture tapped!', { currentTime, lastTapTime, timeSinceLastTap, currentTapCount: tapCount });
-    
     // Reset tap count if more than 2 seconds have passed since last tap
     let newTapCount;
     if (timeSinceLastTap > 2000) {
       newTapCount = 1;
-      console.log('Resetting tap count due to timeout');
     } else {
       newTapCount = tapCount + 1;
-      console.log('Incrementing tap count');
     }
     
     setTapCount(newTapCount);
     setLastTapTime(currentTime);
     
-    console.log(`Admin access tap: ${newTapCount}/5`, { showAdminPanel });
+    console.log(`Admin access tap: ${newTapCount}/5`);
     
     // Open admin panel immediately when 5 taps are reached
     if (newTapCount >= 5) {
-      console.log('5 taps reached! Opening admin panel...');
-      console.log('Current showAdminPanel state:', showAdminPanel);
+      console.log('Opening admin panel...');
       
       // Force the admin panel to open with multiple fallbacks
       setShowAdminPanel(true);
       setTapCount(0);
       setLastTapTime(0);
       
-      console.log('Admin panel state set to true');
-      
       // Additional fallback: Force re-render if panel doesn't appear
       setTimeout(() => {
-        const adminPanelElement = document.querySelector('.admin-panel');
-        console.log('Checking for admin panel element:', adminPanelElement);
-        if (!adminPanelElement) {
+        if (!document.querySelector('.admin-panel')) {
           console.log('Admin panel not found, forcing re-render...');
           setShowAdminPanel(false);
-          setTimeout(() => {
-            console.log('Re-setting admin panel to true');
-            setShowAdminPanel(true);
-          }, 50);
-        } else {
-          console.log('Admin panel found successfully');
+          setTimeout(() => setShowAdminPanel(true), 50);
         }
       }, 100);
     }
@@ -1075,9 +1061,12 @@ export default function Profile() {
               <div className="flex flex-col items-center text-center mb-8">
                 <button 
                   onClick={handleProfilePictureTap}
-                  className={`w-24 h-24 rounded-full flex items-center justify-center mb-4 active:scale-95 transition-all duration-200 ${
-                    tapCount > 0 ? 'bg-blue-200 border-2 border-blue-400' : 'bg-gray-200'
-                  }`}
+                  onTouchStart={(e) => e.preventDefault()}
+                  className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mb-4 active:scale-95 transition-all duration-200 touch-manipulation"
+                  style={{
+                    WebkitTapHighlightColor: 'transparent',
+                    touchAction: 'manipulation'
+                  }}
                 >
                   <User className="w-12 h-12 text-gray-600" />
                 </button>
@@ -1163,27 +1152,10 @@ export default function Profile() {
         <div 
           className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000] p-4 modal-overlay admin-panel"
           onClick={() => setShowAdminPanel(false)}
-          style={{ 
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 99999,
-            transform: 'translateZ(0)',
-            willChange: 'transform',
-            isolation: 'isolate'
-          }}
         >
           <div 
             className="bg-white rounded-2xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto modal-content"
             onClick={(e) => e.stopPropagation()}
-            style={{
-              position: 'relative',
-              zIndex: 100000,
-              transform: 'translate3d(0, 0, 999px)',
-              backfaceVisibility: 'hidden'
-            }}
           >
             <div className="p-6 pb-12">
               <div className="flex items-center justify-between mb-6">
