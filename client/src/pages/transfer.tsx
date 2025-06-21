@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAuth } from "@/lib/auth";
 import { BottomNavigation } from "@/components/ui/bottom-navigation";
 import { apiRequest } from "@/lib/queryClient";
-import { ArrowLeft, PiggyBank, ChevronDown, Send, Info } from "lucide-react";
+import { ArrowLeft, PiggyBank, ChevronDown, Send, Info, CreditCard, Mail, Building } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Account, TransferRequest } from "@shared/schema";
 
@@ -30,10 +30,18 @@ export default function Transfer() {
   const [iban, setIban] = useState("");
   const [amount, setAmount] = useState("");
   const [reference, setReference] = useState("");
+  const [transferType, setTransferType] = useState<"bank" | "card" | "email">("bank");
+  const [cardNumber, setCardNumber] = useState("");
+  const [emailAddress, setEmailAddress] = useState("");
 
   const { data: accounts = [] } = useQuery<Account[]>({
     queryKey: ["/api/accounts", user?.id],
     enabled: !!user,
+  });
+
+  const { data: profileData } = useQuery({
+    queryKey: ["/api/profile", user?.id],
+    enabled: !!user?.id,
   });
 
   const transferMutation = useMutation({
