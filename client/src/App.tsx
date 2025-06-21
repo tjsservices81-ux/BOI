@@ -40,18 +40,9 @@ function ProtectedRoute({ children, fallback }: { children: React.ReactNode; fal
   const user = authHook?.user || null;
   const isLoading = authHook?.isLoading || false;
   
-  // Check if app is still in initialization phase
-  const appSessionActive = localStorage.getItem('app_session_active');
-  const splashCompleted = localStorage.getItem('splash_completed');
-  
-  // SECURITY FIX: Show loading state instead of null during initialization
-  if (!appSessionActive || !splashCompleted) {
-    return (
-      <div className="w-full h-full flex items-center justify-center bg-[#126987]">
-        <div className="text-white">Loading...</div>
-      </div>
-    );
-  }
+  // Simplified approach - don't block on session flags, let auth state handle loading
+  // The loading state should only be shown when auth is actively loading
+  // Remove the blocking loading screen that was causing the stuck state
   
   // Normal protection logic after initialization
   if (!user && !isLoading) {
