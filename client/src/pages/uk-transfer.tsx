@@ -737,7 +737,7 @@ export default function UkTransfer() {
                 <option value="">Select account</option>
                 {accounts.map(account => (
                   <option key={account.id} value={account.id}>
-                    {account.displayName} {account.accountNumber} - €{account.balance}
+                    {account.displayName} {account.accountNumber} - {CurrencyManager.formatAmount(account.balance, currentCurrency)}
                   </option>
                 ))}
               </select>

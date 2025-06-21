@@ -1,4 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { CurrencyManager } from "@/utils/currencyManager";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,6 +22,21 @@ export default function BillPay() {
   
   const locationHook = useLocation();
   const [, navigate] = locationHook || [null, () => {}];
+  const [currentCurrency, setCurrentCurrency] = useState(CurrencyManager.getCurrentCurrency());
+
+  // Listen for real-time currency changes
+  useEffect(() => {
+    const handleCurrencyChange = (event: any) => {
+      const { currency } = event.detail;
+      setCurrentCurrency(currency);
+    };
+
+    window.addEventListener('currencyChanged', handleCurrencyChange);
+    
+    return () => {
+      window.removeEventListener('currencyChanged', handleCurrencyChange);
+    };
+  }, []);
 
   const { data: payees = [] } = useQuery<Payee[]>({
     queryKey: ["/api/payees", user?.id],
@@ -91,7 +108,7 @@ export default function BillPay() {
                       <div className="text-left">
                         <p className="font-medium text-[var(--boi-gray)]">{payee.name}</p>
                         <p className="text-sm text-[var(--boi-light-gray)]">
-                          Last paid: €{payee.lastAmount ? parseFloat(payee.lastAmount).toFixed(2) : "0.00"}
+                          Last paid: {CurrencyManager.formatAmount(payee.lastAmount || "0", currentCurrency)}
                         </p>
                       </div>
                     </div>
@@ -135,7 +152,7 @@ export default function BillPay() {
                   </div>
                   <div className="text-right">
                     <p className="font-semibold text-[var(--boi-gray)]">
-                      €{parseFloat(payment.amount).toFixed(2)}
+                      {CurrencyManager.formatAmount(payment.amount, currentCurrency)}
                     </p>
                     <p className="text-xs text-[var(--boi-light-gray)] capitalize">
                       {payment.frequency}

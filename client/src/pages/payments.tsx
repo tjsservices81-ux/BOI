@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { CurrencyManager } from "../utils/currencyManager";
 import { useLocation } from "wouter";
 import { ChevronLeft, ChevronRight, User, ArrowUpDown, Globe, MapPin, Clock, Users, X, Trash2 } from "lucide-react";
 import { UserDataManager } from "../utils/userDataManager";
@@ -10,6 +11,21 @@ export default function Payments() {
   const [showRecentPayees, setShowRecentPayees] = useState(false);
   const [recentPayees, setRecentPayees] = useState<any[]>([]);
   const [deleteConfirm, setDeleteConfirm] = useState<{name: string, accountInfo: string} | null>(null);
+  const [currentCurrency, setCurrentCurrency] = useState(CurrencyManager.getCurrentCurrency());
+
+  // Listen for real-time currency changes
+  useEffect(() => {
+    const handleCurrencyChange = (event: any) => {
+      const { currency } = event.detail;
+      setCurrentCurrency(currency);
+    };
+
+    window.addEventListener('currencyChanged', handleCurrencyChange);
+    
+    return () => {
+      window.removeEventListener('currencyChanged', handleCurrencyChange);
+    };
+  }, []);
 
   const paymentOptions = [
     {
@@ -255,7 +271,7 @@ export default function Payments() {
                     </div>
                     <div className="text-right">
                       <p className={`font-semibold ${isDebit ? 'text-gray-900' : 'text-green-600'}`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        €{displayAmount.replace('-', '')}
+                        {CurrencyManager.formatAmount(displayAmount.replace('-', ''), currentCurrency)}
                       </p>
                       <p className="text-xs text-gray-500 mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                         {formatDate(payment.timestamp)}
