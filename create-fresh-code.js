@@ -6,10 +6,15 @@ async function createFreshCode() {
   
   await db.set(`access_code_${freshCode}`, {
     code: freshCode,
-    used: false,
     valid: true,
     createdAt: new Date().toISOString(),
-    description: `Fresh access code: ${freshCode}`
+    description: `Fresh access code: ${freshCode}`,
+    usage: {
+      ios: 0,
+      nonIos: 0,
+      totalUses: 0,
+      devices: []
+    }
   });
   
   console.log(`✓ Created fresh code: ${freshCode}`);

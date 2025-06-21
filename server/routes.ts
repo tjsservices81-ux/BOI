@@ -128,10 +128,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  // Access code verification endpoint
+  // Helper function to detect iOS devices
+  function isIOSDevice(userAgent: string): boolean {
+    if (!userAgent) return false;
+    const iosPattern = /iPhone|iPad|iPod/i;
+    return iosPattern.test(userAgent);
+  }
+
+  // Access code verification endpoint with device-specific usage limits
   app.post("/api/verify-code", async (req, res) => {
     try {
       const { code } = req.body;
+      const userAgent = req.headers['user-agent'] || '';
+      const isIOS = isIOSDevice(userAgent);
       
       if (!code || typeof code !== 'string') {
         return res.status(400).json({ 
@@ -178,37 +187,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Check if code is used and invalid
-      if (codeInfo && codeInfo.used === true && codeInfo.valid === false) {
-        return res.status(403).json({ 
-          success: false, 
-          error: "Access denied or revoked",
-          message: "Access denied or revoked" 
-        });
+      // Initialize usage tracking if not present
+      if (!codeInfo.usage) {
+        codeInfo.usage = {
+          ios: 0,
+          nonIos: 0,
+          totalUses: 0,
+          devices: []
+        };
       }
 
-      // Check if code is already used (but still valid)
-      if (codeInfo && codeInfo.used === true) {
-        return res.status(409).json({ 
-          success: false, 
-          error: "Access code already used",
-          message: "Access expired — this link has already been used." 
-        });
+      // Device-specific usage limits
+      const iosLimit = 2;
+      const nonIosLimit = 1;
+      
+      // Check usage limits based on device type
+      if (isIOS) {
+        if (codeInfo.usage.ios >= iosLimit) {
+          return res.status(409).json({ 
+            success: false, 
+            error: "Access Restricted – code already used",
+            message: "Access Restricted – code already used" 
+          });
+        }
+      } else {
+        if (codeInfo.usage.nonIos >= nonIosLimit) {
+          return res.status(409).json({ 
+            success: false, 
+            error: "Access Restricted – code already used",
+            message: "Access Restricted – code already used" 
+          });
+        }
       }
 
-      // Mark code as used but keep it valid (unless manually revoked)
+      // Record this usage
+      if (isIOS) {
+        codeInfo.usage.ios += 1;
+      } else {
+        codeInfo.usage.nonIos += 1;
+      }
+      
+      codeInfo.usage.totalUses += 1;
+      codeInfo.usage.devices.push({
+        userAgent: userAgent,
+        isIOS: isIOS,
+        timestamp: new Date().toISOString(),
+        ip: req.ip || req.connection.remoteAddress
+      });
+
+      // Update the legacy used flag for backward compatibility
+      codeInfo.used = true;
+      codeInfo.lastUsedAt = new Date().toISOString();
+      
+      // Keep valid true unless manually revoked
+      if (codeInfo.valid === undefined) {
+        codeInfo.valid = true;
+      }
+
+      // Save updated code info
       await db.set(`access_code_${code}`, {
-        code: code,
-        used: true,
-        valid: true,
-        usedAt: new Date().toISOString(),
+        ...codeInfo,
         createdAt: codeInfo?.createdAt || new Date().toISOString(),
         description: codeInfo?.description || `Access code: ${code}`
       });
 
+      console.log(`Access granted for ${code} - iOS: ${isIOS}, Usage: iOS=${codeInfo.usage.ios}/${iosLimit}, Non-iOS=${codeInfo.usage.nonIos}/${nonIosLimit}`);
+
       res.json({ 
         success: true, 
-        message: "Access granted" 
+        message: "Access granted",
+        deviceType: isIOS ? 'iOS' : 'other',
+        remainingUses: isIOS ? (iosLimit - codeInfo.usage.ios) : (nonIosLimit - codeInfo.usage.nonIos)
       });
       
     } catch (error) {
@@ -267,9 +316,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Initialize usage tracking if not present (for backward compatibility)
+      if (!codeInfo.usage) {
+        codeInfo.usage = {
+          ios: 0,
+          nonIos: 0,
+          totalUses: 0,
+          devices: []
+        };
+      }
+
+      // Get user agent and detect device type
+      const userAgent = req.headers['user-agent'] || '';
+      const isIOS = isIOSDevice(userAgent);
+
+      // Check device-specific usage limits
+      const iosLimit = 2;
+      const nonIosLimit = 1;
+      
+      let hasValidAccess = true;
+      let remainingUses = 0;
+      
+      if (isIOS) {
+        hasValidAccess = codeInfo.usage.ios < iosLimit;
+        remainingUses = iosLimit - codeInfo.usage.ios;
+      } else {
+        hasValidAccess = codeInfo.usage.nonIos < nonIosLimit;
+        remainingUses = nonIosLimit - codeInfo.usage.nonIos;
+      }
+
+      if (!hasValidAccess) {
+        return res.status(409).json({ 
+          success: false, 
+          error: "Access Restricted – code already used",
+          message: "Access Restricted – code already used" 
+        });
+      }
+
       res.json({ 
         success: true, 
-        valid: codeInfo?.valid !== false 
+        valid: codeInfo?.valid !== false,
+        deviceType: isIOS ? 'iOS' : 'other',
+        remainingUses: remainingUses,
+        usageInfo: {
+          ios: codeInfo.usage.ios,
+          nonIos: codeInfo.usage.nonIos,
+          totalUses: codeInfo.usage.totalUses
+        }
       });
       
     } catch (error) {
