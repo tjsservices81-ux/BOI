@@ -21,6 +21,24 @@ export default function Dashboard() {
   // Local state for account balances that can be updated by transfers
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [isNavigating, setIsNavigating] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Debug authentication state on dashboard load
+  useEffect(() => {
+    console.log('📊 Dashboard component mounted');
+    const cachedUser = localStorage.getItem('bankingUser');
+    if (cachedUser) {
+      console.log('📊 Dashboard: User data found in localStorage:', JSON.parse(cachedUser));
+    } else {
+      console.log('📊 Dashboard: No user data in localStorage');
+    }
+    
+    // Simulate dashboard loading completion
+    setTimeout(() => {
+      setIsLoading(false);
+      console.log('📊 Dashboard loading complete');
+    }, 1000);
+  }, []);
 
   // Enhanced navigation with smooth animations
   const navigateWithAnimation = (path: string, animationType: 'slide-right' | 'slide-left' | 'slide-up' = 'slide-right') => {
@@ -248,6 +266,20 @@ export default function Dashboard() {
       default: return 'bg-gray-500';
     }
   };
+
+  // Show loading state during dashboard initialization
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#126987] to-[#3a5a65] flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
+          <p className="text-white text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+            Loading Dashboard...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`page-container h-screen bg-white overflow-hidden flex flex-col ios-safe-bottom relative page-fade-slide-in ${isNavigating ? 'dashboard-exit' : ''}`} style={{ maxHeight: '100vh' }}>
