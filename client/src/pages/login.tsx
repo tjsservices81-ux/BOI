@@ -97,7 +97,7 @@ export default function Login() {
       const response = await fetch('/api/admin/get-all-users');
       if (response.ok) {
         const serverUsers = await response.json();
-        const validUsers = {};
+        const validUsers: any = {};
         
         // Only keep users that exist on server
         serverUsers.forEach((user: any) => {
@@ -109,11 +109,17 @@ export default function Login() {
         setValidatedUsers(validUsers);
         
         console.log(`Synced ${Object.keys(validUsers).length} users from server`);
+        
+        // Force UI update if no users found
+        if (Object.keys(validUsers).length === 0) {
+          console.log('No users found - showing empty state');
+        }
       } else {
         // Server error or no users - clear local cache
         localStorage.setItem('allUsers', '{}');
         setValidatedUsers({});
         console.log('No users found on server, cleared local cache');
+        console.log('Forcing empty state display');
       }
     } catch (error) {
       console.error('Failed to validate users:', error);
@@ -188,11 +194,15 @@ export default function Login() {
   // Validate users when Admin Access dialog opens
   useEffect(() => {
     if (showAdminLogin) {
-      // Force clear cache and validate
-      localStorage.removeItem('allUsers');
-      localStorage.removeItem('currentUser');
-      localStorage.removeItem('lastActiveUser');
-      validateAndCleanUsers();
+      // Force clear ALL cache and validate
+      localStorage.clear();
+      sessionStorage.clear();
+      setValidatedUsers({});
+      
+      // Small delay to ensure state is cleared
+      setTimeout(() => {
+        validateAndCleanUsers();
+      }, 100);
     }
   }, [showAdminLogin]);
 
@@ -1675,8 +1685,14 @@ export default function Login() {
                 ))}
                 
                 {Object.keys(validatedUsers).length === 0 && (
-                  <div className="text-center py-8 text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    No accounts registered yet
+                  <div className="text-center py-12 space-y-4">
+                    <div className="text-6xl">🏦</div>
+                    <div className="text-gray-500 text-lg font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      No registered accounts
+                    </div>
+                    <div className="text-gray-400 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Database is completely empty
+                    </div>
                   </div>
                 )}
               </div>
