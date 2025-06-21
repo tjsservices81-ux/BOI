@@ -1,6 +1,6 @@
 // Enhanced transfer utilities with offline support
 import { UserDataManager } from './userDataManager';
-import { offlineManager } from './offlineManager';
+import OfflineBanking from './offlineBanking';
 
 export interface Account {
   id: string;
@@ -218,7 +218,7 @@ export const checkTransferConfirmation = async (transferId: string): Promise<{ c
   }
 };
 
-export const processConfirmedTransfer = (
+export const processConfirmedTransfer = async (
   transferId: string,
   fromAccountId: string,
   amount: number,
@@ -227,10 +227,33 @@ export const processConfirmedTransfer = (
   reference: string,
   exchangeRate?: number,
   recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string; bicCode?: string }
-): boolean => {
+): Promise<boolean> => {
   console.log('Processing confirmed transfer:', { transferId, fromAccountId, amount, recipientName, transferType, reference });
   
-  // Execute the actual transfer logic that was previously in processTransfer
+  // Check if offline and use offline banking system
+  if (OfflineBanking.isOffline() || !(navigator.onLine)) {
+    console.log('Processing transfer offline...');
+    
+    const offlineResult = await OfflineBanking.processTransferOffline({
+      fromAccount: fromAccountId,
+      amount: amount.toString(),
+      recipientName,
+      transferType,
+      reference,
+      exchangeRate,
+      ...recipientDetails
+    });
+    
+    if (offlineResult.success) {
+      console.log(`Offline transfer ${transferId} queued successfully with reference: ${offlineResult.reference}`);
+      return true;
+    }
+    
+    console.error(`Offline transfer ${transferId} failed`);
+    return false;
+  }
+  
+  // Execute the actual transfer logic for online mode
   const success = processTransfer(fromAccountId, amount, recipientName, transferType, reference, exchangeRate, recipientDetails);
   
   if (success) {
