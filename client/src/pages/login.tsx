@@ -1078,19 +1078,27 @@ export default function Login() {
                 <button 
                   onClick={handleLoginButton}
                   disabled={isLoading}
-                  className={`w-full py-2.5 ios-button font-semibold text-sm mb-3 transition-all duration-200 ${
+                  className={`w-full py-2.5 ios-button font-semibold text-sm mb-3 transition-all duration-200 android-no-highlight ${
                     biometricVerified || pinVerified 
                       ? 'bg-[#126987] text-white hover:bg-[#3a5a65] active:scale-95' 
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   } disabled:opacity-50`}
-                  style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}
+                  style={{ 
+                    fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
+                    WebkitTapHighlightColor: 'transparent',
+                    outline: 'none'
+                  }}
                 >
                   {isLoading ? "Logging in..." : "Log in"}
                 </button>
 
                 {/* Forgot PIN */}
                 <div className="text-center mb-3">
-                  <button className="text-[#126987] text-xs flex items-center justify-center space-x-1 active:scale-95 transition-transform" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
+                  <button className="text-[#126987] text-xs flex items-center justify-center space-x-1 active:scale-95 transition-transform android-no-highlight" style={{ 
+                    fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
+                    WebkitTapHighlightColor: 'transparent',
+                    outline: 'none'
+                  }}>
                     <span>Forgot your PIN?</span>
                     <ExternalLink className="w-2.5 h-2.5" />
                   </button>

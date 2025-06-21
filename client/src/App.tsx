@@ -109,7 +109,12 @@ function AppRoutes() {
       
       // Apply Android UI fixes to match iOS
       const { AndroidUIFixes } = await import('./utils/androidUIFixes');
+      const { AndroidPerformanceOptimizer } = await import('./utils/androidPerformanceOptimizer');
+      
       AndroidUIFixes.initialize();
+      AndroidUIFixes.fixAccountCardStyling();
+      AndroidUIFixes.removeAndroidRippleEffect();
+      AndroidPerformanceOptimizer.initialize();
       
       // Initialize cache persistence system
       const { UserDataManager } = await import('./utils/userDataManager');

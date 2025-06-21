@@ -234,8 +234,12 @@ export default function InternalTransfer() {
             </div>
             <button
               onClick={() => navigate('/dashboard')}
-              className="w-full bg-[#126987] text-white py-4 rounded-2xl font-semibold active:scale-98 transition-transform"
-              style={{ fontFamily: 'OpenSans, sans-serif' }}
+              className="w-full bg-[#126987] text-white py-4 rounded-2xl font-semibold active:scale-98 transition-transform android-no-highlight"
+              style={{ 
+                fontFamily: 'OpenSans, sans-serif',
+                WebkitTapHighlightColor: 'transparent',
+                outline: 'none'
+              }}
             >
               Done
             </button>
@@ -346,8 +350,12 @@ export default function InternalTransfer() {
               console.log('Button clicked, calling confirmTransfer');
               confirmTransfer();
             }}
-            className="w-full bg-[#126987] text-white py-4 rounded-2xl font-semibold active:scale-98 transition-transform"
-            style={{ fontFamily: 'OpenSans, sans-serif' }}
+            className="w-full bg-[#126987] text-white py-4 rounded-2xl font-semibold active:scale-98 transition-transform android-no-highlight"
+            style={{ 
+              fontFamily: 'OpenSans, sans-serif',
+              WebkitTapHighlightColor: 'transparent',
+              outline: 'none'
+            }}
           >
             Confirm Transfer
           </button>

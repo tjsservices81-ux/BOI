@@ -158,16 +158,21 @@ export class AndroidUIFixes {
     if (!PlatformDetection.isAndroid()) return;
 
     // Apply Android-specific fixes to individual elements
-    element.style.webkitTapHighlightColor = 'transparent';
+    element.style.setProperty('-webkit-tap-highlight-color', 'transparent');
     element.style.outline = 'none';
     element.style.userSelect = 'none';
     element.style.touchAction = 'manipulation';
     
     // Add event listeners to prevent default Android behaviors
     element.addEventListener('touchstart', (e) => {
-      // Prevent Android long-press context menu
-      e.preventDefault();
-    }, { passive: false });
+      // Improve touch responsiveness on Android
+      element.style.transform = 'scale(0.98)';
+    }, { passive: true });
+
+    element.addEventListener('touchend', (e) => {
+      // Reset transform after touch
+      element.style.transform = '';
+    }, { passive: true });
 
     element.addEventListener('contextmenu', (e) => {
       // Disable context menu on Android
