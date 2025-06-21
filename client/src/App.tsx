@@ -12,6 +12,7 @@ import { StateManager } from "@/utils/stateManager";
 import { AppLifecycle } from "@/utils/appLifecycle";
 import { PlatformDetection } from "@/utils/platformDetection";
 import { OfflineAccessManager } from "@/utils/offlineAccessManager";
+import { AccountVerificationManager } from "@/utils/accountVerificationManager";
 import LiveChat from "@/components/LiveChat";
 
 
@@ -35,6 +36,7 @@ import TransactionHistoryWorking from "@/pages/transaction-history-working";
 import Statements from "@/pages/statements";
 import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
+import VerifyAccount from "@/pages/verify-account";
 
 function ProtectedRoute({ children, fallback }: { children: React.ReactNode; fallback?: React.ReactNode }) {
   const authHook = useAuth();
@@ -64,6 +66,65 @@ function ProtectedRoute({ children, fallback }: { children: React.ReactNode; fal
     return null;
   }
   
+  return <VerifiedRoute>{children}</VerifiedRoute>;
+}
+
+function VerifiedRoute({ children }: { children: React.ReactNode }) {
+  const [verificationStatus, setVerificationStatus] = useState<'checking' | 'verified' | 'unverified' | 'error'>('checking');
+  const [redirectPath, setRedirectPath] = useState<string>('/signup');
+  const [verificationMessage, setVerificationMessage] = useState<string>('');
+  const [location] = useLocation();
+
+  useEffect(() => {
+    const checkVerification = async () => {
+      try {
+        // Get current user
+        const { UserDataManager } = await import('./utils/userDataManager');
+        const currentUser = UserDataManager.getCurrentUser();
+        
+        if (!currentUser) {
+          setVerificationStatus('unverified');
+          setRedirectPath('/login');
+          setVerificationMessage('Please log in to continue');
+          return;
+        }
+
+        // Perform silent verification check
+        const result = await AccountVerificationManager.performSilentVerificationCheck(currentUser);
+        
+        if (result.canProceed) {
+          setVerificationStatus('verified');
+        } else {
+          setVerificationStatus('unverified');
+          setRedirectPath(result.redirectTo || '/signup');
+          setVerificationMessage(result.message || 'Account verification required');
+        }
+      } catch (error) {
+        console.error('Verification check failed:', error);
+        setVerificationStatus('error');
+        setRedirectPath('/signup');
+        setVerificationMessage('Unable to verify account status. Please try again.');
+      }
+    };
+
+    checkVerification();
+  }, [location]);
+
+  // Show loading during verification check
+  if (verificationStatus === 'checking') {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-[#126987]">
+        <div className="text-white">Verifying account...</div>
+      </div>
+    );
+  }
+
+  // Redirect if verification failed
+  if (verificationStatus === 'unverified' || verificationStatus === 'error') {
+    return <Redirect to={redirectPath} />;
+  }
+
+  // Render protected content for verified users
   return <>{children}</>;
 }
 

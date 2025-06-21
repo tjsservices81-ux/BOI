@@ -14,6 +14,8 @@ export const users = pgTable("users", {
   joinDate: text("join_date").notNull().default("Member since 2018"),
   dateCreated: timestamp("date_created").notNull().defaultNow(),
   isDisabled: boolean("is_disabled").notNull().default(false),
+  verified: boolean("verified").notNull().default(false),
+  verificationTimestamp: timestamp("verification_timestamp"),
 });
 
 export const accounts = pgTable("accounts", {
