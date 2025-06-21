@@ -31,8 +31,7 @@ export default function Login() {
     phone: '',
     customerNumber: ''
   });
-  const [logoTapCount, setLogoTapCount] = useState(0);
-  const [showAdminLogin, setShowAdminLogin] = useState(false);
+
   const [showOtcVerification, setShowOtcVerification] = useState(false);
   const [otcCode, setOtcCode] = useState('');
   const [generatedOtc, setGeneratedOtc] = useState('');
@@ -125,16 +124,9 @@ export default function Login() {
     setPin('');
     setBiometricVerified(false);
     setPinVerified(false);
-    setLogoTapCount(0);
-    setShowAdminLogin(false);
   }, []);
 
-  // Validate users when Admin Access dialog opens
-  useEffect(() => {
-    if (showAdminLogin) {
-      validateAndCleanUsers();
-    }
-  }, [showAdminLogin]);
+
 
   const handleNavigation = (path: string) => {
     setIsNavigating(true);
@@ -143,24 +135,7 @@ export default function Login() {
     }, 150);
   };
 
-  const handleLogoTap = () => {
-    const newTapCount = logoTapCount + 1;
-    setLogoTapCount(newTapCount);
-    
-    if (newTapCount === 5) {
-      setShowAdminLogin(true);
-      setLogoTapCount(0);
-      return;
-    }
-    
-    // Reset tap count after 3 seconds of inactivity with cleanup
-    const timeoutId = setTimeout(() => {
-      setLogoTapCount(0);
-    }, 3000);
-    
-    // Store timeout ID for potential cleanup
-    return () => clearTimeout(timeoutId);
-  };
+
 
   const generateCustomerNumber = () => {
     return 'BOI' + Math.random().toString().substring(2, 11);
@@ -969,12 +944,7 @@ export default function Login() {
         {/* Header */}
         <div className="flex items-center justify-center pt-12 pb-6 flex-shrink-0">
           <div className="flex items-center">
-            <button 
-              onClick={handleLogoTap}
-              className="active:scale-95 transition-transform"
-            >
-              <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-8 filter brightness-0 invert" />
-            </button>
+            <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-8 filter brightness-0 invert" />
           </div>
         </div>
 
@@ -1418,8 +1388,8 @@ export default function Login() {
         </div>
       )}
 
-      {/* Admin Login Modal */}
-      {showAdminLogin && (
+      {/* Removed dev login modal */}
+      {false && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-sm p-6">
             <div className="flex items-center justify-between mb-6">
