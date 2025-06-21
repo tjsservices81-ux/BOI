@@ -39,6 +39,21 @@ export default function IbanTransfer() {
   const [formData, setFormData] = useState<IbanTransferData | null>(null);
   const [currentCurrency, setCurrentCurrency] = useState(CurrencyManager.getCurrentCurrency());
 
+  // Listen for real-time currency changes
+  useEffect(() => {
+    const handleCurrencyChange = (event: any) => {
+      const { currency } = event.detail;
+      console.log(`IBAN Transfer: Currency changed to ${currency}`);
+      setCurrentCurrency(currency);
+    };
+
+    window.addEventListener('currencyChanged', handleCurrencyChange);
+    
+    return () => {
+      window.removeEventListener('currencyChanged', handleCurrencyChange);
+    };
+  }, []);
+
   const form = useForm<IbanTransferData>({
     resolver: zodResolver(ibanTransferSchema),
     defaultValues: {

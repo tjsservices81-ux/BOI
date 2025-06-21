@@ -91,6 +91,26 @@ export default function UkTransfer() {
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('left');
   const [currentCurrency, setCurrentCurrency] = useState(CurrencyManager.getCurrentCurrency());
 
+  // Listen for real-time currency changes
+  useEffect(() => {
+    const handleCurrencyChange = (event: any) => {
+      const { currency } = event.detail;
+      console.log(`UK Transfer: Currency changed to ${currency}`);
+      setCurrentCurrency(currency);
+      
+      // Update timing text and currency conversion visibility instantly
+      if (currency === 'GBP') {
+        setGbpAmount('0.00'); // Hide conversion for GBP
+      }
+    };
+
+    window.addEventListener('currencyChanged', handleCurrencyChange);
+    
+    return () => {
+      window.removeEventListener('currencyChanged', handleCurrencyChange);
+    };
+  }, [exchangeRate]);
+
   const form = useForm<UkTransferData>({
     resolver: zodResolver(ukTransferSchema),
     defaultValues: {

@@ -24,6 +24,24 @@ export default function Dashboard() {
   const [isNavigating, setIsNavigating] = useState(false);
   const [currentCurrency, setCurrentCurrency] = useState(CurrencyManager.getCurrentCurrency());
 
+  // Listen for real-time currency changes
+  useEffect(() => {
+    const handleCurrencyChange = (event: any) => {
+      const { currency } = event.detail;
+      console.log(`Dashboard: Currency changed to ${currency}`);
+      setCurrentCurrency(currency);
+      
+      // Force re-render of account balances with new currency symbols
+      setAccounts(prev => [...prev]);
+    };
+
+    window.addEventListener('currencyChanged', handleCurrencyChange);
+    
+    return () => {
+      window.removeEventListener('currencyChanged', handleCurrencyChange);
+    };
+  }, []);
+
   // Enhanced navigation with smooth animations
   const navigateWithAnimation = (path: string, animationType: 'slide-right' | 'slide-left' | 'slide-up' = 'slide-right') => {
     setIsNavigating(true);

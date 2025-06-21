@@ -45,7 +45,9 @@ export class CurrencyManager {
   static async setCurrency(currency: Currency): Promise<void> {
     // Save to local storage immediately for instant UI updates
     UserDataManager.setUserData('primaryCurrency', currency);
-    this.notifyListeners(currency);
+    
+    // Trigger instant global update event FIRST
+    this.triggerGlobalCurrencyUpdate(currency);
     
     // Save to database for persistence across sessions
     try {
@@ -89,6 +91,37 @@ export class CurrencyManager {
   // Notify all listeners of currency change
   private static notifyListeners(currency: Currency): void {
     this.listeners.forEach(callback => callback(currency));
+  }
+  
+  // Trigger instant global currency update across all components
+  static triggerGlobalCurrencyUpdate(currency: Currency): void {
+    console.log(`🔄 Triggering global currency update: ${currency}`);
+    
+    // Dispatch custom event for all components listening to currency changes
+    const currencyEvent = new CustomEvent('currencyChanged', {
+      detail: { 
+        currency, 
+        symbol: CURRENCY_CONFIGS[currency].symbol,
+        code: CURRENCY_CONFIGS[currency].code,
+        timestamp: Date.now()
+      }
+    });
+    
+    window.dispatchEvent(currencyEvent);
+    
+    // Also trigger balance and account updates
+    const balanceEvent = new CustomEvent('balanceUpdate', {
+      detail: { currency, forceUpdate: true }
+    });
+    window.dispatchEvent(balanceEvent);
+    
+    const accountsEvent = new CustomEvent('accountsUpdate', {
+      detail: { currency, forceUpdate: true }
+    });
+    window.dispatchEvent(accountsEvent);
+    
+    // Notify traditional listeners as well
+    this.notifyListeners(currency);
   }
   
   // Format amount with correct currency symbol and decimal places

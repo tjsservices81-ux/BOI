@@ -37,6 +37,24 @@ export default function InternalTransfer() {
   const [selectedToAccount, setSelectedToAccount] = useState<any>(null);
   const [currentCurrency, setCurrentCurrency] = useState(CurrencyManager.getCurrentCurrency());
 
+  // Listen for real-time currency changes
+  useEffect(() => {
+    const handleCurrencyChange = (event: any) => {
+      const { currency } = event.detail;
+      console.log(`Internal Transfer: Currency changed to ${currency}`);
+      setCurrentCurrency(currency);
+      
+      // Force re-render of account balances with new currency symbols
+      setAccounts(prev => [...prev]);
+    };
+
+    window.addEventListener('currencyChanged', handleCurrencyChange);
+    
+    return () => {
+      window.removeEventListener('currencyChanged', handleCurrencyChange);
+    };
+  }, []);
+
   const form = useForm<InternalTransferData>({
     resolver: zodResolver(internalTransferSchema),
     defaultValues: {

@@ -19,6 +19,24 @@ export default function TransactionHistoryWorking() {
   const [isNavigating, setIsNavigating] = useState(false);
   const [currentCurrency, setCurrentCurrency] = useState(CurrencyManager.getCurrentCurrency());
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Listen for real-time currency changes
+  useEffect(() => {
+    const handleCurrencyChange = (event: any) => {
+      const { currency } = event.detail;
+      console.log(`Transaction History: Currency changed to ${currency}`);
+      setCurrentCurrency(currency);
+      
+      // Force re-render of all transaction amounts and balance with new currency symbols
+      setTransactions(prev => [...prev]);
+    };
+
+    window.addEventListener('currencyChanged', handleCurrencyChange);
+    
+    return () => {
+      window.removeEventListener('currencyChanged', handleCurrencyChange);
+    };
+  }, []);
   
   const accountId = params?.accountId ? parseInt(params.accountId) : 1;
 
