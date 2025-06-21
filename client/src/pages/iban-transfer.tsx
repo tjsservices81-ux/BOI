@@ -311,9 +311,23 @@ export default function IbanTransfer() {
                     <div className="android-progress-bar">
                       <div 
                         className="android-progress-fill"
-                        style={{ width: `${animationProgress}%` }}
+                        style={{ 
+                          width: `${animationProgress}%`,
+                          background: 'linear-gradient(to right, #126987, #5a7b85, #126987)',
+                          height: '16px',
+                          borderRadius: '9999px',
+                          transition: 'width 300ms ease-out'
+                        }}
                       >
-                        <div className="android-progress-shine"></div>
+                        <div 
+                          className="android-progress-shine"
+                          style={{
+                            animation: 'androidProgressPulse 2s ease-in-out infinite',
+                            WebkitAnimation: 'androidProgressPulse 2s ease-in-out infinite',
+                            animationPlayState: 'running',
+                            WebkitAnimationPlayState: 'running'
+                          }}
+                        ></div>
                       </div>
                     </div>
                     <p className="android-progress-percent">
@@ -324,7 +338,19 @@ export default function IbanTransfer() {
                   {/* Professional Security Notice */}
                   <div className="android-security-card">
                     <div className="android-security-status">
-                      <div className="android-security-dot"></div>
+                      <div 
+                        className="android-security-dot"
+                        style={{
+                          animation: 'androidSecurityPulse 2s ease-in-out infinite',
+                          WebkitAnimation: 'androidSecurityPulse 2s ease-in-out infinite',
+                          animationPlayState: 'running',
+                          WebkitAnimationPlayState: 'running',
+                          width: '12px',
+                          height: '12px',
+                          backgroundColor: '#10b981',
+                          borderRadius: '50%'
+                        }}
+                      ></div>
                       <span className="android-security-text">
                         Secure Connection Active
                       </span>
