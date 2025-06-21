@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, DollarSign, Calendar, Eye, EyeOff } from 'lucide-react';
+import { formatAmount } from '../utils/currencyUtils';
 
 interface SpendingData {
   totalSpent: number;
@@ -87,8 +88,7 @@ export default function SpendingInsights() {
     return 'Other';
   };
 
-  const formatCurrency = (amount: number) => 
-    `€${amount.toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const formatCurrency = (amount: number) => formatAmount(amount.toString());
 
   if (!spendingData) return null;
 

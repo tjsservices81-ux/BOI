@@ -13,6 +13,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { ArrowLeft, PiggyBank, ChevronDown, Send, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Account, TransferRequest } from "@shared/schema";
+import { formatAmount, getTransferTiming } from "@/utils/currencyUtils";
 
 export default function Transfer() {
   const authHook = useAuth();
@@ -112,7 +113,7 @@ export default function Transfer() {
                       <div>
                         <p className="font-medium text-[var(--boi-gray)]">{selectedAccount.displayName}</p>
                         <p className="text-sm text-[var(--boi-light-gray)]">
-                          Available: €{parseFloat(selectedAccount.balance).toFixed(2)}
+                          Available: {formatAmount(selectedAccount.balance)}
                         </p>
                       </div>
                     </div>
