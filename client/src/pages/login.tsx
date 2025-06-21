@@ -83,21 +83,8 @@ export default function Login() {
     
     // Open account creation modal when 5 taps are reached
     if (newTapCount >= 5) {
-      // Check if user is already logged in
-      const currentUser = authHook?.user;
-      const cachedUser = localStorage.getItem('bankingUser');
-      
-      if (currentUser || cachedUser) {
-        console.log('User already logged in - showing toast instead');
-        toast({
-          description: "⚠️ You're already signed in.",
-          duration: 3000,
-        });
-      } else {
-        console.log('Opening account creation...');
-        setShowSignUp(true);
-      }
-      
+      console.log('Opening account creation...');
+      setShowSignUp(true);
       setLogoTapCount(0);
       setLastLogoTapTime(0);
     }

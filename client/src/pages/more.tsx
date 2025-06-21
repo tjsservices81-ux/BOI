@@ -1,18 +1,11 @@
 import { useLocation } from "wouter";
 import { ChevronLeft, User, HelpCircle, Info, Settings, Shield, Building2, MessageCircle } from "lucide-react";
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
 
 export default function More() {
   const [, setLocation] = useLocation();
   const [isNavigating, setIsNavigating] = useState(false);
   const [isLoadingChat, setIsLoadingChat] = useState(false);
-  
-  // Logo tap functionality for authenticated users
-  const [logoTapCount, setLogoTapCount] = useState(0);
-  const [lastLogoTapTime, setLastLogoTapTime] = useState(0);
-  
-  const toast = useToast()?.toast || (() => {});
 
   const handleNavigation = (path: string) => {
     setIsNavigating(true);
