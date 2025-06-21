@@ -12,6 +12,7 @@ import { SecurityWrapper } from "@/components/SecurityWrapper";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { StateManager } from "@/utils/stateManager";
 import { AppLifecycle } from "@/utils/appLifecycle";
+import { UserDataManager } from "@/utils/userDataManager";
 import LiveChat from "@/components/LiveChat";
 
 import Splash from "@/pages/splash";
@@ -181,10 +182,12 @@ function AppRoutes() {
             } else {
               console.log('❌ No valid backend session - showing login');
               
-              // Clear stale authentication data
-              const cachedUser = localStorage.getItem('currentUser');
-              if (cachedUser) {
-                console.log('Clearing stale user data from localStorage');
+              // Clear stale authentication data through UserDataManager
+              try {
+                UserDataManager.clearUserData('currentUser');
+                console.log('Clearing stale user data from UserDataManager');
+              } catch (error) {
+                // Handle case where no user is currently set
                 localStorage.removeItem('currentUser');
               }
               
