@@ -5,6 +5,7 @@ interface User {
   id: number;
   name: string;
   email: string;
+  customerNumber?: string;
 }
 
 interface AuthContextType {

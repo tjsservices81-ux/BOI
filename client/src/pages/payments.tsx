@@ -18,8 +18,14 @@ export default function Payments() {
 
   // Fetch user profile data to check transfer toggle settings
   const { data: profileData } = useQuery({
-    queryKey: ["/api/profile", user?.id],
-    enabled: !!user?.id,
+    queryKey: ["/api/profile"],
+    queryFn: async () => {
+      const currentCustomerNumber = UserDataManager.getCurrentUser();
+      if (!currentCustomerNumber) return null;
+      const response = await fetch(`/api/profile/${currentCustomerNumber}`);
+      return response.ok ? response.json() : null;
+    },
+    enabled: true,
   });
 
   // Base payment options (always available)
@@ -53,7 +59,12 @@ export default function Payments() {
   // Additional payment options based on user toggles
   const conditionalPaymentOptions = [];
   
-  if (profileData?.showCardTransfer) {
+  // Debug logging
+  console.log('Profile data in payments:', profileData);
+  console.log('Show card transfer:', profileData?.showCardTransfer);
+  console.log('Show email transfer:', profileData?.showEmailTransfer);
+  
+  if (profileData?.showCardTransfer === true) {
     conditionalPaymentOptions.push({
       id: 'card',
       title: 'Card Transfer',
@@ -64,7 +75,7 @@ export default function Payments() {
     });
   }
   
-  if (profileData?.showEmailTransfer) {
+  if (profileData?.showEmailTransfer === true) {
     conditionalPaymentOptions.push({
       id: 'email',
       title: 'Email Transfer',
