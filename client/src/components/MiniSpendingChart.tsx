@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { CurrencyManager } from '../utils/currencyManager';
 import { TrendingUp, TrendingDown, BarChart3 } from 'lucide-react';
 
 interface ChartData {
@@ -15,21 +14,6 @@ export default function MiniSpendingChart({ accountId }: MiniSpendingChartProps)
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const [trend, setTrend] = useState<'up' | 'down' | 'stable'>('stable');
   const [isVisible, setIsVisible] = useState(true);
-  const [currentCurrency, setCurrentCurrency] = useState(CurrencyManager.getCurrentCurrency());
-
-  // Listen for real-time currency changes
-  useEffect(() => {
-    const handleCurrencyChange = (event: any) => {
-      const { currency } = event.detail;
-      setCurrentCurrency(currency);
-    };
-
-    window.addEventListener('currencyChanged', handleCurrencyChange);
-    
-    return () => {
-      window.removeEventListener('currencyChanged', handleCurrencyChange);
-    };
-  }, []);
 
   useEffect(() => {
     const calculateChartData = () => {
@@ -135,10 +119,10 @@ export default function MiniSpendingChart({ accountId }: MiniSpendingChartProps)
         <div className="mt-3 pt-3 border-t border-gray-100">
           <div className="flex justify-between text-xs text-gray-600">
             <span style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Total: {CurrencyManager.formatAmount(chartData.reduce((sum, day) => sum + day.amount, 0).toString(), currentCurrency)}
+              Total: €{chartData.reduce((sum, day) => sum + day.amount, 0).toFixed(2)}
             </span>
             <span style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Avg: {CurrencyManager.formatAmount((chartData.reduce((sum, day) => sum + day.amount, 0) / 7).toString(), currentCurrency)}/day
+              Avg: €{(chartData.reduce((sum, day) => sum + day.amount, 0) / 7).toFixed(2)}/day
             </span>
           </div>
         </div>

@@ -7,8 +7,6 @@ import {
   type InsertChatMessage, type InsertChatResponse, type InsertChatSession
 } from "@shared/schema";
 import { PersistentDataManager } from "./persistentStorage";
-import { db } from "./db";
-import { eq } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
@@ -125,37 +123,8 @@ class MemStorage implements IStorage {
       } else {
         console.log("No persisted data found, starting with empty state");
       }
-      
-      // Load database users into memory for API access
-      await this.syncDatabaseUsers();
     } catch (error) {
       console.error('Error loading persisted data:', error);
-    }
-  }
-
-  private async syncDatabaseUsers(): Promise<void> {
-    try {
-      const dbUsers = await db.select().from(users);
-      console.log(`Found ${dbUsers.length} existing users in database`);
-      
-      for (const dbUser of dbUsers) {
-        // Add database users to memory if not already present
-        const existingUser = Array.from(this.users.values()).find(u => u.customerNumber === dbUser.customerNumber);
-        if (!existingUser) {
-          this.users.set(dbUser.id, dbUser);
-          if (dbUser.id >= this.currentUserId) {
-            this.currentUserId = dbUser.id + 1;
-          }
-        } else {
-          // Update existing user with latest database data (especially primaryCurrency)
-          const updatedUser = { ...existingUser, ...dbUser };
-          this.users.set(dbUser.id, updatedUser);
-        }
-      }
-      
-      console.log(`Synchronized ${this.users.size} total users in memory`);
-    } catch (error) {
-      console.log('Database sync not available, using memory-only storage');
     }
   }
 
@@ -204,7 +173,6 @@ class MemStorage implements IStorage {
       address: insertUser.address || null,
       dateOfBirth: insertUser.dateOfBirth || null,
       joinDate: insertUser.joinDate || "Member since 2018",
-      primaryCurrency: insertUser.primaryCurrency || "EUR",
       dateCreated: insertUser.dateCreated || new Date(),
       isDisabled: false
     };
@@ -218,25 +186,7 @@ class MemStorage implements IStorage {
   }
 
   async getUserByCustomerNumber(customerNumber: string): Promise<User | undefined> {
-    const user = Array.from(this.users.values()).find(user => user.customerNumber === customerNumber);
-    
-    // If user found in memory, also check database for latest currency preference
-    if (user) {
-      try {
-        const [dbUser] = await db.select().from(users).where(eq(users.customerNumber, customerNumber));
-        if (dbUser && dbUser.primaryCurrency !== user.primaryCurrency) {
-          // Update memory with database currency preference
-          const updatedUser = { ...user, primaryCurrency: dbUser.primaryCurrency };
-          this.users.set(user.id, updatedUser);
-          await this.saveData();
-          return updatedUser;
-        }
-      } catch (error) {
-        console.log('Note: Using memory currency preference');
-      }
-    }
-    
-    return user;
+    return Array.from(this.users.values()).find(user => user.customerNumber === customerNumber);
   }
 
   async updateUserProfile(customerNumber: string, updates: Partial<User>): Promise<User | undefined> {
@@ -245,18 +195,6 @@ class MemStorage implements IStorage {
       const updatedUser = { ...user, ...updates };
       this.users.set(user.id, updatedUser);
       await this.saveData(); // Persist changes to disk immediately
-      
-      // Also persist primaryCurrency to database for cross-session persistence
-      if (updates.primaryCurrency) {
-        try {
-          await db.update(users)
-            .set({ primaryCurrency: updates.primaryCurrency })
-            .where(eq(users.customerNumber, customerNumber));
-        } catch (error) {
-          console.log('Note: Currency preference saved to memory but not database');
-        }
-      }
-      
       return updatedUser;
     }
     return undefined;
@@ -711,75 +649,6 @@ class MemStorage implements IStorage {
 
     console.log("Sample data initialization complete");
   }
-}
-
-// Database storage implementation for persistent user profiles with currency preferences
-class DatabaseStorage implements IStorage {
-  async getUserByCredentials(customerNumber: string, pin: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.customerNumber, customerNumber));
-    if (user && user.pin === pin) {
-      return user;
-    }
-    return undefined;
-  }
-
-  async createUser(userData: InsertUser): Promise<User> {
-    const [user] = await db.insert(users).values(userData).returning();
-    return user;
-  }
-
-  async getUser(customerNumber: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.customerNumber, customerNumber));
-    return user || undefined;
-  }
-
-  async getUserByCustomerNumber(customerNumber: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.customerNumber, customerNumber));
-    return user || undefined;
-  }
-
-  async updateUserProfile(customerNumber: string, updates: Partial<User>): Promise<User | undefined> {
-    const [updatedUser] = await db
-      .update(users)
-      .set(updates)
-      .where(eq(users.customerNumber, customerNumber))
-      .returning();
-    return updatedUser || undefined;
-  }
-
-  async getAllUsers(): Promise<User[]> {
-    return await db.select().from(users);
-  }
-
-  async deleteUser(customerNumber: string): Promise<boolean> {
-    const result = await db.delete(users).where(eq(users.customerNumber, customerNumber));
-    return result.rowCount > 0;
-  }
-
-  // For now, implement other methods with minimal functionality - main focus is user profile persistence
-  async getAccountsByUserId(userId: number): Promise<Account[]> { return []; }
-  async getAccountById(accountId: number): Promise<Account | undefined> { return undefined; }
-  async createAccount(account: InsertAccount): Promise<Account> { throw new Error('Not implemented'); }
-  async updateAccountBalance(accountId: number, newBalance: string): Promise<void> {}
-  async deleteAccountsByUserId(userId: number): Promise<boolean> { return false; }
-  async getTransactionsByAccountId(accountId: number): Promise<Transaction[]> { return []; }
-  async createTransaction(transaction: InsertTransaction): Promise<Transaction> { throw new Error('Not implemented'); }
-  async deleteTransactionsByAccountId(accountId: number): Promise<boolean> { return false; }
-  async getPayeesByUserId(userId: number): Promise<Payee[]> { return []; }
-  async createPayee(payee: InsertPayee): Promise<Payee> { throw new Error('Not implemented'); }
-  async deletePayeesByUserId(userId: number): Promise<boolean> { return false; }
-  async getScheduledPaymentsByUserId(userId: number): Promise<ScheduledPayment[]> { return []; }
-  async deleteScheduledPaymentsByUserId(userId: number): Promise<boolean> { return false; }
-  async getStatementsByUserId(userId: number): Promise<Statement[]> { return []; }
-  async deleteStatementsByUserId(userId: number): Promise<boolean> { return false; }
-  async getChatMessagesBySessionId(sessionId: string): Promise<ChatMessage[]> { return []; }
-  async createChatMessage(message: InsertChatMessage): Promise<ChatMessage> { throw new Error('Not implemented'); }
-  async deleteChatMessagesByUserId(userId: number): Promise<boolean> { return false; }
-  async getChatResponses(): Promise<ChatResponse[]> { return []; }
-  async createChatResponse(response: InsertChatResponse): Promise<ChatResponse> { throw new Error('Not implemented'); }
-  async getChatSessionsByUserId(userId: number): Promise<ChatSession[]> { return []; }
-  async createChatSession(session: InsertChatSession): Promise<ChatSession> { throw new Error('Not implemented'); }
-  async deleteChatSessionsByUserId(userId: number): Promise<boolean> { return false; }
 }
 
 export const storage = new MemStorage();

@@ -1,5 +1,4 @@
-import { useState, useEffect } from "react";
-import { CurrencyManager } from "@/utils/currencyManager";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -31,23 +30,6 @@ export default function Transfer() {
   const [iban, setIban] = useState("");
   const [amount, setAmount] = useState("");
   const [reference, setReference] = useState("");
-  const [currentCurrency, setCurrentCurrency] = useState(CurrencyManager.getCurrentCurrency());
-
-  // Listen for real-time currency changes
-  useEffect(() => {
-    const handleCurrencyChange = (event: any) => {
-      const { currency } = event.detail;
-      setCurrentCurrency(currency);
-      // Trigger re-render by forcing queryClient invalidation
-      queryClient.invalidateQueries({ queryKey: ['/api/accounts'] });
-    };
-
-    window.addEventListener('currencyChanged', handleCurrencyChange);
-    
-    return () => {
-      window.removeEventListener('currencyChanged', handleCurrencyChange);
-    };
-  }, []);
 
   const { data: accounts = [] } = useQuery<Account[]>({
     queryKey: ["/api/accounts", user?.id],
@@ -130,7 +112,7 @@ export default function Transfer() {
                       <div>
                         <p className="font-medium text-[var(--boi-gray)]">{selectedAccount.displayName}</p>
                         <p className="text-sm text-[var(--boi-light-gray)]">
-                          Available: {CurrencyManager.formatAmount(selectedAccount.balance, currentCurrency)}
+                          Available: €{parseFloat(selectedAccount.balance).toFixed(2)}
                         </p>
                       </div>
                     </div>
@@ -144,7 +126,7 @@ export default function Transfer() {
                       <PiggyBank className="text-[var(--boi-green)] mr-3" />
                       <div>
                         <p className="font-medium">{account.displayName}</p>
-                        <p className="text-sm text-gray-500">{CurrencyManager.formatAmount(account.balance, currentCurrency)}</p>
+                        <p className="text-sm text-gray-500">€{parseFloat(account.balance).toFixed(2)}</p>
                       </div>
                     </div>
                   </SelectItem>
@@ -190,7 +172,7 @@ export default function Transfer() {
           <CardContent className="p-4 space-y-3">
             <h3 className="font-medium text-[var(--boi-gray)] mb-4">Amount</h3>
             <div className="relative">
-              <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[var(--boi-gray)] font-medium">{CurrencyManager.getCurrentSymbol(currentCurrency)}</span>
+              <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[var(--boi-gray)] font-medium">€</span>
               <Input
                 type="number"
                 step="0.01"

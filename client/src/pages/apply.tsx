@@ -26,7 +26,7 @@ export default function Apply() {
     {
       id: 'personal-loan',
       title: 'Personal Loan',
-      description: 'Fixed rate personal loans from £2,000 to £75,000',
+      description: 'Fixed rate personal loans from €2,000 to €75,000',
       icon: '/Loan_medium.png',
       category: 'Loans',
       popular: true

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, DollarSign, Calendar, Eye, EyeOff } from 'lucide-react';
-import { CurrencyManager } from '../utils/currencyManager';
 
 interface SpendingData {
   totalSpent: number;
@@ -15,22 +14,6 @@ interface SpendingData {
 export default function SpendingInsights() {
   const [isVisible, setIsVisible] = useState(false);
   const [spendingData, setSpendingData] = useState<SpendingData | null>(null);
-  const [currentCurrency, setCurrentCurrency] = useState(CurrencyManager.getCurrentCurrency());
-
-  // Listen for real-time currency changes
-  useEffect(() => {
-    const handleCurrencyChange = (event: any) => {
-      const { currency } = event.detail;
-      console.log(`SpendingInsights: Currency changed to ${currency}`);
-      setCurrentCurrency(currency);
-    };
-
-    window.addEventListener('currencyChanged', handleCurrencyChange);
-    
-    return () => {
-      window.removeEventListener('currencyChanged', handleCurrencyChange);
-    };
-  }, []);
 
   useEffect(() => {
     const calculateSpendingInsights = () => {
@@ -44,7 +27,7 @@ export default function SpendingInsights() {
       const debits = transactions.filter((tx: any) => tx.type === 'debit');
       const amounts = debits.map((tx: any) => Math.abs(parseFloat(tx.amount)));
       
-      const totalSpent = amounts.reduce((sum: number, amount: number) => sum + amount, 0);
+      const totalSpent = amounts.reduce((sum, amount) => sum + amount, 0);
       const averageTransaction = totalSpent / amounts.length;
       const largestTransaction = Math.max(...amounts);
 
@@ -105,7 +88,7 @@ export default function SpendingInsights() {
   };
 
   const formatCurrency = (amount: number) => 
-    CurrencyManager.formatAmount(amount.toString(), currentCurrency);
+    `€${amount.toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   if (!spendingData) return null;
 

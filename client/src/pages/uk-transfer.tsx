@@ -7,7 +7,6 @@ import { z } from "zod";
 import { validateUKSortCode, formatSortCode, validateUKAccountNumber } from "../utils/bankValidation";
 import { getAccounts, processTransfer, processSecureTransfer, checkTransferConfirmation, processConfirmedTransfer, generateReference } from "../utils/transferUtils";
 import { UserDataManager } from "../utils/userDataManager";
-import { CurrencyManager } from "../utils/currencyManager";
 
 // Known sort codes for bank identification
 const knownSortCodes: Record<string, string> = {
@@ -89,30 +88,6 @@ export default function UkTransfer() {
   const [exchangeRate, setExchangeRate] = useState<number>(0.85); // EUR to GBP rate
   const [gbpAmount, setGbpAmount] = useState<string>('0.00');
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('left');
-  const [currentCurrency, setCurrentCurrency] = useState(CurrencyManager.getCurrentCurrency());
-
-  // Listen for real-time currency changes
-  useEffect(() => {
-    const handleCurrencyChange = (event: any) => {
-      const { currency } = event.detail;
-      console.log(`UK Transfer: Currency changed to ${currency}`);
-      setCurrentCurrency(currency);
-      
-      // Force re-render of accounts to update currency display
-      setAccounts(prev => [...prev]);
-      
-      // Update timing text and currency conversion visibility instantly
-      if (currency === 'GBP') {
-        setGbpAmount('0.00'); // Hide conversion for GBP
-      }
-    };
-
-    window.addEventListener('currencyChanged', handleCurrencyChange);
-    
-    return () => {
-      window.removeEventListener('currencyChanged', handleCurrencyChange);
-    };
-  }, [exchangeRate]);
 
   const form = useForm<UkTransferData>({
     resolver: zodResolver(ukTransferSchema),
@@ -157,16 +132,7 @@ export default function UkTransfer() {
     }
   };
 
-  // Currency change handler
-  const handleCurrencyChange = (event: Event) => {
-    const customEvent = event as CustomEvent;
-    setCurrentCurrency(customEvent.detail.currency);
-  };
-
   useEffect(() => {
-    // Add currency change event listener
-    window.addEventListener('currencyChanged', handleCurrencyChange as EventListener);
-
     const loadAccounts = () => {
       // Use UserDataManager to get consistent account data
       UserDataManager.clearCache('bankAccounts');
@@ -257,7 +223,6 @@ export default function UkTransfer() {
     }
     
     return () => {
-      window.removeEventListener('currencyChanged', handleCurrencyChange as EventListener);
       window.removeEventListener('accountsUpdate', handleAccountsUpdate as EventListener);
       window.removeEventListener('balanceUpdate', handleAccountsUpdate as EventListener);
       window.removeEventListener('adminProfileUpdate', handleAccountsUpdate as EventListener);
@@ -428,15 +393,10 @@ export default function UkTransfer() {
               <div className="flex justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Amount:</span>
                 <div className="text-right">
-                  <span className="font-semibold text-[#126987] text-xl" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {CurrencyManager.formatAmount(formData?.amount || '0', currentCurrency)}
-                  </span>
-                  {/* Only show conversion for EUR users */}
-                  {!CurrencyManager.shouldHideConversion() && (
-                    <p className="text-sm text-green-700 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      ≈ {CurrencyManager.formatAmount(formData?.amount ? (parseFloat(formData.amount) * exchangeRate) : 0, 'GBP')} GBP
-                    </p>
-                  )}
+                  <span className="font-semibold text-[#126987] text-xl" style={{ fontFamily: 'OpenSans, sans-serif' }}>€{formData?.amount}</span>
+                  <p className="text-sm text-green-700 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    ≈ £{formData?.amount ? (parseFloat(formData.amount) * exchangeRate).toFixed(2) : '0.00'} GBP
+                  </p>
                 </div>
               </div>
               
@@ -454,7 +414,7 @@ export default function UkTransfer() {
                 UK Bank Transfer
               </p>
               <p className="text-xs text-blue-700 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                {CurrencyManager.getTransferTiming('UK')}
+                This transfer will be processed within 1-2 business days due to international banking regulations.
               </p>
             </div>
           </div>
@@ -560,24 +520,19 @@ export default function UkTransfer() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Amount:</span>
-                      <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        {CurrencyManager.formatAmount(form.getValues('amount'), currentCurrency)}
-                      </span>
+                      <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>€{form.getValues('amount')}</span>
                     </div>
-                    {/* Only show conversion for EUR users */}
-                    {!CurrencyManager.shouldHideConversion() && (
-                      <div className="flex justify-between border-t border-gray-200 pt-3">
-                        <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>GBP Equivalent:</span>
-                        <div className="text-right">
-                          <span className="font-semibold text-green-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                            {CurrencyManager.formatAmount((parseFloat(form.getValues('amount')) * exchangeRate), 'GBP')}
-                          </span>
-                          <p className="text-xs text-gray-500 mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                            Rate: {CurrencyManager.getSymbol('EUR')}1 = {CurrencyManager.getSymbol('GBP')}{exchangeRate.toFixed(4)} • Live rate
-                          </p>
-                        </div>
+                    <div className="flex justify-between border-t border-gray-200 pt-3">
+                      <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>GBP Equivalent:</span>
+                      <div className="text-right">
+                        <span className="font-semibold text-green-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          £{(parseFloat(form.getValues('amount')) * exchangeRate).toFixed(2)}
+                        </span>
+                        <p className="text-xs text-gray-500 mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Rate: €1 = £{exchangeRate.toFixed(4)} • Live rate
+                        </p>
                       </div>
-                    )}
+                    </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>To:</span>
                       <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{form.getValues('recipientName')}</span>
@@ -597,7 +552,7 @@ export default function UkTransfer() {
                     </div>
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
                       <p className="text-sm text-blue-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        <strong>International Transfer:</strong> {CurrencyManager.getTransferTiming('UK').replace('This transfer will be processed within ', 'UK transfers from Bank of Ireland typically take ')}
+                        <strong>International Transfer:</strong> UK transfers from Bank of Ireland typically take 1-2 business days to reach the recipient due to cross-border banking regulations.
                       </p>
                     </div>
                     <div className="bg-red-50 border border-red-200 rounded-lg p-3 mt-3">
@@ -740,7 +695,7 @@ export default function UkTransfer() {
                 <option value="">Select account</option>
                 {accounts.map(account => (
                   <option key={account.id} value={account.id}>
-                    {account.displayName} {account.accountNumber} - {CurrencyManager.formatAmount(account.balance, currentCurrency)}
+                    {account.displayName} {account.accountNumber} - €{account.balance}
                   </option>
                 ))}
               </select>
@@ -887,7 +842,7 @@ export default function UkTransfer() {
 
             <div className="bg-gray-50 rounded-lg p-4">
               <label className="block text-sm font-semibold text-gray-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Amount ({currentCurrency})
+                Amount (EUR)
               </label>
               <input
                 type="text"
