@@ -337,7 +337,7 @@ export default function IbanTransfer() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Amount:</span>
-                      <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>€{formData?.amount}</span>
+                      <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{formatCurrency(formData?.amount || '0', userCurrency)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>To:</span>
@@ -598,7 +598,7 @@ export default function IbanTransfer() {
                 <option value="">Select account</option>
                 {accounts.map(account => (
                   <option key={account.id} value={account.id}>
-                    {account.displayName} {account.accountNumber} - €{account.balance}
+                    {account.displayName} {account.accountNumber} - {formatCurrency(account.balance, userCurrency)}
                   </option>
                 ))}
               </select>
@@ -670,7 +670,7 @@ export default function IbanTransfer() {
 
             <div className="bg-gray-50 rounded-lg p-4">
               <label className="block text-sm font-semibold text-gray-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Amount (EUR)
+                Amount ({userCurrency})
               </label>
               <input
                 {...form.register('amount')}

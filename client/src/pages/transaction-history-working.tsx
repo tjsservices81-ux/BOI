@@ -4,7 +4,7 @@ import { ChevronLeft, ArrowUpRight, CreditCard, Building2, Zap, Check, Clock, Ma
 import MiniSpendingChart from "../components/MiniSpendingChart";
 import { UserDataManager } from "../utils/userDataManager.ts";
 import { StateManager } from "../utils/stateManager";
-import { formatCurrency, getUserCurrency, type Currency } from "../utils/currencyUtils";
+import { formatCurrency, getUserCurrency, getCurrencySymbol, type Currency } from "../utils/currencyUtils";
 
 export default function TransactionHistoryWorking() {
   const locationHook = useLocation();
@@ -525,7 +525,7 @@ export default function TransactionHistoryWorking() {
                     <div className="flex justify-between">
                       <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Exchange Rate:</span>
                       <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        €1 = £{selectedTransaction.exchangeRate.toFixed(4)}
+                        {getCurrencySymbol(userCurrency)}1 = {getCurrencySymbol(userCurrency === 'EUR' ? 'GBP' : 'EUR')}{selectedTransaction.exchangeRate.toFixed(4)}
                       </span>
                     </div>
 

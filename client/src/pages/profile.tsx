@@ -909,7 +909,9 @@ export default function Profile() {
       }));
     }, 100);
     
-    alert('Data reset to defaults successfully - all balances set to €0.00, transactions cleared');
+    const currentCurrency = getUserCurrency();
+    const currencySymbol = currentCurrency === 'EUR' ? '€' : '£';
+    alert(`Data reset to defaults successfully - all balances set to ${currencySymbol}0.00, transactions cleared`);
   };
 
   // Load transactions for selected account
