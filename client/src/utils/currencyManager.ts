@@ -177,7 +177,14 @@ export class CurrencyManager {
   
   // Initialize currency manager with event listeners and user preferences
   static initialize(): void {
-    // Load user currency preference from profile data
+    // First check for locally stored currency preference for immediate UI updates
+    const storedCurrency = UserDataManager.getUserData('primaryCurrency', 'EUR');
+    if (storedCurrency !== 'EUR') {
+      // Immediately trigger currency change event for instant UI update
+      this.triggerGlobalCurrencyUpdate(storedCurrency);
+    }
+    
+    // Then load from database asynchronously to sync any changes
     this.loadUserCurrencyPreference();
     
     // Listen for currency change events from admin panel

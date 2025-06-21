@@ -1,5 +1,7 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useLocation } from "wouter";
+import { useState, useEffect } from "react";
+import { CurrencyManager } from "../utils/currencyManager";
 
 interface Transaction {
   id: string;
@@ -13,6 +15,22 @@ interface Transaction {
 export default function Transactions() {
   const locationHook = useLocation();
   const [location, setLocation] = locationHook || ['/', () => {}];
+  const [currentCurrency, setCurrentCurrency] = useState(CurrencyManager.getCurrentCurrency());
+  
+  // Listen for real-time currency changes
+  useEffect(() => {
+    const handleCurrencyChange = (event: any) => {
+      const { currency } = event.detail;
+      console.log(`Transactions: Currency changed to ${currency}`);
+      setCurrentCurrency(currency);
+    };
+
+    window.addEventListener('currencyChanged', handleCurrencyChange);
+    
+    return () => {
+      window.removeEventListener('currencyChanged', handleCurrencyChange);
+    };
+  }, []);
   
   // Parse URL parameters from window.location to get actual query params
   const urlParams = new URLSearchParams(window.location.search);
@@ -126,7 +144,7 @@ export default function Transactions() {
               <p className="text-white/60 text-xs mt-1 boi-regular-font">{getBalanceLabel()}</p>
             </div>
             <div className="text-right">
-              <p className="text-white text-2xl font-semibold boi-semibold-font">€{balance.toFixed(2)}</p>
+              <p className="text-white text-2xl font-semibold boi-semibold-font">{CurrencyManager.formatAmount(balance.toFixed(2), currentCurrency)}</p>
             </div>
           </div>
         </div>
@@ -145,7 +163,7 @@ export default function Transactions() {
                 key={transaction.id}
                 className="px-4 py-4 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer haptic-feedback stagger-item"
                 style={{ animationDelay: `${index * 0.05}s` }}
-                onClick={() => alert(`Transaction details: ${transaction.description}\nAmount: €${Math.abs(transaction.amount).toFixed(2)}\nDate: ${transaction.date}\nBalance after: €${transaction.balance.toFixed(2)}`)}
+                onClick={() => alert(`Transaction details: ${transaction.description}\nAmount: ${CurrencyManager.formatAmount(Math.abs(transaction.amount).toFixed(2), currentCurrency)}\nDate: ${transaction.date}\nBalance after: ${CurrencyManager.formatAmount(transaction.balance.toFixed(2), currentCurrency)}`)}
               >
                 <div className="flex justify-between items-start">
                   {/* Left side - Transaction info */}
@@ -165,7 +183,7 @@ export default function Transactions() {
                         ? 'text-green-600' 
                         : 'text-gray-900'
                     }`}>
-                      {transaction.type === 'credit' ? '+' : ''}€{transaction.amount.toFixed(2)}
+                      {transaction.type === 'credit' ? '+' : ''}{CurrencyManager.formatAmount(transaction.amount.toFixed(2), currentCurrency)}
                     </p>
                   </div>
                 </div>
