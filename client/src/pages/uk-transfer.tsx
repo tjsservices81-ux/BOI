@@ -7,7 +7,7 @@ import { z } from "zod";
 import { validateUKSortCode, formatSortCode, validateUKAccountNumber } from "../utils/bankValidation";
 import { getAccounts, processTransfer, processSecureTransfer, checkTransferConfirmation, processConfirmedTransfer, generateReference } from "../utils/transferUtils";
 import { UserDataManager } from "../utils/userDataManager";
-import { formatCurrency, getUserCurrency, type Currency } from "../utils/currencyUtils";
+import { formatCurrency, getUserCurrency, getCurrencySymbol, type Currency } from "../utils/currencyUtils";
 
 // Known sort codes for bank identification
 const knownSortCodes: Record<string, string> = {
@@ -525,16 +525,16 @@ export default function UkTransfer() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Amount:</span>
-                      <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>€{form.getValues('amount')}</span>
+                      <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{formatCurrency(form.getValues('amount') || '0', userCurrency)}</span>
                     </div>
                     <div className="flex justify-between border-t border-gray-200 pt-3">
                       <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>GBP Equivalent:</span>
                       <div className="text-right">
                         <span className="font-semibold text-green-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          £{(parseFloat(form.getValues('amount')) * exchangeRate).toFixed(2)}
+                          {getCurrencySymbol(userCurrency === 'EUR' ? 'GBP' : 'EUR')}{(parseFloat(form.getValues('amount')) * exchangeRate).toFixed(2)}
                         </span>
                         <p className="text-xs text-gray-500 mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          Rate: €1 = £{exchangeRate.toFixed(4)} • Live rate
+                          Rate: {getCurrencySymbol(userCurrency)}1 = {getCurrencySymbol(userCurrency === 'EUR' ? 'GBP' : 'EUR')}{exchangeRate.toFixed(4)} • Live rate
                         </p>
                       </div>
                     </div>

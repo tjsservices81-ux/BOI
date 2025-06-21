@@ -374,7 +374,7 @@ export default function TransactionHistoryWorking() {
               {/* Amount */}
               <div className="text-center py-4 border-b border-gray-200">
                 <p className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  €{selectedTransaction.amount.replace('-', '')}
+                  {formatCurrency(selectedTransaction.amount.replace('-', ''), userCurrency)}
                 </p>
                 <p className="text-sm text-gray-500 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                   {selectedTransaction.type === 'debit' ? 'Sent' : 'Received'}

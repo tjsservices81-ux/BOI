@@ -484,7 +484,7 @@ export default function InternalTransfer() {
 
             <div>
               <label className="block text-sm font-semibold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Amount (EUR)
+                Amount ({getUserCurrency()})
               </label>
               <input
                 type="number"
