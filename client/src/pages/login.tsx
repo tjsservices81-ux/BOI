@@ -55,16 +55,45 @@ export default function Login() {
   const authHook = useAuth();
   const login = authHook?.login || (() => {});
   const isLoading = authHook?.isLoading || false;
+  const user = authHook?.user || null;
   
   const locationHook = useLocation();
-  const [, navigate] = locationHook || [null, () => {}];
+  const [location, navigate] = locationHook || [null, () => {}];
   const [validatedUsers, setValidatedUsers] = useState<any>({});
   
   const toastHook = useToast();
   const toast = toastHook?.toast || (() => {});
 
-  // Handle logo tap for account creation access (only available before login)
+  // Handle logo tap for account creation access (ONLY on login screen when not authenticated)
   const handleLogoTap = () => {
+    // STRICT CONDITION: Only allow on exact login route
+    const pathname = window.location.pathname;
+    if (pathname !== '/login') {
+      console.log(`Logo tap ignored - not on login page (current: ${pathname})`);
+      return; // Silently ignore taps on non-login pages
+    }
+    
+    // STRICT CONDITION: Check authentication state comprehensively
+    const isAuthenticatedContext = user !== null;
+    const cachedUser = localStorage.getItem('bankingUser');
+    const authToken = localStorage.getItem('auth_token');
+    const isAuthenticated = isAuthenticatedContext || cachedUser || authToken;
+    
+    if (isAuthenticated) {
+      // User is already logged in - show warning toast and prevent any action
+      console.log('Logo tap blocked - user is authenticated');
+      toast({
+        title: "⚠️ You're already signed in.",
+        duration: 2500,
+        variant: "default",
+      });
+      // Reset tap counter to prevent accumulation
+      setLogoTapCount(0);
+      setLastLogoTapTime(0);
+      return;
+    }
+    
+    // Proceed with tap counting only if on login page and not authenticated
     const currentTime = Date.now();
     const timeSinceLastTap = currentTime - lastLogoTapTime;
     
@@ -79,29 +108,25 @@ export default function Login() {
     setLogoTapCount(newTapCount);
     setLastLogoTapTime(currentTime);
     
-    console.log(`Logo tap: ${newTapCount}/5`);
+    console.log(`Logo tap: ${newTapCount}/5 (login page, unauthenticated)`);
     
     // Open account creation modal when 5 taps are reached
     if (newTapCount >= 5) {
-      // Check if user is already logged in
-      const currentUser = authHook?.user;
-      const cachedUser = localStorage.getItem('bankingUser');
-      
-      if (currentUser || cachedUser) {
-        console.log('User already logged in - showing toast instead');
-        toast({
-          description: "⚠️ You're already signed in.",
-          duration: 3000,
-        });
-      } else {
-        console.log('Opening account creation...');
-        setShowSignUp(true);
-      }
-      
+      console.log('Opening account creation modal...');
+      setShowSignUp(true);
       setLogoTapCount(0);
       setLastLogoTapTime(0);
     }
   };
+
+  // Reset logo tap counter when user becomes authenticated
+  useEffect(() => {
+    if (user) {
+      // User is authenticated, reset logo tap state
+      setLogoTapCount(0);
+      setLastLogoTapTime(0);
+    }
+  }, [user]);
 
   // Validate users against server and clean up deleted ones
   const validateAndCleanUsers = async () => {
