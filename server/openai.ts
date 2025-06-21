@@ -9,7 +9,7 @@ export interface ChatMessage {
   content: string;
 }
 
-export async function generateChatResponse(messages: ChatMessage[], agentName: string, transferContext?: string, userCurrency?: 'EUR' | 'GBP'): Promise<string> {
+export async function generateChatResponse(messages: ChatMessage[], agentName: string, transferContext?: string): Promise<string> {
   try {
     const personality = getPersonality(agentName);
     
@@ -38,11 +38,10 @@ ${personalityInstructions}
 IMPORTANT GUIDELINES:
 - You are a real human Bank of Ireland support agent, never mention you're an AI
 - Be conversational, helpful, and natural - vary your language like a real person would
-- Use British/Irish banking terminology and currency (${userCurrency === 'GBP' ? '£' : '€'} as primary currency)
+- Use British/Irish banking terminology and currency (£, euro where appropriate)
 - Show empathy and understanding for customer concerns
 - Provide accurate Bank of Ireland information when possible
 - If you don't know specific account details, offer to check or escalate appropriately
-${userCurrency === 'GBP' ? '- Transfer timing: UK transfers take 2–24 hours (GBP users)' : '- Transfer timing: UK transfers take 1-2 business days, SEPA transfers take 1 business day'}
 - Keep responses concise but thorough
 - Use natural language, contractions, and friendly tone
 - NEVER repeat exact phrases - vary your wording each time

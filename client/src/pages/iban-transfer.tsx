@@ -6,7 +6,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { getAccounts, processTransfer, processSecureTransfer, checkTransferConfirmation, processConfirmedTransfer, generateReference } from "../utils/transferUtils";
 import { UserDataManager } from "../utils/userDataManager";
-import { CurrencyManager } from "../utils/currencyManager";
 
 const ibanTransferSchema = z.object({
   recipientName: z.string().min(2, "Recipient name is required"),
@@ -37,22 +36,6 @@ export default function IbanTransfer() {
   const [animationProgress, setAnimationProgress] = useState<number>(0);
   const [processingStage, setProcessingStage] = useState<string>('Verifying transfer details...');
   const [formData, setFormData] = useState<IbanTransferData | null>(null);
-  const [currentCurrency, setCurrentCurrency] = useState(CurrencyManager.getCurrentCurrency());
-
-  // Listen for real-time currency changes
-  useEffect(() => {
-    const handleCurrencyChange = (event: any) => {
-      const { currency } = event.detail;
-      console.log(`IBAN Transfer: Currency changed to ${currency}`);
-      setCurrentCurrency(currency);
-    };
-
-    window.addEventListener('currencyChanged', handleCurrencyChange);
-    
-    return () => {
-      window.removeEventListener('currencyChanged', handleCurrencyChange);
-    };
-  }, []);
 
   const form = useForm<IbanTransferData>({
     resolver: zodResolver(ibanTransferSchema),
@@ -68,16 +51,7 @@ export default function IbanTransfer() {
 
   const [accounts, setAccounts] = useState<any[]>([]);
 
-  // Currency change handler
-  const handleCurrencyChange = (event: Event) => {
-    const customEvent = event as CustomEvent;
-    setCurrentCurrency(customEvent.detail.currency);
-  };
-
   useEffect(() => {
-    // Add currency change event listener
-    window.addEventListener('currencyChanged', handleCurrencyChange as EventListener);
-    
     const loadAccounts = () => {
       UserDataManager.clearCache('bankAccounts');
       const userAccounts = UserDataManager.getUserData('bankAccounts', []);
@@ -160,7 +134,6 @@ export default function IbanTransfer() {
     }
     
     return () => {
-      window.removeEventListener('currencyChanged', handleCurrencyChange as EventListener);
       window.removeEventListener('accountsUpdate', handleAccountsUpdate as EventListener);
       window.removeEventListener('balanceUpdate', handleAccountsUpdate as EventListener);
       window.removeEventListener('adminProfileUpdate', handleAccountsUpdate as EventListener);
@@ -383,12 +356,12 @@ export default function IbanTransfer() {
                     <div className="flex justify-between">
                       <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Processing Time:</span>
                       <span className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        {CurrencyManager.getTransferTiming('SEPA')}
+                        1 business day
                       </span>
                     </div>
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
                       <p className="text-sm text-blue-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        <strong>SEPA Transfer:</strong> {CurrencyManager.getTransferTiming('SEPA').replace('This transfer will be processed within ', 'Transfers within the SEPA zone typically take ')}
+                        <strong>SEPA Transfer:</strong> Transfers within the SEPA zone typically take 1 business day to complete.
                       </p>
                     </div>
                     <div className="bg-red-50 border border-red-200 rounded-lg p-3 mt-3">
@@ -537,9 +510,7 @@ export default function IbanTransfer() {
               
               <div className="flex justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Amount:</span>
-                <span className="font-semibold text-[#126987] text-xl" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  {CurrencyManager.formatAmount(formData?.amount || '0', currentCurrency)}
-                </span>
+                <span className="font-semibold text-[#126987] text-xl" style={{ fontFamily: 'OpenSans, sans-serif' }}>€{formData?.amount}</span>
               </div>
               
               <div className="flex justify-between py-2">
@@ -556,7 +527,7 @@ export default function IbanTransfer() {
                 SEPA Transfer
               </p>
               <p className="text-xs text-blue-700 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                SEPA Transfer: {CurrencyManager.getTransferTiming('SEPA').replace('This transfer will be processed within ', 'Transfers within the SEPA zone typically take ')}
+                SEPA Transfer: Transfers within the SEPA zone typically take 1 business day to complete.
               </p>
             </div>
           </div>
@@ -694,7 +665,7 @@ export default function IbanTransfer() {
 
             <div className="bg-gray-50 rounded-lg p-4">
               <label className="block text-sm font-semibold text-gray-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Amount ({CurrencyManager.getCode(currentCurrency)})
+                Amount (EUR)
               </label>
               <input
                 {...form.register('amount')}

@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { X, Send, MessageCircle, User, Bot } from "lucide-react";
 import { UserDataManager } from "../utils/userDataManager";
-import { CurrencyManager } from "../utils/currencyManager";
 
 const chatVariants = {
   hidden: {
@@ -68,7 +67,6 @@ interface ChatState {
 
 export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   const currentUser = UserDataManager.getCurrentUser();
-  const [currentCurrency, setCurrentCurrency] = useState(CurrencyManager.getCurrentCurrency());
   
   const initializeFreshChat = () => {
     if (!currentUser) {
@@ -138,21 +136,6 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   };
   
   const [chatState, setChatState] = useState<ChatState>(initializeFreshChat);
-
-  // Listen for real-time currency changes
-  useEffect(() => {
-    const handleCurrencyChange = (event: any) => {
-      const { currency } = event.detail;
-      console.log(`LiveChat: Currency changed to ${currency}`);
-      setCurrentCurrency(currency);
-    };
-
-    window.addEventListener('currencyChanged', handleCurrencyChange);
-    
-    return () => {
-      window.removeEventListener('currencyChanged', handleCurrencyChange);
-    };
-  }, []);
   
   // Load persisted chat state when component opens, or initialize fresh if none exists
   useEffect(() => {
@@ -457,12 +440,12 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       category: 'transfers',
       triggers: ['transfer money', 'send money', 'make transfer', 'how to transfer', 'payment', 'pending transfer', 'international transfer', 'swift code', 'iban transfer', 'uk transfer', 'transfer limit', 'transfer fee'],
       responses: [
-        `Absolutely, I'll help you with transfers. For UK transfers, tap 'Payments' then 'UK Transfer' - ${CurrencyManager.getTransferTiming('UK')} For SEPA zone transfers, use 'SEPA Transfer' which ${CurrencyManager.getTransferTiming('SEPA')} What type of transfer are you looking to make?`,
-        `I can definitely help with that transfer. Use the 'Payments' section at the bottom - UK Transfer for domestic payments (${CurrencyManager.getTransferTiming('UK')}) or SEPA Transfer for transfers within the SEPA zone (small fee applies, ${CurrencyManager.getTransferTiming('SEPA')}). Are you sending money within the UK or to the SEPA zone?`,
-        `Right, let me walk you through the transfer options. Go to 'Payments' at the bottom of your screen. UK Transfer handles domestic payments (${CurrencyManager.getTransferTiming('UK')}), while SEPA Transfer covers payments within the SEPA zone with competitive exchange rates. Which country are you sending to?`,
-        `No worries, I'll explain the transfer process. In 'Payments', you'll see UK Transfer for domestic payments (${CurrencyManager.getTransferTiming('UK')}) and SEPA Transfer for transfers within the SEPA zone (fee applies, ${CurrencyManager.getTransferTiming('SEPA')}). What's the destination for your transfer?`,
-        `Let me help you sort that transfer. The 'Payments' section has two options - UK Transfer for domestic payments (${CurrencyManager.getTransferTiming('UK')}) or SEPA Transfer for transfers within the SEPA zone (${CurrencyManager.getTransferTiming('SEPA')} with a small fee). Where are you sending the money?`,
-        `Alright, I can guide you through the transfer process. Head to 'Payments' where you'll find UK Transfer for domestic payments (${CurrencyManager.getTransferTiming('UK')}) and SEPA Transfer for transfers within the SEPA zone. What type of payment are you making?`
+        "Absolutely, I'll help you with transfers. For UK transfers, tap 'Payments' then 'UK Transfer' - these typically take up to 24 hours. For SEPA zone transfers, use 'SEPA Transfer' which usually takes 1-2 working days. What type of transfer are you looking to make?",
+        "I can definitely help with that transfer. Use the 'Payments' section at the bottom - UK Transfer for domestic payments (up to 24 hours) or SEPA Transfer for transfers within the SEPA zone (small fee applies, 1-2 days). Are you sending money within the UK or to the SEPA zone?",
+        "Right, let me walk you through the transfer options. Go to 'Payments' at the bottom of your screen. UK Transfer handles domestic payments in up to 24 hours, while SEPA Transfer covers payments within the SEPA zone with competitive exchange rates. Which country are you sending to?",
+        "No worries, I'll explain the transfer process. In 'Payments', you'll see UK Transfer for domestic payments (up to 24 hours) and SEPA Transfer for transfers within the SEPA zone (£2-15 fee depending on amount, arrives 1-2 working days). What's the destination for your transfer?",
+        "Let me help you sort that transfer. The 'Payments' section has two options - UK Transfer for domestic payments (allow up to 24 hours) or SEPA Transfer for transfers within the SEPA zone (typically 1-2 days with a small fee). Where are you sending the money?",
+        "Alright, I can guide you through the transfer process. Head to 'Payments' where you'll find UK Transfer for domestic payments (up to 24 hours processing) and SEPA Transfer for transfers within the SEPA zone. What type of payment are you making?"
       ]
     },
     {
@@ -494,10 +477,10 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       category: 'atm_issues',
       triggers: ['atm not working', 'atm problem', 'withdrawal issue', 'atm fee', 'atm limit', 'cash machine', 'atm charges', 'daily limit', 'atm declined'],
       responses: [
-        `ATM issues can be really inconvenient! Your daily withdrawal limit is typically ${CurrencyManager.formatAmount('300', currentCurrency)}, and there's no charge for using Bank of Ireland ATMs. If your card was declined, try a different ATM first - sometimes it's just a machine issue. If problems persist, I can help check your account status.`,
-        `I can help with ATM troubles. Bank of Ireland ATMs are free to use, and your daily limit is usually ${CurrencyManager.formatAmount('300', currentCurrency)}. If you're getting declined, it might be a network issue with that particular machine. Try another ATM, and if it still doesn't work, let me know - we can check if there's an issue with your card.`,
-        `ATM problems are frustrating when you need cash! Your standard daily limit is ${CurrencyManager.formatAmount('300', currentCurrency)}, and you won't be charged for using our ATMs. If a withdrawal failed, try a different machine first - sometimes it's just a connectivity issue. Still having trouble? I can look into your account for any restrictions.`,
-        `Let me help with that ATM issue. You can withdraw up to ${CurrencyManager.formatAmount('300', currentCurrency)} daily from Bank of Ireland ATMs without charges. If your transaction was declined, it could be a temporary machine problem - try another ATM. If it happens again, there might be a card restriction I can help investigate.`
+        "ATM issues can be really inconvenient! Your daily withdrawal limit is typically £300, and there's no charge for using Bank of Ireland ATMs. If your card was declined, try a different ATM first - sometimes it's just a machine issue. If problems persist, I can help check your account status.",
+        "I can help with ATM troubles. Bank of Ireland ATMs are free to use, and your daily limit is usually £300. If you're getting declined, it might be a network issue with that particular machine. Try another ATM, and if it still doesn't work, let me know - we can check if there's an issue with your card.",
+        "ATM problems are frustrating when you need cash! Your standard daily limit is £300, and you won't be charged for using our ATMs. If a withdrawal failed, try a different machine first - sometimes it's just a connectivity issue. Still having trouble? I can look into your account for any restrictions.",
+        "Let me help with that ATM issue. You can withdraw up to £300 daily from Bank of Ireland ATMs without charges. If your transaction was declined, it could be a temporary machine problem - try another ATM. If it happens again, there might be a card restriction I can help investigate."
       ]
     },
     {
@@ -505,10 +488,10 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       category: 'fees_charges',
       triggers: ['fees', 'charges', 'cost', 'how much', 'price', 'overdraft', 'overdraft fee', 'monthly fee', 'account fee', 'maintenance fee'],
       responses: [
-        `I can explain our fee structure. Current accounts have no monthly maintenance fee if you keep a minimum ${CurrencyManager.formatAmount('3000', currentCurrency)} balance, otherwise it's ${CurrencyManager.formatAmount('5', currentCurrency)} monthly. Overdraft rates are 19.9% APR up to ${CurrencyManager.formatAmount('2000', currentCurrency)}. International transfers are ${CurrencyManager.formatAmount('2', currentCurrency)}-${CurrencyManager.formatAmount('15', currentCurrency)} depending on amount and destination. What specific fees were you asking about?`,
-        `Our fees are quite competitive! No monthly charges on current accounts with ${CurrencyManager.formatAmount('3000', currentCurrency)}+ balance, ${CurrencyManager.formatAmount('5', currentCurrency)} monthly otherwise. Overdrafts are 19.9% APR (much better than most banks). UK transfers are free, international ones ${CurrencyManager.formatAmount('2', currentCurrency)}-${CurrencyManager.formatAmount('15', currentCurrency)}. Unpaid item fees are ${CurrencyManager.formatAmount('10', currentCurrency)}. Which fees concern you?`,
-        `Let me break down the main fees: Current accounts are free with ${CurrencyManager.formatAmount('3000', currentCurrency)} balance, ${CurrencyManager.formatAmount('5', currentCurrency)}/month below that. Overdraft is 19.9% APR up to ${CurrencyManager.formatAmount('2000', currentCurrency)} limit. ATM withdrawals abroad are €2.50. Standing orders and direct debits are free. What particular charges are you concerned about?`,
-        `Happy to clarify our charges! Account maintenance is ${CurrencyManager.formatAmount('5', currentCurrency)} monthly unless you keep ${CurrencyManager.formatAmount('3000', currentCurrency)}+ (then it's free). Arranged overdraft is 19.9% APR, unpaid items ${CurrencyManager.formatAmount('10', currentCurrency)}. International payments vary ${CurrencyManager.formatAmount('2', currentCurrency)}-${CurrencyManager.formatAmount('15', currentCurrency)} by destination. No charges for UK payments or most online banking. Need details on any specific fee?`
+        "I can explain our fee structure. Current accounts have no monthly maintenance fee if you keep a minimum £3,000 balance, otherwise it's £5 monthly. Overdraft rates are 19.9% APR up to £2,000. International transfers are £2-15 depending on amount and destination. What specific fees were you asking about?",
+        "Our fees are quite competitive! No monthly charges on current accounts with £3,000+ balance, £5 monthly otherwise. Overdrafts are 19.9% APR (much better than most banks). UK transfers are free, international ones £2-15. Unpaid item fees are £10. Which fees concern you?",
+        "Let me break down the main fees: Current accounts are free with £3,000 balance, £5/month below that. Overdraft is 19.9% APR up to £2,000 limit. ATM withdrawals abroad are €2.50. Standing orders and direct debits are free. What particular charges are you concerned about?",
+        "Happy to clarify our charges! Account maintenance is £5 monthly unless you keep £3,000+ (then it's free). Arranged overdraft is 19.9% APR, unpaid items £10. International payments vary £2-15 by destination. No charges for UK payments or most online banking. Need details on any specific fee?"
       ]
     },
     {
@@ -559,9 +542,9 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       triggers: ['open account', 'new account', 'account opening', 'create account', 'apply for account', 'student account', 'business account'],
       responses: [
         "I'd be happy to help with opening a new account! We offer current accounts, savings accounts, student accounts, and business accounts. You'll need photo ID and proof of address from the last 3 months. Would you like to know about a specific type of account, or shall I arrange for a specialist to call you?",
-        `Great choice in choosing Bank of Ireland for a new account! We have several options - current accounts (free with ${CurrencyManager.formatAmount('3000', currentCurrency)} balance), savings accounts with competitive rates, and specialized accounts for students and businesses. What type of account interests you most?`,
+        "Great choice in choosing Bank of Ireland for a new account! We have several options - current accounts (free with £3,000 balance), savings accounts with competitive rates, and specialized accounts for students and businesses. What type of account interests you most?",
         "Opening an account is straightforward! You'll need valid photo ID and a recent utility bill or bank statement for proof of address. We offer current accounts, savings, student accounts with perks, and business accounts. Which would suit your needs best?",
-        "        `I can definitely help with account opening! Our current accounts are popular (no fees with ${CurrencyManager.formatAmount('3000', currentCurrency)}+ balance), or we have savings accounts with great rates. For students, we have special accounts with overdraft facilities. What are you looking for?`"
+        "I can definitely help with account opening! Our current accounts are popular (no fees with £3,000+ balance), or we have savings accounts with great rates. For students, we have special accounts with overdraft facilities. What are you looking for?"
       ]
     },
     {
@@ -947,7 +930,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     return responses[Math.floor(Math.random() * responses.length)];
   };
 
-  const generateAIResponse = async (userMessage: string, userCurrency: string = 'EUR'): Promise<{ text: string; category: string }> => {
+  const generateAIResponse = async (userMessage: string): Promise<{ text: string; category: string }> => {
     try {
       // Check if user is asking about transactions with no results
       const transactionKeywords = ['transaction', 'payment', 'transfer', 'recent activity', 'account activity', 'movement'];
@@ -1008,8 +991,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
           conversationHistory: conversationHistory,
           agentName: chatState.agentName,
           customerNumber: currentUser,
-          transactionData: userTransactions,
-          userCurrency: userCurrency
+          transactionData: userTransactions
         }),
       });
 
@@ -1068,8 +1050,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     setTimeout(async () => {
       try {
         // Generate response while agent is "reading"
-        const currentCurrency = CurrencyManager.getCurrentCurrency();
-        const responseData = await generateAIResponse(userMessage.text, currentCurrency);
+        const responseData = await generateAIResponse(userMessage.text);
         
         // Calculate realistic typing time based on agent personality
         const responseWords = responseData.text.split(' ').length;
