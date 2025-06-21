@@ -159,22 +159,6 @@
         "dateCreated": "2025-06-21T01:34:48.203Z",
         "isDisabled": false
       }
-    ],
-    [
-      65,
-      {
-        "id": 65,
-        "customerNumber": "BOI927477505",
-        "pin": "000000",
-        "name": "Hjh",
-        "email": "hjj@gmail.com",
-        "phone": "0754646464646",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "2025-06-21T01:41:55.220Z",
-        "dateCreated": "2025-06-21T01:41:55.825Z",
-        "isDisabled": false
-      }
     ]
   ],
   "accounts": [

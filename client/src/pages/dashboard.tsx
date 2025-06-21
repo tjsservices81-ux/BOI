@@ -5,6 +5,7 @@ import SpendingVisualization from "../components/SpendingVisualization";
 import SpendingInsights from "../components/SpendingInsights";
 import { UserDataManager } from "../utils/userDataManager";
 import { StateManager } from "../utils/stateManager";
+import { useToast } from "@/hooks/use-toast";
 
 interface Account {
   id: number;
@@ -21,6 +22,43 @@ export default function Dashboard() {
   // Local state for account balances that can be updated by transfers
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [isNavigating, setIsNavigating] = useState(false);
+  
+  // Logo tap functionality for authenticated users
+  const [logoTapCount, setLogoTapCount] = useState(0);
+  const [lastLogoTapTime, setLastLogoTapTime] = useState(0);
+  
+  const toast = useToast()?.toast || (() => {});
+
+  // Handle logo tap for authenticated users - show toast instead of account creation
+  const handleLogoTap = () => {
+    const currentTime = Date.now();
+    const timeSinceLastTap = currentTime - lastLogoTapTime;
+    
+    // Reset tap count if more than 2 seconds have passed since last tap
+    let newTapCount;
+    if (timeSinceLastTap > 2000) {
+      newTapCount = 1;
+    } else {
+      newTapCount = logoTapCount + 1;
+    }
+    
+    setLogoTapCount(newTapCount);
+    setLastLogoTapTime(currentTime);
+    
+    console.log(`Logo tap (authenticated): ${newTapCount}/5`);
+    
+    // Show toast when 5 taps are reached
+    if (newTapCount >= 5) {
+      console.log('User already logged in - showing toast');
+      toast({
+        description: "⚠️ You're already signed in.",
+        duration: 3000,
+      });
+      
+      setLogoTapCount(0);
+      setLastLogoTapTime(0);
+    }
+  };
 
   // Debug authentication state on dashboard load
   useEffect(() => {
@@ -273,7 +311,19 @@ export default function Dashboard() {
       {/* Blue header bar */}
       <div className="bg-[#126987] flex items-end justify-between px-4 pb-3 flex-shrink-0" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px) + 12px, 56px)' }}>
         <div className="flex items-center">
-          <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-6 filter brightness-0 invert" />
+          <img 
+            src="/boi_logo.svg" 
+            alt="Bank of Ireland" 
+            className="h-6 filter brightness-0 invert cursor-pointer" 
+            onClick={handleLogoTap}
+            style={{
+              touchAction: 'manipulation',
+              userSelect: 'none',
+              WebkitUserSelect: 'none',
+              WebkitTouchCallout: 'none',
+              WebkitTapHighlightColor: 'transparent'
+            }}
+          />
         </div>
         <div className="flex items-center">
           <button 
