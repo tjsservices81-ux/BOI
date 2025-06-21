@@ -542,51 +542,30 @@
         const loader = document.getElementById('loading-screen');
         
         try {
-          // Debug URL and localStorage
-          console.log('Current URL:', window.location.href);
-          console.log('URL search params:', window.location.search);
-          
           // Check if user already has access granted
           const hasAccess = localStorage.getItem('accessGranted');
-          console.log('Stored access:', hasAccess);
-          
           if (hasAccess === 'true') {
-            console.log('Using stored access - skipping verification');
-            localStorage.setItem('app_session_active', 'true');
-            localStorage.setItem('splash_completed', 'true');
             hideLoadingScreen();
-            // Force navigation to dashboard for stored access
-            setTimeout(() => {
-              window.location.href = '/dashboard';
-            }, 500);
             return;
           }
 
           // Check for access code in URL
           const urlParams = new URLSearchParams(window.location.search);
           const accessCode = urlParams.get('access');
-          console.log('Access code from URL:', accessCode);
           
-          // Also check localStorage for previously stored code
-          const storedCode = localStorage.getItem('accessCode');
-          console.log('Stored access code:', storedCode);
-          
-          const codeToCheck = accessCode || storedCode;
-          
-          if (!codeToCheck) {
-            console.log('No access code found - denying access');
+          if (!accessCode) {
+            // No access code and no stored access - show "Not available"
             showAccessDenied("Not available");
             return;
           }
 
-          // Check access code with backend (non-consuming check)
-          console.log('Checking access code:', codeToCheck);
-          const response = await fetch('/api/check-access', {
+          // Verify access code with backend
+          const response = await fetch('/api/verify-code', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ code: codeToCheck })
+            body: JSON.stringify({ code: accessCode })
           });
 
           const result = await response.json();
@@ -594,19 +573,12 @@
           if (result.success) {
             // Access granted - save to localStorage and clean URL
             localStorage.setItem('accessGranted', 'true');
-            localStorage.setItem('accessCode', codeToCheck);
-            localStorage.setItem('app_session_active', 'true');
-            localStorage.setItem('splash_completed', 'true');
+            localStorage.setItem('accessCode', accessCode);
             window.history.replaceState({}, document.title, window.location.pathname);
             console.log('Access granted successfully');
             hideLoadingScreen();
             // Start periodic access validation
             startAccessValidation();
-            
-            // Force navigation to main app after brief delay
-            setTimeout(() => {
-              window.location.href = '/dashboard';
-            }, 500);
           } else {
             // Access denied - show appropriate message
             const message = result.message || "Access code invalid or expired";
