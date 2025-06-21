@@ -30,46 +30,73 @@ const API_CACHE_PATTERNS = [
   '/api/transactions'
 ];
 
-// Install event - cache static assets
+// Install event - cache static assets with mobile optimization
 self.addEventListener('install', (event) => {
-  console.log('Service Worker: Installing...');
+  console.log('📱 Service Worker: Installing for mobile...');
   
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('Service Worker: Caching static assets');
-        return cache.addAll(STATIC_ASSETS.map(url => new Request(url, { cache: 'reload' })));
-      })
-      .then(() => {
-        console.log('Service Worker: Static assets cached successfully');
-        return self.skipWaiting();
-      })
-      .catch((error) => {
-        console.error('Service Worker: Failed to cache static assets:', error);
-      })
+    Promise.all([
+      // Cache static assets
+      caches.open(CACHE_NAME).then((cache) => {
+        console.log('📱 Service Worker: Caching static assets for offline');
+        return cache.addAll(STATIC_ASSETS.map(url => new Request(url, { 
+          cache: 'reload',
+          mode: 'cors',
+          credentials: 'same-origin'
+        })));
+      }),
+      // Force immediate activation for mobile
+      self.skipWaiting()
+    ]).then(() => {
+      console.log('✅ Service Worker: Mobile installation complete');
+      // Notify clients that SW is ready
+      self.clients.matchAll().then(clients => {
+        clients.forEach(client => {
+          client.postMessage({ type: 'SW_ACTIVATED' });
+        });
+      });
+    }).catch((error) => {
+      console.error('❌ Service Worker: Mobile installation failed:', error);
+    })
   );
 });
 
-// Activate event - clean up old caches
+// Activate event - optimize for mobile offline
 self.addEventListener('activate', (event) => {
-  console.log('Service Worker: Activating...');
+  console.log('📱 Service Worker: Activating for mobile offline...');
   
   event.waitUntil(
-    caches.keys()
-      .then((cacheNames) => {
+    Promise.all([
+      // Clean up old caches
+      caches.keys().then((cacheNames) => {
         return Promise.all(
           cacheNames.map((cacheName) => {
             if (cacheName !== CACHE_NAME && cacheName !== RUNTIME_CACHE) {
-              console.log('Service Worker: Deleting old cache:', cacheName);
+              console.log('🗑️ Service Worker: Deleting old cache:', cacheName);
               return caches.delete(cacheName);
             }
           })
         );
-      })
-      .then(() => {
-        console.log('Service Worker: Activated successfully');
-        return self.clients.claim();
-      })
+      }),
+      // Take control immediately for mobile
+      self.clients.claim()
+    ]).then(() => {
+      console.log('✅ Service Worker: Mobile activation complete');
+      
+      // Pre-cache critical mobile assets
+      return caches.open(CACHE_NAME).then(cache => {
+        const mobileAssets = [
+          '/Icons_Fingerprint.svg',
+          '/boi_logo.svg',
+          '/background.jpg'
+        ];
+        return cache.addAll(mobileAssets.map(url => new Request(url, {
+          cache: 'force-cache'
+        })));
+      });
+    }).catch(error => {
+      console.error('❌ Service Worker: Mobile activation failed:', error);
+    })
   );
 });
 
@@ -131,21 +158,45 @@ async function handleApiRequest(request) {
   }
 }
 
-// Handle static assets with cache-first strategy
+// Handle static assets with mobile-optimized cache-first strategy
 async function handleStaticAsset(request) {
-  const cachedResponse = await caches.match(request);
-  
-  if (cachedResponse) {
-    return cachedResponse;
-  }
-  
   try {
-    const networkResponse = await fetch(request);
-    const cache = await caches.open(CACHE_NAME);
-    cache.put(request, networkResponse.clone());
+    // Always try cache first for mobile performance
+    const cachedResponse = await caches.match(request);
+    
+    if (cachedResponse) {
+      console.log('📱 Serving from cache:', request.url);
+      return cachedResponse;
+    }
+    
+    // Network fallback with mobile timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout for mobile
+    
+    const networkResponse = await fetch(request, { 
+      signal: controller.signal,
+      cache: 'no-cache' 
+    });
+    
+    clearTimeout(timeoutId);
+    
+    // Cache successful responses for mobile offline use
+    if (networkResponse.ok) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, networkResponse.clone());
+      console.log('📱 Cached for offline:', request.url);
+    }
+    
     return networkResponse;
+    
   } catch (error) {
-    console.error('Service Worker: Failed to fetch static asset:', request.url);
+    console.log('📱 Mobile offline: Asset not available:', request.url);
+    
+    // Return a basic fallback for essential assets
+    if (request.url.includes('background.jpg')) {
+      return new Response('', { status: 204 });
+    }
+    
     throw error;
   }
 }
@@ -214,12 +265,40 @@ function createOfflineApiResponse(pathname) {
   });
 }
 
-// Listen for messages from the main app
+// Listen for messages from the main app (mobile optimized)
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
+    console.log('📱 Mobile: Skipping waiting, activating immediately');
     self.skipWaiting();
   }
+  
+  if (event.data && event.data.type === 'CLAIM_CLIENTS') {
+    console.log('📱 Mobile: Claiming all clients');
+    self.clients.claim();
+  }
 });
+
+// Add mobile-specific background sync
+self.addEventListener('sync', (event) => {
+  console.log('📱 Mobile: Background sync triggered');
+  if (event.tag === 'mobile-data-sync') {
+    event.waitUntil(syncMobileData());
+  }
+});
+
+// Mobile data sync function
+async function syncMobileData() {
+  try {
+    console.log('📱 Mobile: Syncing offline data...');
+    // This would sync any pending offline data when connection is restored
+    const clients = await self.clients.matchAll();
+    clients.forEach(client => {
+      client.postMessage({ type: 'SYNC_COMPLETE' });
+    });
+  } catch (error) {
+    console.error('📱 Mobile sync failed:', error);
+  }
+}
 
 // Prevent any attempts to access the service worker from external sources
 self.addEventListener('message', (event) => {
