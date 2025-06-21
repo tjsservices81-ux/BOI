@@ -55,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               setUser(parsedUser); // Keep user logged in during server issues
             }
           } catch (error) {
-            localStorage.removeItem('bankingUser');
+            localStorage.removeItem('currentUser');
             setUser(null);
           }
         }
