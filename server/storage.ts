@@ -173,6 +173,7 @@ class MemStorage implements IStorage {
       address: insertUser.address || null,
       dateOfBirth: insertUser.dateOfBirth || null,
       joinDate: insertUser.joinDate || "Member since 2018",
+      primaryCurrency: insertUser.primaryCurrency || "EUR",
       dateCreated: insertUser.dateCreated || new Date(),
       isDisabled: false
     };

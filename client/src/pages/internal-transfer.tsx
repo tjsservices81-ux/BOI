@@ -5,6 +5,7 @@ import { z } from "zod";
 import { useLocation } from "wouter";
 import { ChevronLeft, ArrowUpDown, Check, AlertCircle, X } from "lucide-react";
 import { UserDataManager } from "../utils/userDataManager";
+import { CurrencyManager } from "../utils/currencyManager";
 import { generateReference } from "../utils/transferUtils";
 
 const internalTransferSchema = z.object({
@@ -19,7 +20,7 @@ const internalTransferSchema = z.object({
     .refine((val) => {
       const num = parseFloat(val);
       return num <= 50000;
-    }, "Maximum transfer amount is €50,000"),
+    }, "Maximum transfer amount is £50,000/€50,000"),
   reference: z.string().max(140, "Reference cannot exceed 140 characters").optional()
 });
 
@@ -34,6 +35,7 @@ export default function InternalTransfer() {
   const [accounts, setAccounts] = useState<any[]>([]);
   const [selectedFromAccount, setSelectedFromAccount] = useState<any>(null);
   const [selectedToAccount, setSelectedToAccount] = useState<any>(null);
+  const [currentCurrency, setCurrentCurrency] = useState(CurrencyManager.getCurrentCurrency());
 
   const form = useForm<InternalTransferData>({
     resolver: zodResolver(internalTransferSchema),
@@ -45,9 +47,22 @@ export default function InternalTransfer() {
     }
   });
 
+  // Currency change handler
+  const handleCurrencyChange = (event: Event) => {
+    const customEvent = event as CustomEvent;
+    setCurrentCurrency(customEvent.detail.currency);
+  };
+
   useEffect(() => {
+    // Add currency change event listener
+    window.addEventListener('currencyChanged', handleCurrencyChange as EventListener);
+    
     const userAccounts = UserDataManager.getUserData('bankAccounts', []);
     setAccounts(userAccounts);
+    
+    return () => {
+      window.removeEventListener('currencyChanged', handleCurrencyChange as EventListener);
+    };
   }, []);
 
   useEffect(() => {
