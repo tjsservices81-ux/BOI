@@ -68,6 +68,7 @@ interface ChatState {
 
 export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   const currentUser = UserDataManager.getCurrentUser();
+  const [currentCurrency, setCurrentCurrency] = useState(CurrencyManager.getCurrentCurrency());
   
   const initializeFreshChat = () => {
     if (!currentUser) {

@@ -232,8 +232,7 @@ export default function InternalTransfer() {
   };
 
   const formatAmount = (amount: string) => {
-    const num = parseFloat(amount);
-    return isNaN(num) ? '0.00' : num.toFixed(2);
+    return CurrencyManager.formatAmount(amount, currentCurrency);
   };
 
   if (step === 'success') {
