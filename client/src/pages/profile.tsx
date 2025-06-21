@@ -1971,7 +1971,7 @@ export default function Profile() {
 
       {/* Delete Transaction Modal */}
       {showDeleteTransaction && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10001] p-4">
+        <div className="admin-panel bg-black bg-opacity-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
@@ -2121,7 +2121,7 @@ export default function Profile() {
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && selectedTransaction && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[10002] p-4">
+        <div className="admin-panel bg-black bg-opacity-60 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-md mx-4">
             <div className="p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
