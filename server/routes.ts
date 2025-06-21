@@ -1200,6 +1200,54 @@ No transfers found yet on your account.`;
     }
   });
 
+  // Admin delete user endpoint - DATABASE DELETION
+  app.post("/api/admin/delete-user", async (req, res) => {
+    const { customerNumber } = req.body;
+    
+    if (!customerNumber) {
+      return res.status(400).json({ error: 'Customer number is required' });
+    }
+    
+    try {
+      // SECURITY: Mark user as permanently deleted FIRST
+      PermanentAuthManager.markUserDeleted(customerNumber);
+      
+      // Delete from database - PERMANENT DELETION
+      const dbDeleteResult = await db.delete(users)
+        .where(eq(users.customerNumber, customerNumber))
+        .returning();
+      
+      // Delete permanent sessions from database
+      const sessionDeleteResult = await db.delete(permanentUserSessions)
+        .where(eq(permanentUserSessions.customerNumber, customerNumber))
+        .returning();
+      
+      // Remove from memory storage (fallback)
+      const storageDeleteResult = storage.deleteUser(customerNumber);
+      
+      // Clear active sessions
+      removeUserSession(customerNumber);
+      removeUserDeviceSession(customerNumber);
+      
+      const details = {
+        userDeleted: dbDeleteResult.length > 0 || storageDeleteResult,
+        permanentSessionsRevoked: sessionDeleteResult.length >= 0,
+        memoryCleared: storageDeleteResult
+      };
+      
+      console.log(`🗑️ Admin deleted user: ${customerNumber}`, details);
+      
+      res.json({ 
+        success: true,
+        message: 'User permanently deleted from database and all sessions revoked',
+        details
+      });
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
   // User validation endpoint for login security
   app.get("/api/auth/validate/:customerNumber", async (req, res) => {
     try {

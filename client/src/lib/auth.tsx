@@ -50,10 +50,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 setUser(null);
               }
             } else {
-              // Server error - clear cached data to be safe
-              console.log('Clearing stale user data from localStorage');
-              localStorage.removeItem('bankingUser');
-              setUser(null);
+              // SECURITY: Don't clear data on server errors - preserve user session
+              console.log('Server error during auth check - preserving user session');
+              setUser(parsedUser); // Keep user logged in during server issues
             }
           } catch (error) {
             localStorage.removeItem('bankingUser');

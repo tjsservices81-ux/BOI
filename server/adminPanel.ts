@@ -615,10 +615,15 @@ router.get('/panel', adminAuth, async (req, res) => {
                 document.getElementById('successMessage').classList.remove('show');
               }, 3000);
               
-              // Update stats and reload to reflect changes
-              updateStats();
+                // Update stats and reload to reflect changes
+                updateStats();
+              } else {
+                console.error('Backend deletion incomplete - skipping frontend cleanup');
+                alert('User deletion may have failed. Please refresh and try again.');
+              }
             } else {
               console.error('Error deleting user:', result);
+              alert('Failed to delete user: ' + (result.error || 'Unknown error'));
             }
           } catch (error) {
             console.error('Error deleting user:', error);
