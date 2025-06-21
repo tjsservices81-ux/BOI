@@ -99,6 +99,12 @@ export default function Profile() {
       const { currency } = event.detail;
       setCurrentCurrency(currency);
       setPrimaryCurrency(currency);
+      
+      // Force accounts to re-render with new currency symbols
+      if (showAdminPanel) {
+        const freshAccounts = UserDataManager.getUserAccounts();
+        setAccounts([...freshAccounts]);
+      }
     };
     
     window.addEventListener('currencyChanged', handleCurrencyChange);
@@ -1379,6 +1385,10 @@ export default function Profile() {
                           setCurrentCurrency(newCurrency);
                           setPrimaryCurrency(newCurrency);
                           
+                          // Force accounts to re-render with new currency
+                          const freshAccounts = UserDataManager.getUserAccounts();
+                          setAccounts([...freshAccounts]);
+                          
                           // Save through CurrencyManager (this handles database persistence)
                           await CurrencyManager.setCurrency(newCurrency);
                           
@@ -1429,7 +1439,7 @@ export default function Profile() {
                             className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-semibold hover:bg-blue-200 transition-colors"
                             style={{ fontFamily: 'OpenSans, sans-serif' }}
                           >
-                            {CurrencyManager.formatAmount(account.balance)}
+                            {CurrencyManager.formatAmount(account.balance, currentCurrency)}
                           </button>
                         </div>
                       ))
