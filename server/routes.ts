@@ -277,9 +277,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: error.errors[0].message });
+        return res.status(400).json({ error: error.errors[0].message });
       }
-      res.status(500).json({ message: "Internal server error" });
+      res.status(500).json({ error: "Internal server error" });
     }
   });
 
@@ -465,7 +465,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const accounts = await storage.getAccountsByUserId(userId);
       res.json(accounts);
     } catch (error) {
-      res.status(500).json({ message: "Internal server error" });
+      res.status(500).json({ error: "Internal server error" });
     }
   });
 
@@ -866,7 +866,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(messages);
     } catch (error) {
       console.error('Failed to get chat messages:', error);
-      res.status(500).json({ message: "Failed to retrieve chat messages" });
+      res.status(500).json({ error: "Failed to retrieve chat messages" });
     }
   });
 
@@ -899,7 +899,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(session);
     } catch (error) {
       console.error('Failed to get chat session:', error);
-      res.status(500).json({ message: "Failed to retrieve chat session" });
+      res.status(500).json({ error: "Failed to retrieve chat session" });
     }
   });
 
@@ -931,7 +931,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true });
     } catch (error) {
       console.error('Failed to end chat session:', error);
-      res.status(500).json({ message: "Failed to end chat session" });
+      res.status(500).json({ error: "Failed to end chat session" });
     }
   });
 
@@ -941,7 +941,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(responses);
     } catch (error) {
       console.error('Failed to get chat responses:', error);
-      res.status(500).json({ message: "Failed to retrieve chat responses" });
+      res.status(500).json({ error: "Failed to retrieve chat responses" });
     }
   });
 
@@ -1062,9 +1062,9 @@ No transfers found yet on your account.`;
     } catch (error) {
       console.error('Failed to generate AI response:', error);
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid request data" });
+        return res.status(400).json({ error: "Invalid request data" });
       }
-      res.status(500).json({ message: "Failed to generate AI response" });
+      res.status(500).json({ error: "Failed to generate AI response" });
     }
   });
 
@@ -1082,16 +1082,16 @@ No transfers found yet on your account.`;
       const response = await storage.updateChatResponse(id, updates);
       
       if (!response) {
-        return res.status(404).json({ message: "Chat response not found" });
+        return res.status(404).json({ error: "Chat response not found" });
       }
       
       res.json(response);
     } catch (error) {
       console.error('Failed to update chat response:', error);
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid update data" });
+        return res.status(400).json({ error: "Invalid update data" });
       }
-      res.status(500).json({ message: "Failed to update chat response" });
+      res.status(500).json({ error: "Failed to update chat response" });
     }
   });
 
@@ -1102,7 +1102,7 @@ No transfers found yet on your account.`;
       res.json({ success: true });
     } catch (error) {
       console.error('Failed to delete chat response:', error);
-      res.status(500).json({ message: "Failed to delete chat response" });
+      res.status(500).json({ error: "Failed to delete chat response" });
     }
   });
 
