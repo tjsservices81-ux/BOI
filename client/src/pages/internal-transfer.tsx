@@ -50,8 +50,6 @@ export default function InternalTransfer() {
     setAccounts(userAccounts);
   }, []);
 
-
-
   useEffect(() => {
     const fromAccountId = form.watch('fromAccount');
     const toAccountId = form.watch('toAccount');

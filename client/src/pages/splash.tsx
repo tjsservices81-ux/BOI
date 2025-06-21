@@ -58,7 +58,7 @@ export default function Splash() {
         // Always navigate to login after splash for cold starts
         navigate('/login');
       }, 300); // Brief fade out before navigation
-    }, 3000); // 3 seconds total for faster testing
+    }, 8000); // 8 seconds total
 
     // Cleanup timer and remove splash class
     return () => {
