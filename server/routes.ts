@@ -100,33 +100,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Check if code is used and invalid
-      if (codeInfo && codeInfo.used === true && codeInfo.valid === false) {
-        return res.status(403).json({ 
-          success: false, 
-          error: "Access denied or revoked",
-          message: "Access denied or revoked" 
+      // Only block access if explicitly revoked (valid === false)
+      // Allow unlimited use as long as valid === true
+      
+      if (codeInfo && codeInfo.used === false) {
+        // First time use - mark as used but keep valid for continued access
+        await db.set(`access_code_${code}`, {
+          code: code,
+          used: true,
+          valid: true,
+          firstUsedAt: new Date().toISOString(),
+          createdAt: codeInfo?.createdAt || new Date().toISOString(),
+          description: codeInfo?.description || `Access code: ${code}`
         });
       }
-
-      // Check if code is already used (but still valid)
-      if (codeInfo && codeInfo.used === true) {
-        return res.status(409).json({ 
-          success: false, 
-          error: "Access code already used",
-          message: "Access expired — this link has already been used." 
-        });
-      }
-
-      // Mark code as used but keep it valid (unless manually revoked)
-      await db.set(`access_code_${code}`, {
-        code: code,
-        used: true,
-        valid: true,
-        usedAt: new Date().toISOString(),
-        createdAt: codeInfo?.createdAt || new Date().toISOString(),
-        description: codeInfo?.description || `Access code: ${code}`
-      });
+      
+      // Allow continued access for codes that are used but still valid
 
       res.json({ 
         success: true, 
