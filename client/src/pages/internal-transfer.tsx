@@ -237,7 +237,7 @@ export default function InternalTransfer() {
               Transfer Successful
             </h2>
             <p className="text-gray-600 mb-6" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              €{formatAmount(formData?.amount || '0')} has been transferred from {selectedFromAccount?.displayName} to {selectedToAccount?.displayName}
+              {CurrencyManager.formatAmount(formData?.amount || '0', currentCurrency)} has been transferred from {selectedFromAccount?.displayName} to {selectedToAccount?.displayName}
             </p>
             <div className="bg-gray-50 rounded-2xl p-4 mb-6">
               <p className="text-sm text-gray-600 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -307,11 +307,11 @@ export default function InternalTransfer() {
                     {confirmFromAccount?.accountNumber}
                   </p>
                   <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Balance: €{(() => {
+                    Balance: {CurrencyManager.formatAmount((() => {
                       if (!confirmFromAccount) return '0.00';
                       const balance = typeof confirmFromAccount.balance === 'string' ? parseFloat(confirmFromAccount.balance) : confirmFromAccount.balance;
                       return balance.toFixed(2);
-                    })()}
+                    })(), currentCurrency)}
                   </p>
                 </div>
               </div>
@@ -331,7 +331,7 @@ export default function InternalTransfer() {
               <div className="flex justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Amount:</span>
                 <span className="font-bold text-xl text-[#126987]" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  €{formatAmount(formData?.amount || '0')}
+                  {CurrencyManager.formatAmount(formData?.amount || '0', currentCurrency)}
                 </span>
               </div>
               

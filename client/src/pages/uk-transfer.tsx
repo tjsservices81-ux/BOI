@@ -89,6 +89,7 @@ export default function UkTransfer() {
   const [exchangeRate, setExchangeRate] = useState<number>(0.85); // EUR to GBP rate
   const [gbpAmount, setGbpAmount] = useState<string>('0.00');
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('left');
+  const [currentCurrency, setCurrentCurrency] = useState(CurrencyManager.getCurrentCurrency());
 
   const form = useForm<UkTransferData>({
     resolver: zodResolver(ukTransferSchema),
@@ -133,7 +134,16 @@ export default function UkTransfer() {
     }
   };
 
+  // Currency change handler
+  const handleCurrencyChange = (event: Event) => {
+    const customEvent = event as CustomEvent;
+    setCurrentCurrency(customEvent.detail.currency);
+  };
+
   useEffect(() => {
+    // Add currency change event listener
+    window.addEventListener('currencyChanged', handleCurrencyChange as EventListener);
+
     const loadAccounts = () => {
       // Use UserDataManager to get consistent account data
       UserDataManager.clearCache('bankAccounts');
