@@ -32,6 +32,8 @@ export default function IbanTransfer() {
   const [, navigate] = locationHook || [null, () => {}];
   const [step, setStep] = useState<'form' | 'confirm' | 'security' | 'success' | 'cancelled'>('form');
   const [transferReference, setTransferReference] = useState<string>('');
+  const [transactionId, setTransactionId] = useState<string>('');
+  const [uniqueBoiReference, setUniqueBoiReference] = useState<string>('');
   const [showReference, setShowReference] = useState<boolean>(false);
   const [animationProgress, setAnimationProgress] = useState<number>(0);
   const [processingStage, setProcessingStage] = useState<string>('Verifying transfer details...');
@@ -158,9 +160,12 @@ export default function IbanTransfer() {
       return;
     }
     
-    // Generate unique reference number
-    const ref = generateReference();
-    setTransferReference(ref);
+    // Generate unique BOI reference number
+    const boiRef = generateReference();
+    setUniqueBoiReference(boiRef);
+    
+    // Set user's payment reference from form
+    setTransferReference(formData.reference);
     
     // Start processing animation
     setStep('success');
@@ -200,9 +205,13 @@ export default function IbanTransfer() {
         if (newProgress >= 100) {
           clearInterval(interval);
           
+          // Generate transaction ID
+          const txId = `IBAN_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+          setTransactionId(txId);
+          
           // Process the transfer using the user's payment reference
           const transferSuccess = processConfirmedTransfer(
-            `IBAN_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            txId,
             formData.fromAccount,
             parseFloat(formData.amount),
             formData.recipientName,
@@ -327,8 +336,16 @@ export default function IbanTransfer() {
                 <div className="bg-gray-50 rounded-xl p-4 mb-6 text-left">
                   <div className="space-y-3">
                     <div className="flex justify-between">
-                      <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Reference:</span>
+                      <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Payment Reference:</span>
                       <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{transferReference}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Unique Reference:</span>
+                      <span className="font-semibold text-gray-900 font-mono text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>{uniqueBoiReference}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Transaction ID:</span>
+                      <span className="font-medium text-gray-700 text-xs" style={{ fontFamily: 'OpenSans, sans-serif' }}>{transactionId}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Amount:</span>
