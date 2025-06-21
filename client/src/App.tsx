@@ -208,14 +208,9 @@ function AppRoutes() {
 
   // Handle app lifecycle for state persistence
   useEffect(() => {
-    const appLifecycle = new AppLifecycle();
-    
-    // Set session marker on app focus
-    sessionStorage.setItem('app_active_session', 'true');
-    
-    // Save state when app goes to background
+    // Save state when app goes to background for state restoration
     const handleVisibilityChange = () => {
-      if (document.hidden) {
+      if (document.hidden && user) {
         // Collect current scroll positions
         const scrollPositions: Record<string, number> = {};
         
@@ -233,7 +228,7 @@ function AppRoutes() {
           scrollPositions[location] = window.scrollY;
         }
 
-        // App going to background - save complete state
+        // Save state for potential restoration (UI state only)
         StateManager.saveAppState({
           user,
           currentRoute: location,
@@ -244,19 +239,10 @@ function AppRoutes() {
       }
     };
 
-    // Clear session marker on app termination
-    const handleBeforeUnload = () => {
-      sessionStorage.removeItem('app_active_session');
-    };
-
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    window.addEventListener('pagehide', handleBeforeUnload);
     
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      window.removeEventListener('pagehide', handleBeforeUnload);
     };
   }, [user, location]);
 
