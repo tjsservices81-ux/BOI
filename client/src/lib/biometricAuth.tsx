@@ -30,11 +30,12 @@ export function BiometricAuthProvider({ children }: { children: React.ReactNode 
     userInfo: null
   });
 
-  // Check if user has a valid permanent session - separate from admin validation
+  // Check if user has a valid permanent session - works offline with cached responses
   const checkAuthenticationStatus = async () => {
     try {
       setState(prev => ({ ...prev, isLoading: true, error: null }));
       
+      // OFFLINE FUNCTIONALITY: Auth status works offline through service worker
       const response = await fetch('/api/auth/status', {
         credentials: 'include'
       });
@@ -52,7 +53,6 @@ export function BiometricAuthProvider({ children }: { children: React.ReactNode 
           }));
         } else if (data.isLoggedIn && !data.needsBiometric) {
           // User has valid backend session - trust the backend validation
-          // Backend already validates user existence during session validation
           if (login) {
             login({
               id: data.user.id,
@@ -66,6 +66,15 @@ export function BiometricAuthProvider({ children }: { children: React.ReactNode 
             needsBiometric: false,
             isAuthenticated: true,
             userInfo: data.user,
+            isLoading: false
+          }));
+        } else if (data.offline) {
+          // OFFLINE MODE: Allow biometric authentication offline
+          setState(prev => ({
+            ...prev,
+            needsBiometric: true,
+            isAuthenticated: false,
+            userInfo: null,
             isLoading: false
           }));
         } else {

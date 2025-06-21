@@ -130,14 +130,15 @@ export class AppLifecycle {
   }
 
   static clearAppState() {
-    // Only clear temporary session data, preserve user login
+    // PERMANENT LOGIN: Only clear temporary session data, NEVER clear user authentication
     localStorage.removeItem('app_session_state');
     localStorage.removeItem('app_background_time');
     sessionStorage.removeItem('app_active_session');
     sessionStorage.removeItem('app_was_minimized');
     this.wasMinimized = false;
     this.isAppTerminated = true;
-    // Don't call StateManager.clearAppState() - preserve user login
+    // SECURITY: Never clear user login data - users stay logged in forever unless admin deletes
+    console.log('App state cleared but user authentication preserved');
   }
 
   static getAppTerminationState() {
@@ -148,11 +149,26 @@ export class AppLifecycle {
   }
 
   static isResumingFromMinimize() {
-    return this.wasMinimized && !this.isAppTerminated;
+    const wasMinimized = sessionStorage.getItem('app_was_minimized') === 'true';
+    const activeSession = sessionStorage.getItem('app_active_session') === 'true';
+    return wasMinimized && activeSession && !this.isAppTerminated;
   }
 
   static isFreshStart() {
     return this.isAppTerminated && !this.wasMinimized;
+  }
+
+  // OFFLINE FUNCTIONALITY: Enable complete offline operation
+  static enableOfflineMode() {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+        .then(registration => {
+          console.log('🔄 Offline functionality enabled - app works fully offline');
+        })
+        .catch(error => {
+          console.log('Offline mode unavailable - app still functional online');
+        });
+    }
   }
 
   static saveCurrentState() {

@@ -110,41 +110,50 @@ function AppRoutes() {
   // Initialize app lifecycle and determine app state
   useEffect(() => {
     AppLifecycle.initialize();
+    AppLifecycle.enableOfflineMode(); // Enable offline functionality
     
     const initializeApp = async () => {
       const { isAppTerminated, wasMinimized } = AppLifecycle.getAppTerminationState();
       
-      // Case 1: App is resuming from minimize - restore exactly where user left off
+      // Case 1: App is resuming from minimize - INSTANTLY restore where user left off
       if (AppLifecycle.isResumingFromMinimize()) {
-        console.log('🔄 App resuming from minimize - restoring state');
+        console.log('🔄 MINIMIZE RESUME: Instantly restoring exact state - no splash, no delays');
         
         // Skip splash screen completely and restore immediately
         setSplashShown(true);
         setIsInitialized(true);
         
-        // Check if user was logged in before minimize
+        // PERMANENT LOGIN: Check if user is permanently logged in
+        const cachedUser = UserDataManager.getCurrentUser();
+        const userProfile = UserDataManager.getUserProfile();
+        const isPermanentlyLoggedIn = UserDataManager.getUserData('permanentlyLoggedIn', false);
+        
+        if (cachedUser && userProfile && isPermanentlyLoggedIn) {
+          login({
+            id: userProfile.id || parseInt(userProfile.customerNumber) || 0,
+            name: userProfile.name,
+            email: userProfile.email
+          });
+        }
+        
+        // Restore exact route and scroll position
         const savedState = StateManager.restoreAppState();
-        if (savedState && savedState.user) {
-          login(savedState.user);
+        if (savedState && savedState.currentRoute && savedState.currentRoute !== '/') {
+          navigate(savedState.currentRoute);
           
-          // Restore exact route and scroll position
-          if (savedState.currentRoute && savedState.currentRoute !== '/') {
-            navigate(savedState.currentRoute);
-            
-            // Restore scroll positions
-            if (savedState.scrollPositions) {
-              setTimeout(() => {
-                Object.entries(savedState.scrollPositions).forEach(([route, position]) => {
-                  const scrollPosition = typeof position === 'number' ? position : 0;
-                  const container = document.querySelector(`[data-scroll-route="${route}"]`) as HTMLElement;
-                  if (container && scrollPosition > 0) {
-                    container.scrollTo({ top: scrollPosition, behavior: 'instant' });
-                  } else if (route === window.location.pathname && scrollPosition > 0) {
-                    window.scrollTo({ top: scrollPosition, behavior: 'instant' });
-                  }
-                });
-              }, 50);
-            }
+          // Restore scroll positions instantly
+          if (savedState.scrollPositions) {
+            setTimeout(() => {
+              Object.entries(savedState.scrollPositions).forEach(([route, position]) => {
+                const scrollPosition = typeof position === 'number' ? position : 0;
+                const container = document.querySelector(`[data-scroll-route="${route}"]`) as HTMLElement;
+                if (container && scrollPosition > 0) {
+                  container.scrollTo({ top: scrollPosition, behavior: 'instant' });
+                } else if (route === window.location.pathname && scrollPosition > 0) {
+                  window.scrollTo({ top: scrollPosition, behavior: 'instant' });
+                }
+              });
+            }, 50);
           }
         }
         return;
