@@ -134,8 +134,8 @@ class LaunchScreenOTCService {
 
   private async sendOTCviaEmail(code: string, expiresAt: Date): Promise<void> {
     try {
-      // Use require for nodemailer to avoid ES module issues
-      const nodemailer = require('nodemailer');
+      // Import nodemailer dynamically
+      const nodemailer = await import('nodemailer');
       
       // Admin email - using the same email as the app login system
       const adminEmail = process.env.ADMIN_EMAIL || 'admin@example.com';
@@ -146,7 +146,7 @@ class LaunchScreenOTCService {
       }
 
       // Create transporter using existing email configuration
-      const transporter = nodemailer.createTransport({
+      const transporter = nodemailer.default.createTransport({
         service: 'gmail',
         auth: {
           user: process.env.EMAIL_USER,
