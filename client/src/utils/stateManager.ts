@@ -41,6 +41,7 @@ export class StateManager {
     try {
       const positions = this.getScrollPositions();
       positions[route] = position;
+      // Use global localStorage for scroll positions (app-wide state)
       localStorage.setItem(this.SCROLL_POSITIONS_KEY, JSON.stringify(positions));
     } catch (error) {
       console.error('Failed to save scroll position:', error);
@@ -61,6 +62,7 @@ export class StateManager {
   // Get all scroll positions
   static getScrollPositions(): Record<string, number> {
     try {
+      // Use global localStorage for scroll positions (app-wide state)
       const saved = localStorage.getItem(this.SCROLL_POSITIONS_KEY);
       return saved ? JSON.parse(saved) : {};
     } catch (error) {
@@ -74,6 +76,7 @@ export class StateManager {
     try {
       const formData = this.getAllFormData();
       formData[formId] = data;
+      // Use global localStorage for form data (app-wide state)
       localStorage.setItem(this.FORM_DATA_KEY, JSON.stringify(formData));
     } catch (error) {
       console.error('Failed to save form data:', error);
@@ -94,6 +97,7 @@ export class StateManager {
   // Get all form data
   static getAllFormData(): Record<string, any> {
     try {
+      // Use global localStorage for form data (app-wide state)
       const saved = localStorage.getItem(this.FORM_DATA_KEY);
       return saved ? JSON.parse(saved) : {};
     } catch (error) {
