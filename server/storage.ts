@@ -125,8 +125,37 @@ class MemStorage implements IStorage {
       } else {
         console.log("No persisted data found, starting with empty state");
       }
+      
+      // Load database users into memory for API access
+      await this.syncDatabaseUsers();
     } catch (error) {
       console.error('Error loading persisted data:', error);
+    }
+  }
+
+  private async syncDatabaseUsers(): Promise<void> {
+    try {
+      const dbUsers = await db.select().from(users);
+      console.log(`Found ${dbUsers.length} existing users in database`);
+      
+      for (const dbUser of dbUsers) {
+        // Add database users to memory if not already present
+        const existingUser = Array.from(this.users.values()).find(u => u.customerNumber === dbUser.customerNumber);
+        if (!existingUser) {
+          this.users.set(dbUser.id, dbUser);
+          if (dbUser.id >= this.currentUserId) {
+            this.currentUserId = dbUser.id + 1;
+          }
+        } else {
+          // Update existing user with latest database data (especially primaryCurrency)
+          const updatedUser = { ...existingUser, ...dbUser };
+          this.users.set(dbUser.id, updatedUser);
+        }
+      }
+      
+      console.log(`Synchronized ${this.users.size} total users in memory`);
+    } catch (error) {
+      console.log('Database sync not available, using memory-only storage');
     }
   }
 
