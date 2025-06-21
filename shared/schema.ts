@@ -34,8 +34,6 @@ export const transactions = pgTable("transactions", {
   type: text("type").notNull(), // 'debit', 'credit'
   paymentMethod: text("payment_method").notNull(),
   reference: text("reference"),
-  uniqueReference: text("unique_reference"),
-  transactionId: text("transaction_id"),
   recipientName: text("recipient_name"),
   iban: text("iban"),
   bicCode: text("bic_code"),

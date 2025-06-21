@@ -467,32 +467,12 @@ export default function TransactionHistoryWorking() {
                       </div>
                     )}
 
-                    {/* Payment Reference for SEPA Transfers */}
+                    {/* Reference for IBAN Transfers */}
                     {selectedTransaction.paymentMethod === 'SEPA Transfer' && selectedTransaction.reference && (
                       <div className="flex justify-between">
-                        <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Payment Reference:</span>
+                        <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Reference:</span>
                         <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                           {selectedTransaction.reference}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Unique BOI Reference for SEPA Transfers */}
-                    {selectedTransaction.paymentMethod === 'SEPA Transfer' && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Unique Reference:</span>
-                        <span className="font-semibold text-gray-900 font-mono text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          {selectedTransaction.uniqueReference || 'BOI' + Date.now().toString().slice(-8) + Math.random().toString(36).substr(2, 5).toUpperCase()}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Transaction ID for SEPA Transfers */}
-                    {selectedTransaction.paymentMethod === 'SEPA Transfer' && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Transaction ID:</span>
-                        <span className="font-medium text-gray-700 text-xs" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          {selectedTransaction.transactionId || `IBAN_${selectedTransaction.id}_${Math.random().toString(36).substr(2, 5)}`}
                         </span>
                       </div>
                     )}

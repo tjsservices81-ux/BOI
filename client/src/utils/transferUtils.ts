@@ -114,9 +114,7 @@ export const processTransfer = (
   transferType: 'UK' | 'IBAN',
   reference: string,
   exchangeRate?: number,
-  recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string; bicCode?: string },
-  uniqueReference?: string,
-  transactionId?: string
+  recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string; bicCode?: string }
 ): boolean => {
   console.log('Processing transfer:', { fromAccountId, amount, recipientName, transferType, reference });
   
@@ -173,8 +171,6 @@ export const processTransfer = (
     type: 'debit',
     paymentMethod: `${transferType === 'IBAN' ? 'SEPA' : transferType} Transfer`,
     reference,
-    // uniqueReference,
-    // transactionId,
     recipientName,
     timestamp: new Date().toISOString(),
     ...(transferType === 'UK' && exchangeRate && {
@@ -229,13 +225,12 @@ export const processConfirmedTransfer = (
   transferType: 'UK' | 'IBAN',
   reference: string,
   exchangeRate?: number,
-  recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string; bicCode?: string },
-  uniqueReference?: string
+  recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string; bicCode?: string }
 ): boolean => {
   console.log('Processing confirmed transfer:', { transferId, fromAccountId, amount, recipientName, transferType, reference });
   
   // Execute the actual transfer logic that was previously in processTransfer
-  const success = processTransfer(fromAccountId, amount, recipientName, transferType, reference, exchangeRate, recipientDetails, uniqueReference, transferId);
+  const success = processTransfer(fromAccountId, amount, recipientName, transferType, reference, exchangeRate, recipientDetails);
   
   if (success) {
     console.log(`Transfer ${transferId} completed successfully`);
