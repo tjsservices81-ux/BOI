@@ -13,6 +13,7 @@ interface BankingDB extends DBSchema {
       createdAt: number;
       updatedAt: number;
     };
+    indexes: { 'lastOnlineLogin': number };
   };
   accounts: {
     key: string;
@@ -54,7 +55,7 @@ export class OfflineManager {
           // Users store
           if (!db.objectStoreNames.contains('users')) {
             const usersStore = db.createObjectStore('users', { keyPath: 'customerNumber' });
-            usersStore.createIndex('lastOnlineLogin', 'lastOnlineLogin', { unique: false });
+            usersStore.createIndex('lastOnlineLogin', 'lastOnlineLogin');
           }
 
           // Accounts store

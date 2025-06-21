@@ -50,8 +50,13 @@
             const statusEl = document.getElementById('connectionStatus');
             const textEl = document.getElementById('statusText');
             
-            statusEl.className = `status ${status}`;
-            textEl.textContent = status.toUpperCase();
+            // Add null checks to prevent errors
+            if (statusEl) {
+                statusEl.className = `status ${status}`;
+            }
+            if (textEl) {
+                textEl.textContent = status.toUpperCase();
+            }
         }
 
         // Check service worker
