@@ -217,12 +217,26 @@ export default function Profile() {
         console.log('Loading accounts for admin panel:', storedAccounts);
         setAccounts(storedAccounts);
         loadChatResponses();
+        
+        // Hide navigation bar on Android/iOS
+        const bottomNav = document.querySelector('.bottom-navigation');
+        if (bottomNav) {
+          bottomNav.style.display = 'none';
+        }
+        document.body.style.overflow = 'hidden';
       } catch (error) {
         console.error('Error initializing admin panel:', error);
         // Set default empty accounts if there's an error
         setAccounts([]);
         setChatResponses([]);
       }
+    } else {
+      // Show navigation bar when admin panel closes
+      const bottomNav = document.querySelector('.bottom-navigation');
+      if (bottomNav) {
+        bottomNav.style.display = '';
+      }
+      document.body.style.overflow = '';
     }
   }, [showAdminPanel]);
 

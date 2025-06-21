@@ -922,11 +922,25 @@ input, textarea, select {
   bottom: 0 !important;
   width: 100vw !important;
   height: 100vh !important;
+  height: 100dvh !important;
   max-width: none !important;
   max-height: none !important;
   transform: translate3d(0, 0, 0);
   -webkit-transform: translate3d(0, 0, 0);
   isolation: isolate;
+  /* Android specific navigation bar hiding */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+/* Force hide any bottom navigation when admin panel is active */
+.admin-panel ~ * .bottom-navigation,
+.admin-panel ~ .bottom-navigation,
+body:has(.admin-panel) .bottom-navigation {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
 }
 
 /* Prevent any delayed icon loading in lists */
