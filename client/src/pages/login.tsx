@@ -9,6 +9,7 @@ import { User, ExternalLink, HelpCircle, Phone, Settings, Shield, MapPin, MoreHo
 import { useToast } from "@/hooks/use-toast";
 import { UserDataManager } from "@/utils/userDataManager";
 import { OfflineAccessManager } from "@/utils/offlineAccessManager";
+import { AccountVerificationManager } from "@/utils/accountVerificationManager";
 
 export default function Login() {
   const [customerNumber, setCustomerNumber] = useState("");
@@ -232,8 +233,14 @@ export default function Login() {
       if (response.ok) {
         const responseData = await response.json();
         
-        // Store pending account data
-        setPendingAccountData(userData);
+        // Store pending account data with verification flag
+        const verifiedUserData = {
+          ...userData,
+          verified: false, // Will be set to true after OTC verification
+          accountVerified: false,
+          verificationTimestamp: null
+        };
+        setPendingAccountData(verifiedUserData);
         
         // Show OTC verification screen
         setShowSignUp(false);
@@ -289,13 +296,24 @@ export default function Login() {
       const result = await response.json();
 
       if (response.ok && result.success) {
-        // OTC is valid, create the account
-        UserDataManager.registerUser(pendingAccountData);
-        UserDataManager.initializeFreshAccount(pendingAccountData.customerNumber);
+        // Mark account as verified and create the account
+        const verifiedAccountData = {
+          ...pendingAccountData,
+          verified: true,
+          accountVerified: true,
+          verificationTimestamp: new Date().toISOString()
+        };
+        
+        // Register user with verified status
+        UserDataManager.registerUser(verifiedAccountData);
+        UserDataManager.initializeFreshAccount(verifiedAccountData.customerNumber);
+        
+        // Use verification manager to ensure proper verification status
+        AccountVerificationManager.markAccountVerified(verifiedAccountData.customerNumber);
 
         toast({
           title: "Account Created Successfully",
-          description: `Your customer number is ${pendingAccountData.customerNumber}. Please remember this for future logins.`,
+          description: `Your customer number is ${verifiedAccountData.customerNumber}. Please remember this for future logins.`,
           duration: 5000,
         });
 
@@ -304,7 +322,7 @@ export default function Login() {
         setOtcCode('');
         setPendingAccountData(null);
         setNewUserData({ name: '', email: '', phone: '', customerNumber: '' });
-        setCustomerNumber(pendingAccountData.customerNumber);
+        setCustomerNumber(verifiedAccountData.customerNumber);
 
       } else {
         // OTC validation failed
@@ -344,13 +362,31 @@ export default function Login() {
     try {
       const userProfile = UserDataManager.getUserProfile();
       if (userProfile) {
+        // Check account verification before proceeding
+        const verification = await AccountVerificationManager.performSilentVerificationCheck(customerNumber);
+        
+        if (!verification.canProceed) {
+          toast({
+            title: "Account Verification Required",
+            description: verification.message || "Please complete account verification to continue.",
+            variant: "destructive",
+          });
+          
+          // Redirect to appropriate verification flow
+          setTimeout(() => {
+            navigate(verification.redirectTo || "/verify-account");
+          }, 2000);
+          return;
+        }
+        
+        // Only login if verified
         login({
           id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
           name: userProfile.name,
           email: userProfile.email
         });
+        navigate("/dashboard");
       }
-      navigate("/dashboard");
     } catch (error) {
       toast({
         title: "Login Failed",
@@ -591,6 +627,28 @@ export default function Login() {
       if (!userProfile) {
         clearInterval(loadInterval);
         throw new Error('Unable to load user profile');
+      }
+
+      // Check account verification before completing login
+      const verification = await AccountVerificationManager.performSilentVerificationCheck(currentUser);
+      
+      if (!verification.canProceed) {
+        clearInterval(loadInterval);
+        setIsLoginAnimating(false);
+        setIsScanning(false);
+        setBiometricVerified(false);
+        
+        toast({
+          title: "Account Verification Required",
+          description: verification.message || "Please complete account verification to continue.",
+          variant: "destructive",
+        });
+        
+        // Redirect to appropriate verification flow
+        setTimeout(() => {
+          handleNavigation(verification.redirectTo || "/verify-account");
+        }, 2000);
+        return;
       }
 
       login({

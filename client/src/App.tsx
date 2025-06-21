@@ -443,6 +443,7 @@ function AppRoutes() {
           <Switch>
             <Route path="/splash" component={Splash} />
             <Route path="/login" component={Login} />
+            <Route path="/verify-account" component={VerifyAccount} />
             <Route path="/more" component={More} />
             <Route path="/">
               {(() => {
