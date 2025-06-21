@@ -30,15 +30,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(session({
     secret: process.env.SESSION_SECRET || 'banking-app-secret-key-for-dev',
     store: sessionStore,
-    resave: false,
-    saveUninitialized: false,
+    resave: true, // Always save session back to store
+    saveUninitialized: true, // Save uninitialized sessions
     cookie: {
       secure: false, // Set to true in production with HTTPS
-      httpOnly: true, // Secure cookie access
-      maxAge: undefined, // No expiry - sessions persist permanently until admin deletion
+      httpOnly: false, // Allow JavaScript access for persistence
+      maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year expiry
       sameSite: 'lax' // Allow cookies to be sent with same-site requests
     },
-    rolling: true, // Refresh session on each request
+    rolling: true, // Refresh session on each request to reset expiry
   }));
 
   // Dynamic manifest.json endpoint that includes access code in start_url
@@ -126,6 +126,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       timestamp: new Date().toISOString(),
       server: "Bank of Ireland API"
     });
+  });
+
+  // Session heartbeat endpoint to maintain active sessions
+  app.post("/api/auth/heartbeat", (req, res) => {
+    // This endpoint refreshes the session without requiring authentication
+    // Sessions are maintained indefinitely until admin deletion
+    if (req.session) {
+      req.session.touch(); // Refresh session expiry
+      (req.session as any).lastHeartbeat = new Date().toISOString();
+      
+      res.json({ 
+        status: "heartbeat_received", 
+        timestamp: new Date().toISOString(),
+        sessionActive: true
+      });
+    } else {
+      res.json({ 
+        status: "no_session", 
+        timestamp: new Date().toISOString(),
+        sessionActive: false
+      });
+    }
   });
 
   // Helper function to detect iOS devices

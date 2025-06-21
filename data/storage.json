@@ -82,6 +82,22 @@
         "dateCreated": "2025-06-21T21:32:13.045Z",
         "isDisabled": false
       }
+    ],
+    [
+      36,
+      {
+        "id": 36,
+        "customerNumber": "20668271",
+        "pin": "9999",
+        "name": "Permanent SessionTest",
+        "email": "permanenttest@example.com",
+        "phone": null,
+        "address": null,
+        "dateOfBirth": "1990-01-01",
+        "joinDate": "Member since 2018",
+        "dateCreated": "2025-06-21T21:37:37.873Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [
@@ -160,7 +176,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 36,
+    "currentUserId": 37,
     "currentAccountId": 43,
     "currentTransactionId": 49,
     "currentPayeeId": 25,

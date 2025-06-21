@@ -16,6 +16,33 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Session heartbeat to maintain activity
+let heartbeatInterval: NodeJS.Timeout | null = null;
+
+function startSessionHeartbeat() {
+  if (heartbeatInterval) {
+    clearInterval(heartbeatInterval);
+  }
+  
+  heartbeatInterval = setInterval(() => {
+    localStorage.setItem('lastSessionActivity', Date.now().toString());
+    // Send heartbeat to server to refresh session
+    fetch('/api/auth/heartbeat', {
+      method: 'POST',
+      credentials: 'include'
+    }).catch(() => {
+      // Ignore heartbeat failures - user stays logged in locally
+    });
+  }, 60000); // Every minute
+}
+
+function stopSessionHeartbeat() {
+  if (heartbeatInterval) {
+    clearInterval(heartbeatInterval);
+    heartbeatInterval = null;
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -28,26 +55,62 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     const initializeAuth = async () => {
       try {
-        // Always check for cached user - no cold start detection
+        // Check multiple storage locations for user data
         // Users stay logged in permanently until admin deletion
+        let foundUser = null;
+        
+        // Try primary localStorage
         try {
           const cachedUser = localStorage.getItem('bankingUser');
-          if (cachedUser && isMounted) {
+          if (cachedUser) {
             try {
-              const parsedUser = JSON.parse(cachedUser);
-              setUser(parsedUser);
-              // Reset parse failure counter on success
-              localStorage.removeItem('bankingUser_parseFailures');
+              foundUser = JSON.parse(cachedUser);
             } catch (parseError) {
-              console.error('JSON parse failed, user data preserved for recovery:', parseError);
-              // Keep user data safe - never delete on parse errors
-              // Show recoverable error state instead of wiping account
-              setUser(null); // Temporary state, data preserved
+              console.warn('Primary storage parse failed, trying backup');
             }
           }
         } catch (storageError) {
-          console.error('localStorage access failed, maintaining current state:', storageError);
-          // Don't change user state on storage access errors
+          console.warn('Primary localStorage access failed');
+        }
+        
+        // Try backup localStorage if primary failed
+        if (!foundUser) {
+          try {
+            const backupUser = localStorage.getItem('bankingUserBackup');
+            if (backupUser) {
+              foundUser = JSON.parse(backupUser);
+              // Restore to primary storage
+              localStorage.setItem('bankingUser', backupUser);
+            }
+          } catch (error) {
+            console.warn('Backup localStorage access failed');
+          }
+        }
+        
+        // Try sessionStorage as last resort
+        if (!foundUser) {
+          try {
+            const sessionUser = sessionStorage.getItem('bankingUser');
+            if (sessionUser) {
+              foundUser = JSON.parse(sessionUser);
+              // Restore to localStorage
+              localStorage.setItem('bankingUser', sessionUser);
+              localStorage.setItem('bankingUserBackup', sessionUser);
+            }
+          } catch (error) {
+            console.warn('SessionStorage access failed');
+          }
+        }
+        
+        if (foundUser && isMounted) {
+          setUser(foundUser);
+          // Update activity timestamp
+          localStorage.setItem('lastSessionActivity', Date.now().toString());
+          localStorage.setItem('bankingSessionActive', 'true');
+          // Start heartbeat to maintain session
+          startSessionHeartbeat();
+          // Reset parse failure counter on success
+          localStorage.removeItem('bankingUser_parseFailures');
         }
         
         if (isMounted) {
@@ -112,14 +175,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = (userData: User) => {
     setUser(userData);
-    localStorage.setItem('bankingUser', JSON.stringify(userData));
+    
+    // Store user data with multiple persistence mechanisms
+    const userDataWithTimestamp = {
+      ...userData,
+      loginTime: Date.now(),
+      lastActivity: Date.now(),
+      persistentSession: true
+    };
+    
+    // Primary storage - localStorage (permanent)
+    localStorage.setItem('bankingUser', JSON.stringify(userDataWithTimestamp));
+    
+    // Secondary storage - sessionStorage (browser session backup)
+    sessionStorage.setItem('bankingUser', JSON.stringify(userDataWithTimestamp));
+    
+    // Tertiary storage - localStorage backup with different key
+    localStorage.setItem('bankingUserBackup', JSON.stringify(userDataWithTimestamp));
+    
+    // Set session activity tracker
+    localStorage.setItem('bankingSessionActive', 'true');
+    localStorage.setItem('lastSessionActivity', Date.now().toString());
+    
     // Reset parse failure counter on successful login
     localStorage.removeItem('bankingUser_parseFailures');
+    
+    // Start activity heartbeat to maintain session
+    startSessionHeartbeat();
   };
 
   const logout = async () => {
-    // Logout disabled - users can only be logged out via admin deletion
-    console.warn('logout() disabled - users can only be logged out via admin deletion');
+    // Only admin can force logout - otherwise sessions persist indefinitely
+    console.warn('Standard logout disabled - sessions persist until admin deletion');
+    
+    // Stop heartbeat but keep session data
+    stopSessionHeartbeat();
+    
+    // Mark session as inactive but don't clear data
+    localStorage.setItem('bankingSessionActive', 'false');
+    localStorage.setItem('lastSessionActivity', Date.now().toString());
     
     // Clear offline login permissions on logout attempt
     try {
@@ -131,6 +225,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     return;
   };
+
+  // Admin-only function to force complete logout
+  const forceLogout = () => {
+    stopSessionHeartbeat();
+    setUser(null);
+    
+    // Clear all storage locations
+    localStorage.removeItem('bankingUser');
+    localStorage.removeItem('bankingUserBackup');
+    localStorage.removeItem('bankingSessionActive');
+    localStorage.removeItem('lastSessionActivity');
+    sessionStorage.removeItem('bankingUser');
+    
+    // Clear offline permissions
+    try {
+      import('../utils/secureAuthManager').then(({ SecureAuthManager }) => {
+        SecureAuthManager.clearOfflineLoginPermissions();
+      });
+    } catch (error) {
+      console.error('Failed to clear offline permissions:', error);
+    }
+  };
+
+  // Expose forceLogout for admin use
+  if (typeof window !== 'undefined') {
+    (window as any).forceLogout = forceLogout;
+  }
 
   return (
     <AuthContext.Provider
