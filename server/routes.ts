@@ -479,7 +479,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(transactions);
     } catch (error) {
       console.error('Transaction error:', error);
-      res.status(500).json({ message: "Internal server error" });
+      res.status(500).json({ error: "Internal server error" });
     }
   });
 
@@ -490,14 +490,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const account = await storage.getAccountById(transferData.fromAccountId);
       
       if (!account) {
-        return res.status(404).json({ message: "Account not found" });
+        return res.status(404).json({ error: "Account not found" });
       }
 
       const amount = parseFloat(transferData.amount);
       const currentBalance = parseFloat(account.balance);
       
       if (amount > currentBalance) {
-        return res.status(400).json({ message: "Insufficient funds" });
+        return res.status(400).json({ error: "Insufficient funds" });
       }
 
       // Create debit transaction
@@ -519,9 +519,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true, message: "Transfer completed successfully", transaction });
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: error.errors[0].message });
+        return res.status(400).json({ error: error.errors[0].message });
       }
-      res.status(500).json({ message: "Internal server error" });
+      res.status(500).json({ error: "Internal server error" });
     }
   });
 
@@ -532,7 +532,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const payees = await storage.getPayeesByUserId(userId);
       res.json(payees);
     } catch (error) {
-      res.status(500).json({ message: "Internal server error" });
+      res.status(500).json({ error: "Internal server error" });
     }
   });
 
