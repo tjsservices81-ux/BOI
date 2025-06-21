@@ -2033,7 +2033,7 @@ export default function Profile() {
                         <div
                           key={transaction.id}
                           className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors ${
-                            selectedTransaction?.id === transaction.id ? 'bg-blue-50 border-blue-200' : ''
+                            selectedTransaction?.id === transaction.id ? 'bg-red-50 border-2 border-red-300 shadow-md' : ''
                           }`}
                           onClick={() => setSelectedTransaction(transaction)}
                         >
@@ -2066,15 +2066,29 @@ export default function Profile() {
                                 </p>
                               )}
                             </div>
-                            <div className="text-right">
-                              <p className={`font-bold text-lg ${
-                                transaction.amount.startsWith('-') ? 'text-red-600' : 'text-green-600'
-                              }`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                                {formatCurrency(Math.abs(parseFloat(transaction.amount)), userCurrency)}
-                              </p>
-                              <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                                {transaction.amount.startsWith('-') ? 'Debit' : 'Credit'}
-                              </p>
+                            <div className="text-right flex flex-col items-end space-y-2">
+                              <div>
+                                <p className={`font-bold text-lg ${
+                                  transaction.amount.startsWith('-') ? 'text-red-600' : 'text-green-600'
+                                }`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                                  {formatCurrency(Math.abs(parseFloat(transaction.amount)), userCurrency)}
+                                </p>
+                                <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                                  {transaction.amount.startsWith('-') ? 'Debit' : 'Credit'}
+                                </p>
+                              </div>
+                              {selectedTransaction?.id === transaction.id && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setShowDeleteConfirm(true);
+                                  }}
+                                  className="px-3 py-1 bg-red-600 text-white text-xs rounded-lg hover:bg-red-700 transition-colors"
+                                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                                >
+                                  Delete
+                                </button>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -2091,29 +2105,12 @@ export default function Profile() {
                   </div>
                 )}
 
-                {/* Step 3: Delete Button */}
-                {selectedTransaction && (
-                  <div className="pt-4 border-t border-gray-200">
-                    <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
-                      <h4 className="font-semibold text-red-900 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        Selected Transaction Details:
-                      </h4>
-                      <div className="space-y-1 text-sm text-red-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        <p><strong>Type:</strong> {selectedTransaction.paymentMethod}</p>
-                        <p><strong>Amount:</strong> {formatCurrency(Math.abs(parseFloat(selectedTransaction.amount)), userCurrency)} ({selectedTransaction.amount.startsWith('-') ? 'Debit' : 'Credit'})</p>
-                        <p><strong>Description:</strong> {selectedTransaction.description}</p>
-                        <p><strong>Date:</strong> {new Date(selectedTransaction.timestamp).toLocaleDateString()} {new Date(selectedTransaction.timestamp).toLocaleTimeString()}</p>
-                        {selectedTransaction.reference && <p><strong>Reference:</strong> {selectedTransaction.reference}</p>}
-                      </div>
-                    </div>
-                    
-                    <button
-                      onClick={() => setShowDeleteConfirm(true)}
-                      className="w-full py-3 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition-colors"
-                      style={{ fontFamily: 'OpenSans, sans-serif' }}
-                    >
-                      Delete This Transaction
-                    </button>
+                {/* Instructions */}
+                {selectedAccountId && accountTransactions.length > 0 && (
+                  <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-xl">
+                    <p className="text-sm text-blue-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      <strong>Instructions:</strong> Click on a transaction to select it. A red highlight will appear with a Delete button.
+                    </p>
                   </div>
                 )}
               </div>
