@@ -338,7 +338,7 @@ class DatabaseStorage implements IStorage {
         this.users.set(user.id, user);
       }
       
-      this.persistentDataManager.persistData();
+      await this.saveData();
     } catch (error) {
       console.error('Error updating user activity:', error);
     }
@@ -364,7 +364,7 @@ class DatabaseStorage implements IStorage {
         this.users.set(user.id, user);
       }
       
-      this.persistentDataManager.persistData();
+      await this.saveData();
     } catch (error) {
       console.error('Error saving user preferences:', error);
     }
@@ -390,7 +390,7 @@ class DatabaseStorage implements IStorage {
         this.users.set(user.id, user);
       }
       
-      this.persistentDataManager.persistData();
+      await this.saveData();
     } catch (error) {
       console.error('Error saving device info:', error);
     }
