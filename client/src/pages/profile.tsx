@@ -170,28 +170,6 @@ export default function Profile() {
     };
   }, [isUpdatingProfile]);
 
-  // Manage body class for admin panel to ensure Android navigation bar is hidden
-  useEffect(() => {
-    if (showAdminPanel) {
-      document.body.classList.add('admin-panel-open');
-      // Prevent scrolling on the background
-      document.body.style.overflow = 'hidden';
-      document.documentElement.style.overflow = 'hidden';
-    } else {
-      document.body.classList.remove('admin-panel-open');
-      // Restore scrolling
-      document.body.style.overflow = '';
-      document.documentElement.style.overflow = '';
-    }
-
-    // Cleanup function
-    return () => {
-      document.body.classList.remove('admin-panel-open');
-      document.body.style.overflow = '';
-      document.documentElement.style.overflow = '';
-    };
-  }, [showAdminPanel]);
-
   const userDetails = profileData;
 
   const handleProfilePictureTap = () => {

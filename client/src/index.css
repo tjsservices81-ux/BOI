@@ -914,7 +914,7 @@ input, textarea, select {
 
 /* Admin panel specific styling - ensure it covers everything including navigation */
 .admin-panel {
-  z-index: 2147483647 !important;
+  z-index: 10000 !important;
   position: fixed !important;
   top: 0 !important;
   left: 0 !important;
@@ -922,51 +922,11 @@ input, textarea, select {
   bottom: 0 !important;
   width: 100vw !important;
   height: 100vh !important;
-  height: 100dvh !important;
   max-width: none !important;
   max-height: none !important;
-  margin: 0 !important;
-  padding: 16px !important;
-  transform: translate3d(0, 0, 999px) !important;
-  -webkit-transform: translate3d(0, 0, 999px) !important;
-  isolation: isolate !important;
-  backdrop-filter: blur(0px) !important;
-  -webkit-backdrop-filter: blur(0px) !important;
-}
-
-/* Force admin panel to cover Android system UI */
-@supports (height: 100dvh) {
-  .admin-panel {
-    height: 100dvh !important;
-    min-height: 100dvh !important;
-  }
-}
-
-/* Android specific overrides */
-@media screen and (max-device-width: 768px) {
-  .admin-panel {
-    position: fixed !important;
-    inset: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    max-width: 100% !important;
-    max-height: 100% !important;
-    overflow: hidden !important;
-  }
-}
-
-/* Body lock when admin panel is open */
-body.admin-panel-open {
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
-  overflow: hidden !important;
-  -webkit-overflow-scrolling: touch !important;
-  overscroll-behavior: none !important;
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
+  isolation: isolate;
 }
 
 /* Prevent any delayed icon loading in lists */
