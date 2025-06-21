@@ -1,11 +1,25 @@
 import { useLocation } from "wouter";
 import { ChevronLeft, User, HelpCircle, Info, Settings, Shield, Building2, MessageCircle } from "lucide-react";
 import { useState, useEffect } from "react";
+import LoadingStateManager from "../utils/loadingStateManager";
 
 export default function More() {
   const [, setLocation] = useLocation();
   const [isNavigating, setIsNavigating] = useState(false);
   const [isLoadingChat, setIsLoadingChat] = useState(false);
+
+  // Reset loading states on component mount/unmount
+  useEffect(() => {
+    setIsLoadingChat(false);
+    setIsNavigating(false);
+    LoadingStateManager.resetComponent('more');
+    
+    return () => {
+      setIsLoadingChat(false);
+      setIsNavigating(false);
+      LoadingStateManager.resetComponent('more');
+    };
+  }, []);
 
   const handleNavigation = (path: string) => {
     setIsNavigating(true);
