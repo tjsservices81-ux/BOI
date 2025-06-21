@@ -477,7 +477,7 @@
           // Check if user already has access granted
           const hasAccess = localStorage.getItem('accessGranted');
           if (hasAccess === 'true') {
-            if (loader) loader.style.display = 'none';
+            hideLoadingScreen();
             return;
           }
 
@@ -506,7 +506,8 @@
             // Access granted - save to localStorage and clean URL
             localStorage.setItem('accessGranted', 'true');
             window.history.replaceState({}, document.title, window.location.pathname);
-            if (loader) loader.style.display = 'none';
+            console.log('Access granted successfully');
+            hideLoadingScreen();
           } else {
             // Access denied - show appropriate message
             const message = result.message || "Access code invalid or expired";
@@ -533,6 +534,13 @@
           `;
           loader.style.background = '#f8f9fa';
           loader.style.color = '#374151';
+        }
+      }
+
+      function hideLoadingScreen() {
+        const loader = document.getElementById('loading-screen');
+        if (loader) {
+          loader.style.display = 'none';
         }
       }
 

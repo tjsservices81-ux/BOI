@@ -72,10 +72,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Parse the stored data
-      const codeInfo = typeof codeData === 'string' ? JSON.parse(codeData) : codeData;
+      // Parse the stored data - handle nested JSON serialization
+      let codeInfo;
+      try {
+        if (typeof codeData === 'string') {
+          codeInfo = JSON.parse(codeData);
+        } else if (codeData && typeof codeData === 'object' && codeData.value) {
+          // Handle Replit Database wrapper format
+          codeInfo = typeof codeData.value === 'string' ? JSON.parse(codeData.value) : codeData.value;
+        } else {
+          codeInfo = codeData;
+        }
+      } catch (parseError) {
+        console.error('Error parsing code data:', parseError);
+        return res.status(500).json({ 
+          success: false, 
+          error: "Code data corrupted" 
+        });
+      }
       
-      if (codeInfo.used === true) {
+      if (codeInfo && codeInfo.used === true) {
         return res.status(409).json({ 
           success: false, 
           error: "Access code already used",
@@ -83,16 +99,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Mark code as used atomically
-      const updatedCodeInfo = {
+      // Mark code as used with simple structure
+      await db.set(`access_code_${code}`, {
         code: code,
         used: true,
         usedAt: new Date().toISOString(),
-        createdAt: codeInfo.createdAt || new Date().toISOString(),
-        description: codeInfo.description || `Access code: ${code}`
-      };
-      
-      await db.set(`access_code_${code}`, JSON.stringify(updatedCodeInfo));
+        createdAt: codeInfo?.createdAt || new Date().toISOString(),
+        description: codeInfo?.description || `Access code: ${code}`
+      });
 
       res.json({ 
         success: true, 
