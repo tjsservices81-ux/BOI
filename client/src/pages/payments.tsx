@@ -188,33 +188,7 @@ export default function Payments() {
           ))}
         </div>
 
-        {/* Quick Actions */}
-        <div className="bg-white rounded-2xl p-5 shadow-sm mb-6">
-          <h2 className="font-semibold text-gray-900 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-            Quick Actions
-          </h2>
-          <div className="grid grid-cols-2 gap-4">
-            <button 
-              onClick={() => setShowRecentPayees(true)}
-              className="bg-blue-50 rounded-xl p-4 text-center active:scale-95 transition-transform"
-            >
-              <div className="w-8 h-8 bg-[#126987] rounded-full flex items-center justify-center mx-auto mb-2">
-                <Users className="w-4 h-4 text-white" />
-              </div>
-              <span className="text-sm font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Recent Payees
-              </span>
-            </button>
-            <button className="bg-blue-50 rounded-xl p-4 text-center active:scale-95 transition-transform">
-              <div className="w-8 h-8 bg-[#126987] rounded-full flex items-center justify-center mx-auto mb-2">
-                <img src="/Add-payee.svg" alt="Add" className="w-4 h-4" />
-              </div>
-              <span className="text-sm font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Add Payee
-              </span>
-            </button>
-          </div>
-        </div>
+
 
         {/* Recent Payments */}
         <div className="bg-white rounded-2xl p-5 shadow-sm">
