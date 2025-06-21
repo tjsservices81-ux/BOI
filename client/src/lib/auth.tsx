@@ -93,7 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         // Update user state immediately without flickering
         setUser(updatedUser);
-        localStorage.setItem('bankingUser', JSON.stringify(updatedUser));
+        localStorage.setItem('currentUser', JSON.stringify(updatedUser));
       }
     };
 
@@ -109,7 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = (userData: User) => {
     console.log('🔐 AuthContext login() called with:', userData);
     setUser(userData);
-    localStorage.setItem('bankingUser', JSON.stringify(userData));
+    localStorage.setItem('currentUser', JSON.stringify(userData));
     console.log('✅ User session saved to localStorage');
     
     // Emit global login event for navigation handlers

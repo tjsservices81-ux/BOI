@@ -75,7 +75,7 @@ export default function Login() {
     
     // STRICT CONDITION: Check authentication state comprehensively
     const isAuthenticatedContext = user !== null;
-    const cachedUser = localStorage.getItem('bankingUser');
+    const cachedUser = localStorage.getItem('currentUser');
     const authToken = localStorage.getItem('auth_token');
     const isAuthenticated = isAuthenticatedContext || cachedUser || authToken;
     
