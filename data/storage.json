@@ -356,9 +356,60 @@
         "dateCreated": "2025-06-21T08:57:07.321Z",
         "isDisabled": false
       }
+    ],
+    [
+      74,
+      {
+        "id": 74,
+        "customerNumber": "BOI755183164",
+        "pin": "000000",
+        "name": "Hjjj",
+        "email": "hjh@gmail.com",
+        "phone": "544564",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-06-21T09:31:08.901Z",
+        "primaryCurrency": "GBP",
+        "dateCreated": "2025-06-21T09:31:08.901Z",
+        "isDisabled": false
+      }
     ]
   ],
-  "accounts": [],
+  "accounts": [
+    [
+      37,
+      {
+        "id": 37,
+        "userId": 74,
+        "accountType": "current",
+        "accountNumber": "****2091",
+        "balance": "0.00",
+        "displayName": "Current Account"
+      }
+    ],
+    [
+      38,
+      {
+        "id": 38,
+        "userId": 74,
+        "accountType": "credit",
+        "accountNumber": "****1820",
+        "balance": "0.00",
+        "displayName": "Credit Card"
+      }
+    ],
+    [
+      39,
+      {
+        "id": 39,
+        "userId": 74,
+        "accountType": "savings",
+        "accountNumber": "****0978",
+        "balance": "0.00",
+        "displayName": "Savings Account"
+      }
+    ]
+  ],
   "transactions": [],
   "payees": [],
   "scheduledPayments": [],
@@ -367,8 +418,8 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 74,
-    "currentAccountId": 37,
+    "currentUserId": 75,
+    "currentAccountId": 40,
     "currentTransactionId": 49,
     "currentPayeeId": 25,
     "currentScheduledPaymentId": 1,
