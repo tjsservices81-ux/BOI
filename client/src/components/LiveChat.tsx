@@ -441,12 +441,12 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       category: 'transfers',
       triggers: ['transfer money', 'send money', 'make transfer', 'how to transfer', 'payment', 'pending transfer', 'international transfer', 'swift code', 'iban transfer', 'uk transfer', 'transfer limit', 'transfer fee'],
       responses: [
-        "Absolutely, I'll help you with transfers. For UK transfers, tap 'Payments' then 'UK Transfer' - these typically take up to 24 hours. For SEPA zone transfers, use 'SEPA Transfer' which usually takes 1-2 working days. What type of transfer are you looking to make?",
-        "I can definitely help with that transfer. Use the 'Payments' section at the bottom - UK Transfer for domestic payments (up to 24 hours) or SEPA Transfer for transfers within the SEPA zone (small fee applies, 1-2 days). Are you sending money within the UK or to the SEPA zone?",
-        "Right, let me walk you through the transfer options. Go to 'Payments' at the bottom of your screen. UK Transfer handles domestic payments in up to 24 hours, while SEPA Transfer covers payments within the SEPA zone with competitive exchange rates. Which country are you sending to?",
-        "No worries, I'll explain the transfer process. In 'Payments', you'll see UK Transfer for domestic payments (up to 24 hours) and SEPA Transfer for transfers within the SEPA zone (£2-15 fee depending on amount, arrives 1-2 working days). What's the destination for your transfer?",
-        "Let me help you sort that transfer. The 'Payments' section has two options - UK Transfer for domestic payments (allow up to 24 hours) or SEPA Transfer for transfers within the SEPA zone (typically 1-2 days with a small fee). Where are you sending the money?",
-        "Alright, I can guide you through the transfer process. Head to 'Payments' where you'll find UK Transfer for domestic payments (up to 24 hours processing) and SEPA Transfer for transfers within the SEPA zone. What type of payment are you making?"
+        "Absolutely, I'll help you with transfers. For UK transfers, tap 'Payments' then 'UK Transfer' - these typically take 2-24 hours. For SEPA zone transfers, use 'SEPA Transfer' which usually takes 1-2 working days. What type of transfer are you looking to make?",
+        "I can definitely help with that transfer. Use the 'Payments' section at the bottom - UK Transfer for domestic payments (2-24 hours) or SEPA Transfer for transfers within the SEPA zone (small fee applies, 1-2 days). Are you sending money within the UK or to the SEPA zone?",
+        "Right, let me walk you through the transfer options. Go to 'Payments' at the bottom of your screen. UK Transfer handles domestic payments in 2-24 hours, while SEPA Transfer covers payments within the SEPA zone with competitive exchange rates. Which country are you sending to?",
+        "No worries, I'll explain the transfer process. In 'Payments', you'll see UK Transfer for domestic payments (2-24 hours) and SEPA Transfer for transfers within the SEPA zone (fee applies, arrives 1-2 working days). What's the destination for your transfer?",
+        "Let me help you sort that transfer. The 'Payments' section has two options - UK Transfer for domestic payments (allow 2-24 hours) or SEPA Transfer for transfers within the SEPA zone (typically 1-2 days with a small fee). Where are you sending the money?",
+        "Alright, I can guide you through the transfer process. Head to 'Payments' where you'll find UK Transfer for domestic payments (2-24 hours processing) and SEPA Transfer for transfers within the SEPA zone. What type of payment are you making?"
       ]
     },
     {
@@ -931,7 +931,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     return responses[Math.floor(Math.random() * responses.length)];
   };
 
-  const generateAIResponse = async (userMessage: string): Promise<{ text: string; category: string }> => {
+  const generateAIResponse = async (userMessage: string, userCurrency: string = 'EUR'): Promise<{ text: string; category: string }> => {
     try {
       // Check if user is asking about transactions with no results
       const transactionKeywords = ['transaction', 'payment', 'transfer', 'recent activity', 'account activity', 'movement'];
@@ -992,7 +992,8 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
           conversationHistory: conversationHistory,
           agentName: chatState.agentName,
           customerNumber: currentUser,
-          transactionData: userTransactions
+          transactionData: userTransactions,
+          userCurrency: userCurrency
         }),
       });
 
@@ -1051,7 +1052,8 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     setTimeout(async () => {
       try {
         // Generate response while agent is "reading"
-        const responseData = await generateAIResponse(userMessage.text);
+        const currentCurrency = CurrencyManager.getCurrentCurrency();
+        const responseData = await generateAIResponse(userMessage.text, currentCurrency);
         
         // Calculate realistic typing time based on agent personality
         const responseWords = responseData.text.split(' ').length;

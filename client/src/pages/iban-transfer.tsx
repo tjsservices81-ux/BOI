@@ -145,6 +145,7 @@ export default function IbanTransfer() {
     }
     
     return () => {
+      window.removeEventListener('currencyChanged', handleCurrencyChange as EventListener);
       window.removeEventListener('accountsUpdate', handleAccountsUpdate as EventListener);
       window.removeEventListener('balanceUpdate', handleAccountsUpdate as EventListener);
       window.removeEventListener('adminProfileUpdate', handleAccountsUpdate as EventListener);

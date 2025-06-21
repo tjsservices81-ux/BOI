@@ -884,7 +884,8 @@ export default function Profile() {
       localStorage.setItem(`user_${currentUser}_bankAccounts`, JSON.stringify(updatedAccounts));
     }
     
-    alert(`${editingAccount.displayName} balance updated to €${numericBalance.toFixed(2)}`);
+    const currencySymbol = CurrencyManager.getCurrentSymbol();
+    alert(`${editingAccount.displayName} balance updated to ${currencySymbol}${numericBalance.toFixed(2)}`);
   };
 
   const resetToDefaults = () => {
@@ -943,7 +944,8 @@ export default function Profile() {
       }));
     }, 100);
     
-    alert('Data reset to defaults successfully - all balances set to €0.00, transactions cleared');
+    const currencySymbol = CurrencyManager.getCurrentSymbol();
+    alert(`Data reset to defaults successfully - all balances set to ${currencySymbol}0.00, transactions cleared`);
   };
 
   // Load transactions for selected account
