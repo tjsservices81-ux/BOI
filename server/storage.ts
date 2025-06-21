@@ -383,7 +383,17 @@ class DatabaseStorage implements IStorage {
   async createTransaction(insertTransaction: InsertTransaction): Promise<Transaction> {
     const transaction: Transaction = {
       id: this.currentTransactionId++,
-      ...insertTransaction
+      ...insertTransaction,
+      reference: insertTransaction.reference || null,
+      recipientName: insertTransaction.recipientName || null,
+      iban: insertTransaction.iban || null,
+      bicCode: insertTransaction.bicCode || null,
+      recipientAccountNumber: insertTransaction.recipientAccountNumber || null,
+      recipientSortCode: insertTransaction.recipientSortCode || null,
+      recipientIban: insertTransaction.recipientIban || null,
+      exchangeRate: insertTransaction.exchangeRate || null,
+      convertedAmount: insertTransaction.convertedAmount || null,
+      convertedCurrency: insertTransaction.convertedCurrency || null
     };
     this.transactions.set(transaction.id, transaction);
     return transaction;
@@ -396,7 +406,9 @@ class DatabaseStorage implements IStorage {
   async createPayee(insertPayee: InsertPayee): Promise<Payee> {
     const payee: Payee = {
       id: this.currentPayeeId++,
-      ...insertPayee
+      ...insertPayee,
+      iban: insertPayee.iban || null,
+      lastAmount: insertPayee.lastAmount || null
     };
     this.payees.set(payee.id, payee);
     return payee;
@@ -418,7 +430,9 @@ class DatabaseStorage implements IStorage {
     const message: ChatMessage = {
       id: this.currentChatMessageId++,
       ...insertMessage,
-      timestamp: insertMessage.timestamp || new Date()
+      timestamp: insertMessage.timestamp || new Date(),
+      userId: insertMessage.userId || null,
+      agentName: insertMessage.agentName || null
     };
     this.chatMessages.set(message.id, message);
     return message;
@@ -483,7 +497,10 @@ class DatabaseStorage implements IStorage {
         sessionToken,
         userId,
         customerNumber,
-        deviceInfo: JSON.stringify(metadata),
+        deviceFingerprint: metadata.deviceModel || 'unknown',
+        deviceModel: metadata.deviceModel,
+        ipAddress: metadata.ipAddress,
+        userAgent: metadata.userAgent,
         createdAt: new Date(),
         isActive: true
       });

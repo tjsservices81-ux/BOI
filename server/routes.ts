@@ -16,8 +16,7 @@ import { db } from "./db";
 import { permanentUserSessions, users } from "@shared/schema";
 import { eq, and } from "drizzle-orm";
 
-// Initialize permanent authentication manager
-const permanentAuthManager = new PermanentAuthManager();
+// Note: PermanentAuthManager is a static class - no instantiation needed
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Wait for storage to fully initialize from persistent data
@@ -114,10 +113,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Apply permanent authentication security middleware to protected routes
-  app.use('/api/auth', PermanentAuthManager.createAuthMiddleware());
+  // Apply permanent authentication security middleware to protected routes (excluding login)
   app.use('/api/accounts', PermanentAuthManager.createAuthMiddleware());
   app.use('/api/transfers', PermanentAuthManager.createAuthMiddleware());
+  app.use('/api/auth/status', PermanentAuthManager.createAuthMiddleware());
+  app.use('/api/auth/logout', PermanentAuthManager.createAuthMiddleware());
 
   // Authentication endpoints
   app.post("/api/auth/login", async (req, res) => {
