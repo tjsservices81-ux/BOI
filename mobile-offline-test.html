@@ -116,6 +116,8 @@
         async function checkServiceWorker() {
             const swEl = document.getElementById('swStatus');
             
+            if (!swEl) return; // Safety check
+            
             if ('serviceWorker' in navigator) {
                 try {
                     const registration = await navigator.serviceWorker.getRegistration();
@@ -151,6 +153,8 @@
         // Test cache functionality
         async function testCache() {
             const resultEl = document.getElementById('cacheResult');
+            if (!resultEl) return; // Safety check
+            
             resultEl.innerHTML = '🔄 Testing cache...';
 
             try {
@@ -182,6 +186,8 @@
         // Test banking app access
         async function testBankingApp() {
             const resultEl = document.getElementById('appResult');
+            if (!resultEl) return; // Safety check
+            
             resultEl.innerHTML = '🔄 Testing banking app...';
 
             try {
@@ -209,12 +215,18 @@
         // Listen for connection changes
         window.addEventListener('online', () => {
             updateConnectionStatus();
-            document.getElementById('appResult').innerHTML = '📶 Back online! Cache is preserved.';
+            const appResult = document.getElementById('appResult');
+            if (appResult) {
+                appResult.innerHTML = '📶 Back online! Cache is preserved.';
+            }
         });
         
         window.addEventListener('offline', () => {
             updateConnectionStatus();
-            document.getElementById('appResult').innerHTML = '📵 Now offline! Test the cached app.';
+            const appResult = document.getElementById('appResult');
+            if (appResult) {
+                appResult.innerHTML = '📵 Now offline! Test the cached app.';
+            }
         });
 
         // Auto-refresh status
