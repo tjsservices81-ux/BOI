@@ -37,6 +37,7 @@ export default function IbanTransfer() {
   const [animationProgress, setAnimationProgress] = useState<number>(0);
   const [processingStage, setProcessingStage] = useState<string>('Verifying transfer details...');
   const [formData, setFormData] = useState<IbanTransferData | null>(null);
+  const [currentCurrency, setCurrentCurrency] = useState(CurrencyManager.getCurrentCurrency());
 
   const form = useForm<IbanTransferData>({
     resolver: zodResolver(ibanTransferSchema),
@@ -52,7 +53,16 @@ export default function IbanTransfer() {
 
   const [accounts, setAccounts] = useState<any[]>([]);
 
+  // Currency change handler
+  const handleCurrencyChange = (event: Event) => {
+    const customEvent = event as CustomEvent;
+    setCurrentCurrency(customEvent.detail.currency);
+  };
+
   useEffect(() => {
+    // Add currency change event listener
+    window.addEventListener('currencyChanged', handleCurrencyChange as EventListener);
+    
     const loadAccounts = () => {
       UserDataManager.clearCache('bankAccounts');
       const userAccounts = UserDataManager.getUserData('bankAccounts', []);

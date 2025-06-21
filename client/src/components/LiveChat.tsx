@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { X, Send, MessageCircle, User, Bot } from "lucide-react";
 import { UserDataManager } from "../utils/userDataManager";
+import { CurrencyManager } from "../utils/currencyManager";
 
 const chatVariants = {
   hidden: {
