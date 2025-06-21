@@ -40,27 +40,28 @@ function ProtectedRoute({ children, fallback }: { children: React.ReactNode; fal
   const user = authHook?.user || null;
   const isLoading = authHook?.isLoading || false;
   
-  // Check if app is still in initialization phase
-  const appSessionActive = localStorage.getItem('app_session_active');
-  const splashCompleted = localStorage.getItem('splash_completed');
+  // If user exists, allow immediate access regardless of initialization state
+  if (user && !isLoading) {
+    return <>{children}</>;
+  }
   
-  // SECURITY FIX: Show loading state instead of null during initialization
-  if (!appSessionActive || !splashCompleted) {
+  // Show loading only while authentication is actively loading
+  if (isLoading) {
     return (
       <div className="w-full h-full flex items-center justify-center bg-[#126987]">
-        <div className="text-white">Loading...</div>
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+            Loading...
+          </p>
+        </div>
       </div>
     );
   }
   
-  // Normal protection logic after initialization
-  if (!user && !isLoading) {
+  // No user and not loading - redirect to login
+  if (!user) {
     return fallback ? <>{fallback}</> : <Redirect to="/login" />;
-  }
-  
-  // Show nothing while loading to prevent flash
-  if (isLoading) {
-    return null;
   }
   
   return <>{children}</>;
