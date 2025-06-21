@@ -47,9 +47,124 @@
         "dateCreated": "2025-06-20T23:29:39.531Z",
         "isDisabled": false
       }
+    ],
+    [
+      58,
+      {
+        "id": 58,
+        "customerNumber": "BOI330862484",
+        "pin": "000000",
+        "name": "Hhhy",
+        "email": "fgttyg@gmsil.com",
+        "phone": "55555",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-06-21T00:03:09.740Z",
+        "dateCreated": "2025-06-21T00:03:10.287Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      34,
+      {
+        "id": 34,
+        "customerNumber": "BOI330862484",
+        "pin": "000000",
+        "name": "Hhhy",
+        "email": "fgttyg@gmsil.com",
+        "phone": "55555",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-06-21T00:03:08.475Z",
+        "dateCreated": "2025-06-21T00:03:10.352Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      60,
+      {
+        "id": 60,
+        "customerNumber": "BOI165135067",
+        "pin": "000000",
+        "name": "Tggty",
+        "email": "hhy@gmail.com",
+        "phone": "94499794",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-06-21T00:05:09.462Z",
+        "dateCreated": "2025-06-21T00:05:09.896Z",
+        "isDisabled": false
+      }
     ]
   ],
-  "accounts": [],
+  "accounts": [
+    [
+      37,
+      {
+        "id": 37,
+        "userId": 58,
+        "accountType": "current",
+        "accountNumber": "****2091",
+        "balance": "0.00",
+        "displayName": "Current Account"
+      }
+    ],
+    [
+      38,
+      {
+        "id": 38,
+        "userId": 58,
+        "accountType": "credit",
+        "accountNumber": "****1820",
+        "balance": "0.00",
+        "displayName": "Credit Card"
+      }
+    ],
+    [
+      39,
+      {
+        "id": 39,
+        "userId": 58,
+        "accountType": "savings",
+        "accountNumber": "****0978",
+        "balance": "0.00",
+        "displayName": "Savings Account"
+      }
+    ],
+    [
+      40,
+      {
+        "id": 40,
+        "userId": 34,
+        "accountType": "current",
+        "accountNumber": "****2091",
+        "balance": "0.00",
+        "displayName": "Current Account"
+      }
+    ],
+    [
+      41,
+      {
+        "id": 41,
+        "userId": 34,
+        "accountType": "credit",
+        "accountNumber": "****1820",
+        "balance": "0.00",
+        "displayName": "Credit Card"
+      }
+    ],
+    [
+      42,
+      {
+        "id": 42,
+        "userId": 34,
+        "accountType": "savings",
+        "accountNumber": "****0978",
+        "balance": "0.00",
+        "displayName": "Savings Account"
+      }
+    ]
+  ],
   "transactions": [],
   "payees": [],
   "scheduledPayments": [],
@@ -58,8 +173,8 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 34,
-    "currentAccountId": 37,
+    "currentUserId": 35,
+    "currentAccountId": 43,
     "currentTransactionId": 49,
     "currentPayeeId": 25,
     "currentScheduledPaymentId": 1,

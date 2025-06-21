@@ -1225,7 +1225,7 @@ No transfers found yet on your account.`;
       const { customerNumber } = req.params;
       
       // Check if user exists in database
-      const user = await storage.getUser(customerNumber);
+      const user = await storage.getUserByCustomerNumber(customerNumber);
       if (!user) {
         return res.status(404).json({ 
           success: false, 
