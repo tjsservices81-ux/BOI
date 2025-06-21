@@ -50,33 +50,7 @@ export default function InternalTransfer() {
     setAccounts(userAccounts);
   }, []);
 
-  // Android UI fix for transfer screen
-  useEffect(() => {
-    const isAndroid = /Android/i.test(navigator.userAgent);
 
-    if (isAndroid) {
-      // Ensure confirm button is not hidden or clipped
-      const confirmBtn = document.querySelector('#confirmTransferBtn') as HTMLElement;
-      if (confirmBtn) {
-        confirmBtn.style.display = 'block';
-        confirmBtn.style.position = 'relative';
-        confirmBtn.style.zIndex = '999';
-      }
-
-      // Fix processing screen not rendering right
-      const processingScreen = document.querySelector('#transferProgressScreen') as HTMLElement;
-      if (processingScreen) {
-        processingScreen.style.visibility = 'visible';
-        processingScreen.style.opacity = '1';
-        processingScreen.style.transform = 'translateY(0)';
-        processingScreen.style.zIndex = '999';
-      }
-
-      // Force reflow in case Android WebView is glitching
-      window.scrollTo(0, 1);
-      window.scrollTo(0, 0);
-    }
-  }, [step]);
 
   useEffect(() => {
     const fromAccountId = form.watch('fromAccount');
