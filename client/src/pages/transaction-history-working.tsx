@@ -292,7 +292,7 @@ export default function TransactionHistoryWorking() {
                 </div>
                 <div className="text-right">
                   <p className={`font-semibold text-sm ${isDebit ? 'text-gray-900' : 'text-green-600'}`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    €{transaction.amount}
+                    {formatCurrency(transaction.amount.replace('-', ''), userCurrency)}
                   </p>
                 </div>
               </button>
