@@ -35,6 +35,12 @@ export class CurrencyManager {
     return UserDataManager.getUserData('primaryCurrency', 'EUR') as Currency;
   }
   
+  // Get current currency symbol
+  static getCurrentSymbol(): string {
+    const currency = this.getCurrentCurrency();
+    return CURRENCY_CONFIGS[currency].symbol;
+  }
+  
   // Set current user's primary currency
   static setCurrency(currency: Currency): void {
     UserDataManager.setUserData('primaryCurrency', currency);

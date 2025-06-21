@@ -1331,6 +1331,36 @@ export default function Profile() {
                   </div>
                 </div>
 
+                {/* Currency Management Section */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Currency Management
+                  </h3>
+                  
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Primary Currency
+                    </label>
+                    <select
+                      value={CurrencyManager.getCurrentCurrency()}
+                      onChange={(e) => {
+                        CurrencyManager.setCurrency(e.target.value as 'EUR' | 'GBP');
+                        window.dispatchEvent(new CustomEvent('currencyChanged', {
+                          detail: { currency: e.target.value }
+                        }));
+                      }}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      style={{ fontFamily: 'OpenSans, sans-serif' }}
+                    >
+                      <option value="EUR">Euro (€)</option>
+                      <option value="GBP">Pound Sterling (£)</option>
+                    </select>
+                    <p className="text-sm text-gray-500 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Changes apply instantly across the entire app
+                    </p>
+                  </div>
+                </div>
+
                 {/* Balance Management Section */}
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -1357,7 +1387,7 @@ export default function Profile() {
                             className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-semibold hover:bg-blue-200 transition-colors"
                             style={{ fontFamily: 'OpenSans, sans-serif' }}
                           >
-                            €{account.balance}
+                            {CurrencyManager.formatAmount(account.balance)}
                           </button>
                         </div>
                       ))
@@ -1598,7 +1628,7 @@ export default function Profile() {
 
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  New Balance (€)
+                  New Balance ({CurrencyManager.getCurrentSymbol()})
                 </label>
                 <input
                   type="number"
@@ -1688,7 +1718,7 @@ export default function Profile() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Initial Balance (€)
+                    Initial Balance ({CurrencyManager.getCurrentSymbol()})
                   </label>
                   <input
                     type="number"
