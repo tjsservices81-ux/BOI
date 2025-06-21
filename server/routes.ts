@@ -402,14 +402,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
                           req.headers.authorization?.replace('Bearer ', '');
       
       if (!sessionToken) {
-        return res.status(401).json({ success: false, message: 'No session found' });
+        return res.status(401).json({ error: 'No session found' });
       }
 
       // Validate permanent session
       const user = await storage.validatePermanentUserSession(sessionToken);
       
       if (!user) {
-        return res.status(401).json({ success: false, message: 'Invalid session' });
+        return res.status(401).json({ error: 'Invalid session' });
       }
 
       console.log(`🔐 BIOMETRIC VERIFICATION PASSED: ${user.name} (ID: ${user.id})`);
@@ -430,7 +430,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error('Biometric verification error:', error);
-      res.status(500).json({ success: false, message: 'Verification failed' });
+      res.status(500).json({ error: 'Verification failed' });
     }
   });
 

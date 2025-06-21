@@ -28,8 +28,8 @@ export function PermanentAuthProvider({ children }: { children: ReactNode }) {
     const initializePermanentAuth = async () => {
       try {
         // Always check for permanent session token first
-        const storedToken = localStorage.getItem('permanentSessionToken');
-        const storedUser = localStorage.getItem('permanentUserData');
+        const storedToken = UserDataManager.getUserData('permanentSessionToken', null);
+        const storedUser = UserDataManager.getUserData('permanentUserData', null);
 
         if (storedToken && storedUser) {
           // Validate permanent session with server
@@ -40,14 +40,14 @@ export function PermanentAuthProvider({ children }: { children: ReactNode }) {
           });
 
           if (response.ok) {
-            const userData = JSON.parse(storedUser);
+            const userData = typeof storedUser === 'string' ? JSON.parse(storedUser) : storedUser;
             setUser(userData);
             setSessionToken(storedToken);
             console.log('🔒 PERMANENT SESSION RESTORED: User automatically logged in');
           } else {
             // Token invalid - likely user was deleted by admin
-            localStorage.removeItem('permanentSessionToken');
-            localStorage.removeItem('permanentUserData');
+            UserDataManager.clearUserData('permanentSessionToken');
+            UserDataManager.clearUserData('permanentUserData');
             console.log('🗑️ ADMIN DELETION DETECTED: Permanent session invalidated');
           }
         }

@@ -261,7 +261,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   useEffect(() => {
     if (currentUser) {
       // Simply mark that navigation is active without clearing chat
-      sessionStorage.setItem('app_navigation_active', 'true');
+      UserDataManager.setUserData('app_navigation_active', 'true');
     }
   }, [currentUser]);
 
@@ -1153,12 +1153,9 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     // Clear only the current user's chat data from UserDataManager
     UserDataManager.clearUserData(`liveChatState`);
     
-    // Clear any other user-specific chat-related storage
-    Object.keys(localStorage).forEach(key => {
-      if (key.includes(`_${currentUser}_`) && (key.includes('chat') || key.includes('liveChat'))) {
-        localStorage.removeItem(key);
-      }
-    });
+    // Clear any other user-specific chat-related storage through UserDataManager
+    UserDataManager.clearCache('liveChat');
+    UserDataManager.clearCache('chatState');
     
     // Reset all component state completely
     setChatState({
