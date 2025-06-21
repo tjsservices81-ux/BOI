@@ -177,6 +177,13 @@ export default function Profile() {
               joinDate: userData.joinDate || ""
             });
             
+            // Only update currency if it's different from current state and we're not in admin panel
+            if (userData.primaryCurrency && userData.primaryCurrency !== currentCurrency && !showAdminPanel) {
+              console.log('Updating currency from database:', userData.primaryCurrency);
+              setCurrentCurrency(userData.primaryCurrency);
+              setCurrencyPreference(userData.primaryCurrency);
+            }
+            
             // Update UserDataManager with fresh data (silent update to prevent loops)
             const allUsers = JSON.parse(localStorage.getItem('bankUsers') || '{}');
             if (allUsers[userData.customerNumber]) {
@@ -187,7 +194,8 @@ export default function Profile() {
                 phone: userData.phone || "",
                 dateOfBirth: userData.dateOfBirth || "",
                 address: userData.address || "",
-                joinDate: userData.joinDate || ""
+                joinDate: userData.joinDate || "",
+                primaryCurrency: userData.primaryCurrency || "EUR"
               };
               localStorage.setItem('bankUsers', JSON.stringify(allUsers));
             }
