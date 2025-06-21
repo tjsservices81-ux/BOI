@@ -56,7 +56,7 @@ export default function InternalTransfer() {
 
     if (isAndroid) {
       // Ensure confirm button is not hidden or clipped
-      const confirmBtn = document.querySelector('#confirmTransferBtn');
+      const confirmBtn = document.querySelector('#confirmTransferBtn') as HTMLElement;
       if (confirmBtn) {
         confirmBtn.style.display = 'block';
         confirmBtn.style.position = 'relative';
@@ -64,7 +64,7 @@ export default function InternalTransfer() {
       }
 
       // Fix processing screen not rendering right
-      const processingScreen = document.querySelector('#transferProgressScreen');
+      const processingScreen = document.querySelector('#transferProgressScreen') as HTMLElement;
       if (processingScreen) {
         processingScreen.style.visibility = 'visible';
         processingScreen.style.opacity = '1';
