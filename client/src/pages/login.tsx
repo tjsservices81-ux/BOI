@@ -497,7 +497,7 @@ export default function Login() {
         });
       }, 100);
 
-      // Validate user existence on server during authentication stage
+      // Validate user existence on server during authentication
       const targetCustomerNumber = customerNumber || UserDataManager.getLastActiveUser() || Object.keys(UserDataManager.getAllUsers())[0];
       if (targetCustomerNumber) {
         try {
@@ -510,7 +510,7 @@ export default function Login() {
             setLoginProgress(0);
             setLoginStage('');
             
-            // User was deleted or suspended - clean up local data
+            // User was deleted - clean up local data
             UserDataManager.adminDeleteUser(targetCustomerNumber);
             setBiometricVerified(false);
             setPinVerified(false);

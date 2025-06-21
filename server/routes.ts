@@ -16,7 +16,7 @@ import { db } from "./db";
 import { permanentUserSessions, users } from "@shared/schema";
 import { eq, and } from "drizzle-orm";
 
-// Note: PermanentAuthManager is a static class - no instantiation needed
+// PermanentAuthManager is used as a static class for security operations
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Wait for storage to fully initialize from persistent data

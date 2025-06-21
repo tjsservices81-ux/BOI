@@ -786,21 +786,21 @@ class DatabaseStorage implements IStorage {
             accountId: account.id,
             type: "credit" as const,
             amount: "500.00",
-            currency: "EUR" as const,
             description: "Salary deposit",
-            reference: "SAL001",
-            date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-            balance: account.balance
+            category: "Income",
+            paymentMethod: "Bank Transfer",
+            timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+            reference: "SAL001"
           },
           {
             accountId: account.id,
             type: "debit" as const,
             amount: "125.50",
-            currency: "EUR" as const,
             description: "Grocery shopping",
-            reference: "POS001",
-            date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-            balance: (parseFloat(account.balance) - 125.50).toString()
+            category: "Shopping",
+            paymentMethod: "Card",
+            timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+            reference: "POS001"
           }
         ];
 

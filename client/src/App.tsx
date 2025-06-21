@@ -181,7 +181,7 @@ function AppRoutes() {
             } else {
               console.log('❌ No valid backend session - showing login');
               
-              // Clear any stale localStorage data
+              // Clear stale authentication data
               const cachedUser = localStorage.getItem('currentUser');
               if (cachedUser) {
                 console.log('Clearing stale user data from localStorage');

@@ -596,7 +596,7 @@ router.get('/panel', adminAuth, async (req, res) => {
                     // Check if the authenticated user matches the deleted customer
                     if (parsedUser.id && parsedUser.id.toString().includes(currentCustomerNumber.replace(/\D/g, ''))) {
                       localStorage.removeItem('currentUser');
-                      console.log('🚫 Cleared authentication data for deleted user');
+                      console.log('Cleared authentication data for deleted user');
                     }
                   } catch (e) {
                     // If parsing fails, clear it anyway for safety

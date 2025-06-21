@@ -18,14 +18,12 @@ export default function BottomNavigation() {
       setIsSplashActive(isCurrentlySplash);
     };
 
-    // Check immediately
     checkSplashState();
 
     // Monitor DOM changes and route changes
     const observer = new MutationObserver(checkSplashState);
     observer.observe(document.body, { childList: true, subtree: true });
 
-    // Check on route changes
     const interval = setInterval(checkSplashState, 100);
 
     return () => {

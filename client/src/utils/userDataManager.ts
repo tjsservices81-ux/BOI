@@ -22,7 +22,6 @@ export class UserDataManager {
   static setCurrentUser(customerNumber: string) {
     this.currentUser = customerNumber;
     localStorage.setItem('currentUser', customerNumber);
-    // Also store as last active user for biometric authentication
     this.setLastActiveUser(customerNumber);
   }
 
@@ -34,10 +33,9 @@ export class UserDataManager {
     return this.currentUser;
   }
 
-  // Clear current user session - DISABLED: Only admin deletion should log users out
+  // Clear current user session - SECURITY: Only admin deletion should log users out
   static clearCurrentUser() {
     // This method is disabled to prevent automatic logouts
-    // Users can only be logged out via admin deletion
     console.warn('clearCurrentUser() disabled - users can only be logged out via admin deletion');
     return;
   }
@@ -343,8 +341,7 @@ export class UserDataManager {
       }
     });
     
-    // Don't clear sessionStorage - preserve user login state
-    // Don't clear currentUser, or any user_ prefixed keys
+    // Preserve user login state and authentication data
   }
 
   // Admin function to clear all data - RESTRICTED ACCESS
