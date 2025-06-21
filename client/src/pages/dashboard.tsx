@@ -23,24 +23,29 @@ export default function Dashboard() {
   const [isNavigating, setIsNavigating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check if dashboard should show loading animation
+  // Debug authentication state on dashboard load
   useEffect(() => {
     console.log('📊 Dashboard component mounted');
+    const cachedUser = localStorage.getItem('bankingUser');
+    const isResumeFromMinimize = sessionStorage.getItem('app_active_session');
     
-    // Check if user came from a fresh app start vs quick navigation
-    const urlParams = new URLSearchParams(window.location.search);
-    const skipLoading = urlParams.get('restore') === 'true';
+    if (cachedUser) {
+      console.log('📊 Dashboard: User data found in localStorage:', JSON.parse(cachedUser));
+    } else {
+      console.log('📊 Dashboard: No user data in localStorage');
+    }
     
-    if (skipLoading) {
-      console.log('📊 Dashboard: State restoration - skipping loading animation');
+    // Skip loading animation if resuming from minimize
+    if (isResumeFromMinimize) {
+      console.log('📊 Dashboard: Resuming from minimize - skipping loading animation');
       setIsLoading(false);
     } else {
-      // Show brief loading animation for natural navigation
-      console.log('📊 Dashboard: Normal navigation - showing loading animation');
+      // Show loading animation only for fresh app starts
+      console.log('📊 Dashboard: Fresh start - showing loading animation');
       setTimeout(() => {
         setIsLoading(false);
         console.log('📊 Dashboard loading complete');
-      }, 800);
+      }, 1000);
     }
   }, []);
 

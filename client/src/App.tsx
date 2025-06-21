@@ -106,44 +106,29 @@ function AppRoutes() {
     return () => window.removeEventListener('userLoggedIn', handleUserLoggedIn as EventListener);
   }, [location, navigate]);
 
-  // Initialize app - always check backend session first
+  // Initialize app lifecycle and determine app state
   useEffect(() => {
+    AppLifecycle.initialize();
+    
     const initializeApp = async () => {
-      console.log('🚀 App initializing - checking backend session');
+      const { isAppTerminated, wasMinimized } = AppLifecycle.getAppTerminationState();
       
-      try {
-        // Always check backend session status first
-        const response = await fetch('/api/auth/status', {
-          credentials: 'include'
-        });
-        const authStatus = await response.json();
+      // Case 1: App is resuming from minimize - restore exactly where user left off
+      if (AppLifecycle.isResumingFromMinimize()) {
+        console.log('🔄 App resuming from minimize - restoring state');
         
-        if (authStatus.isLoggedIn) {
-          console.log('✅ Valid backend session found');
+        // Skip splash screen completely and restore immediately
+        setSplashShown(true);
+        setIsInitialized(true);
+        
+        // Check if user was logged in before minimize
+        const savedState = StateManager.restoreAppState();
+        if (savedState && savedState.user) {
+          login(savedState.user);
           
-          if (authStatus.user) {
-            login(authStatus.user);
-          }
-          
-          // Set biometric requirement if needed
-          if (authStatus.needsBiometric) {
-            console.log('🔐 Biometric verification required');
-            biometricAuth.setNeedsBiometric(true);
-          }
-          
-          // Skip splash screen and restore to last screen
-          setSplashShown(true);
-          setIsInitialized(true);
-          
-          // Restore saved route and state
-          const savedState = StateManager.restoreAppState();
-          if (savedState && savedState.currentRoute && savedState.currentRoute !== '/') {
-            console.log(`🔄 Restoring to saved route: ${savedState.currentRoute}`);
-            // Add restore parameter to skip loading animations
-            const restoreUrl = savedState.currentRoute.includes('?') 
-              ? `${savedState.currentRoute}&restore=true`
-              : `${savedState.currentRoute}?restore=true`;
-            navigate(restoreUrl);
+          // Restore exact route and scroll position
+          if (savedState.currentRoute && savedState.currentRoute !== '/') {
+            navigate(savedState.currentRoute);
             
             // Restore scroll positions
             if (savedState.scrollPositions) {
@@ -157,42 +142,73 @@ function AppRoutes() {
                     window.scrollTo({ top: scrollPosition, behavior: 'instant' });
                   }
                 });
-              }, 200);
+              }, 50);
             }
-          } else {
-            // Navigate to dashboard with restore parameter
-            navigate('/dashboard?restore=true');
+          }
+        }
+        return;
+      }
+      
+      // Case 2: App was fully closed - show splash then check backend session
+      if (AppLifecycle.isFreshStart()) {
+        console.log('🚀 Fresh app start - checking session');
+        
+        // Always show splash screen for fresh starts
+        setSplashShown(false);
+        
+        setTimeout(async () => {
+          try {
+            // Check backend session after splash
+            const response = await fetch('/api/auth/status', {
+              credentials: 'include'
+            });
+            const authStatus = await response.json();
+            
+            if (authStatus.isLoggedIn) {
+              console.log('✅ Valid backend session found');
+              
+              if (authStatus.user) {
+                login(authStatus.user);
+              }
+              
+              if (authStatus.needsBiometric) {
+                console.log('Session requires biometric verification');
+                biometricAuth.setNeedsBiometric(true);
+              } else {
+                // Navigate to dashboard if no biometric needed
+                navigate('/dashboard');
+              }
+            } else {
+              console.log('❌ No valid backend session - showing login');
+              
+              // Clear any stale localStorage data
+              const cachedUser = localStorage.getItem('bankingUser');
+              if (cachedUser) {
+                console.log('Clearing stale user data from localStorage');
+                localStorage.removeItem('bankingUser');
+              }
+              
+              // Clear saved state since session is invalid
+              StateManager.clearAppState();
+            }
+          } catch (error) {
+            console.error('Failed to check authentication status:', error);
+            localStorage.removeItem('bankingUser');
           }
           
-          return;
-        }
-        
-        // No valid session - show login
-        console.log('❌ No valid backend session - showing login');
-        
-        // Clear any cached user data
-        const cachedUser = localStorage.getItem('bankingUser');
-        if (cachedUser) {
-          console.log('🧹 Clearing cached user data');
-          localStorage.removeItem('bankingUser');
-        }
-        
-        // Show splash screen then login
-        setSplashShown(false);
-        setTimeout(() => {
           setSplashShown(true);
           setIsInitialized(true);
         }, 1500);
         
-      } catch (error) {
-        console.error('❌ Failed to check authentication status:', error);
-        // On error, assume no session and show login
-        setSplashShown(false);
-        setTimeout(() => {
-          setSplashShown(true);
-          setIsInitialized(true);
-        }, 1500);
+        return;
       }
+      
+      // Fallback: treat as fresh start
+      setSplashShown(false);
+      setTimeout(() => {
+        setSplashShown(true);
+        setIsInitialized(true);
+      }, 1500);
     };
     
     initializeApp();
@@ -206,45 +222,8 @@ function AppRoutes() {
     }
   }, [user, biometricAuth.state.isAuthenticated, isInitialized, splashShown, location, navigate]);
 
-  // Handle app lifecycle for state persistence
-  useEffect(() => {
-    // Save state when app goes to background for state restoration
-    const handleVisibilityChange = () => {
-      if (document.hidden && user) {
-        // Collect current scroll positions
-        const scrollPositions: Record<string, number> = {};
-        
-        // Save scroll positions from all scroll containers
-        document.querySelectorAll('[data-scroll-container]').forEach(element => {
-          const container = element as HTMLElement;
-          const route = container.dataset.scrollRoute;
-          if (route) {
-            scrollPositions[route] = container.scrollTop;
-          }
-        });
-
-        // Save main window scroll if no specific containers
-        if (Object.keys(scrollPositions).length === 0) {
-          scrollPositions[location] = window.scrollY;
-        }
-
-        // Save state for potential restoration (UI state only)
-        StateManager.saveAppState({
-          user,
-          currentRoute: location,
-          timestamp: Date.now(),
-          scrollPositions,
-          formData: StateManager.getAllFormData()
-        });
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [user, location]);
+  // App lifecycle is already initialized and handled by AppLifecycle class
+  // No additional visibility handling needed here
 
   // Route to splash if not initialized
   if (!isInitialized || !splashShown) {

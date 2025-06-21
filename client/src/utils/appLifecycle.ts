@@ -7,6 +7,7 @@ export class AppLifecycle {
   private static visibilityTimeout: NodeJS.Timeout | null = null;
   private static isAppTerminated = false;
   private static backgroundTime = 0;
+  private static wasMinimized = false;
   // Session timeout removed - users stay logged in permanently unless admin deletes account
 
   static initialize() {
@@ -31,39 +32,53 @@ export class AppLifecycle {
   }
 
   static checkAppTermination() {
+    // Check for reliable indicators of app termination vs minimization
+    const appActiveMarker = sessionStorage.getItem('app_active_session');
+    const wasMinimizedFlag = sessionStorage.getItem('app_was_minimized');
     const sessionData = localStorage.getItem('app_session_state');
-    const lastBackgroundTime = localStorage.getItem('app_background_time');
     
-    if (!sessionData || !lastBackgroundTime) {
-      // No previous session or background time - fresh start but keep user logged in
+    // If no session data exists, this is a fresh start
+    if (!sessionData) {
       this.isAppTerminated = true;
-      // Don't clear app state - preserve user login
+      this.wasMinimized = false;
       return;
     }
     
-    // Always restore state regardless of background duration
-    // Users stay logged in permanently unless admin deletes account
-    
-    // Check if page was unloaded/refreshed (indicates force close or refresh)
-    if (!sessionStorage.getItem('app_active_session')) {
-      this.isAppTerminated = true;
-      // Don't clear app state - preserve user login
+    // If app was explicitly marked as minimized and session still exists, treat as minimize
+    if (wasMinimizedFlag === 'true' && appActiveMarker) {
+      this.isAppTerminated = false;
+      this.wasMinimized = true;
+      console.log('🔄 App resuming from minimize - restoring state');
       return;
     }
     
+    // If no active session marker, app was fully closed/terminated
+    if (!appActiveMarker) {
+      this.isAppTerminated = true;
+      this.wasMinimized = false;
+      console.log('🚀 Fresh app start - checking session');
+      // Clear the minimized flag since this is a fresh start
+      sessionStorage.removeItem('app_was_minimized');
+      return;
+    }
+    
+    // Default to minimized state if session marker exists
     this.isAppTerminated = false;
+    this.wasMinimized = true;
   }
 
   static handleVisibilityChange() {
     if (document.hidden) {
-      // App going to background - save state and timestamp
+      // App going to background - mark as minimized and save state
       this.backgroundTime = Date.now();
+      this.wasMinimized = true;
       localStorage.setItem('app_background_time', this.backgroundTime.toString());
+      sessionStorage.setItem('app_was_minimized', 'true');
+      sessionStorage.setItem('app_active_session', 'true');
       this.saveCurrentState();
     } else {
-      // App returning to foreground - always restore state
-      // Users stay logged in permanently unless admin deletes account
-      if (!this.isAppTerminated) {
+      // App returning to foreground - restore state if minimized
+      if (this.wasMinimized && !this.isAppTerminated) {
         this.restoreStateIfNeeded();
       }
     }
@@ -72,11 +87,16 @@ export class AppLifecycle {
   static handleBeforeUnload() {
     // Clear session marker to detect force close
     sessionStorage.removeItem('app_active_session');
+    sessionStorage.removeItem('app_was_minimized');
     this.saveCurrentState();
   }
 
   static handlePageHide() {
-    sessionStorage.removeItem('app_active_session');
+    // Only clear if not minimized - pagehide fires on both minimize and close
+    if (!this.wasMinimized) {
+      sessionStorage.removeItem('app_active_session');
+      sessionStorage.removeItem('app_was_minimized');
+    }
     this.saveCurrentState();
   }
 
@@ -111,7 +131,25 @@ export class AppLifecycle {
     localStorage.removeItem('app_session_state');
     localStorage.removeItem('app_background_time');
     sessionStorage.removeItem('app_active_session');
+    sessionStorage.removeItem('app_was_minimized');
+    this.wasMinimized = false;
+    this.isAppTerminated = true;
     // Don't call StateManager.clearAppState() - preserve user login
+  }
+
+  static getAppTerminationState() {
+    return {
+      isAppTerminated: this.isAppTerminated,
+      wasMinimized: this.wasMinimized
+    };
+  }
+
+  static isResumingFromMinimize() {
+    return this.wasMinimized && !this.isAppTerminated;
+  }
+
+  static isFreshStart() {
+    return this.isAppTerminated && !this.wasMinimized;
   }
 
   static saveCurrentState() {
