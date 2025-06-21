@@ -569,7 +569,7 @@ export default function Login() {
       clearInterval(verifyInterval);
       clearInterval(secureInterval);
 
-      // Verify user is authenticated through UserDataManager
+      // PERMANENT LOGIN: Verify user is authenticated through UserDataManager
       const currentUser = UserDataManager.getCurrentUser();
       if (!currentUser || !UserDataManager.userExists(currentUser)) {
         throw new Error("No valid user session found");
@@ -577,6 +577,8 @@ export default function Login() {
       
       // Record login time and authenticate through auth context
       UserDataManager.recordLoginTime(currentUser);
+      UserDataManager.setUserData('permanentlyLoggedIn', true);
+      
       const userProfile = UserDataManager.getUserProfile();
       if (userProfile) {
         login({
