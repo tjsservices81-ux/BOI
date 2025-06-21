@@ -5,7 +5,7 @@ import { loginSchema, transferSchema } from "@shared/schema";
 import { z } from "zod";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
-import { launchScreenOtc } from "./launchScreenOtc";
+import { otcService } from "./otcService";
 import { transferSecurityService } from "./security/transferSecurity";
 import { generateChatResponse } from "./openai";
 import { isDeviceBlocked, addDeviceSession, isDeviceInPanicMode, isCustomerInPanicMode } from "./deviceSessions";
@@ -44,156 +44,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       timestamp: new Date().toISOString(),
       server: "Bank of Ireland API"
     });
-  });
-
-  // OTC verification endpoint
-  app.post("/api/verify-otc", async (req, res) => {
-    try {
-      const { otc } = req.body;
-      
-      if (!otc || typeof otc !== 'string') {
-        return res.status(400).json({ verified: false, message: "Invalid code format" });
-      }
-
-      const verified = await launchScreenOtc.verifyCode(otc.trim().toUpperCase());
-      
-      if (verified) {
-        console.log(`✅ OTC VERIFICATION SUCCESS: ${otc}`);
-        res.json({ verified: true, message: "Access granted" });
-      } else {
-        console.log(`❌ OTC VERIFICATION FAILED: ${otc}`);
-        res.status(401).json({ verified: false, message: "Invalid access code" });
-      }
-    } catch (error) {
-      console.error('OTC verification error:', error);
-      res.status(500).json({ verified: false, message: "Verification service error" });
-    }
-  });
-
-  // Admin endpoint to get current OTC (hidden method)
-  app.get("/api/admin/current-otc", async (req, res) => {
-    try {
-      const currentOtc = await launchScreenOtc.getCurrentCode();
-      const expiresAt = await launchScreenOtc.getExpirationTime();
-      
-      console.log(`🔐 ADMIN OTC REQUEST: ${req.ip} - Code: ${currentOtc}`);
-      
-      res.json({ 
-        otc: currentOtc, 
-        expiresAt,
-        generatedAt: new Date().toISOString()
-      });
-    } catch (error) {
-      console.error('Admin OTC request error:', error);
-      res.status(500).json({ error: "OTC service error" });
-    }
-  });
-
-  // Admin endpoint to generate new OTC
-  app.post("/api/admin/generate-otc", async (req, res) => {
-    try {
-      const { customCode, expiryHours } = req.body;
-      
-      const newOtc = await launchScreenOtc.generateNewCode(customCode, expiryHours);
-      const expiresAt = await launchScreenOtc.getExpirationTime();
-      
-      console.log(`🔄 ADMIN OTC GENERATION: New code ${newOtc} expires at ${expiresAt}`);
-      
-      res.json({ 
-        otc: newOtc, 
-        expiresAt,
-        message: "New OTC generated successfully"
-      });
-    } catch (error) {
-      console.error('Admin OTC generation error:', error);
-      res.status(500).json({ error: "OTC generation failed" });
-    }
-  });
-
-  // Admin endpoint to configure email delivery
-  app.post("/api/admin/configure-email", async (req, res) => {
-    try {
-      const { adminEmail } = req.body;
-      
-      if (!adminEmail || !adminEmail.includes('@')) {
-        return res.status(400).json({ error: "Valid email address required" });
-      }
-      
-      // Store admin email in environment (temporary - in production this would be in database)
-      process.env.ADMIN_EMAIL = adminEmail;
-      
-      console.log(`📧 ADMIN EMAIL CONFIGURED: ${adminEmail}`);
-      
-      res.json({ 
-        message: "Email configured successfully",
-        email: adminEmail
-      });
-    } catch (error) {
-      console.error('Email configuration error:', error);
-      res.status(500).json({ error: "Email configuration failed" });
-    }
-  });
-
-  // Generate new OTC for each login attempt
-  app.post("/api/admin/generate-otc-for-login", async (req, res) => {
-    try {
-      const { reason, timestamp } = req.body;
-      
-      // Generate fresh OTC for this login attempt
-      const newOtc = await launchScreenOtc.generateNewCode();
-      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
-      
-      console.log(`🔑 LOGIN ATTEMPT OTC: ${newOtc} (expires: ${expiresAt.toLocaleString()})`);
-      console.log(`📋 Reason: ${reason} at ${timestamp}`);
-      
-      // Send email automatically
-      let emailSent = false;
-      try {
-        await launchScreenOtc.sendEmailToAdmin(newOtc, expiresAt);
-        emailSent = true;
-        console.log(`📧 AUTO EMAIL SENT: ${newOtc}`);
-      } catch (emailError) {
-        console.log(`⚠️ Email failed: ${emailError}`);
-      }
-      
-      res.json({ 
-        success: true,
-        otc: newOtc,
-        expiresAt: expiresAt.toISOString(),
-        emailSent,
-        reason
-      });
-    } catch (error) {
-      console.error('Login OTC generation error:', error);
-      res.status(500).json({ error: "Failed to generate login OTC" });
-    }
-  });
-
-  // Admin endpoint to send current OTC via email
-  app.post("/api/admin/send-current-otc-email", async (req, res) => {
-    try {
-      const currentOtc = await launchScreenOtc.getCurrentCode();
-      const expiresAt = await launchScreenOtc.getExpirationTime();
-      
-      if (!currentOtc) {
-        return res.status(404).json({ error: "No active OTC found" });
-      }
-      
-      // Send email manually
-      if (expiresAt && typeof expiresAt === 'string') {
-        await launchScreenOtc.sendEmailToAdmin(currentOtc, new Date(expiresAt));
-      }
-      
-      console.log(`📧 MANUAL OTC EMAIL SENT: ${currentOtc}`);
-      
-      res.json({ 
-        message: "Current OTC sent via email",
-        otc: currentOtc
-      });
-    } catch (error) {
-      console.error('Manual OTC email error:', error);
-      res.status(500).json({ error: "Failed to send OTC email" });
-    }
   });
 
   // Add session tracking middleware
@@ -743,8 +593,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const accountData = accountDataSchema.parse(req.body);
       
-      // Generate OTC and send notification  
-      const otc = await launchScreenOtc.processNewAccount(accountData);
+      // Generate OTC and send notification
+      const otc = await otcService.processNewAccount(accountData);
       
       // Log for security audit
       console.log(`OTC generated for admin panel account creation: ${accountData.customerNumber}`);
@@ -772,7 +622,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       const { customerNumber, code } = validationSchema.parse(req.body);
-      const validation = launchScreenOtc.validateOTC(customerNumber, code);
+      const validation = otcService.validateOTC(customerNumber, code);
 
       if (validation.isValid && validation.accountData) {
         // Create the user in the database with their actual data
