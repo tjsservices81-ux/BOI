@@ -659,9 +659,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Admin profile update error:', error);
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: error.errors[0].message });
+        return res.status(400).json({ error: error.errors[0].message });
       }
-      res.status(500).json({ message: "Internal server error" });
+      res.status(500).json({ error: "Internal server error" });
     }
   });
 
@@ -768,9 +768,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('OTC validation failed:', error);
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid validation data format" });
+        return res.status(400).json({ error: "Invalid validation data format" });
       }
-      res.status(500).json({ message: "Failed to validate OTC" });
+      res.status(500).json({ error: "Failed to validate OTC" });
     }
   });
 
@@ -886,9 +886,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Failed to create chat message:', error);
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid message data" });
+        return res.status(400).json({ error: "Invalid message data" });
       }
-      res.status(500).json({ message: "Failed to create chat message" });
+      res.status(500).json({ error: "Failed to create chat message" });
     }
   });
 
@@ -918,9 +918,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Failed to create chat session:', error);
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid session data" });
+        return res.status(400).json({ error: "Invalid session data" });
       }
-      res.status(500).json({ message: "Failed to create chat session" });
+      res.status(500).json({ error: "Failed to create chat session" });
     }
   });
 
@@ -960,9 +960,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Failed to create chat response:', error);
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid response data" });
+        return res.status(400).json({ error: "Invalid response data" });
       }
-      res.status(500).json({ message: "Failed to create chat response" });
+      res.status(500).json({ error: "Failed to create chat response" });
     }
   });
 
