@@ -1266,7 +1266,7 @@ export default function Login() {
 
       {/* More Menu Modal */}
       {showMoreMenu && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end justify-center">
+        <div className="modal-overlay bg-black bg-opacity-50 flex items-end justify-center">
           <div className="bg-white rounded-t-3xl w-full max-w-md mx-4 mb-0 p-6 animate-slide-up">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-semibold text-gray-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -1336,7 +1336,7 @@ export default function Login() {
       {/* Sign Up Modal */}
       {showSignUp && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+          className="modal-overlay bg-black bg-opacity-50 flex items-center justify-center p-4"
           onClick={(e) => {
             // Only close modal if clicking the backdrop, not the modal content
             if (e.target === e.currentTarget) {
@@ -1456,7 +1456,7 @@ export default function Login() {
 
       {/* Admin Login Modal */}
       {showAdminLogin && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-center justify-center p-4" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999 }}>
+        <div className="modal-overlay bg-black bg-opacity-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-sm p-6 relative" style={{ zIndex: 10000 }}>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -1543,7 +1543,7 @@ export default function Login() {
 
       {/* OTC Verification Modal */}
       {showOtcVerification && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div className="modal-overlay bg-black bg-opacity-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-md p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -1631,7 +1631,7 @@ export default function Login() {
 
       {/* ATM Locator Modal */}
       {showATMLocator && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end justify-center">
+        <div className="modal-overlay bg-black bg-opacity-50 flex items-end justify-center">
           <div className="bg-white rounded-t-3xl w-full max-w-md mx-4 mb-0 h-[85vh] flex flex-col animate-slide-up">
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
