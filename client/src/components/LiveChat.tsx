@@ -141,11 +141,11 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   useEffect(() => {
     if (isOpen && currentUser) {
       const userChatKey = `liveChatState_${currentUser}`;
-      const saved = localStorage.getItem(userChatKey);
+      const saved = UserDataManager.getUserData(`liveChatState`, null);
       
       if (saved) {
         try {
-          const parsedState = JSON.parse(saved);
+          const parsedState = saved;
           // Restore any active chat state (waiting, connected) but not ended
           if (parsedState && parsedState.isActive && parsedState.queueStatus !== 'ended') {
             // Always restore chat state - no session timeout
@@ -231,7 +231,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
         isPersistent: true,
         lastActivity: Date.now()
       };
-      localStorage.setItem(userChatKey, JSON.stringify(persistentState));
+      UserDataManager.setUserData(`liveChatState`, persistentState);
     }
   }, [chatState, currentUser]);
 
@@ -1150,9 +1150,8 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       endChatTimerRef.current = null;
     }
     
-    // Clear only the current user's chat data from localStorage
-    const userChatKey = `liveChatState_${currentUser}`;
-    localStorage.removeItem(userChatKey);
+    // Clear only the current user's chat data from UserDataManager
+    UserDataManager.clearUserData(`liveChatState`);
     
     // Clear any other user-specific chat-related storage
     Object.keys(localStorage).forEach(key => {
