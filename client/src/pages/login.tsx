@@ -489,17 +489,25 @@ export default function Login() {
         });
       }, 100);
 
-      // Import and use SecureAuthManager
+      // Verify user exists locally (biometric already authenticated the user)
+      if (!UserDataManager.userExists(currentUser)) {
+        clearInterval(authInterval);
+        throw new Error('User not found in local storage');
+      }
+
+      // Import SecureAuthManager for connection checks
       const { SecureAuthManager } = await import('../utils/secureAuthManager');
       
-      // Use stored PIN for authentication (in real app, this would be from secure input)
-      const authResult = await SecureAuthManager.authenticate(currentUser, 'stored_pin');
+      // Check connection status for display purposes
+      const hasConnection = await SecureAuthManager.hasInternetConnection();
+      const authResult = {
+        success: true,
+        isOffline: !hasConnection,
+        user: UserDataManager.getUserProfile(),
+        timeRemaining: hasConnection ? null : 'Unknown'
+      };
       
       clearInterval(authInterval);
-
-      if (!authResult.success) {
-        throw new Error(authResult.error || 'Authentication failed');
-      }
 
       // Stage 3: Loading user data (1.5 seconds)
       setLoginStage(authResult.isOffline ? 'Loading offline data...' : 'Loading account data...');
@@ -513,15 +521,18 @@ export default function Login() {
 
       // Record login time and authenticate through auth context
       UserDataManager.recordLoginTime(currentUser);
-      const userProfile = authResult.user || UserDataManager.getUserProfile();
+      const userProfile = UserDataManager.getUserProfile();
       
-      if (userProfile) {
-        login({
-          id: parseInt(currentUser.replace(/\D/g, '')) || 1,
-          name: userProfile.name,
-          email: userProfile.email
-        });
+      if (!userProfile) {
+        clearInterval(loadInterval);
+        throw new Error('Unable to load user profile');
       }
+
+      login({
+        id: parseInt(currentUser.replace(/\D/g, '')) || 1,
+        name: userProfile.name,
+        email: userProfile.email
+      });
       
       await new Promise(resolve => setTimeout(resolve, 1500));
       clearInterval(loadInterval);
@@ -541,10 +552,10 @@ export default function Login() {
       clearInterval(completeInterval);
 
       // Show offline notice if applicable
-      if (authResult.isOffline && authResult.timeRemaining) {
+      if (authResult.isOffline) {
         toast({
-          title: "Offline Login",
-          description: `Authenticated offline (${authResult.timeRemaining})`,
+          title: "Offline Mode",
+          description: "Connected to local data",
           variant: "default",
         });
       }
@@ -554,6 +565,11 @@ export default function Login() {
     } catch (error) {
       setIsLoginAnimating(false);
       setLoginProgress(0);
+      setLoginStage('');
+      
+      // Reset biometric verification state on error
+      setBiometricVerified(false);
+      setPinVerified(false);
       
       const errorMessage = error instanceof Error ? error.message : 'Authentication failed';
       
