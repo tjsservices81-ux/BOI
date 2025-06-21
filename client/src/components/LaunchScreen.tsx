@@ -14,6 +14,8 @@ export function LaunchScreen({ onVerified }: LaunchScreenProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [attempts, setAttempts] = useState(0);
   const [isLocked, setIsLocked] = useState(false);
+  const [currentCode, setCurrentCode] = useState('Loading...');
+  const [codeExpiry, setCodeExpiry] = useState('');
 
   // Check if user is already verified
   useEffect(() => {
@@ -23,54 +25,48 @@ export function LaunchScreen({ onVerified }: LaunchScreenProps) {
       return;
     }
 
-    // Generate new OTC for each login attempt
-    generateNewOTCForLoginAttempt();
+    // Load current OTC code to display
+    loadCurrentCode();
   }, []);
 
-  // Generate new OTC every time someone tries to log in
-  const generateNewOTCForLoginAttempt = async () => {
+  // Load and display current OTC code
+  const loadCurrentCode = async () => {
+    try {
+      const response = await fetch('/api/admin/current-otc', {
+        method: 'GET',
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setCurrentCode(data.otc);
+        setCodeExpiry(new Date(data.expiresAt).toLocaleString());
+      }
+    } catch (error) {
+      setCurrentCode('Error loading code');
+    }
+  };
+
+  // Generate new OTC code
+  const generateNewCode = async () => {
     try {
       const response = await fetch('/api/admin/generate-otc-for-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({ 
-          reason: 'login_attempt',
+          reason: 'manual_generation',
           timestamp: new Date().toISOString()
         })
       });
       
       if (response.ok) {
         const data = await response.json();
-        // Send new OTC to admin via email automatically
-        console.log('%c🔐 NEW LOGIN ATTEMPT - OTC GENERATED', 'color: #ff6b6b; font-weight: bold; font-size: 14px');
-        console.log('%cNew OTC:', 'color: #4ecdc4; font-weight: bold', data.otc);
-        console.log('%cValid until:', 'color: #45b7d1; font-weight: bold', new Date(data.expiresAt).toLocaleString());
-        console.log('%cEmail sent to admin:', 'color: #ffa500; font-weight: bold', data.emailSent ? 'Yes' : 'No');
+        setCurrentCode(data.otc);
+        setCodeExpiry(new Date(data.expiresAt).toLocaleString());
       }
     } catch (error) {
-      console.log('Failed to generate new OTC for login attempt:', error);
-    }
-  };
-
-  // Future webhook method (placeholder for admin)
-  const sendOTCWebhook = async (otcCode: string, expiresAt: string) => {
-    // Replace this URL with your webhook endpoint
-    const webhookUrl = 'https://your-webhook-endpoint.com/otc-delivery';
-    
-    try {
-      await fetch(webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          otc: otcCode,
-          expiresAt,
-          timestamp: new Date().toISOString(),
-          app: 'BOI Mobile Banking'
-        })
-      });
-    } catch (error) {
-      console.log('Webhook delivery failed, falling back to console:', error);
+      console.log('Failed to generate new code:', error);
     }
   };
 
@@ -135,72 +131,86 @@ export function LaunchScreen({ onVerified }: LaunchScreenProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white dark:bg-black">
-      <div className="w-full max-w-md px-6">
-        <Card className="border-0 shadow-2xl bg-white/95 dark:bg-black/95 backdrop-blur-sm">
-          <CardHeader className="text-center pb-6">
-            <div className="mx-auto mb-4 w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center">
-              <AlertCircle className="w-8 h-8 text-red-600 dark:text-red-400" />
-            </div>
-            <h1 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-              Sorry, WHERE isn't available right now.
-            </h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Please enter your one-time access code to continue
-            </p>
-          </CardHeader>
-          
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <Input
-                    type="text"
-                    placeholder="Enter access code"
-                    value={otc}
-                    onChange={(e) => setOtc(e.target.value.toUpperCase())}
-                    className="pl-10 text-center font-mono text-lg tracking-wider"
-                    maxLength={8}
-                    disabled={isSubmitting || isLocked}
-                    autoFocus
-                  />
-                </div>
-                
-                {error && (
-                  <p className="text-sm text-red-600 dark:text-red-400 text-center">
-                    {error}
-                  </p>
-                )}
-                
-                {attempts > 0 && attempts < 5 && !error.includes('Invalid') && (
-                  <p className="text-xs text-yellow-600 dark:text-yellow-400 text-center">
-                    {attempts} failed attempt{attempts !== 1 ? 's' : ''}
-                  </p>
-                )}
-              </div>
-              
-              <Button
-                type="submit"
-                className="w-full bg-[#126987] hover:bg-[#0e5a75] text-white"
-                disabled={isSubmitting || isLocked || !otc.trim()}
-              >
-                {isSubmitting ? (
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Verifying...
-                  </div>
-                ) : isLocked ? (
-                  'Access Locked'
-                ) : (
-                  'Continue'
-                )}
-              </Button>
-            </form>
-            
+    <div className="min-h-screen bg-[#f8f9fa] flex flex-col items-center justify-center p-4">
+      <div className="w-full max-w-md space-y-6">
+        {/* Header */}
+        <div className="text-center space-y-4">
+          <div className="mx-auto w-20 h-20 bg-[#126987] rounded-full flex items-center justify-center">
+            <Lock className="w-10 h-10 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">WHERE Access Portal</h1>
+            <p className="text-gray-600 mt-2">Current access code displayed below</p>
+          </div>
+        </div>
 
+        {/* Current Code Display */}
+        <Card className="shadow-lg border-0 bg-gradient-to-br from-[#126987] to-[#0e5a75] text-white">
+          <CardContent className="text-center py-8">
+            <h2 className="text-lg font-semibold mb-4">Current Access Code</h2>
+            <div className="text-4xl font-mono font-bold tracking-wider mb-2">
+              {currentCode}
+            </div>
+            <p className="text-sm opacity-80 mb-4">Valid until: {codeExpiry}</p>
+            <Button 
+              onClick={generateNewCode}
+              className="bg-white text-[#126987] hover:bg-gray-100"
+            >
+              Generate New Code
+            </Button>
           </CardContent>
         </Card>
+
+        {/* Visitor Code Entry */}
+        <Card className="shadow-lg border-0">
+          <CardHeader className="text-center pb-4">
+            <div className="flex items-center justify-center space-x-2">
+              <AlertCircle className="w-5 h-5 text-orange-500" />
+              <span className="text-sm text-gray-600">Visitor Access</span>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label htmlFor="otc" className="block text-sm font-medium text-gray-700 mb-1">
+                  Enter Code Provided
+                </label>
+                <Input
+                  id="otc"
+                  type="text"
+                  value={otc}
+                  onChange={(e) => setOtc(e.target.value.toUpperCase())}
+                  placeholder="Enter 6-character code"
+                  className="text-center text-lg tracking-wider font-mono"
+                  maxLength={8}
+                  disabled={isSubmitting || isLocked}
+                  autoComplete="off"
+                />
+              </div>
+
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded-md p-3">
+                  <p className="text-sm text-red-600">{error}</p>
+                </div>
+              )}
+
+              <Button 
+                type="submit" 
+                className="w-full bg-[#126987] hover:bg-[#0e5a75] text-white"
+                disabled={isSubmitting || isLocked}
+              >
+                {isSubmitting ? 'Verifying...' : 'Continue'}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        {/* Instructions */}
+        <div className="text-center bg-blue-50 p-4 rounded-lg">
+          <p className="text-sm text-blue-800 font-medium">
+            Share the current access code with visitors to grant them access
+          </p>
+        </div>
       </div>
     </div>
   );
