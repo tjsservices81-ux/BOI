@@ -221,10 +221,17 @@ export default function Payments() {
 
 
         {/* Debug info - temporary */}
-        <div className="bg-yellow-100 p-2 rounded text-xs mb-4">
+        <div className="bg-yellow-100 p-3 rounded text-sm mb-4">
+          <strong>Debug Info:</strong><br/>
+          Current User: {UserDataManager.getCurrentUser() || 'None'}<br/>
           Profile: {profileData ? 'Loaded' : 'Not loaded'}<br/>
-          Card: {profileData?.showCardTransfer?.toString()}<br/>
-          Email: {profileData?.showEmailTransfer?.toString()}<br/>
+          {profileData && (
+            <>
+              Card: {profileData.showCardTransfer?.toString()}<br/>
+              Email: {profileData.showEmailTransfer?.toString()}<br/>
+              Customer: {profileData.customerNumber}<br/>
+            </>
+          )}
           Options: {paymentOptions.length}
         </div>
 
