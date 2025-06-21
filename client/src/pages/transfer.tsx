@@ -13,7 +13,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { ArrowLeft, PiggyBank, ChevronDown, Send, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Account, TransferRequest } from "@shared/schema";
-import { formatAmount, getTransferTiming } from "@/utils/currencyUtils";
+import { formatAmount, getTransferTiming, getCurrencySymbol } from "@/utils/currencyUtils";
 
 export default function Transfer() {
   const authHook = useAuth();
@@ -127,7 +127,7 @@ export default function Transfer() {
                       <PiggyBank className="text-[var(--boi-green)] mr-3" />
                       <div>
                         <p className="font-medium">{account.displayName}</p>
-                        <p className="text-sm text-gray-500">€{parseFloat(account.balance).toFixed(2)}</p>
+                        <p className="text-sm text-gray-500">{formatAmount(account.balance)}</p>
                       </div>
                     </div>
                   </SelectItem>
@@ -173,7 +173,7 @@ export default function Transfer() {
           <CardContent className="p-4 space-y-3">
             <h3 className="font-medium text-[var(--boi-gray)] mb-4">Amount</h3>
             <div className="relative">
-              <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[var(--boi-gray)] font-medium">€</span>
+              <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[var(--boi-gray)] font-medium">{getCurrencySymbol()}</span>
               <Input
                 type="number"
                 step="0.01"
