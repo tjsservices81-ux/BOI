@@ -42,8 +42,7 @@
     <link rel="preload" href="/icon-footer-more.svg" as="image">
     <link rel="preload" href="/icon-footer-more-highlight.svg" as="image">
     
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="/manifest.json" />
+    <!-- PWA Manifest - will be dynamically injected -->
     
     <!-- App Icons for different devices -->
     <link rel="apple-touch-icon" sizes="57x57" href="/boi_app_icon.png" />
@@ -469,15 +468,114 @@
         });
       }
 
+      // Dynamic PWA Manifest Generation
+      function generateDynamicManifest() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const accessCode = urlParams.get('access');
+        const hasStoredAccess = localStorage.getItem('accessGranted') === 'true';
+        const storedCode = localStorage.getItem('accessCode');
+        
+        // Determine the start URL - preserve access code for PWA
+        let startUrl = '/';
+        if (accessCode) {
+          startUrl = `/?access=${accessCode}`;
+        } else if (hasStoredAccess && storedCode) {
+          startUrl = `/?access=${storedCode}`;
+        }
+        
+        const manifest = {
+          name: "Bank of Ireland Mobile",
+          short_name: "BOI Mobile",
+          description: "Bank of Ireland Mobile Banking Application",
+          start_url: startUrl,
+          display: "standalone",
+          orientation: "portrait-primary",
+          theme_color: "#126987",
+          background_color: "#126987",
+          scope: "/",
+          lang: "en-IE",
+          icons: [
+            {
+              src: "/boi_app_icon.png",
+              sizes: "192x192",
+              type: "image/png",
+              purpose: "any maskable"
+            },
+            {
+              src: "/boi_app_icon.png", 
+              sizes: "512x512",
+              type: "image/png",
+              purpose: "any maskable"
+            },
+            {
+              src: "/icon-192.svg",
+              sizes: "192x192", 
+              type: "image/svg+xml",
+              purpose: "any"
+            },
+            {
+              src: "/icon-512.svg",
+              sizes: "512x512",
+              type: "image/svg+xml", 
+              purpose: "any"
+            }
+          ],
+          categories: ["finance", "banking"],
+          prefer_related_applications: false,
+          shortcuts: [
+            {
+              name: "Make Transfer",
+              short_name: "Transfer",
+              description: "Send money quickly", 
+              url: startUrl.includes('access=') ? startUrl.replace('/?', '/uk-transfer?') : "/uk-transfer",
+              icons: [{ src: "/boi_app_icon.png", sizes: "96x96" }]
+            },
+            {
+              name: "View Accounts",
+              short_name: "Accounts", 
+              description: "Check your balances",
+              url: startUrl.includes('access=') ? startUrl.replace('/?', '/dashboard?') : "/dashboard",
+              icons: [{ src: "/boi_app_icon.png", sizes: "96x96" }]
+            }
+          ]
+        };
+        
+        // Create blob URL for the manifest
+        const manifestBlob = new Blob([JSON.stringify(manifest, null, 2)], {
+          type: 'application/manifest+json'
+        });
+        const manifestUrl = URL.createObjectURL(manifestBlob);
+        
+        // Remove any existing manifest link
+        const existingManifest = document.querySelector('link[rel="manifest"]');
+        if (existingManifest) {
+          existingManifest.remove();
+        }
+        
+        // Inject the new dynamic manifest
+        const manifestLink = document.createElement('link');
+        manifestLink.rel = 'manifest';
+        manifestLink.href = manifestUrl;
+        document.head.appendChild(manifestLink);
+        
+        console.log('Dynamic PWA manifest generated with start_url:', startUrl);
+        return manifestUrl;
+      }
+
       // Access control system
       async function checkAccess() {
         const loader = document.getElementById('loading-screen');
+        
+        // Generate dynamic PWA manifest before access check
+        generateDynamicManifest();
         
         try {
           // Check if user already has access granted
           const hasAccess = localStorage.getItem('accessGranted');
           if (hasAccess === 'true') {
             hideLoadingScreen();
+            // Regenerate manifest with stored access code for PWA consistency
+            generateDynamicManifest();
             return;
           }
 
@@ -508,6 +606,10 @@
             localStorage.setItem('accessCode', accessCode);
             window.history.replaceState({}, document.title, window.location.pathname);
             console.log('Access granted successfully');
+            
+            // Regenerate manifest with preserved access code for PWA
+            generateDynamicManifest();
+            
             hideLoadingScreen();
             // Start periodic access validation
             startAccessValidation();
