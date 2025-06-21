@@ -994,6 +994,157 @@ input, textarea, select {
   transform: scale(0.98) !important;
 }
 
+/* Android touch transparency fix - prevent elements from becoming invisible when tapped */
+@media (hover: none) and (pointer: coarse) {
+  /* This targets touch devices (primarily Android) */
+  
+  /* Button touch transparency fix */
+  button, 
+  .ios-button,
+  [role="button"],
+  input[type="submit"],
+  input[type="button"],
+  .bg-\[#126987\],
+  .bg-green-600,
+  .bg-blue-600 {
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    touch-action: manipulation !important;
+    /* Force background to stay visible on touch */
+    background-clip: padding-box !important;
+    -webkit-background-clip: padding-box !important;
+    will-change: auto !important;
+    backface-visibility: hidden !important;
+  }
+  
+  /* Prevent opacity/background changes on active/focus states */
+  button:active,
+  button:focus,
+  .ios-button:active,
+  .ios-button:focus,
+  input:active,
+  input:focus,
+  .ios-input:active,
+  .ios-input:focus {
+    opacity: 1 !important;
+    background-color: inherit !important;
+    /* Use subtle scale instead of opacity change */
+    transform: scale(0.98) !important;
+    transition: transform 0.1s ease !important;
+  }
+  
+  /* Input field transparency fix */
+  input,
+  textarea,
+  select,
+  .ios-input {
+    -webkit-tap-highlight-color: transparent !important;
+    background-clip: padding-box !important;
+    -webkit-background-clip: padding-box !important;
+    opacity: 1 !important;
+    backface-visibility: hidden !important;
+  }
+  
+  /* Card and interactive element fix */
+  .ios-card,
+  .card,
+  .hover\:bg-gray-50,
+  .hover\:bg-gray-100,
+  .active\:scale-98,
+  .active\:scale-95 {
+    -webkit-tap-highlight-color: transparent !important;
+    background-clip: padding-box !important;
+    -webkit-background-clip: padding-box !important;
+    opacity: 1 !important;
+    backface-visibility: hidden !important;
+  }
+  
+  /* Specific fixes for login and transfer buttons */
+  .login-button,
+  .transfer-button,
+  .confirm-button,
+  button[type="submit"] {
+    opacity: 1 !important;
+    background-color: inherit !important;
+    color: inherit !important;
+    border-color: inherit !important;
+  }
+  
+  /* Tailwind class specific fixes */
+  .bg-green-600:active,
+  .bg-blue-600:active,
+  .bg-\[#126987\]:active,
+  .bg-gray-50:active,
+  .bg-white:active {
+    opacity: 1 !important;
+    background-color: inherit !important;
+  }
+  
+  /* Payment and transfer form fixes */
+  .payment-option,
+  .transfer-option,
+  .account-selector,
+  .amount-input,
+  .reference-input {
+    -webkit-tap-highlight-color: transparent !important;
+    opacity: 1 !important;
+    background-color: inherit !important;
+    backface-visibility: hidden !important;
+  }
+  
+  /* Modal and overlay fixes */
+  .modal-content,
+  .dialog-content,
+  .confirmation-dialog {
+    opacity: 1 !important;
+    background-color: inherit !important;
+    backface-visibility: hidden !important;
+  }
+  
+  /* Navigation and menu fixes */
+  .bottom-navigation button,
+  .nav-button,
+  .menu-item {
+    -webkit-tap-highlight-color: transparent !important;
+    opacity: 1 !important;
+    background-color: inherit !important;
+    backface-visibility: hidden !important;
+  }
+  
+  /* Form validation and state fixes */
+  .error-state,
+  .success-state,
+  .warning-state {
+    opacity: 1 !important;
+    background-color: inherit !important;
+    color: inherit !important;
+  }
+  
+  /* Dashboard card fixes */
+  .dashboard-card,
+  .account-card,
+  .quick-action,
+  .balance-card {
+    -webkit-tap-highlight-color: transparent !important;
+    opacity: 1 !important;
+    background-color: inherit !important;
+    backface-visibility: hidden !important;
+  }
+  
+  /* Comprehensive background preservation */
+  *:active,
+  *:focus {
+    opacity: 1 !important;
+    background-color: inherit !important;
+    border-color: inherit !important;
+    color: inherit !important;
+    /* Prevent any webkit styling overrides */
+    -webkit-appearance: none !important;
+    appearance: none !important;
+  }
+}
+
 /* Admin panel content should be above everything */
 .admin-panel .modal-content {
   z-index: 10001 !important;
