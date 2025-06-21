@@ -1,5 +1,22 @@
 {
-  "users": [],
+  "users": [
+    [
+      31,
+      {
+        "id": 31,
+        "customerNumber": "BOI834005438",
+        "pin": "000000",
+        "name": "Johnpork",
+        "email": "pork@gmail.com",
+        "phone": "5454545464",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-06-21T06:30:41.481Z",
+        "dateCreated": "2025-06-21T06:30:41.482Z",
+        "isDisabled": false
+      }
+    ]
+  ],
   "accounts": [],
   "transactions": [],
   "payees": [],
@@ -9,7 +26,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 31,
+    "currentUserId": 32,
     "currentAccountId": 37,
     "currentTransactionId": 49,
     "currentPayeeId": 25,
