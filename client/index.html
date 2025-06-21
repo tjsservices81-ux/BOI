@@ -42,8 +42,70 @@
     <link rel="preload" href="/icon-footer-more.svg" as="image">
     <link rel="preload" href="/icon-footer-more-highlight.svg" as="image">
     
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="/manifest.json" />
+    <!-- Dynamic PWA Manifest with access code -->
+    <script>
+      // Dynamic manifest loading with access code for Safari compatibility
+      (function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const accessCode = urlParams.get('access') || localStorage.getItem('accessCode');
+        const manifestUrl = accessCode ? `/manifest.json?access=${accessCode}` : '/manifest.json';
+        
+        // Remove any existing manifest links to prevent conflicts
+        const existingManifest = document.querySelector('link[rel="manifest"]');
+        if (existingManifest) {
+          existingManifest.remove();
+        }
+        
+        // Create and inject manifest link immediately
+        const manifestLink = document.createElement('link');
+        manifestLink.rel = 'manifest';
+        manifestLink.href = manifestUrl;
+        manifestLink.crossOrigin = 'anonymous';
+        document.head.appendChild(manifestLink);
+        
+        // Enhanced Safari compatibility
+        if (navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome')) {
+          // Multiple approaches for Safari recognition
+          
+          // Method 1: Prefetch with custom headers
+          const preloadLink = document.createElement('link');
+          preloadLink.rel = 'prefetch';
+          preloadLink.href = manifestUrl;
+          preloadLink.crossOrigin = 'anonymous';
+          document.head.appendChild(preloadLink);
+          
+          // Method 2: Force fetch with access code header
+          const headers = new Headers();
+          if (accessCode) {
+            headers.append('X-Access-Code', accessCode);
+          }
+          
+          fetch(manifestUrl, { 
+            method: 'GET',
+            headers: headers,
+            cache: 'no-cache',
+            mode: 'cors'
+          }).then(response => {
+            if (response.ok) {
+              console.log('Manifest preloaded for Safari with access code:', accessCode);
+            }
+          }).catch(() => {
+            console.warn('Manifest preload failed, but will still work');
+          });
+          
+          // Method 3: Safari-specific PWA setup
+          setTimeout(() => {
+            if (window.navigator.standalone === false) {
+              // User is in Safari but not installed as PWA
+              console.log('Safari detected - manifest ready for Add to Home Screen');
+            }
+          }, 100);
+        }
+        
+        // Log for debugging
+        console.log('Dynamic manifest loaded:', manifestUrl);
+      })();
+    </script>
     
     <!-- App Icons for different devices -->
     <link rel="apple-touch-icon" sizes="57x57" href="/boi_app_icon.png" />
