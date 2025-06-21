@@ -937,61 +937,14 @@ input, textarea, select {
   backdrop-filter: blur(2px);
 }
 
-/* Prevent any elements inside admin panel from being transparent */
+/* Simple fix: ensure all elements have solid backgrounds */
 .admin-panel * {
-  -webkit-tap-highlight-color: transparent !important;
-  -webkit-touch-callout: none !important;
-  -webkit-user-select: none !important;
-  touch-action: manipulation !important;
-}
-
-/* Force solid backgrounds on all admin panel elements */
-.admin-panel button,
-.admin-panel div,
-.admin-panel .bg-blue-50,
-.admin-panel .bg-green-50,
-.admin-panel .bg-red-50,
-.admin-panel .bg-purple-50,
-.admin-panel .bg-gray-50,
-.admin-panel .bg-white {
+  -webkit-tap-highlight-color: rgba(0,0,0,0) !important;
   opacity: 1 !important;
-  background-clip: padding-box !important;
-  -webkit-background-clip: padding-box !important;
-  will-change: auto !important;
 }
 
-/* Specific background colors to prevent transparency */
-.admin-panel .bg-blue-50 {
-  background-color: rgb(239 246 255) !important;
-  border-color: rgb(191 219 254) !important;
-}
-.admin-panel .bg-green-50 {
-  background-color: rgb(240 253 244) !important;
-  border-color: rgb(187 247 208) !important;
-}
-.admin-panel .bg-red-50 {
-  background-color: rgb(254 242 242) !important;
-  border-color: rgb(254 202 202) !important;
-}
-.admin-panel .bg-purple-50 {
-  background-color: rgb(250 245 255) !important;
-  border-color: rgb(221 214 254) !important;
-}
-.admin-panel .bg-gray-50 {
-  background-color: rgb(249 250 251) !important;
-  border-color: rgb(229 231 235) !important;
-}
-.admin-panel .bg-white {
-  background-color: rgb(255 255 255) !important;
-}
-
-/* Prevent button state transparency issues */
-.admin-panel button:active,
-.admin-panel button:focus,
-.admin-panel button:hover {
+.admin-panel button {
   opacity: 1 !important;
-  background-color: inherit !important;
-  transform: scale(0.98) !important;
 }
 
 /* Admin panel content should be above everything */
