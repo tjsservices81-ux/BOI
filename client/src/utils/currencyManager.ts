@@ -103,13 +103,34 @@ export class CurrencyManager {
     return '';
   }
   
-  // Initialize currency manager with event listeners
+  // Initialize currency manager with event listeners and user preferences
   static initialize(): void {
+    // Load user currency preference from profile data
+    this.loadUserCurrencyPreference();
+    
     // Listen for currency change events from admin panel
     window.addEventListener('currencyChanged', ((event: CustomEvent) => {
       const { currency } = event.detail;
       this.notifyListeners(currency);
     }) as EventListener);
+  }
+
+  // Load user currency preference from database
+  static async loadUserCurrencyPreference(): Promise<void> {
+    try {
+      const currentUser = localStorage.getItem('currentUser');
+      if (currentUser) {
+        const response = await fetch(`/api/profile/${currentUser}`);
+        if (response.ok) {
+          const userData = await response.json();
+          if (userData.primaryCurrency) {
+            this.setCurrency(userData.primaryCurrency);
+          }
+        }
+      }
+    } catch (error) {
+      console.log('Using default currency preference');
+    }
   }
 }
 

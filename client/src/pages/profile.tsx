@@ -92,13 +92,31 @@ export default function Profile() {
     setPrimaryCurrency(storedCurrency);
   }, []);
 
-  // Currency change handler with live updates
-  const handleCurrencyChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  // Currency change handler with live updates and database persistence
+  const handleCurrencyChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newCurrency = event.target.value as 'EUR' | 'GBP';
     setPrimaryCurrency(newCurrency);
     
-    // Save to user data
+    // Save to user data locally
     UserDataManager.setUserData('primaryCurrency', newCurrency);
+    
+    // Update CurrencyManager state
+    CurrencyManager.setCurrency(newCurrency);
+    
+    // Persist to database if user is available
+    if (profileData?.customerNumber) {
+      try {
+        await fetch(`/api/profile/${profileData.customerNumber}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ primaryCurrency: newCurrency }),
+        });
+      } catch (error) {
+        console.error('Failed to persist currency preference:', error);
+      }
+    }
     
     // Dispatch currency change event for live updates across the app
     window.dispatchEvent(new CustomEvent('currencyChanged', {
