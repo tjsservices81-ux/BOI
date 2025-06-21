@@ -42,9 +42,32 @@ export class CurrencyManager {
   }
   
   // Set current user's primary currency
-  static setCurrency(currency: Currency): void {
+  static async setCurrency(currency: Currency): Promise<void> {
+    // Save to local storage immediately for instant UI updates
     UserDataManager.setUserData('primaryCurrency', currency);
     this.notifyListeners(currency);
+    
+    // Save to database for persistence across sessions
+    try {
+      const customerNumber = UserDataManager.getUserData('customerNumber');
+      if (customerNumber) {
+        const response = await fetch(`/api/profile/${customerNumber}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            primaryCurrency: currency
+          }),
+        });
+        
+        if (!response.ok) {
+          console.error('Failed to save currency preference to database');
+        }
+      }
+    } catch (error) {
+      console.error('Error saving currency preference:', error);
+    }
   }
   
   // Subscribe to currency changes
@@ -130,7 +153,9 @@ export class CurrencyManager {
         if (response.ok) {
           const userData = await response.json();
           if (userData.primaryCurrency) {
-            this.setCurrency(userData.primaryCurrency);
+            // Set currency without triggering database save to avoid recursion
+            UserDataManager.setUserData('primaryCurrency', userData.primaryCurrency);
+            this.notifyListeners(userData.primaryCurrency);
           }
         }
       }

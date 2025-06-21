@@ -1343,8 +1343,8 @@ export default function Profile() {
                     </label>
                     <select
                       value={CurrencyManager.getCurrentCurrency()}
-                      onChange={(e) => {
-                        CurrencyManager.setCurrency(e.target.value as 'EUR' | 'GBP');
+                      onChange={async (e) => {
+                        await CurrencyManager.setCurrency(e.target.value as 'EUR' | 'GBP');
                         window.dispatchEvent(new CustomEvent('currencyChanged', {
                           detail: { currency: e.target.value }
                         }));
