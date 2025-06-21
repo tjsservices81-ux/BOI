@@ -164,68 +164,161 @@ export async function getUserSessions() {
   // Initialize sample sessions if needed
   initializeSampleSessions();
   
-  // Import storage to access user data
+  // Import storage and database access
   const { storage } = await import('./storage');
+  const { db } = await import('./db');
   
   try {
-    // Ensure storage is fully initialized before accessing data
-    await storage.waitForInitialization();
+    console.log('🔍 Scanning all user data sources for admin panel recovery...');
     
-    // Get all users from the storage system
-    const allUsers = await storage.getAllUsers();
-    
-    console.log(`getUserSessions: Found ${allUsers.length} users in database`);
-    
-    // Create a map of all users with their session info (if any)
     const userSessionsMap = new Map();
     
-    // First, add all users from the database
-    allUsers.forEach(user => {
-      userSessionsMap.set(user.customerNumber, {
-        sessionId: `user_${user.id}`, // Use user ID as fallback session ID
-        username: user.name || user.customerNumber,
-        email: user.email || 'No email provided',
-        dateOfBirth: user.dateOfBirth || 'Not provided',
-        deviceInfo: 'Not logged in',
-        ipAddress: 'N/A',
-        loginTime: 'Never logged in',
-        customerNumber: user.customerNumber,
-        isLoggedIn: false
-      });
-    });
-    
-    // Then update with actual device session data for logged-in users
-    deviceSessions.forEach(session => {
-      if (session.customerNumber && userSessionsMap.has(session.customerNumber)) {
-        const user = allUsers.find(u => u.customerNumber === session.customerNumber);
-        userSessionsMap.set(session.customerNumber, {
-          sessionId: session.sessionId,
-          username: user?.name || session.customerNumber || 'Unknown User',
-          email: user?.email || 'No email provided',
-          dateOfBirth: user?.dateOfBirth || 'Not provided',
-          deviceInfo: session.deviceModel || 'Unknown Device',
-          ipAddress: session.ipAddress || 'Unknown',
-          loginTime: session.loginTime || new Date().toISOString(),
-          customerNumber: session.customerNumber,
-          isLoggedIn: true
+    // 1. Get all users from PostgreSQL database (primary source)
+    try {
+      const dbUsers = await db.select().from((await import('../shared/schema')).users);
+      console.log(`📊 Found ${dbUsers.length} users in PostgreSQL database`);
+      
+      dbUsers.forEach(user => {
+        userSessionsMap.set(user.customerNumber, {
+          sessionId: `db_user_${user.id}`,
+          username: user.name || user.customerNumber,
+          email: user.email || 'No email provided',
+          dateOfBirth: user.dateOfBirth || 'Not provided',
+          deviceInfo: 'Database User',
+          ipAddress: 'N/A',
+          loginTime: user.dateCreated ? new Date(user.dateCreated).toISOString() : 'Not available',
+          customerNumber: user.customerNumber,
+          isLoggedIn: false,
+          userId: user.id,
+          source: 'database'
         });
+      });
+    } catch (dbError: any) {
+      console.warn('Database access failed, falling back to memory storage:', dbError?.message || 'Unknown error');
+    }
+    
+    // 2. Get all users from memory storage system
+    try {
+      await storage.waitForInitialization();
+      const memoryUsers = await storage.getAllUsers();
+      console.log(`💾 Found ${memoryUsers.length} users in memory storage`);
+      
+      memoryUsers.forEach(user => {
+        if (!userSessionsMap.has(user.customerNumber)) {
+          userSessionsMap.set(user.customerNumber, {
+            sessionId: `mem_user_${user.id}`,
+            username: user.name || user.customerNumber,
+            email: user.email || 'No email provided',
+            dateOfBirth: user.dateOfBirth || 'Not provided',
+            deviceInfo: 'Memory Storage',
+            ipAddress: 'N/A',
+            loginTime: user.dateCreated ? new Date(user.dateCreated).toISOString() : 'Not available',
+            customerNumber: user.customerNumber,
+            isLoggedIn: false,
+            userId: user.id,
+            source: 'memory'
+          });
+        } else {
+          // Merge additional data from memory storage
+          const existing = userSessionsMap.get(user.customerNumber);
+          existing.username = user.name || existing.username;
+          existing.email = user.email || existing.email;
+          existing.source = `${existing.source},memory`;
+        }
+      });
+    } catch (storageError) {
+      console.warn('Memory storage access failed:', storageError.message);
+    }
+    
+    // 3. Update with active device session data for currently logged-in users
+    deviceSessions.forEach(session => {
+      if (session.customerNumber) {
+        if (userSessionsMap.has(session.customerNumber)) {
+          const existing = userSessionsMap.get(session.customerNumber);
+          userSessionsMap.set(session.customerNumber, {
+            ...existing,
+            sessionId: session.sessionId,
+            deviceInfo: session.deviceModel || existing.deviceInfo,
+            ipAddress: session.ipAddress || existing.ipAddress,
+            loginTime: session.loginTime || existing.loginTime,
+            isLoggedIn: true,
+            source: `${existing.source},device_session`
+          });
+        } else {
+          // Add users that only exist in device sessions
+          userSessionsMap.set(session.customerNumber, {
+            sessionId: session.sessionId,
+            username: session.customerNumber,
+            email: 'Session user',
+            dateOfBirth: 'Not provided',
+            deviceInfo: session.deviceModel || 'Unknown Device',
+            ipAddress: session.ipAddress || 'Unknown',
+            loginTime: session.loginTime || new Date().toISOString(),
+            customerNumber: session.customerNumber,
+            isLoggedIn: true,
+            source: 'device_session_only'
+          });
+        }
       }
     });
     
-    return Array.from(userSessionsMap.values());
+    // 4. Check for any persistent storage file users
+    try {
+      const fs = await import('fs');
+      const path = await import('path');
+      const storageFile = path.join(process.cwd(), 'data/storage.json');
+      
+      if (fs.existsSync(storageFile)) {
+        const data = JSON.parse(fs.readFileSync(storageFile, 'utf8'));
+        if (data.users && Array.isArray(data.users)) {
+          console.log(`📁 Found ${data.users.length} users in persistent storage file`);
+          
+          data.users.forEach(([id, user]) => {
+            if (user.customerNumber && !userSessionsMap.has(user.customerNumber)) {
+              userSessionsMap.set(user.customerNumber, {
+                sessionId: `file_user_${user.id}`,
+                username: user.name || user.customerNumber,
+                email: user.email || 'No email provided',
+                dateOfBirth: user.dateOfBirth || 'Not provided',
+                deviceInfo: 'Persistent Storage',
+                ipAddress: 'N/A',
+                loginTime: user.dateCreated ? new Date(user.dateCreated).toISOString() : 'Not available',
+                customerNumber: user.customerNumber,
+                isLoggedIn: false,
+                userId: user.id,
+                source: 'persistent_file'
+              });
+            }
+          });
+        }
+      }
+    } catch (fileError) {
+      console.warn('Persistent storage file access failed:', fileError.message);
+    }
+    
+    const allUsers = Array.from(userSessionsMap.values());
+    const loggedInCount = allUsers.filter(u => u.isLoggedIn).length;
+    
+    console.log(`✅ User recovery complete: ${allUsers.length} total users, ${loggedInCount} currently authenticated`);
+    console.log(`📋 Data sources: database, memory, device sessions, persistent files`);
+    
+    return allUsers;
+    
   } catch (error) {
-    console.error('Error accessing user data from storage:', error);
-    // Fallback to device session data only
+    console.error('❌ Complete user recovery failed, using fallback data:', error);
+    
+    // Ultimate fallback - return any available device sessions
     return deviceSessions.map(session => ({
       sessionId: session.sessionId,
-      username: session.customerNumber || 'Unknown User',
-      email: 'No email provided',
+      username: session.customerNumber || 'Fallback User',
+      email: 'Fallback data',
       dateOfBirth: 'Not provided',
       deviceInfo: session.deviceModel || 'Unknown Device',
       ipAddress: session.ipAddress || 'Unknown',
       loginTime: session.loginTime || new Date().toISOString(),
       customerNumber: session.customerNumber,
-      isLoggedIn: true
+      isLoggedIn: true,
+      source: 'fallback_device_session'
     }));
   }
 }

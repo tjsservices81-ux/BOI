@@ -53,7 +53,8 @@ class UserRecoverySystem {
   async scanPostgreSQLDatabase() {
     try {
       this.log('Scanning PostgreSQL database for users...', 'info');
-      const { Client } = require('pg');
+      const pg = await import('pg');
+      const { Client } = pg.default || pg;
       
       const client = new Client({
         connectionString: process.env.DATABASE_URL
