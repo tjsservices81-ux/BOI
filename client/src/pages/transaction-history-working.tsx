@@ -533,7 +533,7 @@ export default function TransactionHistoryWorking() {
                       <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>GBP Equivalent:</span>
                       <div className="text-right">
                         <span className="font-semibold text-green-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          £{selectedTransaction.convertedAmount}
+                          {getCurrencySymbol(userCurrency === 'EUR' ? 'GBP' : 'EUR')}{selectedTransaction.convertedAmount}
                         </span>
                         <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                           Live rate at time of transfer
