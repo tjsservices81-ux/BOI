@@ -1492,6 +1492,40 @@ body {
     overscroll-behavior: contain !important;
   }
 
+  /* Android specific UK transfer field fixes */
+  .grid.grid-cols-2 .bg-gray-50 label {
+    white-space: nowrap !important;
+    overflow: visible !important;
+    font-size: 0.875rem !important;
+    line-height: 1.2 !important;
+  }
+
+  /* Android grid layout optimization */
+  .grid.grid-cols-2 {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 1rem !important;
+  }
+
+  .grid.grid-cols-2 > div {
+    min-width: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* Android UK transfer form fixes - prevent label text wrapping */
+  @media screen and (max-width: 768px) {
+    .grid.grid-cols-2 .bg-gray-50 {
+      padding: 1rem !important;
+      min-width: 0 !important;
+    }
+    
+    .grid.grid-cols-2 .bg-gray-50 label {
+      white-space: nowrap !important;
+      font-size: 0.875rem !important;
+      line-height: 1.25rem !important;
+      margin-bottom: 0.75rem !important;
+    }
+  }
+
   /* Android UK transfer form fixes - prevent label text wrapping */
   .grid-cols-2 .bg-gray-50 label {
     white-space: nowrap !important;
