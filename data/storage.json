@@ -1,5 +1,38 @@
 {
-  "users": [],
+  "users": [
+    [
+      31,
+      {
+        "id": 31,
+        "customerNumber": "BOI327149991",
+        "pin": "000000",
+        "name": "User",
+        "email": "user@example.com",
+        "phone": null,
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-06-21T12:43:19.683Z",
+        "dateCreated": "2025-06-21T12:43:19.683Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      32,
+      {
+        "id": 32,
+        "customerNumber": "BOI560715829",
+        "pin": "000000",
+        "name": "Hhhh",
+        "email": "hhh@gmail.com",
+        "phone": "555",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-06-21T12:44:18.970Z",
+        "dateCreated": "2025-06-21T12:44:18.971Z",
+        "isDisabled": false
+      }
+    ]
+  ],
   "accounts": [],
   "transactions": [],
   "payees": [],
@@ -9,7 +42,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 31,
+    "currentUserId": 33,
     "currentAccountId": 37,
     "currentTransactionId": 49,
     "currentPayeeId": 25,

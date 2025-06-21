@@ -1210,6 +1210,32 @@ export default function Profile() {
                       </div>
                     </button>
 
+                    {/* Currency Display Toggle */}
+                    <button 
+                      onClick={() => {
+                        const newCurrency = profileData.currency === 'EUR' ? 'GBP' : 'EUR';
+                        setProfileData(prev => ({ ...prev, currency: newCurrency }));
+                        UserDataManager.updateUserProfile({ currency: newCurrency });
+                        // Trigger a page refresh to update all displays
+                        window.location.reload();
+                      }}
+                      className="w-full flex items-center space-x-3 p-4 bg-purple-50 border border-purple-200 rounded-xl active:scale-98 transition-transform"
+                    >
+                      <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                        <span className="text-purple-600 font-bold text-lg">
+                          {profileData.currency === 'EUR' ? '€' : '£'}
+                        </span>
+                      </div>
+                      <div className="flex-1 text-left">
+                        <p className="font-semibold text-purple-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Currency Display: {profileData.currency === 'EUR' ? 'EUR (€)' : 'GBP (£)'}
+                        </p>
+                        <p className="text-sm text-purple-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Tap to switch to {profileData.currency === 'EUR' ? 'GBP (£)' : 'EUR (€)'}
+                        </p>
+                      </div>
+                    </button>
+
                     {/* Add Sample Transaction */}
                     <button 
                       onClick={() => setShowAddTransaction(true)}
