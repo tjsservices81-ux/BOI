@@ -279,13 +279,15 @@ export default function IbanTransfer() {
               }}>
                 <div className="ios-processing-content" style={{
                   textAlign: 'center',
-                  padding: '0 2rem',
+                  padding: '2rem',
                   maxWidth: '400px',
                   width: '100%',
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  gap: '2rem'
+                  justifyContent: 'center',
+                  gap: '1.5rem',
+                  minHeight: '60vh'
                 }}>
                   
                   {/* Circular Spinner - iOS Style */}
