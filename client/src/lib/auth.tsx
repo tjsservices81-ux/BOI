@@ -24,6 +24,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Initialize auth state on mount - check for valid session
   useEffect(() => {
     let isMounted = true;
+    let initializationTimer: NodeJS.Timeout;
     
     const initializeAuth = async () => {
       try {
@@ -48,6 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           console.error('localStorage access failed, maintaining current state:', storageError);
           // Don't change user state on storage access errors
         }
+        
         if (isMounted) {
           setIsLoading(false);
           setIsInitialized(true);
@@ -62,10 +64,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
+    // Start initialization immediately
     initializeAuth();
+    
+    // Fallback timeout to prevent infinite loading
+    initializationTimer = setTimeout(() => {
+      if (isMounted && isLoading) {
+        console.warn('Auth initialization timeout reached, forcing completion');
+        setIsLoading(false);
+        setIsInitialized(true);
+      }
+    }, 3000);
     
     return () => {
       isMounted = false;
+      if (initializationTimer) {
+        clearTimeout(initializationTimer);
+      }
     };
   }, []);
 

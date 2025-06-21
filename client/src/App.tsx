@@ -39,13 +39,49 @@ function ProtectedRoute({ children, fallback }: { children: React.ReactNode; fal
   const authHook = useAuth();
   const user = authHook?.user || null;
   const isLoading = authHook?.isLoading || false;
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
+  const [initializationComplete, setInitializationComplete] = useState(false);
   
-  // Check if app is still in initialization phase
-  const appSessionActive = localStorage.getItem('app_session_active');
-  const splashCompleted = localStorage.getItem('splash_completed');
+  // Check initialization status with timeout fallback
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    let initCheckInterval: NodeJS.Timeout;
+    
+    const checkInitialization = () => {
+      const appSessionActive = localStorage.getItem('app_session_active');
+      const splashCompleted = localStorage.getItem('splash_completed');
+      
+      // Mark as initialized if both conditions are met OR if we have a user
+      if ((appSessionActive && splashCompleted) || user) {
+        setInitializationComplete(true);
+        if (initCheckInterval) {
+          clearInterval(initCheckInterval);
+        }
+      }
+    };
+    
+    // Check initialization immediately and then periodically
+    checkInitialization();
+    initCheckInterval = setInterval(checkInitialization, 100);
+    
+    // Fallback timeout after 4 seconds - force navigation to login
+    timeoutId = setTimeout(() => {
+      console.warn('ProtectedRoute: Initialization timeout reached, forcing login redirect');
+      setLoadingTimeout(true);
+      setInitializationComplete(true);
+      if (initCheckInterval) {
+        clearInterval(initCheckInterval);
+      }
+    }, 4000);
+    
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      if (initCheckInterval) clearInterval(initCheckInterval);
+    };
+  }, [user]);
   
-  // SECURITY FIX: Show loading state instead of null during initialization
-  if (!appSessionActive || !splashCompleted) {
+  // Show loading screen during initialization (max 4 seconds)
+  if (!initializationComplete) {
     return (
       <div className="w-full h-full flex items-center justify-center bg-[#126987]">
         <div className="text-white">Loading...</div>
@@ -53,14 +89,23 @@ function ProtectedRoute({ children, fallback }: { children: React.ReactNode; fal
     );
   }
   
+  // Handle timeout scenario - force redirect to login
+  if (loadingTimeout && !user) {
+    return fallback ? <>{fallback}</> : <Redirect to="/login" />;
+  }
+  
   // Normal protection logic after initialization
   if (!user && !isLoading) {
     return fallback ? <>{fallback}</> : <Redirect to="/login" />;
   }
   
-  // Show nothing while loading to prevent flash
-  if (isLoading) {
-    return null;
+  // Show brief loading only if auth is actively loading (not during timeout)
+  if (isLoading && !loadingTimeout) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-[#126987]">
+        <div className="text-white">Loading...</div>
+      </div>
+    );
   }
   
   return <>{children}</>;
@@ -103,127 +148,154 @@ function AppRoutes() {
   
   // Initialize app state with proper cold/warm start detection
   useEffect(() => {
+    let initializationTimer: NodeJS.Timeout;
+    
     const initializeApp = async () => {
-      // Initialize platform-specific handlers first
-      PlatformDetection.setupPlatformSpecificHandlers();
-      
-      // Apply Android UI fixes to match iOS
-      const { AndroidUIFixes } = await import('./utils/androidUIFixes');
-      const { AndroidPerformanceOptimizer } = await import('./utils/androidPerformanceOptimizer');
-      
-      AndroidUIFixes.initialize();
-      AndroidUIFixes.fixAccountCardStyling();
-      AndroidUIFixes.removeAndroidRippleEffect();
-      AndroidPerformanceOptimizer.initialize();
-      
-      // Initialize cache persistence system
-      const { UserDataManager } = await import('./utils/userDataManager');
-      UserDataManager.initializeCachePersistence();
-      
-      // Use platform detection for accurate cold/warm start determination
-      const startType = PlatformDetection.getCurrentStartType();
-      const isColdStart = startType === 'cold' || startType === 'uncertain';
-      
-      if (isColdStart) {
-        // COLD START: App was fully closed/terminated - always show splash sequence
-        console.log('Cold start detected - showing splash sequence');
+      try {
+        // Initialize platform-specific handlers first
+        PlatformDetection.setupPlatformSpecificHandlers();
         
-        // Reset all splash-related flags for fresh start
-        setSplashShown(false);
-        localStorage.removeItem('splash_completed');
-        localStorage.removeItem('app_background_time');
-        localStorage.setItem('app_session_active', 'true');
+        // Apply Android UI fixes to match iOS
+        const { AndroidUIFixes } = await import('./utils/androidUIFixes');
+        const { AndroidPerformanceOptimizer } = await import('./utils/androidPerformanceOptimizer');
         
-        // Restore user session silently in background (permanent login)
-        // COORDINATION FIX: Only restore if auth context hasn't already initialized user
-        try {
-          const savedState = StateManager.restoreAppState(true);
-          if (savedState && savedState.user && !user && !isLoading) {
-            // Prevent race condition with auth.tsx initialization
-            setTimeout(() => {
-              if (!user) { // Double-check user isn't set by auth context
-                login(savedState.user);
-              }
-            }, 100);
-          }
-        } catch (error) {
-          console.error('Failed to restore user session:', error);
-        }
+        AndroidUIFixes.initialize();
+        AndroidUIFixes.fixAccountCardStyling();
+        AndroidUIFixes.removeAndroidRippleEffect();
+        AndroidPerformanceOptimizer.initialize();
         
-      } else if (startType === 'warm') {
-        // WARM START: App was backgrounded - restore exactly where user left off
-        console.log('Warm start detected - restoring previous state');
+        // Initialize cache persistence system
+        const { UserDataManager } = await import('./utils/userDataManager');
+        UserDataManager.initializeCachePersistence();
         
-        localStorage.removeItem('app_background_time');
+        // Use platform detection for accurate cold/warm start determination
+        const startType = PlatformDetection.getCurrentStartType();
+        const isColdStart = startType === 'cold' || startType === 'uncertain';
         
-        try {
-          const savedState = StateManager.restoreAppState(false); // Pass isWarmStart flag
+        if (isColdStart) {
+          // COLD START: App was fully closed/terminated - always show splash sequence
+          console.log('Cold start detected - showing splash sequence');
           
-          if (savedState && savedState.user && !user && !isLoading) {
-            // COORDINATION FIX: Prevent race condition with auth context
-            setTimeout(() => {
-              if (!user) { // Double-check user isn't set by auth context
-                login(savedState.user);
-                
-                // Restore exact route for warm start
-                if (savedState.currentRoute && savedState.currentRoute !== '/login' && savedState.currentRoute !== '/splash') {
-                  navigate(savedState.currentRoute);
+          // Reset all splash-related flags for fresh start
+          setSplashShown(false);
+          localStorage.removeItem('splash_completed');
+          localStorage.removeItem('app_background_time');
+          localStorage.setItem('app_session_active', 'true');
+          
+          // Restore user session silently in background (permanent login)
+          // Let auth context handle user initialization to prevent race conditions
+          try {
+            const savedState = StateManager.restoreAppState(true);
+            if (savedState && savedState.user && !user && !isLoading) {
+              // Delay to let auth context complete initialization first
+              setTimeout(() => {
+                if (!user) {
+                  login(savedState.user);
                 }
-              }
-            }, 100);
+              }, 200);
+            }
+          } catch (error) {
+            console.error('Failed to restore user session:', error);
+          }
+          
+        } else if (startType === 'warm') {
+          // WARM START: App was backgrounded - restore exactly where user left off
+          console.log('Warm start detected - restoring previous state');
+          
+          localStorage.removeItem('app_background_time');
+          
+          try {
+            const savedState = StateManager.restoreAppState(false);
             
-            // Skip splash entirely for warm starts
-            setSplashShown(true);
-            localStorage.setItem('splash_completed', 'true');
-          } else {
-            // No valid saved state - fallback to cold start behavior
+            if (savedState && savedState.user && !user && !isLoading) {
+              // Delay to coordinate with auth context
+              setTimeout(() => {
+                if (!user) {
+                  login(savedState.user);
+                  
+                  // Restore exact route for warm start
+                  if (savedState.currentRoute && savedState.currentRoute !== '/login' && savedState.currentRoute !== '/splash') {
+                    navigate(savedState.currentRoute);
+                  }
+                }
+              }, 200);
+              
+              // Skip splash entirely for warm starts
+              setSplashShown(true);
+              localStorage.setItem('splash_completed', 'true');
+            } else {
+              // No valid saved state - fallback to cold start behavior
+              setSplashShown(false);
+              localStorage.removeItem('splash_completed');
+            }
+          } catch (error) {
+            console.error('Failed to restore warm start state:', error);
+            // Fallback to cold start behavior
             setSplashShown(false);
             localStorage.removeItem('splash_completed');
           }
-        } catch (error) {
-          console.error('Failed to restore warm start state:', error);
-          // Fallback to cold start behavior
+          
+        } else {
+          // UNCERTAIN STATE: Default to cold start behavior for safety
+          console.log('Uncertain state - defaulting to cold start behavior');
           setSplashShown(false);
           localStorage.removeItem('splash_completed');
-        }
-        
-      } else {
-        // UNCERTAIN STATE: Default to cold start behavior for safety
-        console.log('Uncertain state - defaulting to cold start behavior');
-        setSplashShown(false);
-        localStorage.removeItem('splash_completed');
-        localStorage.setItem('app_session_active', 'true');
-        
-        // Try to restore user session
-        try {
-          const savedState = StateManager.restoreAppState(true);
-          if (savedState && savedState.user && !user) {
-            login(savedState.user);
+          localStorage.setItem('app_session_active', 'true');
+          
+          // Try to restore user session
+          try {
+            const savedState = StateManager.restoreAppState(true);
+            if (savedState && savedState.user && !user) {
+              setTimeout(() => {
+                if (!user) {
+                  login(savedState.user);
+                }
+              }, 200);
+            }
+          } catch (error) {
+            console.error('Failed to restore user session:', error);
           }
-        } catch (error) {
-          console.error('Failed to restore user session:', error);
         }
-      }
-      
-      // Preserve all user data - only clear truly temporary items
-      const keys = Object.keys(localStorage);
-      keys.forEach(key => {
-        if (key.startsWith('temp_cache_') || key.startsWith('_debug_')) {
-          localStorage.removeItem(key);
+        
+        // Preserve all user data - only clear truly temporary items
+        const keys = Object.keys(localStorage);
+        keys.forEach(key => {
+          if (key.startsWith('temp_cache_') || key.startsWith('_debug_')) {
+            localStorage.removeItem(key);
+          }
+        });
+        
+        const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+        if (themeColorMeta) {
+          themeColorMeta.setAttribute('content', '#000DFF');
         }
-      });
-      
-      const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-      if (themeColorMeta) {
-        themeColorMeta.setAttribute('content', '#000DFF');
+        
+        setIsRestoringState(false);
+        // Mark as initialized after a brief delay
+        setTimeout(() => setIsInitialized(true), 100);
+        
+      } catch (error) {
+        console.error('App initialization error:', error);
+        // Force initialization complete to prevent infinite loading
+        setIsRestoringState(false);
+        setIsInitialized(true);
       }
-      
-      setIsRestoringState(false);
-      // Mark as initialized after a tick to prevent flash
-      setTimeout(() => setIsInitialized(true), 0);
     };
 
     initializeApp();
+    
+    // Fallback timeout to prevent infinite initialization
+    initializationTimer = setTimeout(() => {
+      console.warn('App initialization timeout reached, forcing completion');
+      setIsRestoringState(false);
+      setIsInitialized(true);
+    }, 5000);
+    
+    return () => {
+      if (initializationTimer) {
+        clearTimeout(initializationTimer);
+      }
+    };
   }, []);
 
   // Consolidated lifecycle event handling to prevent conflicts
