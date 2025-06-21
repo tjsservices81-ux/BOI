@@ -64,30 +64,36 @@ export default function Login() {
   const toastHook = useToast();
   const toast = toastHook?.toast || (() => {});
 
-  // Handle logo tap for account creation access (only available on login screen when not authenticated)
+  // Handle logo tap for account creation access (ONLY on login screen when not authenticated)
   const handleLogoTap = () => {
-    // Check if we're on the login route
-    if (location !== '/login') {
+    // STRICT CONDITION: Only allow on exact login route
+    const pathname = window.location.pathname;
+    if (pathname !== '/login') {
+      console.log(`Logo tap ignored - not on login page (current: ${pathname})`);
       return; // Silently ignore taps on non-login pages
     }
     
-    // Check authentication state (both auth context and localStorage)
-    const isAuthenticated = user !== null;
+    // STRICT CONDITION: Check authentication state comprehensively
+    const isAuthenticatedContext = user !== null;
     const cachedUser = localStorage.getItem('bankingUser');
+    const authToken = localStorage.getItem('auth_token');
+    const isAuthenticated = isAuthenticatedContext || cachedUser || authToken;
     
-    if (isAuthenticated || cachedUser) {
-      // User is already logged in - show warning toast and return
+    if (isAuthenticated) {
+      // User is already logged in - show warning toast and prevent any action
+      console.log('Logo tap blocked - user is authenticated');
       toast({
         title: "⚠️ You're already signed in.",
         duration: 2500,
         variant: "default",
       });
-      // Reset tap counter
+      // Reset tap counter to prevent accumulation
       setLogoTapCount(0);
       setLastLogoTapTime(0);
       return;
     }
     
+    // Proceed with tap counting only if on login page and not authenticated
     const currentTime = Date.now();
     const timeSinceLastTap = currentTime - lastLogoTapTime;
     
@@ -102,11 +108,11 @@ export default function Login() {
     setLogoTapCount(newTapCount);
     setLastLogoTapTime(currentTime);
     
-    console.log(`Logo tap: ${newTapCount}/5 (on login screen, not authenticated)`);
+    console.log(`Logo tap: ${newTapCount}/5 (login page, unauthenticated)`);
     
     // Open account creation modal when 5 taps are reached
     if (newTapCount >= 5) {
-      console.log('Opening account creation...');
+      console.log('Opening account creation modal...');
       setShowSignUp(true);
       setLogoTapCount(0);
       setLastLogoTapTime(0);
