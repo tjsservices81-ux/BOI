@@ -937,15 +937,7 @@ input, textarea, select {
   backdrop-filter: blur(2px);
 }
 
-/* Simple fix: ensure all elements have solid backgrounds */
-.admin-panel * {
-  -webkit-tap-highlight-color: rgba(0,0,0,0) !important;
-  opacity: 1 !important;
-}
-
-.admin-panel button {
-  opacity: 1 !important;
-}
+/* Remove global opacity changes that affected iOS */
 
 /* Admin panel content should be above everything */
 .admin-panel .modal-content {
