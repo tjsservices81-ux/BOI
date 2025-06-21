@@ -75,7 +75,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Parse the stored data
       const codeInfo = typeof codeData === 'string' ? JSON.parse(codeData) : codeData;
       
-      if (codeInfo.used) {
+      if (codeInfo.used === true) {
         return res.status(409).json({ 
           success: false, 
           error: "Access code already used",
@@ -83,12 +83,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Mark code as used
-      await db.set(`access_code_${code}`, JSON.stringify({
-        ...codeInfo,
+      // Mark code as used atomically
+      const updatedCodeInfo = {
+        code: code,
         used: true,
-        usedAt: new Date().toISOString()
-      }));
+        usedAt: new Date().toISOString(),
+        createdAt: codeInfo.createdAt || new Date().toISOString(),
+        description: codeInfo.description || `Access code: ${code}`
+      };
+      
+      await db.set(`access_code_${code}`, JSON.stringify(updatedCodeInfo));
 
       res.json({ 
         success: true, 
