@@ -1,0 +1,69 @@
+1.	The exact logic to implement the currency toggle, and
+	2.	A full diagnostic scan instruction to ensure nothing breaks or is placed wrong:
+
+⸻
+
+🔧 Full Setup + Diagnostic Scan Prompt
+
+🧠 Add a permanent currency setting in the User Admin Panel (accessed by tapping profile 5 times):
+
+⸻
+
+✅ UI Requirement:
+	•	Add a dropdown setting labeled:
+Primary Currency:
+Options:
+	•	Euro (€) — default
+	•	Pound Sterling (£)
+
+⸻
+
+✅ When Pound Sterling (£) is selected:
+	•	Save "GBP" to the user’s profile using the same method used for storing name/balance.
+	•	Update the following UI areas to use £:
+	•	Account cards
+	•	Balance displays
+	•	Transfer screens
+	•	Transaction history
+	•	Confirmation messages
+	•	Disable all currency conversion logic (no rates, conversions, or conversion text).
+	•	Hide/remove all UI or backend calls related to currency exchange for that user.
+	•	Replace all text that says 1–2 days to 2–24 hours.
+	•	This state must persist through:
+	•	App restarts
+	•	Swiping up (force-closing)
+	•	Minimizing and reopening
+	•	Offline/online transitions
+
+⸻
+
+✅ When switched back to Euro (€):
+	•	Save "EUR" to the user profile.
+	•	Restore all € visuals and formatting.
+	•	Re-enable currency conversion.
+	•	Restore 2–24 hours text back to 1–2 days.
+
+⸻
+
+🔍 NOW: Run a Full Diagnostic Scan Before Applying Anything
+
+Scan and validate the entire app before making changes. Instructions:
+	1.	Search all code files (frontend, backend, logic, storage, and UI).
+	2.	Verify and list:
+	•	Any existing currency-related logic (conversion, symbols, references, hardcoded values).
+	•	Where balance and name are saved for each user.
+	•	Any localStorage, sessionStorage, or database fields related to currency.
+	•	Where profile settings are updated and reflected across the app.
+	•	All conditionals tied to "EUR" or "GBP".
+	•	Any possible mismatch in:
+	•	Variable names
+	•	Function calls
+	•	UI bindings
+	•	Conditional rendering
+	3.	✅ Confirm that toggling the currency:
+	•	Does not affect other users.
+	•	Applies immediately (no refresh required).
+	•	Does not break any layout or cause error screens.
+	•	Works identically on iOS and Android.
+	•	Loads correctly even if app is reopened later (must persist).
+	4.	❌ Do not fix or modify anything yet. Only generate a detailed report of every issue or dependency involved.
