@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { X, Send, MessageCircle, User, Bot } from "lucide-react";
 import { UserDataManager } from "../utils/userDataManager";
+import { getUserCurrency } from "../utils/currencyUtils";
 
 const chatVariants = {
   hidden: {
@@ -421,7 +422,11 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     };
   }, []);
 
-  const getDefaultResponses = (): ChatResponse[] => [
+  const getDefaultResponses = (): ChatResponse[] => {
+    const primaryCurrency = getUserCurrency();
+    const isGBP = primaryCurrency === 'GBP';
+    
+    return [
     {
       id: '1',
       category: 'card_issues',

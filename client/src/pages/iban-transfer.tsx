@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { getAccounts, processTransfer, processSecureTransfer, checkTransferConfirmation, processConfirmedTransfer, generateReference } from "../utils/transferUtils";
 import { UserDataManager } from "../utils/userDataManager";
+import { formatAmount, getTransferTiming } from "../utils/currencyUtils";
 
 const ibanTransferSchema = z.object({
   recipientName: z.string().min(2, "Recipient name is required"),
@@ -361,7 +362,7 @@ export default function IbanTransfer() {
                     </div>
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
                       <p className="text-sm text-blue-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        <strong>SEPA Transfer:</strong> Transfers within the SEPA zone typically take 1 business day to complete.
+                        <strong>SEPA Transfer:</strong> {getTransferTiming()}
                       </p>
                     </div>
                     <div className="bg-red-50 border border-red-200 rounded-lg p-3 mt-3">
@@ -527,7 +528,7 @@ export default function IbanTransfer() {
                 SEPA Transfer
               </p>
               <p className="text-xs text-blue-700 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                SEPA Transfer: Transfers within the SEPA zone typically take 1 business day to complete.
+                SEPA Transfer: {getTransferTiming()}
               </p>
             </div>
           </div>
