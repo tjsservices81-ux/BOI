@@ -149,10 +149,10 @@ function AppRoutes() {
         }
       }
       
-      // Clear temporary state for cold launch behavior
+      // Preserve all user data - only clear truly temporary items
       const keys = Object.keys(localStorage);
       keys.forEach(key => {
-        if (key.includes('chat') || key.includes('liveChat') || key.includes('tempState') || key.includes('session_')) {
+        if (key.startsWith('temp_cache_') || key.startsWith('_debug_')) {
           localStorage.removeItem(key);
         }
       });
@@ -256,7 +256,7 @@ function AppRoutes() {
     const handlePageHide = () => {
       // Only mark for cold restart if this is actually an app closure
       // PageHide can trigger for various reasons, so we're more conservative
-      sessionStorage.setItem('page_hidden', 'true');
+      localStorage.setItem('page_hidden', 'true');
     };
 
     const handlePageShow = (event: PageTransitionEvent) => {
@@ -264,13 +264,13 @@ function AppRoutes() {
       const forceColdStart = localStorage.getItem('force_cold_start') === 'true';
       
       if (forceColdStart) {
-        // This was a real app closure - force full reload for cold launch
+        // This was a real app closure - restore state without reloading
         localStorage.removeItem('force_cold_start');
-        // Don't clear sessionStorage - preserve user login state
-        window.location.reload();
+        // Preserve user login state and app data - no forced reload
+        restoreAppStateOnForeground();
       } else {
         // This was just backgrounding/foregrounding - restore state
-        sessionStorage.removeItem('page_hidden');
+        localStorage.removeItem('page_hidden'); // Changed from sessionStorage
         restoreAppStateOnForeground();
       }
     };

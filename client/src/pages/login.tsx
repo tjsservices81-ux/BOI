@@ -455,17 +455,19 @@ export default function Login() {
             setLoginProgress(0);
             setLoginStage('');
             
-            // User was deleted or suspended - clean up local data
-            UserDataManager.adminDeleteUser(targetCustomerNumber);
+            // Server validation failed - preserve local data for offline use
+            // Don't delete user data, just show warning about server sync
             setBiometricVerified(false);
             setPinVerified(false);
             
             toast({
-              title: "Account Not Available",
-              description: validation.message || "This account no longer exists.",
-              variant: "destructive",
+              title: "Server Sync Issue",
+              description: "Account exists locally but server validation failed. You can still access your data offline.",
+              variant: "default",
             });
-            return;
+            
+            // Continue with offline login using local data
+            console.warn('Server validation failed, continuing with offline mode for user:', targetCustomerNumber);
           }
         } catch (error) {
           console.error('Failed to validate user during login:', error);

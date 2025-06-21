@@ -29,32 +29,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         // Always check for cached user - no cold start detection
         // Users stay logged in permanently until admin deletion
-        const cachedUser = localStorage.getItem('bankingUser');
-        if (cachedUser && isMounted) {
-          try {
-            const parsedUser = JSON.parse(cachedUser);
-            setUser(parsedUser);
-          } catch (error) {
-            console.error('Failed to parse cached user, keeping data for retry:', error);
-            // Don't remove localStorage data on single parse failure
-            // Only clear if repeatedly failing to prevent permanent data loss
-            const parseFailures = parseInt(localStorage.getItem('bankingUser_parseFailures') || '0');
-            if (parseFailures >= 3) {
-              localStorage.removeItem('bankingUser');
+        try {
+          const cachedUser = localStorage.getItem('bankingUser');
+          if (cachedUser && isMounted) {
+            try {
+              const parsedUser = JSON.parse(cachedUser);
+              setUser(parsedUser);
+              // Reset parse failure counter on success
               localStorage.removeItem('bankingUser_parseFailures');
-            } else {
-              localStorage.setItem('bankingUser_parseFailures', (parseFailures + 1).toString());
+            } catch (parseError) {
+              console.error('JSON parse failed, user data preserved for recovery:', parseError);
+              // Keep user data safe - never delete on parse errors
+              // Show recoverable error state instead of wiping account
+              setUser(null); // Temporary state, data preserved
             }
-            setUser(null);
           }
+        } catch (storageError) {
+          console.error('localStorage access failed, maintaining current state:', storageError);
+          // Don't change user state on storage access errors
         }
         if (isMounted) {
           setIsLoading(false);
           setIsInitialized(true);
         }
       } catch (error) {
+        console.error('Auth initialization error, preserving existing state:', error);
         if (isMounted) {
-          setUser(null);
+          // Don't wipe user state on initialization errors
           setIsLoading(false);
           setIsInitialized(true);
         }

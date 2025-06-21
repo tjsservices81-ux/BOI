@@ -862,18 +862,20 @@ export default function Profile() {
     UserDataManager.setUserData('savedPayees', []);
     UserDataManager.setUserData('recentPayees', []);
     
-    // Force clear any legacy localStorage entries that might exist
+    // Only clear user financial data, preserve authentication and session data
     const currentUser = UserDataManager.getCurrentUser();
     if (currentUser) {
-      localStorage.removeItem(`user_${currentUser}_bankAccounts`);
+      // Clear only account balances and transaction history - not auth data
       localStorage.removeItem(`user_${currentUser}_bankTransactions`);
       localStorage.removeItem(`user_${currentUser}_savedPayees`);
       localStorage.removeItem(`user_${currentUser}_recentPayees`);
+      // Note: keeping bankAccounts to preserve account structure
     }
+    // Clear legacy financial data only
     localStorage.removeItem('bankTransactions');
     localStorage.removeItem('savedPayees');
     localStorage.removeItem('recentPayees');
-    localStorage.removeItem('bankAccounts');
+    // Note: not clearing 'bankAccounts', 'bankingUser', 'currentUser', 'lastActiveUser'
     
     // Update local state immediately
     setAccounts(defaultAccounts);

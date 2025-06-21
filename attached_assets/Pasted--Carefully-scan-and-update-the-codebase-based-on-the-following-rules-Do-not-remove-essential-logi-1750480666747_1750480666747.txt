@@ -1,0 +1,74 @@
+🔍 Carefully scan and update the codebase based on the following rules. Do not remove essential logic, only disable or refactor destructive behaviors that are not user-initiated or admin-initiated.
+
+⸻
+
+✅ Fix 1: Prevent Auto-Logout on JSON Parse Failures
+
+File: client/src/lib/auth.tsx (Lines 42–44)
+	•	Wrap localStorage.getItem('bankingUser') in a try-catch block.
+	•	On error, do not delete user — instead, show a recoverable error message.
+
+⸻
+
+✅ Fix 2: Remove Forced Server Validation Deletion
+
+File: client/src/pages/login.tsx (Lines 458–478)
+	•	Disable or comment out the line calling UserDataManager.adminDeleteUser() on validation failure.
+	•	Add fallback UI for users who don’t exist on the server but are in localStorage.
+
+⸻
+
+✅ Fix 3: Disable Cold Start Forced Reload + Wipe
+
+File: client/src/App.tsx (Lines 266–270)
+	•	Remove or disable window.location.reload() tied to force_cold_start.
+	•	Retain localStorage and app state unless explicitly reset.
+
+⸻
+
+✅ Fix 4: Disable Reset Function Clearing Auth
+
+File: client/src/pages/profile.tsx (Lines 234–253)
+	•	Remove or limit resetToDefaults() so it does not touch login/session data.
+
+⸻
+
+✅ Fix 5: Modify Cleanup Functions
+
+File: client/src/utils/userDataManager.ts (Lines 322–351)
+	•	Comment out or protect clearAllData() and removeUser() so they only run when triggered by admin/panel.
+
+⸻
+
+✅ Fix 6: Stop Cache Loss on Reload
+
+File: client/src/utils/userDataManager.ts (Lines 17–18)
+	•	Migrate in-memory cache Maps to localStorage fallback to persist across reloads.
+
+⸻
+
+✅ Fix 7: Patch Auto-Clearing Storage
+
+File: client/src/App.tsx (Lines 154–158)
+	•	Remove auto-deletion of localStorage keys like chat, tempState, session_.
+
+⸻
+
+✅ Fix 8: Make Session Durable
+
+File: server/index.ts (Lines 32–36)
+	•	Ensure PostgreSQL session store is persistent across reboots using durable storage or in-memory backup logic.
+
+⸻
+
+✅ Fix 9: Prevent Auth setUser(null) on Init Errors
+
+File: client/src/lib/auth.tsx (Lines 55–61)
+	•	Catch and log errors silently instead of calling setUser(null) which wipes login.
+
+⸻
+
+✅ Fix 10: Remove sessionStorage Reset on Close
+
+File: client/src/App.tsx (Line 259)
+	•	Replace sessionStorage with localStorage for durability across browser closes.
