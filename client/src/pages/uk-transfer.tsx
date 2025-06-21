@@ -879,44 +879,13 @@ export default function UkTransfer() {
               )}
             </div>
 
-            {/* Android-optimized button container */}
-            <div style={{ 
-              paddingTop: '1rem',
-              paddingBottom: '2rem',
-              position: 'relative',
-              zIndex: 20
-            }}>
-              <button
-                type="submit"
-                className="w-full text-white py-4 rounded-lg font-bold transition-all duration-150 ease-out active:scale-98 text-sm shadow-lg"
-                style={{ 
-                  fontFamily: 'OpenSans, sans-serif',
-                  background: '#126987',
-                  backgroundColor: '#126987',
-                  backgroundImage: 'linear-gradient(to right, #126987, #5a7b85)',
-                  border: 'none',
-                  outline: 'none',
-                  WebkitAppearance: 'none',
-                  MozAppearance: 'none',
-                  appearance: 'none',
-                  zIndex: 20,
-                  position: 'relative',
-                  minHeight: '48px',
-                  touchAction: 'manipulation',
-                  WebkitTouchCallout: 'none',
-                  WebkitUserSelect: 'none',
-                  userSelect: 'none',
-                  display: 'block',
-                  width: '100%',
-                  cursor: 'pointer',
-                  fontSize: '16px',
-                  lineHeight: '1.2',
-                  textAlign: 'center'
-                }}
-              >
-                Continue to Review
-              </button>
-            </div>
+            <button
+              type="submit"
+              className="w-full bg-gradient-to-r from-[#126987] to-[#5a7b85] text-white py-4 rounded-lg font-bold transition-all duration-150 ease-out active:scale-98 text-sm shadow-md"
+              style={{ fontFamily: 'OpenSans, sans-serif' }}
+            >
+              Continue to Review
+            </button>
           </form>
         </div>
       </div>

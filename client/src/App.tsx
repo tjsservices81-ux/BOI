@@ -40,9 +40,18 @@ function ProtectedRoute({ children, fallback }: { children: React.ReactNode; fal
   const user = authHook?.user || null;
   const isLoading = authHook?.isLoading || false;
   
-  // Simplified approach - don't block on session flags, let auth state handle loading
-  // The loading state should only be shown when auth is actively loading
-  // Remove the blocking loading screen that was causing the stuck state
+  // Check if app is still in initialization phase
+  const appSessionActive = localStorage.getItem('app_session_active');
+  const splashCompleted = localStorage.getItem('splash_completed');
+  
+  // SECURITY FIX: Show loading state instead of null during initialization
+  if (!appSessionActive || !splashCompleted) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-[#126987]">
+        <div className="text-white">Loading...</div>
+      </div>
+    );
+  }
   
   // Normal protection logic after initialization
   if (!user && !isLoading) {
@@ -119,10 +128,6 @@ function AppRoutes() {
         // COLD START: App was fully closed/terminated - always show splash sequence
         console.log('Cold start detected - showing splash sequence');
         
-        // Initialize session flags to prevent stuck loading states
-        localStorage.setItem('app_session_active', 'true');
-        localStorage.setItem('splash_completed', 'true');
-        
         // Reset all splash-related flags for fresh start
         setSplashShown(false);
         localStorage.removeItem('splash_completed');
@@ -148,10 +153,6 @@ function AppRoutes() {
       } else if (startType === 'warm') {
         // WARM START: App was backgrounded - restore exactly where user left off
         console.log('Warm start detected - restoring previous state');
-        
-        // Initialize session flags to prevent stuck loading states
-        localStorage.setItem('app_session_active', 'true');
-        localStorage.setItem('splash_completed', 'true');
         
         localStorage.removeItem('app_background_time');
         

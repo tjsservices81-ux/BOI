@@ -48,8 +48,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           console.error('localStorage access failed, maintaining current state:', storageError);
           // Don't change user state on storage access errors
         }
-        
-        // Always resolve loading state quickly to prevent stuck animations
         if (isMounted) {
           setIsLoading(false);
           setIsInitialized(true);
@@ -64,19 +62,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    // Initialize immediately, then force loading false after 100ms max
     initializeAuth();
-    
-    const loadingTimeout = setTimeout(() => {
-      if (isMounted) {
-        setIsLoading(false);
-        setIsInitialized(true);
-      }
-    }, 100);
     
     return () => {
       isMounted = false;
-      clearTimeout(loadingTimeout);
     };
   }, []);
 

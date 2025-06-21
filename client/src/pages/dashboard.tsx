@@ -1,8 +1,8 @@
 import { ChevronRight, User } from "lucide-react";
 import { useLocation } from "wouter";
 import { useState, useEffect, useRef } from "react";
-// import SpendingVisualization from "../components/SpendingVisualization";
-// import SpendingInsights from "../components/SpendingInsights";
+import SpendingVisualization from "../components/SpendingVisualization";
+import SpendingInsights from "../components/SpendingInsights";
 import { UserDataManager } from "../utils/userDataManager";
 import { StateManager } from "../utils/stateManager";
 
@@ -251,8 +251,8 @@ export default function Dashboard() {
 
   return (
     <div className={`page-container h-screen bg-white overflow-hidden flex flex-col ios-safe-bottom relative page-fade-slide-in ${isNavigating ? 'dashboard-exit' : ''}`} style={{ maxHeight: '100vh' }}>
-      {/* Ambient spending visualization background - temporarily disabled for performance */}
-      {/* <SpendingVisualization /> */}
+      {/* Ambient spending visualization background */}
+      <SpendingVisualization />
       
       {/* Blue header bar */}
       <div className="bg-[#126987] flex items-end justify-between px-4 pb-3 flex-shrink-0" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px) + 12px, 56px)' }}>

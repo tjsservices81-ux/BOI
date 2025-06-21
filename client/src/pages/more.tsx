@@ -1,25 +1,11 @@
 import { useLocation } from "wouter";
 import { ChevronLeft, User, HelpCircle, Info, Settings, Shield, Building2, MessageCircle } from "lucide-react";
-import { useState, useEffect } from "react";
-import LoadingStateManager from "../utils/loadingStateManager";
+import { useState } from "react";
 
 export default function More() {
   const [, setLocation] = useLocation();
   const [isNavigating, setIsNavigating] = useState(false);
   const [isLoadingChat, setIsLoadingChat] = useState(false);
-
-  // Reset loading states on component mount/unmount
-  useEffect(() => {
-    setIsLoadingChat(false);
-    setIsNavigating(false);
-    LoadingStateManager.resetComponent('more');
-    
-    return () => {
-      setIsLoadingChat(false);
-      setIsNavigating(false);
-      LoadingStateManager.resetComponent('more');
-    };
-  }, []);
 
   const handleNavigation = (path: string) => {
     setIsNavigating(true);
@@ -31,22 +17,11 @@ export default function More() {
   const handleLiveChatClick = () => {
     setIsLoadingChat(true);
     // Simulate loading time for a realistic experience
-    const timeoutId = setTimeout(() => {
+    setTimeout(() => {
       setIsLoadingChat(false);
       // Dispatch global event to open persistent live chat
       window.dispatchEvent(new CustomEvent('openLiveChat'));
     }, 1200); // 1.2 seconds loading
-    
-    // Safety fallback to prevent stuck loading state
-    const fallbackTimeoutId = setTimeout(() => {
-      setIsLoadingChat(false);
-    }, 3000); // Maximum 3 seconds
-    
-    // Cleanup on component unmount
-    return () => {
-      clearTimeout(timeoutId);
-      clearTimeout(fallbackTimeoutId);
-    };
   };
 
   return (

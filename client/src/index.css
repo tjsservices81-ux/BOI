@@ -33,36 +33,6 @@ input[type="text"], input[type="email"], input[type="password"], textarea {
   -webkit-text-size-adjust: 100%;
 }
 
-/* Android button visibility fixes */
-button[type="submit"] {
-  -webkit-appearance: none !important;
-  -moz-appearance: none !important;
-  appearance: none !important;
-  background-clip: padding-box !important;
-  border: none !important;
-  outline: none !important;
-  -webkit-transform: translateZ(0) !important;
-  transform: translateZ(0) !important;
-  will-change: transform !important;
-  backface-visibility: hidden !important;
-  -webkit-backface-visibility: hidden !important;
-}
-
-/* Android Chrome specific button fixes */
-@media screen and (-webkit-min-device-pixel-ratio: 1) {
-  button[type="submit"] {
-    position: relative !important;
-    z-index: 100 !important;
-    display: block !important;
-    width: 100% !important;
-    min-height: 48px !important;
-    touch-action: manipulation !important;
-    -webkit-touch-callout: none !important;
-    -webkit-user-select: none !important;
-    user-select: none !important;
-  }
-}
-
 /* iOS specific keyboard handling */
 @supports (-webkit-touch-callout: none) {
   .chat-container {
