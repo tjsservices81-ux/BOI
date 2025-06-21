@@ -478,6 +478,131 @@ html {
   transform: scale(0.98);
 }
 
+/* Android-specific touch transparency bug fix */
+@media screen and (max-width: 768px) and (-webkit-min-device-pixel-ratio: 1) {
+  /* Detect Android devices specifically */
+  
+  /* Override any outline, background, or opacity changes on touch */
+  button,
+  input,
+  textarea,
+  select,
+  [role="button"],
+  .ios-button,
+  .ios-input,
+  .ios-card {
+    outline: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+  }
+  
+  /* Force background and styling to stay visible on active/focus */
+  button:active,
+  button:focus,
+  input:active,
+  input:focus,
+  textarea:active,
+  textarea:focus,
+  select:active,
+  select:focus,
+  [role="button"]:active,
+  [role="button"]:focus,
+  .ios-button:active,
+  .ios-button:focus,
+  .ios-input:active,
+  .ios-input:focus,
+  .ios-card:active,
+  .ios-card:focus {
+    opacity: 1 !important;
+    background-color: inherit !important;
+    background-image: inherit !important;
+    border-color: inherit !important;
+    color: inherit !important;
+    outline: none !important;
+    box-shadow: inherit !important;
+    /* Prevent Android WebView from making elements transparent */
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    transform: scale(0.98) !important;
+    transition: transform 0.1s ease !important;
+  }
+  
+  /* Specific fixes for common button classes */
+  .bg-green-600:active,
+  .bg-blue-600:active,
+  .bg-\[#126987\]:active,
+  .bg-gray-50:active,
+  .bg-white:active,
+  .hover\:bg-gray-100:active,
+  .hover\:bg-gray-50:active {
+    background-color: inherit !important;
+    opacity: 1 !important;
+  }
+  
+  /* Login and form button specific fixes */
+  button[type="submit"]:active,
+  button[type="submit"]:focus,
+  .login-button:active,
+  .login-button:focus,
+  .confirm-button:active,
+  .confirm-button:focus {
+    background-color: inherit !important;
+    color: inherit !important;
+    border-color: inherit !important;
+    opacity: 1 !important;
+  }
+  
+  /* Additional Android WebView fixes */
+  *:active,
+  *:focus {
+    -webkit-tap-highlight-color: transparent !important;
+    outline: none !important;
+  }
+  
+  /* Prevent any element from becoming transparent on touch */
+  *:active {
+    opacity: 1 !important;
+    background-color: inherit !important;
+    color: inherit !important;
+    border-color: inherit !important;
+    filter: none !important;
+    /* Force hardware acceleration to prevent rendering issues */
+    transform: translateZ(0) !important;
+    -webkit-transform: translateZ(0) !important;
+    backface-visibility: hidden !important;
+    -webkit-backface-visibility: hidden !important;
+  }
+  
+  /* Specific element overrides for Android touch issues */
+  button:active,
+  input[type="submit"]:active,
+  input[type="button"]:active,
+  .bg-green-600:active,
+  .bg-blue-600:active,
+  .bg-\[#126987\]:active {
+    opacity: 1 !important;
+    background-color: inherit !important;
+    background-image: inherit !important;
+    /* Force background to stay visible */
+    background: inherit !important;
+  }
+  
+  /* Force visible state on common interactive elements */
+  .ios-button:active,
+  .ios-input:active,
+  .ios-card:active,
+  button:active,
+  input:active {
+    visibility: visible !important;
+    opacity: 1 !important;
+    /* Prevent webkit from changing background */
+    -webkit-appearance: none !important;
+    background-color: inherit !important;
+  }
+}
+
 /* Prevent invisible text during font load */
 .font-loading {
   font-family: 'OpenSans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
