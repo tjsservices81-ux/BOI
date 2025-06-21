@@ -53,11 +53,13 @@ export function BiometricAuthProvider({ children }: { children: React.ReactNode 
         } else if (data.isLoggedIn && !data.needsBiometric) {
           // User has valid backend session - trust the backend validation
           // Backend already validates user existence during session validation
-          login({
-            id: data.user.id,
-            name: data.user.name,
-            email: data.user.email
-          });
+          if (login) {
+            login({
+              id: data.user.id,
+              name: data.user.name,
+              email: data.user.email
+            });
+          }
           
           setState(prev => ({
             ...prev,
@@ -147,11 +149,13 @@ export function BiometricAuthProvider({ children }: { children: React.ReactNode 
         const data = await response.json();
         if (data.success) {
           // Call main auth context login to establish shared session
-          login({
-            id: data.user.id,
-            name: data.user.name,
-            email: data.user.email
-          });
+          if (login) {
+            login({
+              id: data.user.id,
+              name: data.user.name,
+              email: data.user.email
+            });
+          }
           
           // Wait for login to complete, then update biometric state
           await new Promise(resolve => setTimeout(resolve, 100));
