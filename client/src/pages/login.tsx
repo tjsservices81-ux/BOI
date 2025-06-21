@@ -547,31 +547,44 @@ export default function Login() {
       return;
     }
 
-    // Check if user exists
-    if (!UserDataManager.userExists(customerNumber)) {
+    try {
+      // Call backend login API to establish session
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ customerNumber, pin })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Set user in auth context
+        login({
+          id: data.user.id,
+          name: data.user.name,
+          email: data.user.email
+        });
+        setPinVerified(true);
+        
+        // Navigate to biometric screen for device verification
+        navigate('/biometric-auth');
+      } else {
+        const errorData = await response.json();
+        toast({
+          title: "Login Failed",
+          description: errorData.message || "Invalid credentials",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
       toast({
         title: "Login Failed",
-        description: "Customer number not found. Please create an account first.",
+        description: "Unable to connect to server. Please try again.",
         variant: "destructive",
       });
-      return;
     }
-    
-    // Initialize fresh account data and verify PIN
-    UserDataManager.initializeFreshAccount(customerNumber);
-    UserDataManager.recordLoginTime(customerNumber);
-    const userProfile = UserDataManager.getUserProfile();
-    if (userProfile) {
-      login({
-        id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
-        name: userProfile.name,
-        email: userProfile.email
-      });
-    }
-    setPinVerified(true);
-    
-    // Navigate to dashboard after verification
-    navigate('/dashboard');
   };
 
   const requestLocation = () => {

@@ -60,7 +60,13 @@ export function BiometricAuthProvider({ children }: { children: React.ReactNode 
             const userExists = adminData.users?.find((u: any) => u.customerNumber === data.user?.customerNumber);
             
             if (userExists && !userExists.isDisabled) {
-              // User exists and is not disabled by admin
+              // User exists and is not disabled - set main auth context
+              login({
+                id: data.user.id,
+                name: data.user.name,
+                email: data.user.email
+              });
+              
               setState(prev => ({
                 ...prev,
                 needsBiometric: false,
@@ -82,6 +88,12 @@ export function BiometricAuthProvider({ children }: { children: React.ReactNode 
           } else {
             // Admin check failed - allow login but log warning
             console.warn('Admin status check failed, allowing login');
+            login({
+              id: data.user.id,
+              name: data.user.name,
+              email: data.user.email
+            });
+            
             setState(prev => ({
               ...prev,
               needsBiometric: false,
