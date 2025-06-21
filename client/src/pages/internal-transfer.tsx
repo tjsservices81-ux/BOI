@@ -35,6 +35,7 @@ export default function InternalTransfer() {
   const [accounts, setAccounts] = useState<any[]>([]);
   const [selectedFromAccount, setSelectedFromAccount] = useState<any>(null);
   const [selectedToAccount, setSelectedToAccount] = useState<any>(null);
+  const [userCurrency, setUserCurrency] = useState<Currency>('EUR');
 
   const form = useForm<InternalTransferData>({
     resolver: zodResolver(internalTransferSchema),
@@ -49,6 +50,7 @@ export default function InternalTransfer() {
   useEffect(() => {
     const userAccounts = UserDataManager.getUserData('bankAccounts', []);
     setAccounts(userAccounts);
+    setUserCurrency(getUserCurrency());
   }, []);
 
   useEffect(() => {
@@ -449,7 +451,7 @@ export default function InternalTransfer() {
                 <option value="">Select source account</option>
                 {accounts.map((account) => (
                   <option key={account.id} value={account.id}>
-                    {account.displayName} - €{typeof account.balance === 'string' ? parseFloat(account.balance).toFixed(2) : account.balance.toFixed(2)}
+                    {account.displayName} - {formatCurrency(account.balance, userCurrency)}
                   </option>
                 ))}
               </select>

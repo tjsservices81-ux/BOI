@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { ChevronLeft, ChevronRight, CreditCard, Home, DollarSign, Car, Building2, Briefcase } from "lucide-react";
+import { getUserCurrency, type Currency } from "../utils/currencyUtils";
 
 interface ProductTile {
   id: string;
@@ -14,6 +15,18 @@ interface ProductTile {
 export default function Apply() {
   const locationHook = useLocation();
   const [, navigate] = locationHook || [null, () => {}];
+  const [userCurrency, setUserCurrency] = useState<Currency>('EUR');
+
+  useEffect(() => {
+    setUserCurrency(getUserCurrency());
+  }, []);
+
+  const getPersonalLoanDescription = () => {
+    const currencySymbol = userCurrency === 'EUR' ? '€' : '£';
+    const minAmount = userCurrency === 'EUR' ? '2,000' : '1,500';
+    const maxAmount = userCurrency === 'EUR' ? '75,000' : '60,000';
+    return `Fixed rate personal loans from ${currencySymbol}${minAmount} to ${currencySymbol}${maxAmount}`;
+  };
 
   const products: ProductTile[] = [
     {
@@ -26,7 +39,7 @@ export default function Apply() {
     {
       id: 'personal-loan',
       title: 'Personal Loan',
-      description: 'Fixed rate personal loans from €2,000 to €75,000',
+      description: getPersonalLoanDescription(),
       icon: '/Loan_medium.png',
       category: 'Loans',
       popular: true
