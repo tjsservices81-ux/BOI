@@ -457,7 +457,8 @@ export default function InternalTransfer() {
               </label>
               <select
                 {...form.register('toAccount')}
-                className="input-unified unified-font w-full text-gray-900"
+                className="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#126987] focus:border-transparent text-gray-900"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
               >
                 <option value="">Select destination account</option>
                 {accounts.filter(acc => acc.id !== form.watch('fromAccount')).map((account) => (

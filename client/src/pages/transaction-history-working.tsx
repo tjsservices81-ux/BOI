@@ -224,7 +224,7 @@ export default function TransactionHistoryWorking() {
       style={{ backgroundColor: '#f9fafb', height: '100vh', maxHeight: '100vh' }}>
       <div className="bg-[#126987] text-white p-6 flex-shrink-0">
         <div className="flex items-center justify-between mb-4">
-          <button onClick={() => navigateWithAnimation('/dashboard', 'slide-left')} className="flex items-center text-white button-unified">
+          <button onClick={() => navigateWithAnimation('/dashboard', 'slide-left')} className="flex items-center text-white">
             <ChevronLeft className="w-5 h-5 mr-2" />
             <span className="font-semibold text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
               {accountInfo?.displayName || 'Account'}

@@ -261,7 +261,7 @@ export default function Dashboard() {
         </div>
         <div className="flex items-center">
           <button 
-            className="text-white hover:bg-white/20 h-8 w-8 rounded-full flex items-center justify-center button-unified gpu-accelerated"
+            className="text-white hover:bg-white/20 h-8 w-8 rounded-full flex items-center justify-center touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-95"
             onClick={() => navigateWithAnimation('/profile', 'slide-up')}
           >
             <User className="h-5 w-5" />
@@ -290,7 +290,7 @@ export default function Dashboard() {
       {/* Main content area - white card with rounded top corners */}
       <div 
         ref={scrollContainerRef}
-        className="main-scroll-container flex-1 px-0 -mt-8 overflow-y-auto scroll-unified" 
+        className="main-scroll-container flex-1 px-0 -mt-8 overflow-y-auto ios-scroll" 
         style={{ maxHeight: 'calc(100vh - 200px)' }}
         data-scroll-container
         data-scroll-route="/dashboard"
@@ -300,21 +300,21 @@ export default function Dashboard() {
             {(accounts && Array.isArray(accounts)) && accounts.map((account, index) => (
               <button 
                 key={account.id}
-                className={`account-card-unified gpu-accelerated stagger-item ${isNavigating ? 'opacity-50 pointer-events-none' : ''}`}
+                className={`w-full flex items-center justify-between border-b border-gray-100 hover:bg-gray-50 touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-98 haptic-feedback relative stagger-item card-interactive ${isNavigating ? 'opacity-50 pointer-events-none' : ''}`}
                 onClick={() => navigateWithAnimation(`/transactions/${account.id}`, 'slide-right')}
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 {/* Colored side bar */}
                 <div className={`absolute left-0 top-0 bottom-0 w-1 ${getAccountColor(account.accountType)}`}></div>
                 
-                <div className="flex items-center justify-between w-full">
+                <div className="flex items-center justify-between w-full px-6 py-4">
                   <div className="text-left">
-                    <p className="account-name-unified unified-font">{account.displayName.toUpperCase()}</p>
-                    <p className="account-number-unified unified-font">{account.accountNumber}</p>
+                    <p className="font-medium text-sm text-gray-800 boi-regular-font">{account.displayName.toUpperCase()}</p>
+                    <p className="text-xs text-gray-500 mt-0.5 boi-regular-font">{account.accountNumber}</p>
                   </div>
                   <div className="flex items-center">
-                    <p className="balance-amount-unified unified-font">€{parseFloat(account.balance).toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-                    <ChevronRight className="chevron-unified" />
+                    <p className="text-lg font-semibold text-[#126987] boi-semibold-font">€{parseFloat(account.balance).toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                    <ChevronRight className="h-4 w-4 ml-3 text-gray-400" />
                   </div>
                 </div>
               </button>

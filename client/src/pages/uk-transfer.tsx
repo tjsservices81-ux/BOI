@@ -690,7 +690,8 @@ export default function UkTransfer() {
               </label>
               <select
                 {...form.register('fromAccount')}
-                className="input-unified unified-font w-full text-sm bg-white"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
               >
                 <option value="">Select account</option>
                 {accounts.map(account => (

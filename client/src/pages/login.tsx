@@ -1078,18 +1078,19 @@ export default function Login() {
                 <button 
                   onClick={handleLoginButton}
                   disabled={isLoading}
-                  className={`button-unified unified-font w-full text-sm mb-3 ${
+                  className={`w-full py-2.5 ios-button font-semibold text-sm mb-3 transition-all duration-200 ${
                     biometricVerified || pinVerified 
-                      ? 'bg-[#126987] text-white hover:bg-[#3a5a65]' 
+                      ? 'bg-[#126987] text-white hover:bg-[#3a5a65] active:scale-95' 
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   } disabled:opacity-50`}
+                  style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}
                 >
                   {isLoading ? "Logging in..." : "Log in"}
                 </button>
 
                 {/* Forgot PIN */}
                 <div className="text-center mb-3">
-                  <button className="text-[#126987] text-xs flex items-center justify-center space-x-1 button-unified unified-font">
+                  <button className="text-[#126987] text-xs flex items-center justify-center space-x-1 active:scale-95 transition-transform" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif' }}>
                     <span>Forgot your PIN?</span>
                     <ExternalLink className="w-2.5 h-2.5" />
                   </button>
@@ -1109,7 +1110,7 @@ export default function Login() {
 
               {/* PIN Option Card - separate gray card */}
               <button 
-                className="button-unified w-full bg-gray-50 border border-gray-200 p-3 flex items-center space-x-3 hover:bg-gray-100"
+                className="w-full bg-gray-50 border border-gray-200 ios-card p-3 flex items-center space-x-3 hover:bg-gray-100 active:scale-98 transition-all duration-150"
                 onClick={() => {
                   console.log("PIN button clicked, current showPinLogin:", showPinLogin);
                   setShowPinLogin(!showPinLogin);
@@ -1204,14 +1205,14 @@ export default function Login() {
         <div className="fixed bottom-0 left-0 right-0 bg-[#126987]/95 backdrop-blur-sm px-4 py-3 ios-safe-bottom">
           <div className="flex justify-evenly items-center w-full max-w-xs mx-auto">
             <button 
-              className="button-unified flex flex-col items-center space-y-1 py-2 hover:opacity-80"
+              className="flex flex-col items-center space-y-1 py-2 transition-opacity duration-150 hover:opacity-80"
               onClick={handleATMLocatorOpen}
               disabled={isNavigating || isLoading}
             >
               <MapPin className="w-5 h-5 text-white" />
               <span className="text-white text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>ATM/Branch</span>
             </button>
-            <button className="button-unified flex flex-col items-center space-y-1 py-2 hover:opacity-80">
+            <button className="flex flex-col items-center space-y-1 py-2 transition-opacity duration-150 hover:opacity-80">
               <Shield className="w-5 h-5 text-white" />
               <span className="text-white text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Security</span>
             </button>
@@ -1237,7 +1238,7 @@ export default function Login() {
               </h3>
               <button 
                 onClick={() => setShowMoreMenu(false)}
-                className="button-unified w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200"
+                className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
               >
                 <span className="text-gray-600 text-lg">×</span>
               </button>
@@ -1287,7 +1288,8 @@ export default function Login() {
             
             <button 
               onClick={() => setShowMoreMenu(false)}
-              className="button-unified unified-font w-full mt-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200"
+              className="w-full mt-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+              style={{ fontFamily: 'OpenSans, sans-serif' }}
             >
               Close
             </button>
@@ -1338,7 +1340,8 @@ export default function Login() {
                   type="text"
                   value={newUserData.name}
                   onChange={(e) => setNewUserData({...newUserData, name: e.target.value})}
-                  className="input-unified unified-font w-full"
+                  className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
                   placeholder="Enter your full name"
                   autoComplete="name"
                   required
@@ -1354,7 +1357,8 @@ export default function Login() {
                   type="email"
                   value={newUserData.email}
                   onChange={(e) => setNewUserData({...newUserData, email: e.target.value})}
-                  className="input-unified unified-font w-full"
+                  className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
                   placeholder="Enter your email address"
                   autoComplete="email"
                   required
@@ -1370,7 +1374,8 @@ export default function Login() {
                   type="tel"
                   value={newUserData.phone}
                   onChange={(e) => setNewUserData({...newUserData, phone: e.target.value})}
-                  className="input-unified unified-font w-full"
+                  className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
                   placeholder="+353 XX XXX XXXX"
                   autoComplete="tel"
                   required
@@ -1423,7 +1428,7 @@ export default function Login() {
               </h2>
               <button 
                 onClick={() => setShowAdminLogin(false)}
-                className="button-unified w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center"
+                className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center active:scale-95 transition-transform"
               >
                 <span className="text-gray-600 text-lg">×</span>
               </button>
