@@ -368,14 +368,9 @@ export default function Login() {
         if (!verification.canProceed) {
           toast({
             title: "Account Verification Required",
-            description: verification.message || "Please complete account verification to continue.",
+            description: verification.message || "Please contact support to complete account verification.",
             variant: "destructive",
           });
-          
-          // Redirect to appropriate verification flow
-          setTimeout(() => {
-            navigate(verification.redirectTo || "/verify-account");
-          }, 2000);
           return;
         }
         
@@ -639,15 +634,10 @@ export default function Login() {
         setBiometricVerified(false);
         
         toast({
-          title: "Account Verification Required",
-          description: verification.message || "Please complete account verification to continue.",
+          title: "Account Verification Required", 
+          description: verification.message || "Please contact support to complete account verification.",
           variant: "destructive",
         });
-        
-        // Redirect to appropriate verification flow
-        setTimeout(() => {
-          handleNavigation(verification.redirectTo || "/verify-account");
-        }, 2000);
         return;
       }
 

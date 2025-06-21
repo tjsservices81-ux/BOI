@@ -236,12 +236,12 @@ export class AccountVerificationManager {
         verification = await this.checkOfflineVerification(customerNumber);
       }
 
-      // If not verified, block access
+      // If not verified, block access but don't redirect to signup
       if (!verification.isVerified) {
         return {
           canProceed: false,
-          redirectTo: '/signup',
-          message: 'Account not verified. Please complete signup to continue.',
+          redirectTo: '/login',
+          message: 'Account not verified. Please contact support to complete account verification.',
           isOfflineValid: false
         };
       }
@@ -250,7 +250,7 @@ export class AccountVerificationManager {
       if (!isOnline && !verification.verifiedOnline) {
         return {
           canProceed: false,
-          redirectTo: '/verify-account',
+          redirectTo: '/login',
           message: 'Please connect to the internet to verify your account status.',
           isOfflineValid: false
         };
@@ -266,7 +266,7 @@ export class AccountVerificationManager {
       console.error('AccountVerificationManager: Silent verification check failed:', error);
       return {
         canProceed: false,
-        redirectTo: '/signup',
+        redirectTo: '/login',
         message: 'Unable to verify account status. Please try again.',
         isOfflineValid: false
       };
@@ -306,7 +306,7 @@ export class AccountVerificationManager {
       return {
         allowed: false,
         reason: verification.reason,
-        redirectTo: '/signup'
+        redirectTo: '/login'
       };
     }
 
@@ -314,7 +314,7 @@ export class AccountVerificationManager {
       return {
         allowed: false,
         reason: 'Offline access requires recent online verification',
-        redirectTo: '/verify-account'
+        redirectTo: '/login'
       };
     }
 

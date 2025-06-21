@@ -119,9 +119,9 @@ function VerifiedRoute({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Redirect if verification failed
+  // Redirect if verification failed (but only redirect to login, not signup)
   if (verificationStatus === 'unverified' || verificationStatus === 'error') {
-    return <Redirect to={redirectPath} />;
+    return <Redirect to="/login" />;
   }
 
   // Render protected content for verified users
