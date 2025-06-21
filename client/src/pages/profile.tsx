@@ -497,11 +497,20 @@ export default function Profile() {
     const currentCustomerNumber = UserDataManager.getCurrentUser();
     if (!currentCustomerNumber) return;
 
+    // Update local state immediately for responsive UI
+    if (toggleType === 'card') {
+      setShowCardTransfer(value);
+    } else {
+      setShowEmailTransfer(value);
+    }
+
     try {
       const updateData = {
         [toggleType === 'card' ? 'showCardTransfer' : 'showEmailTransfer']: value
       };
 
+      console.log('Updating transfer toggle:', toggleType, value);
+      
       const response = await fetch(`/api/profile/${currentCustomerNumber}`, {
         method: 'PUT',
         headers: {
@@ -511,19 +520,16 @@ export default function Profile() {
       });
 
       if (response.ok) {
-        // Update local state
-        if (toggleType === 'card') {
-          setShowCardTransfer(value);
-        } else {
-          setShowEmailTransfer(value);
-        }
+        const updatedData = await response.json();
+        console.log('Toggle update successful:', updatedData);
         
-        // Update local storage
+        // Update local storage with the confirmed values
         const allUsers = JSON.parse(localStorage.getItem('bankUsers') || '{}');
         if (allUsers[currentCustomerNumber]) {
           allUsers[currentCustomerNumber] = {
             ...allUsers[currentCustomerNumber],
-            [toggleType === 'card' ? 'showCardTransfer' : 'showEmailTransfer']: value
+            showCardTransfer: updatedData.showCardTransfer ?? true,
+            showEmailTransfer: updatedData.showEmailTransfer ?? true
           };
           localStorage.setItem('bankUsers', JSON.stringify(allUsers));
         }
