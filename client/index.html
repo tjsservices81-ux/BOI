@@ -275,36 +275,9 @@
           }
         }, 100);
         
-        // Load main React app - use static script tag approach for better PWA compatibility
-        try {
-          // Check if script is already loaded
-          const existingScript = document.querySelector('script[src="/client/src/main.tsx"]');
-          if (existingScript) {
-            console.log('Main script already exists, checking app mount...');
-            return;
-          }
-          
-          const script = document.createElement('script');
-          script.type = 'module';
-          script.src = '/client/src/main.tsx';
-          script.async = true;
-          
-          script.onload = () => {
-            console.log('Main script loaded successfully');
-          };
-          
-          script.onerror = (error) => {
-            console.error('Script load error:', error);
-            clearTimeout(appLoadTimeout);
-            showError('Failed to load app resources. Please check your connection.');
-          };
-          
-          document.head.appendChild(script);
-        } catch (error) {
-          console.error('Script creation error:', error);
-          clearTimeout(appLoadTimeout);
-          showError('Failed to initialize app. Please refresh the page.');
-        }
+        // The main React app script is already in the HTML
+        // Just wait for it to mount
+        console.log('Waiting for React app to mount...');
       }
       
       // Enhanced service worker registration for mobile PWA
@@ -505,7 +478,7 @@
         });
       }
     </script>
-    <script type="module" src="/client/src/main.tsx"></script>
+    <script type="module" src="/src/main.tsx"></script>
     <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
     <script type="text/javascript" src="https://replit.com/public/js/replit-dev-banner.js"></script>
   </body>
