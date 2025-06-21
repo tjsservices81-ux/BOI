@@ -296,7 +296,7 @@ export default function Login() {
 
       if (response.ok && result.success) {
         // OTC is valid, create the account
-        UserDataManager.registerUser(pendingAccountData);
+        await UserDataManager.registerUser(pendingAccountData);
         UserDataManager.initializeFreshAccount(pendingAccountData.customerNumber);
 
         toast({

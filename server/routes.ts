@@ -404,9 +404,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Create user in database with proper date conversion
+      const { dateCreated, ...userDataWithoutDate } = userData;
       const newUser = await storage.createUser({
-        ...userData,
-        dateCreated: userData.dateCreated ? new Date(userData.dateCreated) : new Date()
+        ...userDataWithoutDate,
+        dateCreated: dateCreated ? new Date(dateCreated) : new Date()
       });
       
       console.log(`✅ NEW USER CREATED: ${newUser.name} (${newUser.customerNumber}) with PIN: ${newUser.pin}`);
