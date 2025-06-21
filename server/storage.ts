@@ -1,6 +1,6 @@
 import { 
   users, accounts, transactions, payees, scheduledPayments, statements,
-  chatMessages, chatResponses, chatSessions,
+  chatMessages, chatResponses, chatSessions, permanentUserSessions,
   type User, type Account, type Transaction, type Payee, type ScheduledPayment, type Statement,
   type ChatMessage, type ChatResponse, type ChatSession,
   type InsertUser, type InsertAccount, type InsertTransaction, type InsertPayee,
@@ -48,6 +48,10 @@ export interface IStorage {
   getChatSession(sessionId: string): Promise<ChatSession | undefined>;
   createChatSession(session: InsertChatSession): Promise<ChatSession>;
   endChatSession(sessionId: string): Promise<void>;
+  
+  // Permanent session operations for security
+  createPermanentUserSession(userId: number, customerNumber: string, metadata: any): Promise<string>;
+  validatePermanentUserSession(sessionToken: string): Promise<User | undefined>;
   getChatResponses(): Promise<ChatResponse[]>;
   createChatResponse(response: InsertChatResponse): Promise<ChatResponse>;
   updateChatResponse(id: number, updates: Partial<ChatResponse>): Promise<ChatResponse | undefined>;
@@ -467,6 +471,61 @@ class DatabaseStorage implements IStorage {
 
   async deleteChatResponse(id: number): Promise<void> {
     this.chatResponses.delete(id);
+  }
+
+  // Permanent session operations for bulletproof security
+  async createPermanentUserSession(userId: number, customerNumber: string, metadata: any): Promise<string> {
+    const sessionToken = `perm_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    try {
+      // Insert into database with permanent session data
+      await db.insert(permanentUserSessions).values({
+        sessionToken,
+        userId,
+        customerNumber,
+        deviceInfo: JSON.stringify(metadata),
+        createdAt: new Date(),
+        isActive: true
+      });
+      
+      console.log(`🔐 Permanent session created in database: ${sessionToken} for user ${customerNumber}`);
+      return sessionToken;
+    } catch (error) {
+      console.error('Failed to create permanent session:', error);
+      throw error;
+    }
+  }
+
+  async validatePermanentUserSession(sessionToken: string): Promise<User | undefined> {
+    try {
+      // Query permanent session from database
+      const session = await db.select()
+        .from(permanentUserSessions)
+        .where(eq(permanentUserSessions.sessionToken, sessionToken))
+        .limit(1);
+
+      if (session.length === 0 || !session[0].isActive) {
+        console.log(`❌ Invalid or inactive permanent session: ${sessionToken}`);
+        return undefined;
+      }
+
+      // Get user from database
+      const user = await db.select()
+        .from(users)
+        .where(eq(users.id, session[0].userId))
+        .limit(1);
+
+      if (user.length === 0) {
+        console.log(`❌ User not found for session: ${sessionToken}`);
+        return undefined;
+      }
+
+      console.log(`✅ Valid permanent session: ${sessionToken} for user ${user[0].customerNumber}`);
+      return user[0];
+    } catch (error) {
+      console.error('Failed to validate permanent session:', error);
+      return undefined;
+    }
   }
 
   // Admin operations

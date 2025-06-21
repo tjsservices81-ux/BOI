@@ -241,7 +241,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Create permanent session in database - NEVER EXPIRES
       PermanentAuthManager.createPermanentSession(user.customerNumber);
-      const sessionToken = await storage.createPermanentSession(
+      const sessionToken = await storage.createPermanentUserSession(
         user.id,
         user.customerNumber,
         {
@@ -366,7 +366,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Validate permanent session token directly
-      const user = await storage.validatePermanentSession(sessionToken);
+      const user = await storage.validatePermanentUserSession(sessionToken);
       
       if (user) {
         console.log(`✅ PERMANENT SESSION VERIFIED: ${user.name} (ID: ${user.id})`);
@@ -407,7 +407,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Validate permanent session
-      const user = await storage.validatePermanentSession(sessionToken);
+      const user = await storage.validatePermanentUserSession(sessionToken);
       
       if (!user) {
         return res.status(401).json({ success: false, message: 'Invalid session' });
