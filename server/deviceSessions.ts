@@ -226,8 +226,8 @@ export async function getUserSessions() {
           existing.source = `${existing.source},memory`;
         }
       });
-    } catch (storageError) {
-      console.warn('Memory storage access failed:', storageError.message);
+    } catch (storageError: any) {
+      console.warn('Memory storage access failed:', storageError?.message || 'Unknown error');
     }
     
     // 3. Update with active device session data for currently logged-in users
@@ -273,7 +273,7 @@ export async function getUserSessions() {
         if (data.users && Array.isArray(data.users)) {
           console.log(`📁 Found ${data.users.length} users in persistent storage file`);
           
-          data.users.forEach(([id, user]) => {
+          data.users.forEach(([id, user]: [any, any]) => {
             if (user.customerNumber && !userSessionsMap.has(user.customerNumber)) {
               userSessionsMap.set(user.customerNumber, {
                 sessionId: `file_user_${user.id}`,
@@ -292,8 +292,8 @@ export async function getUserSessions() {
           });
         }
       }
-    } catch (fileError) {
-      console.warn('Persistent storage file access failed:', fileError.message);
+    } catch (fileError: any) {
+      console.warn('Persistent storage file access failed:', fileError?.message || 'Unknown error');
     }
     
     const allUsers = Array.from(userSessionsMap.values());
