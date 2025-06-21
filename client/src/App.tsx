@@ -10,6 +10,7 @@ import { SecurityWrapper } from "@/components/SecurityWrapper";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { StateManager } from "@/utils/stateManager";
 import { AppLifecycle } from "@/utils/appLifecycle";
+import { PlatformDetection } from "@/utils/platformDetection";
 import LiveChat from "@/components/LiveChat";
 
 
@@ -39,7 +40,16 @@ function ProtectedRoute({ children, fallback }: { children: React.ReactNode; fal
   const user = authHook?.user || null;
   const isLoading = authHook?.isLoading || false;
   
-  // Prevent any flash by immediately redirecting if no user
+  // Check if app is still in initialization phase
+  const appSessionActive = localStorage.getItem('app_session_active');
+  const splashCompleted = localStorage.getItem('splash_completed');
+  
+  // Don't redirect during cold start initialization - let splash/login flow complete
+  if (!appSessionActive || !splashCompleted) {
+    return null;
+  }
+  
+  // Normal protection logic after initialization
   if (!user && !isLoading) {
     return fallback ? <>{fallback}</> : <Redirect to="/login" />;
   }
@@ -87,64 +97,83 @@ function AppRoutes() {
   };
 
   
-  // Initialize app state with persistence support
+  // Initialize app state with proper cold/warm start detection
   useEffect(() => {
     const initializeApp = async () => {
       // Initialize cache persistence system
       const { UserDataManager } = await import('./utils/userDataManager');
       UserDataManager.initializeCachePersistence();
       
-      // Check persistent app state - no session dependency
-      const wasAppActive = localStorage.getItem('app_was_active');
+      // Determine if this is a cold start (app was fully closed) or warm start (app was minimized)
+      const appSessionActive = localStorage.getItem('app_session_active');
       const lastBackgroundTime = localStorage.getItem('app_background_time');
+      const splashCompleted = localStorage.getItem('splash_completed');
       
-      if (!wasAppActive) {
-        // Fresh app start - show splash but keep user logged in
-        setSplashShown(false);
-        localStorage.removeItem('app_background_time');
-        localStorage.setItem('app_was_active', 'true');
+      const isColdStart = !appSessionActive;
+      
+      if (isColdStart) {
+        // COLD START: App was fully closed/terminated - always show splash sequence
+        console.log('Cold start detected - showing splash sequence');
         
-        // Always try to restore user session
+        // Reset all splash-related flags for fresh start
+        setSplashShown(false);
+        localStorage.removeItem('splash_completed');
+        localStorage.removeItem('app_background_time');
+        localStorage.setItem('app_session_active', 'true');
+        
+        // Restore user session silently in background (permanent login)
         try {
-          const savedState = StateManager.restoreAppState();
+          const savedState = StateManager.restoreAppState(true); // Pass isColdStart flag
           if (savedState && savedState.user && !user) {
-            // Restore user session silently
             login(savedState.user);
           }
         } catch (error) {
           console.error('Failed to restore user session:', error);
         }
+        
       } else if (lastBackgroundTime) {
-        // App was backgrounded - always restore state regardless of time
+        // WARM START: App was backgrounded - restore exactly where user left off
+        console.log('Warm start detected - restoring previous state');
+        
         localStorage.removeItem('app_background_time');
         
         try {
-          const savedState = StateManager.restoreAppState();
+          const savedState = StateManager.restoreAppState(false); // Pass isWarmStart flag
           
           if (savedState && savedState.user && !user) {
-            // Restore user session silently
+            // Restore user session
             login(savedState.user);
             
-            // Restore route if different from current
-            if (savedState.currentRoute !== location && savedState.currentRoute !== '/login') {
+            // Restore exact route for warm start
+            if (savedState.currentRoute && savedState.currentRoute !== '/login' && savedState.currentRoute !== '/splash') {
               navigate(savedState.currentRoute);
             }
             
-            // Skip splash if restoring state
+            // Skip splash entirely for warm starts
             setSplashShown(true);
+            localStorage.setItem('splash_completed', 'true');
           } else {
-            // No valid saved state, show splash
+            // No valid saved state - fallback to cold start behavior
             setSplashShown(false);
+            localStorage.removeItem('splash_completed');
           }
         } catch (error) {
-          console.error('Failed to restore app state:', error);
+          console.error('Failed to restore warm start state:', error);
+          // Fallback to cold start behavior
           setSplashShown(false);
+          localStorage.removeItem('splash_completed');
         }
+        
       } else {
-        // No background time recorded - show splash but try to restore user
+        // UNCERTAIN STATE: Default to cold start behavior for safety
+        console.log('Uncertain state - defaulting to cold start behavior');
         setSplashShown(false);
+        localStorage.removeItem('splash_completed');
+        localStorage.setItem('app_session_active', 'true');
+        
+        // Try to restore user session
         try {
-          const savedState = StateManager.restoreAppState();
+          const savedState = StateManager.restoreAppState(true);
           if (savedState && savedState.user && !user) {
             login(savedState.user);
           }
@@ -172,42 +201,71 @@ function AppRoutes() {
     };
 
     initializeApp();
+  }, []);
+
+  // Consolidated lifecycle event handling to prevent conflicts
+  useEffect(() => {
+    let backgroundTimer: NodeJS.Timeout | null = null;
     
-    // Handle app lifecycle events directly
     const handleVisibilityChange = () => {
       if (document.hidden) {
-        // App going to background - save state and timestamp
+        // App going to background - mark for warm start and save state
         localStorage.setItem('app_background_time', Date.now().toString());
         if (user) {
           StateManager.handleVisibilityChange(location, user);
+        }
+      } else {
+        // App coming to foreground - this indicates warm start
+        if (backgroundTimer) {
+          clearTimeout(backgroundTimer);
+          backgroundTimer = null;
         }
       }
     };
 
     const handleBeforeUnload = () => {
-      // Save state but keep user logged in permanently
+      // App being terminated - mark for cold start on next launch
+      localStorage.removeItem('app_session_active');
       if (user) {
         StateManager.handleVisibilityChange(location, user);
       }
     };
 
     const handlePageHide = () => {
-      // Save state but keep user logged in permanently
-      if (user) {
-        StateManager.handleVisibilityChange(location, user);
+      // Page being hidden - potential app termination
+      backgroundTimer = setTimeout(() => {
+        localStorage.removeItem('app_session_active');
+      }, 1000); // Short delay to distinguish between backgrounding and termination
+    };
+
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (backgroundTimer) {
+        clearTimeout(backgroundTimer);
+        backgroundTimer = null;
+      }
+      
+      // If page was restored from cache, this is definitely a warm start
+      if (event.persisted) {
+        localStorage.setItem('app_session_active', 'true');
       }
     };
 
+    // Register single set of event listeners
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('beforeunload', handleBeforeUnload);
     window.addEventListener('pagehide', handlePageHide);
+    window.addEventListener('pageshow', handlePageShow);
     
     return () => {
+      if (backgroundTimer) {
+        clearTimeout(backgroundTimer);
+      }
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('pagehide', handlePageHide);
+      window.removeEventListener('pageshow', handlePageShow);
     };
-  }, []);
+  }, [user, location]);
 
 
 
@@ -302,15 +360,19 @@ function AppRoutes() {
 
 
 
-  // Listen for splash completion
+  // Listen for splash completion and mark it properly
   useEffect(() => {
     const handleSplashComplete = () => {
       setSplashTransitioning(true);
+      // Mark splash as completed in localStorage for proper state tracking
+      localStorage.setItem('splash_completed', 'true');
+      
       // Small delay to prevent flash, then complete transition
       setTimeout(() => {
         setSplashShown(true);
         setSplashTransitioning(false);
       }, 100);
+      
       const themeColorMeta = document.querySelector('meta[name="theme-color"]');
       if (themeColorMeta) {
         themeColorMeta.setAttribute('content', '#126987');
@@ -357,12 +419,24 @@ function AppRoutes() {
             <Route path="/login" component={Login} />
             <Route path="/more" component={More} />
             <Route path="/">
-              {/* Handle root route - always show proper sequence for cold starts */}
-              {!splashShown || splashTransitioning ? (
-                <Splash />
-              ) : (
-                <Login />
-              )}
+              {(() => {
+                // Proper cold/warm start detection for root route
+                const appSessionActive = localStorage.getItem('app_session_active');
+                const splashCompleted = localStorage.getItem('splash_completed');
+                
+                // Force splash for cold starts (no active session or incomplete splash)
+                if (!appSessionActive || (!splashShown && !splashCompleted)) {
+                  return <Splash />;
+                }
+                
+                // For warm starts with user authenticated, go directly to dashboard
+                if (user && splashCompleted) {
+                  return <Redirect to="/dashboard" />;
+                }
+                
+                // Default: show login after splash completion
+                return <Login />;
+              })()}
             </Route>
           <Route path="/dashboard">
             <ProtectedRoute>

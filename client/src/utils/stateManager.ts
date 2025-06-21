@@ -19,14 +19,26 @@ export class StateManager {
     }
   }
 
-  // Restore complete app state
-  static restoreAppState(): any {
+  // Restore complete app state with cold/warm start distinction
+  static restoreAppState(isColdStart = false): any {
     try {
       const saved = localStorage.getItem(this.STATE_KEY);
       if (saved) {
         const state = JSON.parse(saved);
-        // Always restore state regardless of time - users stay logged in permanently
-        return state;
+        
+        if (isColdStart) {
+          // Cold start: Only restore user auth, reset navigation to default
+          return {
+            user: state.user,
+            currentRoute: '/dashboard', // Default route after splash/login sequence
+            scrollPositions: {},
+            formData: {},
+            timestamp: state.timestamp
+          };
+        } else {
+          // Warm start: Restore complete state including exact navigation position
+          return state;
+        }
       }
     } catch (error) {
       console.error('Failed to restore app state:', error);
