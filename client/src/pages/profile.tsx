@@ -528,10 +528,22 @@ export default function Profile() {
           localStorage.setItem('bankUsers', JSON.stringify(allUsers));
         }
       } else {
-        console.error('Failed to update transfer toggle');
+        console.error('Failed to update transfer toggle - reverting state');
+        // Revert the toggle state on failure
+        if (toggleType === 'card') {
+          setShowCardTransfer(!value);
+        } else {
+          setShowEmailTransfer(!value);
+        }
       }
     } catch (error) {
       console.error('Error updating transfer toggle:', error);
+      // Revert the toggle state on error
+      if (toggleType === 'card') {
+        setShowCardTransfer(!value);
+      } else {
+        setShowEmailTransfer(!value);
+      }
     }
   };
 
