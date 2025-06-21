@@ -281,11 +281,12 @@ export default function IbanTransfer() {
                 background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
                 zIndex: 1000,
                 display: 'flex',
-                alignItems: 'center',
+                alignItems: 'flex-start',
                 justifyContent: 'center',
-                padding: '2rem'
+                padding: '2rem',
+                paddingTop: '25vh'
               }}>
-                <div className="text-center max-w-sm w-full" style={{ marginTop: '0', transform: 'translateY(0)' }}>
+                <div className="text-center max-w-sm w-full">
                   {/* Bank of Ireland Professional Logo Area */}
                   <div className="mb-6">
                     <div className="w-20 h-20 bg-[#126987] rounded-full flex items-center justify-center mx-auto mb-4 shadow-xl">
