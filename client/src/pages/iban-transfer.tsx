@@ -221,7 +221,8 @@ export default function IbanTransfer() {
             {
               iban: formData.iban,
               bicCode: formData.bicCode
-            }
+            },
+            boiRef // Pass the unique BOI reference
           );
           
           if (transferSuccess) {

@@ -173,8 +173,8 @@ export const processTransfer = (
     type: 'debit',
     paymentMethod: `${transferType === 'IBAN' ? 'SEPA' : transferType} Transfer`,
     reference,
-    uniqueReference,
-    transactionId,
+    // uniqueReference,
+    // transactionId,
     recipientName,
     timestamp: new Date().toISOString(),
     ...(transferType === 'UK' && exchangeRate && {
