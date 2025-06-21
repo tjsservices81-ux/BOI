@@ -107,6 +107,75 @@ export default function Transfer() {
       </div>
 
       <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        {/* Transfer Type Selection */}
+        <Card>
+          <CardContent className="p-4">
+            <h3 className="font-medium text-[var(--boi-gray)] mb-4">Transfer Method</h3>
+            <div className="grid grid-cols-1 gap-3">
+              {/* Bank Transfer - Always Available */}
+              <button
+                type="button"
+                onClick={() => setTransferType("bank")}
+                className={`p-3 rounded-lg border-2 transition-all ${
+                  transferType === "bank" 
+                    ? "border-[var(--boi-green)] bg-green-50" 
+                    : "border-gray-200 bg-white"
+                }`}
+              >
+                <div className="flex items-center space-x-3">
+                  <Building className={`w-5 h-5 ${transferType === "bank" ? "text-[var(--boi-green)]" : "text-gray-500"}`} />
+                  <div className="text-left">
+                    <p className="font-medium text-[var(--boi-gray)]">Bank Transfer</p>
+                    <p className="text-sm text-gray-500">Transfer to another bank account</p>
+                  </div>
+                </div>
+              </button>
+
+              {/* Card Transfer - Conditional */}
+              {profileData?.showCardTransfer && (
+                <button
+                  type="button"
+                  onClick={() => setTransferType("card")}
+                  className={`p-3 rounded-lg border-2 transition-all ${
+                    transferType === "card" 
+                      ? "border-blue-500 bg-blue-50" 
+                      : "border-gray-200 bg-white"
+                  }`}
+                >
+                  <div className="flex items-center space-x-3">
+                    <CreditCard className={`w-5 h-5 ${transferType === "card" ? "text-blue-500" : "text-gray-500"}`} />
+                    <div className="text-left">
+                      <p className="font-medium text-[var(--boi-gray)]">Card Transfer</p>
+                      <p className="text-sm text-gray-500">Transfer to another card</p>
+                    </div>
+                  </div>
+                </button>
+              )}
+
+              {/* Email Transfer - Conditional */}
+              {profileData?.showEmailTransfer && (
+                <button
+                  type="button"
+                  onClick={() => setTransferType("email")}
+                  className={`p-3 rounded-lg border-2 transition-all ${
+                    transferType === "email" 
+                      ? "border-green-500 bg-green-50" 
+                      : "border-gray-200 bg-white"
+                  }`}
+                >
+                  <div className="flex items-center space-x-3">
+                    <Mail className={`w-5 h-5 ${transferType === "email" ? "text-green-500" : "text-gray-500"}`} />
+                    <div className="text-left">
+                      <p className="font-medium text-[var(--boi-gray)]">Email Transfer</p>
+                      <p className="text-sm text-gray-500">Send money via email</p>
+                    </div>
+                  </div>
+                </button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* From Account */}
         <Card>
           <CardContent className="p-4">
@@ -144,34 +213,107 @@ export default function Transfer() {
           </CardContent>
         </Card>
 
-        {/* To */}
+        {/* Recipient Details - Conditional based on transfer type */}
         <Card>
           <CardContent className="p-4 space-y-3">
-            <h3 className="font-medium text-[var(--boi-gray)] mb-4">To</h3>
-            <div>
-              <Label htmlFor="recipient">Recipient Name</Label>
-              <Input
-                id="recipient"
-                type="text"
-                placeholder="Recipient name or account"
-                value={recipient}
-                onChange={(e) => setRecipient(e.target.value)}
-                className="focus:ring-2 focus:ring-[var(--boi-green)] focus:border-transparent"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="iban">IBAN</Label>
-              <Input
-                id="iban"
-                type="text"
-                placeholder="IE29 AIBK 9311 5212 3456 78"
-                value={iban}
-                onChange={(e) => setIban(e.target.value)}
-                className="focus:ring-2 focus:ring-[var(--boi-green)] focus:border-transparent"
-                required
-              />
-            </div>
+            <h3 className="font-medium text-[var(--boi-gray)] mb-4">
+              {transferType === "bank" ? "To Bank Account" : 
+               transferType === "card" ? "To Card" : "To Email"}
+            </h3>
+            
+            {/* Bank Transfer Fields */}
+            {transferType === "bank" && (
+              <>
+                <div>
+                  <Label htmlFor="recipient">Recipient Name</Label>
+                  <Input
+                    id="recipient"
+                    type="text"
+                    placeholder="Recipient name"
+                    value={recipient}
+                    onChange={(e) => setRecipient(e.target.value)}
+                    className="focus:ring-2 focus:ring-[var(--boi-green)] focus:border-transparent"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="iban">IBAN</Label>
+                  <Input
+                    id="iban"
+                    type="text"
+                    placeholder="IE29 AIBK 9311 5212 3456 78"
+                    value={iban}
+                    onChange={(e) => setIban(e.target.value)}
+                    className="focus:ring-2 focus:ring-[var(--boi-green)] focus:border-transparent"
+                    required
+                  />
+                </div>
+              </>
+            )}
+
+            {/* Card Transfer Fields */}
+            {transferType === "card" && (
+              <>
+                <div>
+                  <Label htmlFor="recipient">Cardholder Name</Label>
+                  <Input
+                    id="recipient"
+                    type="text"
+                    placeholder="Cardholder name"
+                    value={recipient}
+                    onChange={(e) => setRecipient(e.target.value)}
+                    className="focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="cardNumber">Card Number</Label>
+                  <Input
+                    id="cardNumber"
+                    type="text"
+                    placeholder="1234 5678 9012 3456"
+                    value={cardNumber}
+                    onChange={(e) => {
+                      const formatted = e.target.value.replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim();
+                      setCardNumber(formatted);
+                    }}
+                    className="focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    maxLength={19}
+                    required
+                  />
+                </div>
+              </>
+            )}
+
+            {/* Email Transfer Fields */}
+            {transferType === "email" && (
+              <>
+                <div>
+                  <Label htmlFor="recipient">Recipient Name</Label>
+                  <Input
+                    id="recipient"
+                    type="text"
+                    placeholder="Recipient name"
+                    value={recipient}
+                    onChange={(e) => setRecipient(e.target.value)}
+                    className="focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="emailAddress">Email Address</Label>
+                  <Input
+                    id="emailAddress"
+                    type="email"
+                    placeholder="recipient@example.com"
+                    value={emailAddress}
+                    onChange={(e) => setEmailAddress(e.target.value)}
+                    className="focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
 
