@@ -1225,18 +1225,10 @@ export default function Login() {
                         id="pin"
                         type="password"
                         value={pin}
-                        onChange={(e) => {
-                          setPin(e.target.value);
-                          // Auto-verify when PIN is 4 digits and customer number is present
-                          if (e.target.value.length === 4 && customerNumber.length > 0) {
-                            setTimeout(() => {
-                              handlePinVerification({ preventDefault: () => {} } as React.FormEvent);
-                            }, 500);
-                          }
-                        }}
-                        placeholder="Enter your 4-digit PIN"
+                        onChange={(e) => setPin(e.target.value)}
+                        placeholder="Enter your PIN"
                         className="mt-1 ios-input"
-                        maxLength={4}
+                        maxLength={6}
                         disabled={isLoading}
                       />
                     </div>
