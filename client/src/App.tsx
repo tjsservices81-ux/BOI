@@ -187,8 +187,12 @@ function AppRoutes() {
                 UserDataManager.clearUserData('currentUser');
                 console.log('Clearing stale user data from UserDataManager');
               } catch (error) {
-                // Handle case where no user is currently set
-                localStorage.removeItem('currentUser');
+                // Handle case where no user is currently set - use UserDataManager
+                try {
+                  UserDataManager.clearUserData('currentUser');
+                } catch (clearError) {
+                  console.warn('Failed to clear user data via UserDataManager');
+                }
               }
               
               // Clear saved state since session is invalid
@@ -199,7 +203,7 @@ function AppRoutes() {
             try {
               UserDataManager.clearUserData('currentUser');
             } catch (clearError) {
-              localStorage.removeItem('currentUser');
+              console.warn('Failed to clear user data via UserDataManager:', clearError);
             }
           }
           

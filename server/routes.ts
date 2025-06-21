@@ -289,7 +289,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { sessionToken } = req.body;
       
       if (!sessionToken) {
-        return res.status(400).json({ message: "Session token required" });
+        return res.status(400).json({ error: "Session token required" });
       }
 
       console.log(`🔍 VALIDATING TOKEN: ${sessionToken.substring(0, 20)}...`);
@@ -305,7 +305,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (sessionResult.length === 0) {
         console.log('❌ No session found with this token');
-        return res.status(401).json({ message: "Session invalid", valid: false });
+        return res.status(401).json({ error: "Session invalid", valid: false });
       }
       
       const session = sessionResult[0];
@@ -313,7 +313,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if session is active
       if (!session.isActive) {
         console.log('❌ Session found but not active');
-        return res.status(401).json({ message: "Session inactive", valid: false });
+        return res.status(401).json({ error: "Session inactive", valid: false });
       }
       
       // Get user data with fallback to storage layer
@@ -332,7 +332,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await db.update(permanentUserSessions)
           .set({ isActive: false })
           .where(eq(permanentUserSessions.sessionToken, sessionToken));
-        return res.status(401).json({ message: "Account no longer exists", valid: false });
+        return res.status(401).json({ error: "Account no longer exists", valid: false });
       }
       
       const user = userResult[0];
@@ -349,7 +349,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error('Permanent session validation error:', error);
-      res.status(500).json({ message: "Server error", valid: false });
+      res.status(500).json({ error: "Server error", valid: false });
     }
   });
 
@@ -446,7 +446,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       (req as any).session.touch();
       res.json((req as any).session.user);
     } else {
-      res.status(401).json({ message: "Not authenticated" });
+      res.status(401).json({ error: "Not authenticated" });
     }
   });
 
@@ -455,7 +455,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Logout functionality disabled - users stay logged in permanently
     // Only admin deletion should remove user sessions
     console.warn('Logout attempt blocked - users can only be logged out via admin deletion');
-    res.status(403).json({ message: "Logout disabled - users can only be logged out via admin deletion" });
+    res.status(403).json({ error: "Logout disabled - users can only be logged out via admin deletion" });
   });
 
   // Get user accounts
