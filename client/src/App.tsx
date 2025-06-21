@@ -299,6 +299,12 @@ function AppRoutes() {
           </ProtectedRoute>
         </Route>
         
+        <Route path="/transactions/:accountId">
+          <ProtectedRoute>
+            <TransactionHistoryWorking />
+          </ProtectedRoute>
+        </Route>
+        
         <Route path="/cards">
           <ProtectedRoute>
             <Cards />
