@@ -5,6 +5,7 @@ import { z } from "zod";
 import { useLocation } from "wouter";
 import { ChevronLeft, ArrowUpDown, Check, AlertCircle, X } from "lucide-react";
 import { UserDataManager } from "../utils/userDataManager";
+import { CurrencyManager } from "../utils/currencyManager";
 import { generateReference } from "../utils/transferUtils";
 
 const internalTransferSchema = z.object({
@@ -19,7 +20,7 @@ const internalTransferSchema = z.object({
     .refine((val) => {
       const num = parseFloat(val);
       return num <= 50000;
-    }, "Maximum transfer amount is €50,000"),
+    }, "Maximum transfer amount is £50,000/€50,000"),
   reference: z.string().max(140, "Reference cannot exceed 140 characters").optional()
 });
 
@@ -34,6 +35,25 @@ export default function InternalTransfer() {
   const [accounts, setAccounts] = useState<any[]>([]);
   const [selectedFromAccount, setSelectedFromAccount] = useState<any>(null);
   const [selectedToAccount, setSelectedToAccount] = useState<any>(null);
+  const [currentCurrency, setCurrentCurrency] = useState(CurrencyManager.getCurrentCurrency());
+
+  // Listen for real-time currency changes
+  useEffect(() => {
+    const handleCurrencyChange = (event: any) => {
+      const { currency } = event.detail;
+      console.log(`Internal Transfer: Currency changed to ${currency}`);
+      setCurrentCurrency(currency);
+      
+      // Force re-render of account balances with new currency symbols
+      setAccounts(prev => [...prev]);
+    };
+
+    window.addEventListener('currencyChanged', handleCurrencyChange);
+    
+    return () => {
+      window.removeEventListener('currencyChanged', handleCurrencyChange);
+    };
+  }, []);
 
   const form = useForm<InternalTransferData>({
     resolver: zodResolver(internalTransferSchema),
@@ -45,9 +65,22 @@ export default function InternalTransfer() {
     }
   });
 
+  // Currency change handler
+  const handleCurrencyChange = (event: Event) => {
+    const customEvent = event as CustomEvent;
+    setCurrentCurrency(customEvent.detail.currency);
+  };
+
   useEffect(() => {
+    // Add currency change event listener
+    window.addEventListener('currencyChanged', handleCurrencyChange as EventListener);
+    
     const userAccounts = UserDataManager.getUserData('bankAccounts', []);
     setAccounts(userAccounts);
+    
+    return () => {
+      window.removeEventListener('currencyChanged', handleCurrencyChange as EventListener);
+    };
   }, []);
 
   useEffect(() => {
@@ -199,8 +232,7 @@ export default function InternalTransfer() {
   };
 
   const formatAmount = (amount: string) => {
-    const num = parseFloat(amount);
-    return isNaN(num) ? '0.00' : num.toFixed(2);
+    return CurrencyManager.formatAmount(amount, currentCurrency);
   };
 
   if (step === 'success') {
@@ -222,7 +254,7 @@ export default function InternalTransfer() {
               Transfer Successful
             </h2>
             <p className="text-gray-600 mb-6" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              €{formatAmount(formData?.amount || '0')} has been transferred from {selectedFromAccount?.displayName} to {selectedToAccount?.displayName}
+              {CurrencyManager.formatAmount(formData?.amount || '0', currentCurrency)} has been transferred from {selectedFromAccount?.displayName} to {selectedToAccount?.displayName}
             </p>
             <div className="bg-gray-50 rounded-2xl p-4 mb-6">
               <p className="text-sm text-gray-600 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -292,11 +324,11 @@ export default function InternalTransfer() {
                     {confirmFromAccount?.accountNumber}
                   </p>
                   <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Balance: €{(() => {
+                    Balance: {CurrencyManager.formatAmount((() => {
                       if (!confirmFromAccount) return '0.00';
                       const balance = typeof confirmFromAccount.balance === 'string' ? parseFloat(confirmFromAccount.balance) : confirmFromAccount.balance;
                       return balance.toFixed(2);
-                    })()}
+                    })(), currentCurrency)}
                   </p>
                 </div>
               </div>
@@ -316,7 +348,7 @@ export default function InternalTransfer() {
               <div className="flex justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Amount:</span>
                 <span className="font-bold text-xl text-[#126987]" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  €{formatAmount(formData?.amount || '0')}
+                  {CurrencyManager.formatAmount(formData?.amount || '0', currentCurrency)}
                 </span>
               </div>
               
@@ -448,7 +480,7 @@ export default function InternalTransfer() {
                 <option value="">Select source account</option>
                 {accounts.map((account) => (
                   <option key={account.id} value={account.id}>
-                    {account.displayName} - €{typeof account.balance === 'string' ? parseFloat(account.balance).toFixed(2) : account.balance.toFixed(2)}
+                    {account.displayName} - {CurrencyManager.formatAmount(account.balance, currentCurrency)}
                   </option>
                 ))}
               </select>
@@ -484,7 +516,7 @@ export default function InternalTransfer() {
 
             <div>
               <label className="block text-sm font-semibold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Amount (EUR)
+                Amount ({CurrencyManager.getCode(currentCurrency)})
               </label>
               <input
                 type="number"

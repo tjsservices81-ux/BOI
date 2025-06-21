@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, DollarSign, Calendar, Eye, EyeOff } from 'lucide-react';
-import { formatAmount } from '../utils/currencyUtils';
+import { CurrencyManager } from '../utils/currencyManager';
 
 interface SpendingData {
   totalSpent: number;
@@ -15,6 +15,22 @@ interface SpendingData {
 export default function SpendingInsights() {
   const [isVisible, setIsVisible] = useState(false);
   const [spendingData, setSpendingData] = useState<SpendingData | null>(null);
+  const [currentCurrency, setCurrentCurrency] = useState(CurrencyManager.getCurrentCurrency());
+
+  // Listen for real-time currency changes
+  useEffect(() => {
+    const handleCurrencyChange = (event: any) => {
+      const { currency } = event.detail;
+      console.log(`SpendingInsights: Currency changed to ${currency}`);
+      setCurrentCurrency(currency);
+    };
+
+    window.addEventListener('currencyChanged', handleCurrencyChange);
+    
+    return () => {
+      window.removeEventListener('currencyChanged', handleCurrencyChange);
+    };
+  }, []);
 
   useEffect(() => {
     const calculateSpendingInsights = () => {
@@ -88,7 +104,8 @@ export default function SpendingInsights() {
     return 'Other';
   };
 
-  const formatCurrency = (amount: number) => formatAmount(amount.toString());
+  const formatCurrency = (amount: number) => 
+    CurrencyManager.formatAmount(amount.toString(), currentCurrency);
 
   if (!spendingData) return null;
 

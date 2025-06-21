@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin, Calendar, CreditCard, X, RefreshCw, Plus, MessageCircle, Trash2, PhoneCall } from "lucide-react";
 import { UserDataManager } from "@/utils/userDataManager";
+import { CurrencyManager } from "@/utils/currencyManager";
 import { useAuth } from "@/lib/auth";
 import { motion, AnimatePresence } from "framer-motion";
-import { getUserCurrency, setCurrencyPreference, getCurrencySymbol, formatAmount } from "@/utils/currencyUtils";
 
 export default function Profile() {
   const locationHook = useLocation();
@@ -19,8 +19,6 @@ export default function Profile() {
   const [accounts, setAccounts] = useState<any[]>([]);
   const [editingAccount, setEditingAccount] = useState<any>(null);
   const [newBalance, setNewBalance] = useState('');
-  const [currentCurrency, setCurrentCurrency] = useState<'EUR' | 'GBP'>('EUR');
-  const [adminCurrency, setAdminCurrency] = useState<'EUR' | 'GBP'>('EUR');
 
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [showAddTransaction, setShowAddTransaction] = useState(false);
@@ -50,6 +48,10 @@ export default function Profile() {
     responses: '',
     category: ''
   });
+
+  // Primary Currency state
+  const [primaryCurrency, setPrimaryCurrency] = useState<'EUR' | 'GBP'>('EUR');
+  const [currentCurrency, setCurrentCurrency] = useState(CurrencyManager.getCurrentCurrency());
 
   // Delete transaction states
   const [showDeleteTransaction, setShowDeleteTransaction] = useState(false);
@@ -86,38 +88,57 @@ export default function Profile() {
     };
   });
 
-  const handleAdminCurrencyChange = async (newCurrency: 'EUR' | 'GBP') => {
-    // Immediate state updates
-    setAdminCurrency(newCurrency);
-    setCurrentCurrency(newCurrency);
-    
-    // Immediate storage saves
-    UserDataManager.setUserData('primaryCurrency', newCurrency);
-    setCurrencyPreference(newCurrency);
-    
-    // Database save
-    const currentUser = UserDataManager.getCurrentUser();
-    if (currentUser) {
-      fetch(`/api/profile/${currentUser}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ primaryCurrency: newCurrency }),
-      });
-    }
-    
-    // Update all components immediately
-    window.dispatchEvent(new CustomEvent('currencyUpdate'));
-    window.dispatchEvent(new CustomEvent('currencyChanged', { detail: { currency: newCurrency } }));
-  };
-
-  // Initialize currencies on mount
+  // Initialize primary currency from user data and set up currency change listener
   useEffect(() => {
-    const savedCurrency = getUserCurrency();
-    setCurrentCurrency(savedCurrency);
-    setAdminCurrency(savedCurrency);
+    const storedCurrency = UserDataManager.getUserData('primaryCurrency', 'EUR');
+    setPrimaryCurrency(storedCurrency);
+    setCurrentCurrency(storedCurrency);
+    
+    // Listen for currency changes from other sources
+    const handleCurrencyChange = (event: any) => {
+      const { currency } = event.detail;
+      setCurrentCurrency(currency);
+      setPrimaryCurrency(currency);
+    };
+    
+    window.addEventListener('currencyChanged', handleCurrencyChange);
+    
+    return () => {
+      window.removeEventListener('currencyChanged', handleCurrencyChange);
+    };
   }, []);
 
-  // Remove conflicting currency sync effect that may override user selections
+  // Currency change handler with live updates and database persistence
+  const handleCurrencyChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const newCurrency = event.target.value as 'EUR' | 'GBP';
+    setPrimaryCurrency(newCurrency);
+    
+    // Save to user data locally
+    UserDataManager.setUserData('primaryCurrency', newCurrency);
+    
+    // Update CurrencyManager state
+    CurrencyManager.setCurrency(newCurrency);
+    
+    // Persist to database if user is available
+    if (profileData?.customerNumber) {
+      try {
+        await fetch(`/api/profile/${profileData.customerNumber}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ primaryCurrency: newCurrency }),
+        });
+      } catch (error) {
+        console.error('Failed to persist currency preference:', error);
+      }
+    }
+    
+    // Dispatch currency change event for live updates across the app
+    window.dispatchEvent(new CustomEvent('currencyChanged', {
+      detail: { currency: newCurrency }
+    }));
+  };
 
   // Load profile data from database with real-time updates
   useEffect(() => {
@@ -143,11 +164,14 @@ export default function Profile() {
               joinDate: userData.joinDate || ""
             });
             
-            // Only update currency if it's different from current state and we're not in admin panel or updating
-            if (userData.primaryCurrency && userData.primaryCurrency !== currentCurrency && !showAdminPanel && !isUpdatingProfile) {
-              console.log('Updating currency from database:', userData.primaryCurrency);
+            // Update currency state if available in profile data
+            if (userData.primaryCurrency) {
+              console.log(`Loading saved currency from profile: ${userData.primaryCurrency}`);
               setCurrentCurrency(userData.primaryCurrency);
-              setCurrencyPreference(userData.primaryCurrency);
+              setPrimaryCurrency(userData.primaryCurrency);
+              
+              // Update CurrencyManager with database value
+              UserDataManager.setUserData('primaryCurrency', userData.primaryCurrency);
             }
             
             // Update UserDataManager with fresh data (silent update to prevent loops)
@@ -160,8 +184,7 @@ export default function Profile() {
                 phone: userData.phone || "",
                 dateOfBirth: userData.dateOfBirth || "",
                 address: userData.address || "",
-                joinDate: userData.joinDate || "",
-                primaryCurrency: userData.primaryCurrency || "EUR"
+                joinDate: userData.joinDate || ""
               };
               localStorage.setItem('bankUsers', JSON.stringify(allUsers));
             }
@@ -243,7 +266,7 @@ export default function Profile() {
     }
   };
 
-  // Admin panel functions - Load accounts when panel opens ONLY
+  // Admin panel functions - Load accounts when panel opens and on changes
   useEffect(() => {
     if (showAdminPanel) {
       try {
@@ -251,10 +274,6 @@ export default function Profile() {
         console.log('Loading accounts for admin panel:', storedAccounts);
         setAccounts(storedAccounts);
         loadChatResponses();
-        
-        // Load current saved currency for admin panel
-        const savedCurrency = getUserCurrency();
-        setAdminCurrency(savedCurrency);
       } catch (error) {
         console.error('Error initializing admin panel:', error);
         // Set default empty accounts if there's an error
@@ -296,7 +315,7 @@ export default function Profile() {
     {
       id: '2',
       triggers: ['transfer money', 'send money', 'make transfer', 'how to transfer'],
-      response: "You can transfer money by tapping 'Payments' in the bottom menu. Choose 'UK Transfer' (using sort code and account number, takes up to 24 hours) or 'IBAN Transfer' for SEPA transfers (using IBAN and BIC, takes 1 business day). Would you like specific help with either option?"
+      response: `You can transfer money by tapping 'Payments' in the bottom menu. Choose 'UK Transfer' (using sort code and account number, ${CurrencyManager.getTransferTiming('UK')}) or 'IBAN Transfer' for SEPA transfers (using IBAN and BIC, ${CurrencyManager.getTransferTiming('SEPA')}). Would you like specific help with either option?`
     },
     {
       id: '3',
@@ -326,7 +345,7 @@ export default function Profile() {
     {
       id: '9',
       triggers: ['how long', 'transfer time', 'when arrive', 'delivery time', 'processing time'],
-      response: "Transfer timing depends on the type: UK transfers (using sort code and account number) take up to 24 hours to arrive. SEPA transfers (using IBAN and BIC) take 1 business day to reach the recipient's account."
+      response: `Transfer timing depends on the type: UK transfers (using sort code and account number) ${CurrencyManager.getTransferTiming('UK')} SEPA transfers (using IBAN and BIC) ${CurrencyManager.getTransferTiming('SEPA')}`
     },
     {
       id: '8',
@@ -890,7 +909,8 @@ export default function Profile() {
       localStorage.setItem(`user_${currentUser}_bankAccounts`, JSON.stringify(updatedAccounts));
     }
     
-    alert(`${editingAccount.displayName} balance updated to €${numericBalance.toFixed(2)}`);
+    const currencySymbol = CurrencyManager.getCurrentSymbol();
+    alert(`${editingAccount.displayName} balance updated to ${currencySymbol}${numericBalance.toFixed(2)}`);
   };
 
   const resetToDefaults = () => {
@@ -949,7 +969,8 @@ export default function Profile() {
       }));
     }, 100);
     
-    alert('Data reset to defaults successfully - all balances set to €0.00, transactions cleared');
+    const currencySymbol = CurrencyManager.getCurrentSymbol();
+    alert(`Data reset to defaults successfully - all balances set to ${currencySymbol}0.00, transactions cleared`);
   };
 
   // Load transactions for selected account
@@ -1206,10 +1227,29 @@ export default function Profile() {
                     Profile Management
                   </h3>
                   
+                  {/* Primary Currency Selection */}
+                  <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-xl">
+                    <label className="block text-sm font-medium text-green-900 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Primary Currency
+                    </label>
+                    <select
+                      value={primaryCurrency}
+                      onChange={handleCurrencyChange}
+                      className="w-full px-4 py-3 border border-green-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 bg-white"
+                      style={{ fontFamily: 'OpenSans, sans-serif' }}
+                    >
+                      <option value="EUR">Euro (€)</option>
+                      <option value="GBP">Pound Sterling (£)</option>
+                    </select>
+                    <p className="text-xs text-green-600 mt-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Changes apply immediately across the entire app
+                    </p>
+                  </div>
+                  
                   {/* Edit Profile */}
                   <button 
                     onClick={startEditingProfile}
-                    className="w-full flex items-center space-x-3 p-4 bg-blue-50 border border-blue-200 rounded-xl active:scale-98 transition-transform mb-3"
+                    className="w-full flex items-center space-x-3 p-4 bg-blue-50 border border-blue-200 rounded-xl active:scale-98 transition-transform"
                   >
                     <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                       <Edit3 className="w-5 h-5 text-blue-600" />
@@ -1223,27 +1263,6 @@ export default function Profile() {
                       </p>
                     </div>
                   </button>
-
-                  {/* Primary Currency Setting */}
-                  <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
-                    <label className="block text-sm font-semibold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Primary Currency
-                    </label>
-                    <select
-                      value={adminCurrency}
-                      onChange={(e) => {
-                        handleAdminCurrencyChange(e.target.value as 'EUR' | 'GBP');
-                      }}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-gray-900"
-                      style={{ fontFamily: 'OpenSans, sans-serif' }}
-                    >
-                      <option value="EUR">Euro (€)</option>
-                      <option value="GBP">Pound Sterling (£)</option>
-                    </select>
-                    <p className="text-xs text-gray-600 mt-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Changes how all amounts are displayed in the app
-                    </p>
-                  </div>
                 </div>
 
                 {/* Account Management Section */}
@@ -1337,6 +1356,53 @@ export default function Profile() {
                   </div>
                 </div>
 
+                {/* Currency Management Section */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Currency Management
+                  </h3>
+                  
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Primary Currency
+                    </label>
+                    <select
+                      value={currentCurrency}
+                      onChange={async (e) => {
+                        const newCurrency = e.target.value as 'EUR' | 'GBP';
+                        const currencyName = newCurrency === 'EUR' ? 'Euro (€)' : 'Pound Sterling (£)';
+                        
+                        try {
+                          console.log(`Saving currency: ${newCurrency}`);
+                          
+                          // Update local state immediately for responsive UI
+                          setCurrentCurrency(newCurrency);
+                          setPrimaryCurrency(newCurrency);
+                          
+                          // Save through CurrencyManager (this handles database persistence)
+                          await CurrencyManager.setCurrency(newCurrency);
+                          
+                          console.log(`✓ Currency saved: ${currencyName}`);
+                          
+                        } catch (error) {
+                          console.error('Currency save error:', error);
+                          // Revert local state on error
+                          setCurrentCurrency(CurrencyManager.getCurrentCurrency());
+                          setPrimaryCurrency(CurrencyManager.getCurrentCurrency());
+                        }
+                      }}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      style={{ fontFamily: 'OpenSans, sans-serif' }}
+                    >
+                      <option value="EUR">Euro (€)</option>
+                      <option value="GBP">Pound Sterling (£)</option>
+                    </select>
+                    <p className="text-sm text-gray-500 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Changes apply instantly across the entire app
+                    </p>
+                  </div>
+                </div>
+
                 {/* Balance Management Section */}
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -1363,7 +1429,7 @@ export default function Profile() {
                             className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-semibold hover:bg-blue-200 transition-colors"
                             style={{ fontFamily: 'OpenSans, sans-serif' }}
                           >
-                            €{account.balance}
+                            {CurrencyManager.formatAmount(account.balance)}
                           </button>
                         </div>
                       ))
@@ -1604,7 +1670,7 @@ export default function Profile() {
 
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  New Balance (€)
+                  New Balance ({CurrencyManager.getCurrentSymbol()})
                 </label>
                 <input
                   type="number"
@@ -1694,7 +1760,7 @@ export default function Profile() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Initial Balance (€)
+                    Initial Balance ({CurrencyManager.getCurrentSymbol()})
                   </label>
                   <input
                     type="number"
@@ -1768,7 +1834,7 @@ export default function Profile() {
                       </div>
                       <div className="text-right">
                         <p className="text-lg font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          {formatAmount(account.balance)}
+                          €{account.balance}
                         </p>
                       </div>
                     </button>

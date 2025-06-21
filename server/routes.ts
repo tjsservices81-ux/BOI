@@ -408,7 +408,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         phone: z.string().optional(),
         address: z.string().optional(),
         dateOfBirth: z.string().optional(),
-        joinDate: z.string().optional()
+        joinDate: z.string().optional(),
+        primaryCurrency: z.enum(['EUR', 'GBP']).optional()
       });
       
       const updates = profileUpdateSchema.parse(req.body);
@@ -435,7 +436,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`✅ Profile updated for customer ${customerNumber}:`, {
         name: updates.name,
         email: updates.email,
-        dateOfBirth: updates.dateOfBirth
+        dateOfBirth: updates.dateOfBirth,
+        primaryCurrency: updates.primaryCurrency
       });
       
       res.json(updatedUser);

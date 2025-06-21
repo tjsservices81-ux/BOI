@@ -5,7 +5,7 @@ import SpendingVisualization from "../components/SpendingVisualization";
 import SpendingInsights from "../components/SpendingInsights";
 import { UserDataManager } from "../utils/userDataManager";
 import { StateManager } from "../utils/stateManager";
-import { getCurrencySymbol, formatAmount } from "../utils/currencyUtils";
+import { CurrencyManager } from "../utils/currencyManager";
 
 interface Account {
   id: number;
@@ -22,6 +22,25 @@ export default function Dashboard() {
   // Local state for account balances that can be updated by transfers
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [isNavigating, setIsNavigating] = useState(false);
+  const [currentCurrency, setCurrentCurrency] = useState(CurrencyManager.getCurrentCurrency());
+
+  // Listen for real-time currency changes
+  useEffect(() => {
+    const handleCurrencyChange = (event: any) => {
+      const { currency } = event.detail;
+      console.log(`Dashboard: Currency changed to ${currency}`);
+      setCurrentCurrency(currency);
+      
+      // Force re-render of account balances with new currency symbols
+      setAccounts(prev => [...prev]);
+    };
+
+    window.addEventListener('currencyChanged', handleCurrencyChange);
+    
+    return () => {
+      window.removeEventListener('currencyChanged', handleCurrencyChange);
+    };
+  }, []);
 
   // Enhanced navigation with smooth animations
   const navigateWithAnimation = (path: string, animationType: 'slide-right' | 'slide-left' | 'slide-up' = 'slide-right') => {
@@ -114,12 +133,6 @@ export default function Dashboard() {
       }
     };
 
-    // Listen for currency changes to refresh display
-    const handleCurrencyUpdate = () => {
-      // Force re-render of accounts to update currency symbols
-      setAccounts(prev => [...prev]);
-    };
-
     const handleProfileUpdate = async () => {
       // Reload user data when admin updates profile
       const currentUser = UserDataManager.getCurrentUser();
@@ -199,6 +212,10 @@ export default function Dashboard() {
       }
     };
 
+    const handleCurrencyChange = (event: any) => {
+      setCurrentCurrency(event.detail.currency);
+    };
+
     window.addEventListener('balanceUpdate', handleBalanceUpdate as EventListener);
     window.addEventListener('adminProfileUpdate', handleProfileUpdate as EventListener);
     window.addEventListener('userProfileUpdate', handleProfileUpdate as EventListener);
@@ -207,8 +224,7 @@ export default function Dashboard() {
     window.addEventListener('transactionDeleted', handleTransactionDeleted as EventListener);
     window.addEventListener('transactionUpdate', handleTransactionDeleted as EventListener);
     window.addEventListener('forceRefresh', handleForceRefresh as EventListener);
-    window.addEventListener('currencyUpdate', handleCurrencyUpdate as EventListener);
-    window.addEventListener('currencyChanged', handleCurrencyUpdate as EventListener);
+    window.addEventListener('currencyChanged', handleCurrencyChange as EventListener);
     
     return () => {
       window.removeEventListener('balanceUpdate', handleBalanceUpdate as EventListener);
@@ -219,8 +235,7 @@ export default function Dashboard() {
       window.removeEventListener('transactionDeleted', handleTransactionDeleted as EventListener);
       window.removeEventListener('transactionUpdate', handleTransactionDeleted as EventListener);
       window.removeEventListener('forceRefresh', handleForceRefresh as EventListener);
-      window.removeEventListener('currencyUpdate', handleCurrencyUpdate as EventListener);
-      window.removeEventListener('currencyChanged', handleCurrencyUpdate as EventListener);
+      window.removeEventListener('currencyChanged', handleCurrencyChange as EventListener);
     };
   }, [accounts]);
 
@@ -332,7 +347,7 @@ export default function Dashboard() {
                     <p className="text-xs text-gray-500 mt-0.5 boi-regular-font">{account.accountNumber}</p>
                   </div>
                   <div className="flex items-center">
-                    <p className="text-lg font-semibold text-[#126987] boi-semibold-font">{formatAmount(account.balance)}</p>
+                    <p className="text-lg font-semibold text-[#126987] boi-semibold-font">{CurrencyManager.formatAmount(account.balance)}</p>
                     <ChevronRight className="h-4 w-4 ml-3 text-gray-400" />
                   </div>
                 </div>

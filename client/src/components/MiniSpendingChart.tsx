@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, BarChart3 } from 'lucide-react';
-import { formatAmount } from '../utils/currencyUtils';
 
 interface ChartData {
   date: string;
@@ -120,10 +119,10 @@ export default function MiniSpendingChart({ accountId }: MiniSpendingChartProps)
         <div className="mt-3 pt-3 border-t border-gray-100">
           <div className="flex justify-between text-xs text-gray-600">
             <span style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Total: {formatAmount(chartData.reduce((sum, day) => sum + day.amount, 0).toFixed(2))}
+              Total: €{chartData.reduce((sum, day) => sum + day.amount, 0).toFixed(2)}
             </span>
             <span style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Avg: {formatAmount((chartData.reduce((sum, day) => sum + day.amount, 0) / 7).toFixed(2))}/day
+              Avg: €{(chartData.reduce((sum, day) => sum + day.amount, 0) / 7).toFixed(2)}/day
             </span>
           </div>
         </div>

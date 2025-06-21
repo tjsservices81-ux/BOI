@@ -7,6 +7,8 @@ import {
   type InsertChatMessage, type InsertChatResponse, type InsertChatSession
 } from "@shared/schema";
 import { PersistentDataManager } from "./persistentStorage";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
@@ -84,7 +86,6 @@ class MemStorage implements IStorage {
   private currentStatementId: number = 1;
   private currentChatMessageId: number = 1;
   private currentChatResponseId: number = 1;
-  private currentChatSessionId: number = 1;
 
   private persistentManager: PersistentDataManager;
 
@@ -124,8 +125,37 @@ class MemStorage implements IStorage {
       } else {
         console.log("No persisted data found, starting with empty state");
       }
+      
+      // Load database users into memory for API access
+      await this.syncDatabaseUsers();
     } catch (error) {
       console.error('Error loading persisted data:', error);
+    }
+  }
+
+  private async syncDatabaseUsers(): Promise<void> {
+    try {
+      const dbUsers = await db.select().from(users);
+      console.log(`Found ${dbUsers.length} existing users in database`);
+      
+      for (const dbUser of dbUsers) {
+        // Add database users to memory if not already present
+        const existingUser = Array.from(this.users.values()).find(u => u.customerNumber === dbUser.customerNumber);
+        if (!existingUser) {
+          this.users.set(dbUser.id, dbUser);
+          if (dbUser.id >= this.currentUserId) {
+            this.currentUserId = dbUser.id + 1;
+          }
+        } else {
+          // Update existing user with latest database data (especially primaryCurrency)
+          const updatedUser = { ...existingUser, ...dbUser };
+          this.users.set(dbUser.id, updatedUser);
+        }
+      }
+      
+      console.log(`Synchronized ${this.users.size} total users in memory`);
+    } catch (error) {
+      console.log('Database sync not available, using memory-only storage');
     }
   }
 
@@ -174,9 +204,9 @@ class MemStorage implements IStorage {
       address: insertUser.address || null,
       dateOfBirth: insertUser.dateOfBirth || null,
       joinDate: insertUser.joinDate || "Member since 2018",
+      primaryCurrency: insertUser.primaryCurrency || "EUR",
       dateCreated: insertUser.dateCreated || new Date(),
-      isDisabled: false,
-      primaryCurrency: insertUser.primaryCurrency || "EUR"
+      isDisabled: false
     };
     this.users.set(user.id, user);
     await this.saveData(); // Persist data immediately
@@ -188,7 +218,25 @@ class MemStorage implements IStorage {
   }
 
   async getUserByCustomerNumber(customerNumber: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.customerNumber === customerNumber);
+    const user = Array.from(this.users.values()).find(user => user.customerNumber === customerNumber);
+    
+    // If user found in memory, also check database for latest currency preference
+    if (user) {
+      try {
+        const [dbUser] = await db.select().from(users).where(eq(users.customerNumber, customerNumber));
+        if (dbUser && dbUser.primaryCurrency !== user.primaryCurrency) {
+          // Update memory with database currency preference
+          const updatedUser = { ...user, primaryCurrency: dbUser.primaryCurrency };
+          this.users.set(user.id, updatedUser);
+          await this.saveData();
+          return updatedUser;
+        }
+      } catch (error) {
+        console.log('Note: Using memory currency preference');
+      }
+    }
+    
+    return user;
   }
 
   async updateUserProfile(customerNumber: string, updates: Partial<User>): Promise<User | undefined> {
@@ -197,6 +245,18 @@ class MemStorage implements IStorage {
       const updatedUser = { ...user, ...updates };
       this.users.set(user.id, updatedUser);
       await this.saveData(); // Persist changes to disk immediately
+      
+      // Also persist primaryCurrency to database for cross-session persistence
+      if (updates.primaryCurrency) {
+        try {
+          await db.update(users)
+            .set({ primaryCurrency: updates.primaryCurrency })
+            .where(eq(users.customerNumber, customerNumber));
+        } catch (error) {
+          console.log('Note: Currency preference saved to memory but not database');
+        }
+      }
+      
       return updatedUser;
     }
     return undefined;
@@ -287,18 +347,7 @@ class MemStorage implements IStorage {
   async createTransaction(insertTransaction: InsertTransaction): Promise<Transaction> {
     const transaction: Transaction = {
       id: this.currentTransactionId++,
-      ...insertTransaction,
-      recipientName: insertTransaction.recipientName || null,
-      iban: insertTransaction.iban || null,
-      bicCode: insertTransaction.bicCode || null,
-      reference: insertTransaction.reference || null,
-      recipientAccountNumber: insertTransaction.recipientAccountNumber || null,
-      recipientSortCode: insertTransaction.recipientSortCode || null,
-      recipientIban: insertTransaction.recipientIban || null,
-      convertedAmount: insertTransaction.convertedAmount || null,
-      exchangeRate: insertTransaction.exchangeRate || null,
-      convertedCurrency: insertTransaction.convertedCurrency || null,
-      timestamp: insertTransaction.timestamp || new Date()
+      ...insertTransaction
     };
     this.transactions.set(transaction.id, transaction);
     return transaction;
@@ -311,9 +360,7 @@ class MemStorage implements IStorage {
   async createPayee(insertPayee: InsertPayee): Promise<Payee> {
     const payee: Payee = {
       id: this.currentPayeeId++,
-      ...insertPayee,
-      iban: insertPayee.iban || null,
-      lastAmount: insertPayee.lastAmount || null
+      ...insertPayee
     };
     this.payees.set(payee.id, payee);
     return payee;
@@ -335,8 +382,6 @@ class MemStorage implements IStorage {
     const message: ChatMessage = {
       id: this.currentChatMessageId++,
       ...insertMessage,
-      userId: insertMessage.userId || null,
-      agentName: insertMessage.agentName || null,
       timestamp: insertMessage.timestamp || new Date()
     };
     this.chatMessages.set(message.id, message);
@@ -349,11 +394,7 @@ class MemStorage implements IStorage {
 
   async createChatSession(insertSession: InsertChatSession): Promise<ChatSession> {
     const session: ChatSession = {
-      id: this.currentChatSessionId++,
       ...insertSession,
-      userId: insertSession.userId || null,
-      isActive: insertSession.isActive !== undefined ? insertSession.isActive : true,
-      endedAt: insertSession.endedAt || null,
       startedAt: insertSession.startedAt || new Date()
     };
     this.chatSessions.set(session.sessionId, session);
@@ -376,10 +417,7 @@ class MemStorage implements IStorage {
   async createChatResponse(insertResponse: InsertChatResponse): Promise<ChatResponse> {
     const response: ChatResponse = {
       id: this.currentChatResponseId++,
-      ...insertResponse,
-      isActive: insertResponse.isActive !== undefined ? insertResponse.isActive : true,
-      createdAt: insertResponse.createdAt || new Date(),
-      updatedAt: insertResponse.updatedAt || new Date()
+      ...insertResponse
     };
     this.chatResponses.set(response.id, response);
     return response;
@@ -617,11 +655,7 @@ class MemStorage implements IStorage {
       ];
 
       for (const accountData of sampleAccounts) {
-        const account = await this.createAccount({
-          ...accountData,
-          displayName: accountData.type,
-          accountType: accountData.type
-        });
+        const account = await this.createAccount(accountData);
 
         // Create sample transactions
         const sampleTransactions = [
@@ -648,12 +682,7 @@ class MemStorage implements IStorage {
         ];
 
         for (const transactionData of sampleTransactions) {
-          await this.createTransaction({
-            ...transactionData,
-            category: transactionData.type === "credit" ? "Income" : "General",
-            paymentMethod: transactionData.type === "credit" ? "Bank Transfer" : "Card",
-            timestamp: transactionData.date || new Date()
-          });
+          await this.createTransaction(transactionData);
         }
       }
 
@@ -676,15 +705,81 @@ class MemStorage implements IStorage {
       ];
 
       for (const payeeData of samplePayees) {
-        await this.createPayee({
-          ...payeeData,
-          category: payeeData.type
-        });
+        await this.createPayee(payeeData);
       }
     }
 
     console.log("Sample data initialization complete");
   }
+}
+
+// Database storage implementation for persistent user profiles with currency preferences
+class DatabaseStorage implements IStorage {
+  async getUserByCredentials(customerNumber: string, pin: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.customerNumber, customerNumber));
+    if (user && user.pin === pin) {
+      return user;
+    }
+    return undefined;
+  }
+
+  async createUser(userData: InsertUser): Promise<User> {
+    const [user] = await db.insert(users).values(userData).returning();
+    return user;
+  }
+
+  async getUser(customerNumber: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.customerNumber, customerNumber));
+    return user || undefined;
+  }
+
+  async getUserByCustomerNumber(customerNumber: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.customerNumber, customerNumber));
+    return user || undefined;
+  }
+
+  async updateUserProfile(customerNumber: string, updates: Partial<User>): Promise<User | undefined> {
+    const [updatedUser] = await db
+      .update(users)
+      .set(updates)
+      .where(eq(users.customerNumber, customerNumber))
+      .returning();
+    return updatedUser || undefined;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users);
+  }
+
+  async deleteUser(customerNumber: string): Promise<boolean> {
+    const result = await db.delete(users).where(eq(users.customerNumber, customerNumber));
+    return result.rowCount > 0;
+  }
+
+  // For now, implement other methods with minimal functionality - main focus is user profile persistence
+  async getAccountsByUserId(userId: number): Promise<Account[]> { return []; }
+  async getAccountById(accountId: number): Promise<Account | undefined> { return undefined; }
+  async createAccount(account: InsertAccount): Promise<Account> { throw new Error('Not implemented'); }
+  async updateAccountBalance(accountId: number, newBalance: string): Promise<void> {}
+  async deleteAccountsByUserId(userId: number): Promise<boolean> { return false; }
+  async getTransactionsByAccountId(accountId: number): Promise<Transaction[]> { return []; }
+  async createTransaction(transaction: InsertTransaction): Promise<Transaction> { throw new Error('Not implemented'); }
+  async deleteTransactionsByAccountId(accountId: number): Promise<boolean> { return false; }
+  async getPayeesByUserId(userId: number): Promise<Payee[]> { return []; }
+  async createPayee(payee: InsertPayee): Promise<Payee> { throw new Error('Not implemented'); }
+  async deletePayeesByUserId(userId: number): Promise<boolean> { return false; }
+  async getScheduledPaymentsByUserId(userId: number): Promise<ScheduledPayment[]> { return []; }
+  async deleteScheduledPaymentsByUserId(userId: number): Promise<boolean> { return false; }
+  async getStatementsByUserId(userId: number): Promise<Statement[]> { return []; }
+  async deleteStatementsByUserId(userId: number): Promise<boolean> { return false; }
+  async getChatMessagesBySessionId(sessionId: string): Promise<ChatMessage[]> { return []; }
+  async createChatMessage(message: InsertChatMessage): Promise<ChatMessage> { throw new Error('Not implemented'); }
+  async deleteChatMessagesByUserId(userId: number): Promise<boolean> { return false; }
+  async getChatResponses(): Promise<ChatResponse[]> { return []; }
+  async createChatResponse(response: InsertChatResponse): Promise<ChatResponse> { throw new Error('Not implemented'); }
+  async getChatSessionsByUserId(userId: number): Promise<ChatSession[]> { return []; }
+  async createChatSession(session: InsertChatSession): Promise<ChatSession> { throw new Error('Not implemented'); }
+  async deleteChatSessionsByUserId(userId: number): Promise<boolean> { return false; }
 }
 
 export const storage = new MemStorage();

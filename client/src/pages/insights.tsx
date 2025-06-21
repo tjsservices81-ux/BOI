@@ -1,6 +1,5 @@
 import { ChevronLeft } from "lucide-react";
 import { useLocation } from "wouter";
-import { formatAmount } from "../utils/currencyUtils";
 
 export default function Insights() {
   const [, setLocation] = useLocation();
@@ -150,15 +149,15 @@ export default function Insights() {
                 <p className="text-xs text-gray-500 boi-regular-font">10/25</p>
               </div>
               <h3 className="text-sm font-semibold text-gray-900 mb-2 boi-semibold-font">Savings goal update</h3>
-              <p className="text-xs text-gray-600 mb-4 boi-regular-font">You're 60% towards your {formatAmount('5000')} holiday savings goal</p>
+              <p className="text-xs text-gray-600 mb-4 boi-regular-font">You're 60% towards your €5,000 holiday savings goal</p>
               
               <div className="bg-green-50 border border-green-200 rounded-lg p-3">
                 <div className="w-full bg-green-100 rounded-full h-3 mb-2">
                   <div className="bg-green-500 h-3 rounded-full" style={{width: '60%'}}></div>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-xs text-green-700 boi-regular-font">{formatAmount('3000')} saved</span>
-                  <span className="text-xs text-green-700 boi-regular-font">{formatAmount('5000')} goal</span>
+                  <span className="text-xs text-green-700 boi-regular-font">€3,000 saved</span>
+                  <span className="text-xs text-green-700 boi-regular-font">€5,000 goal</span>
                 </div>
               </div>
             </div>

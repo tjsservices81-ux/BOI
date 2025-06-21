@@ -13,7 +13,6 @@ import { apiRequest } from "@/lib/queryClient";
 import { ArrowLeft, PiggyBank, ChevronDown, Send, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Account, TransferRequest } from "@shared/schema";
-import { formatAmount, getTransferTiming, getCurrencySymbol } from "@/utils/currencyUtils";
 
 export default function Transfer() {
   const authHook = useAuth();
@@ -113,7 +112,7 @@ export default function Transfer() {
                       <div>
                         <p className="font-medium text-[var(--boi-gray)]">{selectedAccount.displayName}</p>
                         <p className="text-sm text-[var(--boi-light-gray)]">
-                          Available: {formatAmount(selectedAccount.balance)}
+                          Available: €{parseFloat(selectedAccount.balance).toFixed(2)}
                         </p>
                       </div>
                     </div>
@@ -127,7 +126,7 @@ export default function Transfer() {
                       <PiggyBank className="text-[var(--boi-green)] mr-3" />
                       <div>
                         <p className="font-medium">{account.displayName}</p>
-                        <p className="text-sm text-gray-500">{formatAmount(account.balance)}</p>
+                        <p className="text-sm text-gray-500">€{parseFloat(account.balance).toFixed(2)}</p>
                       </div>
                     </div>
                   </SelectItem>
@@ -173,7 +172,7 @@ export default function Transfer() {
           <CardContent className="p-4 space-y-3">
             <h3 className="font-medium text-[var(--boi-gray)] mb-4">Amount</h3>
             <div className="relative">
-              <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[var(--boi-gray)] font-medium">{getCurrencySymbol()}</span>
+              <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[var(--boi-gray)] font-medium">€</span>
               <Input
                 type="number"
                 step="0.01"
@@ -219,8 +218,8 @@ export default function Transfer() {
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
-            <p className="font-medium mb-1">Transfer Timing</p>
-            <p className="text-sm">{getTransferTiming()}</p>
+            <p className="font-medium mb-1">Security Notice</p>
+            <p className="text-sm">Transfers are processed securely with 256-bit encryption. Large transfers may require additional verification.</p>
           </AlertDescription>
         </Alert>
       </form>

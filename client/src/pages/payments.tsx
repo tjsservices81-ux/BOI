@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { ChevronLeft, ChevronRight, User, ArrowUpDown, Globe, MapPin, Clock, Users, X, Trash2 } from "lucide-react";
 import { UserDataManager } from "../utils/userDataManager";
-import { formatAmount } from "../utils/currencyUtils";
 
 export default function Payments() {
   const [, navigate] = useLocation() || ['/', () => {}];
@@ -256,7 +255,7 @@ export default function Payments() {
                     </div>
                     <div className="text-right">
                       <p className={`font-semibold ${isDebit ? 'text-gray-900' : 'text-green-600'}`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        {formatAmount(displayAmount.replace('-', ''))}
+                        €{displayAmount.replace('-', '')}
                       </p>
                       <p className="text-xs text-gray-500 mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                         {formatDate(payment.timestamp)}
