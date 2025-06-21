@@ -54,10 +54,10 @@ export class RealTimeSync {
   // Setup event listeners for immediate sync triggers
   private static setupEventListeners() {
     // Sync on profile updates
-    window.addEventListener('profileUpdated', this.handleProfileUpdate as EventListener);
+    window.addEventListener('profileUpdated', this.handleProfileUpdate as any);
     
     // Sync on transaction updates
-    window.addEventListener('transactionUpdate', this.handleTransactionUpdate as EventListener);
+    window.addEventListener('transactionUpdate', this.handleTransactionUpdate as any);
     
     // Sync on balance updates
     window.addEventListener('balanceUpdate', this.handleBalanceUpdate as any);
@@ -160,7 +160,4 @@ export class RealTimeSync {
   }
 }
 
-// Auto-enable real-time sync when module loads
-if (typeof window !== 'undefined') {
-  RealTimeSync.enable();
-}
+// Note: RealTimeSync is manually enabled in App.tsx to avoid double initialization

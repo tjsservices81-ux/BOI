@@ -17,7 +17,7 @@ export interface UserData {
   deviceInfo?: any;
   notificationSettings?: any;
   securitySettings?: any;
-  lastActivity?: string | null;
+  lastActivity?: Date | string | null;
 }
 
 export class UserDataManager {
@@ -253,11 +253,7 @@ export class UserDataManager {
       // Also update the main user record
       const allUsers = this.getAllUsers();
       if (allUsers[currentUser]) {
-        if (!allUsers[currentUser].lastActivity) {
-          allUsers[currentUser].lastActivity = now;
-        } else {
-          allUsers[currentUser].lastActivity = now;
-        }
+        allUsers[currentUser].lastActivity = now;
         localStorage.setItem('allBankUsers', JSON.stringify(allUsers));
       }
     }
