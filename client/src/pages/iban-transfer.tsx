@@ -144,6 +144,15 @@ export default function IbanTransfer() {
 
   const onSubmit = (data: IbanTransferData) => {
     setFormData(data);
+    
+    // Generate unique BOI reference and transaction ID for confirmation screen
+    const generatedBoiRef = generateReference();
+    const generatedTxId = `IBAN_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    setUniqueBoiReference(generatedBoiRef);
+    setTransactionId(generatedTxId);
+    setTransferReference(data.reference);
+    
     setStep('confirm');
   };
 
@@ -159,13 +168,6 @@ export default function IbanTransfer() {
       setStep('cancelled');
       return;
     }
-    
-    // Generate unique BOI reference number
-    const boiRef = generateReference();
-    setUniqueBoiReference(boiRef);
-    
-    // Set user's payment reference from form
-    setTransferReference(formData.reference);
     
     // Start processing animation
     setStep('success');
@@ -205,13 +207,9 @@ export default function IbanTransfer() {
         if (newProgress >= 100) {
           clearInterval(interval);
           
-          // Generate transaction ID
-          const txId = `IBAN_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-          setTransactionId(txId);
-          
           // Process the transfer using the user's payment reference
           const transferSuccess = processConfirmedTransfer(
-            txId,
+            transactionId,
             formData.fromAccount,
             parseFloat(formData.amount),
             formData.recipientName,
@@ -222,7 +220,7 @@ export default function IbanTransfer() {
               iban: formData.iban,
               bicCode: formData.bicCode
             },
-            boiRef // Pass the unique BOI reference
+            uniqueBoiReference // Pass the unique BOI reference
           );
           
           if (transferSuccess) {
@@ -531,9 +529,19 @@ export default function IbanTransfer() {
                 <span className="font-semibold text-[#126987] text-xl" style={{ fontFamily: 'OpenSans, sans-serif' }}>€{formData?.amount}</span>
               </div>
               
-              <div className="flex justify-between py-2">
-                <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Reference:</span>
+              <div className="flex justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Payment Reference:</span>
                 <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{formData?.reference}</span>
+              </div>
+              
+              <div className="flex justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Unique Reference:</span>
+                <span className="font-semibold text-gray-900 font-mono text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>{uniqueBoiReference || 'Will be generated'}</span>
+              </div>
+              
+              <div className="flex justify-between py-2">
+                <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Transaction ID:</span>
+                <span className="font-medium text-gray-700 text-xs" style={{ fontFamily: 'OpenSans, sans-serif' }}>{transactionId || 'Will be generated'}</span>
               </div>
             </div>
           </div>
