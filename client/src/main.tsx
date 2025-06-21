@@ -27,16 +27,27 @@ const ensureFontsLoaded = () => {
   });
 };
 
-// Initialize offline support
-import { OfflineManager } from './utils/offlineManager'
-
-// Initialize optimizations and offline support
+// Initialize optimizations
 preloadCriticalAssets();
 ensureFontsLoaded();
 
-// Initialize OfflineManager
-OfflineManager.initialize().catch(error => {
-  console.error('Failed to initialize offline manager:', error)
-})
+// Initialize OfflineManager safely after DOM is ready
+const initializeOfflineManager = async () => {
+  try {
+    // Wait for DOM to be ready
+    if (document.readyState === 'loading') {
+      await new Promise(resolve => document.addEventListener('DOMContentLoaded', resolve));
+    }
+    
+    const { OfflineManager } = await import('./utils/offlineManager');
+    await OfflineManager.initialize();
+    console.log('OfflineManager initialized successfully');
+  } catch (error) {
+    console.warn('OfflineManager initialization failed, continuing without offline support:', error);
+  }
+};
+
+// Initialize in background without blocking app startup
+setTimeout(() => initializeOfflineManager(), 100);
 
 createRoot(document.getElementById("root")!).render(<App />);
