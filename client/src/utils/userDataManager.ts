@@ -140,6 +140,19 @@ export class UserDataManager {
     }
   }
 
+  // Clear user-specific data from cache for key
+  static clearUserData(key: string) {
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) return;
+    
+    const cacheKey = `${currentUser}_${key}`;
+    this.dataCache.delete(cacheKey);
+    this.cacheTimestamps.delete(cacheKey);
+    
+    // Also clear from localStorage
+    localStorage.removeItem(`user_${currentUser}_${key}`);
+  }
+
   // Get all registered users
   static getAllUsers(): { [customerNumber: string]: UserData } {
     return JSON.parse(localStorage.getItem('allBankUsers') || '{}');

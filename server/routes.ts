@@ -1123,7 +1123,7 @@ No transfers found yet on your account.`;
       res.json({ success: true, users: usersWithStatus });
     } catch (error) {
       console.error('Failed to get users:', error);
-      res.status(500).json({ success: false, message: "Failed to load users" });
+      res.status(500).json({ error: "Failed to load users" });
     }
   });
 
@@ -1133,7 +1133,7 @@ No transfers found yet on your account.`;
       res.json({ success: true, sessions });
     } catch (error) {
       console.error('Failed to get device sessions:', error);
-      res.status(500).json({ success: false, message: "Failed to load device sessions" });
+      res.status(500).json({ error: "Failed to load device sessions" });
     }
   });
 
@@ -1144,7 +1144,7 @@ No transfers found yet on your account.`;
       res.json({ success: true });
     } catch (error) {
       console.error('Failed to block device:', error);
-      res.status(500).json({ success: false, message: "Failed to block device" });
+      res.status(500).json({ error: "Failed to block device" });
     }
   });
 
@@ -1155,7 +1155,7 @@ No transfers found yet on your account.`;
       res.json({ success: true });
     } catch (error) {
       console.error('Failed to unblock device:', error);
-      res.status(500).json({ success: false, message: "Failed to unblock device" });
+      res.status(500).json({ error: "Failed to unblock device" });
     }
   });
 
@@ -1166,7 +1166,7 @@ No transfers found yet on your account.`;
       res.json({ success: true });
     } catch (error) {
       console.error('Failed to enable panic mode:', error);
-      res.status(500).json({ success: false, message: "Failed to enable panic mode" });
+      res.status(500).json({ error: "Failed to enable panic mode" });
     }
   });
 
@@ -1177,7 +1177,7 @@ No transfers found yet on your account.`;
       res.json({ success: true });
     } catch (error) {
       console.error('Failed to disable panic mode:', error);
-      res.status(500).json({ success: false, message: "Failed to disable panic mode" });
+      res.status(500).json({ error: "Failed to disable panic mode" });
     }
   });
 
