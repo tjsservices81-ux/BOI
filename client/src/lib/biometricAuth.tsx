@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useAuth } from './auth';
+import { AuthContext } from './auth';
 
 interface BiometricAuthState {
   isAuthenticated: boolean;
@@ -20,7 +20,8 @@ interface BiometricAuthContextType {
 const BiometricAuthContext = createContext<BiometricAuthContextType | null>(null);
 
 export function BiometricAuthProvider({ children }: { children: React.ReactNode }) {
-  const { login } = useAuth(); // Access main auth context
+  const authContext = useContext(AuthContext);
+  const login = authContext?.login;
   const [state, setState] = useState<BiometricAuthState>({
     isAuthenticated: false,
     needsBiometric: true,

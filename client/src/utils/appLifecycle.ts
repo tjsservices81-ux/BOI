@@ -35,6 +35,7 @@ export class AppLifecycle {
     // Check for reliable indicators of app termination vs minimization
     const appActiveMarker = sessionStorage.getItem('app_active_session');
     const wasMinimizedFlag = sessionStorage.getItem('app_was_minimized');
+    // Use global localStorage for app lifecycle (not user-specific)
     const sessionData = localStorage.getItem('app_session_state');
     
     // If no session data exists, this is a fresh start
@@ -72,6 +73,7 @@ export class AppLifecycle {
       // App going to background - mark as minimized and save state
       this.backgroundTime = Date.now();
       this.wasMinimized = true;
+      // Use global localStorage for app lifecycle (not user-specific)
       localStorage.setItem('app_background_time', this.backgroundTime.toString());
       sessionStorage.setItem('app_was_minimized', 'true');
       sessionStorage.setItem('app_active_session', 'true');

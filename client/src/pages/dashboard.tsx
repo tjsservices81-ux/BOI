@@ -173,8 +173,8 @@ export default function Dashboard() {
         UserDataManager.clearCache('bankAccounts');
         setAccounts(updatedAccounts);
         
-        // Also update localStorage for immediate access by other components
-        localStorage.setItem('bankAccounts', JSON.stringify(updatedAccounts));
+        // Update through UserDataManager for consistency
+        UserDataManager.setUserData('bankAccounts', updatedAccounts);
       }
     };
 
@@ -229,7 +229,7 @@ export default function Dashboard() {
 
   // Store accounts in localStorage for transfer forms to access
   useEffect(() => {
-    localStorage.setItem('bankAccounts', JSON.stringify(accounts));
+    UserDataManager.setUserData('bankAccounts', accounts);
   }, [accounts]);
 
   // Handle scroll position persistence

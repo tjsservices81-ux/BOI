@@ -13,6 +13,7 @@ export class StateManager {
     timestamp: number;
   }) {
     try {
+      // Use global localStorage for state management (not user-specific)
       localStorage.setItem(this.STATE_KEY, JSON.stringify(state));
     } catch (error) {
       console.error('Failed to save app state:', error);
@@ -22,6 +23,7 @@ export class StateManager {
   // Restore complete app state
   static restoreAppState(): any {
     try {
+      // Use global localStorage for state management (not user-specific)
       const saved = localStorage.getItem(this.STATE_KEY);
       if (saved) {
         const state = JSON.parse(saved);
