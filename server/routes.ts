@@ -436,7 +436,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`✅ Profile updated for customer ${customerNumber}:`, {
         name: updates.name,
         email: updates.email,
-        dateOfBirth: updates.dateOfBirth
+        dateOfBirth: updates.dateOfBirth,
+        primaryCurrency: updates.primaryCurrency
       });
       
       res.json(updatedUser);

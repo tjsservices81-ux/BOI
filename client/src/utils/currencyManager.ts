@@ -51,6 +51,8 @@ export class CurrencyManager {
     try {
       const customerNumber = UserDataManager.getCurrentUser();
       if (customerNumber) {
+        console.log(`Saving currency ${currency} for customer ${customerNumber}`);
+        
         const response = await fetch(`/api/profile/${customerNumber}`, {
           method: 'PUT',
           headers: {
@@ -60,6 +62,9 @@ export class CurrencyManager {
             primaryCurrency: currency
           }),
         });
+        
+        const responseData = await response.text();
+        console.log('Currency save response:', response.status, responseData);
         
         if (!response.ok) {
           throw new Error(`Database save failed: ${response.status}`);
@@ -157,11 +162,15 @@ export class CurrencyManager {
         const response = await fetch(`/api/profile/${currentUser}`);
         if (response.ok) {
           const userData = await response.json();
+          console.log('Loaded user data:', userData);
           if (userData.primaryCurrency) {
+            console.log(`Loading saved currency preference: ${userData.primaryCurrency}`);
             // Set currency without triggering database save to avoid recursion
             UserDataManager.setUserData('primaryCurrency', userData.primaryCurrency);
             this.notifyListeners(userData.primaryCurrency);
           }
+        } else {
+          console.log('Failed to load user currency preference');
         }
       }
     } catch (error) {
