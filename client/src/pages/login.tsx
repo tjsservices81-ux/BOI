@@ -505,15 +505,13 @@ export default function Login() {
         
       const authResult = {
         success: true,
-        isOffline: false,
-        user: userProfile,
-        timeRemaining: null
+        user: userProfile
       };
       
       clearInterval(authInterval);
 
       // Stage 3: Loading user data (1.5 seconds)
-      setLoginStage(authResult.isOffline ? 'Loading offline data...' : 'Loading account data...');
+      setLoginStage('Loading account data...');
       setLoginProgress(70);
       const loadInterval = setInterval(() => {
         setLoginProgress(prev => {
@@ -524,12 +522,6 @@ export default function Login() {
 
       // Record login time and authenticate through auth context
       UserDataManager.recordLoginTime(currentUser);
-      const userProfile = UserDataManager.getUserProfile();
-      
-      if (!userProfile) {
-        clearInterval(loadInterval);
-        throw new Error('Unable to load user profile');
-      }
 
       login({
         id: parseInt(currentUser.replace(/\D/g, '')) || 1,
@@ -554,14 +546,7 @@ export default function Login() {
       setLoginProgress(100);
       clearInterval(completeInterval);
 
-      // Show offline notice if applicable
-      if (authResult.isOffline) {
-        toast({
-          title: "Offline Mode",
-          description: authResult.message || `Offline access (${authResult.timeRemaining || 'Limited time'})`,
-          variant: "default",
-        });
-      }
+      // Authentication successful
 
       await new Promise(resolve => setTimeout(resolve, 300));
       navigate("/dashboard");
