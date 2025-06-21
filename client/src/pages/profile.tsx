@@ -4,7 +4,7 @@ import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin
 import { UserDataManager } from "@/utils/userDataManager";
 import { useAuth } from "@/lib/auth";
 import { motion, AnimatePresence } from "framer-motion";
-import { getUserCurrency } from "@/utils/currencyUtils";
+import { getUserCurrency, formatCurrency, type Currency } from "@/utils/currencyUtils";
 
 export default function Profile() {
   const locationHook = useLocation();
@@ -38,6 +38,7 @@ export default function Profile() {
     currency: 'EUR'
   });
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+  const [userCurrency, setUserCurrency] = useState<Currency>('EUR');
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   
   // Chat response management states
@@ -111,6 +112,9 @@ export default function Profile() {
               joinDate: userData.joinDate || "",
               currency: userData.currency || "EUR"
             });
+            
+            // Update userCurrency state
+            setUserCurrency(userData.currency || "EUR");
             
             // Update UserDataManager with fresh data (silent update to prevent loops)
             const allUsers = JSON.parse(localStorage.getItem('bankUsers') || '{}');
@@ -1305,7 +1309,7 @@ export default function Profile() {
                             className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-semibold hover:bg-blue-200 transition-colors"
                             style={{ fontFamily: 'OpenSans, sans-serif' }}
                           >
-                            €{account.balance}
+                            {formatCurrency(account.balance, userCurrency)}
                           </button>
                         </div>
                       ))
