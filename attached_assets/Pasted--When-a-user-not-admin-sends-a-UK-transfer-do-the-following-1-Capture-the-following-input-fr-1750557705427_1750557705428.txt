@@ -1,0 +1,74 @@
+// When a user (not admin) sends a UK transfer, do the following:
+
+1. Capture the following input from the user transfer screen:
+   - amount (e.g. £250.00)
+   - senderName (fetched from logged-in user’s profile)
+   - reference (entered by user)
+   - sortCode (entered by user)
+   - accountNumber (entered by user)
+   - recipientPhone (optional, pulled from saved payee or typed in)
+
+2. Use this exact list of sort codes to match to the correct bank name.
+Only use the banks that are already in my system — nothing else.
+
+const sortCodeToBank = {
+  "04-00-04": "Monzo Bank",
+  "07-01-16": "Metro Bank",
+  "08-71-99": "Cashplus Bank",
+  "20-00-00": "Barclays Bank",
+  "30-93-94": "Lloyds Bank",
+  "60-83-71": "Starling Bank",
+  "77-29-00": "TSB Bank"
+};
+
+If the sort code does not match one of these, show an error:
+**“Unsupported bank – sort code not recognised”**
+Do not allow the transfer to proceed.
+
+3. If the sort code is valid:
+   - Mask the account number like ****5421
+   - Detect the correct bank name using the map
+   - Generate a random 6-character payment ID (uppercase, letters and numbers)
+
+4. Save the payment in the database with this structure:
+{
+  paymentID: "8YT2FB",
+  status: "Sent",
+  type: "UK Transfer",
+  amount: "£250.00",
+  senderName: "J. Murphy",
+  reference: "Deposit June",
+  sortCode: "30-93-94",
+  receivingBank: "Lloyds Bank",
+  accountMasked: "****5421",
+  dateTime: currentDateTime (e.g. 22/06/2025 02:11)
+}
+
+5. Create a link like:  
+**https://myboi.link/view/8YT2FB**
+
+Make a route `/view/:paymentID` that shows a confirmation page styled like Bank of Ireland with:
+- Status: Sent
+- Amount
+- Sender
+- Reference
+- Sort code + receiving bank
+- Masked account number
+- Date + Time
+- Payment ID
+- Note: “Funds may take 2–24 hours to clear depending on your bank.”
+
+6. If the recipientPhone was entered:
+Send this SMS using Twilio (or my existing system):
+
+`Bank of Ireland: A payment of £250.00 has been sent to your account.
+From: J. Murphy
+Ref: Deposit June
+Sort code: 30-93-94 (Lloyds Bank)
+Acc: ****5421
+Sent: 22/06/2025 02:11
+Funds may take 2–24 hours to clear depending on your bank.
+View details: https://myboi.link/view/8YT2FB`
+
+// Do not allow this flow for unsupported sort codes.
+// Do not change anything else in the app.
