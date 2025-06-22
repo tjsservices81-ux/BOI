@@ -209,53 +209,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Initialize usage tracking if not present
-      if (!codeInfo.usage) {
-        codeInfo.usage = {
+      // Initialize modern usage tracking if not present
+      if (!codeInfo.usageCount) {
+        codeInfo.usageCount = {
           ios: 0,
-          nonIos: 0,
-          totalUses: 0,
-          devices: []
+          android: 0,
+          other: 0
         };
       }
+      if (!codeInfo.deviceLimits) {
+        codeInfo.deviceLimits = {
+          ios: 2,
+          android: 1,
+          other: 1
+        };
+      }
+      if (codeInfo.totalUsage === undefined) {
+        codeInfo.totalUsage = 0;
+      }
 
-      // Device-specific usage limits
-      const iosLimit = 2;
-      const nonIosLimit = 1;
+      // Determine device type
+      const isAndroid = userAgent.toLowerCase().includes('android');
+      let deviceType, currentUsage, deviceLimit;
       
-      // Check usage limits based on device type
       if (isIOS) {
-        if (codeInfo.usage.ios >= iosLimit) {
-          return res.status(409).json({ 
-            success: false, 
-            error: "Access Restricted – code already used",
-            message: "Access Restricted – code already used" 
-          });
-        }
+        deviceType = 'ios';
+        currentUsage = codeInfo.usageCount.ios;
+        deviceLimit = codeInfo.deviceLimits.ios;
+      } else if (isAndroid) {
+        deviceType = 'android';
+        currentUsage = codeInfo.usageCount.android;
+        deviceLimit = codeInfo.deviceLimits.android;
       } else {
-        if (codeInfo.usage.nonIos >= nonIosLimit) {
-          return res.status(409).json({ 
-            success: false, 
-            error: "Access Restricted – code already used",
-            message: "Access Restricted – code already used" 
-          });
-        }
+        deviceType = 'other';
+        currentUsage = codeInfo.usageCount.other;
+        deviceLimit = codeInfo.deviceLimits.other;
+      }
+      
+      // Check if device has exceeded its limit
+      if (currentUsage >= deviceLimit) {
+        return res.status(409).json({ 
+          success: false, 
+          error: "Access Restricted – code already used",
+          message: "Access Restricted – code already used" 
+        });
       }
 
       // Record this usage
-      if (isIOS) {
-        codeInfo.usage.ios += 1;
-      } else {
-        codeInfo.usage.nonIos += 1;
-      }
-      
-      codeInfo.usage.totalUses += 1;
-      codeInfo.usage.devices.push({
-        userAgent: userAgent,
-        isIOS: isIOS,
-        timestamp: new Date().toISOString(),
-        ip: req.ip || req.connection.remoteAddress
-      });
+      codeInfo.usageCount[deviceType] += 1;
+      codeInfo.totalUsage += 1;
 
       // Update the legacy used flag for backward compatibility
       codeInfo.used = true;
@@ -267,19 +269,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Save updated code info
-      await db.set(`access_code_${code}`, {
-        ...codeInfo,
-        createdAt: codeInfo?.createdAt || new Date().toISOString(),
-        description: codeInfo?.description || `Access code: ${code}`
-      });
+      await db.set(`access_code_${code}`, JSON.stringify(codeInfo));
 
-      console.log(`Access granted for ${code} - iOS: ${isIOS}, Usage: iOS=${codeInfo.usage.ios}/${iosLimit}, Non-iOS=${codeInfo.usage.nonIos}/${nonIosLimit}`);
+      console.log(`Access granted for ${code} - iOS: ${isIOS}, Usage: iOS=${codeInfo.usageCount.ios}/${codeInfo.deviceLimits.ios}, Non-iOS=${codeInfo.usageCount.android + codeInfo.usageCount.other}/${codeInfo.deviceLimits.android + codeInfo.deviceLimits.other}`);
 
       res.json({ 
         success: true, 
         message: "Access granted",
-        deviceType: isIOS ? 'iOS' : 'other',
-        remainingUses: isIOS ? (iosLimit - codeInfo.usage.ios) : (nonIosLimit - codeInfo.usage.nonIos)
+        deviceType: deviceType,
+        remainingUses: deviceLimit - codeInfo.usageCount[deviceType]
       });
       
     } catch (error) {
