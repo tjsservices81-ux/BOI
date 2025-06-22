@@ -1056,7 +1056,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/transfer/uk", requireAuth, async (req, res) => {
     try {
       const transferData = ukTransferSchema.parse(req.body);
-      const userId = req.session.user.id;
+      const userId = (req.session as any).user.id;
       const user = await storage.getUser(userId);
       
       if (!user) {
@@ -1064,7 +1064,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Sort code to bank mapping - exact list as specified
-      const sortCodeToBank = {
+      const sortCodeToBank: Record<string, string> = {
         "04-00-04": "Monzo Bank",
         "07-01-16": "Metro Bank", 
         "08-71-99": "Cashplus Bank",
@@ -1125,7 +1125,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId: user.id
       };
 
-      await db.insert(ukPayments).values(ukPayment);
+      await pgDb.insert(ukPayments).values(ukPayment);
 
       // Generate confirmation link
       const confirmationLink = `https://myboi.link/view/${paymentID}`;
@@ -1187,7 +1187,7 @@ View details: ${confirmationLink}`;
     try {
       const { paymentID } = req.params;
       
-      const [payment] = await db
+      const [payment] = await pgDb
         .select()
         .from(ukPayments)
         .where(eq(ukPayments.paymentID, paymentID));
