@@ -118,24 +118,6 @@ export const chatSessions = pgTable("chat_sessions", {
   endedAt: timestamp("ended_at"),
 });
 
-// UK payments table for transfer confirmations
-export const ukPayments = pgTable("uk_payments", {
-  id: serial("id").primaryKey(),
-  paymentID: text("payment_id").notNull().unique(),
-  status: text("status").notNull().default("Sent"),
-  type: text("type").notNull().default("UK Transfer"),
-  amount: text("amount").notNull(),
-  senderName: text("sender_name").notNull(),
-  reference: text("reference").notNull(),
-  sortCode: text("sort_code").notNull(),
-  receivingBank: text("receiving_bank").notNull(),
-  accountMasked: text("account_masked").notNull(),
-  dateTime: text("date_time").notNull(),
-  recipientPhone: text("recipient_phone"),
-  userId: integer("user_id").notNull(),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
-
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
 });
@@ -164,10 +146,6 @@ export const insertChatSessionSchema = createInsertSchema(chatSessions).omit({
   id: true,
 });
 
-export const insertUkPaymentSchema = createInsertSchema(ukPayments).omit({
-  id: true,
-});
-
 export const loginSchema = z.object({
   customerNumber: z.string().min(1, "Customer number is required"),
   pin: z.string().min(4, "PIN must be at least 4 digits"),
@@ -181,14 +159,6 @@ export const transferSchema = z.object({
   reference: z.string().optional(),
 });
 
-export const ukTransferSchema = z.object({
-  amount: z.string().min(1, "Amount is required"),
-  reference: z.string().min(1, "Reference is required"),
-  sortCode: z.string().min(1, "Sort code is required"),
-  accountNumber: z.string().min(1, "Account number is required"),
-  recipientPhone: z.string().optional(),
-});
-
 export type User = typeof users.$inferSelect;
 export type Account = typeof accounts.$inferSelect;
 export type Transaction = typeof transactions.$inferSelect;
@@ -198,7 +168,6 @@ export type Statement = typeof statements.$inferSelect;
 export type ChatMessage = typeof chatMessages.$inferSelect;
 export type ChatResponse = typeof chatResponses.$inferSelect;
 export type ChatSession = typeof chatSessions.$inferSelect;
-export type UkPayment = typeof ukPayments.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertAccount = z.infer<typeof insertAccountSchema>;
 export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
@@ -206,7 +175,5 @@ export type InsertPayee = z.infer<typeof insertPayeeSchema>;
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type InsertChatResponse = z.infer<typeof insertChatResponseSchema>;
 export type InsertChatSession = z.infer<typeof insertChatSessionSchema>;
-export type InsertUkPayment = z.infer<typeof insertUkPaymentSchema>;
 export type LoginRequest = z.infer<typeof loginSchema>;
 export type TransferRequest = z.infer<typeof transferSchema>;
-export type UkTransferRequest = z.infer<typeof ukTransferSchema>;
