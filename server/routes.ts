@@ -157,12 +157,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return iosPattern.test(userAgent);
   }
 
-  // Access code verification endpoint with device-specific usage limits
+  // Access code verification endpoint - ALL CODES DISABLED
   app.post("/api/verify-code", async (req, res) => {
     try {
       const { code } = req.body;
-      const userAgent = req.headers['user-agent'] || '';
-      const isIOS = isIOSDevice(userAgent);
       
       if (!code || typeof code !== 'string') {
         return res.status(400).json({ 
@@ -171,15 +169,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Get access code data from database
-      const codeData = await db.get(`access_code_${code}`);
-      
-      if (!codeData) {
-        return res.status(404).json({ 
-          success: false, 
-          error: "Access code not found" 
-        });
-      }
+      // ALL ACCESS CODES DISABLED - Return not found for any code
+      return res.status(404).json({ 
+        success: false, 
+        error: "Access code not found" 
+      });
 
       // Parse the stored data - handle nested JSON serialization
       let codeInfo;
