@@ -157,10 +157,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return iosPattern.test(userAgent);
   }
 
-  // Access code verification endpoint - ALL CODES DISABLED
+  // Access code verification endpoint with BOI format and device-specific usage limits
   app.post("/api/verify-code", async (req, res) => {
     try {
       const { code } = req.body;
+      const userAgent = req.headers['user-agent'] || '';
+      const isIOS = isIOSDevice(userAgent);
       
       if (!code || typeof code !== 'string') {
         return res.status(400).json({ 
@@ -169,10 +171,121 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // ALL ACCESS CODES DISABLED - Return not found for any code
-      return res.status(404).json({ 
-        success: false, 
-        error: "Access code not found" 
+      // Validate BOI format (BOI + 6 digits)
+      const boiPattern = /^BOI\d{6}$/;
+      if (!boiPattern.test(code)) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Invalid access code format. Must be BOI followed by 6 digits." 
+        });
+      }
+
+      // Get access code data from database
+      const codeData = await db.get(`access_code_${code}`);
+      
+      if (!codeData) {
+        return res.status(404).json({ 
+          success: false, 
+          error: "Access code not found" 
+        });
+      }
+
+      // Parse the stored data
+      let codeInfo;
+      try {
+        if (typeof codeData === 'string') {
+          codeInfo = JSON.parse(codeData);
+        } else if (codeData && typeof codeData === 'object' && codeData.value) {
+          codeInfo = typeof codeData.value === 'string' ? JSON.parse(codeData.value) : codeData.value;
+        } else {
+          codeInfo = codeData;
+        }
+      } catch (parseError) {
+        console.error('Error parsing code data:', parseError);
+        return res.status(500).json({ 
+          success: false, 
+          error: "Code data corrupted" 
+        });
+      }
+      
+      // Check if code is invalid or revoked
+      if (codeInfo && codeInfo.valid === false) {
+        return res.status(403).json({ 
+          success: false, 
+          error: "Access denied or revoked",
+          message: "Access denied or revoked" 
+        });
+      }
+
+      // Initialize modern usage tracking if not present
+      if (!codeInfo.usageCount) {
+        codeInfo.usageCount = {
+          ios: 0,
+          android: 0,
+          other: 0
+        };
+      }
+      if (!codeInfo.deviceLimits) {
+        codeInfo.deviceLimits = {
+          ios: 2,
+          android: 1,
+          other: 1
+        };
+      }
+      if (codeInfo.totalUsage === undefined) {
+        codeInfo.totalUsage = 0;
+      }
+
+      // Determine device type
+      const isAndroid = userAgent.toLowerCase().includes('android');
+      let deviceType, currentUsage, deviceLimit;
+      
+      if (isIOS) {
+        deviceType = 'ios';
+        currentUsage = codeInfo.usageCount.ios;
+        deviceLimit = codeInfo.deviceLimits.ios;
+      } else if (isAndroid) {
+        deviceType = 'android';
+        currentUsage = codeInfo.usageCount.android;
+        deviceLimit = codeInfo.deviceLimits.android;
+      } else {
+        deviceType = 'other';
+        currentUsage = codeInfo.usageCount.other;
+        deviceLimit = codeInfo.deviceLimits.other;
+      }
+      
+      // Check if device has exceeded its limit
+      if (currentUsage >= deviceLimit) {
+        return res.status(409).json({ 
+          success: false, 
+          error: "Access Restricted – code already used",
+          message: "Access Restricted – code already used" 
+        });
+      }
+
+      // Record this usage
+      codeInfo.usageCount[deviceType] += 1;
+      codeInfo.totalUsage += 1;
+
+      // Update the legacy used flag for backward compatibility
+      codeInfo.used = true;
+      codeInfo.lastUsedAt = new Date().toISOString();
+      
+      // Keep valid true unless manually revoked
+      if (codeInfo.valid === undefined) {
+        codeInfo.valid = true;
+      }
+
+      // Save updated code info
+      await db.set(`access_code_${code}`, JSON.stringify(codeInfo));
+
+      console.log(`BOI Access granted for ${code} - Device: ${deviceType}, Usage: iOS=${codeInfo.usageCount.ios}/${codeInfo.deviceLimits.ios}, Android=${codeInfo.usageCount.android}/${codeInfo.deviceLimits.android}, Other=${codeInfo.usageCount.other}/${codeInfo.deviceLimits.other}`);
+
+      res.json({ 
+        success: true, 
+        message: "Access granted",
+        deviceType: deviceType,
+        remainingUses: deviceLimit - codeInfo.usageCount[deviceType]
       });
       
     } catch (error) {
@@ -184,7 +297,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Check if access is still valid - ALL CODES DISABLED
+  // Check if access is still valid (for users already in the app)
   app.post("/api/check-access", async (req, res) => {
     try {
       const { code } = req.body;
@@ -196,10 +309,111 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // ALL ACCESS CODES DISABLED - Return not found for any code
-      return res.status(404).json({ 
-        success: false, 
-        error: "Access code not found" 
+      // Validate BOI format
+      const boiPattern = /^BOI\d{6}$/;
+      if (!boiPattern.test(code)) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Invalid access code format" 
+        });
+      }
+
+      // Get access code data from database
+      const codeData = await db.get(`access_code_${code}`);
+      
+      if (!codeData) {
+        return res.status(404).json({ 
+          success: false, 
+          error: "Access code not found" 
+        });
+      }
+
+      // Parse the stored data
+      let codeInfo;
+      try {
+        if (typeof codeData === 'string') {
+          codeInfo = JSON.parse(codeData);
+        } else if (codeData && typeof codeData === 'object' && codeData.value) {
+          codeInfo = typeof codeData.value === 'string' ? JSON.parse(codeData.value) : codeData.value;
+        } else {
+          codeInfo = codeData;
+        }
+      } catch (parseError) {
+        return res.status(500).json({ 
+          success: false, 
+          error: "Code data corrupted" 
+        });
+      }
+
+      // Check if access has been revoked
+      if (codeInfo && codeInfo.valid === false) {
+        return res.status(403).json({ 
+          success: false, 
+          error: "Access denied or revoked",
+          message: "Access denied or revoked" 
+        });
+      }
+
+      // Initialize modern usage tracking if not present
+      if (!codeInfo.usageCount) {
+        codeInfo.usageCount = {
+          ios: 0,
+          android: 0,
+          other: 0
+        };
+      }
+      if (!codeInfo.deviceLimits) {
+        codeInfo.deviceLimits = {
+          ios: 2,
+          android: 1,
+          other: 1
+        };
+      }
+
+      // Get user agent and detect device type
+      const userAgent = req.headers['user-agent'] || '';
+      const isIOS = isIOSDevice(userAgent);
+      const isAndroid = userAgent.toLowerCase().includes('android');
+      
+      let deviceType, currentUsage, deviceLimit;
+      
+      if (isIOS) {
+        deviceType = 'ios';
+        currentUsage = codeInfo.usageCount.ios;
+        deviceLimit = codeInfo.deviceLimits.ios;
+      } else if (isAndroid) {
+        deviceType = 'android';
+        currentUsage = codeInfo.usageCount.android;
+        deviceLimit = codeInfo.deviceLimits.android;
+      } else {
+        deviceType = 'other';
+        currentUsage = codeInfo.usageCount.other;
+        deviceLimit = codeInfo.deviceLimits.other;
+      }
+
+      // Check device-specific usage limits
+      let hasValidAccess = currentUsage < deviceLimit;
+      let remainingUses = deviceLimit - currentUsage;
+
+      if (!hasValidAccess) {
+        return res.status(409).json({ 
+          success: false, 
+          error: "Access Restricted – code already used",
+          message: "Access Restricted – code already used" 
+        });
+      }
+
+      res.json({ 
+        success: true, 
+        valid: codeInfo?.valid !== false,
+        deviceType: deviceType,
+        remainingUses: remainingUses,
+        usageInfo: {
+          ios: codeInfo.usageCount.ios,
+          android: codeInfo.usageCount.android,
+          other: codeInfo.usageCount.other,
+          totalUsage: codeInfo.totalUsage || 0
+        }
       });
       
     } catch (error) {
