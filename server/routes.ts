@@ -174,105 +174,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success: false, 
         error: "Access code not found" 
       });
-
-      // Parse the stored data - handle nested JSON serialization
-      let codeInfo;
-      try {
-        if (typeof codeData === 'string') {
-          codeInfo = JSON.parse(codeData);
-        } else if (codeData && typeof codeData === 'object' && codeData.value) {
-          // Handle Replit Database wrapper format
-          codeInfo = typeof codeData.value === 'string' ? JSON.parse(codeData.value) : codeData.value;
-        } else {
-          codeInfo = codeData;
-        }
-      } catch (parseError) {
-        console.error('Error parsing code data:', parseError);
-        return res.status(500).json({ 
-          success: false, 
-          error: "Code data corrupted" 
-        });
-      }
-      
-      // Check if code is invalid or revoked
-      if (codeInfo && codeInfo.valid === false) {
-        return res.status(403).json({ 
-          success: false, 
-          error: "Access denied or revoked",
-          message: "Access denied or revoked" 
-        });
-      }
-
-      // Initialize modern usage tracking if not present
-      if (!codeInfo.usageCount) {
-        codeInfo.usageCount = {
-          ios: 0,
-          android: 0,
-          other: 0
-        };
-      }
-      if (!codeInfo.deviceLimits) {
-        codeInfo.deviceLimits = {
-          ios: 2,
-          android: 1,
-          other: 1
-        };
-      }
-      if (codeInfo.totalUsage === undefined) {
-        codeInfo.totalUsage = 0;
-      }
-
-      // Determine device type
-      const isAndroid = userAgent.toLowerCase().includes('android');
-      let deviceType, currentUsage, deviceLimit;
-      
-      if (isIOS) {
-        deviceType = 'ios';
-        currentUsage = codeInfo.usageCount.ios;
-        deviceLimit = codeInfo.deviceLimits.ios;
-      } else if (isAndroid) {
-        deviceType = 'android';
-        currentUsage = codeInfo.usageCount.android;
-        deviceLimit = codeInfo.deviceLimits.android;
-      } else {
-        deviceType = 'other';
-        currentUsage = codeInfo.usageCount.other;
-        deviceLimit = codeInfo.deviceLimits.other;
-      }
-      
-      // Check if device has exceeded its limit
-      if (currentUsage >= deviceLimit) {
-        return res.status(409).json({ 
-          success: false, 
-          error: "Access Restricted – code already used",
-          message: "Access Restricted – code already used" 
-        });
-      }
-
-      // Record this usage
-      codeInfo.usageCount[deviceType] += 1;
-      codeInfo.totalUsage += 1;
-
-      // Update the legacy used flag for backward compatibility
-      codeInfo.used = true;
-      codeInfo.lastUsedAt = new Date().toISOString();
-      
-      // Keep valid true unless manually revoked
-      if (codeInfo.valid === undefined) {
-        codeInfo.valid = true;
-      }
-
-      // Save updated code info
-      await db.set(`access_code_${code}`, JSON.stringify(codeInfo));
-
-      console.log(`Access granted for ${code} - iOS: ${isIOS}, Usage: iOS=${codeInfo.usageCount.ios}/${codeInfo.deviceLimits.ios}, Non-iOS=${codeInfo.usageCount.android + codeInfo.usageCount.other}/${codeInfo.deviceLimits.android + codeInfo.deviceLimits.other}`);
-
-      res.json({ 
-        success: true, 
-        message: "Access granted",
-        deviceType: deviceType,
-        remainingUses: deviceLimit - codeInfo.usageCount[deviceType]
-      });
       
     } catch (error) {
       console.error('Access code verification error:', error);
@@ -283,7 +184,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Check if access is still valid (for users already in the app)
+  // Check if access is still valid - ALL CODES DISABLED
   app.post("/api/check-access", async (req, res) => {
     try {
       const { code } = req.body;
@@ -295,89 +196,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Get access code data from database
-      const codeData = await db.get(`access_code_${code}`);
-      
-      if (!codeData) {
-        return res.status(404).json({ 
-          success: false, 
-          error: "Access code not found" 
-        });
-      }
-
-      // Parse the stored data
-      let codeInfo;
-      try {
-        if (typeof codeData === 'string') {
-          codeInfo = JSON.parse(codeData);
-        } else if (codeData && typeof codeData === 'object' && codeData.value) {
-          codeInfo = typeof codeData.value === 'string' ? JSON.parse(codeData.value) : codeData.value;
-        } else {
-          codeInfo = codeData;
-        }
-      } catch (parseError) {
-        return res.status(500).json({ 
-          success: false, 
-          error: "Code data corrupted" 
-        });
-      }
-
-      // Check if access has been revoked
-      if (codeInfo && codeInfo.valid === false) {
-        return res.status(403).json({ 
-          success: false, 
-          error: "Access denied or revoked",
-          message: "Access denied or revoked" 
-        });
-      }
-
-      // Initialize usage tracking if not present (for backward compatibility)
-      if (!codeInfo.usage) {
-        codeInfo.usage = {
-          ios: 0,
-          nonIos: 0,
-          totalUses: 0,
-          devices: []
-        };
-      }
-
-      // Get user agent and detect device type
-      const userAgent = req.headers['user-agent'] || '';
-      const isIOS = isIOSDevice(userAgent);
-
-      // Check device-specific usage limits
-      const iosLimit = 2;
-      const nonIosLimit = 1;
-      
-      let hasValidAccess = true;
-      let remainingUses = 0;
-      
-      if (isIOS) {
-        hasValidAccess = codeInfo.usage.ios < iosLimit;
-        remainingUses = iosLimit - codeInfo.usage.ios;
-      } else {
-        hasValidAccess = codeInfo.usage.nonIos < nonIosLimit;
-        remainingUses = nonIosLimit - codeInfo.usage.nonIos;
-      }
-
-      if (!hasValidAccess) {
-        return res.status(409).json({ 
-          success: false, 
-          error: "Access Restricted – code already used",
-          message: "Access Restricted – code already used" 
-        });
-      }
-
-      res.json({ 
-        success: true, 
-        valid: codeInfo?.valid !== false,
-        deviceType: isIOS ? 'iOS' : 'other',
-        remainingUses: remainingUses,
-        usageInfo: {
-          ios: codeInfo.usage.ios,
-          nonIos: codeInfo.usage.nonIos,
-          totalUses: codeInfo.usage.totalUses
-        }
+      // ALL ACCESS CODES DISABLED - Return not found for any code
+      return res.status(404).json({ 
+        success: false, 
+        error: "Access code not found" 
       });
       
     } catch (error) {
