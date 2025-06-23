@@ -4,7 +4,7 @@ async function comprehensiveBOITest() {
   // Test PWA manifest with BOI codes
   console.log('1. Testing PWA Manifest Generation...\n');
   
-  const testCode = 'BOI849579'; // Fresh unused code
+  const testCode = 'BOI863209'; // Fresh unused code
   
   try {
     const manifestResponse = await fetch(`http://localhost:5000/manifest.json?access=${testCode}`);
@@ -70,7 +70,7 @@ async function comprehensiveBOITest() {
   
   // Verify codes are stored correctly
   const remainingCodes = [
-    'BOI167795', 'BOI543809', 'BOI770373', 'BOI722934', 'BOI920514', 'BOI729486'
+    'BOI989390', 'BOI786792', 'BOI119196', 'BOI988532', 'BOI751260', 'BOI468112'
   ];
   
   let validCodes = 0;
@@ -96,7 +96,7 @@ async function comprehensiveBOITest() {
   
   console.log('\n5. Testing Cross-Device Usage Tracking...\n');
   
-  const crossTestCode = 'BOI167795';
+  const crossTestCode = 'BOI989390';
   
   // Test Android access
   try {
