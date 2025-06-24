@@ -121,6 +121,7 @@ The application implements a sophisticated device-specific access control mechan
 
 ## Changelog
 
+- June 24, 2025. Implemented complete BOI access control system with device-specific limits
 - June 23, 2025. Initial setup
 
 ## User Preferences
