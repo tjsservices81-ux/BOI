@@ -32,7 +32,8 @@ This is a comprehensive mobile banking application built as a Progressive Web Ap
 ### Access Code System
 The application implements a sophisticated device-specific access control mechanism:
 - **iOS Devices**: 2 uses per access code (iPhone/iPad detection)
-- **Non-iOS Devices**: 1 use per access code
+- **Android Devices**: 2 uses per access code (updated June 25, 2025)
+- **Other Devices**: 1 use per access code
 - **Code Format**: BOI followed by 6 random digits (e.g., BOI968736)
 - **Usage Tracking**: Real-time monitoring of code consumption
 - **Revocation Support**: Instant access revocation capabilities
