@@ -228,7 +228,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!codeInfo.deviceLimits) {
         codeInfo.deviceLimits = {
           ios: 2,
-          android: 1,
+          android: 2,
           other: 1
         };
       }
@@ -365,7 +365,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!codeInfo.deviceLimits) {
         codeInfo.deviceLimits = {
           ios: 2,
-          android: 1,
+          android: 2,
           other: 1
         };
       }
