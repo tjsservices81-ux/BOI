@@ -23,7 +23,7 @@ export default function TransactionHistoryWorking() {
   
   const accountId = params?.accountId ? parseInt(params.accountId) : 1;
 
-  // Share receipt functionality - generates professional bank statement
+  // Share receipt functionality - captures receipt screen and opens native share
   const shareReceipt = async () => {
     if (!selectedTransaction) return;
     
@@ -57,53 +57,52 @@ export default function TransactionHistoryWorking() {
       // Remove temporary container
       document.body.removeChild(tempContainer);
       
+      // Convert canvas to blob
       canvas.toBlob(async (blob: Blob | null) => {
         if (!blob) {
-          console.error('Failed to generate image blob');
+          console.error('Failed to generate receipt image');
           return;
         }
 
-        // Check if Web Share API is available and supports files
-        if (navigator.share && navigator.canShare && navigator.canShare({ files: [new File([blob], 'test.png', { type: 'image/png' })] })) {
-          // Create file for native sharing
-          const file = new File([blob], 'Bank of Ireland Receipt.png', { type: 'image/png' });
-          
+        // Check if native sharing is supported
+        if (navigator.share) {
           try {
+            // Create file object for sharing
+            const receiptImageFile = new File([blob], 'Bank of Ireland Receipt.png', { 
+              type: 'image/png' 
+            });
+            
+            // Open native share sheet
             await navigator.share({
               title: 'Bank of Ireland Receipt',
-              files: [file]
+              text: 'Transaction Confirmation Attached',
+              files: [receiptImageFile]
             });
-          } catch (error) {
-            // User cancelled share or error occurred
-            if (error.name !== 'AbortError') {
-              console.error('Share failed:', error);
-              // Fallback to download
-              downloadImage(canvas, 'Bank of Ireland - Transaction Confirmation');
+            
+          } catch (error: any) {
+            // Handle share errors
+            if (error.name === 'AbortError') {
+              // User cancelled - do nothing
+              return;
             }
-          }
-        } else if (navigator.share) {
-          // Web Share API available but doesn't support files - share with URL
-          try {
-            const dataUrl = canvas.toDataURL('image/png');
-            await navigator.share({
-              title: 'Bank of Ireland Receipt',
-              text: 'Transaction receipt from Bank of Ireland',
-              url: dataUrl
-            });
-          } catch (error) {
-            if (error.name !== 'AbortError') {
-              console.error('Share failed:', error);
-              downloadImage(canvas, 'Bank of Ireland - Transaction Confirmation');
+            
+            if (error.name === 'NotSupportedError') {
+              alert('File sharing not supported on this device.');
+              return;
             }
+            
+            console.error('Share failed:', error);
+            alert('Sharing failed. Please try again.');
           }
         } else {
-          // No Web Share API - fallback to download
-          downloadImage(canvas, 'Bank of Ireland - Transaction Confirmation');
+          // No Web Share API support
+          alert('Sharing not supported on this device.');
         }
       }, 'image/png');
       
     } catch (error) {
-      console.error('Error generating bank statement:', error);
+      console.error('Error generating receipt:', error);
+      alert('Failed to generate receipt for sharing.');
     }
   };
 
