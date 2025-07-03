@@ -111,93 +111,89 @@ export default function TransactionHistoryWorking() {
         padding: 0;
         max-width: 450px;
         color: #333;
-        line-height: 1.6;
         margin: 0 auto;
       ">
         <!-- Bank Logo and Header -->
-        <div style="
-          text-align: center; 
-          margin-top: 50px;
-          margin-bottom: 40px;
-        ">
+        <div style="margin-top: 40px; text-align: center;">
           <img src="/attached_assets/IMG_1908_1751574344262.webp" alt="Bank of Ireland" style="
             width: 150px; 
             height: auto; 
             display: block;
-            margin: 0 auto 25px auto;
+            margin: 0 auto;
           " />
+        </div>
+        <div style="margin-top: 20px; text-align: center;">
           <div style="
             font-size: 13px;
             font-weight: 300;
             color: #777;
             letter-spacing: 0.5px;
-            text-align: center;
-            padding-bottom: 15px;
+            padding-bottom: 12px;
           ">Transaction Confirmation Statement</div>
         </div>
 
         <!-- Transaction Details Section -->
         <div style="
-          border-top: 1px solid #ddd;
-          border-bottom: 1px solid #ddd;
-          padding: 30px 40px;
-          margin: 0 20px 40px 20px;
+          border-top: 1px solid #ccc;
+          border-bottom: 1px solid #ccc;
+          padding: 25px 30px;
+          margin: 30px 20px;
         ">
           <table style="width: 100%; border-collapse: collapse;">
             <tr>
-              <td style="padding: 10px 0; font-size: 13px; font-weight: bold; color: #444; text-align: left; width: 50%; vertical-align: top;">Amount:</td>
-              <td style="padding: 10px 0; font-size: 13px; font-weight: bold; color: #333; text-align: left; vertical-align: top;">${getCurrencySymbol(userCurrency)}${formatAmountWithCommas(transaction.amount)}</td>
+              <td style="padding: 15px 0; font-size: 13px; font-weight: bold; color: #444; text-align: left; width: 40%;">Amount:</td>
+              <td style="padding: 15px 0; font-size: 13px; font-weight: bold; color: #333; text-align: left;">${getCurrencySymbol(userCurrency)}${formatAmountWithCommas(transaction.amount)}</td>
             </tr>
             <tr>
-              <td style="padding: 10px 0; font-size: 13px; font-weight: bold; color: #444; text-align: left; vertical-align: top;">Date:</td>
-              <td style="padding: 10px 0; font-size: 13px; font-weight: bold; color: #333; text-align: left; vertical-align: top;">${formattedDate}</td>
+              <td style="padding: 15px 0; font-size: 13px; font-weight: bold; color: #444; text-align: left;">Date:</td>
+              <td style="padding: 15px 0; font-size: 13px; font-weight: bold; color: #333; text-align: left;">${formattedDate}</td>
             </tr>
             <tr>
-              <td style="padding: 10px 0; font-size: 13px; font-weight: bold; color: #444; text-align: left; vertical-align: top;">Time:</td>
-              <td style="padding: 10px 0; font-size: 13px; font-weight: bold; color: #333; text-align: left; vertical-align: top;">${formattedTime}</td>
+              <td style="padding: 15px 0; font-size: 13px; font-weight: bold; color: #444; text-align: left;">Time:</td>
+              <td style="padding: 15px 0; font-size: 13px; font-weight: bold; color: #333; text-align: left;">${formattedTime}</td>
             </tr>
             ${transaction.recipientName ? `
             <tr>
-              <td style="padding: 10px 0; font-size: 13px; font-weight: bold; color: #444; text-align: left; vertical-align: top;">Recipient:</td>
-              <td style="padding: 10px 0; font-size: 13px; font-weight: bold; color: #333; text-align: left; vertical-align: top;">${transaction.recipientName}</td>
+              <td style="padding: 15px 0; font-size: 13px; font-weight: bold; color: #444; text-align: left;">Recipient:</td>
+              <td style="padding: 15px 0; font-size: 13px; font-weight: bold; color: #333; text-align: left;">${transaction.recipientName}</td>
             </tr>
             ` : ''}
             ${transaction.recipientSortCode ? `
             <tr>
-              <td style="padding: 10px 0; font-size: 13px; font-weight: bold; color: #444; text-align: left; vertical-align: top;">Sort Code:</td>
-              <td style="padding: 10px 0; font-size: 13px; font-weight: bold; color: #333; text-align: left; vertical-align: top;">${transaction.recipientSortCode.replace(/(\d{2})(\d{2})(\d{2})/, '$1-$2-$3')}</td>
+              <td style="padding: 15px 0; font-size: 13px; font-weight: bold; color: #444; text-align: left;">Sort Code:</td>
+              <td style="padding: 15px 0; font-size: 13px; font-weight: bold; color: #333; text-align: left;">${transaction.recipientSortCode.replace(/(\d{2})(\d{2})(\d{2})/, '$1-$2-$3')}</td>
             </tr>
             ` : ''}
             ${transaction.recipientAccountNumber ? `
             <tr>
-              <td style="padding: 10px 0; font-size: 13px; font-weight: bold; color: #444; text-align: left; vertical-align: top;">Account No:</td>
-              <td style="padding: 10px 0; font-size: 13px; font-weight: bold; color: #333; text-align: left; vertical-align: top;">${transaction.recipientAccountNumber}</td>
+              <td style="padding: 15px 0; font-size: 13px; font-weight: bold; color: #444; text-align: left;">Account No:</td>
+              <td style="padding: 15px 0; font-size: 13px; font-weight: bold; color: #333; text-align: left;">${transaction.recipientAccountNumber}</td>
             </tr>
             ` : ''}
             ${transaction.iban ? `
             <tr>
-              <td style="padding: 10px 0; font-size: 13px; font-weight: bold; color: #444; text-align: left; vertical-align: top;">IBAN:</td>
-              <td style="padding: 10px 0; font-size: 13px; font-weight: bold; color: #333; font-family: 'Courier New', monospace; text-align: left; vertical-align: top;">${transaction.iban}</td>
+              <td style="padding: 15px 0; font-size: 13px; font-weight: bold; color: #444; text-align: left;">IBAN:</td>
+              <td style="padding: 15px 0; font-size: 13px; font-weight: bold; color: #333; font-family: 'Courier New', monospace; text-align: left;">${transaction.iban}</td>
             </tr>
             ` : ''}
             ${transaction.reference ? `
             <tr>
-              <td style="padding: 10px 0; font-size: 13px; font-weight: bold; color: #444; text-align: left; vertical-align: top;">Reference:</td>
-              <td style="padding: 10px 0; font-size: 13px; font-weight: bold; color: #333; text-align: left; vertical-align: top;">${transaction.reference}</td>
+              <td style="padding: 15px 0; font-size: 13px; font-weight: bold; color: #444; text-align: left;">Reference:</td>
+              <td style="padding: 15px 0; font-size: 13px; font-weight: bold; color: #333; text-align: left;">${transaction.reference}</td>
             </tr>
             ` : ''}
             <tr>
-              <td style="padding: 10px 0; font-size: 13px; font-weight: bold; color: #444; text-align: left; vertical-align: top;">Transaction ID:</td>
-              <td style="padding: 10px 0; font-size: 13px; font-weight: bold; color: #333; font-family: 'Courier New', monospace; text-align: left; vertical-align: top;">${transaction.id}</td>
+              <td style="padding: 15px 0; font-size: 13px; font-weight: bold; color: #444; text-align: left;">Transaction ID:</td>
+              <td style="padding: 15px 0; font-size: 13px; font-weight: bold; color: #333; font-family: 'Courier New', monospace; text-align: left;">${transaction.id}</td>
             </tr>
             ${transaction.exchangeRate ? `
             <tr>
-              <td style="padding: 10px 0; font-size: 13px; font-weight: bold; color: #444; text-align: left; vertical-align: top;">Exchange Rate:</td>
-              <td style="padding: 10px 0; font-size: 13px; font-weight: bold; color: #333; text-align: left; vertical-align: top;">${getCurrencySymbol(userCurrency)}1 = ${getCurrencySymbol(userCurrency === 'EUR' ? 'GBP' : 'EUR')}${transaction.exchangeRate.toFixed(4)}</td>
+              <td style="padding: 15px 0; font-size: 13px; font-weight: bold; color: #444; text-align: left;">Exchange Rate:</td>
+              <td style="padding: 15px 0; font-size: 13px; font-weight: bold; color: #333; text-align: left;">${getCurrencySymbol(userCurrency)}1 = ${getCurrencySymbol(userCurrency === 'EUR' ? 'GBP' : 'EUR')}${transaction.exchangeRate.toFixed(4)}</td>
             </tr>
             <tr>
-              <td style="padding: 10px 0; font-size: 13px; font-weight: bold; color: #444; text-align: left; vertical-align: top;">Converted Amount:</td>
-              <td style="padding: 10px 0; font-size: 13px; font-weight: bold; color: #333; text-align: left; vertical-align: top;">${getCurrencySymbol(userCurrency === 'EUR' ? 'GBP' : 'EUR')}${formatAmountWithCommas(transaction.convertedAmount)}</td>
+              <td style="padding: 15px 0; font-size: 13px; font-weight: bold; color: #444; text-align: left;">Converted Amount:</td>
+              <td style="padding: 15px 0; font-size: 13px; font-weight: bold; color: #333; text-align: left;">${getCurrencySymbol(userCurrency === 'EUR' ? 'GBP' : 'EUR')}${formatAmountWithCommas(transaction.convertedAmount)}</td>
             </tr>
             ` : ''}
           </table>
@@ -208,11 +204,11 @@ export default function TransactionHistoryWorking() {
           text-align: center; 
           font-size: 11px; 
           color: #777; 
-          line-height: 1.5;
-          margin-bottom: 40px;
+          line-height: 1.4;
+          margin-bottom: 30px;
           padding: 0 20px;
         ">
-          <div style="margin-bottom: 8px;">This is an official confirmation from Bank of Ireland.</div>
+          <div style="margin-bottom: 6px;">This is an official confirmation from Bank of Ireland.</div>
           <div>For confirmation only. No signature required.</div>
         </div>
       </div>
