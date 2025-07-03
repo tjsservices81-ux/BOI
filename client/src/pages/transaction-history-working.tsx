@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useRoute } from "wouter";
-import { ChevronLeft, ArrowUpRight, CreditCard, Building2, Zap, Check, Clock, MapPin, Globe } from "lucide-react";
+import { ChevronLeft, ArrowUpRight, CreditCard, Building2, Zap, Check, Clock, MapPin, Globe, Share } from "lucide-react";
 import MiniSpendingChart from "../components/MiniSpendingChart";
 import { UserDataManager } from "../utils/userDataManager.ts";
 import { StateManager } from "../utils/stateManager";
@@ -19,8 +19,59 @@ export default function TransactionHistoryWorking() {
   const [isNavigating, setIsNavigating] = useState(false);
   const [userCurrency, setUserCurrency] = useState<Currency>('EUR');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const receiptRef = useRef<HTMLDivElement>(null);
   
   const accountId = params?.accountId ? parseInt(params.accountId) : 1;
+
+  // Share receipt functionality
+  const shareReceipt = async () => {
+    if (!receiptRef.current || !selectedTransaction) return;
+    
+    try {
+      // Use html2canvas to capture the receipt
+      const html2canvas = (await import('html2canvas')).default;
+      
+      const canvas = await html2canvas(receiptRef.current, {
+        backgroundColor: '#ffffff',
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        height: receiptRef.current.scrollHeight,
+        width: receiptRef.current.scrollWidth
+      });
+      
+      canvas.toBlob(async (blob: Blob | null) => {
+        if (blob && navigator.share) {
+          // Native share for mobile devices
+          const file = new File([blob], 'transaction-receipt.png', { type: 'image/png' });
+          
+          try {
+            await navigator.share({
+              title: 'Transaction Receipt',
+              text: `Receipt for ${selectedTransaction.description}`,
+              files: [file]
+            });
+          } catch (error) {
+            // Fallback to download if share fails
+            downloadImage(canvas);
+          }
+        } else {
+          // Fallback to download for desktop
+          downloadImage(canvas);
+        }
+      }, 'image/png');
+      
+    } catch (error) {
+      console.error('Error generating receipt image:', error);
+    }
+  };
+
+  const downloadImage = (canvas: HTMLCanvasElement) => {
+    const link = document.createElement('a');
+    link.download = `transaction-receipt-${selectedTransaction?.id || 'receipt'}.png`;
+    link.href = canvas.toDataURL();
+    link.click();
+  };
 
   // Enhanced navigation with smooth animations
   const navigateWithAnimation = (path: string, animationType: 'slide-right' | 'slide-left' | 'slide-up' = 'slide-right') => {
@@ -337,22 +388,31 @@ export default function TransactionHistoryWorking() {
           <div 
             onClick={(e) => e.stopPropagation()}
             className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] shadow-xl flex flex-col">
-            {/* Fixed header with close button */}
+            {/* Fixed header with share and close buttons */}
             <div className="flex items-center justify-between p-6 pb-4 border-b border-gray-200 flex-shrink-0">
               <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                 Transaction Details
               </h2>
-              <button 
-                onClick={() => setSelectedTransaction(null)}
-                className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center active:scale-95 transition-transform"
-              >
-                <span className="text-gray-600 text-lg">×</span>
-              </button>
+              <div className="flex items-center space-x-3">
+                <button 
+                  onClick={shareReceipt}
+                  className="w-8 h-8 bg-[#126987] rounded-full flex items-center justify-center active:scale-95 transition-transform"
+                  title="Share Receipt"
+                >
+                  <Share className="w-4 h-4 text-white" />
+                </button>
+                <button 
+                  onClick={() => setSelectedTransaction(null)}
+                  className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center active:scale-95 transition-transform"
+                >
+                  <span className="text-gray-600 text-lg">×</span>
+                </button>
+              </div>
             </div>
 
             {/* Scrollable content area */}
             <div className="flex-1 overflow-y-auto" style={{ maxHeight: 'calc(90vh - 120px)' }}>
-              <div className="p-6 pt-4 pb-24">
+              <div ref={receiptRef} className="p-6 pt-4 pb-24">
                 <div className="space-y-6">
               {/* Transaction Status */}
               <div className="flex items-center justify-center py-4 bg-green-50 rounded-xl">
