@@ -31,60 +31,61 @@ export default function TransactionHistoryWorking() {
       // Create a professional bank statement style receipt
       const receiptHtml = generateBankStatementHtml(selectedTransaction);
       
-      // Create a temporary container
+      // Create a temporary container that's visible on screen
       const tempContainer = document.createElement('div');
       tempContainer.innerHTML = receiptHtml;
-      tempContainer.style.position = 'absolute';
-      tempContainer.style.left = '-9999px';
-      tempContainer.style.top = '-9999px';
+      tempContainer.style.position = 'fixed';
+      tempContainer.style.left = '0px';
+      tempContainer.style.top = '0px';
       tempContainer.style.background = 'white';
       tempContainer.style.width = '400px';
       tempContainer.style.padding = '20px';
+      tempContainer.style.zIndex = '9999';
+      tempContainer.style.opacity = '0';
+      tempContainer.style.pointerEvents = 'none';
       document.body.appendChild(tempContainer);
       
       // Use html2canvas to capture the styled receipt
       const html2canvas = (await import('html2canvas')).default;
       
-      const canvas = await html2canvas(tempContainer, {
+      html2canvas(tempContainer, {
         backgroundColor: '#ffffff',
         scale: 2,
         useCORS: true,
         allowTaint: true,
         width: 440,
         height: tempContainer.scrollHeight + 40
-      });
-      
-      // Remove temporary container
-      document.body.removeChild(tempContainer);
-      
-      // Convert canvas to blob
-      canvas.toBlob(async (blob: Blob | null) => {
-        if (!blob) {
-          console.error('Failed to generate receipt image');
-          return;
-        }
-
-        // Create File object
-        const file = new File([blob], 'Bank-of-Ireland-Receipt.png', { type: 'image/png' });
-
-        // Check if sharing is supported and open native share sheet
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          try {
-            await navigator.share({ 
-              files: [file], 
-              title: 'Bank of Ireland Receipt', 
-              text: 'Transaction Confirmation Attached' 
-            });
-          } catch (error: any) {
-            // User cancelled or other error - only log, don't alert unless critical
-            if (error.name !== 'AbortError') {
-              console.error('Share error:', error);
-            }
+      }).then(canvas => {
+        // Remove temporary container
+        document.body.removeChild(tempContainer);
+        
+        canvas.toBlob(blob => {
+          if (!blob) {
+            alert('Failed to generate receipt image');
+            return;
           }
-        } else {
-          alert('Sharing not supported on this device.');
-        }
-      }, 'image/png');
+
+          const file = new File([blob], 'Bank-of-Ireland-Receipt.png', { type: 'image/png' });
+
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            navigator.share({
+              title: 'Bank of Ireland Receipt',
+              text: 'Transaction Confirmation Attached',
+              files: [file]
+            }).catch(error => {
+              if (error.name !== 'AbortError') {
+                alert('Share failed: ' + error.message);
+              }
+            });
+          } else {
+            alert('Sharing not supported on this device.');
+          }
+        }, 'image/png');
+      }).catch(error => {
+        document.body.removeChild(tempContainer);
+        console.error('Canvas capture failed:', error);
+        alert('Failed to capture receipt image');
+      });
       
     } catch (error) {
       console.error('Error generating receipt:', error);
