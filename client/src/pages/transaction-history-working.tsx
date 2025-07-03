@@ -23,52 +23,187 @@ export default function TransactionHistoryWorking() {
   
   const accountId = params?.accountId ? parseInt(params.accountId) : 1;
 
-  // Share receipt functionality
+  // Share receipt functionality - generates professional bank statement
   const shareReceipt = async () => {
-    if (!receiptRef.current || !selectedTransaction) return;
+    if (!selectedTransaction) return;
     
     try {
-      // Use html2canvas to capture the receipt
+      // Create a professional bank statement style receipt
+      const receiptHtml = generateBankStatementHtml(selectedTransaction);
+      
+      // Create a temporary container
+      const tempContainer = document.createElement('div');
+      tempContainer.innerHTML = receiptHtml;
+      tempContainer.style.position = 'absolute';
+      tempContainer.style.left = '-9999px';
+      tempContainer.style.top = '-9999px';
+      tempContainer.style.background = 'white';
+      tempContainer.style.width = '400px';
+      tempContainer.style.padding = '20px';
+      document.body.appendChild(tempContainer);
+      
+      // Use html2canvas to capture the styled receipt
       const html2canvas = (await import('html2canvas')).default;
       
-      const canvas = await html2canvas(receiptRef.current, {
+      const canvas = await html2canvas(tempContainer, {
         backgroundColor: '#ffffff',
         scale: 2,
         useCORS: true,
         allowTaint: true,
-        height: receiptRef.current.scrollHeight,
-        width: receiptRef.current.scrollWidth
+        width: 440,
+        height: tempContainer.scrollHeight + 40
       });
+      
+      // Remove temporary container
+      document.body.removeChild(tempContainer);
       
       canvas.toBlob(async (blob: Blob | null) => {
         if (blob && navigator.share) {
           // Native share for mobile devices
-          const file = new File([blob], 'transaction-receipt.png', { type: 'image/png' });
+          const file = new File([blob], 'bank-statement.png', { type: 'image/png' });
           
           try {
             await navigator.share({
-              title: 'Transaction Receipt',
-              text: `Receipt for ${selectedTransaction.description}`,
+              title: 'Bank Statement',
+              text: `Bank statement for ${selectedTransaction.description}`,
               files: [file]
             });
           } catch (error) {
             // Fallback to download if share fails
-            downloadImage(canvas);
+            downloadImage(canvas, 'bank-statement');
           }
         } else {
           // Fallback to download for desktop
-          downloadImage(canvas);
+          downloadImage(canvas, 'bank-statement');
         }
       }, 'image/png');
       
     } catch (error) {
-      console.error('Error generating receipt image:', error);
+      console.error('Error generating bank statement:', error);
     }
   };
 
-  const downloadImage = (canvas: HTMLCanvasElement) => {
+  const generateBankStatementHtml = (transaction: any) => {
+    const formattedDate = new Date(transaction.timestamp).toLocaleDateString('en-IE', { 
+      day: '2-digit', 
+      month: '2-digit', 
+      year: 'numeric' 
+    });
+    const formattedTime = new Date(transaction.timestamp).toLocaleTimeString('en-IE', { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+
+    return `
+      <div style="
+        font-family: 'Arial', sans-serif;
+        background: white;
+        padding: 30px;
+        max-width: 400px;
+        color: #333;
+        line-height: 1.4;
+      ">
+        <!-- Bank Logo and Header -->
+        <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #0047ab; padding-bottom: 15px;">
+          <div style="
+            font-size: 24px;
+            font-weight: bold;
+            color: #0047ab;
+            margin-bottom: 5px;
+          ">Bank of Ireland</div>
+          <div style="font-size: 12px; color: #666;">TRANSACTION STATEMENT</div>
+        </div>
+
+        <!-- Transaction Details -->
+        <div style="margin-bottom: 25px;">
+          <div style="
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          ">Transaction Details</div>
+          
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr style="border-bottom: 1px solid #eee;">
+              <td style="padding: 8px 0; font-size: 12px; color: #666; width: 35%;">Amount:</td>
+              <td style="padding: 8px 0; font-size: 12px; font-weight: bold; color: #333;">${formatCurrency(transaction.amount.replace('-', ''), userCurrency)}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #eee;">
+              <td style="padding: 8px 0; font-size: 12px; color: #666;">Date:</td>
+              <td style="padding: 8px 0; font-size: 12px; color: #333;">${formattedDate}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #eee;">
+              <td style="padding: 8px 0; font-size: 12px; color: #666;">Time:</td>
+              <td style="padding: 8px 0; font-size: 12px; color: #333;">${formattedTime}</td>
+            </tr>
+            ${transaction.recipientName ? `
+            <tr style="border-bottom: 1px solid #eee;">
+              <td style="padding: 8px 0; font-size: 12px; color: #666;">Recipient:</td>
+              <td style="padding: 8px 0; font-size: 12px; color: #333;">${transaction.recipientName}</td>
+            </tr>
+            ` : ''}
+            ${transaction.recipientSortCode ? `
+            <tr style="border-bottom: 1px solid #eee;">
+              <td style="padding: 8px 0; font-size: 12px; color: #666;">Sort Code:</td>
+              <td style="padding: 8px 0; font-size: 12px; color: #333;">${transaction.recipientSortCode.replace(/(\d{2})(\d{2})(\d{2})/, '$1-$2-$3')}</td>
+            </tr>
+            ` : ''}
+            ${transaction.recipientAccountNumber ? `
+            <tr style="border-bottom: 1px solid #eee;">
+              <td style="padding: 8px 0; font-size: 12px; color: #666;">Account No:</td>
+              <td style="padding: 8px 0; font-size: 12px; color: #333;">${transaction.recipientAccountNumber}</td>
+            </tr>
+            ` : ''}
+            ${transaction.iban ? `
+            <tr style="border-bottom: 1px solid #eee;">
+              <td style="padding: 8px 0; font-size: 12px; color: #666;">IBAN:</td>
+              <td style="padding: 8px 0; font-size: 12px; color: #333; font-family: monospace;">${transaction.iban}</td>
+            </tr>
+            ` : ''}
+            ${transaction.reference ? `
+            <tr style="border-bottom: 1px solid #eee;">
+              <td style="padding: 8px 0; font-size: 12px; color: #666;">Reference:</td>
+              <td style="padding: 8px 0; font-size: 12px; color: #333;">${transaction.reference}</td>
+            </tr>
+            ` : ''}
+            <tr style="border-bottom: 1px solid #eee;">
+              <td style="padding: 8px 0; font-size: 12px; color: #666;">Transaction ID:</td>
+              <td style="padding: 8px 0; font-size: 12px; color: #333; font-family: monospace;">${transaction.id}</td>
+            </tr>
+            ${transaction.exchangeRate ? `
+            <tr style="border-bottom: 1px solid #eee;">
+              <td style="padding: 8px 0; font-size: 12px; color: #666;">Exchange Rate:</td>
+              <td style="padding: 8px 0; font-size: 12px; color: #333;">${getCurrencySymbol(userCurrency)}1 = ${getCurrencySymbol(userCurrency === 'EUR' ? 'GBP' : 'EUR')}${transaction.exchangeRate.toFixed(4)}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #eee;">
+              <td style="padding: 8px 0; font-size: 12px; color: #666;">Converted Amount:</td>
+              <td style="padding: 8px 0; font-size: 12px; color: #333;">${getCurrencySymbol(userCurrency === 'EUR' ? 'GBP' : 'EUR')}${transaction.convertedAmount}</td>
+            </tr>
+            ` : ''}
+          </table>
+        </div>
+
+        <!-- Footer -->
+        <div style="
+          text-align: center; 
+          font-size: 10px; 
+          color: #999; 
+          border-top: 1px solid #eee; 
+          padding-top: 15px;
+          margin-top: 20px;
+        ">
+          <div>Bank of Ireland (UK) plc</div>
+          <div style="margin-top: 5px;">Generated: ${new Date().toLocaleDateString('en-IE')} ${new Date().toLocaleTimeString('en-IE')}</div>
+        </div>
+      </div>
+    `;
+  };
+
+  const downloadImage = (canvas: HTMLCanvasElement, filename: string) => {
     const link = document.createElement('a');
-    link.download = `transaction-receipt-${selectedTransaction?.id || 'receipt'}.png`;
+    link.download = `${filename}-${selectedTransaction?.id || 'statement'}.png`;
     link.href = canvas.toDataURL();
     link.click();
   };
