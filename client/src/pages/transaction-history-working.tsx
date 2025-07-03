@@ -64,38 +64,24 @@ export default function TransactionHistoryWorking() {
           return;
         }
 
-        // Check if native sharing is supported
-        if (navigator.share) {
+        // Create File object
+        const file = new File([blob], 'Bank-of-Ireland-Receipt.png', { type: 'image/png' });
+
+        // Check if sharing is supported and open native share sheet
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
           try {
-            // Create file object for sharing
-            const receiptImageFile = new File([blob], 'Bank of Ireland Receipt.png', { 
-              type: 'image/png' 
+            await navigator.share({ 
+              files: [file], 
+              title: 'Bank of Ireland Receipt', 
+              text: 'Transaction Confirmation Attached' 
             });
-            
-            // Open native share sheet
-            await navigator.share({
-              title: 'Bank of Ireland Receipt',
-              text: 'Transaction Confirmation Attached',
-              files: [receiptImageFile]
-            });
-            
           } catch (error: any) {
-            // Handle share errors
-            if (error.name === 'AbortError') {
-              // User cancelled - do nothing
-              return;
+            // User cancelled or other error - only log, don't alert unless critical
+            if (error.name !== 'AbortError') {
+              console.error('Share error:', error);
             }
-            
-            if (error.name === 'NotSupportedError') {
-              alert('File sharing not supported on this device.');
-              return;
-            }
-            
-            console.error('Share failed:', error);
-            alert('Sharing failed. Please try again.');
           }
         } else {
-          // No Web Share API support
           alert('Sharing not supported on this device.');
         }
       }, 'image/png');
