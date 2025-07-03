@@ -58,22 +58,46 @@ export default function TransactionHistoryWorking() {
       document.body.removeChild(tempContainer);
       
       canvas.toBlob(async (blob: Blob | null) => {
-        if (blob && navigator.share) {
-          // Native share for mobile devices
-          const file = new File([blob], 'Bank of Ireland - Transaction Confirmation.pdf', { type: 'image/png' });
+        if (!blob) {
+          console.error('Failed to generate image blob');
+          return;
+        }
+
+        // Check if Web Share API is available and supports files
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [new File([blob], 'test.png', { type: 'image/png' })] })) {
+          // Create file for native sharing
+          const file = new File([blob], 'Bank of Ireland Receipt.png', { type: 'image/png' });
           
           try {
             await navigator.share({
-              title: 'Bank of Ireland - Transaction Confirmation',
-              text: `Transaction confirmation for ${selectedTransaction.description}`,
+              title: 'Bank of Ireland Receipt',
               files: [file]
             });
           } catch (error) {
-            // Fallback to download if share fails
-            downloadImage(canvas, 'Bank of Ireland - Transaction Confirmation');
+            // User cancelled share or error occurred
+            if (error.name !== 'AbortError') {
+              console.error('Share failed:', error);
+              // Fallback to download
+              downloadImage(canvas, 'Bank of Ireland - Transaction Confirmation');
+            }
+          }
+        } else if (navigator.share) {
+          // Web Share API available but doesn't support files - share with URL
+          try {
+            const dataUrl = canvas.toDataURL('image/png');
+            await navigator.share({
+              title: 'Bank of Ireland Receipt',
+              text: 'Transaction receipt from Bank of Ireland',
+              url: dataUrl
+            });
+          } catch (error) {
+            if (error.name !== 'AbortError') {
+              console.error('Share failed:', error);
+              downloadImage(canvas, 'Bank of Ireland - Transaction Confirmation');
+            }
           }
         } else {
-          // Fallback to download for desktop
+          // No Web Share API - fallback to download
           downloadImage(canvas, 'Bank of Ireland - Transaction Confirmation');
         }
       }, 'image/png');
