@@ -53,16 +53,20 @@ export async function generateTransferConfirmationPDF(
       
       try {
         if (fs.existsSync(logoPath)) {
-          console.log('✅ FINAL: BOI_logo.png found, embedding cleanly...');
+          console.log('✅ FINAL: BOI_logo.png found, fixing transparency issue...');
           
-          // Embed Bank of Ireland logo cleanly without overlays
+          // Add white background behind logo to fix transparency issue
+          doc.rect(40, 40, 160, 50)
+             .fill('#ffffff');
+          
+          // Embed Bank of Ireland logo on white background
           doc.image(logoPath, 40, 40, { 
             width: 160
           });
           
           logoAdded = true;
           startY = 110; // Position content below logo
-          console.log('✅ FINAL: BOI logo embedded cleanly at (40,40) with width 160px');
+          console.log('✅ FINAL: BOI logo embedded with white background at (40,40)');
           
         } else {
           console.log('❌ VISUAL ERROR: BOI_logo.png not found at path');

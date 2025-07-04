@@ -95,6 +95,12 @@ This is a comprehensive mobile banking application built as a Progressive Web Ap
 - **Security**: HTTPS required for PWA installation and service worker functionality
 
 ## Changelog
+- July 04, 2025: CRITICAL FIX - Resolved PNG transparency issue in PDF logo embedding
+  - Identified that BOI_logo.png has RGBA format with alpha channel causing invisible rendering
+  - Fixed by adding white background rectangle behind logo to ensure visibility
+  - PNG file analysis revealed color type 6 (RGBA) was rendering as transparent in PDFKit
+  - Logo now displays correctly at position (40,40) with white background support
+  - All PDF transfer confirmations now show visible Bank of Ireland branding
 - July 04, 2025: Completed official Bank of Ireland PDF transfer confirmation system
   - Successfully embedded authentic Bank of Ireland logo inline in PDF documents (160px width, top left positioning)
   - Logo sourced from IMG_1957_1751636332135.webp with BOI_logo.png fallback ensuring proper embedding
