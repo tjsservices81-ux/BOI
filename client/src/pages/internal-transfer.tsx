@@ -198,6 +198,54 @@ export default function InternalTransfer() {
       detail: { accounts: updatedAccounts, source: 'internal-transfer' }
     }));
 
+    // ✅ INTERNAL TRANSFER COMPLETED SUCCESSFULLY - NOW SEND EMAIL CONFIRMATION
+    try {
+      const userProfile = UserDataManager.getUserData('userProfile', null);
+      
+      if (userProfile && userProfile.email) {
+        const timestamp = new Date().toLocaleString('en-GB', {
+          dateStyle: 'short',
+          timeStyle: 'short',
+          timeZone: 'Europe/Dublin'
+        });
+        
+        const currency = userProfile.currency === 'GBP' ? '£' : '€';
+        
+        const emailRequest = {
+          userEmail: userProfile.email,
+          senderName: userProfile.name,
+          recipientName: toAccount.displayName,
+          amount: transferAmount.toFixed(2),
+          currency: currency,
+          transactionReference: reference,
+          accountInfo: `${fromAccount.displayName} (${fromAccount.accountNumber})`
+        };
+
+        // Send email confirmation after successful internal transfer
+        fetch('/api/send-transfer-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify(emailRequest)
+        }).then(response => {
+          if (response.ok) {
+            console.log('✅ Internal transfer confirmation email sent successfully to:', userProfile.email);
+            return response.json();
+          } else {
+            console.error('❌ Failed to send internal transfer confirmation email. Status:', response.status);
+          }
+        }).catch(error => {
+          console.error('❌ Internal transfer email confirmation request failed:', error);
+        });
+      } else {
+        console.warn('⚠️ No user email found - internal transfer confirmation email not sent');
+      }
+    } catch (emailError) {
+      console.error('❌ Error sending internal transfer confirmation email:', emailError);
+    }
+
     setStep('success');
   };
 
