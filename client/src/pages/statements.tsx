@@ -1,18 +1,29 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
-import { FileText, Download, Calendar, ChevronLeft, Check } from 'lucide-react';
+import { FileText, Download, Calendar, ChevronLeft, Check, CreditCard } from 'lucide-react';
 import { UserDataManager } from '@/utils/userDataManager';
 
 export default function Statements() {
   const [, navigate] = useLocation();
   const [selectedPeriod, setSelectedPeriod] = useState('1-week');
+  const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationComplete, setGenerationComplete] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [accounts, setAccounts] = useState<any[]>([]);
 
   useEffect(() => {
     const currentUser = UserDataManager.getCurrentUser();
     setUser(currentUser);
+    
+    // Load user's bank accounts
+    const userAccounts = UserDataManager.getUserData('bankAccounts', []);
+    setAccounts(userAccounts);
+    
+    // Set default account to the first account
+    if (userAccounts.length > 0 && selectedAccountId === null) {
+      setSelectedAccountId(userAccounts[0].id);
+    }
   }, []);
 
   const getStatementPeriod = () => {
@@ -66,7 +77,7 @@ export default function Statements() {
   };
 
   const handleGenerateStatement = async () => {
-    if (!user) return;
+    if (!user || selectedAccountId === null) return;
 
     setIsGenerating(true);
     setGenerationComplete(false);
@@ -74,24 +85,25 @@ export default function Statements() {
     try {
       const { startDate, endDate } = getStatementPeriod();
       
-      // Get user's account information
-      const accounts = UserDataManager.getUserData('bankAccounts', []);
-      const primaryAccount = accounts.find((acc: any) => acc.type === 'Current Account') || accounts[0];
+      // Get the selected account
+      const selectedAccount = accounts.find((acc: any) => acc.id === selectedAccountId);
       
-      if (!primaryAccount) {
-        alert('No account found for statement generation');
+      if (!selectedAccount) {
+        alert('Selected account not found for statement generation');
         return;
       }
 
-      // Get transactions for the period
-      const allTransactions = UserDataManager.getUserData('transactionHistory', []);
+      // Get transactions for the period and selected account
+      const allTransactions = UserDataManager.getUserData('bankTransactions', []);
       const periodTransactions = allTransactions.filter((transaction: any) => {
         const transactionDate = new Date(transaction.date);
-        return transactionDate >= startDate && transactionDate <= endDate;
+        const isInPeriod = transactionDate >= startDate && transactionDate <= endDate;
+        const isFromSelectedAccount = transaction.accountId === selectedAccountId;
+        return isInPeriod && isFromSelectedAccount;
       });
 
       // Calculate balances
-      const openingBalance = parseFloat(primaryAccount.balance) - 
+      const openingBalance = parseFloat(selectedAccount.balance) - 
         periodTransactions.reduce((sum: number, tx: any) => {
           return sum + (tx.type === 'credit' ? parseFloat(tx.amount) : -parseFloat(tx.amount));
         }, 0);
@@ -104,13 +116,13 @@ export default function Statements() {
         .filter((tx: any) => tx.type === 'debit')
         .reduce((sum: number, tx: any) => sum + parseFloat(tx.amount), 0);
 
-      const closingBalance = parseFloat(primaryAccount.balance);
+      const closingBalance = parseFloat(selectedAccount.balance);
 
       // Prepare statement data
       const statementData = {
         user: {
           fullName: user.name || 'Account Holder',
-          accountNumber: primaryAccount.accountNumber || '12345678'
+          accountNumber: selectedAccount.accountNumber || '12345678'
         },
         period: {
           startDate: formatDate(startDate),
@@ -237,6 +249,51 @@ export default function Statements() {
               </div>
             </div>
 
+            {/* Account Selection */}
+            <div className="space-y-3 mb-6">
+              <label className="block text-sm font-medium text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Select Account
+              </label>
+              
+              <div className="space-y-2">
+                {accounts.map((account) => (
+                  <label key={account.id} className="flex items-center space-x-3 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="account"
+                      value={account.id}
+                      checked={selectedAccountId === account.id}
+                      onChange={(e) => setSelectedAccountId(parseInt(e.target.value))}
+                      className="w-4 h-4 text-[#126987] border-gray-300 focus:ring-[#126987]"
+                    />
+                    <div className="flex items-center space-x-2">
+                      <CreditCard className="w-4 h-4 text-gray-600" />
+                      <div>
+                        <span className="text-sm font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          {account.displayName}
+                        </span>
+                        <span className="text-xs text-gray-500 ml-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          {account.accountNumber}
+                        </span>
+                      </div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+
+              {/* Selected Account Display */}
+              {selectedAccountId && (
+                <div className="mt-3 p-3 bg-green-50 rounded-lg border border-green-200">
+                  <div className="flex items-center space-x-2">
+                    <CreditCard className="w-4 h-4 text-green-600" />
+                    <span className="text-sm font-medium text-green-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      {accounts.find(acc => acc.id === selectedAccountId)?.displayName} - Balance: €{accounts.find(acc => acc.id === selectedAccountId)?.balance}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Period Selection */}
             <div className="space-y-3 mb-6">
               <label className="block text-sm font-medium text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -283,11 +340,11 @@ export default function Statements() {
             {/* Generate Button */}
             <button
               onClick={handleGenerateStatement}
-              disabled={isGenerating}
+              disabled={isGenerating || selectedAccountId === null}
               className={`w-full py-3 px-4 rounded-xl font-semibold text-white transition-all duration-200 active:scale-98 ${
                 generationComplete
                   ? 'bg-green-600 hover:bg-green-700'
-                  : isGenerating
+                  : isGenerating || selectedAccountId === null
                   ? 'bg-gray-400 cursor-not-allowed'
                   : 'bg-[#126987] hover:bg-[#0d4e63]'
               }`}

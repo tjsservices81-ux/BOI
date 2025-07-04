@@ -95,6 +95,13 @@ This is a comprehensive mobile banking application built as a Progressive Web Ap
 - **Security**: HTTPS required for PWA installation and service worker functionality
 
 ## Changelog
+- July 04, 2025: ACCOUNT SELECTION FOR STATEMENTS - Added account selection functionality to statements feature
+  - Users can now select which account to generate statements for (Current Account, Savings, Credit Card, etc.)
+  - Account selection with radio buttons showing account name, number, and current balance
+  - Transaction filtering by selected account ID to ensure statements only include relevant transactions
+  - Enhanced UI with account display showing selected account and balance
+  - Generate button disabled when no account is selected to prevent errors
+  - Maintains all existing statement periods and PDF generation functionality
 - July 04, 2025: STATEMENT PERIODS ENHANCEMENT - Added flexible date range options including 1 week and 2 weeks periods
   - Expanded statement period selection from 4 options to 7 options
   - Added 1 Week, 2 Weeks, and 1 Month (last 30 days) options alongside existing monthly periods
