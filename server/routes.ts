@@ -12,6 +12,7 @@ import { isDeviceBlocked, addDeviceSession, isDeviceInPanicMode, isCustomerInPan
 import { isAccountActiveOnOtherDevice, setUserDeviceSession, removeUserDeviceSession, getUserDeviceSession, isCurrentDeviceAuthorized } from "./deviceExclusiveAuth";
 import { addUserSession, removeUserSession, sessionTrackingMiddleware, isSessionValid } from "./sessionManager";
 import { sendTransferConfirmation, type TransferConfirmationDetails } from "./emailService";
+import { generateStatementPDF, getStatementFilename } from "./statementService";
 import Database from "@replit/database";
 
 // Initialize Replit Database for access codes
@@ -830,6 +831,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Test email error:', error);
       res.status(500).json({ success: false, message: "Internal server error" });
+    }
+  });
+
+  // Generate PDF statement
+  app.post("/api/generate-statement", async (req, res) => {
+    try {
+      console.log('Statement generation request received:', req.body);
+      
+      const statementData = req.body;
+      
+      // Validate required data
+      if (!statementData.user || !statementData.period || !statementData.summary || !statementData.transactions) {
+        return res.status(400).json({ success: false, message: "Missing required statement data" });
+      }
+
+      // Generate the PDF
+      const pdfBuffer = await generateStatementPDF(statementData);
+      
+      // Generate filename
+      const lastName = statementData.user.fullName.split(' ').pop() || 'Statement';
+      const statementDate = new Date(statementData.period.endDate.split('/').reverse().join('-'));
+      const filename = getStatementFilename(lastName, statementDate);
+      
+      console.log(`Statement PDF generated successfully: ${filename}, Size: ${pdfBuffer.length} bytes`);
+      
+      // Set headers for PDF download
+      res.set({
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="${filename}"`,
+        'Content-Length': pdfBuffer.length.toString()
+      });
+      
+      res.send(pdfBuffer);
+      
+    } catch (error) {
+      console.error('Statement generation error:', error);
+      res.status(500).json({ success: false, message: "Failed to generate statement" });
     }
   });
 

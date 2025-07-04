@@ -95,6 +95,17 @@ This is a comprehensive mobile banking application built as a Progressive Web Ap
 - **Security**: HTTPS required for PWA installation and service worker functionality
 
 ## Changelog
+- July 04, 2025: STATEMENTS FEATURE - Implemented comprehensive Bank of Ireland statement generation system
+  - Created new Statements page replacing Pay Bills section in More menu
+  - Implemented PDF generation service using statement_background.jpeg template (IMG_1981_1751652629227.jpeg)
+  - Precise field positioning: Account info at x:140mm y:62mm, Summary at x:20mm y:95mm, Transaction table at y:140mm
+  - Professional layout matching authentic BOI statements with proper A4 dimensions (595x842 points)
+  - Multiple statement periods: Current month, Last month, Last 3 months, Last 6 months
+  - Dynamic transaction table with Date, Description, Withdrawal, Deposit, Balance columns
+  - Ending balance footer in blue row area with right-aligned bold formatting
+  - Filename format: BOI_Statement_[LastName]_[MMYYYY].pdf
+  - API endpoint /api/generate-statement for PDF creation and download
+  - Full integration with user account data and transaction history
 - July 04, 2025: PDF ENHANCEMENT - Added IBAN and BIC display for SEPA transfer confirmations
   - PDF generation now includes IBAN and BIC codes for SEPA transfers alongside existing account/sort code for UK transfers
   - Professional formatting with proper labels and Bank of Ireland styling
