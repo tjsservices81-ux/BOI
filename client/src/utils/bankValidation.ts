@@ -9,6 +9,7 @@ const sortCodeMap = {
   "200003": "Barclays",
   "200000": "Barclays",
   "400515": "HSBC UK",
+  "400000": "HSBC UK",
   "600001": "NatWest",
   "072500": "Nationwide Building Society",
   "089299": "Co-operative Bank",
