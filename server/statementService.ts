@@ -88,20 +88,8 @@ export async function generateStatementPDF(data: StatementData): Promise<Buffer>
       doc.text(truncatedName.toUpperCase(), accountInfoX, accountInfoY);
       doc.text(`****${lastFourDigits}`, accountInfoX, accountInfoY + 8);
       
-      // Period format: DD MMM YYYY - DD MMM YYYY (authentic BOI style)
-      const formatPeriodDate = (dateStr: string) => {
-        const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-        const parts = dateStr.split('/');
-        if (parts.length === 3) {
-          const monthIndex = parseInt(parts[1]) - 1;
-          return `${parts[0]} ${months[monthIndex]} ${parts[2]}`;
-        }
-        return dateStr;
-      };
-      
-      const startFormatted = formatPeriodDate(data.period.startDate);
-      const endFormatted = formatPeriodDate(data.period.endDate);
-      doc.text(`${startFormatted} - ${endFormatted}`, accountInfoX, accountInfoY + 16);
+      // Statement period format: DD/MM/YYYY to DD/MM/YYYY
+      doc.text(`${data.period.startDate} to ${data.period.endDate}`, accountInfoX, accountInfoY + 16);
 
       // ACCOUNT SUMMARY (100% accurate BOI template positioning)
       // Millimeter-perfect alignment with authentic BOI statement summary box
@@ -118,17 +106,22 @@ export async function generateStatementPDF(data: StatementData): Promise<Buffer>
         return amount.replace(/[€EUR\s]/g, '');
       };
       
-      // Left-aligned labels, right-aligned amounts at exact positions
-      doc.text('OPENING BALANCE', summaryX, summaryY);
+      // Format dates for summary labels
+      const formatSummaryDate = (dateStr: string) => {
+        return dateStr; // Keep DD/MM/YYYY format for summary
+      };
+      
+      // Left-aligned descriptive labels, right-aligned amounts
+      doc.text(`Balance on ${formatSummaryDate(data.period.startDate)}:`, summaryX, summaryY);
       doc.text(`€${formatBalance(data.summary.openingBalance)}`, summaryX + 90, summaryY, { align: 'right', width: 50 });
       
-      doc.text('MONEY IN', summaryX, summaryY + lineHeight);
+      doc.text('Total money in:', summaryX, summaryY + lineHeight);
       doc.text(`€${formatBalance(data.summary.totalIn)}`, summaryX + 90, summaryY + lineHeight, { align: 'right', width: 50 });
       
-      doc.text('MONEY OUT', summaryX, summaryY + (lineHeight * 2));
+      doc.text('Total money out:', summaryX, summaryY + (lineHeight * 2));
       doc.text(`€${formatBalance(data.summary.totalOut)}`, summaryX + 90, summaryY + (lineHeight * 2), { align: 'right', width: 50 });
       
-      doc.text('CLOSING BALANCE', summaryX, summaryY + (lineHeight * 3));
+      doc.text(`Balance on ${formatSummaryDate(data.period.endDate)}:`, summaryX, summaryY + (lineHeight * 3));
       doc.text(`€${formatBalance(data.summary.closingBalance)}`, summaryX + 90, summaryY + (lineHeight * 3), { align: 'right', width: 50 });
 
       // TRANSACTION TABLE (100% precision BOI template alignment)
@@ -169,20 +162,20 @@ export async function generateStatementPDF(data: StatementData): Promise<Buffer>
         const desc = transaction.description.substring(0, 20).toUpperCase();
         doc.text(desc, descCol, rowY);
         
-        // Amount formatting: Clean and right-aligned in precise columns
+        // Amount formatting: Show ONLY withdrawal OR deposit, never both on same line
         if (transaction.withdrawal && transaction.withdrawal !== '0.00' && transaction.withdrawal !== '') {
           const amount = transaction.withdrawal.replace(/[€EUR\s]/g, '');
-          doc.text(amount, withdrawalCol, rowY, { align: 'right', width: 60 });
-        }
-        
-        if (transaction.deposit && transaction.deposit !== '0.00' && transaction.deposit !== '') {
+          doc.text(`€${amount}`, withdrawalCol, rowY, { align: 'right', width: 60 });
+          // Ensure deposit column is empty
+        } else if (transaction.deposit && transaction.deposit !== '0.00' && transaction.deposit !== '') {
           const amount = transaction.deposit.replace(/[€EUR\s]/g, '');
-          doc.text(amount, depositCol, rowY, { align: 'right', width: 60 });
+          doc.text(`€${amount}`, depositCol, rowY, { align: 'right', width: 60 });
+          // Ensure withdrawal column is empty
         }
         
-        // Running balance: Right-aligned in balance column
+        // Running balance: Right-aligned in balance column with € symbol
         const balance = transaction.balance.replace(/[€EUR\s]/g, '');
-        doc.text(balance, balanceCol, rowY, { align: 'right', width: 80 });
+        doc.text(`€${balance}`, balanceCol, rowY, { align: 'right', width: 80 });
       });
 
       // ENDING BALANCE FOOTER (millimeter-exact BOI positioning)
