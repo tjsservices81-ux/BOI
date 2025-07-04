@@ -57,18 +57,18 @@ export async function generateTransferConfirmationPDF(
       // Now overlay the transfer confirmation content on the template
       console.log('🔧 OVERLAY: Adding transfer confirmation content...');
       
-      // Title positioned over the template
+      // Title positioned over the template with better spacing
       doc.font('Helvetica-Bold')
          .fontSize(20)
          .fillColor('#000000')
-         .text('Transfer Confirmation', 50, 280);
+         .text('Transfer Confirmation', 50, 300);
 
       // Blue line under title
-      doc.rect(50, 310, 495, 2)
+      doc.rect(50, 330, 495, 2)
          .fill('#1a5490');
 
       // Transaction Details Header Box
-      doc.rect(50, 330, 495, 30)
+      doc.rect(50, 350, 495, 30)
          .fill('#f0f0f0')
          .stroke('#1a5490')
          .lineWidth(1);
@@ -76,12 +76,12 @@ export async function generateTransferConfirmationPDF(
       doc.font('Helvetica-Bold')
          .fontSize(14)
          .fillColor('#1a5490')
-         .text('Transaction Details', 60, 340);
+         .text('Transaction Details', 60, 360);
 
-      // Transfer details content
-      let yPos = 380;
+      // Transfer details content with improved spacing
+      let yPos = 400;
       const leftCol = 60;
-      const rightCol = 250;
+      const rightCol = 280;
 
       // Amount (highlighted)
       doc.font('Helvetica-Bold')
@@ -94,7 +94,22 @@ export async function generateTransferConfirmationPDF(
          .fillColor('#1a5490')
          .text(`${currency}${amount}`, rightCol, yPos);
       
-      yPos += 25;
+      yPos += 30;
+
+      // Add currency conversion for UK transfers
+      if (transferData.exchangeRate && transferData.convertedAmount && transferData.convertedCurrency) {
+        doc.font('Helvetica-Bold')
+           .fontSize(12)
+           .fillColor('#000000')
+           .text('Converted Amount:', leftCol, yPos);
+        
+        doc.font('Helvetica')
+           .fontSize(12)
+           .fillColor('#1a5490')
+           .text(`${transferData.convertedCurrency}${transferData.convertedAmount} (Rate: ${transferData.exchangeRate})`, rightCol, yPos);
+        
+        yPos += 30;
+      }
 
       // To Account
       doc.font('Helvetica-Bold')
@@ -107,7 +122,7 @@ export async function generateTransferConfirmationPDF(
          .fillColor('#000000')
          .text(recipientName, rightCol, yPos);
       
-      yPos += 25;
+      yPos += 30;
 
       // Account details based on transfer type
       if (transferData.recipientAccountNumber && transferData.recipientSortCode) {
@@ -122,7 +137,7 @@ export async function generateTransferConfirmationPDF(
            .fillColor('#000000')
            .text(transferData.recipientAccountNumber, rightCol, yPos);
         
-        yPos += 20;
+        yPos += 25;
 
         doc.font('Helvetica-Bold')
            .fontSize(12)
@@ -134,7 +149,7 @@ export async function generateTransferConfirmationPDF(
            .fillColor('#000000')
            .text(transferData.recipientSortCode, rightCol, yPos);
         
-        yPos += 25;
+        yPos += 30;
       }
 
       // Reference
@@ -148,7 +163,7 @@ export async function generateTransferConfirmationPDF(
          .fillColor('#000000')
          .text(transactionReference, rightCol, yPos);
       
-      yPos += 25;
+      yPos += 30;
 
       // Date/Time
       doc.font('Helvetica-Bold')
@@ -169,7 +184,7 @@ export async function generateTransferConfirmationPDF(
          .fillColor('#000000')
          .text(currentDate, rightCol, yPos);
       
-      yPos += 25;
+      yPos += 30;
 
       // Transaction ID
       doc.font('Helvetica-Bold')
@@ -182,9 +197,7 @@ export async function generateTransferConfirmationPDF(
          .fillColor('#000000')
          .text(transferData.id?.toString() || 'N/A', rightCol, yPos);
       
-      yPos += 25;
-
-      yPos += 25;
+      yPos += 40;
 
       // Security warning (red text)
       doc.font('Helvetica-Bold')
