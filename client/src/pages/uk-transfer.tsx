@@ -10,6 +10,7 @@ import hsbcIcon from "@assets/IMG_1992_1751647291682.webp";
 import bankOfScotlandIcon from "@assets/IMG_1993_1751647303161.png";
 import monzoIcon from "@assets/IMG_1995_1751647342658.png";
 import starlingIcon from "@assets/IMG_1996_1751647366865.png";
+import halifaxIcon from "@assets/IMG_1997_1751647408940.png";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -98,6 +99,9 @@ const getBankIcon = (bankName: string): string | undefined => {
   }
   if (bankName === 'Starling Bank') {
     return starlingIcon;
+  }
+  if (bankName === 'Halifax') {
+    return halifaxIcon;
   }
   return undefined;
 };
