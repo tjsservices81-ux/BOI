@@ -65,9 +65,7 @@ export async function generateTransferConfirmationPDF(
           doc.image(logoPath, 40, 40, { 
             width: 160,
             height: 50,
-            fit: [160, 50],
-            align: 'left',
-            valign: 'top'
+            fit: [160, 50]
           });
           
           logoAdded = true;
