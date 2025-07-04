@@ -241,7 +241,13 @@ export default function InternalTransfer() {
           amount: transferAmount.toFixed(2),
           currency: currency,
           transactionReference: reference,
-          accountInfo: `${fromAccount.displayName} (${fromAccount.accountNumber})`
+          accountInfo: `${fromAccount.displayName} (${fromAccount.accountNumber})`,
+          transferData: {
+            ...debitTransaction,
+            paymentMethod: 'Internal Transfer',
+            fromAccountName: fromAccount.displayName,
+            toAccountName: toAccount.displayName
+          }
         };
 
         // Send email confirmation after successful internal transfer

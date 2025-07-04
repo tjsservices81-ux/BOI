@@ -764,7 +764,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         amount: z.string(),
         currency: z.string(),
         transactionReference: z.string(),
-        accountInfo: z.string().optional()
+        accountInfo: z.string().optional(),
+        transferData: z.any().optional()
       });
       
       const emailData = emailSchema.parse(req.body);
@@ -784,7 +785,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         accountInfo: emailData.accountInfo || "Current Account"
       };
       
-      const success = await sendTransferConfirmation(emailData.userEmail, confirmationDetails);
+      const success = await sendTransferConfirmation(emailData.userEmail, confirmationDetails, emailData.transferData);
       
       if (success) {
         res.json({ success: true, message: "Transfer confirmation email sent successfully" });

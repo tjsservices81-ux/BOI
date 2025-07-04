@@ -3,6 +3,8 @@
  * Uses the same SMTP configuration as the OTC service
  */
 import nodemailer from 'nodemailer';
+import fs from 'fs';
+import path from 'path';
 
 export interface EmailParams {
   to: string;
@@ -67,23 +69,49 @@ export async function sendEmail(to: string, subject: string, body: string): Prom
   }
 
   try {
+    // Prepare Bank of Ireland logo attachment
+    const logoPath = path.join(process.cwd(), 'client', 'public', 'icons', 'boi-icon-192.png');
+    let attachments = [];
+    
+    if (fs.existsSync(logoPath)) {
+      attachments.push({
+        filename: 'boi-logo.png',
+        path: logoPath,
+        cid: 'boi-logo' // Content ID for inline embedding
+      });
+    }
+
     const mailOptions = {
       from: 'bankofireland2007@gmail.com', // Use the same sender as OTC service
       to: to,
       subject: subject,
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="background-color: #126987; color: white; padding: 20px; border-radius: 8px 8px 0 0;">
-            <h2 style="margin: 0; font-size: 24px;">Bank of Ireland</h2>
-            <p style="margin: 5px 0 0 0; font-size: 16px;">${subject}</p>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 0; background-color: #ffffff;">
+          <!-- Header with Bank of Ireland Logo -->
+          <div style="background-color: #1f5f8b; padding: 20px; text-align: center;">
+            ${fs.existsSync(logoPath) ? 
+              '<img src="cid:boi-logo" alt="Bank of Ireland" style="height: 60px; width: auto; display: block; margin: 0 auto;">' : 
+              '<h2 style="margin: 0; color: white; font-size: 24px;">Bank of Ireland</h2>'
+            }
           </div>
           
-          <div style="background-color: #f8f9fa; padding: 30px; border: 1px solid #dee2e6; border-top: none; border-radius: 0 0 8px 8px;">
-            ${body.replace(/\n/g, '<br>')}
+          <!-- Email Content -->
+          <div style="background-color: #ffffff; padding: 30px; line-height: 1.6; color: #333333;">
+            <div style="font-size: 16px;">
+              ${body.replace(/\n/g, '<br>').replace(/•/g, '&bull;')}
+            </div>
+          </div>
+          
+          <!-- Footer -->
+          <div style="background-color: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #dee2e6;">
+            <p style="margin: 0; font-size: 12px; color: #666666;">
+              This is an automated message from Bank of Ireland. Please do not reply to this email.
+            </p>
           </div>
         </div>
       `,
-      text: body
+      text: body,
+      attachments: attachments
     };
 
     await transporter.sendMail(mailOptions);
@@ -98,21 +126,65 @@ export async function sendEmail(to: string, subject: string, body: string): Prom
 }
 
 /**
- * Generate transfer confirmation email content in the format requested by user
+ * Generate transfer confirmation email content with Bank of Ireland formatting
  */
-export function generateTransferConfirmationEmail(details: TransferConfirmationDetails): { subject: string; body: string } {
+export function generateTransferConfirmationEmail(details: TransferConfirmationDetails, transferData?: any): { subject: string; body: string } {
   const subject = "Transfer Confirmation";
   
-  const body = `
-Hello ${details.senderName},
+  // Determine transfer type based on payment method or currency
+  const isUKTransfer = transferData?.paymentMethod === 'UK Transfer' || 
+                     transferData?.recipientSortCode || 
+                     transferData?.recipientAccountNumber;
+  
+  const isSEPATransfer = transferData?.paymentMethod === 'SEPA Transfer' || 
+                        transferData?.iban || 
+                        transferData?.bicCode ||
+                        details.currency === '€';
 
-Your transfer of ${details.currency}${details.amount} to ${details.recipientName} has been completed successfully.
+  let transferDetails = '';
+  
+  if (isUKTransfer) {
+    transferDetails = `
+• Amount: £${details.amount}
+• To Account: ${details.recipientName}
+• Account Number: ${transferData?.recipientAccountNumber || 'Not available'}
+• Sort Code: ${transferData?.recipientSortCode || 'Not available'}
+• Reference: ${details.transactionReference}
+• Date/Time: ${details.dateTime}
+• Transaction ID: ${transferData?.id || 'Not available'}
+• Unique Reference: ${details.transactionReference}`;
+  } else if (isSEPATransfer) {
+    transferDetails = `
+• Amount: €${details.amount}
+• To Account: ${details.recipientName}
+• IBAN: ${transferData?.iban || transferData?.recipientIban || 'Not available'}
+• BIC: ${transferData?.bicCode || 'Not available'}
+• Reference: ${details.transactionReference}
+• Date/Time: ${details.dateTime}
+• Transaction ID: ${transferData?.id || 'Not available'}
+• Unique Reference: ${details.transactionReference}`;
+  } else {
+    // Default format for other transfers
+    transferDetails = `
+• Amount: ${details.currency}${details.amount}
+• To Account: ${details.recipientName}
+• Reference: ${details.transactionReference}
+• Date/Time: ${details.dateTime}
+• Transaction ID: ${transferData?.id || 'Not available'}
+• Unique Reference: ${details.transactionReference}`;
+  }
+  
+  const body = `Dear ${details.senderName},
 
-Reference: ${details.transactionReference}
-Date: ${details.dateTime}
+We confirm that your recent transfer has been successfully completed.
+${transferDetails}
 
-Thank you for using our service.
-  `;
+If you did not authorise this payment, please contact us immediately on 1800 123 456 or via your online banking.
+
+Thank you for banking with Bank of Ireland.
+
+BOI Customer Service
+www.bankofireland.com`;
   
   return { subject, body };
 }
@@ -122,14 +194,16 @@ Thank you for using our service.
  */
 export async function sendTransferConfirmation(
   userEmail: string, 
-  details: TransferConfirmationDetails
+  details: TransferConfirmationDetails,
+  transferData?: any
 ): Promise<boolean> {
   console.log('🔵 TRANSFER CONFIRMATION EMAIL TRIGGERED - sendTransferConfirmation()');
   console.log('Sending to:', userEmail);
   console.log('Transfer:', details.amount, details.recipientName, details.transactionReference);
+  console.log('Transfer data:', transferData);
   
   try {
-    const { subject, body } = generateTransferConfirmationEmail(details);
+    const { subject, body } = generateTransferConfirmationEmail(details, transferData);
     const success = await sendEmail(userEmail, subject, body);
     
     if (success) {

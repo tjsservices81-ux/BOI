@@ -95,7 +95,13 @@ This is a comprehensive mobile banking application built as a Progressive Web Ap
 - **Security**: HTTPS required for PWA installation and service worker functionality
 
 ## Changelog
-- July 04, 2025. Initial setup
+- July 04, 2025: Fixed transfer confirmation email system with Bank of Ireland branding
+  - Resolved user profile data retrieval issue that prevented emails from sending
+  - Implemented dynamic transfer type detection (UK vs SEPA vs Internal)
+  - Added authentic Bank of Ireland logo with inline SMTP embedding
+  - Created transfer-specific email formatting with proper account details
+  - Added comprehensive debugging system for email delivery tracking
+- July 04, 2025: Initial setup
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.

@@ -257,7 +257,8 @@ Thank you for using our service.`;
         amount: amount.toFixed(2),
         currency: currency,
         transactionReference: transactionReference,
-        accountInfo: `${selectedAccount.displayName} (${selectedAccount.accountNumber})`
+        accountInfo: `${selectedAccount.displayName} (${selectedAccount.accountNumber})`,
+        transferData: newTransaction
       };
 
       // Send email confirmation after successful transfer

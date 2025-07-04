@@ -39,13 +39,14 @@
         "customerNumber": "BOI910844651",
         "pin": "000000",
         "name": "Ryan O’Neill",
-        "email": "ethanw2111@gmail.com",
+        "email": "nathanbyrne873@gmail.com",
         "phone": "074286484844",
-        "address": null,
-        "dateOfBirth": null,
+        "address": "",
+        "dateOfBirth": "",
         "joinDate": "2025-07-04T11:43:51.637Z",
         "dateCreated": "2025-07-04T11:43:51.638Z",
-        "isDisabled": false
+        "isDisabled": false,
+        "currency": "EUR"
       }
     ]
   ],
