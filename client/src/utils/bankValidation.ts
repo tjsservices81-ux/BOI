@@ -11,6 +11,15 @@ const sortCodeMap = {
   "300083": "TSB Bank",
   "090128": "Santander",
   
+  // NatWest
+  "011001": "NatWest",
+  "500000": "NatWest",
+  "536107": "NatWest",
+  "557013": "NatWest",
+  "606004": "NatWest",
+  "600846": "NatWest",
+  "603030": "NatWest",
+  
   // Bank of Scotland
   "802000": "Bank of Scotland",
   "802260": "Bank of Scotland",
