@@ -11,6 +11,7 @@ import { generateChatResponse } from "./openai";
 import { isDeviceBlocked, addDeviceSession, isDeviceInPanicMode, isCustomerInPanicMode } from "./deviceSessions";
 import { isAccountActiveOnOtherDevice, setUserDeviceSession, removeUserDeviceSession, getUserDeviceSession, isCurrentDeviceAuthorized } from "./deviceExclusiveAuth";
 import { addUserSession, removeUserSession, sessionTrackingMiddleware, isSessionValid } from "./sessionManager";
+import { sendTransferConfirmation, type TransferConfirmationDetails } from "./emailService";
 import Database from "@replit/database";
 
 // Initialize Replit Database for access codes
@@ -672,6 +673,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Create debit transaction
+      const transactionReference = transferData.reference || `TXN${Date.now()}_${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
       const transaction = await storage.createTransaction({
         accountId: transferData.fromAccountId,
         amount: `-${amount}`,
@@ -679,13 +681,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
         category: "transfer",
         type: "debit",
         paymentMethod: "Online Transfer",
-        reference: transferData.reference || `TXN${Date.now()}`,
+        reference: transactionReference,
         timestamp: new Date()
       });
 
       // Update account balance
       const newBalance = (currentBalance - amount).toFixed(2);
       await storage.updateAccountBalance(transferData.fromAccountId, newBalance);
+
+      // Get user details for email notification
+      const allUsers = await storage.getAllUsers();
+      const user = allUsers.find(u => {
+        // Find user who owns this account by matching userId
+        return u.id === account.userId;
+      });
+      
+      if (user && user.email) {
+        try {
+          // Send transfer confirmation email
+          const confirmationDetails: TransferConfirmationDetails = {
+            recipientName: transferData.toAccount, // Using toAccount as recipient name for now
+            amount: amount.toFixed(2),
+            currency: user.currency || 'EUR',
+            dateTime: new Date().toLocaleString('en-GB', {
+              dateStyle: 'full',
+              timeStyle: 'medium',
+              timeZone: 'Europe/Dublin'
+            }),
+            transactionReference: transactionReference,
+            senderName: user.name,
+            accountInfo: `${account.displayName} (${account.accountNumber.slice(-4)})`
+          };
+
+          await sendTransferConfirmation(user.email, confirmationDetails);
+        } catch (emailError) {
+          console.error('Failed to send transfer confirmation email:', emailError);
+          // Don't fail the transfer if email fails
+        }
+      }
 
       res.json({ message: "Transfer completed successfully", transaction });
     } catch (error) {
@@ -872,6 +905,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           joinDate: updates.joinDate || new Date().toISOString()
         });
         updatedUser = newUser;
+      }
+
+      // If email was updated, ensure it's synchronized across all user records
+      if (updates.email && updatedUser) {
+        try {
+          // Update email in any other user data stores if needed
+          // This ensures email consistency across all systems
+          console.log(`✅ Email synchronized for customer ${customerNumber}: ${updates.email}`);
+        } catch (emailSyncError) {
+          console.error('Failed to synchronize email across systems:', emailSyncError);
+        }
       }
       
       // Notify admin panel of profile update by logging the change

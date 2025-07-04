@@ -146,7 +146,37 @@ export const processTransfer = (
     return false;
   }
   
-  // Update balance in the account
+  // Send transfer to backend API for processing (including email notification)
+  try {
+    const transferRequest = {
+      fromAccountId: parseInt(fromAccountId),
+      toAccount: recipientName,
+      amount: amount.toString(),
+      reference: reference || `Transfer to ${recipientName}`,
+      transferType,
+      recipientDetails
+    };
+
+    fetch('/api/transfer', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(transferRequest)
+    }).then(response => {
+      if (response.ok) {
+        console.log('✅ Transfer processed and email sent via backend API');
+      } else {
+        console.error('❌ Backend transfer API failed');
+      }
+    }).catch(error => {
+      console.error('❌ Transfer API request failed:', error);
+    });
+  } catch (apiError) {
+    console.error('❌ Error calling transfer API:', apiError);
+  }
+
+  // Update balance in the account locally for immediate UI feedback
   const newBalance = (currentBalance - amount).toFixed(2);
   selectedAccount.balance = newBalance;
   console.log('New balance:', newBalance);

@@ -238,6 +238,48 @@ export class UserDataManager {
           detail: { name: updates.name }
         }));
       }
+
+      // Email synchronization across all user data
+      if (updates.email && updates.email !== previousData.email) {
+        console.log(`🔄 Email synchronization started: ${previousData.email} → ${updates.email}`);
+        
+        // Update email in all data stores that might contain user email
+        UserDataManager.synchronizeEmailAcrossDataStores(currentUser, updates.email);
+        
+        // Dispatch email update event for other components
+        window.dispatchEvent(new CustomEvent('emailUpdated', {
+          detail: { 
+            oldEmail: previousData.email, 
+            newEmail: updates.email,
+            customerNumber: currentUser
+          }
+        }));
+        
+        console.log(`✅ Email synchronization completed for customer ${currentUser}`);
+      }
+    }
+  }
+
+  // Email synchronization across all data stores
+  static synchronizeEmailAcrossDataStores(customerNumber: string, newEmail: string) {
+    try {
+      // Update email in any profile-related data stores
+      const profileData = this.getUserData('profile', {});
+      if (profileData) {
+        profileData.email = newEmail;
+        this.setUserData('profile', profileData);
+      }
+      
+      // Update email in contact information
+      const contactData = this.getUserData('contactInfo', {});
+      if (contactData) {
+        contactData.email = newEmail;
+        this.setUserData('contactInfo', contactData);
+      }
+      
+      console.log(`📧 Email synchronized across all data stores for ${customerNumber}`);
+    } catch (error) {
+      console.error('Failed to synchronize email across data stores:', error);
     }
   }
 
