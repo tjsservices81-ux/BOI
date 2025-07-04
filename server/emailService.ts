@@ -69,8 +69,8 @@ export async function sendEmail(to: string, subject: string, body: string): Prom
   }
 
   try {
-    // Prepare Bank of Ireland logo attachment
-    const logoPath = path.join(process.cwd(), 'client', 'public', 'icons', 'boi-icon-192.png');
+    // Prepare Bank of Ireland logo attachment - use the new uploaded authentic BOI logo
+    const logoPath = path.join(process.cwd(), 'attached_assets', 'IMG_1948_1751632845410.png');
     let attachments = [];
     
     if (fs.existsSync(logoPath)) {
@@ -168,9 +168,9 @@ export function generateTransferConfirmationEmail(details: TransferConfirmationD
 <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
     <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e0e0e0;">
         
-        <!-- Header with BOI Logo -->
-        <div style="background-color: #0052cc; padding: 25px; text-align: center;">
-            <img src="cid:boi-logo" alt="Bank of Ireland" style="height: 45px; width: auto; display: block; margin: 0 auto;">
+        <!-- Header with authentic BOI Logo -->
+        <div style="background-color: #ffffff; padding: 30px 25px 20px 25px; text-align: center;">
+            <img src="cid:boi-logo" alt="Bank of Ireland" style="height: 50px; width: auto; display: block; margin: 0 auto;">
         </div>
         
         <!-- Main Content -->
