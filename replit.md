@@ -98,9 +98,10 @@ This is a comprehensive mobile banking application built as a Progressive Web Ap
 - July 04, 2025: Completed professional Bank of Ireland email system with authentic branding
   - Fixed user profile data retrieval issue that prevented emails from sending
   - Implemented dynamic transfer type detection (UK vs SEPA vs Internal transfers)
-  - Integrated authentic Bank of Ireland logo (uploaded by user) with proper SMTP embedding
-  - Removed blue header bar and replaced with clean white background and professional spacing
-  - Single BOI logo placement at top only - no duplicate logos anywhere in email
+  - Integrated authentic Bank of Ireland logo (uploaded by user) with proper inline SMTP embedding
+  - Logo embedded via Content-ID (cid:boi-logo) with contentDisposition: 'inline' to prevent attachment display
+  - Logo positioned at very top of email content (before "Transfer Confirmation" heading)
+  - Removed blue header bar and all duplicate logos - single logo placement only
   - Added transfer-specific formatting with consistent bullet points and spacing
   - Included "This is an automated message from Bank of Ireland. Please do not reply to this email."
   - Added proper BOI footer with customer service information and website
