@@ -835,15 +835,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Generate PDF statement with exact BOI layout and real transaction data
-  app.post("/api/generate-statement", async (req, res) => {
+  app.post("/api/generate-statement", requireAuth, async (req, res) => {
     try {
-      // Check authentication
-      const sessionUser = (req as any).session?.user;
-      if (!sessionUser) {
-        return res.status(401).json({ success: false, message: "Not authenticated" });
-      }
-
-      console.log('🔵 Statement generation request received for user:', sessionUser.customerNumber);
+      console.log('🔵 Statement generation request received for session:', req.sessionID);
       
       const { accountId, period } = req.body;
       
@@ -852,8 +846,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ success: false, message: "Missing required data: accountId, period" });
       }
 
-      // Get user data from session user's customer number
-      const user = await storage.getUserByCustomerNumber(sessionUser.customerNumber);
+      // Get user data from session userId (requireAuth middleware ensures this exists)
+      const userId = (req as any).session.userId;
+      const allUsers = await storage.getAllUsers();
+      const user = allUsers.find(u => u.id === userId);
       if (!user) {
         return res.status(404).json({ success: false, message: "User not found" });
       }
