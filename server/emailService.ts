@@ -130,95 +130,32 @@ export function generateTransferConfirmationEmail(details: TransferConfirmationD
   
   if (isUKTransfer) {
     transferDetails = `
-                    <div style="margin-bottom: 12px; padding: 8px 0; border-bottom: 1px solid #e8edf3;">
-                        <strong style="color: #0052cc; font-weight: 600;">Amount:</strong> 
-                        <span style="float: right; font-weight: 500;">£${details.amount}</span>
-                    </div>
-                    <div style="margin-bottom: 12px; padding: 8px 0; border-bottom: 1px solid #e8edf3;">
-                        <strong style="color: #0052cc; font-weight: 600;">To Account:</strong> 
-                        <span style="float: right; font-weight: 500;">${details.recipientName}</span>
-                    </div>
-                    <div style="margin-bottom: 12px; padding: 8px 0; border-bottom: 1px solid #e8edf3;">
-                        <strong style="color: #0052cc; font-weight: 600;">Account Number:</strong> 
-                        <span style="float: right; font-weight: 500;">${transferData?.recipientAccountNumber || 'Not available'}</span>
-                    </div>
-                    <div style="margin-bottom: 12px; padding: 8px 0; border-bottom: 1px solid #e8edf3;">
-                        <strong style="color: #0052cc; font-weight: 600;">Sort Code:</strong> 
-                        <span style="float: right; font-weight: 500;">${transferData?.recipientSortCode || 'Not available'}</span>
-                    </div>
-                    <div style="margin-bottom: 12px; padding: 8px 0; border-bottom: 1px solid #e8edf3;">
-                        <strong style="color: #0052cc; font-weight: 600;">Reference:</strong> 
-                        <span style="float: right; font-weight: 500;">${details.transactionReference}</span>
-                    </div>
-                    <div style="margin-bottom: 12px; padding: 8px 0; border-bottom: 1px solid #e8edf3;">
-                        <strong style="color: #0052cc; font-weight: 600;">Date/Time:</strong> 
-                        <span style="float: right; font-weight: 500;">${details.dateTime}</span>
-                    </div>
-                    <div style="margin-bottom: 12px; padding: 8px 0; border-bottom: 1px solid #e8edf3;">
-                        <strong style="color: #0052cc; font-weight: 600;">Transaction ID:</strong> 
-                        <span style="float: right; font-weight: 500;">${transferData?.id || 'Not available'}</span>
-                    </div>
-                    <div style="padding: 8px 0;">
-                        <strong style="color: #0052cc; font-weight: 600;">Unique Reference:</strong> 
-                        <span style="float: right; font-weight: 500;">BOI-${transferData?.id || details.transactionReference}-UK</span>
-                    </div>`;
+                    <div style="margin-bottom: 8px;">• Amount: £${details.amount}</div>
+                    <div style="margin-bottom: 8px;">• To Account: ${details.recipientName}</div>
+                    <div style="margin-bottom: 8px;">• Account Number: ${transferData?.recipientAccountNumber || 'Not available'}</div>
+                    <div style="margin-bottom: 8px;">• Sort Code: ${transferData?.recipientSortCode || 'Not available'}</div>
+                    <div style="margin-bottom: 8px;">• Reference: ${details.transactionReference}</div>
+                    <div style="margin-bottom: 8px;">• Date/Time: ${details.dateTime}</div>
+                    <div style="margin-bottom: 8px;">• Transaction ID: ${transferData?.id || 'Not available'}</div>
+                    <div style="margin-bottom: 0;">• Unique Reference: BOI-${transferData?.id || details.transactionReference}-UK</div>`;
   } else if (isSEPATransfer) {
     transferDetails = `
-                    <div style="margin-bottom: 12px; padding: 8px 0; border-bottom: 1px solid #e8edf3;">
-                        <strong style="color: #0052cc; font-weight: 600;">Amount:</strong> 
-                        <span style="float: right; font-weight: 500;">€${details.amount}</span>
-                    </div>
-                    <div style="margin-bottom: 12px; padding: 8px 0; border-bottom: 1px solid #e8edf3;">
-                        <strong style="color: #0052cc; font-weight: 600;">To Account:</strong> 
-                        <span style="float: right; font-weight: 500;">${details.recipientName}</span>
-                    </div>
-                    <div style="margin-bottom: 12px; padding: 8px 0; border-bottom: 1px solid #e8edf3;">
-                        <strong style="color: #0052cc; font-weight: 600;">IBAN:</strong> 
-                        <span style="float: right; font-weight: 500;">${transferData?.iban || transferData?.recipientIban || 'Not available'}</span>
-                    </div>
-                    <div style="margin-bottom: 12px; padding: 8px 0; border-bottom: 1px solid #e8edf3;">
-                        <strong style="color: #0052cc; font-weight: 600;">BIC:</strong> 
-                        <span style="float: right; font-weight: 500;">${transferData?.bicCode || 'Not available'}</span>
-                    </div>
-                    <div style="margin-bottom: 12px; padding: 8px 0; border-bottom: 1px solid #e8edf3;">
-                        <strong style="color: #0052cc; font-weight: 600;">Reference:</strong> 
-                        <span style="float: right; font-weight: 500;">${details.transactionReference}</span>
-                    </div>
-                    <div style="margin-bottom: 12px; padding: 8px 0; border-bottom: 1px solid #e8edf3;">
-                        <strong style="color: #0052cc; font-weight: 600;">Date/Time:</strong> 
-                        <span style="float: right; font-weight: 500;">${details.dateTime}</span>
-                    </div>
-                    <div style="margin-bottom: 12px; padding: 8px 0; border-bottom: 1px solid #e8edf3;">
-                        <strong style="color: #0052cc; font-weight: 600;">Transaction ID:</strong> 
-                        <span style="float: right; font-weight: 500;">${transferData?.id || 'Not available'}</span>
-                    </div>
-                    <div style="padding: 8px 0;">
-                        <strong style="color: #0052cc; font-weight: 600;">Unique Reference:</strong> 
-                        <span style="float: right; font-weight: 500;">BOI-${transferData?.id || details.transactionReference}-SEPA</span>
-                    </div>`;
+                    <div style="margin-bottom: 8px;">• Amount: €${details.amount}</div>
+                    <div style="margin-bottom: 8px;">• To Account: ${details.recipientName}</div>
+                    <div style="margin-bottom: 8px;">• IBAN: ${transferData?.iban || transferData?.recipientIban || 'Not available'}</div>
+                    <div style="margin-bottom: 8px;">• BIC: ${transferData?.bicCode || 'Not available'}</div>
+                    <div style="margin-bottom: 8px;">• Reference: ${details.transactionReference}</div>
+                    <div style="margin-bottom: 8px;">• Date/Time: ${details.dateTime}</div>
+                    <div style="margin-bottom: 8px;">• Transaction ID: ${transferData?.id || 'Not available'}</div>
+                    <div style="margin-bottom: 0;">• Unique Reference: BOI-${transferData?.id || details.transactionReference}-SEPA</div>`;
   } else {
     // Default format for other transfers
     transferDetails = `
-                    <div style="margin-bottom: 12px; padding: 8px 0; border-bottom: 1px solid #e8edf3;">
-                        <strong style="color: #0052cc; font-weight: 600;">Amount:</strong> 
-                        <span style="float: right; font-weight: 500;">${details.currency}${details.amount}</span>
-                    </div>
-                    <div style="margin-bottom: 12px; padding: 8px 0; border-bottom: 1px solid #e8edf3;">
-                        <strong style="color: #0052cc; font-weight: 600;">To Account:</strong> 
-                        <span style="float: right; font-weight: 500;">${details.recipientName}</span>
-                    </div>
-                    <div style="margin-bottom: 12px; padding: 8px 0; border-bottom: 1px solid #e8edf3;">
-                        <strong style="color: #0052cc; font-weight: 600;">Reference:</strong> 
-                        <span style="float: right; font-weight: 500;">${details.transactionReference}</span>
-                    </div>
-                    <div style="margin-bottom: 12px; padding: 8px 0; border-bottom: 1px solid #e8edf3;">
-                        <strong style="color: #0052cc; font-weight: 600;">Date/Time:</strong> 
-                        <span style="float: right; font-weight: 500;">${details.dateTime}</span>
-                    </div>
-                    <div style="padding: 8px 0;">
-                        <strong style="color: #0052cc; font-weight: 600;">Transaction ID:</strong> 
-                        <span style="float: right; font-weight: 500;">${transferData?.id || 'Not available'}</span>
-                    </div>`;
+                    <div style="margin-bottom: 8px;">• Amount: ${details.currency}${details.amount}</div>
+                    <div style="margin-bottom: 8px;">• To Account: ${details.recipientName}</div>
+                    <div style="margin-bottom: 8px;">• Reference: ${details.transactionReference}</div>
+                    <div style="margin-bottom: 8px;">• Date/Time: ${details.dateTime}</div>
+                    <div style="margin-bottom: 0;">• Transaction ID: ${transferData?.id || 'Not available'}</div>`;
   }
   
   const body = `
@@ -228,94 +165,56 @@ export function generateTransferConfirmationEmail(details: TransferConfirmationD
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Transfer Confirmation - Bank of Ireland</title>
-    <style>
-        @media print {
-            body { margin: 0; padding: 20px; background-color: white !important; }
-            .email-container { border: none !important; box-shadow: none !important; }
-            .no-print { display: none !important; }
-        }
-        @page {
-            margin: 1in;
-            size: A4;
-        }
-    </style>
 </head>
-<body style="margin: 0; padding: 20px; font-family: 'Arial', sans-serif; background-color: #ffffff; color: #333333;">
-    <div class="email-container" style="max-width: 650px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e5e5e5; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-        
-        <!-- Header Section with Logo -->
-        <div style="background-color: #ffffff; padding: 40px 30px 20px 30px; text-align: center; border-bottom: 2px solid #0052cc;">
-            <img src="cid:boi-logo" alt="Bank of Ireland" style="height: 55px; width: auto; display: block; margin: 0 auto;" />
-        </div>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
+    <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e0e0e0;">
         
         <!-- Main Content -->
-        <div style="padding: 40px 30px;">
+        <div style="padding: 30px 25px;">
+            <!-- Bank of Ireland Logo at top -->
+            <img src="cid:boi-logo" alt="Bank of Ireland" style="height: 50px; display: block; margin: 20px auto;" />
             
-            <!-- Title -->
-            <h1 style="color: #0052cc; margin: 0 0 30px 0; font-size: 24px; font-weight: bold; text-align: center; letter-spacing: 0.5px;">
-                Transfer Confirmation
-            </h1>
+            <h2 style="color: #333333; margin: 0 0 25px 0; font-size: 20px; font-weight: bold;">Transfer Confirmation</h2>
             
-            <!-- Personal Greeting -->
-            <p style="color: #333333; margin: 0 0 25px 0; line-height: 1.6; font-size: 16px;">
+            <p style="color: #333333; margin: 0 0 20px 0; line-height: 1.6; font-size: 15px;">
                 Dear ${details.senderName},
             </p>
             
-            <p style="color: #333333; margin: 0 0 35px 0; line-height: 1.6; font-size: 16px;">
-                We confirm that your recent transfer has been successfully completed. Please retain this confirmation for your records.
+            <p style="color: #333333; margin: 0 0 30px 0; line-height: 1.6; font-size: 15px;">
+                We confirm that your recent transfer has been successfully completed.
             </p>
             
-            <!-- Transfer Details Box -->
-            <div style="background-color: #f8f9fb; border: 2px solid #e1e8f0; border-radius: 8px; padding: 30px; margin: 0 0 35px 0;">
-                <h2 style="color: #0052cc; margin: 0 0 25px 0; font-size: 18px; font-weight: bold; border-bottom: 1px solid #d1d9e0; padding-bottom: 10px;">
-                    Transfer Details
-                </h2>
-                <div style="color: #333333; font-size: 15px; line-height: 1.8;">
+            <!-- Transfer Details -->
+            <div style="background-color: #f8f9fa; border-left: 4px solid #0052cc; padding: 25px; margin: 0 0 30px 0;">
+                <h3 style="color: #0052cc; margin: 0 0 20px 0; font-size: 16px; font-weight: bold;">Transfer Details</h3>
+                <div style="color: #333333; font-size: 14px; line-height: 1.4;">
                     ${transferDetails}
                 </div>
             </div>
             
-            <!-- Security Notice -->
-            <div style="background-color: #fff5f5; border: 1px solid #fed7d7; border-radius: 6px; padding: 20px; margin: 0 0 30px 0;">
-                <p style="color: #d32f2f; margin: 0; line-height: 1.5; font-size: 15px; font-weight: bold;">
-                    ⚠️ If you did not authorise this payment, contact us immediately on 1800 123 456.
-                </p>
-            </div>
-            
-            <!-- Automated Message Notice -->
-            <p style="color: #666666; margin: 0 0 20px 0; line-height: 1.5; font-size: 13px; font-weight: bold; text-align: center; font-style: italic;">
+            <p style="color: #555555; margin: 0 0 25px 0; line-height: 1.5; font-size: 13px; font-weight: bold;">
                 This is an automated message from Bank of Ireland. Please do not reply to this email.
             </p>
             
+            <p style="color: #d32f2f; margin: 0 0 0 0; line-height: 1.5; font-size: 14px; font-weight: bold;">
+                If you did not authorise this payment, contact 1800 123 456 immediately.
+            </p>
         </div>
         
-        <!-- Professional Footer -->
-        <div style="background-color: #f4f6f8; padding: 30px; border-top: 1px solid #e5e5e5;">
-            <div style="text-align: center; margin-bottom: 20px;">
-                <p style="color: #0052cc; margin: 0 0 8px 0; font-size: 16px; font-weight: bold;">
-                    Thank you for banking with Bank of Ireland.
-                </p>
-            </div>
-            
-            <div style="text-align: center; border-top: 1px solid #d1d9e0; padding-top: 20px;">
-                <p style="color: #666666; margin: 0 0 5px 0; font-size: 14px;">
-                    BOI Customer Service
-                </p>
-                <p style="color: #0052cc; margin: 0; font-size: 14px; font-weight: 500;">
-                    www.bankofireland.com
-                </p>
-            </div>
+        <!-- Footer -->
+        <div style="background-color: #f8f9fa; padding: 25px; border-top: 1px solid #e0e0e0; text-align: left;">
+            <p style="color: #666666; margin: 0 0 8px 0; font-size: 14px; line-height: 1.5;">
+                Thank you for banking with Bank of Ireland.
+            </p>
+            <p style="color: #666666; margin: 0 0 8px 0; font-size: 14px;">
+                BOI Customer Service
+            </p>
+            <p style="color: #0052cc; margin: 0; font-size: 14px;">
+                www.bankofireland.com
+            </p>
         </div>
         
     </div>
-    
-    <!-- PDF Export Script (for web dashboard) -->
-    <script class="no-print">
-        function exportToPDF() {
-            window.print();
-        }
-    </script>
-    
 </body>
 </html>`;
   
