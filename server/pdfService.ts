@@ -153,7 +153,7 @@ export async function generateTransferConfirmationPDF(
         yPos += 30;
       }
 
-      // Reference
+      // Reference (use actual transfer reference)
       doc.font('Helvetica-Bold')
          .fontSize(12)
          .fillColor('#000000')
@@ -162,28 +162,37 @@ export async function generateTransferConfirmationPDF(
       doc.font('Helvetica')
          .fontSize(12)
          .fillColor('#000000')
-         .text(transactionReference, rightCol, yPos);
+         .text(transferData?.reference || transactionReference, rightCol, yPos);
       
       yPos += 30;
 
-      // Date/Time
+      // Date/Time (use actual transfer timestamp)
       doc.font('Helvetica-Bold')
          .fontSize(12)
          .fillColor('#000000')
          .text('Date/Time:', leftCol, yPos);
       
-      const currentDate = new Date().toLocaleDateString('en-GB', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
+      // Use the actual transfer timestamp if available, otherwise current date
+      const transferDate = transferData?.timestamp 
+        ? new Date(transferData.timestamp).toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          })
+        : new Date().toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
       
       doc.font('Helvetica')
          .fontSize(12)
          .fillColor('#000000')
-         .text(currentDate, rightCol, yPos);
+         .text(transferDate, rightCol, yPos);
       
       yPos += 30;
 
