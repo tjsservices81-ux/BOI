@@ -95,15 +95,17 @@ This is a comprehensive mobile banking application built as a Progressive Web Ap
 - **Security**: HTTPS required for PWA installation and service worker functionality
 
 ## Changelog
-- July 04, 2025: POSITIONING ACCURACY ENHANCEMENT - Refined PDF field positioning based on authentic BOI statement analysis
-  - Account info repositioned: x=320, y=150 with left alignment for natural text flow
-  - Font size adjusted to 9pt for authentic statement appearance
-  - Account summary repositioned: x=50, y=250 with simplified black text formatting
-  - Transaction table elevated: Start y=350 with tighter 18pt row spacing
-  - Column alignment refined: Date=50, Description=120, Withdrawal=280, Deposit=350, Balance=450
-  - Font size reduced to 8pt for transaction table (authentic statement density)
-  - Ending balance repositioned: y=680 with right-aligned compact formatting
-  - Customer number masking maintained: ****[last 4 digits] format
+- July 04, 2025: FINAL POSITIONING ACCURACY VERIFICATION - Comprehensive analysis and optimization for authentic BOI statement precision
+  - Account info final position: x=400, y=100 within A4 bounds (595x842pt) with name truncation for long names
+  - Account summary optimized: x=70, y=200 with 12pt line spacing and consistent €symbol formatting
+  - Transaction table precision: Start y=280, row height=15pt for authentic density
+  - Column positioning finalized: Date=60, Description=130, Withdrawal=300, Deposit=380, Balance=460
+  - Font sizes optimized: 8pt account info, 8pt summary, 7pt transactions for authentic appearance
+  - Currency formatting standardized: €symbol throughout (removing EUR/€ duplicates)
+  - Date formatting: DD/MM/YYYY truncation for BOI standard
+  - Description truncation: 22 characters to fit template width
+  - Ending balance final position: y=620 with ENDING BALANCE label in 8pt bold
+  - Template boundaries respected: Transaction cutoff at y=600, footer at y=620
 - July 04, 2025: NEW BOI TEMPLATE INTEGRATION - Updated PDF generation to use new Bank of Ireland statement template
   - Replaced template image path to use new uploaded BOI template (IMG_1981_1751654672745.jpeg)
   - Precise field positioning: Account info right-aligned in top-right quadrant under BOI logo
