@@ -143,42 +143,21 @@ export default function Statements() {
 
       const closingBalance = parseFloat(selectedAccount.balance);
 
-      // Prepare statement data
-      const statementData = {
-        user: {
-          fullName: user.name || 'Account Holder',
-          accountNumber: selectedAccount.accountNumber || '12345678'
-        },
-        period: {
-          startDate: formatDate(startDate),
-          endDate: formatDate(endDate)
-        },
-        summary: {
-          openingBalance: openingBalance.toFixed(2),
-          totalIn: totalIn.toFixed(2),
-          totalOut: totalOut.toFixed(2),
-          closingBalance: closingBalance.toFixed(2)
-        },
-        transactions: periodTransactions.map((tx: any) => ({
-          date: new Date(tx.date).toLocaleDateString('en-GB', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-          }),
-          description: tx.description || tx.merchant || 'Transaction',
-          withdrawal: tx.type === 'debit' ? parseFloat(tx.amount).toFixed(2) : '',
-          deposit: tx.type === 'credit' ? parseFloat(tx.amount).toFixed(2) : '',
-          balance: tx.balance ? parseFloat(tx.balance).toFixed(2) : closingBalance.toFixed(2)
-        }))
+      // Prepare simplified statement data for new API
+      const statementRequestData = {
+        accountId: selectedAccountId,
+        period: selectedPeriod
       };
 
-      // Generate PDF
+      console.log('🔵 Sending statement request:', statementRequestData);
+
+      // Generate PDF with new simplified API
       const response = await fetch('/api/generate-statement', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(statementData),
+        body: JSON.stringify(statementRequestData),
       });
 
       if (response.ok) {

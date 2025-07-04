@@ -12,7 +12,7 @@ import { isDeviceBlocked, addDeviceSession, isDeviceInPanicMode, isCustomerInPan
 import { isAccountActiveOnOtherDevice, setUserDeviceSession, removeUserDeviceSession, getUserDeviceSession, isCurrentDeviceAuthorized } from "./deviceExclusiveAuth";
 import { addUserSession, removeUserSession, sessionTrackingMiddleware, isSessionValid } from "./sessionManager";
 import { sendTransferConfirmation, type TransferConfirmationDetails } from "./emailService";
-import { generateStatementPDF, getStatementFilename } from "./statementService";
+import { generateStatement } from "./statementService";
 import Database from "@replit/database";
 
 // Initialize Replit Database for access codes
@@ -834,27 +834,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Generate PDF statement
+  // Generate PDF statement with exact BOI layout and real transaction data
   app.post("/api/generate-statement", async (req, res) => {
     try {
-      console.log('Statement generation request received:', req.body);
-      
-      const statementData = req.body;
-      
-      // Validate required data
-      if (!statementData.user || !statementData.period || !statementData.summary || !statementData.transactions) {
-        return res.status(400).json({ success: false, message: "Missing required statement data" });
+      // Check authentication
+      const sessionUser = (req as any).session?.user;
+      if (!sessionUser) {
+        return res.status(401).json({ success: false, message: "Not authenticated" });
       }
 
-      // Generate the PDF
-      const pdfBuffer = await generateStatementPDF(statementData);
+      console.log('🔵 Statement generation request received for user:', sessionUser.customerNumber);
+      
+      const { accountId, period } = req.body;
+      
+      // Validate required data
+      if (!accountId || !period) {
+        return res.status(400).json({ success: false, message: "Missing required data: accountId, period" });
+      }
+
+      // Get user data from session user's customer number
+      const user = await storage.getUserByCustomerNumber(sessionUser.customerNumber);
+      if (!user) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+
+      // Get user accounts
+      const accounts = await storage.getAccountsByUserId(user.id);
+      const selectedAccount = accounts.find(acc => acc.id === accountId);
+      if (!selectedAccount) {
+        return res.status(404).json({ success: false, message: "Account not found" });
+      }
+
+      // Get transactions for the account
+      const transactions = await storage.getTransactionsByAccountId(accountId);
+      
+      // Create userData object with real data
+      const nameParts = (user.name || 'Account Holder').split(' ');
+      const userData = {
+        firstName: nameParts[0] || 'Account',
+        lastName: nameParts.slice(1).join(' ') || 'Holder',
+        accounts: [{
+          accountNumber: selectedAccount.accountNumber,
+          balance: selectedAccount.balance
+        }],
+        transactions: transactions
+      };
+
+      // Generate the PDF using the new service
+      const pdfDoc = await generateStatement(userData, period);
+      
+      // Collect PDF buffer
+      const chunks: Buffer[] = [];
+      pdfDoc.on('data', (chunk: Buffer) => chunks.push(chunk));
+      
+      await new Promise((resolve, reject) => {
+        pdfDoc.on('end', resolve);
+        pdfDoc.on('error', reject);
+        pdfDoc.end();
+      });
+      
+      const pdfBuffer = Buffer.concat(chunks);
       
       // Generate filename
-      const lastName = statementData.user.fullName.split(' ').pop() || 'Statement';
-      const statementDate = new Date(statementData.period.endDate.split('/').reverse().join('-'));
-      const filename = getStatementFilename(lastName, statementDate);
+      const lastName = nameParts.slice(1).join('') || 'Statement';
+      const filename = `BOI_Statement_${lastName}_${new Date().toLocaleDateString('en-GB', { month: '2-digit', year: 'numeric' }).replace('/', '')}.pdf`;
       
-      console.log(`Statement PDF generated successfully: ${filename}, Size: ${pdfBuffer.length} bytes`);
+      console.log(`✅ Statement PDF generated: ${filename}, Size: ${pdfBuffer.length} bytes`);
       
       // Set headers for PDF download
       res.set({
@@ -866,7 +911,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.send(pdfBuffer);
       
     } catch (error) {
-      console.error('Statement generation error:', error);
+      console.error('❌ Statement generation error:', error);
       res.status(500).json({ success: false, message: "Failed to generate statement" });
     }
   });

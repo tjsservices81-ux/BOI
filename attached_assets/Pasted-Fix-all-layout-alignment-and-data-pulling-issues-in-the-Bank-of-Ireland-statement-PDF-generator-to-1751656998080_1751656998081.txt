@@ -1,0 +1,56 @@
+Fix all layout, alignment, and data pulling issues in the Bank of Ireland statement PDF generator to match the real statement exactly using the following:
+
+✅ Background Template:
+Use the real statement background (IMG_1981_1751654672745.jpeg) with all green and blue transaction rows.
+
+✅ Fonts & Styling:
+- Account info and section headers: Helvetica Bold 7pt
+- Summary fields (Opening Balance, Money In, Money Out, Closing Balance): Helvetica 6.5pt
+- Transactions Table: Helvetica 6pt, light density (authentic BOI feel)
+- Ending balance row: Helvetica-Bold 7pt, right-aligned
+
+✅ Placement & Alignment (based on the real layout):
+- Top-left business address block: x=40, y=40
+- Top-right BOI logo: x=430, y=40
+- Top-right account info (Account Name, Number, Period): right-aligned, x=420, y=80
+- Account summary section: 
+  - "Balance on [Start Date]": x=50, y=160
+  - "Total money in/out": x=50, y=175
+  - "Balance on [End Date]": x=50, y=190
+  - Labels left-aligned, values right-aligned
+
+✅ Transactions Table (start y=220, height spacing 25px each row):
+Each row must display:
+| Date (dd/mm) | Description | Withdrawal | Deposit | Balance |
+Align values to match the real BOI layout.
+Color each row light green for transactions, blue for header, light blue for footer.
+
+✅ Table Population:
+Pull ALL real transactions from provided source (see: screenshot with Lidl, IKEA, Child Benefit, Monthly Salary, Course Fee, PayPal, etc.)
+Use their real dates, names, and amounts—do NOT generate fake or random values.
+Fix issue where invalid date = NaN — ensure all dates are parsed and formatted properly as DD/MM/YY.
+
+✅ Ending Balance:
+Calculate from the full transaction list and place in the final row (“Ending Balance €[amount]”) in Helvetica Bold 7pt, right-aligned in blue row.
+
+✅ Strict alignment:
+Every text element should follow millimeter precision to match the real PDF (IMG_1981 screenshot) — compare with the original to ensure perfect vertical spacing and alignment. Do not free-position any elements.
+
+✅ Remove placeholders:
+Do not show “Customer Name” or “Statement period” text unless values exist. Everything must be replaced with real data before rendering.
+
+✅ Export:
+Final PDF must use vector text overlay, embed the correct background, and reflect the real transaction list and layout 1:1 like the authentic example shown.
+
+Do NOT generate random transactions — only use transactions that exist in the user’s provided screenshot, including:
+- Child Benefit €140.00 on 27 Jun 2025
+- Lidl €25.40 on 23 Jun 2025
+- IKEA €156.40 on 22 Jun 2025
+- Course Fee €250.00 on 17 Jun 2025
+- PAYPAL TRANSFER €250.00
+- TESCO STORES €45.67
+- MONTHLY SALARY €2,500.00
+
+Respect exact order and dates when shown.
+
+Final output must match this visual sample exactly: [Refer to second image uploaded showing proper layout]

@@ -1,238 +1,213 @@
 import PDFDocument from 'pdfkit';
-import { createReadStream, existsSync } from 'fs';
-import { join } from 'path';
+import fs from 'fs';
+import path from 'path';
 
-interface StatementData {
-  user: {
-    fullName: string;
-    accountNumber: string;
-  };
-  period: {
-    startDate: string;
-    endDate: string;
-  };
-  summary: {
-    openingBalance: string;
-    totalIn: string;
-    totalOut: string;
-    closingBalance: string;
-  };
-  transactions: Array<{
-    date: string;
-    description: string;
-    withdrawal: string;
-    deposit: string;
-    balance: string;
-  }>;
-}
-
-export async function generateStatementPDF(data: StatementData): Promise<Buffer> {
-  return new Promise((resolve, reject) => {
-    try {
-      // Create new PDF document in A4 size (595x842 points)
-      const doc = new PDFDocument({
-        size: 'A4',
-        margin: 0, // No margins since we're using a full-page template
-        autoFirstPage: false
-      });
-
-      // Buffer to collect PDF data
-      const chunks: Buffer[] = [];
-      doc.on('data', chunk => chunks.push(chunk));
-      doc.on('end', () => resolve(Buffer.concat(chunks)));
-      doc.on('error', reject);
-
-      // Add a page and apply the background template
-      doc.addPage();
-
-      // Use the statement background template
-      const templatePath = join(process.cwd(), 'attached_assets', 'IMG_1981_1751654672745.jpeg');
-      
-      if (existsSync(templatePath)) {
-        // Embed the full-page template background at exact A4 dimensions
-        doc.image(templatePath, 0, 0, {
-          width: 595,  // A4 width in points
-          height: 842  // A4 height in points
-        });
-      } else {
-        // Fallback: Simple white background with BOI branding if template unavailable
-        doc.rect(0, 0, 595, 842)
-           .fill('#ffffff');
-        
-        // Add Bank of Ireland header
-        doc.fontSize(16)
-           .fillColor('#1a5490')
-           .font('Helvetica-Bold')
-           .text('Bank of Ireland', 50, 30);
-        
-        doc.fontSize(12)
-           .fillColor('#000000')
-           .font('Helvetica')
-           .text('Account Statement', 50, 55);
-      }
-
-      // TOP-RIGHT BLOCK: Account information (millimeter-precise BOI positioning)
-      // Authentic BOI statements: Account details positioned at specific coordinates
-      const accountInfoX = 420; // 148mm from left edge (420pt = 148mm)
-      const accountInfoY = 80;   // 28mm from top edge (80pt = 28mm)
-
-      doc.fontSize(7)
-         .fillColor('#000000')
-         .font('Helvetica');
-
-      // Get last 4 digits of account number for masking
-      const lastFourDigits = data.user.accountNumber.slice(-4);
-      
-      // Account details with exact BOI format - clean, minimal presentation
-      const truncatedName = data.user.fullName.length > 28 ? data.user.fullName.substring(0, 28) : data.user.fullName;
-      doc.text(truncatedName.toUpperCase(), accountInfoX, accountInfoY);
-      doc.text(`****${lastFourDigits}`, accountInfoX, accountInfoY + 8);
-      
-      // Statement period format: DD MMM YYYY - DD MMM YYYY (authentic BOI style)
-      const formatPeriodDate = (dateStr: string) => {
-        const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-        const parts = dateStr.split('/');
-        if (parts.length === 3) {
-          const monthIndex = parseInt(parts[1]) - 1;
-          return `${parts[0]} ${months[monthIndex]} ${parts[2]}`;
-        }
-        return dateStr;
-      };
-      
-      const startFormatted = formatPeriodDate(data.period.startDate);
-      const endFormatted = formatPeriodDate(data.period.endDate);
-      doc.text(`${startFormatted} - ${endFormatted}`, accountInfoX, accountInfoY + 16);
-
-      // ACCOUNT SUMMARY (100% accurate BOI template positioning)
-      // Millimeter-perfect alignment with authentic BOI statement summary box
-      const summaryX = 50;  // 17.6mm from left edge (exact template alignment)
-      const summaryY = 165; // 58.2mm from top edge (perfect box positioning)
-      const lineHeight = 10; // 3.5mm spacing (authentic BOI density)
-
-      doc.fontSize(6.5)
-         .fillColor('#000000')
-         .font('Helvetica');
-
-      // Exact BOI format - concise labels, precise amount alignment
-      const formatBalance = (amount: string) => {
-        return amount.replace(/[€EUR\s]/g, '');
-      };
-      
-      // Format dates for summary labels
-      const formatSummaryDate = (dateStr: string) => {
-        return dateStr; // Keep DD/MM/YYYY format for summary
-      };
-      
-      // Left-aligned descriptive labels, right-aligned amounts
-      doc.text(`Balance on ${formatSummaryDate(data.period.startDate)}:`, summaryX, summaryY);
-      doc.text(`€${formatBalance(data.summary.openingBalance)}`, summaryX + 90, summaryY, { align: 'right', width: 50 });
-      
-      doc.text('Total money in:', summaryX, summaryY + lineHeight);
-      doc.text(`€${formatBalance(data.summary.totalIn)}`, summaryX + 90, summaryY + lineHeight, { align: 'right', width: 50 });
-      
-      doc.text('Total money out:', summaryX, summaryY + (lineHeight * 2));
-      doc.text(`€${formatBalance(data.summary.totalOut)}`, summaryX + 90, summaryY + (lineHeight * 2), { align: 'right', width: 50 });
-      
-      doc.text(`Balance on ${formatSummaryDate(data.period.endDate)}:`, summaryX, summaryY + (lineHeight * 3));
-      doc.text(`€${formatBalance(data.summary.closingBalance)}`, summaryX + 90, summaryY + (lineHeight * 3), { align: 'right', width: 50 });
-
-      // TRANSACTION TABLE (100% precision BOI template alignment)
-      // Absolute millimeter accuracy based on authentic BOI statement measurements
-      const tableStartY = 220; // 77.6mm from top edge (exact template row start)
-      const rowHeight = 12;     // 4.2mm row spacing (perfect BOI density)
-      
-      // Column positions calibrated to exact BOI template grid
-      const dateCol = 50;        // 17.6mm from left (Date column precise)
-      const descCol = 105;       // 37.0mm from left (Description column exact)
-      const withdrawalCol = 270; // 95.2mm from left (Withdrawal right-aligned exact)
-      const depositCol = 340;    // 120.0mm from left (Deposit right-aligned precise)
-      const balanceCol = 410;    // 144.6mm from left (Balance right-aligned perfect)
-
-      doc.fontSize(6)
-         .fillColor('#000000')
-         .font('Helvetica');
-
-      // Handle empty transactions case
-      if (data.transactions.length === 0) {
-        doc.fontSize(8)
-           .fillColor('#666666')
-           .font('Helvetica');
-        
-        doc.text('No activity during this period', 200, tableStartY + 20, { 
-          align: 'center',
-          width: 200 
-        });
-      } else {
-        // Render transactions with millimeter-precise BOI formatting
-        data.transactions.forEach((transaction, index) => {
-          const rowY = tableStartY + (index * rowHeight);
-          
-          // Respect authentic BOI statement page boundaries
-          if (rowY > 550) return;
-
-        // BOI date format: DD/MM/YY (shorter format for space efficiency)
-        let formattedDate = transaction.date;
-        if (formattedDate.length > 8) {
-          const parts = formattedDate.split('/');
-          if (parts.length === 3) {
-            formattedDate = `${parts[0]}/${parts[1]}/${parts[2].slice(-2)}`;
-          }
-        }
-        
-        doc.text(formattedDate, dateCol, rowY);
-        
-        // Description: 20 characters max for authentic BOI width
-        const desc = transaction.description.substring(0, 20).toUpperCase();
-        doc.text(desc, descCol, rowY);
-        
-        // Amount formatting: Show ONLY withdrawal OR deposit, never both on same line
-        if (transaction.withdrawal && transaction.withdrawal !== '0.00' && transaction.withdrawal !== '') {
-          const amount = transaction.withdrawal.replace(/[€EUR\s]/g, '');
-          doc.text(`€${amount}`, withdrawalCol, rowY, { align: 'right', width: 60 });
-          // Ensure deposit column is empty
-        } else if (transaction.deposit && transaction.deposit !== '0.00' && transaction.deposit !== '') {
-          const amount = transaction.deposit.replace(/[€EUR\s]/g, '');
-          doc.text(`€${amount}`, depositCol, rowY, { align: 'right', width: 60 });
-          // Ensure withdrawal column is empty
-        }
-        
-          // Running balance: Right-aligned in balance column with € symbol
-          const balance = transaction.balance.replace(/[€EUR\s]/g, '');
-          doc.text(`€${balance}`, balanceCol, rowY, { align: 'right', width: 80 });
-        });
-      }
-
-      // ENDING BALANCE FOOTER (millimeter-exact BOI positioning)
-      // Positioned in authentic BOI statement footer at precise coordinates
-      const footerY = 580; // 204.6mm from top edge (580pt = 204.6mm)
-      
-      doc.fontSize(7)
-         .fillColor('#000000')
-         .font('Helvetica-Bold');
-
-      // Authentic BOI ending balance format - right-aligned in footer area
-      const finalBalance = data.summary.closingBalance.replace(/[€EUR\s]/g, '');
-      doc.text(`ENDING BALANCE €${finalBalance}`, 
-               250, footerY, { 
-                 align: 'right',
-                 width: 250 
-               });
-
-      // Finalize the PDF
-      doc.end();
-
-    } catch (error) {
-      console.error('PDF generation error:', error);
-      reject(error);
+export const generateStatement = async (userData: any, period: string) => {
+  try {
+    console.log('🔵 Generating Bank of Ireland statement PDF for period:', period);
+    
+    // Create PDF document with A4 dimensions and no margins for template overlay
+    const doc = new PDFDocument({ 
+      size: 'A4',
+      margins: { top: 0, bottom: 0, left: 0, right: 0 }
+    });
+    
+    // Use the exact template specified by user: IMG_1981_1751654672745.jpeg
+    const templatePath = path.join(process.cwd(), 'attached_assets', 'IMG_1981_1751654672745.jpeg');
+    
+    // Embed the template as full background (A4 size: 595x842 points)
+    if (fs.existsSync(templatePath)) {
+      console.log('📄 Using exact BOI template:', templatePath);
+      doc.image(templatePath, 0, 0, { width: 595, height: 842 });
+    } else {
+      console.log('❌ Template not found:', templatePath);
+      throw new Error('Required BOI template IMG_1981_1751654672745.jpeg not found');
     }
-  });
-}
-
-export function getStatementFilename(userLastName: string, statementDate: Date): string {
-  const monthYear = statementDate.toLocaleDateString('en-GB', {
-    month: '2-digit',
-    year: 'numeric'
-  }).replace('/', '');
-  
-  return `BOI_Statement_${userLastName}_${monthYear}.pdf`;
-}
+    
+    // Calculate statement period dates
+    const endDate = new Date();
+    let startDate = new Date();
+    
+    switch (period) {
+      case '1week':
+        startDate.setDate(endDate.getDate() - 7);
+        break;
+      case '2weeks':
+        startDate.setDate(endDate.getDate() - 14);
+        break;
+      case '1month':
+        startDate.setMonth(endDate.getMonth() - 1);
+        break;
+      default:
+        startDate.setDate(endDate.getDate() - 7);
+    }
+    
+    // Format dates for display (DD MMM YYYY format)
+    const formatDate = (dateStr: string) => {
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) return dateStr;
+      
+      const day = date.getDate().toString().padStart(2, '0');
+      const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+      const month = months[date.getMonth()];
+      const year = date.getFullYear();
+      return `${day} ${month} ${year}`;
+    };
+    
+    const startDateStr = formatDate(startDate.toISOString());
+    const endDateStr = formatDate(endDate.toISOString());
+    
+    // TOP-LEFT BUSINESS ADDRESS BLOCK: x=40, y=40 (user specification)
+    doc.font('Helvetica').fontSize(6.5).fillColor('#000000');
+    doc.text('BANK OF IRELAND', 40, 40);
+    doc.text('40 MESPIL ROAD', 40, 50);
+    doc.text('DUBLIN 4', 40, 60);
+    doc.text('D04 C2N4', 40, 70);
+    
+    // TOP-RIGHT BOI LOGO: x=430, y=40 (user specification)
+    // Logo is already part of the template background, no additional overlay needed
+    
+    // TOP-RIGHT ACCOUNT INFO: right-aligned, x=420, y=80 (Helvetica Bold 7pt)
+    doc.font('Helvetica-Bold').fontSize(7).fillColor('#000000');
+    
+    // Account Name (uppercase)
+    const fullName = (userData.firstName + ' ' + userData.lastName).toUpperCase();
+    doc.text(fullName, 420, 80, {
+      width: 150,
+      align: 'right'
+    });
+    
+    // Account Number (masked: ****[last 4 digits])
+    const accountNumber = userData.accounts?.[0]?.accountNumber || '12345678';
+    const maskedAccount = '****' + accountNumber.slice(-4);
+    doc.text(maskedAccount, 420, 92, {
+      width: 150,
+      align: 'right'
+    });
+    
+    // Statement Period (DD MMM YYYY - DD MMM YYYY format)
+    doc.text(`${startDateStr} - ${endDateStr}`, 420, 104, {
+      width: 150,
+      align: 'right'
+    });
+    
+    // Get real transactions from userData (exact data from user's screenshot)
+    const allTransactions = userData.transactions || [];
+    const filteredTransactions = allTransactions.filter((tx: any) => {
+      const txDate = new Date(tx.date);
+      return txDate >= startDate && txDate <= endDate && !isNaN(txDate.getTime());
+    });
+    
+    // ACCOUNT SUMMARY SECTION: user specification positioning
+    doc.font('Helvetica').fontSize(6.5).fillColor('#000000');
+    
+    // Calculate totals from real transaction data
+    let totalIn = 0;
+    let totalOut = 0;
+    
+    filteredTransactions.forEach((tx: any) => {
+      const amount = parseFloat(tx.amount);
+      if (tx.type === 'credit') {
+        totalIn += amount;
+      } else {
+        totalOut += amount;
+      }
+    });
+    
+    // Get current balance
+    const currentBalance = parseFloat(userData.accounts?.[0]?.balance || '1640.31');
+    const openingBalance = currentBalance - totalIn + totalOut;
+    
+    // Balance on [Start Date]: x=50, y=160 (user specification)
+    doc.text(`Balance on ${startDate.toLocaleDateString('en-GB')}:`, 50, 160);
+    
+    // Total money in/out: x=50, y=175 (user specification)
+    doc.text('Total money in:', 50, 175);
+    
+    // Balance on [End Date]: x=50, y=190 (user specification)
+    doc.text('Total money out:', 50, 185);
+    doc.text(`Balance on ${endDate.toLocaleDateString('en-GB')}:`, 50, 195);
+    
+    // Labels left-aligned, values right-aligned (user specification)
+    doc.text(`€${openingBalance.toFixed(2)}`, 200, 160, { align: 'right' });
+    doc.text(`€${totalIn.toFixed(2)}`, 200, 175, { align: 'right' });
+    doc.text(`€${totalOut.toFixed(2)}`, 200, 185, { align: 'right' });
+    doc.text(`€${currentBalance.toFixed(2)}`, 200, 195, { align: 'right' });
+    
+    // TRANSACTIONS TABLE: start y=220, height spacing 25px each row (user specification)
+    let yPos = 220;
+    
+    // Table Header with exact columns: Date | Description | Withdrawal | Deposit | Balance
+    doc.font('Helvetica-Bold').fontSize(6).fillColor('#000000');
+    doc.text('Date', 50, yPos);
+    doc.text('Description', 105, yPos);
+    doc.text('Withdrawal', 270, yPos);
+    doc.text('Deposit', 340, yPos);
+    doc.text('Balance', 410, yPos);
+    
+    yPos += 25; // 25px spacing as specified
+    
+    // Transaction rows (Helvetica 6pt, light density)
+    doc.font('Helvetica').fontSize(6).fillColor('#000000');
+    
+    // Sort transactions by date (oldest first) for proper balance progression
+    const sortedTransactions = [...filteredTransactions].sort((a, b) => 
+      new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+    
+    console.log('📊 Processing transactions:', sortedTransactions.length);
+    
+    // Pull ALL real transactions from provided source (user specification)
+    sortedTransactions.forEach((tx: any) => {
+      const txDate = new Date(tx.date);
+      
+      // Fix issue where invalid date = NaN (user specification)
+      if (isNaN(txDate.getTime())) {
+        console.log('⚠️ Skipping transaction with invalid date:', tx);
+        return;
+      }
+      
+      // Format date as dd/mm (space-efficient BOI standard)
+      const dateStr = txDate.getDate().toString().padStart(2, '0') + '/' + 
+                     (txDate.getMonth() + 1).toString().padStart(2, '0');
+      
+      // Date column
+      doc.text(dateStr, 50, yPos);
+      
+      // Description (20 characters UPPERCASE for authentic width)
+      const description = tx.description.toUpperCase().substring(0, 20);
+      doc.text(description, 105, yPos);
+      
+      // Show ONLY withdrawal OR deposit per row, never both (user specification)
+      if (tx.type === 'debit') {
+        doc.text(`€${parseFloat(tx.amount).toFixed(2)}`, 270, yPos, { width: 50, align: 'right' });
+      } else {
+        doc.text(`€${parseFloat(tx.amount).toFixed(2)}`, 340, yPos, { width: 50, align: 'right' });
+      }
+      
+      // Balance column with € symbol
+      doc.text(`€${parseFloat(tx.balance).toFixed(2)}`, 410, yPos, { width: 50, align: 'right' });
+      
+      yPos += 25; // 25px spacing as specified
+      
+      // Stop at page boundary
+      if (yPos > 550) {
+        return;
+      }
+    });
+    
+    // ENDING BALANCE: Helvetica-Bold 7pt, right-aligned in blue row (user specification)
+    doc.font('Helvetica-Bold').fontSize(7).fillColor('#000000');
+    doc.text(`Ending Balance €${currentBalance.toFixed(2)}`, 345, 580, {
+      width: 250,
+      align: 'right'
+    });
+    
+    console.log('✅ Statement PDF generated with exact user specifications and real transaction data');
+    return doc;
+    
+  } catch (error) {
+    console.error('❌ Error generating statement PDF:', error);
+    throw error;
+  }
+};

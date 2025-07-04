@@ -2,87 +2,114 @@
 // This provides authentic transaction history when none exists
 
 export const generateRealisticTransactions = (accountId: number, accountBalance: string, daysBack: number = 30) => {
-  const transactions = [];
-  const balance = parseFloat(accountBalance);
-  let runningBalance = balance;
-  
-  // Realistic transaction patterns based on Irish banking
-  const transactionTypes = [
-    // Income transactions
-    { type: 'credit', description: 'MONTHLY SALARY', amount: () => 3200.00, frequency: 'monthly' },
-    { type: 'credit', description: 'CHILD BENEFIT', amount: () => 280.00, frequency: 'monthly' },
-    { type: 'credit', description: 'PAYPAL TRANSFER', amount: () => Math.random() * 500 + 100, frequency: 'weekly' },
-    { type: 'credit', description: 'BANK TRANSFER', amount: () => Math.random() * 300 + 50, frequency: 'random' },
-    
-    // Expense transactions
-    { type: 'debit', description: 'LIDL STORES', amount: () => Math.random() * 80 + 20, frequency: 'frequent' },
-    { type: 'debit', description: 'TESCO STORES', amount: () => Math.random() * 120 + 30, frequency: 'frequent' },
-    { type: 'debit', description: 'IKEA DUBLIN', amount: () => Math.random() * 400 + 100, frequency: 'rare' },
-    { type: 'debit', description: 'COURSE FEE', amount: () => 450.00, frequency: 'rare' },
-    { type: 'debit', description: 'DUBLIN CITY COUNCIL', amount: () => 280.00, frequency: 'monthly' },
-    { type: 'debit', description: 'ESB NETWORKS', amount: () => Math.random() * 80 + 40, frequency: 'monthly' },
-    { type: 'debit', description: 'VODAFONE IRELAND', amount: () => 45.00, frequency: 'monthly' },
-    { type: 'debit', description: 'SUPERVALU', amount: () => Math.random() * 60 + 15, frequency: 'frequent' },
-    { type: 'debit', description: 'COSTA COFFEE', amount: () => Math.random() * 15 + 3, frequency: 'frequent' },
-    { type: 'debit', description: 'DUBLIN BUS', amount: () => 2.55, frequency: 'frequent' },
-    { type: 'debit', description: 'CIRCLE K', amount: () => Math.random() * 60 + 20, frequency: 'weekly' },
-    { type: 'debit', description: 'AMAZON PAYMENTS', amount: () => Math.random() * 80 + 15, frequency: 'weekly' }
+  // Exact transactions from user's screenshot - DO NOT GENERATE RANDOM DATA
+  const exactTransactions = [
+    {
+      id: 1001,
+      accountId: accountId,
+      date: new Date('2025-06-27').toISOString(),
+      description: 'CHILD BENEFIT',
+      type: 'credit',
+      amount: '140.00',
+      balance: '1640.31',
+      merchant: 'CHILD BENEFIT',
+      category: 'Income'
+    },
+    {
+      id: 1002,
+      accountId: accountId,
+      date: new Date('2025-06-23').toISOString(),
+      description: 'LIDL',
+      type: 'debit',
+      amount: '25.40',
+      balance: '1500.31',
+      merchant: 'LIDL',
+      category: 'Expenses'
+    },
+    {
+      id: 1003,
+      accountId: accountId,
+      date: new Date('2025-06-22').toISOString(),
+      description: 'IKEA',
+      type: 'debit',
+      amount: '156.40',
+      balance: '1525.71',
+      merchant: 'IKEA',
+      category: 'Expenses'
+    },
+    {
+      id: 1004,
+      accountId: accountId,
+      date: new Date('2025-06-17').toISOString(),
+      description: 'COURSE FEE',
+      type: 'debit',
+      amount: '250.00',
+      balance: '1682.11',
+      merchant: 'COURSE FEE',
+      category: 'Expenses'
+    },
+    {
+      id: 1005,
+      accountId: accountId,
+      date: new Date('2025-06-15').toISOString(),
+      description: 'PAYPAL TRANSFER',
+      type: 'credit',
+      amount: '250.00',
+      balance: '1932.11',
+      merchant: 'PAYPAL TRANSFER',
+      category: 'Income'
+    },
+    {
+      id: 1006,
+      accountId: accountId,
+      date: new Date('2025-06-10').toISOString(),
+      description: 'TESCO STORES',
+      type: 'debit',
+      amount: '45.67',
+      balance: '1682.11',
+      merchant: 'TESCO STORES',
+      category: 'Expenses'
+    },
+    {
+      id: 1007,
+      accountId: accountId,
+      date: new Date('2025-06-01').toISOString(),
+      description: 'MONTHLY SALARY',
+      type: 'credit',
+      amount: '2500.00',
+      balance: '1727.78',
+      merchant: 'MONTHLY SALARY',
+      category: 'Income'
+    }
   ];
   
-  // Generate transactions for the specified period
-  const now = new Date();
-  const startDate = new Date(now.getTime() - (daysBack * 24 * 60 * 60 * 1000));
+  // Sort by date ascending (oldest first)
+  exactTransactions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   
-  // Calculate how many transactions based on period length
-  const transactionCount = Math.floor(daysBack * 1.2); // About 1.2 transactions per day
+  // Calculate proper running balances
+  const finalBalance = parseFloat(accountBalance);
+  let currentBalance = finalBalance;
   
-  for (let i = 0; i < transactionCount; i++) {
-    // Random date within the period
-    const transactionDate = new Date(
-      startDate.getTime() + Math.random() * (now.getTime() - startDate.getTime())
-    );
-    
-    // Select random transaction type
-    const transaction = transactionTypes[Math.floor(Math.random() * transactionTypes.length)];
-    const amount = transaction.amount();
-    
-    // Update running balance
-    if (transaction.type === 'credit') {
-      runningBalance += amount;
+  // Work backwards to calculate opening balance
+  for (let i = exactTransactions.length - 1; i >= 0; i--) {
+    const tx = exactTransactions[i];
+    if (tx.type === 'credit') {
+      currentBalance -= parseFloat(tx.amount);
     } else {
-      runningBalance -= amount;
+      currentBalance += parseFloat(tx.amount);
     }
-    
-    transactions.push({
-      id: Date.now() + i,
-      accountId: accountId,
-      date: transactionDate.toISOString(),
-      description: transaction.description,
-      type: transaction.type,
-      amount: amount.toFixed(2),
-      balance: Math.max(0, runningBalance).toFixed(2),
-      merchant: transaction.description,
-      category: transaction.type === 'credit' ? 'Income' : 'Expenses'
-    });
   }
   
-  // Sort by date ascending (oldest first)
-  transactions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  
-  // Recalculate balances in chronological order
-  let currentBalance = balance - transactions.reduce((sum, tx) => {
-    return sum + (tx.type === 'credit' ? parseFloat(tx.amount) : -parseFloat(tx.amount));
-  }, 0);
-  
-  transactions.forEach(tx => {
+  // Now work forwards to set correct balances
+  exactTransactions.forEach(tx => {
     if (tx.type === 'credit') {
       currentBalance += parseFloat(tx.amount);
     } else {
       currentBalance -= parseFloat(tx.amount);
     }
-    tx.balance = Math.max(0, currentBalance).toFixed(2);
+    tx.balance = currentBalance.toFixed(2);
   });
   
-  return transactions;
+  return exactTransactions;
 };
 
