@@ -126,47 +126,47 @@ export const generateStatement = async (userData: any, period: string) => {
     // TOP-RIGHT BOI LOGO: x=430, y=40 (user specification)
     // Logo is already part of the template background, no additional overlay needed
     
-    // TOP-RIGHT ACCOUNT INFO: right-aligned, x=420, y=80 (Helvetica Bold 7pt)
+    // TOP-RIGHT ACCOUNT INFO: right-aligned, moved down to proper position
     doc.font('Helvetica-Bold').fontSize(7).fillColor('#000000');
     
     // Account Name (uppercase) - from real account data
     const accountHolder = userData.accountInfo?.accountHolder || 'ACCOUNT HOLDER';
-    doc.text(accountHolder.toUpperCase(), 420, 80, {
+    doc.text(accountHolder.toUpperCase(), 420, 140, {
       width: 150,
       align: 'right'
     });
     
     // Account Number - use real account number from session
     const accountNumber = userData.accountInfo?.accountNumber || '****2091';
-    doc.text(accountNumber, 420, 92, {
+    doc.text(accountNumber, 420, 152, {
       width: 150,
       align: 'right'
     });
     
     // Statement Period (DD MMM YYYY - DD MMM YYYY format) - EXACT from transaction dates
-    doc.text(`${startDateStr} - ${endDateStr}`, 420, 104, {
+    doc.text(`${startDateStr} - ${endDateStr}`, 420, 164, {
       width: 150,
       align: 'right'
     });
     
-    // ACCOUNT SUMMARY SECTION: x=50, y=165 (exact user positioning)
+    // ACCOUNT SUMMARY SECTION: moved down to proper position
     doc.font('Helvetica-Bold').fontSize(6.5).fillColor('#1a5490'); // Blue labels
     
     // Balance labels and values (authentic BOI format)
-    doc.text(`Balance on ${startDate.toLocaleDateString('en-GB')}:`, 50, 165);
-    doc.text('Total money in:', 50, 175);
-    doc.text('Total money out:', 50, 185);
-    doc.text(`Balance on ${endDate.toLocaleDateString('en-GB')}:`, 50, 195);
+    doc.text(`Balance on ${startDate.toLocaleDateString('en-GB')}:`, 50, 220);
+    doc.text('Total money in:', 50, 230);
+    doc.text('Total money out:', 50, 240);
+    doc.text(`Balance on ${endDate.toLocaleDateString('en-GB')}:`, 50, 250);
     
     // Values right-aligned with black text
     doc.font('Helvetica').fontSize(6.5).fillColor('#000000');
-    doc.text(`€${openingBalance.toFixed(2)}`, 50, 165, { width: 150, align: 'right' });
-    doc.text(`€${totalMoneyIn.toFixed(2)}`, 50, 175, { width: 150, align: 'right' });
-    doc.text(`€${totalMoneyOut.toFixed(2)}`, 50, 185, { width: 150, align: 'right' });
-    doc.text(`€${closingBalance.toFixed(2)}`, 50, 195, { width: 150, align: 'right' });
+    doc.text(`€${openingBalance.toFixed(2)}`, 50, 220, { width: 150, align: 'right' });
+    doc.text(`€${totalMoneyIn.toFixed(2)}`, 50, 230, { width: 150, align: 'right' });
+    doc.text(`€${totalMoneyOut.toFixed(2)}`, 50, 240, { width: 150, align: 'right' });
+    doc.text(`€${closingBalance.toFixed(2)}`, 50, 250, { width: 150, align: 'right' });
     
-    // TRANSACTIONS TABLE: start y=220, height spacing 25px each row (user specification)
-    let yPos = 220;
+    // TRANSACTIONS TABLE: start after account summary section
+    let yPos = 290;
     
     // Table Header with exact columns: Date | Description | Withdrawal | Deposit | Balance
     doc.font('Helvetica-Bold').fontSize(6).fillColor('#000000');
@@ -176,7 +176,7 @@ export const generateStatement = async (userData: any, period: string) => {
     doc.text('Deposit', 340, yPos);
     doc.text('Balance', 410, yPos);
     
-    yPos += 25; // 25px spacing as specified
+    yPos += 15; // Better spacing for table rows
     
     // Transaction rows (Helvetica 6pt, light density)
     doc.font('Helvetica').fontSize(6).fillColor('#000000');
@@ -224,7 +224,7 @@ export const generateStatement = async (userData: any, period: string) => {
     
     // ENDING BALANCE: Helvetica-Bold 7pt, right-aligned in blue row (user specification)
     doc.font('Helvetica-Bold').fontSize(7).fillColor('#000000');
-    doc.text(`Ending Balance €${closingBalance.toFixed(2)}`, 345, 580, {
+    doc.text(`Ending Balance €${closingBalance.toFixed(2)}`, 345, 650, {
       width: 250,
       align: 'right'
     });
