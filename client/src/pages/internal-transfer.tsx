@@ -201,7 +201,27 @@ export default function InternalTransfer() {
     // ✅ INTERNAL TRANSFER COMPLETED SUCCESSFULLY - NOW SEND EMAIL CONFIRMATION
     console.log('🔵 INTERNAL TRANSFER COMPLETED - Starting email confirmation process');
     try {
-      const userProfile = UserDataManager.getUserData('userProfile', null);
+      // Try multiple sources for user data
+      let userProfile = UserDataManager.getUserData('userProfile', null);
+      
+      // If userProfile is null, try getting from auth system
+      if (!userProfile) {
+        const bankingUser = localStorage.getItem('bankingUser');
+        if (bankingUser) {
+          try {
+            userProfile = JSON.parse(bankingUser);
+            console.log('User profile found in auth system:', userProfile ? 'YES' : 'NO');
+          } catch (e) {
+            console.log('Failed to parse banking user data');
+          }
+        }
+      }
+      
+      // If still no profile, try UserDataManager's getUserProfile method
+      if (!userProfile) {
+        userProfile = UserDataManager.getUserProfile();
+      }
+      
       console.log('User profile found:', userProfile ? 'YES' : 'NO');
       console.log('User email:', userProfile?.email);
       
