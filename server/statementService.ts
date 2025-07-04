@@ -71,97 +71,90 @@ export async function generateStatementPDF(data: StatementData): Promise<Buffer>
            .text('Account Statement', 50, 55);
       }
 
-      // TOP-RIGHT BLOCK: Account information (under Bank of Ireland logo)
-      // Right-align text in top-right quadrant
-      const topRightX = 400; // Right-aligned positioning
-      const topRightY = 100;  // Under BOI logo
+      // TOP-RIGHT BLOCK: Account information (positioned accurately for BOI template)
+      // Based on authentic BOI statement analysis
+      const topRightX = 320; // Adjusted for proper right-side positioning
+      const topRightY = 150;  // Lower positioning under BOI logo area
 
-      doc.fontSize(10)
+      doc.fontSize(9)
          .fillColor('#000000')
          .font('Helvetica');
 
       // Get last 4 digits of account number for masking
       const lastFourDigits = data.user.accountNumber.slice(-4);
       
-      doc.text(`Account Name: ${data.user.fullName}`, topRightX, topRightY, { align: 'right', width: 180 });
-      doc.text(`Customer Number: ****${lastFourDigits}`, topRightX, topRightY + 15, { align: 'right', width: 180 });
-      doc.text(`Statement Period: ${data.period.startDate} to ${data.period.endDate}`, topRightX, topRightY + 30, { align: 'right', width: 180 });
+      doc.text(`Account Name: ${data.user.fullName}`, topRightX, topRightY, { align: 'left', width: 250 });
+      doc.text(`Customer Number: ****${lastFourDigits}`, topRightX, topRightY + 12, { align: 'left', width: 250 });
+      doc.text(`Statement Period: ${data.period.startDate} to ${data.period.endDate}`, topRightX, topRightY + 24, { align: 'left', width: 250 });
 
-      // ACCOUNT SUMMARY (left side, under "ACCOUNT SUMMARY" title)
-      // Position aligned with blue "ACCOUNT SUMMARY" area
-      const summaryX = 60;  // Left side positioning
-      const summaryY = 280; // Under ACCOUNT SUMMARY title
-      const lineHeight = 16; // Proper spacing
-
-      doc.fontSize(10)
-         .fillColor('#1a5490') // Blue color to match ACCOUNT SUMMARY
-         .font('Helvetica-Bold');
-
-      // Labels in bold blue, values in regular black
-      doc.text(`Balance on ${data.period.startDate}:`, summaryX, summaryY);
-      doc.fillColor('#000000').font('Helvetica').text(`EUR ${data.summary.openingBalance}`, summaryX + 120, summaryY);
-      
-      doc.fillColor('#1a5490').font('Helvetica-Bold').text(`Total money in:`, summaryX, summaryY + lineHeight);
-      doc.fillColor('#000000').font('Helvetica').text(`EUR ${data.summary.totalIn}`, summaryX + 120, summaryY + lineHeight);
-      
-      doc.fillColor('#1a5490').font('Helvetica-Bold').text(`Total money out:`, summaryX, summaryY + (lineHeight * 2));
-      doc.fillColor('#000000').font('Helvetica').text(`EUR ${data.summary.totalOut}`, summaryX + 120, summaryY + (lineHeight * 2));
-      
-      doc.fillColor('#1a5490').font('Helvetica-Bold').text(`Balance on ${data.period.endDate}:`, summaryX, summaryY + (lineHeight * 3));
-      doc.fillColor('#000000').font('Helvetica').text(`EUR ${data.summary.closingBalance}`, summaryX + 120, summaryY + (lineHeight * 3));
-
-      // TRANSACTION TABLE (aligned with green/blue row boxes)
-      // Position to align with the template's transaction table area
-      const tableStartY = 420; // Aligned with template transaction rows
-      const rowHeight = 20;     // Proper row spacing
-      
-      // Column positions to align exactly with template boxes
-      const dateCol = 60;        // Date column
-      const descCol = 150;       // Description column  
-      const withdrawalCol = 320; // Withdrawal column
-      const depositCol = 400;    // Deposit column
-      const balanceCol = 480;    // Running balance column
+      // ACCOUNT SUMMARY (positioned to match authentic BOI statement layout)
+      // Adjusted based on typical BOI statement positioning
+      const summaryX = 50;  // Left margin alignment
+      const summaryY = 250; // Positioned under account summary header
+      const lineHeight = 14; // Tighter spacing for authentic look
 
       doc.fontSize(9)
+         .fillColor('#000000') // Use black text for professional appearance
+         .font('Helvetica');
+
+      // Simple format matching authentic BOI statements
+      doc.text(`Balance on ${data.period.startDate}: EUR ${data.summary.openingBalance}`, summaryX, summaryY);
+      doc.text(`Total money in: EUR ${data.summary.totalIn}`, summaryX, summaryY + lineHeight);
+      doc.text(`Total money out: EUR ${data.summary.totalOut}`, summaryX, summaryY + (lineHeight * 2));
+      doc.text(`Balance on ${data.period.endDate}: EUR ${data.summary.closingBalance}`, summaryX, summaryY + (lineHeight * 3));
+
+      // TRANSACTION TABLE (precisely aligned with BOI template rows)
+      // Adjusted positioning based on authentic BOI statement analysis
+      const tableStartY = 350; // Higher position to match template
+      const rowHeight = 18;     // Tighter row spacing for more transactions
+      
+      // Column positions adjusted for authentic BOI statement alignment
+      const dateCol = 50;        // Date column
+      const descCol = 120;       // Description column  
+      const withdrawalCol = 280; // Withdrawal column (right-aligned)
+      const depositCol = 350;    // Deposit column (right-aligned)
+      const balanceCol = 450;    // Running balance column (right-aligned)
+
+      doc.fontSize(8)
          .fillColor('#000000')
          .font('Helvetica');
 
-      // Render each transaction row aligned with colored boxes
+      // Render each transaction row with authentic BOI formatting
       data.transactions.forEach((transaction, index) => {
         const rowY = tableStartY + (index * rowHeight);
         
         // Skip if we exceed page boundaries
-        if (rowY > 680) return;
+        if (rowY > 650) return;
 
-        // Left-align text, right-align amounts
+        // Left-align text, right-align amounts (authentic BOI style)
         doc.text(transaction.date, dateCol, rowY);
-        doc.text(transaction.description.substring(0, 20), descCol, rowY); // Fit in box
+        doc.text(transaction.description.substring(0, 25), descCol, rowY); // Longer descriptions
         
-        // Only show withdrawal OR deposit per row (not both)
+        // Show withdrawal OR deposit per row (not both) - right-aligned
         if (transaction.withdrawal && transaction.withdrawal !== '0.00') {
-          doc.text(transaction.withdrawal, withdrawalCol, rowY, { align: 'right', width: 70 });
+          doc.text(transaction.withdrawal, withdrawalCol, rowY, { align: 'right', width: 60 });
         }
         
         if (transaction.deposit && transaction.deposit !== '0.00') {
-          doc.text(transaction.deposit, depositCol, rowY, { align: 'right', width: 70 });
+          doc.text(transaction.deposit, depositCol, rowY, { align: 'right', width: 60 });
         }
         
         doc.text(transaction.balance, balanceCol, rowY, { align: 'right', width: 80 });
       });
 
-      // ENDING BALANCE FOOTER (in the final blue row)
-      // Position in the blue footer area to match template design
-      const footerY = 720; // Blue row at bottom
+      // ENDING BALANCE FOOTER (positioned for authentic BOI statement)
+      // Positioned in footer area to match template
+      const footerY = 680; // Adjusted footer position
       
-      doc.fontSize(10)
+      doc.fontSize(9)
          .fillColor('#000000')
          .font('Helvetica-Bold');
 
-      // Right-aligned ending balance matching template style
-      doc.text(`Ending Balance                                    EUR ${data.summary.closingBalance}`, 
-               200, footerY, { 
+      // Right-aligned ending balance in authentic BOI style
+      doc.text(`Ending Balance: EUR ${data.summary.closingBalance}`, 
+               350, footerY, { 
                  align: 'right',
-                 width: 250 
+                 width: 150 
                });
 
       // Finalize the PDF

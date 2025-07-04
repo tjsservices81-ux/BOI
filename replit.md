@@ -95,6 +95,15 @@ This is a comprehensive mobile banking application built as a Progressive Web Ap
 - **Security**: HTTPS required for PWA installation and service worker functionality
 
 ## Changelog
+- July 04, 2025: POSITIONING ACCURACY ENHANCEMENT - Refined PDF field positioning based on authentic BOI statement analysis
+  - Account info repositioned: x=320, y=150 with left alignment for natural text flow
+  - Font size adjusted to 9pt for authentic statement appearance
+  - Account summary repositioned: x=50, y=250 with simplified black text formatting
+  - Transaction table elevated: Start y=350 with tighter 18pt row spacing
+  - Column alignment refined: Date=50, Description=120, Withdrawal=280, Deposit=350, Balance=450
+  - Font size reduced to 8pt for transaction table (authentic statement density)
+  - Ending balance repositioned: y=680 with right-aligned compact formatting
+  - Customer number masking maintained: ****[last 4 digits] format
 - July 04, 2025: NEW BOI TEMPLATE INTEGRATION - Updated PDF generation to use new Bank of Ireland statement template
   - Replaced template image path to use new uploaded BOI template (IMG_1981_1751654672745.jpeg)
   - Precise field positioning: Account info right-aligned in top-right quadrant under BOI logo
