@@ -25,7 +25,7 @@ export async function generateTransferConfirmationPDF(
       console.log('🔵 GENERATING PROFESSIONAL BOI PDF DOCUMENT');
       
       const doc = new PDFDocument({ 
-        margin: 60,
+        margin: 40,
         size: 'A4',
         info: {
           Title: `Transfer Confirmation - ${transferData?.id}`,
@@ -43,64 +43,64 @@ export async function generateTransferConfirmationPDF(
         resolve(pdfBuffer);
       });
 
-      // VISUAL VERIFICATION: Embed Bank of Ireland logo at top-left
+      // CORRECTED: Embed Bank of Ireland logo within proper margins
       const logoPath = path.join(process.cwd(), 'BOI_logo.png');
       let logoAdded = false;
-      let startY = 150; // Increased to ensure logo has space
+      let startY = 120; // Content starts after logo area
       
-      console.log('🔍 VISUAL LOGO CHECK: Loading BOI logo from:', logoPath);
-      console.log('🔍 File exists check:', fs.existsSync(logoPath));
+      console.log('🔧 MARGIN-CORRECTED LOGO: Loading BOI logo from:', logoPath);
+      console.log('🔧 File exists check:', fs.existsSync(logoPath));
       
       try {
         if (fs.existsSync(logoPath)) {
-          console.log('✅ FINAL: BOI_logo.png found, fixing transparency issue...');
+          console.log('✅ MARGIN FIX: BOI_logo.png found, embedding within margins...');
           
-          // Add white background behind logo to fix transparency issue
-          doc.rect(40, 40, 160, 50)
+          // Add white background within proper margins (40px from edge + margin)
+          doc.rect(50, 50, 160, 50)
              .fill('#ffffff');
           
-          // Embed Bank of Ireland logo on white background
-          doc.image(logoPath, 40, 40, { 
+          // Embed Bank of Ireland logo properly positioned within margins
+          doc.image(logoPath, 50, 50, { 
             width: 160
           });
           
           logoAdded = true;
-          startY = 110; // Position content below logo
-          console.log('✅ FINAL: BOI logo embedded with white background at (40,40)');
+          startY = 120; // Content positioned below logo
+          console.log('✅ MARGIN FIX: BOI logo embedded correctly at (50,50) within margins');
           
         } else {
-          console.log('❌ VISUAL ERROR: BOI_logo.png not found at path');
+          console.log('❌ MARGIN ERROR: BOI_logo.png not found at path');
         }
       } catch (error) {
-        console.log('❌ VISUAL ERROR: Logo embedding failed:', (error as Error).message);
+        console.log('❌ MARGIN ERROR: Logo embedding failed:', (error as Error).message);
         console.log('❌ Error stack:', (error as Error).stack);
       }
 
-      // Fallback only if logo completely fails
+      // Fallback with correct positioning
       if (!logoAdded) {
-        console.log('⚠️ VISUAL FALLBACK: Creating text header');
+        console.log('⚠️ MARGIN FALLBACK: Creating text header within margins');
         doc.font('Helvetica-Bold')
            .fontSize(18)
            .fillColor('#1a5490')
-           .text('Bank of Ireland', 40, 50);
-        startY = 85;
+           .text('Bank of Ireland', 50, 60);
+        startY = 95;
       }
 
-      let currentY = startY + 30; // Ensure content is well below logo
+      let currentY = startY + 20; // Proper spacing below logo
 
-      // Main heading - Transfer Confirmation (bold, positioned below logo)
+      // Main heading - Transfer Confirmation (positioned within margins)
       doc.font('Helvetica-Bold')
          .fontSize(22)
          .fillColor('#000000')
-         .text('Transfer Confirmation', 40, currentY);
+         .text('Transfer Confirmation', 50, currentY);
       
       currentY += 40;
 
-      // Professional line separator
+      // Professional line separator (within margins)
       doc.strokeColor('#1a5490')
          .lineWidth(2)
-         .moveTo(40, currentY)
-         .lineTo(555, currentY)
+         .moveTo(50, currentY)
+         .lineTo(545, currentY)
          .stroke();
       
       currentY += 25;
@@ -109,7 +109,7 @@ export async function generateTransferConfirmationPDF(
       doc.font('Helvetica-Bold')
          .fontSize(16)
          .fillColor('#1a5490')
-         .text('Transaction Details', 40, currentY);
+         .text('Transaction Details', 50, currentY);
       
       currentY += 25;
 
@@ -168,13 +168,13 @@ export async function generateTransferConfirmationPDF(
         doc.font('Helvetica-Bold')
            .fontSize(11)
            .fillColor('#333333')
-           .text(detail.label, 60, currentY);
+           .text(detail.label, 70, currentY);
         
         // Value (properly aligned and styled)
         doc.font(detail.bold ? 'Helvetica-Bold' : 'Helvetica')
            .fontSize(detail.bold ? 12 : 11)
            .fillColor(detail.bold ? '#1a5490' : '#000000')
-           .text(detail.value, 180, currentY);
+           .text(detail.value, 190, currentY);
         
         currentY += 18;
       }
