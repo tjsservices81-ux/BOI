@@ -31,6 +31,22 @@
         "dateCreated": "2025-07-03T20:39:18.450Z",
         "isDisabled": false
       }
+    ],
+    [
+      3,
+      {
+        "id": 3,
+        "customerNumber": "BOI789484838",
+        "pin": "000000",
+        "name": "Hahahsha",
+        "email": "snahsj@gmaill.com",
+        "phone": "4845454",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-07-04T10:23:37.479Z",
+        "dateCreated": "2025-07-04T10:23:37.479Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [],
@@ -42,7 +58,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 3,
+    "currentUserId": 4,
     "currentAccountId": 1,
     "currentTransactionId": 1,
     "currentPayeeId": 1,

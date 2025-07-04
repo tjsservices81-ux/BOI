@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useRoute } from "wouter";
-import { ChevronLeft, ArrowUpRight, CreditCard, Building2, Zap, Check, Clock, MapPin, Globe, Share } from "lucide-react";
+import { ChevronLeft, ArrowUpRight, CreditCard, Building2, Zap, Check, Clock, MapPin, Globe, Share, Upload } from "lucide-react";
 import MiniSpendingChart from "../components/MiniSpendingChart";
 import { UserDataManager } from "../utils/userDataManager.ts";
 import { StateManager } from "../utils/stateManager";
@@ -48,23 +48,21 @@ export default function TransactionHistoryWorking() {
       const receiptHtml = generateBankStatementHtml(selectedTransaction);
       console.log('Generated HTML:', receiptHtml.substring(0, 200) + '...');
       
-      // Create a temporary container that's visible for rendering
+      // Create a temporary container for rendering (off-screen)
       const tempContainer = document.createElement('div');
       tempContainer.innerHTML = receiptHtml;
       tempContainer.style.position = 'fixed';
-      tempContainer.style.left = '50%';
-      tempContainer.style.top = '50%';
-      tempContainer.style.transform = 'translate(-50%, -50%)';
+      tempContainer.style.left = '-9999px'; // Off-screen but still rendered
+      tempContainer.style.top = '0px';
       tempContainer.style.background = 'white';
       tempContainer.style.width = '400px';
       tempContainer.style.padding = '20px';
-      tempContainer.style.zIndex = '10000';
-      tempContainer.style.boxShadow = '0 4px 20px rgba(0,0,0,0.3)';
-      tempContainer.style.border = '2px solid #000DFF';
+      tempContainer.style.zIndex = '9999';
+      tempContainer.style.visibility = 'hidden'; // Hidden but still rendered
       document.body.appendChild(tempContainer);
       
-      // Show preview for 2 seconds before capturing
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Wait for fonts and styles to load
+      await new Promise(resolve => setTimeout(resolve, 100));
       
       // Use html2canvas to capture the styled receipt
       const html2canvas = (await import('html2canvas')).default;
@@ -610,7 +608,20 @@ export default function TransactionHistoryWorking() {
                   className="w-8 h-8 bg-[#126987] rounded-full flex items-center justify-center active:scale-95 transition-transform"
                   title="Share Receipt"
                 >
-                  <Share className="w-4 h-4 text-white" />
+                  {/* iOS/Android native share icon - square with arrow pointing up */}
+                  <svg 
+                    className="w-4 h-4 text-white" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  >
+                    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                    <polyline points="16,6 12,2 8,6" />
+                    <line x1="12" y1="2" x2="12" y2="15" />
+                  </svg>
                 </button>
                 <button 
                   onClick={() => setSelectedTransaction(null)}
