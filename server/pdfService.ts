@@ -43,49 +43,70 @@ export async function generateTransferConfirmationPDF(
         resolve(pdfBuffer);
       });
 
-      // Directly embed the Bank of Ireland logo PNG file
+      // VISUAL VERIFICATION: Embed Bank of Ireland logo at top-left
       const logoPath = path.join(process.cwd(), 'BOI_logo.png');
       let logoAdded = false;
-      let startY = 120;
-
-      console.log('🔍 LOGO DEBUG: Attempting to load BOI logo from:', logoPath);
+      let startY = 150; // Increased to ensure logo has space
+      
+      console.log('🔍 VISUAL LOGO CHECK: Loading BOI logo from:', logoPath);
+      console.log('🔍 File exists check:', fs.existsSync(logoPath));
+      
+      // First, add a test rectangle to verify positioning works
+      doc.rect(40, 40, 160, 50)
+         .stroke('#ff0000')
+         .lineWidth(1);
+      console.log('✅ TEST: Red rectangle drawn at logo position for verification');
       
       try {
-        // Check if logo file exists
         if (fs.existsSync(logoPath)) {
-          console.log('✅ LOGO DEBUG: BOI_logo.png file found, embedding...');
+          console.log('✅ VISUAL: BOI_logo.png found, now embedding...');
           
-          // Embed Bank of Ireland logo at top-left corner (exactly as requested)
-          doc.image(logoPath, 40, 40, { width: 160 });
+          // Embed logo with explicit parameters and larger area
+          doc.image(logoPath, 40, 40, { 
+            width: 160,
+            height: 50,
+            fit: [160, 50],
+            align: 'left',
+            valign: 'top'
+          });
+          
           logoAdded = true;
-          startY = 130;
-          console.log('✅ LOGO EMBEDDED: Bank of Ireland logo successfully added to PDF at position (40, 40)');
+          startY = 110; // Position content below logo
+          console.log('✅ VISUAL CONFIRMED: BOI logo embedded at (40,40) with width 160px');
+          
+          // Add a border around logo for verification
+          doc.rect(39, 39, 162, 52)
+             .stroke('#0000ff')
+             .lineWidth(1);
+          console.log('✅ VISUAL: Blue border added around logo for verification');
+          
         } else {
-          console.log('❌ LOGO ERROR: BOI_logo.png file not found at:', logoPath);
+          console.log('❌ VISUAL ERROR: BOI_logo.png not found at path');
         }
-      } catch (logoError) {
-        console.log('❌ LOGO ERROR: Failed to embed logo:', (logoError as Error).message);
+      } catch (error) {
+        console.log('❌ VISUAL ERROR: Logo embedding failed:', (error as Error).message);
+        console.log('❌ Error stack:', (error as Error).stack);
       }
 
-      // Only use text if logo completely fails
+      // Fallback only if logo completely fails
       if (!logoAdded) {
-        console.log('⚠️ FALLBACK: Using text header instead of logo');
+        console.log('⚠️ VISUAL FALLBACK: Creating text header');
         doc.font('Helvetica-Bold')
-           .fontSize(20)
+           .fontSize(18)
            .fillColor('#1a5490')
            .text('Bank of Ireland', 40, 50);
-        startY = 100;
+        startY = 85;
       }
 
-      let currentY = startY + 20; // Proper spacing below logo
+      let currentY = startY + 30; // Ensure content is well below logo
 
-      // Main heading - Transfer Confirmation (bold, properly positioned)
+      // Main heading - Transfer Confirmation (bold, positioned below logo)
       doc.font('Helvetica-Bold')
          .fontSize(22)
          .fillColor('#000000')
          .text('Transfer Confirmation', 40, currentY);
       
-      currentY += 45;
+      currentY += 40;
 
       // Professional line separator
       doc.strokeColor('#1a5490')
