@@ -88,8 +88,20 @@ export async function generateStatementPDF(data: StatementData): Promise<Buffer>
       doc.text(truncatedName.toUpperCase(), accountInfoX, accountInfoY);
       doc.text(`****${lastFourDigits}`, accountInfoX, accountInfoY + 8);
       
-      // Statement period format: DD/MM/YYYY to DD/MM/YYYY
-      doc.text(`${data.period.startDate} to ${data.period.endDate}`, accountInfoX, accountInfoY + 16);
+      // Statement period format: DD MMM YYYY - DD MMM YYYY (authentic BOI style)
+      const formatPeriodDate = (dateStr: string) => {
+        const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+        const parts = dateStr.split('/');
+        if (parts.length === 3) {
+          const monthIndex = parseInt(parts[1]) - 1;
+          return `${parts[0]} ${months[monthIndex]} ${parts[2]}`;
+        }
+        return dateStr;
+      };
+      
+      const startFormatted = formatPeriodDate(data.period.startDate);
+      const endFormatted = formatPeriodDate(data.period.endDate);
+      doc.text(`${startFormatted} - ${endFormatted}`, accountInfoX, accountInfoY + 16);
 
       // ACCOUNT SUMMARY (100% accurate BOI template positioning)
       // Millimeter-perfect alignment with authentic BOI statement summary box

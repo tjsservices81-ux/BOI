@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { FileText, Download, Calendar, ChevronLeft, Check, CreditCard } from 'lucide-react';
 import { UserDataManager } from '@/utils/userDataManager';
+import { ensureTransactionData } from '@/utils/sampleTransactionData';
 
 export default function Statements() {
   const [, navigate] = useLocation();
@@ -93,6 +94,9 @@ export default function Statements() {
         return;
       }
 
+      // Ensure transaction data exists for this account
+      ensureTransactionData(selectedAccountId, selectedAccount.balance);
+      
       // Get transactions for the period and selected account
       const allTransactions = UserDataManager.getUserData('bankTransactions', []);
       const periodTransactions = allTransactions.filter((transaction: any) => {
@@ -102,47 +106,12 @@ export default function Statements() {
         return isInPeriod && isFromSelectedAccount;
       });
 
-      // If no transactions found, create some sample transactions for the demo
-      if (periodTransactions.length === 0) {
-        console.log('No transactions found for account', selectedAccountId, '- creating sample data');
-        
-        const sampleTransactions = [
-          {
-            id: Date.now() + 1,
-            accountId: selectedAccountId,
-            date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-            description: 'PAYPAL TRANSFER',
-            type: 'credit',
-            amount: '250.00',
-            balance: (parseFloat(selectedAccount.balance) - 150).toFixed(2)
-          },
-          {
-            id: Date.now() + 2,
-            accountId: selectedAccountId,
-            date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
-            description: 'TESCO STORES',
-            type: 'debit',
-            amount: '45.67',
-            balance: (parseFloat(selectedAccount.balance) - 195.67).toFixed(2)
-          },
-          {
-            id: Date.now() + 3,
-            accountId: selectedAccountId,
-            date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-            description: 'MONTHLY SALARY',
-            type: 'credit',
-            amount: '2500.00',
-            balance: (parseFloat(selectedAccount.balance) - 195.67 + 2500).toFixed(2)
-          }
-        ];
-        
-        // Save sample transactions for future use
-        const updatedTransactions = [...allTransactions, ...sampleTransactions];
-        UserDataManager.setUserData('bankTransactions', updatedTransactions);
-        
-        // Use sample transactions for this statement
-        periodTransactions.push(...sampleTransactions);
-      }
+      console.log('Statement generation:', {
+        accountId: selectedAccountId,
+        totalTransactions: allTransactions.length,
+        periodTransactions: periodTransactions.length,
+        period: `${formatDate(startDate)} to ${formatDate(endDate)}`
+      });
 
       // Calculate balances
       const openingBalance = parseFloat(selectedAccount.balance) - 

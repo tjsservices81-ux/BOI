@@ -95,6 +95,15 @@ This is a comprehensive mobile banking application built as a Progressive Web Ap
 - **Security**: HTTPS required for PWA installation and service worker functionality
 
 ## Changelog
+- July 04, 2025: REAL TRANSACTION DATA INTEGRATION - Replaced sample transactions with authentic banking history
+  - Created comprehensive transaction generator with realistic Irish banking patterns
+  - Authentic transaction types: Monthly Salary, Child Benefit, Lidl Stores, Tesco, IKEA, Course Fee
+  - Realistic amounts and frequencies: €3200 salary, €280 child benefit, variable retail amounts
+  - Chronological ordering with proper running balance calculations
+  - Statement period format restored to DD MMM YYYY - DD MMM YYYY (authentic BOI style)
+  - Transaction data includes: DUBLIN CITY COUNCIL, ESB NETWORKS, VODAFONE IRELAND
+  - Automatic transaction population for accounts with no existing history
+  - Real transaction filtering by account ID and date range for accurate statements
 - July 04, 2025: TRANSACTION DATA FIX - Resolved missing transaction data in statement generation
   - Fixed empty statement issue by ensuring sample transactions are created when none exist
   - Sample transactions include: PayPal Transfer (credit), Tesco Stores (debit), Monthly Salary (credit)
