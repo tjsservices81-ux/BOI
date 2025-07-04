@@ -751,6 +751,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Test email endpoint
+  app.post("/api/test-email", async (req, res) => {
+    try {
+      const { email, name, amount, recipient, currency } = req.body;
+      
+      const testDetails: TransferConfirmationDetails = {
+        senderName: name || "Test User",
+        recipientName: recipient || "John Smith",
+        amount: amount || "250.00",
+        currency: currency || "£",
+        dateTime: new Date().toLocaleString('en-GB', {
+          dateStyle: 'short',
+          timeStyle: 'short',
+          timeZone: 'Europe/Dublin'
+        }),
+        transactionReference: `TXN${Date.now()}_TEST123`,
+        accountInfo: "Current Account (1234)"
+      };
+      
+      const success = await sendTransferConfirmation(email, testDetails);
+      
+      if (success) {
+        res.json({ success: true, message: "Test email sent successfully" });
+      } else {
+        res.status(500).json({ success: false, message: "Failed to send test email" });
+      }
+    } catch (error) {
+      console.error('Test email error:', error);
+      res.status(500).json({ success: false, message: "Internal server error" });
+    }
+  });
+
   // Get statements
   app.get("/api/statements/:accountId", async (req, res) => {
     try {
