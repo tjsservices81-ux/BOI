@@ -187,7 +187,7 @@ export async function generateTransferConfirmationPDF(
       
       yPos += 30;
 
-      // Transaction ID
+      // Transaction ID (use the actual transaction reference)
       doc.font('Helvetica-Bold')
          .fontSize(12)
          .fillColor('#000000')
@@ -196,7 +196,7 @@ export async function generateTransferConfirmationPDF(
       doc.font('Helvetica')
          .fontSize(12)
          .fillColor('#000000')
-         .text(transferData?.id?.toString() || 'N/A', rightCol, yPos);
+         .text(transferData?.id?.toString() || transactionReference, rightCol, yPos);
       
       yPos += 50;
 
