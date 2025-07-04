@@ -1,5 +1,6 @@
 /**
  * Email service for sending transfer confirmations and notifications
+ * Uses the same SMTP configuration as the OTC service
  */
 import nodemailer from 'nodemailer';
 
@@ -19,18 +20,27 @@ export interface TransferConfirmationDetails {
   accountInfo?: string;
 }
 
-// Create SMTP transporter using environment credentials
+// Create SMTP transporter using the same configuration as OTC service
 const createTransporter = () => {
   try {
-    return nodemailer.createTransport({
+    const emailConfig = {
       host: process.env.SMTP_HOST,
-      port: 587,
-      secure: false, // Use TLS
+      port: parseInt(process.env.SMTP_PORT || '587'),
+      secure: process.env.SMTP_PORT === '465', // Use secure for port 465
       auth: {
         user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
+        pass: process.env.SMTP_PASS
       },
-    });
+      tls: {
+        rejectUnauthorized: false
+      }
+    };
+
+    // Only initialize if SMTP credentials are provided
+    if (emailConfig.host && emailConfig.auth.user && emailConfig.auth.pass) {
+      return nodemailer.createTransport(emailConfig);
+    }
+    return null;
   } catch (error) {
     console.error('Failed to create email transporter:', error);
     return null;
@@ -38,26 +48,51 @@ const createTransporter = () => {
 };
 
 /**
- * Send email notification - for now logging detailed email content for testing
- * When proper SMTP is configured, this will send actual emails
+ * Send email using the same SMTP configuration as the OTC service
  */
 export async function sendEmail(to: string, subject: string, body: string): Promise<boolean> {
-  console.log('📧 EMAIL NOTIFICATION SYSTEM');
-  console.log('='.repeat(60));
-  console.log(`📬 TO: ${to}`);
-  console.log(`📋 SUBJECT: ${subject}`);
-  console.log('📄 EMAIL CONTENT:');
-  console.log(body);
-  console.log('='.repeat(60));
+  console.log('📧 SENDING EMAIL NOTIFICATION');
+  console.log(`To: ${to}`);
+  console.log(`Subject: ${subject}`);
   
-  // For production, implement proper SMTP here
-  // For now, detailed logging serves as email confirmation
+  const transporter = createTransporter();
   
-  console.log('✅ EMAIL LOGGED SUCCESSFULLY');
-  console.log(`📧 Email notification prepared for: ${to}`);
-  console.log('🔧 To enable actual email delivery, configure proper SMTP credentials');
-  
-  return true; // Return true since logging succeeded
+  if (!transporter) {
+    console.log('SMTP not configured. Email would be sent to:', { to, subject });
+    console.log('Email content:');
+    console.log(body);
+    return false;
+  }
+
+  try {
+    const mailOptions = {
+      from: 'bankofireland2007@gmail.com', // Use the same sender as OTC service
+      to: to,
+      subject: subject,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background-color: #126987; color: white; padding: 20px; border-radius: 8px 8px 0 0;">
+            <h2 style="margin: 0; font-size: 24px;">Bank of Ireland</h2>
+            <p style="margin: 5px 0 0 0; font-size: 16px;">${subject}</p>
+          </div>
+          
+          <div style="background-color: #f8f9fa; padding: 30px; border: 1px solid #dee2e6; border-top: none; border-radius: 0 0 8px 8px;">
+            ${body.replace(/\n/g, '<br>')}
+          </div>
+        </div>
+      `,
+      text: body
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log(`✅ Transfer confirmation email sent successfully to: ${to}`);
+    return true;
+  } catch (error) {
+    console.error('Failed to send transfer confirmation email:', error);
+    console.log('Email content that failed to send:');
+    console.log(body);
+    return false;
+  }
 }
 
 /**
