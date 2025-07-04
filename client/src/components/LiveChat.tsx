@@ -469,12 +469,12 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       category: 'card_issues',
       triggers: ['unblock card', 'card blocked', 'card not working', 'blocked card', 'card issue', 'lost card', 'stolen card', 'replacement card', 'new card'],
       responses: [
-        "I can help you with your card issue right away. To unblock your card, go to Profile > Admin Panel and tap 'Unblock Card'. Your card will be available immediately for transactions.",
-        "No worries at all, let me sort that card problem for you. You can unblock your card through Profile > Admin Panel > 'Unblock Card'. It takes effect instantly, so you'll be able to use it straight away.",
-        "I completely understand how frustrating that must be! The quickest way to unblock it is through your Profile > Admin Panel. Look for the 'Unblock Card' option and it'll be working again in seconds.",
-        "Right, I'll walk you through unblocking your card. Navigate to Profile > Admin Panel and select 'Unblock Card' for instant activation. If you're still having issues after that, just let me know.",
-        "Alright, let me help with that card issue. Head to Profile > Admin Panel and you'll see the 'Unblock Card' option there. Once you tap it, your card should be good to go immediately.",
-        "For your security, your card has been blocked, but I can help you get it working again. Go to Profile > Admin Panel and select 'Unblock Card' - that'll restore full access right away."
+        "I can assist you with your card issue. To unblock your card, please navigate to Profile > Admin Panel and select 'Unblock Card'. This will restore access immediately for transactions.",
+        "I'll help you resolve your card issue. Please access Profile > Admin Panel and select 'Unblock Card'. This will reactivate your card instantly.",
+        "I can help you reactivate your card. Navigate to Profile > Admin Panel and select the 'Unblock Card' option for immediate restoration of service.",
+        "To resolve your card issue, please navigate to Profile > Admin Panel and select 'Unblock Card' for instant activation. Please contact us if you need further assistance.",
+        "I can help you with your card access. Please go to Profile > Admin Panel where you'll find the 'Unblock Card' option for immediate reactivation.",
+        "Your card can be reactivated immediately. Please navigate to Profile > Admin Panel and select 'Unblock Card' to restore full access."
       ]
     },
     {
@@ -482,12 +482,12 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       category: 'transfers',
       triggers: ['transfer money', 'send money', 'make transfer', 'how to transfer', 'payment', 'pending transfer', 'international transfer', 'swift code', 'iban transfer', 'uk transfer', 'transfer limit', 'transfer fee'],
       responses: [
-        "Absolutely, I'll help you with transfers. For UK transfers, tap 'Payments' then 'UK Transfer' - these typically take up to 24 hours. For SEPA zone transfers, use 'SEPA Transfer' which usually takes 1-2 working days. What type of transfer are you looking to make?",
-        "I can definitely help with that transfer. Use the 'Payments' section at the bottom - UK Transfer for domestic payments (up to 24 hours) or SEPA Transfer for transfers within the SEPA zone (small fee applies, 1-2 days). Are you sending money within the UK or to the SEPA zone?",
-        "Right, let me walk you through the transfer options. Go to 'Payments' at the bottom of your screen. UK Transfer handles domestic payments in up to 24 hours, while SEPA Transfer covers payments within the SEPA zone with competitive exchange rates. Which country are you sending to?",
-        "No worries, I'll explain the transfer process. In 'Payments', you'll see UK Transfer for domestic payments (up to 24 hours) and SEPA Transfer for transfers within the SEPA zone (£2-15 fee depending on amount, arrives 1-2 working days). What's the destination for your transfer?",
-        "Let me help you sort that transfer. The 'Payments' section has two options - UK Transfer for domestic payments (allow up to 24 hours) or SEPA Transfer for transfers within the SEPA zone (typically 1-2 days with a small fee). Where are you sending the money?",
-        "Alright, I can guide you through the transfer process. Head to 'Payments' where you'll find UK Transfer for domestic payments (up to 24 hours processing) and SEPA Transfer for transfers within the SEPA zone. What type of payment are you making?"
+        "I can assist you with transfer services. Please navigate to 'Payments' for UK Transfer (up to 24 hours processing) or SEPA Transfer (1-2 business days). Which type of transfer do you require?",
+        "I'll help you with your transfer requirements. Access the 'Payments' section for UK Transfer (domestic payments, up to 24 hours) or SEPA Transfer (SEPA zone payments, 1-2 business days). What is your destination?",
+        "Transfer services are available through 'Payments'. UK Transfer processes domestic payments in up to 24 hours, while SEPA Transfer handles SEPA zone payments in 1-2 business days. Which service do you need?",
+        "I can guide you through the transfer process. In 'Payments', you'll find UK Transfer for domestic payments (up to 24 hours) and SEPA Transfer for SEPA zone payments (1-2 business days). What's your transfer destination?",
+        "Transfer assistance is available through the 'Payments' section. UK Transfer for domestic payments (up to 24 hours) or SEPA Transfer for SEPA zone payments (1-2 business days). Where are you sending funds?",
+        "I can help you with transfer services. Navigate to 'Payments' for UK Transfer (domestic payments, up to 24 hours) and SEPA Transfer (SEPA zone payments, 1-2 business days). What type of transfer do you need?"
       ]
     },
     {
@@ -495,9 +495,9 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       category: 'account_info',
       triggers: ['check balance', 'account balance', 'how much money', 'balance', 'statement', 'iban', 'sort code', 'account number', 'account details', 'routing number'],
       responses: [
-        "Your account balances are displayed right on the main dashboard when you log in. For detailed statements or account numbers, just tap on any account to see the full breakdown including IBAN and sort code.",
-        "Brilliant, all your balances are visible on the homepage dashboard. If you need your IBAN, sort code, or detailed statements, tap on the specific account and you'll find all those details there.",
-        "Perfect! You can see all your account balances on the main screen. For account numbers, IBAN details, or monthly statements, just tap the account you're interested in - everything's there.",
+        "Your account balances are displayed on the main dashboard. For detailed statements, account numbers, IBAN, and sort codes, please select the specific account.",
+        "Account balances are visible on the main dashboard. For IBAN, sort code, or detailed statements, please select the relevant account for complete information.",
+        "Account information is available on the main dashboard. For account numbers, IBAN details, or statements, please select the account you need information for.",
         "Right, your current balances are shown on the dashboard. Need your account details like IBAN or sort code? Tap on any account and you'll see the full account information plus transaction history.",
         "Let me help you with that. Your balances appear on the main dashboard, and for specific account details like IBAN or sort code, simply tap on the account to view all the information.",
         "No worries at all! All account balances are on your homepage. For detailed statements or account numbers, tap any account and you'll get the complete breakdown including IBAN and sort codes."
@@ -890,14 +890,14 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     // Card-related responses
     if (message.includes('card') || message.includes('blocked') || message.includes('unblock')) {
       const cardResponses: { [key: string]: string[] } = {
-        'Emma': ["I can definitely help with your card! To unblock it, just go to Profile > Admin Panel and tap 'Unblock Card' - it'll work right away! 😊"],
-        'Zoe': ["Card blocked? Shocking. Go to Profile > Admin Panel, hit 'Unblock Card' and voilà - magic happens."],
-        'Liam': ["card blocked? profile > admin panel > unblock card. done."],
-        'Rachel': ["Let me... help you... with that card... Go to... Profile... then Admin Panel... and tap... Unblock Card..."],
-        'Sarah': ["Oh no! Don't worry at all - I'll get your card sorted immediately! Just pop over to Profile > Admin Panel and you'll see 'Unblock Card' right there! It'll be working perfectly in seconds!"],
+        'Emma': ["I can assist you with your card issue. To unblock your card, please navigate to Profile > Admin Panel and select 'Unblock Card'. This will restore access immediately."],
+        'Zoe': ["Card blocked? Right. Go to Profile > Admin Panel, select 'Unblock Card' and it will be reactivated immediately."],
+        'Liam': ["card issue: profile > admin panel > unblock card. immediate access."],
+        'Rachel': ["I can... help you... with your card... Please go to... Profile... then Admin Panel... and select... Unblock Card..."],
+        'Sarah': ["I'll help you resolve your card issue right away. Please navigate to Profile > Admin Panel where you'll find the 'Unblock Card' option. This will restore full functionality immediately."],
         'James': ["I shall assist you with your card matter. Please navigate to Profile > Admin Panel and select 'Unblock Card' for immediate resolution."],
-        'Connor': ["Card trouble? 😅 No worries! Head to Profile > Admin Panel and hit 'Unblock Card'! 🔓✨ You'll be good to go!"],
-        'Sophie': ["OMG your card! 💳 Don't worry hun, just go to Profile > Admin Panel and tap 'Unblock Card'! It'll be working again super quick! 💕"]
+        'Connor': ["Card issue? I can help! Navigate to Profile > Admin Panel and select 'Unblock Card' for immediate access restoration."],
+        'Sophie': ["I'll help you with your card right away! Please go to Profile > Admin Panel and select 'Unblock Card' for immediate reactivation."]
       };
       const responses = cardResponses[agentName] || cardResponses['Emma'];
       return responses[Math.floor(Math.random() * responses.length)];
@@ -906,12 +906,12 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     // Transfer-related responses
     if (message.includes('transfer') || message.includes('payment') || message.includes('send')) {
       const transferResponses: { [key: string]: string[] } = {
-        'Emma': ["For transfers, just tap 'Payments' at the bottom! UK Transfer takes up to 24 hours, SEPA Transfer is 1-2 days. Which are you looking to do?"],
-        'Zoe': ["Transfers, huh? Revolutionary. Hit 'Payments', pick UK Transfer or SEPA Transfer. One's domestic, one's not. Figure it out."],
+        'Emma': ["I can assist you with transfer services. Please navigate to 'Payments' where you'll find UK Transfer (up to 24 hours processing) and SEPA Transfer (1-2 business days). Which type of transfer do you require?"],
+        'Zoe': ["Transfer options are in 'Payments'. UK Transfer for domestic transactions, SEPA Transfer for European payments. Choose accordingly."],
         'James': ["I shall guide you through the transfer process. Access 'Payments' and select either UK Transfer for domestic transactions or SEPA Transfer for European payments."],
-        'Liam': ["payments > uk transfer (24hrs) or sepa transfer (1-2 days). where u sending?"],
-        'Sarah': ["Absolutely! I'm so excited to help with your transfer! Go to 'Payments' and you'll see UK Transfer (up to 24 hours) or SEPA Transfer (1-2 days). Which country are you sending to? I want to make sure we get this perfect for you!"],
-        'Connor': ["Transfer time! 💸 Check out 'Payments' for UK Transfer (24hrs) or SEPA Transfer (1-2 days)! ⏰ Where's the money going? 🌍"]
+        'Liam': ["payments > uk transfer (24hrs) or sepa transfer (1-2 days). destination?"],
+        'Sarah': ["I'll help you with your transfer requirements. Please access 'Payments' where you'll find UK Transfer (up to 24 hours) and SEPA Transfer (1-2 business days). Which destination are you sending to?"],
+        'Connor': ["Transfer assistance available in 'Payments' section. UK Transfer (24hrs processing) or SEPA Transfer (1-2 business days). What's your destination?"]
       };
       const responses = transferResponses[agentName] || transferResponses['Emma'];
       return responses[Math.floor(Math.random() * responses.length)];
@@ -920,12 +920,12 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     // Balance/account info responses
     if (message.includes('balance') || message.includes('account') || message.includes('statement')) {
       const balanceResponses: { [key: string]: string[] } = {
-        'Emma': ["Your balances are right on the main dashboard! For detailed info like IBAN or statements, just tap any account to see everything."],
-        'Zoe': ["Balance? It's literally on the front page. Tap an account for the thrilling details like IBAN and statements."],
+        'Emma': ["Your account balances are displayed on the main dashboard. For detailed information including IBAN, sort codes, or statements, please select the specific account."],
+        'Zoe': ["Balance information is on the main dashboard. Select an account for detailed information including IBAN and statements."],
         'James': ["Your account balances are displayed prominently on the main dashboard. For comprehensive account details, simply select the relevant account."],
-        'Liam': ["balance = homepage. tap account for details."],
-        'Sarah': ["Perfect question! Your balances are beautifully displayed right on your main dashboard! And if you need any specific details like your IBAN or statements, just tap on whichever account you're interested in - everything's there waiting for you!"],
-        'Connor': ["Balance check! 📊 It's all on your homepage! Tap any account for the full details! 💰✨"]
+        'Liam': ["balance = dashboard. tap account for details."],
+        'Sarah': ["Your account balances are prominently displayed on your main dashboard. For specific details such as IBAN or statements, please select the account you're interested in."],
+        'Connor': ["Balance information is available on your main dashboard. Select any account for detailed information including IBAN and statement access."]
       };
       const responses = balanceResponses[agentName] || balanceResponses['Emma'];
       return responses[Math.floor(Math.random() * responses.length)];
