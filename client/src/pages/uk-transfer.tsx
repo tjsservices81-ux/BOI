@@ -4,6 +4,12 @@ import { ChevronLeft, Info, Check, CreditCard, Building2, Building, Plus, X } fr
 import barclaysIcon from "@assets/IMG_1985_1751646296833.png";
 import lloydsIcon from "@assets/IMG_1986_1751646563662.png";
 import tsbIcon from "@assets/IMG_1987_1751646758072.png";
+import nationwideIcon from "@assets/IMG_1988_1751647270547.png";
+import natwestIcon from "@assets/IMG_1991_1751647281263.jpeg";
+import hsbcIcon from "@assets/IMG_1992_1751647291682.webp";
+import bankOfScotlandIcon from "@assets/IMG_1993_1751647303161.png";
+import monzoIcon from "@assets/IMG_1995_1751647342658.png";
+import starlingIcon from "@assets/IMG_1996_1751647366865.png";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -74,6 +80,24 @@ const getBankIcon = (bankName: string): string | undefined => {
   }
   if (bankName === 'TSB Bank') {
     return tsbIcon;
+  }
+  if (bankName === 'Nationwide') {
+    return nationwideIcon;
+  }
+  if (bankName === 'NatWest') {
+    return natwestIcon;
+  }
+  if (bankName === 'HSBC') {
+    return hsbcIcon;
+  }
+  if (bankName === 'Bank of Scotland') {
+    return bankOfScotlandIcon;
+  }
+  if (bankName === 'Monzo') {
+    return monzoIcon;
+  }
+  if (bankName === 'Starling Bank') {
+    return starlingIcon;
   }
   return undefined;
 };
@@ -868,7 +892,13 @@ export default function UkTransfer() {
                       <img 
                         src={getBankIcon(identifiedBank)!} 
                         alt={`${identifiedBank} logo`}
-                        className={`mr-2 object-contain ${identifiedBank === 'TSB Bank' ? 'w-8 h-5' : 'w-4 h-4'}`}
+                        className={`mr-2 object-contain ${
+                          identifiedBank === 'TSB Bank' ? 'w-8 h-5' : 
+                          identifiedBank === 'Nationwide' ? 'w-5 h-5' : 
+                          identifiedBank === 'Monzo' ? 'w-5 h-5' : 
+                          identifiedBank === 'Starling Bank' ? 'w-5 h-5' : 
+                          'w-4 h-4'
+                        }`}
                       />
                     ) : (
                       <Building className="w-4 h-4 text-green-600 mr-2" />
