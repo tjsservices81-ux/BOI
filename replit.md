@@ -122,6 +122,7 @@ The application implements a sophisticated device-specific access control mechan
 
 ## Changelog
 
+- July 4, 2025. Fixed compilation error in transaction history - removed duplicate `downloadImage` function declaration
 - June 24, 2025. Implemented complete BOI access control system with device-specific limits
 - June 23, 2025. Initial setup
 
