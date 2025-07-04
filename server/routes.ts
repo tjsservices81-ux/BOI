@@ -992,6 +992,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin endpoint for generating access codes (no auth required for admin operations)
+  app.post("/api/admin/generate-codes", async (req, res) => {
+    try {
+      const codeGenerationSchema = z.object({
+        count: z.number().min(1).max(20).default(1),
+        issuedBy: z.string().default('System Admin')
+      });
+
+      const { count, issuedBy } = codeGenerationSchema.parse(req.body);
+      const codes = [];
+      
+      for (let i = 0; i < count; i++) {
+        // Generate BOI + 6 random digits
+        const randomDigits = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+        const accessCode = `BOI${randomDigits}`;
+        
+        // Store access code in database with device-specific limits
+        await db.set(`access_code_${accessCode}`, {
+          code: accessCode,
+          valid: true,
+          createdAt: new Date().toISOString(),
+          issuedBy: issuedBy,
+          usageCount: {
+            ios: 0,
+            android: 0,
+            other: 0
+          },
+          totalUsage: 0,
+          usesRemaining: 1, // Will be dynamically calculated per device
+          revokedAt: null
+        });
+        
+        codes.push({
+          code: accessCode,
+          usesRemaining: 'Device-specific (iOS/Android: 2, Other: 1)',
+          createdAt: new Date().toISOString(),
+          status: 'Active'
+        });
+        
+        console.log(`✅ NEW ACCESS CODE CREATED: ${accessCode} by ${issuedBy}`);
+      }
+      
+      res.json({ 
+        success: true, 
+        codes: codes,
+        message: `${count} access code(s) generated successfully`
+      });
+    } catch (error) {
+      console.error('Code generation failed:', error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid request format" });
+      }
+      res.status(500).json({ message: "Failed to generate access codes" });
+    }
+  });
+
   // OTC validation endpoint
   app.post("/api/admin/validate-otc", async (req, res) => {
     try {
