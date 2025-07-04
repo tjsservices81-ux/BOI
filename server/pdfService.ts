@@ -43,81 +43,76 @@ export async function generateTransferConfirmationPDF(
         resolve(pdfBuffer);
       });
 
-      // Add the actual Bank of Ireland logo at top left
-      const logoPath = path.join(process.cwd(), 'attached_assets', 'IMG_1957_1751635910952.webp');
+      // Embed the authentic Bank of Ireland logo at top left corner
+      const logoPath = path.join(process.cwd(), 'attached_assets', 'IMG_1957_1751636332135.webp');
       let logoAdded = false;
       let startY = 80;
 
-      // First try the uploaded authentic BOI logo
+      // Try the latest uploaded authentic BOI logo first
       try {
         if (fs.existsSync(logoPath)) {
-          // Add authentic BOI logo at top left with proper sizing
-          doc.image(logoPath, 60, 60, { width: 150, height: 45 });
+          // Embed authentic BOI logo inline at top left (like real BOI documents)
+          doc.image(logoPath, 50, 50, { width: 160, height: 48 });
           logoAdded = true;
-          startY = 130;
-          console.log('✅ Authentic Bank of Ireland logo embedded in PDF');
+          startY = 120;
+          console.log('✅ Authentic Bank of Ireland logo embedded inline in PDF');
         }
       } catch (logoError) {
-        console.log('⚠️ Primary logo failed, trying PNG alternatives...');
+        console.log('⚠️ Primary logo failed, trying alternatives...');
         
-        // Try PNG alternatives if webp fails
-        const pngOptions = [
+        // Try backup logo files
+        const backupLogos = [
+          path.join(process.cwd(), 'attached_assets', 'IMG_1957_1751635910952.webp'),
           path.join(process.cwd(), 'BOI_logo.png'),
-          path.join(process.cwd(), 'boi_app_icon.png'),
-          path.join(process.cwd(), 'client', 'public', 'icons', 'boi-icon-192.png')
+          path.join(process.cwd(), 'boi_app_icon.png')
         ];
 
-        for (const pngPath of pngOptions) {
+        for (const backupPath of backupLogos) {
           try {
-            if (fs.existsSync(pngPath)) {
-              doc.image(pngPath, 60, 60, { width: 150, height: 45 });
+            if (fs.existsSync(backupPath)) {
+              doc.image(backupPath, 50, 50, { width: 160, height: 48 });
               logoAdded = true;
-              startY = 130;
-              console.log('✅ BOI logo embedded from PNG:', pngPath);
+              startY = 120;
+              console.log('✅ BOI logo embedded from backup:', backupPath);
               break;
             }
-          } catch (pngError) {
+          } catch (backupError) {
             continue;
           }
         }
       }
 
-      // Only use text fallback if absolutely no logo works
+      // Minimal text fallback only if all logo attempts fail
       if (!logoAdded) {
         doc.font('Helvetica-Bold')
-           .fontSize(24)
-           .fillColor('#003366')
-           .text('Bank of Ireland', 60, 60);
+           .fontSize(18)
+           .fillColor('#1a5490')
+           .text('Bank of Ireland', 50, 60);
         startY = 100;
-        console.log('⚠️ Using text header as logo fallback');
+        console.log('⚠️ Using minimal text header as final fallback');
       }
 
-      let currentY = startY + 20; // Add space below logo
+      let currentY = startY + 30; // Professional spacing below logo
 
-      // Main heading - Transfer Confirmation
+      // Main heading - Transfer Confirmation (matching real BOI documents)
       doc.font('Helvetica-Bold')
-         .fontSize(22)
-         .fillColor('#003366')
-         .text('Transfer Confirmation', 60, currentY);
+         .fontSize(20)
+         .fillColor('#000000')
+         .text('Transfer Confirmation', 50, currentY);
+      
+      currentY += 50;
+
+      // Transaction Details section in boxed layout (like real BOI)
+      doc.rect(50, currentY, 495, 25)
+         .fillAndStroke('#f5f5f5', '#1a5490')
+         .lineWidth(1);
+
+      doc.font('Helvetica-Bold')
+         .fontSize(14)
+         .fillColor('#1a5490')
+         .text('Transaction Details', 60, currentY + 7);
       
       currentY += 40;
-
-      // Add a professional line separator
-      doc.strokeColor('#003366')
-         .lineWidth(2)
-         .moveTo(60, currentY)
-         .lineTo(535, currentY)
-         .stroke();
-      
-      currentY += 25;
-
-      // Transaction Details section header
-      doc.font('Helvetica-Bold')
-         .fontSize(16)
-         .fillColor('#003366')
-         .text('Transaction Details', 60, currentY);
-      
-      currentY += 25;
 
       // Determine transfer type for proper formatting
       const isUKTransfer = transferData?.paymentMethod === 'UK Transfer' || 
@@ -168,66 +163,74 @@ export async function generateTransferConfirmationPDF(
         { label: 'Unique Reference:', value: `BOI-${transferData?.id}-${isUKTransfer ? 'UK' : isSEPATransfer ? 'SEPA' : 'INT'}`, bold: false }
       );
 
-      // Render details in clean, professional layout
+      // Render transaction details exactly like real BOI confirmations
       for (const detail of transactionDetails) {
-        // Label (bold, left-aligned)
+        // Label (bold, consistent styling)
         doc.font('Helvetica-Bold')
-           .fontSize(11)
-           .fillColor('#333333')
-           .text(detail.label, 80, currentY, { width: 140, align: 'left' });
+           .fontSize(10)
+           .fillColor('#000000')
+           .text(detail.label, 70, currentY, { width: 120, align: 'left' });
         
-        // Value (regular or bold for amount)
+        // Value (regular or bold for amount, proper alignment)
         doc.font(detail.bold ? 'Helvetica-Bold' : 'Helvetica')
-           .fontSize(detail.bold ? 12 : 11)
-           .fillColor(detail.bold ? '#003366' : '#000000')
-           .text(detail.value, 220, currentY, { width: 300, align: 'left' });
+           .fontSize(detail.bold ? 11 : 10)
+           .fillColor(detail.bold ? '#1a5490' : '#000000')
+           .text(detail.value, 200, currentY, { width: 320, align: 'left' });
         
-        currentY += 18;
+        currentY += 16;
       }
 
-      currentY += 30;
+      currentY += 25;
 
-      // Add separator line
-      doc.strokeColor('#dddddd')
+      // Separator line (like real BOI documents)
+      doc.strokeColor('#cccccc')
          .lineWidth(1)
-         .moveTo(60, currentY)
-         .lineTo(535, currentY)
+         .moveTo(50, currentY)
+         .lineTo(545, currentY)
          .stroke();
-      
-      currentY += 25;
-
-      // Security warning - Important notice
-      doc.font('Helvetica-Bold')
-         .fontSize(11)
-         .fillColor('#cc0000')
-         .text('If you did not authorise this payment, contact 1800 123 456 immediately.', 
-               60, currentY, { align: 'left' });
-      
-      currentY += 25;
-
-      // Automated message
-      doc.font('Helvetica')
-         .fontSize(10)
-         .fillColor('#666666')
-         .text('This is an automated confirmation from Bank of Ireland. Do not reply.', 
-               60, currentY, { align: 'left' });
       
       currentY += 20;
 
+      // Red security warning (exactly like real BOI)
       doc.font('Helvetica-Bold')
-         .fontSize(11)
-         .fillColor('#003366')
-         .text('Thank you for banking with Bank of Ireland.', 
-               60, currentY, { align: 'left' });
+         .fontSize(10)
+         .fillColor('#cc0000')
+         .text('If you did not authorise this payment, contact 1800 123 456 immediately.', 
+               50, currentY);
+      
+      currentY += 20;
+
+      // Grey automated message line (like real BOI)
+      doc.font('Helvetica')
+         .fontSize(9)
+         .fillColor('#777777')
+         .text('This is an automated confirmation from Bank of Ireland. Please retain this document for your records.', 
+               50, currentY);
       
       currentY += 25;
 
-      // Final footer
+      // Blue footer section (matching real BOI style)
+      doc.rect(50, currentY, 495, 35)
+         .fillAndStroke('#1a5490', '#1a5490');
+
+      doc.font('Helvetica-Bold')
+         .fontSize(12)
+         .fillColor('#ffffff')
+         .text('Thank you for banking with Bank of Ireland', 60, currentY + 8);
+      
       doc.font('Helvetica')
-         .fontSize(10)
-         .fillColor('#333333')
-         .text('BOI Customer Service | www.bankofireland.com', 
-               60, currentY, { align: 'left' });
+         .fontSize(9)
+         .fillColor('#ffffff')
+         .text('BOI Customer Service | www.bankofireland.com | 1800 123 456', 60, currentY + 22);
+
+      currentY += 50;
+
+      // Small grey generation info (like real BOI documents)
+      doc.font('Helvetica')
+         .fontSize(8)
+         .fillColor('#999999')
+         .text(`Generated: ${new Date().toLocaleDateString('en-IE')} | Ref: ${transferData?.id || 'N/A'}`, 
+               50, currentY, { align: 'left' });
 
       doc.end();
     } catch (error) {
