@@ -10,17 +10,8 @@ import { formatCurrency, getUserCurrency, type Currency } from "../utils/currenc
 
 const ibanTransferSchema = z.object({
   recipientName: z.string().min(2, "Recipient name is required"),
-  iban: z.string().min(15, "Valid IBAN required").refine((val) => {
-    // Remove spaces and convert to uppercase for validation
-    const cleanIban = val.replace(/\s/g, '').toUpperCase();
-    // Basic IBAN format: 2 letters (country) + 2 digits (check) + up to 30 alphanumeric characters
-    return /^[A-Z]{2}[0-9]{2}[A-Z0-9]{1,30}$/.test(cleanIban) && cleanIban.length >= 15 && cleanIban.length <= 34;
-  }, "Invalid IBAN format"),
-  bicCode: z.string().min(8, "Valid BIC code required").refine((val) => {
-    // BIC format: 8 or 11 characters (letters and numbers)
-    const cleanBic = val.replace(/\s/g, '').toUpperCase();
-    return /^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/.test(cleanBic);
-  }, "Invalid BIC format"),
+  iban: z.string().min(1, "IBAN is required"),
+  bicCode: z.string().min(1, "BIC code is required"),
   amount: z.string().min(1, "Amount is required"),
   reference: z.string().min(1, "Reference is required"),
   fromAccount: z.string().min(1, "Please select an account")
