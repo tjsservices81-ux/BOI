@@ -43,47 +43,51 @@ export async function generateTransferConfirmationPDF(
         resolve(pdfBuffer);
       });
 
-      // CORRECTED: Embed Bank of Ireland logo within proper margins
+      // RENDER ORDER FIX: Embed logo FIRST before any other content
       const logoPath = path.join(process.cwd(), 'BOI_logo.png');
       let logoAdded = false;
-      let startY = 120; // Content starts after logo area
+      let startY = 120;
       
-      console.log('🔧 MARGIN-CORRECTED LOGO: Loading BOI logo from:', logoPath);
-      console.log('🔧 File exists check:', fs.existsSync(logoPath));
+      console.log('🔧 RENDER ORDER FIX: Processing logo first...');
       
+      // Step 1: Render white background rectangle
+      doc.rect(50, 50, 160, 50)
+         .fill('#ffffff')
+         .stroke('#dddddd');  // Add subtle border for visibility
+      
+      // Step 2: Attempt logo embedding with error handling
       try {
         if (fs.existsSync(logoPath)) {
-          console.log('✅ MARGIN FIX: BOI_logo.png found, embedding within margins...');
+          console.log('✅ RENDER FIX: Embedding logo immediately after background...');
           
-          // Add white background within proper margins (40px from edge + margin)
-          doc.rect(50, 50, 160, 50)
-             .fill('#ffffff');
-          
-          // Embed Bank of Ireland logo properly positioned within margins
+          // Force immediate logo rendering
           doc.image(logoPath, 50, 50, { 
-            width: 160
+            width: 160,
+            height: 50
           });
           
           logoAdded = true;
-          startY = 120; // Content positioned below logo
-          console.log('✅ MARGIN FIX: BOI logo embedded correctly at (50,50) within margins');
+          console.log('✅ RENDER FIX: Logo rendered in correct sequence');
           
         } else {
-          console.log('❌ MARGIN ERROR: BOI_logo.png not found at path');
+          console.log('❌ RENDER ERROR: Logo file not found');
         }
       } catch (error) {
-        console.log('❌ MARGIN ERROR: Logo embedding failed:', (error as Error).message);
-        console.log('❌ Error stack:', (error as Error).stack);
+        console.log('❌ RENDER ERROR: Logo embedding failed:', (error as Error).message);
       }
 
-      // Fallback with correct positioning
+      // Step 3: Fallback text if logo fails
       if (!logoAdded) {
-        console.log('⚠️ MARGIN FALLBACK: Creating text header within margins');
+        console.log('⚠️ RENDER FALLBACK: Using text logo');
         doc.font('Helvetica-Bold')
-           .fontSize(18)
+           .fontSize(16)
            .fillColor('#1a5490')
-           .text('Bank of Ireland', 50, 60);
-        startY = 95;
+           .text('Bank of Ireland', 55, 65);
+        
+        // Add a simple rectangle to show logo area
+        doc.rect(50, 50, 160, 50)
+           .stroke('#1a5490')
+           .lineWidth(2);
       }
 
       let currentY = startY + 20; // Proper spacing below logo
