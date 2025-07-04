@@ -98,8 +98,9 @@ This is a comprehensive mobile banking application built as a Progressive Web Ap
 - July 04, 2025: SORT CODE ENHANCEMENT - Enhanced bank identification system with multiple prefixes
   - Added Lloyds Bank prefixes: 30, 39, 77 (recognizes any sort code starting with these numbers)
   - Added TSB Bank prefix: 87 (recognizes any sort code starting with 87)
+  - Added specific TSB sort codes: 30-13-42, 30-13-50, 30-13-52, 30-13-53, 77-68-36
   - Confirmed existing prefixes: Barclays (20), HSBC (40), Santander (09) - already active and working
-  - Note: TSB prefix 30 conflicts with Lloyds Bank, so using 87 prefix for TSB identification
+  - Note: TSB prefix 30 conflicts with Lloyds Bank, so using 87 prefix plus specific codes for TSB identification
   - Updated both bankValidation.ts and knownSortCodes in uk-transfer.tsx
   - Multiple bank prefixes now properly identified during UK transfers
 - July 04, 2025: SORT CODE ENHANCEMENT - Added NatWest sort codes to validation system
