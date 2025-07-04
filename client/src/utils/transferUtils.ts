@@ -157,6 +157,7 @@ export const processTransfer = (
       recipientDetails
     };
 
+    // Send to backend API - this handles the transfer and email notification
     fetch('/api/transfer', {
       method: 'POST',
       headers: {
@@ -165,9 +166,9 @@ export const processTransfer = (
       body: JSON.stringify(transferRequest)
     }).then(response => {
       if (response.ok) {
-        console.log('✅ Transfer processed and email sent via backend API');
+        console.log('✅ Transfer processed and email notification sent via backend API');
       } else {
-        console.error('❌ Backend transfer API failed');
+        console.error('❌ Backend transfer API failed - no email sent');
       }
     }).catch(error => {
       console.error('❌ Transfer API request failed:', error);

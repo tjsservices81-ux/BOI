@@ -1,0 +1,38 @@
+{
+  "users": [
+    [
+      1,
+      {
+        "id": 1,
+        "customerNumber": "BOI865617121",
+        "pin": "000000",
+        "name": "Shahajhs",
+        "email": "ethanw2111@gmail.com",
+        "phone": "45455454",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-07-04T11:06:40.953Z",
+        "dateCreated": "2025-07-04T11:06:40.954Z",
+        "isDisabled": false
+      }
+    ]
+  ],
+  "accounts": [],
+  "transactions": [],
+  "payees": [],
+  "scheduledPayments": [],
+  "statements": [],
+  "chatMessages": [],
+  "chatResponses": [],
+  "chatSessions": [],
+  "counters": {
+    "currentUserId": 2,
+    "currentAccountId": 1,
+    "currentTransactionId": 1,
+    "currentPayeeId": 1,
+    "currentScheduledPaymentId": 1,
+    "currentStatementId": 1,
+    "currentChatMessageId": 1,
+    "currentChatResponseId": 1
+  }
+}

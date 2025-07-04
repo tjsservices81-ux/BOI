@@ -154,9 +154,15 @@ export const loginSchema = z.object({
 export const transferSchema = z.object({
   fromAccountId: z.number(),
   toAccount: z.string().min(1, "Recipient is required"),
-  iban: z.string().min(1, "IBAN is required"),
   amount: z.string().min(1, "Amount is required"),
   reference: z.string().optional(),
+  transferType: z.enum(['UK', 'IBAN']).optional(),
+  recipientDetails: z.object({
+    accountNumber: z.string().optional(),
+    sortCode: z.string().optional(),
+    iban: z.string().optional(),
+    bicCode: z.string().optional(),
+  }).optional(),
 });
 
 export type User = typeof users.$inferSelect;

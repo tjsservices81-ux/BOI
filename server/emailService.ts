@@ -40,37 +40,20 @@ export function sendEmail(to: string, subject: string, body: string): Promise<bo
 }
 
 /**
- * Generate transfer confirmation email content
+ * Generate transfer confirmation email content in the format requested by user
  */
 export function generateTransferConfirmationEmail(details: TransferConfirmationDetails): { subject: string; body: string } {
-  const subject = `Transfer Confirmation - ${details.transactionReference}`;
+  const subject = "Transfer Confirmation";
   
   const body = `
-Dear ${details.senderName},
+Hello ${details.senderName},
 
-Your transfer has been successfully processed. Here are the details:
+Your transfer of ${details.currency}${details.amount} to ${details.recipientName} has been completed successfully.
 
-TRANSFER DETAILS
-================
-Recipient: ${details.recipientName}
-Amount: ${details.currency} ${details.amount}
-Date & Time: ${details.dateTime}
-Transaction Reference: ${details.transactionReference}
-${details.accountInfo ? `Account: ${details.accountInfo}` : ''}
+Reference: ${details.transactionReference}
+Date: ${details.dateTime}
 
-Your funds have been securely transferred and should reach the recipient shortly.
-
-If you have any questions about this transfer, please contact our customer service team with your transaction reference number.
-
-Thank you for banking with us.
-
-Best regards,
-BOI Banking Team
-
----
-This is an automated message. Please do not reply to this email.
-Transaction ID: ${details.transactionReference}
-Sent: ${new Date().toISOString()}
+Thank you for using our service.
   `;
   
   return { subject, body };

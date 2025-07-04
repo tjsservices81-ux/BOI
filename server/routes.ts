@@ -698,14 +698,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (user && user.email) {
         try {
-          // Send transfer confirmation email
+          // Send transfer confirmation email using the exact format requested by user
           const confirmationDetails: TransferConfirmationDetails = {
-            recipientName: transferData.toAccount, // Using toAccount as recipient name for now
+            recipientName: transferData.toAccount,
             amount: amount.toFixed(2),
-            currency: user.currency || 'EUR',
+            currency: (user.currency === 'GBP' ? '£' : '€'),
             dateTime: new Date().toLocaleString('en-GB', {
-              dateStyle: 'full',
-              timeStyle: 'medium',
+              dateStyle: 'short',
+              timeStyle: 'short',
               timeZone: 'Europe/Dublin'
             }),
             transactionReference: transactionReference,
@@ -910,9 +910,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // If email was updated, ensure it's synchronized across all user records
       if (updates.email && updatedUser) {
         try {
-          // Update email in any other user data stores if needed
-          // This ensures email consistency across all systems
-          console.log(`✅ Email synchronized for customer ${customerNumber}: ${updates.email}`);
+          // Verify the email was properly stored in the database
+          const verificationUser = await storage.getUserByCustomerNumber(customerNumber);
+          if (verificationUser && verificationUser.email === updates.email) {
+            console.log(`✅ Email synchronized and verified for customer ${customerNumber}: ${updates.email}`);
+          } else {
+            console.error(`❌ Email synchronization failed for customer ${customerNumber}`);
+          }
         } catch (emailSyncError) {
           console.error('Failed to synchronize email across systems:', emailSyncError);
         }
