@@ -86,26 +86,3 @@ export const generateRealisticTransactions = (accountId: number, accountBalance:
   return transactions;
 };
 
-export const ensureTransactionData = (accountId: number, accountBalance: string) => {
-  const { UserDataManager } = require('./userDataManager');
-  
-  // Check if transactions exist for this account
-  const allTransactions = UserDataManager.getUserData('bankTransactions', []);
-  const accountTransactions = allTransactions.filter((t: any) => t.accountId === accountId);
-  
-  if (accountTransactions.length === 0) {
-    console.log('No transactions found for account', accountId, '- generating realistic transaction history');
-    
-    // Generate 30 days of realistic transactions
-    const newTransactions = generateRealisticTransactions(accountId, accountBalance, 30);
-    
-    // Add to existing transactions
-    const updatedTransactions = [...allTransactions, ...newTransactions];
-    UserDataManager.setUserData('bankTransactions', updatedTransactions);
-    
-    console.log('Generated', newTransactions.length, 'realistic transactions for account', accountId);
-    return newTransactions;
-  }
-  
-  return accountTransactions;
-};

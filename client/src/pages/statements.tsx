@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { FileText, Download, Calendar, ChevronLeft, Check, CreditCard } from 'lucide-react';
 import { UserDataManager } from '@/utils/userDataManager';
-import { ensureTransactionData } from '@/utils/sampleTransactionData';
 
 export default function Statements() {
   const [, navigate] = useLocation();
@@ -95,7 +94,22 @@ export default function Statements() {
       }
 
       // Ensure transaction data exists for this account
-      ensureTransactionData(selectedAccountId, selectedAccount.balance);
+      const allTransactionsBefore = UserDataManager.getUserData('bankTransactions', []);
+      const accountTransactionsBefore = allTransactionsBefore.filter((t: any) => t.accountId === selectedAccountId);
+      
+      if (accountTransactionsBefore.length === 0) {
+        console.log('No transactions found for account', selectedAccountId, '- generating realistic transaction history');
+        
+        // Import the transaction generator
+        const { generateRealisticTransactions } = await import('@/utils/sampleTransactionData');
+        const newTransactions = generateRealisticTransactions(selectedAccountId, selectedAccount.balance, 30);
+        
+        // Add to existing transactions
+        const updatedTransactions = [...allTransactionsBefore, ...newTransactions];
+        UserDataManager.setUserData('bankTransactions', updatedTransactions);
+        
+        console.log('Generated', newTransactions.length, 'realistic transactions for account', selectedAccountId);
+      }
       
       // Get transactions for the period and selected account
       const allTransactions = UserDataManager.getUserData('bankTransactions', []);
