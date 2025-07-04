@@ -184,18 +184,7 @@ export async function generateTransferConfirmationPDF(
       
       yPos += 25;
 
-      // Unique Reference
-      doc.font('Helvetica-Bold')
-         .fontSize(12)
-         .fillColor('#000000')
-         .text('Unique Reference:', leftCol, yPos);
-      
-      doc.font('Helvetica')
-         .fontSize(12)
-         .fillColor('#000000')
-         .text(`BOI-${transferData.id}`, rightCol, yPos);
-
-      yPos += 50;
+      yPos += 25;
 
       // Security warning (red text)
       doc.font('Helvetica-Bold')
