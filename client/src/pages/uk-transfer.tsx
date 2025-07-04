@@ -868,7 +868,7 @@ export default function UkTransfer() {
                       <img 
                         src={getBankIcon(identifiedBank)!} 
                         alt={`${identifiedBank} logo`}
-                        className="w-4 h-4 mr-2 object-contain"
+                        className={`mr-2 object-contain ${identifiedBank === 'TSB Bank' ? 'w-6 h-4' : 'w-4 h-4'}`}
                       />
                     ) : (
                       <Building className="w-4 h-4 text-green-600 mr-2" />
