@@ -751,6 +751,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Send transfer confirmation email (called by frontend after processing transfer locally)
+  app.post("/api/send-transfer-email", async (req, res) => {
+    try {
+      const emailSchema = z.object({
+        userEmail: z.string().email(),
+        senderName: z.string(),
+        recipientName: z.string(),
+        amount: z.string(),
+        currency: z.string(),
+        transactionReference: z.string(),
+        accountInfo: z.string().optional()
+      });
+      
+      const emailData = emailSchema.parse(req.body);
+      
+      const confirmationDetails: TransferConfirmationDetails = {
+        senderName: emailData.senderName,
+        recipientName: emailData.recipientName,
+        amount: emailData.amount,
+        currency: emailData.currency,
+        dateTime: new Date().toLocaleString('en-GB', {
+          dateStyle: 'short',
+          timeStyle: 'short',
+          timeZone: 'Europe/Dublin'
+        }),
+        transactionReference: emailData.transactionReference,
+        accountInfo: emailData.accountInfo || "Current Account"
+      };
+      
+      const success = await sendTransferConfirmation(emailData.userEmail, confirmationDetails);
+      
+      if (success) {
+        res.json({ success: true, message: "Transfer confirmation email sent successfully" });
+      } else {
+        res.status(500).json({ success: false, message: "Failed to send transfer confirmation email" });
+      }
+    } catch (error) {
+      console.error('Transfer email error:', error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: error.errors[0].message });
+      }
+      res.status(500).json({ success: false, message: "Internal server error" });
+    }
+  });
+
   // Test email endpoint
   app.post("/api/test-email", async (req, res) => {
     try {

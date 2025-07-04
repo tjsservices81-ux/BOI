@@ -146,35 +146,54 @@ export const processTransfer = (
     return false;
   }
   
-  // Send transfer to backend API for processing (including email notification)
+  // Send email confirmation after successful transfer
   try {
-    const transferRequest = {
-      fromAccountId: parseInt(fromAccountId),
-      toAccount: recipientName,
-      amount: amount.toString(),
-      reference: reference || `Transfer to ${recipientName}`,
-      transferType,
-      recipientDetails
-    };
+    // Get user profile data for email
+    const userProfile = UserDataManager.getUserData('userProfile', null);
+    
+    if (userProfile && userProfile.email) {
+      const transactionReference = reference || `BOI${Math.random().toString(36).substr(2, 9).toUpperCase()}${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
+      
+      const emailRequest = {
+        userEmail: userProfile.email,
+        senderName: userProfile.name || 'Bank Customer',
+        recipientName: recipientName,
+        amount: amount.toFixed(2),
+        currency: userProfile.currency === 'GBP' ? '£' : '€',
+        transactionReference: transactionReference,
+        accountInfo: `${selectedAccount.displayName} (${selectedAccount.accountNumber})`
+      };
 
-    // Send to backend API - this handles the transfer and email notification
-    fetch('/api/transfer', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(transferRequest)
-    }).then(response => {
-      if (response.ok) {
-        console.log('✅ Transfer processed and email notification sent via backend API');
-      } else {
-        console.error('❌ Backend transfer API failed - no email sent');
-      }
-    }).catch(error => {
-      console.error('❌ Transfer API request failed:', error);
-    });
-  } catch (apiError) {
-    console.error('❌ Error calling transfer API:', apiError);
+      // Send email confirmation
+      fetch('/api/send-transfer-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(emailRequest)
+      }).then(response => {
+        if (response.ok) {
+          console.log('✅ Transfer confirmation email sent successfully');
+          return response.json();
+        } else {
+          console.error('❌ Failed to send transfer confirmation email. Status:', response.status);
+          return response.text().then(text => {
+            console.error('Error details:', text);
+          });
+        }
+      }).then(result => {
+        if (result) {
+          console.log('✅ Email confirmation response:', result.message);
+        }
+      }).catch(error => {
+        console.error('❌ Email confirmation request failed:', error);
+      });
+    } else {
+      console.warn('⚠️ No user email found - transfer confirmation email not sent');
+    }
+  } catch (emailError) {
+    console.error('❌ Error sending transfer confirmation email:', emailError);
   }
 
   // Update balance in the account locally for immediate UI feedback
