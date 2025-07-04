@@ -69,7 +69,7 @@ export async function generateTransferConfirmationPDF(
       // Transfer summary section (right side like statement header)
       const currentDate = new Date().toLocaleDateString('en-IE', {
         day: '2-digit',
-        month: '3-short',
+        month: 'short',
         year: 'numeric'
       });
 

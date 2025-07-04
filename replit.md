@@ -95,7 +95,7 @@ This is a comprehensive mobile banking application built as a Progressive Web Ap
 - **Security**: HTTPS required for PWA installation and service worker functionality
 
 ## Changelog
-- July 04, 2025: Completed authentic Bank of Ireland PDF transfer confirmation system
+- July 04, 2025: Completed authentic Bank of Ireland PDF transfer confirmation system with email delivery
   - Fixed user profile data retrieval issue that prevented emails from sending
   - Implemented dynamic transfer type detection (UK vs SEPA vs Internal transfers)
   - Created PDF documents matching exact authentic Bank of Ireland statement styling and layout
@@ -107,7 +107,11 @@ This is a comprehensive mobile banking application built as a Progressive Web Ap
   - Transfer-specific formatting: UK (Account Number/Sort Code), SEPA (IBAN/BIC)
   - Security warning: "If you did not authorise this payment, contact 1800 123 456 immediately"
   - Professional footer matching BOI statement style with "Page 1 of 1"
-  - Email system sends clean HTML message with PDF attachment (TransferConfirmation-[ID].pdf)
+  - Email delivery system with comprehensive SMTP logging and error handling
+  - PDF size validation (under 1MB), proper MIME types (application/pdf), and base64 encoding
+  - Fallback email system without PDF if attachment fails, with detailed error tracking
+  - Email tracking: Message IDs, SMTP responses, accepted/rejected recipients logged
+  - Clean HTML email body with simplified Bank of Ireland branding
   - PDF metadata includes proper document information and BOI creator details
   - Authentic BOI color scheme (#0066B2) and Helvetica fonts throughout
   - Documents are indistinguishable from real Bank of Ireland transfer confirmations
