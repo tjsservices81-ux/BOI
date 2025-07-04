@@ -5,28 +5,25 @@
 import nodemailer from 'nodemailer';
 import fs from 'fs';
 import path from 'path';
-
-export interface EmailParams {
-  to: string;
-  subject: string;
-  body: string;
-}
+import { generateTransferConfirmationPDF } from './pdfService';
 
 export interface TransferConfirmationDetails {
+  senderName: string;
   recipientName: string;
   amount: string;
   currency: string;
-  dateTime: string;
   transactionReference: string;
-  senderName: string;
-  accountInfo?: string;
+  dateTime: string;
+  accountInfo: string;
 }
 
-// Create SMTP transporter using the same configuration as OTC service
+/**
+ * Create email transporter using the same SMTP configuration as OTC service
+ */
 const createTransporter = () => {
   try {
     const emailConfig = {
-      host: process.env.SMTP_HOST,
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
       port: parseInt(process.env.SMTP_PORT || '587'),
       secure: process.env.SMTP_PORT === '465', // Use secure for port 465
       auth: {
@@ -50,38 +47,29 @@ const createTransporter = () => {
 };
 
 /**
- * Send email using the same SMTP configuration as the OTC service
+ * Send email with PDF attachment
  */
-export async function sendEmail(to: string, subject: string, body: string): Promise<boolean> {
-  console.log('🔵 EMAIL FUNCTION CALLED - sendEmail()');
-  console.log('📧 SENDING EMAIL NOTIFICATION');
+export async function sendEmailWithPDF(
+  to: string, 
+  subject: string, 
+  body: string, 
+  pdfBuffer: Buffer, 
+  pdfFilename: string
+): Promise<boolean> {
+  console.log('🔵 EMAIL WITH PDF FUNCTION CALLED');
+  console.log('📧 SENDING EMAIL WITH PDF ATTACHMENT');
   console.log(`To: ${to}`);
   console.log(`Subject: ${subject}`);
-  console.log(`Body preview: ${body.substring(0, 100)}...`);
+  console.log(`PDF Filename: ${pdfFilename}`);
   
   const transporter = createTransporter();
   
   if (!transporter) {
-    console.log('SMTP not configured. Email would be sent to:', { to, subject });
-    console.log('Email content:');
-    console.log(body);
+    console.log('SMTP not configured. Email with PDF would be sent to:', { to, subject, pdfFilename });
     return false;
   }
 
   try {
-    // Prepare Bank of Ireland logo attachment - use the new uploaded authentic BOI logo
-    const logoPath = path.join(process.cwd(), 'attached_assets', 'IMG_1948_1751632845410.png');
-    let attachments: any[] = [];
-    
-    if (fs.existsSync(logoPath)) {
-      attachments.push({
-        filename: 'boi-logo.png',
-        path: logoPath,
-        cid: 'boi-logo', // Content ID for inline embedding
-        contentDisposition: 'inline' // Prevent showing as separate attachment
-      });
-    }
-
     const mailOptions = {
       from: {
         name: 'Bank of Ireland',
@@ -89,9 +77,15 @@ export async function sendEmail(to: string, subject: string, body: string): Prom
       },
       to: to,
       subject: subject,
-      html: body, // Use the properly formatted HTML from generateTransferConfirmationEmail
+      html: body,
       text: body.replace(/<[^>]*>/g, ''), // Strip HTML tags for text version
-      attachments: attachments,
+      attachments: [
+        {
+          filename: pdfFilename,
+          content: pdfBuffer,
+          contentType: 'application/pdf'
+        }
+      ],
       headers: {
         'X-Priority': '1',
         'X-MSMail-Priority': 'High',
@@ -100,12 +94,10 @@ export async function sendEmail(to: string, subject: string, body: string): Prom
     };
 
     await transporter.sendMail(mailOptions);
-    console.log(`✅ Transfer confirmation email sent successfully to: ${to}`);
+    console.log(`✅ Email with PDF attachment sent successfully to: ${to}`);
     return true;
   } catch (error) {
-    console.error('Failed to send transfer confirmation email:', error);
-    console.log('Email content that failed to send:');
-    console.log(body);
+    console.error('Failed to send email with PDF:', error);
     return false;
   }
 }
@@ -113,50 +105,8 @@ export async function sendEmail(to: string, subject: string, body: string): Prom
 /**
  * Generate transfer confirmation email content with Bank of Ireland formatting
  */
-export function generateTransferConfirmationEmail(details: TransferConfirmationDetails, transferData?: any): { subject: string; body: string } {
+export function generateTransferConfirmationEmail(details: TransferConfirmationDetails): { subject: string; body: string } {
   const subject = "Transfer Confirmation - Bank of Ireland";
-  
-  // Determine transfer type based on payment method or currency
-  const isUKTransfer = transferData?.paymentMethod === 'UK Transfer' || 
-                     transferData?.recipientSortCode || 
-                     transferData?.recipientAccountNumber;
-  
-  const isSEPATransfer = transferData?.paymentMethod === 'SEPA Transfer' || 
-                        transferData?.iban || 
-                        transferData?.bicCode ||
-                        details.currency === '€';
-
-  let transferDetails = '';
-  
-  if (isUKTransfer) {
-    transferDetails = `
-                    <div style="margin-bottom: 8px;">• Amount: £${details.amount}</div>
-                    <div style="margin-bottom: 8px;">• To Account: ${details.recipientName}</div>
-                    <div style="margin-bottom: 8px;">• Account Number: ${transferData?.recipientAccountNumber || 'Not available'}</div>
-                    <div style="margin-bottom: 8px;">• Sort Code: ${transferData?.recipientSortCode || 'Not available'}</div>
-                    <div style="margin-bottom: 8px;">• Reference: ${details.transactionReference}</div>
-                    <div style="margin-bottom: 8px;">• Date/Time: ${details.dateTime}</div>
-                    <div style="margin-bottom: 8px;">• Transaction ID: ${transferData?.id || 'Not available'}</div>
-                    <div style="margin-bottom: 0;">• Unique Reference: BOI-${transferData?.id || details.transactionReference}-UK</div>`;
-  } else if (isSEPATransfer) {
-    transferDetails = `
-                    <div style="margin-bottom: 8px;">• Amount: €${details.amount}</div>
-                    <div style="margin-bottom: 8px;">• To Account: ${details.recipientName}</div>
-                    <div style="margin-bottom: 8px;">• IBAN: ${transferData?.iban || transferData?.recipientIban || 'Not available'}</div>
-                    <div style="margin-bottom: 8px;">• BIC: ${transferData?.bicCode || 'Not available'}</div>
-                    <div style="margin-bottom: 8px;">• Reference: ${details.transactionReference}</div>
-                    <div style="margin-bottom: 8px;">• Date/Time: ${details.dateTime}</div>
-                    <div style="margin-bottom: 8px;">• Transaction ID: ${transferData?.id || 'Not available'}</div>
-                    <div style="margin-bottom: 0;">• Unique Reference: BOI-${transferData?.id || details.transactionReference}-SEPA</div>`;
-  } else {
-    // Default format for other transfers
-    transferDetails = `
-                    <div style="margin-bottom: 8px;">• Amount: ${details.currency}${details.amount}</div>
-                    <div style="margin-bottom: 8px;">• To Account: ${details.recipientName}</div>
-                    <div style="margin-bottom: 8px;">• Reference: ${details.transactionReference}</div>
-                    <div style="margin-bottom: 8px;">• Date/Time: ${details.dateTime}</div>
-                    <div style="margin-bottom: 0;">• Transaction ID: ${transferData?.id || 'Not available'}</div>`;
-  }
   
   const body = `
 <!DOCTYPE html>
@@ -167,52 +117,36 @@ export function generateTransferConfirmationEmail(details: TransferConfirmationD
     <title>Transfer Confirmation - Bank of Ireland</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
-    <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e0e0e0;">
+    <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e0e0e0; padding: 30px;">
         
-        <!-- Main Content -->
-        <div style="padding: 30px 25px;">
-            <!-- Bank of Ireland Logo at top -->
-            <img src="cid:boi-logo" alt="Bank of Ireland" style="height: 50px; display: block; margin: 20px auto;" />
-            
-            <h2 style="color: #333333; margin: 0 0 25px 0; font-size: 20px; font-weight: bold;">Transfer Confirmation</h2>
-            
-            <p style="color: #333333; margin: 0 0 20px 0; line-height: 1.6; font-size: 15px;">
-                Dear ${details.senderName},
+        <h2 style="color: #0052cc; margin: 0 0 25px 0; font-size: 24px; font-weight: bold; text-align: center;">Bank of Ireland</h2>
+        
+        <h3 style="color: #333333; margin: 0 0 20px 0; font-size: 18px;">Dear ${details.senderName},</h3>
+        
+        <p style="color: #333333; margin: 0 0 25px 0; line-height: 1.6; font-size: 15px;">
+            Your transfer confirmation is attached to this email as a PDF document.
+        </p>
+        
+        <p style="color: #333333; margin: 0 0 25px 0; line-height: 1.6; font-size: 15px;">
+            Please find attached your Bank of Ireland transfer confirmation.
+        </p>
+        
+        <div style="background-color: #f8f9fa; padding: 20px; margin: 25px 0; border-left: 4px solid #0052cc;">
+            <p style="color: #333333; margin: 0; font-size: 14px; font-weight: bold;">
+                Transfer Reference: ${details.transactionReference}
             </p>
-            
-            <p style="color: #333333; margin: 0 0 30px 0; line-height: 1.6; font-size: 15px;">
-                We confirm that your recent transfer has been successfully completed.
-            </p>
-            
-            <!-- Transfer Details -->
-            <div style="background-color: #f8f9fa; border-left: 4px solid #0052cc; padding: 25px; margin: 0 0 30px 0;">
-                <h3 style="color: #0052cc; margin: 0 0 20px 0; font-size: 16px; font-weight: bold;">Transfer Details</h3>
-                <div style="color: #333333; font-size: 14px; line-height: 1.4;">
-                    ${transferDetails}
-                </div>
-            </div>
-            
-            <p style="color: #555555; margin: 0 0 25px 0; line-height: 1.5; font-size: 13px; font-weight: bold;">
-                This is an automated message from Bank of Ireland. Please do not reply to this email.
-            </p>
-            
-            <p style="color: #d32f2f; margin: 0 0 0 0; line-height: 1.5; font-size: 14px; font-weight: bold;">
-                If you did not authorise this payment, contact 1800 123 456 immediately.
+            <p style="color: #333333; margin: 5px 0 0 0; font-size: 14px;">
+                Amount: ${details.currency}${details.amount} to ${details.recipientName}
             </p>
         </div>
         
-        <!-- Footer -->
-        <div style="background-color: #f8f9fa; padding: 25px; border-top: 1px solid #e0e0e0; text-align: left;">
-            <p style="color: #666666; margin: 0 0 8px 0; font-size: 14px; line-height: 1.5;">
-                Thank you for banking with Bank of Ireland.
-            </p>
-            <p style="color: #666666; margin: 0 0 8px 0; font-size: 14px;">
-                BOI Customer Service
-            </p>
-            <p style="color: #0052cc; margin: 0; font-size: 14px;">
-                www.bankofireland.com
-            </p>
-        </div>
+        <p style="color: #666666; margin: 25px 0 15px 0; font-size: 12px;">
+            Thank you for banking with Bank of Ireland.
+        </p>
+        
+        <p style="color: #666666; margin: 0; font-size: 12px;">
+            BOI Customer Service | www.bankofireland.com
+        </p>
         
     </div>
 </body>
@@ -222,7 +156,7 @@ export function generateTransferConfirmationEmail(details: TransferConfirmationD
 }
 
 /**
- * Send transfer confirmation email to user
+ * Send transfer confirmation email to user with PDF attachment
  */
 export async function sendTransferConfirmation(
   userEmail: string, 
@@ -235,11 +169,17 @@ export async function sendTransferConfirmation(
   console.log('Transfer data:', transferData);
   
   try {
-    const { subject, body } = generateTransferConfirmationEmail(details, transferData);
-    const success = await sendEmail(userEmail, subject, body);
+    // Generate email content (simple HTML without logo)
+    const { subject, body } = generateTransferConfirmationEmail(details);
+    
+    // Generate PDF with BOI logo and transfer details
+    const pdfBuffer = await generateTransferConfirmationPDF(details, transferData);
+    
+    // Send email with PDF attachment
+    const success = await sendEmailWithPDF(userEmail, subject, body, pdfBuffer, `TransferConfirmation-${transferData?.id || details.transactionReference}.pdf`);
     
     if (success) {
-      console.log(`✅ Transfer confirmation email sent to ${userEmail} for transaction ${details.transactionReference}`);
+      console.log(`✅ Transfer confirmation email with PDF sent to ${userEmail} for transaction ${details.transactionReference}`);
     } else {
       console.error(`❌ Failed to send transfer confirmation email to ${userEmail}`);
     }

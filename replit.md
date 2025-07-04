@@ -95,16 +95,15 @@ This is a comprehensive mobile banking application built as a Progressive Web Ap
 - **Security**: HTTPS required for PWA installation and service worker functionality
 
 ## Changelog
-- July 04, 2025: Completed professional Bank of Ireland email system with authentic branding
+- July 04, 2025: Completed professional Bank of Ireland email system with PDF attachments
   - Fixed user profile data retrieval issue that prevented emails from sending
   - Implemented dynamic transfer type detection (UK vs SEPA vs Internal transfers)
-  - Integrated authentic Bank of Ireland logo (uploaded by user) with proper inline SMTP embedding
-  - Logo embedded via Content-ID (cid:boi-logo) with contentDisposition: 'inline' to prevent attachment display
-  - Logo positioned at very top of email content (before "Transfer Confirmation" heading)
-  - Removed blue header bar and all duplicate logos - single logo placement only
-  - Added transfer-specific formatting with consistent bullet points and spacing
-  - Included "This is an automated message from Bank of Ireland. Please do not reply to this email."
-  - Added proper BOI footer with customer service information and website
+  - Created professional PDF confirmation documents with authentic Bank of Ireland logo
+  - PDF generation using pdfkit with proper BOI branding and clean layout
+  - Email system sends simple HTML message with PDF attachment (TransferConfirmation-[ID].pdf)
+  - PDF contains: BOI logo, Transfer Confirmation heading, Transaction Details section, security warnings
+  - Transfer-specific PDF formatting with proper account details for each type
+  - Clean email body: "Please find attached your Bank of Ireland transfer confirmation"
   - Configured anti-spam headers and proper from address formatting
   - UK transfers display: Amount, To Account, Account Number, Sort Code, Reference, Date/Time, Transaction ID, Unique Reference
   - SEPA transfers display: Amount, To Account, IBAN, BIC, Reference, Date/Time, Transaction ID, Unique Reference
