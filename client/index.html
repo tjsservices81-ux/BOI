@@ -560,7 +560,7 @@
           }
 
           // Verify access code with backend
-          const response = await fetch('/api/check-access', {
+          const response = await fetch('/api/verify-code', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
