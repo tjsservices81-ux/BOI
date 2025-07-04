@@ -95,6 +95,15 @@ This is a comprehensive mobile banking application built as a Progressive Web Ap
 - **Security**: HTTPS required for PWA installation and service worker functionality
 
 ## Changelog
+- July 04, 2025: TEMPLATE POSITIONING OVERHAUL - Updated PDF generation to use exact template column positioning
+  - Account info positioned at top: 13%, right: 6% with Arial bold 14px font
+  - Left header section at top: 28%, left: 6%, spacing 32px apart with Arial regular 13px
+  - Balance values right-aligned at left: 48% for perfect template alignment
+  - Transaction table uses exact column positioning: Date(6%), Description(22%), Withdrawal(55%), Deposit(70%), Balance(85%)
+  - Maximum 7 transactions to fit template's alternating green/white rows
+  - Bottom bar "Ending Balance" left-aligned at left: 6%, balance value right-aligned at right: 5%
+  - All positioning matches template's colored bands with no overflow beyond visible space
+  - Font sizes optimized: Arial 10px for account info, 9px for summaries, 8.5px for transactions
 - July 04, 2025: COMPLETE STATEMENT GENERATOR OVERHAUL - Rebuilt PDF generation with real transaction scanning and exact layout matching
   - Real transaction scanning from active session data (Child Benefit €140, Lidl €25.40, IKEA €156.40, Course Fee €250, PayPal €250, Tesco €45.67, Monthly Salary €2,500)
   - Auto-assigned column system: Date → Column 1, Description → Column 2, Withdrawal/Deposit → Column 3/4, Running Balance → Column 5

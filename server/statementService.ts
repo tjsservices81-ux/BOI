@@ -126,108 +126,106 @@ export const generateStatement = async (userData: any, period: string) => {
     // TOP-RIGHT BOI LOGO: x=430, y=40 (user specification)
     // Logo is already part of the template background, no additional overlay needed
     
-    // TOP-RIGHT ACCOUNT INFO: right-aligned, moved down to proper position
-    doc.font('Helvetica-Bold').fontSize(7).fillColor('#000000');
+    // TOP-RIGHT ACCOUNT INFO: positioned at top: 13%, right: 6% (template specification)
+    doc.font('Helvetica-Bold').fontSize(10).fillColor('#000000');
     
     // Account Name (uppercase) - from real account data
     const accountHolder = userData.accountInfo?.accountHolder || 'ACCOUNT HOLDER';
-    doc.text(accountHolder.toUpperCase(), 420, 140, {
+    doc.text(accountHolder.toUpperCase(), 559, 110, {
       width: 150,
       align: 'right'
     });
     
     // Account Number - use real account number from session
     const accountNumber = userData.accountInfo?.accountNumber || '****2091';
-    doc.text(accountNumber, 420, 152, {
+    doc.text(accountNumber, 559, 125, {
       width: 150,
       align: 'right'
     });
     
-    // Statement Period (DD MMM YYYY - DD MMM YYYY format) - EXACT from transaction dates
-    doc.text(`${startDateStr} - ${endDateStr}`, 420, 164, {
+    // Statement Period (Start Date - End Date format) - EXACT from transaction dates
+    doc.text(`${startDateStr} - ${endDateStr}`, 559, 140, {
       width: 150,
       align: 'right'
     });
     
-    // ACCOUNT SUMMARY SECTION: moved down to proper position
-    doc.font('Helvetica-Bold').fontSize(6.5).fillColor('#1a5490'); // Blue labels
+    // LEFT HEADER SECTION: positioned at top: 28%, left: 6% (template specification)
+    doc.font('Helvetica').fontSize(9).fillColor('#000000');
     
-    // Balance labels and values (authentic BOI format)
-    doc.text(`Balance on ${startDate.toLocaleDateString('en-GB')}:`, 50, 220);
-    doc.text('Total money in:', 50, 230);
-    doc.text('Total money out:', 50, 240);
-    doc.text(`Balance on ${endDate.toLocaleDateString('en-GB')}:`, 50, 250);
+    // Balance labels starting at top: 28%, left: 6%, spacing 32px apart
+    doc.text(`Balance on ${startDate.toLocaleDateString('en-GB')}:`, 36, 236);
+    doc.text('Total money in:', 36, 268);
+    doc.text('Total money out:', 36, 300);
+    doc.text(`Balance on ${endDate.toLocaleDateString('en-GB')}:`, 36, 332);
     
-    // Values right-aligned with black text
-    doc.font('Helvetica').fontSize(6.5).fillColor('#000000');
-    doc.text(`€${openingBalance.toFixed(2)}`, 50, 220, { width: 150, align: 'right' });
-    doc.text(`€${totalMoneyIn.toFixed(2)}`, 50, 230, { width: 150, align: 'right' });
-    doc.text(`€${totalMoneyOut.toFixed(2)}`, 50, 240, { width: 150, align: 'right' });
-    doc.text(`€${closingBalance.toFixed(2)}`, 50, 250, { width: 150, align: 'right' });
+    // Values right-aligned at approx left: 48%
+    doc.font('Helvetica').fontSize(9).fillColor('#000000');
+    doc.text(`€${openingBalance.toFixed(2)}`, 285, 236, { width: 100, align: 'right' });
+    doc.text(`€${totalMoneyIn.toFixed(2)}`, 285, 268, { width: 100, align: 'right' });
+    doc.text(`€${totalMoneyOut.toFixed(2)}`, 285, 300, { width: 100, align: 'right' });
+    doc.text(`€${closingBalance.toFixed(2)}`, 285, 332, { width: 100, align: 'right' });
     
-    // TRANSACTIONS TABLE: start after account summary section
-    let yPos = 290;
+    // TRANSACTIONS TABLE: positioned to fill the 7 alternating rows (green/white)
+    let yPos = 400; // Start after the account summary section
     
-    // Table Header with exact columns: Date | Description | Withdrawal | Deposit | Balance
-    doc.font('Helvetica-Bold').fontSize(6).fillColor('#000000');
-    doc.text('Date', 50, yPos);
-    doc.text('Description', 105, yPos);
-    doc.text('Withdrawal', 270, yPos);
-    doc.text('Deposit', 340, yPos);
-    doc.text('Balance', 410, yPos);
+    // Skip header row - template already has column headers
+    // Process max 7 transactions to fit in template rows
+    const maxTransactions = Math.min(transactionsWithRunningBalance.length, 7);
     
-    yPos += 15; // Better spacing for table rows
-    
-    // Transaction rows (Helvetica 6pt, light density)
-    doc.font('Helvetica').fontSize(6).fillColor('#000000');
+    // Fill transaction table rows using exact template column positioning
+    doc.font('Helvetica').fontSize(8.5).fillColor('#000000');
     
     console.log('📊 Processing transactions in table:', transactionsWithRunningBalance.length);
     
-    // Create transaction table with auto-assigned columns and running balance calculation
-    transactionsWithRunningBalance.forEach((tx: any) => {
+    // Process max 7 transactions to fit template rows, show only last 7 if more exist
+    const displayTransactions = transactionsWithRunningBalance.slice(-7);
+    
+    displayTransactions.forEach((tx: any, index: number) => {
       const txDate = new Date(tx.date);
       
-      // Fix issue where invalid date = NaN (user specification)
+      // Fix issue where invalid date = NaN
       if (isNaN(txDate.getTime())) {
         console.log('⚠️ Skipping transaction with invalid date:', tx);
         return;
       }
       
-      // Format date as dd/mm (space-efficient BOI standard)
-      const dateStr = txDate.getDate().toString().padStart(2, '0') + '/' + 
-                     (txDate.getMonth() + 1).toString().padStart(2, '0');
+      // Date column: left: 6%, width: 15% (DD/MM/YY format)
+      const formattedDate = txDate.toLocaleDateString('en-GB', { 
+        day: '2-digit', 
+        month: '2-digit', 
+        year: '2-digit' 
+      });
+      doc.text(formattedDate, 36, yPos);
       
-      // Date column
-      doc.text(dateStr, 50, yPos);
-      
-      // Description (20 characters UPPERCASE for authentic width)
+      // Description column: left: 22%, width: 33%
       const description = tx.description.toUpperCase().substring(0, 20);
-      doc.text(description, 105, yPos);
+      doc.text(description, 131, yPos);
       
-      // Show ONLY withdrawal OR deposit per row, never both (user specification)
+      // Withdrawal column: left: 55%, width: 15%, right-aligned
+      // Deposit column: left: 70%, width: 15%, right-aligned
       if (tx.type === 'debit') {
-        doc.text(`€${parseFloat(tx.amount).toFixed(2)}`, 270, yPos, { width: 50, align: 'right' });
+        doc.text(`€${parseFloat(tx.amount).toFixed(2)}`, 327, yPos, { width: 89, align: 'right' });
       } else {
-        doc.text(`€${parseFloat(tx.amount).toFixed(2)}`, 340, yPos, { width: 50, align: 'right' });
+        doc.text(`€${parseFloat(tx.amount).toFixed(2)}`, 416, yPos, { width: 89, align: 'right' });
       }
       
-      // Balance column with € symbol (running balance calculated as we go)
-      doc.text(`€${tx.runningBalance}`, 410, yPos, { width: 50, align: 'right' });
+      // Balance column: left: 85%, width: 13%, right-aligned
+      doc.text(`€${tx.runningBalance}`, 506, yPos, { width: 77, align: 'right' });
       
-      yPos += 12; // 12pt row spacing for authentic BOI density
+      yPos += 25; // Row spacing to match template alternating rows
       
-      // Stop at page boundary
-      if (yPos > 550) {
-        return;
-      }
+      // Stop after 7 rows (template limit)
+      if (index >= 6) return;
     });
     
-    // ENDING BALANCE: Helvetica-Bold 7pt, right-aligned in blue row (user specification)
-    doc.font('Helvetica-Bold').fontSize(7).fillColor('#000000');
-    doc.text(`Ending Balance €${closingBalance.toFixed(2)}`, 345, 650, {
-      width: 250,
-      align: 'right'
-    });
+    // BOTTOM BAR: "Ending Balance" in light blue bar
+    doc.font('Helvetica-Bold').fontSize(9).fillColor('#000000');
+    
+    // "Ending Balance" left-aligned at left: 6%
+    doc.text('Ending Balance', 36, 575);
+    
+    // Balance value right-aligned at right: 5%, bold
+    doc.text(`€${closingBalance.toFixed(2)}`, 565, 575, { width: 100, align: 'right' });
     
     console.log('✅ Statement PDF generated with exact user specifications and real transaction data');
     return doc;
