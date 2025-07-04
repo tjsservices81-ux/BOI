@@ -542,10 +542,12 @@
         const loader = document.getElementById('loading-screen');
         
         try {
-          // Clear any cached access for fresh verification
-          localStorage.removeItem('accessGranted');
-          localStorage.removeItem('accessCode');
-          console.log('Starting fresh access verification...');
+          // Check if user already has access granted
+          const hasAccess = localStorage.getItem('accessGranted');
+          if (hasAccess === 'true') {
+            hideLoadingScreen();
+            return;
+          }
 
           // Check for access code in URL
           const urlParams = new URLSearchParams(window.location.search);
@@ -558,8 +560,7 @@
           }
 
           // Verify access code with backend
-          console.log('Verifying access code:', accessCode);
-          const response = await fetch('/api/verify-code', {
+          const response = await fetch('/api/check-access', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
