@@ -376,38 +376,44 @@ export default function UkTransfer() {
         if (newProgress >= 100) {
           clearInterval(interval);
           
-          // Process the transfer
-          const transferSuccess = processConfirmedTransfer(
-            `UK_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            formData.fromAccount,
-            parseFloat(formData.amount),
-            formData.recipientName,
-            'UK',
-            transferReference,
-            exchangeRate,
-            {
-              accountNumber: formData.accountNumber,
-              sortCode: formData.sortCode
+          // Process the transfer asynchronously
+          setTimeout(async () => {
+            try {
+              const transferSuccess = await processConfirmedTransfer(
+                `UK_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                formData.fromAccount,
+                parseFloat(formData.amount),
+                formData.recipientName,
+                'UK',
+                transferReference,
+                exchangeRate,
+                {
+                  accountNumber: formData.accountNumber,
+                  sortCode: formData.sortCode
+                }
+              );
+              
+              if (transferSuccess) {
+                // Add successful payee to recent payees
+                const payee = {
+                  name: formData.recipientName,
+                  accountInfo: `${formatSortCode(formData.sortCode)} ${formData.accountNumber}`,
+                  transferType: 'UK Transfer',
+                  reference: formData.reference || '',
+                  timestamp: new Date().toISOString()
+                };
+                UserDataManager.addRecentPayee(payee);
+                
+                // Dispatch events to update all components
+                window.dispatchEvent(new CustomEvent('transactionUpdate'));
+                window.dispatchEvent(new CustomEvent('balanceUpdate'));
+                
+                setShowReference(true);
+              }
+            } catch (error) {
+              console.error('Transfer processing failed:', error);
             }
-          );
-          
-          if (transferSuccess) {
-            // Add successful payee to recent payees
-            const payee = {
-              name: formData.recipientName,
-              accountInfo: `${formatSortCode(formData.sortCode)} ${formData.accountNumber}`,
-              transferType: 'UK Transfer',
-              reference: formData.reference || '',
-              timestamp: new Date().toISOString()
-            };
-            UserDataManager.addRecentPayee(payee);
-            
-            // Dispatch events to update all components
-            window.dispatchEvent(new CustomEvent('transactionUpdate'));
-            window.dispatchEvent(new CustomEvent('balanceUpdate'));
-            
-            setShowReference(true);
-          }
+          }, 0);
           
           return 100;
         }

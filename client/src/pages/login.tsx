@@ -456,6 +456,11 @@ export default function Login() {
   };
 
   const handleLoginButton = async () => {
+    // Prevent multiple clicks while already processing
+    if (isLoading || isLoginAnimating) {
+      return;
+    }
+
     if (!biometricVerified && !pinVerified) {
       toast({
         title: "Authentication Required",
@@ -476,6 +481,7 @@ export default function Login() {
       return;
     }
 
+    // Set animation state immediately to prevent double clicks
     setIsLoginAnimating(true);
     setLoginProgress(0);
 
@@ -564,6 +570,7 @@ export default function Login() {
       await new Promise(resolve => setTimeout(resolve, 300));
       navigate("/dashboard");
     } catch (error) {
+      // Reset animation state immediately
       setIsLoginAnimating(false);
       setLoginProgress(0);
       setLoginStage('');
