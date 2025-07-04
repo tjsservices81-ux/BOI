@@ -95,6 +95,14 @@ This is a comprehensive mobile banking application built as a Progressive Web Ap
 - **Security**: HTTPS required for PWA installation and service worker functionality
 
 ## Changelog
+- July 04, 2025: NEW BOI TEMPLATE INTEGRATION - Updated PDF generation to use new Bank of Ireland statement template
+  - Replaced template image path to use new uploaded BOI template (IMG_1981_1751654672745.jpeg)
+  - Precise field positioning: Account info right-aligned in top-right quadrant under BOI logo
+  - Customer number now masked as ****[last 4 digits] for privacy compliance
+  - Account summary with blue labels (Helvetica-Bold) and black values aligned with template
+  - Transaction table rows aligned exactly with template's colored boxes
+  - Ending balance footer positioned in blue row area with proper right alignment
+  - All field positioning optimized for authentic Bank of Ireland statement appearance
 - July 04, 2025: SIMPLIFIED STATEMENT PERIODS - Reduced statement period options to essential short-term periods
   - Statement period dropdown now contains only: 1 Week, 2 Weeks, 1 Month
   - Removed longer periods (current month, previous month, 3 months, 6 months) for streamlined user experience
