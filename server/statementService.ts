@@ -45,8 +45,8 @@ export async function generateStatementPDF(data: StatementData): Promise<Buffer>
       // Add a page and apply the background template
       doc.addPage();
 
-      // Use the statement background template
-      const templatePath = join(process.cwd(), 'attached_assets', 'IMG_1981_1751652629227.jpeg');
+      // Use the new statement background template
+      const templatePath = join(process.cwd(), 'attached_assets', 'IMG_1981_1751653862587.jpeg');
       
       if (existsSync(templatePath)) {
         // Embed the full-page template background at exact A4 dimensions
@@ -71,69 +71,96 @@ export async function generateStatementPDF(data: StatementData): Promise<Buffer>
            .text('Account Statement', 50, 55);
       }
 
-      // TOP-RIGHT BLOCK: Account information (under Bank of Ireland logo)
-      // Position: x: 140mm (≈ 396 points), y: 62mm (≈ 176 points)
-      const topRightX = 396; // 140mm in points
-      const topRightY = 176;  // 62mm in points
-
-      doc.fontSize(10)
-         .fillColor('#000000')
-         .font('Helvetica');
-
-      doc.text(`Account Name: ${data.user.fullName}`, topRightX, topRightY);
-      doc.text(`Account Number: ${data.user.accountNumber}`, topRightX, topRightY + 14);
-      doc.text(`Statement Period: ${data.period.startDate} to ${data.period.endDate}`, topRightX, topRightY + 28);
-
-      // ACCOUNT SUMMARY (left side, under "ACCOUNT SUMMARY")
-      // Position: x: 20mm (≈ 57 points), y: 95mm (≈ 269 points)
-      const summaryX = 57;  // 20mm in points
-      const summaryY = 269; // 95mm in points
-      const lineHeight = 17; // 6mm in points
-
-      doc.fontSize(10)
-         .fillColor('#000000')
-         .font('Helvetica');
-
-      doc.text(`Balance on ${data.period.startDate}: EUR ${data.summary.openingBalance}`, summaryX, summaryY);
-      doc.text(`Total money in: EUR ${data.summary.totalIn}`, summaryX, summaryY + lineHeight);
-      doc.text(`Total money out: EUR ${data.summary.totalOut}`, summaryX, summaryY + (lineHeight * 2));
-      doc.text(`Balance on ${data.period.endDate}: EUR ${data.summary.closingBalance}`, summaryX, summaryY + (lineHeight * 3));
-
-      // TRANSACTION TABLE (below the blue header row)
-      // Position: y: 140mm (≈ 397 points)
-      const tableStartY = 397; // 140mm in points
-      const rowHeight = 34;     // 12mm in points
+      // BANK ADDRESS (top left - matching template)
+      const addressX = 50;
+      const addressY = 80;
       
-      // Column positions to align with template
-      const dateCol = 57;        // 20mm
-      const descCol = 142;       // 50mm  
-      const withdrawalCol = 312;  // 110mm
-      const depositCol = 397;     // 140mm
-      const balanceCol = 482;     // 170mm
+      doc.fontSize(8)
+         .fillColor('#000000')
+         .font('Helvetica');
+      
+      doc.text('Bank of Ireland (UK) plc', addressX, addressY);
+      doc.text('Bow Bells House', addressX, addressY + 10);
+      doc.text('1 Bread Street', addressX, addressY + 20);
+      doc.text('London EC4M 9BE', addressX, addressY + 30);
+
+      // ACCOUNT INFORMATION BLOCK (right side of header)
+      const accountInfoX = 350;
+      const accountInfoY = 80;
 
       doc.fontSize(9)
          .fillColor('#000000')
          .font('Helvetica');
 
-      // Render each transaction row
+      doc.text(`Account Name: ${data.user.fullName}`, accountInfoX, accountInfoY);
+      doc.text(`Account Number: ${data.user.accountNumber}`, accountInfoX, accountInfoY + 12);
+      doc.text(`Statement Period: ${data.period.startDate} to ${data.period.endDate}`, accountInfoX, accountInfoY + 24);
+      doc.text(`Statement Date: ${new Date().toLocaleDateString('en-GB')}`, accountInfoX, accountInfoY + 36);
+
+      // ACCOUNT SUMMARY (positioned to match template layout)
+      const summaryX = 60;
+      const summaryY = 180;
+      const lineHeight = 14;
+
+      doc.fontSize(9)
+         .fillColor('#000000')
+         .font('Helvetica-Bold');
+      
+      doc.text('ACCOUNT SUMMARY', summaryX, summaryY);
+      
+      doc.font('Helvetica')
+         .fontSize(8);
+
+      doc.text(`Opening Balance (${data.period.startDate}): EUR ${data.summary.openingBalance}`, summaryX, summaryY + 20);
+      doc.text(`Total Credits: EUR ${data.summary.totalIn}`, summaryX, summaryY + 34);
+      doc.text(`Total Debits: EUR ${data.summary.totalOut}`, summaryX, summaryY + 48);
+      doc.text(`Closing Balance (${data.period.endDate}): EUR ${data.summary.closingBalance}`, summaryX, summaryY + 62);
+
+      // TRANSACTION TABLE (positioned to match template)
+      const tableStartY = 320;
+      const rowHeight = 16;
+      
+      // Column positions matching template layout
+      const dateCol = 60;
+      const descCol = 140;
+      const withdrawalCol = 280;
+      const depositCol = 380;
+      const balanceCol = 480;
+
+      // Table header
+      doc.fontSize(8)
+         .fillColor('#000000')
+         .font('Helvetica-Bold');
+      
+      doc.text('Date', dateCol, tableStartY);
+      doc.text('Description', descCol, tableStartY);
+      doc.text('Debit', withdrawalCol, tableStartY);
+      doc.text('Credit', depositCol, tableStartY);
+      doc.text('Balance', balanceCol, tableStartY);
+
+      doc.fontSize(8)
+         .fillColor('#000000')
+         .font('Helvetica');
+
+      // Render each transaction row (starting after header)
       data.transactions.forEach((transaction, index) => {
-        const rowY = tableStartY + (index * rowHeight);
+        const rowY = tableStartY + 20 + (index * rowHeight); // Start after header
         
         // Skip if we exceed page boundaries
         if (rowY > 750) return;
 
         doc.text(transaction.date, dateCol, rowY);
-        doc.text(transaction.description.substring(0, 25), descCol, rowY); // Truncate long descriptions
+        doc.text(transaction.description.substring(0, 30), descCol, rowY);
         
         if (transaction.withdrawal) {
-          doc.text(transaction.withdrawal, withdrawalCol, rowY);
+          doc.text(`EUR ${transaction.withdrawal}`, withdrawalCol, rowY);
         }
         
         if (transaction.deposit) {
-          doc.text(transaction.deposit, depositCol, rowY);
+          doc.text(`EUR ${transaction.deposit}`, depositCol, rowY);
         }
         
-        doc.text(transaction.balance, balanceCol, rowY);
+        doc.text(`EUR ${transaction.balance}`, balanceCol, rowY);
       });
 
       // ENDING BALANCE FOOTER (in the final blue row)
