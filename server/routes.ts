@@ -157,7 +157,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return iosPattern.test(userAgent);
   }
 
-  // Access code verification endpoint with BOI format and device-specific usage limits
+  // Access code verification endpoint with device-specific usage limits
   app.post("/api/verify-code", async (req, res) => {
     try {
       const { code } = req.body;
@@ -171,15 +171,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Validate BOI format (BOI + 6 digits)
-      const boiPattern = /^BOI\d{6}$/;
-      if (!boiPattern.test(code)) {
-        return res.status(400).json({ 
-          success: false, 
-          error: "Invalid access code format. Must be BOI followed by 6 digits." 
-        });
-      }
-
       // Get access code data from database
       const codeData = await db.get(`access_code_${code}`);
       
@@ -190,12 +181,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Parse the stored data
+      // Parse the stored data - handle nested JSON serialization
       let codeInfo;
       try {
         if (typeof codeData === 'string') {
           codeInfo = JSON.parse(codeData);
         } else if (codeData && typeof codeData === 'object' && codeData.value) {
+          // Handle Replit Database wrapper format
           codeInfo = typeof codeData.value === 'string' ? JSON.parse(codeData.value) : codeData.value;
         } else {
           codeInfo = codeData;
@@ -228,7 +220,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!codeInfo.deviceLimits) {
         codeInfo.deviceLimits = {
           ios: 2,
-          android: 2,
+          android: 1,
           other: 1
         };
       }
@@ -279,7 +271,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Save updated code info
       await db.set(`access_code_${code}`, JSON.stringify(codeInfo));
 
-      console.log(`BOI Access granted for ${code} - Device: ${deviceType}, Usage: iOS=${codeInfo.usageCount.ios}/${codeInfo.deviceLimits.ios}, Android=${codeInfo.usageCount.android}/${codeInfo.deviceLimits.android}, Other=${codeInfo.usageCount.other}/${codeInfo.deviceLimits.other}`);
+      console.log(`Access granted for ${code} - iOS: ${isIOS}, Usage: iOS=${codeInfo.usageCount.ios}/${codeInfo.deviceLimits.ios}, Non-iOS=${codeInfo.usageCount.android + codeInfo.usageCount.other}/${codeInfo.deviceLimits.android + codeInfo.deviceLimits.other}`);
 
       res.json({ 
         success: true, 
@@ -306,15 +298,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ 
           success: false, 
           error: "Access code required" 
-        });
-      }
-
-      // Validate BOI format
-      const boiPattern = /^BOI\d{6}$/;
-      if (!boiPattern.test(code)) {
-        return res.status(400).json({ 
-          success: false, 
-          error: "Invalid access code format" 
         });
       }
 
@@ -354,46 +337,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Initialize modern usage tracking if not present
-      if (!codeInfo.usageCount) {
-        codeInfo.usageCount = {
+      // Initialize usage tracking if not present (for backward compatibility)
+      if (!codeInfo.usage) {
+        codeInfo.usage = {
           ios: 0,
-          android: 0,
-          other: 0
-        };
-      }
-      if (!codeInfo.deviceLimits) {
-        codeInfo.deviceLimits = {
-          ios: 2,
-          android: 2,
-          other: 1
+          nonIos: 0,
+          totalUses: 0,
+          devices: []
         };
       }
 
       // Get user agent and detect device type
       const userAgent = req.headers['user-agent'] || '';
       const isIOS = isIOSDevice(userAgent);
-      const isAndroid = userAgent.toLowerCase().includes('android');
-      
-      let deviceType, currentUsage, deviceLimit;
-      
-      if (isIOS) {
-        deviceType = 'ios';
-        currentUsage = codeInfo.usageCount.ios;
-        deviceLimit = codeInfo.deviceLimits.ios;
-      } else if (isAndroid) {
-        deviceType = 'android';
-        currentUsage = codeInfo.usageCount.android;
-        deviceLimit = codeInfo.deviceLimits.android;
-      } else {
-        deviceType = 'other';
-        currentUsage = codeInfo.usageCount.other;
-        deviceLimit = codeInfo.deviceLimits.other;
-      }
 
       // Check device-specific usage limits
-      let hasValidAccess = currentUsage < deviceLimit;
-      let remainingUses = deviceLimit - currentUsage;
+      const iosLimit = 2;
+      const nonIosLimit = 1;
+      
+      let hasValidAccess = true;
+      let remainingUses = 0;
+      
+      if (isIOS) {
+        hasValidAccess = codeInfo.usage.ios < iosLimit;
+        remainingUses = iosLimit - codeInfo.usage.ios;
+      } else {
+        hasValidAccess = codeInfo.usage.nonIos < nonIosLimit;
+        remainingUses = nonIosLimit - codeInfo.usage.nonIos;
+      }
 
       if (!hasValidAccess) {
         return res.status(409).json({ 
@@ -406,13 +377,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ 
         success: true, 
         valid: codeInfo?.valid !== false,
-        deviceType: deviceType,
+        deviceType: isIOS ? 'iOS' : 'other',
         remainingUses: remainingUses,
         usageInfo: {
-          ios: codeInfo.usageCount.ios,
-          android: codeInfo.usageCount.android,
-          other: codeInfo.usageCount.other,
-          totalUsage: codeInfo.totalUsage || 0
+          ios: codeInfo.usage.ios,
+          nonIos: codeInfo.usage.nonIos,
+          totalUses: codeInfo.usage.totalUses
         }
       });
       
@@ -989,62 +959,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid account data format" });
       }
       res.status(500).json({ message: "Failed to generate OTC" });
-    }
-  });
-
-  // Admin endpoint for generating access codes (no auth required for admin operations)
-  app.post("/api/admin/generate-codes", async (req, res) => {
-    try {
-      const codeGenerationSchema = z.object({
-        count: z.number().min(1).max(20).default(1),
-        issuedBy: z.string().default('System Admin')
-      });
-
-      const { count, issuedBy } = codeGenerationSchema.parse(req.body);
-      const codes = [];
-      
-      for (let i = 0; i < count; i++) {
-        // Generate BOI + 6 random digits
-        const randomDigits = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
-        const accessCode = `BOI${randomDigits}`;
-        
-        // Store access code in database with device-specific limits
-        await db.set(`access_code_${accessCode}`, {
-          code: accessCode,
-          valid: true,
-          createdAt: new Date().toISOString(),
-          issuedBy: issuedBy,
-          usageCount: {
-            ios: 0,
-            android: 0,
-            other: 0
-          },
-          totalUsage: 0,
-          usesRemaining: 1, // Will be dynamically calculated per device
-          revokedAt: null
-        });
-        
-        codes.push({
-          code: accessCode,
-          usesRemaining: 'Device-specific (iOS/Android: 2, Other: 1)',
-          createdAt: new Date().toISOString(),
-          status: 'Active'
-        });
-        
-        console.log(`✅ NEW ACCESS CODE CREATED: ${accessCode} by ${issuedBy}`);
-      }
-      
-      res.json({ 
-        success: true, 
-        codes: codes,
-        message: `${count} access code(s) generated successfully`
-      });
-    } catch (error) {
-      console.error('Code generation failed:', error);
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid request format" });
-      }
-      res.status(500).json({ message: "Failed to generate access codes" });
     }
   });
 

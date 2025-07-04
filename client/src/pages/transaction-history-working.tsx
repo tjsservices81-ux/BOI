@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useRoute } from "wouter";
-import { ChevronLeft, ArrowUpRight, CreditCard, Building2, Zap, Check, Clock, MapPin, Globe, Share } from "lucide-react";
+import { ChevronLeft, ArrowUpRight, CreditCard, Building2, Zap, Check, Clock, MapPin, Globe } from "lucide-react";
 import MiniSpendingChart from "../components/MiniSpendingChart";
 import { UserDataManager } from "../utils/userDataManager.ts";
 import { StateManager } from "../utils/stateManager";
@@ -19,213 +19,8 @@ export default function TransactionHistoryWorking() {
   const [isNavigating, setIsNavigating] = useState(false);
   const [userCurrency, setUserCurrency] = useState<Currency>('EUR');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const receiptRef = useRef<HTMLDivElement>(null);
   
   const accountId = params?.accountId ? parseInt(params.accountId) : 1;
-
-  // Share receipt functionality - captures receipt screen and opens native share
-  const shareReceipt = async () => {
-    if (!selectedTransaction) return;
-    
-    try {
-      // Create a professional bank statement style receipt
-      const receiptHtml = generateBankStatementHtml(selectedTransaction);
-      
-      // Create a temporary container that's visible on screen
-      const tempContainer = document.createElement('div');
-      tempContainer.innerHTML = receiptHtml;
-      tempContainer.style.position = 'fixed';
-      tempContainer.style.left = '0px';
-      tempContainer.style.top = '0px';
-      tempContainer.style.background = 'white';
-      tempContainer.style.width = '400px';
-      tempContainer.style.padding = '20px';
-      tempContainer.style.zIndex = '9999';
-      tempContainer.style.opacity = '0';
-      tempContainer.style.pointerEvents = 'none';
-      document.body.appendChild(tempContainer);
-      
-      // Use html2canvas to capture the styled receipt
-      const html2canvas = (await import('html2canvas')).default;
-      
-      html2canvas(tempContainer, {
-        backgroundColor: '#ffffff',
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        width: 440,
-        height: tempContainer.scrollHeight + 40
-      }).then(canvas => {
-        // Remove temporary container
-        document.body.removeChild(tempContainer);
-        
-        canvas.toBlob(blob => {
-          if (!blob) {
-            alert('Failed to generate receipt image');
-            return;
-          }
-
-          const file = new File([blob], 'Bank-of-Ireland-Receipt.png', { type: 'image/png' });
-
-          if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            navigator.share({
-              title: 'Bank of Ireland Receipt',
-              text: 'Transaction Confirmation Attached',
-              files: [file]
-            }).catch(error => {
-              if (error.name !== 'AbortError') {
-                alert('Share failed: ' + error.message);
-              }
-            });
-          } else {
-            alert('Sharing not supported on this device.');
-          }
-        }, 'image/png');
-      }).catch(error => {
-        document.body.removeChild(tempContainer);
-        console.error('Canvas capture failed:', error);
-        alert('Failed to capture receipt image');
-      });
-      
-    } catch (error) {
-      console.error('Error generating receipt:', error);
-      alert('Failed to generate receipt for sharing.');
-    }
-  };
-
-  const generateBankStatementHtml = (transaction: any) => {
-    const formattedDate = new Date(transaction.timestamp).toLocaleDateString('en-IE', { 
-      day: '2-digit', 
-      month: '2-digit', 
-      year: 'numeric' 
-    });
-    const formattedTime = new Date(transaction.timestamp).toLocaleTimeString('en-IE', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
-
-    // Format currency with commas for thousands
-    const formatAmountWithCommas = (amount: string) => {
-      const cleanAmount = amount.replace('-', '');
-      const numericAmount = parseFloat(cleanAmount);
-      return numericAmount.toLocaleString('en-IE', { 
-        minimumFractionDigits: 2, 
-        maximumFractionDigits: 2 
-      });
-    };
-
-    return `
-      <div style="
-        font-family: 'Roboto', 'Arial', sans-serif;
-        background: white;
-        max-width: 400px;
-        margin: 0 auto;
-        padding: 30px 20px 20px 20px;
-        color: #333;
-      ">
-        <!-- Bank Logo and Header -->
-        <div style="text-align: center; margin-bottom: 25px;">
-          <img src="/attached_assets/IMG_1908_1751574344262.webp" alt="Bank of Ireland" style="
-            width: 130px; 
-            height: auto; 
-            display: block;
-            margin: 0 auto 15px auto;
-          " />
-          <div style="
-            font-size: 12px;
-            font-weight: 300;
-            color: #777;
-            letter-spacing: 0.3px;
-          ">Transaction Confirmation Statement</div>
-        </div>
-
-        <!-- Transaction Details Section -->
-        <div style="
-          border-top: 1px solid #ccc;
-          border-bottom: 1px solid #ccc;
-          padding: 18px 0;
-          margin: 0 15px 20px 15px;
-        ">
-          <table style="width: 100%; border-collapse: collapse;">
-            <tr>
-              <td style="padding: 8px 0; font-size: 12px; font-weight: bold; color: #444; text-align: left; width: 42%;">Amount:</td>
-              <td style="padding: 8px 0; font-size: 12px; font-weight: bold; color: #333; text-align: left;">${getCurrencySymbol(userCurrency)}${formatAmountWithCommas(transaction.amount)}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 0; font-size: 12px; font-weight: bold; color: #444; text-align: left;">Date:</td>
-              <td style="padding: 8px 0; font-size: 12px; font-weight: bold; color: #333; text-align: left;">${formattedDate}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 0; font-size: 12px; font-weight: bold; color: #444; text-align: left;">Time:</td>
-              <td style="padding: 8px 0; font-size: 12px; font-weight: bold; color: #333; text-align: left;">${formattedTime}</td>
-            </tr>
-            ${transaction.recipientName ? `
-            <tr>
-              <td style="padding: 8px 0; font-size: 12px; font-weight: bold; color: #444; text-align: left;">Recipient:</td>
-              <td style="padding: 8px 0; font-size: 12px; font-weight: bold; color: #333; text-align: left;">${transaction.recipientName}</td>
-            </tr>
-            ` : ''}
-            ${transaction.recipientSortCode ? `
-            <tr>
-              <td style="padding: 8px 0; font-size: 12px; font-weight: bold; color: #444; text-align: left;">Sort Code:</td>
-              <td style="padding: 8px 0; font-size: 12px; font-weight: bold; color: #333; text-align: left;">${transaction.recipientSortCode.replace(/(\d{2})(\d{2})(\d{2})/, '$1-$2-$3')}</td>
-            </tr>
-            ` : ''}
-            ${transaction.recipientAccountNumber ? `
-            <tr>
-              <td style="padding: 8px 0; font-size: 12px; font-weight: bold; color: #444; text-align: left;">Account No:</td>
-              <td style="padding: 8px 0; font-size: 12px; font-weight: bold; color: #333; text-align: left;">${transaction.recipientAccountNumber}</td>
-            </tr>
-            ` : ''}
-            ${transaction.iban ? `
-            <tr>
-              <td style="padding: 8px 0; font-size: 12px; font-weight: bold; color: #444; text-align: left;">IBAN:</td>
-              <td style="padding: 8px 0; font-size: 12px; font-weight: bold; color: #333; font-family: 'Courier New', monospace; text-align: left;">${transaction.iban}</td>
-            </tr>
-            ` : ''}
-            ${transaction.reference ? `
-            <tr>
-              <td style="padding: 8px 0; font-size: 12px; font-weight: bold; color: #444; text-align: left;">Reference:</td>
-              <td style="padding: 8px 0; font-size: 12px; font-weight: bold; color: #333; text-align: left;">${transaction.reference}</td>
-            </tr>
-            ` : ''}
-            <tr>
-              <td style="padding: 8px 0; font-size: 12px; font-weight: bold; color: #444; text-align: left;">Transaction ID:</td>
-              <td style="padding: 8px 0; font-size: 12px; font-weight: bold; color: #333; font-family: 'Courier New', monospace; text-align: left;">${transaction.id}</td>
-            </tr>
-            ${transaction.exchangeRate ? `
-            <tr>
-              <td style="padding: 8px 0; font-size: 12px; font-weight: bold; color: #444; text-align: left;">Exchange Rate:</td>
-              <td style="padding: 8px 0; font-size: 12px; font-weight: bold; color: #333; text-align: left;">${getCurrencySymbol(userCurrency)}1 = ${getCurrencySymbol(userCurrency === 'EUR' ? 'GBP' : 'EUR')}${transaction.exchangeRate.toFixed(4)}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 0; font-size: 12px; font-weight: bold; color: #444; text-align: left;">Converted Amount:</td>
-              <td style="padding: 8px 0; font-size: 12px; font-weight: bold; color: #333; text-align: left;">${getCurrencySymbol(userCurrency === 'EUR' ? 'GBP' : 'EUR')}${formatAmountWithCommas(transaction.convertedAmount)}</td>
-            </tr>
-            ` : ''}
-          </table>
-        </div>
-
-        <!-- Footer -->
-        <div style="
-          text-align: center; 
-          font-size: 10px; 
-          color: #777; 
-          line-height: 1.3;
-        ">
-          <div style="margin-bottom: 4px;">This is an official confirmation from Bank of Ireland.</div>
-          <div>For confirmation only. No signature required.</div>
-        </div>
-      </div>
-    `;
-  };
-
-  const downloadImage = (canvas: HTMLCanvasElement, filename: string) => {
-    const link = document.createElement('a');
-    link.download = `${filename}.pdf`;
-    link.href = canvas.toDataURL();
-    link.click();
-  };
 
   // Enhanced navigation with smooth animations
   const navigateWithAnimation = (path: string, animationType: 'slide-right' | 'slide-left' | 'slide-up' = 'slide-right') => {
@@ -542,31 +337,22 @@ export default function TransactionHistoryWorking() {
           <div 
             onClick={(e) => e.stopPropagation()}
             className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] shadow-xl flex flex-col">
-            {/* Fixed header with share and close buttons */}
+            {/* Fixed header with close button */}
             <div className="flex items-center justify-between p-6 pb-4 border-b border-gray-200 flex-shrink-0">
               <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                 Transaction Details
               </h2>
-              <div className="flex items-center space-x-3">
-                <button 
-                  onClick={shareReceipt}
-                  className="w-8 h-8 bg-[#126987] rounded-full flex items-center justify-center active:scale-95 transition-transform"
-                  title="Share Receipt"
-                >
-                  <Share className="w-4 h-4 text-white" />
-                </button>
-                <button 
-                  onClick={() => setSelectedTransaction(null)}
-                  className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center active:scale-95 transition-transform"
-                >
-                  <span className="text-gray-600 text-lg">×</span>
-                </button>
-              </div>
+              <button 
+                onClick={() => setSelectedTransaction(null)}
+                className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center active:scale-95 transition-transform"
+              >
+                <span className="text-gray-600 text-lg">×</span>
+              </button>
             </div>
 
             {/* Scrollable content area */}
             <div className="flex-1 overflow-y-auto" style={{ maxHeight: 'calc(90vh - 120px)' }}>
-              <div ref={receiptRef} className="p-6 pt-4 pb-24">
+              <div className="p-6 pt-4 pb-24">
                 <div className="space-y-6">
               {/* Transaction Status */}
               <div className="flex items-center justify-center py-4 bg-green-50 rounded-xl">
