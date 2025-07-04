@@ -140,12 +140,23 @@ export async function generateStatementPDF(data: StatementData): Promise<Buffer>
          .fillColor('#000000')
          .font('Helvetica');
 
-      // Render transactions with millimeter-precise BOI formatting
-      data.transactions.forEach((transaction, index) => {
-        const rowY = tableStartY + (index * rowHeight);
+      // Handle empty transactions case
+      if (data.transactions.length === 0) {
+        doc.fontSize(8)
+           .fillColor('#666666')
+           .font('Helvetica');
         
-        // Respect authentic BOI statement page boundaries
-        if (rowY > 550) return;
+        doc.text('No activity during this period', 200, tableStartY + 20, { 
+          align: 'center',
+          width: 200 
+        });
+      } else {
+        // Render transactions with millimeter-precise BOI formatting
+        data.transactions.forEach((transaction, index) => {
+          const rowY = tableStartY + (index * rowHeight);
+          
+          // Respect authentic BOI statement page boundaries
+          if (rowY > 550) return;
 
         // BOI date format: DD/MM/YY (shorter format for space efficiency)
         let formattedDate = transaction.date;
@@ -173,10 +184,11 @@ export async function generateStatementPDF(data: StatementData): Promise<Buffer>
           // Ensure withdrawal column is empty
         }
         
-        // Running balance: Right-aligned in balance column with € symbol
-        const balance = transaction.balance.replace(/[€EUR\s]/g, '');
-        doc.text(`€${balance}`, balanceCol, rowY, { align: 'right', width: 80 });
-      });
+          // Running balance: Right-aligned in balance column with € symbol
+          const balance = transaction.balance.replace(/[€EUR\s]/g, '');
+          doc.text(`€${balance}`, balanceCol, rowY, { align: 'right', width: 80 });
+        });
+      }
 
       // ENDING BALANCE FOOTER (millimeter-exact BOI positioning)
       // Positioned in authentic BOI statement footer at precise coordinates

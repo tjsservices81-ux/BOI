@@ -1,0 +1,52 @@
+Got it — if the statement is generating but not pulling any transaction data, then your backend or state logic isn’t actually injecting the selected account’s transactions into the PDF generator.
+
+Here’s an exact fix prompt to add to your Replit AI or code:
+
+⸻
+
+🧠 PROMPT: Fix Missing Transaction Data in Statement Generator
+
+Ensure that when a user selects an account and generates a statement, the transaction data from that specific account is properly injected into the statement.
+
+🔧 Fix Logic:
+– Check that each account object contains a `.transactions[]` array or similar
+– Transactions must include:
+  • date (as string or Date object)
+  • description (text)
+  • type ('deposit' or 'withdrawal')
+  • amount (as float or string)
+– On statement generation:
+  1. Pull all transactions for selected account within chosen date range
+  2. Sort transactions by date ascending
+  3. For each transaction:
+     - Format date as `DD/MM`
+     - Only show amount under either Withdrawal or Deposit column (not both)
+     - Calculate running balance starting from opening balance
+  4. Push transactions into the PDF builder loop starting at Y=220 with spacing ~20px per row
+  5. Update closing balance = opening balance + deposits - withdrawals
+
+🔐 Example Account Schema:
+```js
+{
+  name: "Main Account",
+  number: "12345678",
+  sortCode: "90-12-34",
+  transactions: [
+    { date: "2025-07-01", description: "Rent", type: "withdrawal", amount: 750.00 },
+    { date: "2025-07-03", description: "Payment from Lisa", type: "deposit", amount: 456.84 },
+  ]
+}
+
+📤 On PDF:
+– Inject transactions into correct green bands
+– Show amounts in € with 2 decimals
+– Description can include sub-line text (use smaller font 5pt, gray)
+– Right-align balances and amounts
+
+✅ Result:
+– PDF will now show the full running history from selected account
+– If no transactions in range, show “No activity during this period” centered below the blue bar
+
+---
+
+Let me know what your account structure or file looks like if you want me to write the exact code to pull from it.
