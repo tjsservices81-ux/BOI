@@ -265,13 +265,6 @@ export default function TransactionHistoryWorking() {
     `;
   };
 
-  const downloadImage = (canvas: HTMLCanvasElement, filename: string) => {
-    const link = document.createElement('a');
-    link.download = `${filename}.pdf`;
-    link.href = canvas.toDataURL();
-    link.click();
-  };
-
   // Enhanced navigation with smooth animations
   const navigateWithAnimation = (path: string, animationType: 'slide-right' | 'slide-left' | 'slide-up' = 'slide-right') => {
     setIsNavigating(true);
