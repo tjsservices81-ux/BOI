@@ -13,6 +13,7 @@ import starlingIcon from "@assets/IMG_1996_1751647366865.png";
 import halifaxIcon from "@assets/IMG_1997_1751647408940.png";
 import santanderIcon from "@assets/IMG_1998_1751647765469.jpeg";
 import metroBankIcon from "@assets/IMG_1999_1751647836371.png";
+import rbsIcon from "@assets/IMG_2001_1751648200916.png";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -111,6 +112,9 @@ const getBankIcon = (bankName: string): string | undefined => {
   }
   if (bankName === 'Metro Bank') {
     return metroBankIcon;
+  }
+  if (bankName === 'Royal Bank of Scotland') {
+    return rbsIcon;
   }
   return undefined;
 };
