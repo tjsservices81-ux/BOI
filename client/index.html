@@ -554,28 +554,6 @@
           const accessCode = urlParams.get('access');
           
           if (!accessCode) {
-            // For testing purposes, allow access with any of the working codes
-            const testCodes = ['FRESH2025', 'WORKING2024'];
-            // Check if any test code exists in database by trying them
-            for (const testCode of testCodes) {
-              try {
-                const testResponse = await fetch('/api/check-access', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ code: testCode })
-                });
-                const testResult = await testResponse.json();
-                if (testResult.success && testResult.valid) {
-                  console.log(`Using test code: ${testCode}`);
-                  localStorage.setItem('accessGranted', 'true');
-                  localStorage.setItem('accessCode', testCode);
-                  hideLoadingScreen();
-                  return;
-                }
-              } catch (e) {
-                console.log(`Test code ${testCode} failed:`, e);
-              }
-            }
             // No access code and no stored access - show "Not available"
             showAccessDenied("Not available");
             return;
