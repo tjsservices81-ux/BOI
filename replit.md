@@ -126,8 +126,7 @@ This is a comprehensive mobile banking application built as a Progressive Web Ap
   - Rolling date calculations for week/month periods vs calendar-based periods for monthly options
 - July 04, 2025: STATEMENTS FEATURE - Implemented comprehensive Bank of Ireland statement generation system
   - Created new Statements page replacing Pay Bills section in More menu
-  - Implemented PDF generation service using authentic BOI template (IMG_1981_1751653862587.jpeg)
-  - Added Bank of Ireland address in top left corner matching authentic layout
+  - Implemented PDF generation service using statement_background.jpeg template (IMG_1981_1751652629227.jpeg)
   - Precise field positioning: Account info at x:140mm y:62mm, Summary at x:20mm y:95mm, Transaction table at y:140mm
   - Professional layout matching authentic BOI statements with proper A4 dimensions (595x842 points)
   - Multiple statement periods: Current month, Last month, Last 3 months, Last 6 months
