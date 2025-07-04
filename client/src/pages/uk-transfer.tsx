@@ -12,6 +12,7 @@ import monzoIcon from "@assets/IMG_1995_1751647342658.png";
 import starlingIcon from "@assets/IMG_1996_1751647366865.png";
 import halifaxIcon from "@assets/IMG_1997_1751647408940.png";
 import santanderIcon from "@assets/IMG_1998_1751647765469.jpeg";
+import metroBankIcon from "@assets/IMG_1999_1751647836371.png";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -58,7 +59,8 @@ const knownSortCodes: Record<string, string> = {
   "04-06-05": "Tide",
   "60-83-71": "Starling Bank",
   "08-71-99": "Cashplus",
-  "23-14-70": "Wise"
+  "23-14-70": "Wise",
+  "23-05-80": "Metro Bank"
 };
 
 const ukTransferSchema = z.object({
@@ -106,6 +108,9 @@ const getBankIcon = (bankName: string): string | undefined => {
   }
   if (bankName === 'Santander') {
     return santanderIcon;
+  }
+  if (bankName === 'Metro Bank') {
+    return metroBankIcon;
   }
   return undefined;
 };
@@ -902,6 +907,7 @@ export default function UkTransfer() {
                         alt={`${identifiedBank} logo`}
                         className={`mr-2 object-contain ${
                           identifiedBank === 'TSB Bank' ? 'w-8 h-5' : 
+                          identifiedBank === 'Halifax' ? 'w-8 h-6' : 
                           identifiedBank === 'Nationwide' ? 'w-5 h-5' : 
                           identifiedBank === 'Monzo' ? 'w-5 h-5' : 
                           identifiedBank === 'Starling Bank' ? 'w-5 h-5' : 
