@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { ChevronLeft, Info, Check, CreditCard, Building2, Building, Plus, X } from "lucide-react";
 import barclaysIcon from "@assets/IMG_1985_1751646296833.png";
+import lloydsIcon from "@assets/IMG_1986_1751646563662.png";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -66,6 +67,9 @@ type UkTransferData = z.infer<typeof ukTransferSchema>;
 const getBankIcon = (bankName: string): string | undefined => {
   if (bankName === 'Barclays') {
     return barclaysIcon;
+  }
+  if (bankName === 'Lloyds Bank') {
+    return lloydsIcon;
   }
   return undefined;
 };
