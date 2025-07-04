@@ -212,9 +212,9 @@ export default function Statements() {
   };
 
   return (
-    <div className="page-container page-fade-in min-h-screen bg-gray-50">
+    <div className="page-container page-fade-in h-screen bg-gray-50 flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="sticky top-0 left-0 right-0 bg-white border-b border-gray-100 z-20">
+      <div className="flex-shrink-0 bg-white border-b border-gray-100 z-20">
         <div className="flex items-center justify-between px-4 py-4">
           <button 
             onClick={() => navigate('/more')}
@@ -230,8 +230,14 @@ export default function Statements() {
       </div>
 
       {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto overscroll-contain pb-24 px-4" style={{ WebkitOverflowScrolling: 'touch' }}>
-        <div className="max-w-md mx-auto space-y-6 py-6">
+      <div 
+        className="flex-1 overflow-y-auto overscroll-contain px-4" 
+        style={{ 
+          WebkitOverflowScrolling: 'touch',
+          height: 'calc(100vh - 73px)' // Subtract header height
+        }}
+      >
+        <div className="max-w-md mx-auto space-y-6 py-6 pb-24">
           
           {/* Statement Info */}
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
