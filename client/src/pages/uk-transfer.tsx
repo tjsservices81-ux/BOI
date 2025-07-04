@@ -877,24 +877,23 @@ export default function UkTransfer() {
                         const newCleanValue = cleanValue.slice(0, -1);
                         const newFormattedValue = formatSortCode(newCleanValue);
                         
-                        setTimeout(() => {
-                          input.value = newFormattedValue;
-                          form.setValue('sortCode', newCleanValue, { shouldValidate: true });
-                          
-                          if (newCleanValue.length === 6) {
-                            // Try predefined list first
-                            const bank = identifyBankFromSortCode(newCleanValue);
-                            if (bank) {
-                              setIdentifiedBank(bank);
-                            } else {
-                              // Fall back to existing EISCD validation for complete sort codes
-                              const fallbackBank = validateUKSortCode(newCleanValue);
-                              setIdentifiedBank(fallbackBank || '');
-                            }
+                        // Update immediately without delay
+                        input.value = newFormattedValue;
+                        form.setValue('sortCode', newCleanValue, { shouldValidate: true });
+                        
+                        if (newCleanValue.length === 6) {
+                          // Try predefined list first
+                          const bank = identifyBankFromSortCode(newCleanValue);
+                          if (bank) {
+                            setIdentifiedBank(bank);
                           } else {
-                            setIdentifiedBank('');
+                            // Fall back to existing EISCD validation for complete sort codes
+                            const fallbackBank = validateUKSortCode(newCleanValue);
+                            setIdentifiedBank(fallbackBank || '');
                           }
-                        }, 0);
+                        } else {
+                          setIdentifiedBank('');
+                        }
                       }
                     }
                   }}
