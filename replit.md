@@ -95,6 +95,12 @@ This is a comprehensive mobile banking application built as a Progressive Web Ap
 - **Security**: HTTPS required for PWA installation and service worker functionality
 
 ## Changelog
+- July 04, 2025: STATEMENT PERIODS ENHANCEMENT - Added flexible date range options including 1 week and 2 weeks periods
+  - Expanded statement period selection from 4 options to 7 options
+  - Added 1 Week, 2 Weeks, and 1 Month (last 30 days) options alongside existing monthly periods
+  - Default selection changed to 1 Week for quicker statement generation
+  - Enhanced period labels for clarity: "Previous Month" instead of "Last Month"
+  - Rolling date calculations for week/month periods vs calendar-based periods for monthly options
 - July 04, 2025: STATEMENTS FEATURE - Implemented comprehensive Bank of Ireland statement generation system
   - Created new Statements page replacing Pay Bills section in More menu
   - Implemented PDF generation service using statement_background.jpeg template (IMG_1981_1751652629227.jpeg)

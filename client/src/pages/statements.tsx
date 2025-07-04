@@ -5,7 +5,7 @@ import { UserDataManager } from '@/utils/userDataManager';
 
 export default function Statements() {
   const [, navigate] = useLocation();
-  const [selectedPeriod, setSelectedPeriod] = useState('current-month');
+  const [selectedPeriod, setSelectedPeriod] = useState('1-week');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationComplete, setGenerationComplete] = useState(false);
   const [user, setUser] = useState<any>(null);
@@ -20,6 +20,18 @@ export default function Statements() {
     let startDate, endDate;
 
     switch (selectedPeriod) {
+      case '1-week':
+        startDate = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000));
+        endDate = now;
+        break;
+      case '2-weeks':
+        startDate = new Date(now.getTime() - (14 * 24 * 60 * 60 * 1000));
+        endDate = now;
+        break;
+      case '1-month':
+        startDate = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
+        endDate = now;
+        break;
       case 'current-month':
         startDate = new Date(now.getFullYear(), now.getMonth(), 1);
         endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
@@ -168,10 +180,16 @@ export default function Statements() {
     const { startDate, endDate } = getStatementPeriod();
     
     switch (selectedPeriod) {
+      case '1-week':
+        return `Last Week (${formatDate(startDate)} - ${formatDate(endDate)})`;
+      case '2-weeks':
+        return `Last 2 Weeks (${formatDate(startDate)} - ${formatDate(endDate)})`;
+      case '1-month':
+        return `Last Month (${formatDate(startDate)} - ${formatDate(endDate)})`;
       case 'current-month':
         return `Current Month (${formatDate(startDate)} - ${formatDate(endDate)})`;
       case 'last-month':
-        return `Last Month (${formatDate(startDate)} - ${formatDate(endDate)})`;
+        return `Previous Month (${formatDate(startDate)} - ${formatDate(endDate)})`;
       case 'last-3-months':
         return `Last 3 Months (${formatDate(startDate)} - ${formatDate(endDate)})`;
       case 'last-6-months':
@@ -227,8 +245,11 @@ export default function Statements() {
               
               <div className="space-y-2">
                 {[
+                  { value: '1-week', label: '1 Week' },
+                  { value: '2-weeks', label: '2 Weeks' },
+                  { value: '1-month', label: '1 Month' },
                   { value: 'current-month', label: 'Current Month' },
-                  { value: 'last-month', label: 'Last Month' },
+                  { value: 'last-month', label: 'Previous Month' },
                   { value: 'last-3-months', label: 'Last 3 Months' },
                   { value: 'last-6-months', label: 'Last 6 Months' }
                 ].map((option) => (
