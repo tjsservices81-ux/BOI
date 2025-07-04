@@ -11,6 +11,12 @@ const sortCodeMap = {
   "300083": "TSB Bank",
   "090128": "Santander",
   
+  // Bank of Scotland
+  "802000": "Bank of Scotland",
+  "802260": "Bank of Scotland",
+  "802045": "Bank of Scotland",
+  "804635": "Bank of Scotland",
+  
   // Online / Challenger Banks
   "040004": "Monzo",
   "608371": "Starling Bank",

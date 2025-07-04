@@ -95,6 +95,19 @@ This is a comprehensive mobile banking application built as a Progressive Web Ap
 - **Security**: HTTPS required for PWA installation and service worker functionality
 
 ## Changelog
+- July 04, 2025: SORT CODE ENHANCEMENT - Added Bank of Scotland sort codes to validation system
+  - Added sort codes: 80-20-00, 80-22-60, 80-20-45, 80-46-35
+  - Updated both bankValidation.ts and knownSortCodes in uk-transfer.tsx
+  - Bank of Scotland now properly identified during UK transfers with these specific sort codes
+  - Includes general "80" prefix recognition for all Bank of Scotland sort codes
+- July 04, 2025: VALIDATION IMPROVEMENT - Made IBAN and BIC validation flexible for international transfers
+  - Removed strict formatting requirements for IBAN and BIC codes
+  - Users can now enter any format without validation errors
+  - Improved user experience for international SEPA transfers
+- July 04, 2025: CHAT PROFESSIONALISM - Updated live chat agents for professional banking communication
+  - All banking queries now use professional language while maintaining agent personalities
+  - Standardized responses for transfers, card issues, and account information
+  - Maintained individual agent character traits for non-banking conversations
 - July 04, 2025: FEATURE RESTORATION - Restored "Secure Connection Active" status display during transfer processing
   - Restored secure connection indicator with green pulsing dot and description
   - Added to both UK Transfer and IBAN Transfer processing screens
