@@ -51,9 +51,11 @@ const createTransporter = () => {
  * Send email using the same SMTP configuration as the OTC service
  */
 export async function sendEmail(to: string, subject: string, body: string): Promise<boolean> {
+  console.log('🔵 EMAIL FUNCTION CALLED - sendEmail()');
   console.log('📧 SENDING EMAIL NOTIFICATION');
   console.log(`To: ${to}`);
   console.log(`Subject: ${subject}`);
+  console.log(`Body preview: ${body.substring(0, 100)}...`);
   
   const transporter = createTransporter();
   
@@ -122,6 +124,10 @@ export async function sendTransferConfirmation(
   userEmail: string, 
   details: TransferConfirmationDetails
 ): Promise<boolean> {
+  console.log('🔵 TRANSFER CONFIRMATION EMAIL TRIGGERED - sendTransferConfirmation()');
+  console.log('Sending to:', userEmail);
+  console.log('Transfer:', details.amount, details.recipientName, details.transactionReference);
+  
   try {
     const { subject, body } = generateTransferConfirmationEmail(details);
     const success = await sendEmail(userEmail, subject, body);
@@ -134,7 +140,7 @@ export async function sendTransferConfirmation(
     
     return success;
   } catch (error) {
-    console.error('Error sending transfer confirmation email:', error);
+    console.error('🔴 ERROR in sendTransferConfirmation:', error);
     return false;
   }
 }

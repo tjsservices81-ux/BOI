@@ -753,6 +753,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Send transfer confirmation email (called by frontend after processing transfer locally)
   app.post("/api/send-transfer-email", async (req, res) => {
+    console.log('🔵 EMAIL API ENDPOINT CALLED - /api/send-transfer-email');
+    console.log('🔵 Request body:', req.body);
+    
     try {
       const emailSchema = z.object({
         userEmail: z.string().email(),
@@ -765,6 +768,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       const emailData = emailSchema.parse(req.body);
+      console.log('🔵 Email data parsed:', emailData);
       
       const confirmationDetails: TransferConfirmationDetails = {
         senderName: emailData.senderName,

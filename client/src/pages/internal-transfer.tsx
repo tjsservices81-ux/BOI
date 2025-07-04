@@ -199,8 +199,11 @@ export default function InternalTransfer() {
     }));
 
     // ✅ INTERNAL TRANSFER COMPLETED SUCCESSFULLY - NOW SEND EMAIL CONFIRMATION
+    console.log('🔵 INTERNAL TRANSFER COMPLETED - Starting email confirmation process');
     try {
       const userProfile = UserDataManager.getUserData('userProfile', null);
+      console.log('User profile found:', userProfile ? 'YES' : 'NO');
+      console.log('User email:', userProfile?.email);
       
       if (userProfile && userProfile.email) {
         const timestamp = new Date().toLocaleString('en-GB', {
@@ -222,6 +225,9 @@ export default function InternalTransfer() {
         };
 
         // Send email confirmation after successful internal transfer
+        console.log('🔵 Making internal transfer email API request to:', '/api/send-transfer-email');
+        console.log('🔵 Internal transfer email request payload:', emailRequest);
+        
         fetch('/api/send-transfer-email', {
           method: 'POST',
           headers: {
@@ -230,14 +236,18 @@ export default function InternalTransfer() {
           credentials: 'include',
           body: JSON.stringify(emailRequest)
         }).then(response => {
+          console.log('🔵 Internal transfer email API response status:', response.status);
           if (response.ok) {
             console.log('✅ Internal transfer confirmation email sent successfully to:', userProfile.email);
             return response.json();
           } else {
             console.error('❌ Failed to send internal transfer confirmation email. Status:', response.status);
+            return response.text().then(text => {
+              console.error('Error response:', text);
+            });
           }
         }).catch(error => {
-          console.error('❌ Internal transfer email confirmation request failed:', error);
+          console.error('🔴 Internal transfer email confirmation request failed:', error);
         });
       } else {
         console.warn('⚠️ No user email found - internal transfer confirmation email not sent');

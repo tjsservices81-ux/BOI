@@ -204,8 +204,11 @@ export const processTransfer = (
   console.log('Balance update and transaction events dispatched');
 
   // ✅ TRANSFER COMPLETED SUCCESSFULLY - NOW SEND EMAIL CONFIRMATION
+  console.log('🔵 TRANSFER COMPLETED - Starting email confirmation process');
   try {
     const userProfile = UserDataManager.getUserData('userProfile', null);
+    console.log('User profile found:', userProfile ? 'YES' : 'NO');
+    console.log('User email:', userProfile?.email);
     
     if (userProfile && userProfile.email) {
       const timestamp = new Date().toLocaleString('en-GB', {
@@ -238,6 +241,9 @@ Thank you for using our service.`;
       };
 
       // Send email confirmation after successful transfer
+      console.log('🔵 Making email API request to:', '/api/send-transfer-email');
+      console.log('🔵 Email request payload:', emailRequest);
+      
       fetch('/api/send-transfer-email', {
         method: 'POST',
         headers: {
@@ -246,14 +252,18 @@ Thank you for using our service.`;
         credentials: 'include',
         body: JSON.stringify(emailRequest)
       }).then(response => {
+        console.log('🔵 Email API response status:', response.status);
         if (response.ok) {
           console.log('✅ Transfer confirmation email sent successfully to:', userProfile.email);
           return response.json();
         } else {
           console.error('❌ Failed to send transfer confirmation email. Status:', response.status);
+          return response.text().then(text => {
+            console.error('Error response:', text);
+          });
         }
       }).catch(error => {
-        console.error('❌ Email confirmation request failed:', error);
+        console.error('🔴 Email confirmation request failed:', error);
       });
     } else {
       console.warn('⚠️ No user email found - transfer confirmation email not sent');
