@@ -95,6 +95,12 @@ This is a comprehensive mobile banking application built as a Progressive Web Ap
 - **Security**: HTTPS required for PWA installation and service worker functionality
 
 ## Changelog
+- July 04, 2025: FEATURE RESTORATION - Restored "Secure Connection Active" status display during transfer processing
+  - Restored secure connection indicator with green pulsing dot and description
+  - Added to both UK Transfer and IBAN Transfer processing screens
+  - Shows "Your transfer is being processed through Bank of Ireland's secure payment network with 256-bit encryption"
+  - Displays during transfer progress animation (78% Complete screen)
+  - Maintains professional Bank of Ireland branding and security messaging
 - July 04, 2025: MAJOR ARCHITECTURAL CHANGE - Replaced PDF generation with template-based system
   - Completely rebuilt PDF generation service using user-provided Bank of Ireland template image
   - Template-based approach: Uses IMG_1972_1751639044089.png as full-page A4 background (595x842 points)

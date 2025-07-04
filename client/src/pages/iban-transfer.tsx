@@ -324,6 +324,20 @@ export default function IbanTransfer() {
                     </p>
                   </div>
                   
+                  {/* Secure Connection Active Status */}
+                  <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 bg-green-500 rounded-full mr-3 animate-pulse"></div>
+                      <div className="flex-1">
+                        <p className="font-semibold text-gray-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Secure Connection Active
+                        </p>
+                        <p className="text-xs text-gray-600 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Your transfer is being processed through Bank of Ireland's secure payment network with 256-bit encryption
+                        </p>
+                      </div>
+                    </div>
+                  </div>
 
                 </div>
               </div>
