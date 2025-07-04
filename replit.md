@@ -95,6 +95,12 @@ This is a comprehensive mobile banking application built as a Progressive Web Ap
 - **Security**: HTTPS required for PWA installation and service worker functionality
 
 ## Changelog
+- July 04, 2025: PDF ENHANCEMENT - Added IBAN and BIC display for SEPA transfer confirmations
+  - PDF generation now includes IBAN and BIC codes for SEPA transfers alongside existing account/sort code for UK transfers
+  - Professional formatting with proper labels and Bank of Ireland styling
+  - IBAN displays from transferData.iban or transferData.recipientIban fields
+  - BIC Code displays from transferData.bicCode field
+  - Maintains template-based PDF system with authentic Bank of Ireland branding
 - July 04, 2025: VISUAL ENHANCEMENT - Added bank icons to sort code validation display
   - Implemented bank icons: Barclays (blue eagle), Lloyds Bank (black horse), TSB Bank (three circles logo)
   - Icons appear alongside bank names with proper sizing (16x16px) and positioning

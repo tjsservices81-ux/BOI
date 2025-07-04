@@ -153,6 +153,35 @@ export async function generateTransferConfirmationPDF(
         yPos += 30;
       }
 
+      // Account details for SEPA transfers (IBAN and BIC)
+      if (transferData && (transferData.iban || transferData.recipientIban) && transferData.bicCode) {
+        // IBAN
+        doc.font('Helvetica-Bold')
+           .fontSize(12)
+           .fillColor('#000000')
+           .text('IBAN:', leftCol, yPos);
+        
+        doc.font('Helvetica')
+           .fontSize(12)
+           .fillColor('#000000')
+           .text(transferData.iban || transferData.recipientIban, rightCol, yPos);
+        
+        yPos += 30;
+
+        // BIC Code
+        doc.font('Helvetica-Bold')
+           .fontSize(12)
+           .fillColor('#000000')
+           .text('BIC Code:', leftCol, yPos);
+        
+        doc.font('Helvetica')
+           .fontSize(12)
+           .fillColor('#000000')
+           .text(transferData.bicCode, rightCol, yPos);
+        
+        yPos += 30;
+      }
+
       // Reference (use actual transfer reference)
       doc.font('Helvetica-Bold')
          .fontSize(12)
