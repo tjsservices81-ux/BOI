@@ -95,18 +95,21 @@ This is a comprehensive mobile banking application built as a Progressive Web Ap
 - **Security**: HTTPS required for PWA installation and service worker functionality
 
 ## Changelog
-- July 04, 2025: Completed professional Bank of Ireland email system with PDF attachments
+- July 04, 2025: Completed authentic Bank of Ireland PDF transfer confirmation system
   - Fixed user profile data retrieval issue that prevented emails from sending
   - Implemented dynamic transfer type detection (UK vs SEPA vs Internal transfers)
-  - Created professional PDF confirmation documents with authentic Bank of Ireland logo
-  - PDF generation using pdfkit with proper BOI branding and clean layout
-  - Email system sends simple HTML message with PDF attachment (TransferConfirmation-[ID].pdf)
-  - PDF contains: BOI logo, Transfer Confirmation heading, Transaction Details section, security warnings
-  - Transfer-specific PDF formatting with proper account details for each type
-  - Clean email body: "Please find attached your Bank of Ireland transfer confirmation"
-  - Configured anti-spam headers and proper from address formatting
-  - UK transfers display: Amount, To Account, Account Number, Sort Code, Reference, Date/Time, Transaction ID, Unique Reference
-  - SEPA transfers display: Amount, To Account, IBAN, BIC, Reference, Date/Time, Transaction ID, Unique Reference
+  - Created professional PDF documents matching authentic Bank of Ireland styling and branding
+  - PDF generation using pdfkit with A4 format, proper margins, and BOI color scheme (#003f7f blue)
+  - Professional PDF layout: BOI header, Transfer Confirmation title, blue line separators, structured sections
+  - Transaction Details section with boxed heading and two-column label/value layout
+  - Transfer-specific formatting with bold amount highlighting and proper account details
+  - Red security warning box: "If you did not authorise this payment, contact 1800 123 456 immediately"
+  - Professional footer with BOI branding and contact information
+  - Email system sends clean HTML message with PDF attachment (TransferConfirmation-[ID].pdf)
+  - PDF metadata includes document title, author, and BOI creator information
+  - UK transfers display: Amount, Account Number, Sort Code, Reference, Date/Time, Transaction ID, Unique Reference
+  - SEPA transfers display: Amount, IBAN, BIC, Reference, Date/Time, Transaction ID, Unique Reference
+  - Professional BOI text header with blue background when logo embedding unavailable
 - July 04, 2025: Initial setup
 
 ## User Preferences
