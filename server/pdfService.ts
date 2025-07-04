@@ -51,32 +51,18 @@ export async function generateTransferConfirmationPDF(
       console.log('🔍 VISUAL LOGO CHECK: Loading BOI logo from:', logoPath);
       console.log('🔍 File exists check:', fs.existsSync(logoPath));
       
-      // First, add a test rectangle to verify positioning works
-      doc.rect(40, 40, 160, 50)
-         .stroke('#ff0000')
-         .lineWidth(1);
-      console.log('✅ TEST: Red rectangle drawn at logo position for verification');
-      
       try {
         if (fs.existsSync(logoPath)) {
-          console.log('✅ VISUAL: BOI_logo.png found, now embedding...');
+          console.log('✅ FINAL: BOI_logo.png found, embedding cleanly...');
           
-          // Embed logo with explicit parameters and larger area
+          // Embed Bank of Ireland logo cleanly without overlays
           doc.image(logoPath, 40, 40, { 
-            width: 160,
-            height: 50,
-            fit: [160, 50]
+            width: 160
           });
           
           logoAdded = true;
           startY = 110; // Position content below logo
-          console.log('✅ VISUAL CONFIRMED: BOI logo embedded at (40,40) with width 160px');
-          
-          // Add a border around logo for verification
-          doc.rect(39, 39, 162, 52)
-             .stroke('#0000ff')
-             .lineWidth(1);
-          console.log('✅ VISUAL: Blue border added around logo for verification');
+          console.log('✅ FINAL: BOI logo embedded cleanly at (40,40) with width 160px');
           
         } else {
           console.log('❌ VISUAL ERROR: BOI_logo.png not found at path');
