@@ -166,7 +166,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userAgent = req.headers['user-agent'] || '';
       const isIOS = isIOSDevice(userAgent);
       
-      if (!code || typeof code !== 'string') {
+      if (!code || typeof code !== 'string' || !code.startsWith('BOI')) {
         return res.status(400).json({ 
           success: false, 
           error: "Invalid access code format" 
@@ -296,7 +296,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { code } = req.body;
       
-      if (!code || typeof code !== 'string') {
+      if (!code || typeof code !== 'string' || !code.startsWith('BOI')) {
         return res.status(400).json({ 
           success: false, 
           error: "Access code required" 

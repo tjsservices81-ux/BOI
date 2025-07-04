@@ -95,6 +95,15 @@ This is a comprehensive mobile banking application built as a Progressive Web Ap
 - **Security**: HTTPS required for PWA installation and service worker functionality
 
 ## Changelog
+- July 04, 2025: BOI PREFIX ENFORCEMENT - Updated access code validation to require "BOI" prefix for all codes
+  - All access codes must now start with "BOI" prefix (e.g., BOI123456)
+  - Applied validation to both /api/verify-code and /api/check-access endpoints
+  - Non-BOI codes are rejected with "Invalid access code format" error
+  - Ensures consistent branding and security across all access code systems
+- July 04, 2025: STATEMENTS BUTTON DISABLED - Temporarily disabled statements button in More menu
+  - Comments out statements functionality while maintaining backend services
+  - Users cannot access statement generation through the interface
+  - All statement generation code remains intact for future re-enablement
 - July 04, 2025: TEMPLATE POSITIONING OVERHAUL - Updated PDF generation to use exact template column positioning
   - Account info positioned at top: 13%, right: 6% with Arial bold 14px font
   - Left header section at top: 28%, left: 6%, spacing 32px apart with Arial regular 13px
