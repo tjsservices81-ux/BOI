@@ -95,6 +95,12 @@ This is a comprehensive mobile banking application built as a Progressive Web Ap
 - **Security**: HTTPS required for PWA installation and service worker functionality
 
 ## Changelog
+- July 04, 2025: STATEMENTS SCROLLING ENHANCEMENT - Made statements screen fully scrollable for better mobile experience
+  - Changed header from fixed to sticky positioning to maintain visibility while scrolling
+  - Added proper overflow-y-auto and flex-1 classes for smooth vertical scrolling
+  - Enhanced touch scrolling with WebkitOverflowScrolling: 'touch' for iOS devices
+  - Added overscroll-contain to prevent scroll chaining on mobile browsers
+  - Proper padding and container structure to accommodate all content on smaller screens
 - July 04, 2025: ACCOUNT SELECTION FOR STATEMENTS - Added account selection functionality to statements feature
   - Users can now select which account to generate statements for (Current Account, Savings, Credit Card, etc.)
   - Account selection with radio buttons showing account name, number, and current balance
