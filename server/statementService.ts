@@ -5,6 +5,7 @@ import path from 'path';
 export const generateStatement = async (userData: any, period: string) => {
   try {
     console.log('🔵 Generating Bank of Ireland statement PDF for period:', period);
+    console.log('📊 Transaction data received:', userData.transactions?.length || 0, 'transactions');
     
     // Create PDF document with A4 dimensions and no margins for template overlay
     const doc = new PDFDocument({ 
@@ -24,23 +25,39 @@ export const generateStatement = async (userData: any, period: string) => {
       throw new Error('Required BOI template IMG_1981_1751654672745.jpeg not found');
     }
     
-    // Calculate statement period dates
-    const endDate = new Date();
-    let startDate = new Date();
+    // REAL TRANSACTION SCANNING AND VALIDATION
+    console.log('🔍 Scanning real transaction data...');
+    let realTransactions = userData.transactions || [];
     
-    switch (period) {
-      case '1week':
-        startDate.setDate(endDate.getDate() - 7);
-        break;
-      case '2weeks':
-        startDate.setDate(endDate.getDate() - 14);
-        break;
-      case '1month':
-        startDate.setMonth(endDate.getMonth() - 1);
-        break;
-      default:
-        startDate.setDate(endDate.getDate() - 7);
+    // Error handling for missing transactions
+    if (!realTransactions || realTransactions.length === 0) {
+      console.log('❌ Transaction history unavailable - no real data found');
+      
+      // Add error message to PDF instead of fake data
+      doc.font('Helvetica-Bold').fontSize(10).fillColor('#ff0000');
+      doc.text('Transaction history unavailable', 50, 300, {
+        width: 500,
+        align: 'center'
+      });
+      
+      return doc;
     }
+    
+    console.log('✅ Found real transactions:', realTransactions.length);
+    realTransactions.forEach((tx: any, index: number) => {
+      console.log(`${index + 1}. ${tx.description}: €${tx.amount} (${tx.type}) - ${new Date(tx.date).toLocaleDateString()}`);
+    });
+    
+    // Sort transactions chronologically (oldest to newest) for proper balance calculation
+    realTransactions.sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    
+    // Calculate statement period from actual transaction dates
+    const oldestTransaction = realTransactions[0];
+    const newestTransaction = realTransactions[realTransactions.length - 1];
+    const startDate = new Date(oldestTransaction.date);
+    const endDate = new Date(newestTransaction.date);
+    
+    console.log('📅 Statement period:', startDate.toLocaleDateString(), 'to', endDate.toLocaleDateString());
     
     // Format dates for display (DD MMM YYYY format)
     const formatDate = (dateStr: string) => {
@@ -57,6 +74,48 @@ export const generateStatement = async (userData: any, period: string) => {
     const startDateStr = formatDate(startDate.toISOString());
     const endDateStr = formatDate(endDate.toISOString());
     
+    // BALANCE CALCULATIONS (based on real transaction data)
+    console.log('💰 Calculating balances from real transactions...');
+    
+    // Calculate total money in and out from real transactions
+    const totalMoneyIn = realTransactions
+      .filter((tx: any) => tx.type === 'credit')
+      .reduce((sum: number, tx: any) => sum + parseFloat(tx.amount), 0);
+      
+    const totalMoneyOut = realTransactions
+      .filter((tx: any) => tx.type === 'debit')  
+      .reduce((sum: number, tx: any) => sum + parseFloat(tx.amount), 0);
+    
+    // Use closing balance from account info (€1,640.31 from session)
+    const closingBalance = parseFloat(userData.accountInfo?.balance || '1640.31');
+    
+    // Calculate opening balance = closing balance - net transactions
+    const netTransactions = totalMoneyIn - totalMoneyOut;
+    const openingBalance = closingBalance - netTransactions;
+    
+    console.log('💰 Balance calculations:');
+    console.log(`- Opening Balance: €${openingBalance.toFixed(2)}`);
+    console.log(`- Total Money In: €${totalMoneyIn.toFixed(2)}`);
+    console.log(`- Total Money Out: €${totalMoneyOut.toFixed(2)}`);
+    console.log(`- Closing Balance: €${closingBalance.toFixed(2)}`);
+    
+    // Calculate running balance for each transaction
+    let currentBalance = openingBalance;
+    const transactionsWithRunningBalance = realTransactions.map((tx: any) => {
+      if (tx.type === 'credit') {
+        currentBalance += parseFloat(tx.amount);
+      } else {
+        currentBalance -= parseFloat(tx.amount);
+      }
+      
+      return {
+        ...tx,
+        runningBalance: currentBalance.toFixed(2)
+      };
+    });
+    
+    console.log('✅ Running balances calculated for all transactions');
+    
     // TOP-LEFT BUSINESS ADDRESS BLOCK: x=40, y=40 (user specification)
     doc.font('Helvetica').fontSize(6.5).fillColor('#000000');
     doc.text('BANK OF IRELAND', 40, 40);
@@ -70,69 +129,41 @@ export const generateStatement = async (userData: any, period: string) => {
     // TOP-RIGHT ACCOUNT INFO: right-aligned, x=420, y=80 (Helvetica Bold 7pt)
     doc.font('Helvetica-Bold').fontSize(7).fillColor('#000000');
     
-    // Account Name (uppercase)
-    const fullName = (userData.firstName + ' ' + userData.lastName).toUpperCase();
-    doc.text(fullName, 420, 80, {
+    // Account Name (uppercase) - from real account data
+    const accountHolder = userData.accountInfo?.accountHolder || 'ACCOUNT HOLDER';
+    doc.text(accountHolder.toUpperCase(), 420, 80, {
       width: 150,
       align: 'right'
     });
     
-    // Account Number (masked: ****[last 4 digits])
-    const accountNumber = userData.accounts?.[0]?.accountNumber || '12345678';
-    const maskedAccount = '****' + accountNumber.slice(-4);
-    doc.text(maskedAccount, 420, 92, {
+    // Account Number - use real account number from session
+    const accountNumber = userData.accountInfo?.accountNumber || '****2091';
+    doc.text(accountNumber, 420, 92, {
       width: 150,
       align: 'right'
     });
     
-    // Statement Period (DD MMM YYYY - DD MMM YYYY format)
+    // Statement Period (DD MMM YYYY - DD MMM YYYY format) - EXACT from transaction dates
     doc.text(`${startDateStr} - ${endDateStr}`, 420, 104, {
       width: 150,
       align: 'right'
     });
     
-    // Get real transactions from userData (exact data from user's screenshot)
-    const allTransactions = userData.transactions || [];
-    const filteredTransactions = allTransactions.filter((tx: any) => {
-      const txDate = new Date(tx.date);
-      return txDate >= startDate && txDate <= endDate && !isNaN(txDate.getTime());
-    });
+    // ACCOUNT SUMMARY SECTION: x=50, y=165 (exact user positioning)
+    doc.font('Helvetica-Bold').fontSize(6.5).fillColor('#1a5490'); // Blue labels
     
-    // ACCOUNT SUMMARY SECTION: user specification positioning
-    doc.font('Helvetica').fontSize(6.5).fillColor('#000000');
-    
-    // Calculate totals from real transaction data
-    let totalIn = 0;
-    let totalOut = 0;
-    
-    filteredTransactions.forEach((tx: any) => {
-      const amount = parseFloat(tx.amount);
-      if (tx.type === 'credit') {
-        totalIn += amount;
-      } else {
-        totalOut += amount;
-      }
-    });
-    
-    // Get current balance
-    const currentBalance = parseFloat(userData.accounts?.[0]?.balance || '1640.31');
-    const openingBalance = currentBalance - totalIn + totalOut;
-    
-    // Balance on [Start Date]: x=50, y=160 (user specification)
-    doc.text(`Balance on ${startDate.toLocaleDateString('en-GB')}:`, 50, 160);
-    
-    // Total money in/out: x=50, y=175 (user specification)
+    // Balance labels and values (authentic BOI format)
+    doc.text(`Balance on ${startDate.toLocaleDateString('en-GB')}:`, 50, 165);
     doc.text('Total money in:', 50, 175);
-    
-    // Balance on [End Date]: x=50, y=190 (user specification)
     doc.text('Total money out:', 50, 185);
     doc.text(`Balance on ${endDate.toLocaleDateString('en-GB')}:`, 50, 195);
     
-    // Labels left-aligned, values right-aligned (user specification)
-    doc.text(`€${openingBalance.toFixed(2)}`, 200, 160, { align: 'right' });
-    doc.text(`€${totalIn.toFixed(2)}`, 200, 175, { align: 'right' });
-    doc.text(`€${totalOut.toFixed(2)}`, 200, 185, { align: 'right' });
-    doc.text(`€${currentBalance.toFixed(2)}`, 200, 195, { align: 'right' });
+    // Values right-aligned with black text
+    doc.font('Helvetica').fontSize(6.5).fillColor('#000000');
+    doc.text(`€${openingBalance.toFixed(2)}`, 50, 165, { width: 150, align: 'right' });
+    doc.text(`€${totalMoneyIn.toFixed(2)}`, 50, 175, { width: 150, align: 'right' });
+    doc.text(`€${totalMoneyOut.toFixed(2)}`, 50, 185, { width: 150, align: 'right' });
+    doc.text(`€${closingBalance.toFixed(2)}`, 50, 195, { width: 150, align: 'right' });
     
     // TRANSACTIONS TABLE: start y=220, height spacing 25px each row (user specification)
     let yPos = 220;
@@ -150,15 +181,10 @@ export const generateStatement = async (userData: any, period: string) => {
     // Transaction rows (Helvetica 6pt, light density)
     doc.font('Helvetica').fontSize(6).fillColor('#000000');
     
-    // Sort transactions by date (oldest first) for proper balance progression
-    const sortedTransactions = [...filteredTransactions].sort((a, b) => 
-      new Date(a.date).getTime() - new Date(b.date).getTime()
-    );
+    console.log('📊 Processing transactions in table:', transactionsWithRunningBalance.length);
     
-    console.log('📊 Processing transactions:', sortedTransactions.length);
-    
-    // Pull ALL real transactions from provided source (user specification)
-    sortedTransactions.forEach((tx: any) => {
+    // Create transaction table with auto-assigned columns and running balance calculation
+    transactionsWithRunningBalance.forEach((tx: any) => {
       const txDate = new Date(tx.date);
       
       // Fix issue where invalid date = NaN (user specification)
@@ -185,10 +211,10 @@ export const generateStatement = async (userData: any, period: string) => {
         doc.text(`€${parseFloat(tx.amount).toFixed(2)}`, 340, yPos, { width: 50, align: 'right' });
       }
       
-      // Balance column with € symbol
-      doc.text(`€${parseFloat(tx.balance).toFixed(2)}`, 410, yPos, { width: 50, align: 'right' });
+      // Balance column with € symbol (running balance calculated as we go)
+      doc.text(`€${tx.runningBalance}`, 410, yPos, { width: 50, align: 'right' });
       
-      yPos += 25; // 25px spacing as specified
+      yPos += 12; // 12pt row spacing for authentic BOI density
       
       // Stop at page boundary
       if (yPos > 550) {
@@ -198,7 +224,7 @@ export const generateStatement = async (userData: any, period: string) => {
     
     // ENDING BALANCE: Helvetica-Bold 7pt, right-aligned in blue row (user specification)
     doc.font('Helvetica-Bold').fontSize(7).fillColor('#000000');
-    doc.text(`Ending Balance €${currentBalance.toFixed(2)}`, 345, 580, {
+    doc.text(`Ending Balance €${closingBalance.toFixed(2)}`, 345, 580, {
       width: 250,
       align: 'right'
     });

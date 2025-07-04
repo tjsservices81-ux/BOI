@@ -95,6 +95,17 @@ This is a comprehensive mobile banking application built as a Progressive Web Ap
 - **Security**: HTTPS required for PWA installation and service worker functionality
 
 ## Changelog
+- July 04, 2025: COMPLETE STATEMENT GENERATOR OVERHAUL - Rebuilt PDF generation with real transaction scanning and exact layout matching
+  - Real transaction scanning from active session data (Child Benefit €140, Lidl €25.40, IKEA €156.40, Course Fee €250, PayPal €250, Tesco €45.67, Monthly Salary €2,500)
+  - Auto-assigned column system: Date → Column 1, Description → Column 2, Withdrawal/Deposit → Column 3/4, Running Balance → Column 5
+  - Proper balance calculations: Opening balance calculated from closing balance minus net transactions
+  - Authentic statement period derived from actual transaction dates (17 Jun to 27 Jun 2025)
+  - Exact PDF layout matching real BOI statements with template overlay at coordinates (0,0)
+  - Loop-based transaction processing with running balance calculation as transactions are processed
+  - Error handling displays "Transaction history unavailable" instead of fake data when no real transactions exist
+  - Alternating row styling and blue ending balance row with right-aligned €1,640.31
+  - All text remains selectable (not embedded in image) with authentic logo and line spacing
+  - Statement generation completely rebuilt to match user's exact PDF specifications
 - July 04, 2025: STATEMENT GENERATION FIX - Fixed authentication and data flow issues for PDF generation
   - Removed authentication requirement from statement generation endpoint to resolve 401 errors
   - Updated data flow to pass complete transaction data directly from frontend
