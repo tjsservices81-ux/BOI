@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { ChevronLeft, Info, Check, CreditCard, Building2, Building, Plus, X } from "lucide-react";
 import barclaysIcon from "@assets/IMG_1985_1751646296833.png";
 import lloydsIcon from "@assets/IMG_1986_1751646563662.png";
+import tsbIcon from "@assets/IMG_1987_1751646758072.png";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -70,6 +71,9 @@ const getBankIcon = (bankName: string): string | undefined => {
   }
   if (bankName === 'Lloyds Bank') {
     return lloydsIcon;
+  }
+  if (bankName === 'TSB Bank') {
+    return tsbIcon;
   }
   return undefined;
 };
