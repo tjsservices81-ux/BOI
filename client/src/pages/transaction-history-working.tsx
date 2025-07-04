@@ -42,41 +42,55 @@ export default function TransactionHistoryWorking() {
     
     try {
       console.log('Starting share process...');
-      console.log('Location protocol:', window.location.protocol);
-      console.log('Location hostname:', window.location.hostname);
-      console.log('Navigator.share available:', !!navigator.share);
-      console.log('Navigator.canShare available:', !!navigator.canShare);
-      console.log('User agent:', navigator.userAgent);
-      console.log('Is secure context:', window.isSecureContext);
+      console.log('Selected transaction:', selectedTransaction);
       
       // Create a professional bank statement style receipt
       const receiptHtml = generateBankStatementHtml(selectedTransaction);
+      console.log('Generated HTML:', receiptHtml.substring(0, 200) + '...');
       
-      // Create a temporary container that's visible on screen
+      // Create a temporary container that's visible for rendering
       const tempContainer = document.createElement('div');
       tempContainer.innerHTML = receiptHtml;
       tempContainer.style.position = 'fixed';
-      tempContainer.style.left = '0px';
-      tempContainer.style.top = '0px';
+      tempContainer.style.left = '50%';
+      tempContainer.style.top = '50%';
+      tempContainer.style.transform = 'translate(-50%, -50%)';
       tempContainer.style.background = 'white';
       tempContainer.style.width = '400px';
       tempContainer.style.padding = '20px';
-      tempContainer.style.zIndex = '9999';
-      tempContainer.style.opacity = '0';
-      tempContainer.style.pointerEvents = 'none';
+      tempContainer.style.zIndex = '10000';
+      tempContainer.style.boxShadow = '0 4px 20px rgba(0,0,0,0.3)';
+      tempContainer.style.border = '2px solid #000DFF';
       document.body.appendChild(tempContainer);
+      
+      // Show preview for 2 seconds before capturing
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
       // Use html2canvas to capture the styled receipt
       const html2canvas = (await import('html2canvas')).default;
+      
+      console.log('Container dimensions:', {
+        width: tempContainer.offsetWidth,
+        height: tempContainer.offsetHeight,
+        scrollHeight: tempContainer.scrollHeight
+      });
       
       html2canvas(tempContainer, {
         backgroundColor: '#ffffff',
         scale: 2,
         useCORS: true,
         allowTaint: true,
-        width: 440,
-        height: tempContainer.scrollHeight + 40
+        width: tempContainer.offsetWidth,
+        height: tempContainer.scrollHeight,
+        logging: true, // Enable logging for debugging
+        removeContainer: false // Keep container for debugging
       }).then(canvas => {
+        console.log('Canvas created:', {
+          width: canvas.width,
+          height: canvas.height,
+          dataURL: canvas.toDataURL().substring(0, 100) + '...'
+        });
+        
         // Remove temporary container
         document.body.removeChild(tempContainer);
         
@@ -104,7 +118,6 @@ export default function TransactionHistoryWorking() {
               }).catch(error => {
                 console.error('Share with files failed:', error);
                 if (error.name !== 'AbortError') {
-                  // If Web Share API fails, fall back to download
                   console.log('Falling back to download...');
                   downloadImage(canvas, 'Bank-of-Ireland-Receipt.png');
                 }
@@ -161,21 +174,27 @@ export default function TransactionHistoryWorking() {
 
     return `
       <div style="
-        font-family: 'Roboto', 'Arial', sans-serif;
+        font-family: 'Arial', sans-serif;
         background: white;
         max-width: 400px;
         margin: 0 auto;
         padding: 30px 20px 20px 20px;
         color: #333;
+        border: 1px solid #ddd;
       ">
         <!-- Bank Logo and Header -->
         <div style="text-align: center; margin-bottom: 25px;">
-          <img src="/attached_assets/IMG_1908_1751574344262.webp" alt="Bank of Ireland" style="
-            width: 130px; 
-            height: auto; 
-            display: block;
+          <div style="
+            background: #000DFF;
+            color: white;
+            padding: 12px 20px;
             margin: 0 auto 15px auto;
-          " />
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            width: fit-content;
+          ">BANK OF IRELAND</div>
           <div style="
             font-size: 12px;
             font-weight: 300;
