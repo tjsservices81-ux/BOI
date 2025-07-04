@@ -95,19 +95,20 @@ This is a comprehensive mobile banking application built as a Progressive Web Ap
 - **Security**: HTTPS required for PWA installation and service worker functionality
 
 ## Changelog
-- July 04, 2025: Completed professional Bank of Ireland email system with authentic branding
+- July 04, 2025: Finalized professional Bank of Ireland email system with PDF-ready formatting
   - Fixed user profile data retrieval issue that prevented emails from sending
   - Implemented dynamic transfer type detection (UK vs SEPA vs Internal transfers)
   - Integrated authentic Bank of Ireland logo (uploaded by user) with proper inline SMTP embedding
-  - Logo embedded via Content-ID (cid:boi-logo) with contentDisposition: 'inline' to prevent attachment display
-  - Logo positioned at very top of email content (before "Transfer Confirmation" heading)
-  - Removed blue header bar and all duplicate logos - single logo placement only
-  - Added transfer-specific formatting with consistent bullet points and spacing
-  - Included "This is an automated message from Bank of Ireland. Please do not reply to this email."
-  - Added proper BOI footer with customer service information and website
+  - Logo embedded via Content-ID (cid:boi-logo) with contentDisposition: 'inline' at top of email
+  - Created PDF-exportable layout with @media print CSS rules and A4 page formatting
+  - Professional layout with BOI blue header border, centered logo, and clean typography
+  - Enhanced transfer details box with bordered rows and right-aligned values
+  - Added security notice box with warning icon and red styling
+  - Included automated message notice and proper BOI footer with contact information
   - Configured anti-spam headers and proper from address formatting
   - UK transfers display: Amount, To Account, Account Number, Sort Code, Reference, Date/Time, Transaction ID, Unique Reference
   - SEPA transfers display: Amount, To Account, IBAN, BIC, Reference, Date/Time, Transaction ID, Unique Reference
+  - Email template optimized for PDF export with print-friendly styling and margins
 - July 04, 2025: Initial setup
 
 ## User Preferences
