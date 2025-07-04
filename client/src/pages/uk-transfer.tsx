@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { ChevronLeft, Info, Check, CreditCard, Building2, Building, Plus, X } from "lucide-react";
+import barclaysIcon from "@assets/IMG_1985_1751646296833.png";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -60,6 +61,14 @@ const ukTransferSchema = z.object({
 });
 
 type UkTransferData = z.infer<typeof ukTransferSchema>;
+
+// Function to get bank icon
+const getBankIcon = (bankName: string): string | undefined => {
+  if (bankName === 'Barclays') {
+    return barclaysIcon;
+  }
+  return undefined;
+};
 
 // Function to identify bank from sort code
 const identifyBankFromSortCode = (sortCode: string): string => {
@@ -847,7 +856,15 @@ export default function UkTransfer() {
                 />
                 {identifiedBank && (
                   <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded-md flex items-center">
-                    <Building className="w-4 h-4 text-green-600 mr-2" />
+                    {getBankIcon(identifiedBank) ? (
+                      <img 
+                        src={getBankIcon(identifiedBank)!} 
+                        alt={`${identifiedBank} logo`}
+                        className="w-4 h-4 mr-2 object-contain"
+                      />
+                    ) : (
+                      <Building className="w-4 h-4 text-green-600 mr-2" />
+                    )}
                     <span className="text-xs text-green-700 font-medium">{identifiedBank}</span>
                   </div>
                 )}

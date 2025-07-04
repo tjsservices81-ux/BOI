@@ -95,6 +95,11 @@ This is a comprehensive mobile banking application built as a Progressive Web Ap
 - **Security**: HTTPS required for PWA installation and service worker functionality
 
 ## Changelog
+- July 04, 2025: VISUAL ENHANCEMENT - Added bank icons to sort code validation display
+  - Implemented Barclays icon display in green validation box when Barclays sort codes are entered
+  - Icon appears alongside bank name with proper sizing (16x16px) and positioning
+  - Created getBankIcon function for scalable bank icon system
+  - Icons display only when available, fallback to building icon for other banks
 - July 04, 2025: SORT CODE ENHANCEMENT - Enhanced bank identification system with multiple prefixes
   - Added Lloyds Bank prefixes: 30, 39, 77 (recognizes any sort code starting with these numbers)
   - Added TSB Bank prefix: 87 (recognizes any sort code starting with 87)
