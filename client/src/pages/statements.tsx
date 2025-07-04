@@ -261,43 +261,19 @@ export default function Statements() {
                 Select Account
               </label>
               
-              <div className="space-y-2">
+              <select
+                value={selectedAccountId || ''}
+                onChange={(e) => setSelectedAccountId(e.target.value ? parseInt(e.target.value) : null)}
+                className="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#126987] focus:border-transparent text-gray-900"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              >
+                <option value="">Choose an account...</option>
                 {accounts.map((account) => (
-                  <label key={account.id} className="flex items-center space-x-3 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="account"
-                      value={account.id}
-                      checked={selectedAccountId === account.id}
-                      onChange={(e) => setSelectedAccountId(parseInt(e.target.value))}
-                      className="w-4 h-4 text-[#126987] border-gray-300 focus:ring-[#126987]"
-                    />
-                    <div className="flex items-center space-x-2">
-                      <CreditCard className="w-4 h-4 text-gray-600" />
-                      <div>
-                        <span className="text-sm font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          {account.displayName}
-                        </span>
-                        <span className="text-xs text-gray-500 ml-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          {account.accountNumber}
-                        </span>
-                      </div>
-                    </div>
-                  </label>
+                  <option key={account.id} value={account.id}>
+                    {account.displayName} - {account.accountNumber} - €{account.balance}
+                  </option>
                 ))}
-              </div>
-
-              {/* Selected Account Display */}
-              {selectedAccountId && (
-                <div className="mt-3 p-3 bg-green-50 rounded-lg border border-green-200">
-                  <div className="flex items-center space-x-2">
-                    <CreditCard className="w-4 h-4 text-green-600" />
-                    <span className="text-sm font-medium text-green-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      {accounts.find(acc => acc.id === selectedAccountId)?.displayName} - Balance: €{accounts.find(acc => acc.id === selectedAccountId)?.balance}
-                    </span>
-                  </div>
-                </div>
-              )}
+              </select>
             </div>
 
             {/* Period Selection */}
@@ -306,31 +282,16 @@ export default function Statements() {
                 Statement Period
               </label>
               
-              <div className="space-y-2">
-                {[
-                  { value: '1-week', label: '1 Week' },
-                  { value: '2-weeks', label: '2 Weeks' },
-                  { value: '1-month', label: '1 Month' },
-                  { value: 'current-month', label: 'Current Month' },
-                  { value: 'last-month', label: 'Previous Month' },
-                  { value: 'last-3-months', label: 'Last 3 Months' },
-                  { value: 'last-6-months', label: 'Last 6 Months' }
-                ].map((option) => (
-                  <label key={option.value} className="flex items-center space-x-3 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="period"
-                      value={option.value}
-                      checked={selectedPeriod === option.value}
-                      onChange={(e) => setSelectedPeriod(e.target.value)}
-                      className="w-4 h-4 text-[#126987] border-gray-300 focus:ring-[#126987]"
-                    />
-                    <span className="text-sm text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      {option.label}
-                    </span>
-                  </label>
-                ))}
-              </div>
+              <select
+                value={selectedPeriod}
+                onChange={(e) => setSelectedPeriod(e.target.value)}
+                className="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#126987] focus:border-transparent text-gray-900"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              >
+                <option value="1-week">1 Week</option>
+                <option value="2-weeks">2 Weeks</option>
+                <option value="1-month">1 Month</option>
+              </select>
 
               {/* Selected Period Display */}
               <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">

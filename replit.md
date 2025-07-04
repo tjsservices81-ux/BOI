@@ -95,6 +95,16 @@ This is a comprehensive mobile banking application built as a Progressive Web Ap
 - **Security**: HTTPS required for PWA installation and service worker functionality
 
 ## Changelog
+- July 04, 2025: SIMPLIFIED STATEMENT PERIODS - Reduced statement period options to essential short-term periods
+  - Statement period dropdown now contains only: 1 Week, 2 Weeks, 1 Month
+  - Removed longer periods (current month, previous month, 3 months, 6 months) for streamlined user experience
+  - Maintains all account selection and PDF generation functionality
+- July 04, 2025: DROPDOWN UI ENHANCEMENT - Replaced radio buttons with dropdown menus for statements selection
+  - Account selection now uses dropdown menu with account name, number, and balance
+  - Statement period selection changed to dropdown menu for cleaner interface
+  - Consistent styling with transfer screens using rounded-xl borders and focus states
+  - Maintains display panels showing selected account/period details below dropdowns
+  - Improved mobile UX with native dropdown scrolling behavior
 - July 04, 2025: STATEMENTS SCROLLING ENHANCEMENT - Made statements screen fully scrollable for better mobile experience
   - Changed header from fixed to sticky positioning to maintain visibility while scrolling
   - Added proper overflow-y-auto and flex-1 classes for smooth vertical scrolling
