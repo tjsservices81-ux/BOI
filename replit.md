@@ -95,6 +95,15 @@ This is a comprehensive mobile banking application built as a Progressive Web Ap
 - **Security**: HTTPS required for PWA installation and service worker functionality
 
 ## Changelog
+- July 04, 2025: CRITICAL FIX - Completely overhauled live chat agent behavior for professional banking standards
+  - Removed all 30+ fictional agent personalities that sounded unprofessional or chatty
+  - Implemented standardized Bank of Ireland representative greeting: "You're speaking with a Bank of Ireland representative. How can I assist you today?"
+  - Enhanced natural language understanding to respond to user intent regardless of exact phrasing
+  - Added professional off-topic response: "I'm here to help with Bank of Ireland services. Please let me know how I can assist with your account or transactions."
+  - Eliminated humor, storytelling, emojis, and character-driven responses
+  - Updated OpenAI chat system to enforce professional banking tone
+  - All agents now sound like authentic Bank of Ireland customer service staff
+  - Improved flexible response matching for banking queries (transfers, cards, balances, etc.)
 - July 04, 2025: FEATURE RESTORATION - Restored "Secure Connection Active" status display during transfer processing
   - Restored secure connection indicator with green pulsing dot and description
   - Added to both UK Transfer and IBAN Transfer processing screens
