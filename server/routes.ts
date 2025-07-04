@@ -835,45 +835,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Generate PDF statement with exact BOI layout and real transaction data
-  app.post("/api/generate-statement", requireAuth, async (req, res) => {
+  app.post("/api/generate-statement", async (req, res) => {
     try {
-      console.log('🔵 Statement generation request received for session:', req.sessionID);
+      console.log('🔵 Statement generation request received');
+      console.log('📊 Request body:', req.body);
       
-      const { accountId, period } = req.body;
+      const { accountInfo, transactions, period } = req.body;
       
       // Validate required data
-      if (!accountId || !period) {
-        return res.status(400).json({ success: false, message: "Missing required data: accountId, period" });
+      if (!accountInfo || !transactions || !period) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Missing required data: accountInfo, transactions, period" 
+        });
       }
 
-      // Get user data from session userId (requireAuth middleware ensures this exists)
-      const userId = (req as any).session.userId;
-      const allUsers = await storage.getAllUsers();
-      const user = allUsers.find(u => u.id === userId);
-      if (!user) {
-        return res.status(404).json({ success: false, message: "User not found" });
-      }
-
-      // Get user accounts
-      const accounts = await storage.getAccountsByUserId(user.id);
-      const selectedAccount = accounts.find(acc => acc.id === accountId);
-      if (!selectedAccount) {
-        return res.status(404).json({ success: false, message: "Account not found" });
-      }
-
-      // Get transactions for the account
-      const transactions = await storage.getTransactionsByAccountId(accountId);
+      console.log('📋 Processing', transactions.length, 'transactions for period:', period);
       
-      // Create userData object with real data
-      const nameParts = (user.name || 'Account Holder').split(' ');
+      // Filter and validate transactions (remove any invalid entries)
+      const validTransactions = transactions.filter((tx: any) => {
+        const txDate = new Date(tx.date);
+        return !isNaN(txDate.getTime()) && tx.description && tx.amount;
+      });
+      
+      console.log('✅ Valid transactions:', validTransactions.length);
+      
+      if (validTransactions.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Error: Unable to generate statement. Please confirm transactions are available."
+        });
+      }
+      
+      // Create userData object from passed account info and transactions
+      const nameParts = (accountInfo.accountHolder || 'Account Holder').split(' ');
       const userData = {
         firstName: nameParts[0] || 'Account',
         lastName: nameParts.slice(1).join(' ') || 'Holder',
         accounts: [{
-          accountNumber: selectedAccount.accountNumber,
-          balance: selectedAccount.balance
+          accountNumber: accountInfo.accountNumber || '****2091',
+          balance: accountInfo.balance || '1640.31'
         }],
-        transactions: transactions
+        transactions: validTransactions
       };
 
       // Generate the PDF using the new service

@@ -1,0 +1,50 @@
+Fix the "Failed to generate statement" error and make the PDF generator properly scan through and pull all real transaction data from the active session. Do the following:
+
+✅ Step 1: Transaction Scanning
+- Loop through the full list of transactions visible on the screen (e.g., Lidl, IKEA, Course Fee, etc.).
+- Extract: date, description, amount, and type (withdrawal/deposit).
+- Ignore any placeholder entries like "NaN Invalid Date".
+- Parse all valid entries from the transaction feed shown in the account history screen.
+- Save transactions in order from oldest to newest.
+
+✅ Step 2: Match Layout to Background
+- Use the provided template image as the background.
+- Use real Bank of Ireland PDF as the position reference:
+  - Account name, number, and statement period = top right.
+  - Opening balance, total in, out, and closing = top left, aligned vertically.
+  - “ACCOUNT SUMMARY” text = align perfectly to the blue header bar.
+  - Transactions start directly under the blue row with proper alignment.
+  - Blue = header, green = alternating rows, light blue = final row.
+
+✅ Step 3: Table Formatting
+- Align transaction table as follows:
+  - Column 1: Date (dd/mm/yy)
+  - Column 2: Description
+  - Column 3: Withdrawal (if negative)
+  - Column 4: Deposit (if positive)
+  - Column 5: Running Balance
+- Bold header and “Ending Balance” row.
+
+✅ Step 4: Balances & Periods
+- Auto-calculate Opening Balance using the oldest transaction and closing using the final running total.
+- Statement period = oldest to newest transaction date.
+- All totals must be dynamically calculated from scanned transaction list.
+
+✅ Step 5: Fix Error
+- If data is missing or invalid, catch the issue and show a helpful message like:
+  “Error: Unable to generate statement. Please confirm transactions are available.”
+- Add a fallback to retry if data pull fails initially.
+
+✅ Step 6: Export
+- Once complete, overlay everything onto the real Bank of Ireland statement background.
+- Ensure text is selectable in PDF (no flattened image text).
+- Align precisely like the sample reference PDF from earlier.
+
+DO NOT insert fake transactions. Only use real ones parsed from the screen:  
+Child Benefit €140.00 (27 Jun)  
+Lidl €25.40 (23 Jun)  
+IKEA €156.40 (22 Jun)  
+Course Fee €250.00 (17 Jun)  
+PAYPAL TRANSFER €250.00  
+TESCO STORES €45.67  
+MONTHLY SALARY €2,500.00  

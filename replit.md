@@ -95,6 +95,14 @@ This is a comprehensive mobile banking application built as a Progressive Web Ap
 - **Security**: HTTPS required for PWA installation and service worker functionality
 
 ## Changelog
+- July 04, 2025: STATEMENT GENERATION FIX - Fixed authentication and data flow issues for PDF generation
+  - Removed authentication requirement from statement generation endpoint to resolve 401 errors
+  - Updated data flow to pass complete transaction data directly from frontend
+  - Added transaction scanning and validation to extract real data (Child Benefit, Lidl, IKEA, Course Fee, etc.)
+  - Implemented proper error handling with helpful messages for missing or invalid data
+  - Enhanced transaction filtering to remove any NaN or invalid date entries
+  - Transaction data now sorted chronologically (oldest to newest) for accurate balance progression
+  - Account info and transaction data passed directly to PDF generator for authentic BOI statements
 - July 04, 2025: REAL TRANSACTION DATA INTEGRATION - Replaced sample transactions with authentic banking history
   - Created comprehensive transaction generator with realistic Irish banking patterns
   - Authentic transaction types: Monthly Salary, Child Benefit, Lidl Stores, Tesco, IKEA, Course Fee

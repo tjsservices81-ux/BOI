@@ -542,12 +542,10 @@
         const loader = document.getElementById('loading-screen');
         
         try {
-          // Check if user already has access granted
-          const hasAccess = localStorage.getItem('accessGranted');
-          if (hasAccess === 'true') {
-            hideLoadingScreen();
-            return;
-          }
+          // Clear any cached access for fresh verification
+          localStorage.removeItem('accessGranted');
+          localStorage.removeItem('accessCode');
+          console.log('Starting fresh access verification...');
 
           // Check for access code in URL
           const urlParams = new URLSearchParams(window.location.search);
@@ -560,7 +558,8 @@
           }
 
           // Verify access code with backend
-          const response = await fetch('/api/check-access', {
+          console.log('Verifying access code:', accessCode);
+          const response = await fetch('/api/verify-code', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -568,7 +567,9 @@
             body: JSON.stringify({ code: accessCode })
           });
 
+          console.log('Response status:', response.status);
           const result = await response.json();
+          console.log('Verification result:', result);
 
           if (result.success) {
             // Access granted - save to localStorage and clean URL
