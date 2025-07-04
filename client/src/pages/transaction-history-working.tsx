@@ -23,6 +23,19 @@ export default function TransactionHistoryWorking() {
   
   const accountId = params?.accountId ? parseInt(params.accountId) : 1;
 
+  // Helper function to download image when sharing is not available
+  const downloadImage = (canvas: HTMLCanvasElement, filename: string) => {
+    const link = document.createElement('a');
+    link.download = filename;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    
+    // Show user-friendly message
+    setTimeout(() => {
+      alert('Receipt saved to Downloads. You can now share it from your photo gallery.');
+    }, 100);
+  };
+
   // Share receipt functionality - captures receipt screen and opens native share
   const shareReceipt = async () => {
     if (!selectedTransaction) return;
@@ -30,8 +43,11 @@ export default function TransactionHistoryWorking() {
     try {
       console.log('Starting share process...');
       console.log('Location protocol:', window.location.protocol);
+      console.log('Location hostname:', window.location.hostname);
       console.log('Navigator.share available:', !!navigator.share);
       console.log('Navigator.canShare available:', !!navigator.canShare);
+      console.log('User agent:', navigator.userAgent);
+      console.log('Is secure context:', window.isSecureContext);
       
       // Create a professional bank statement style receipt
       const receiptHtml = generateBankStatementHtml(selectedTransaction);
@@ -74,59 +90,40 @@ export default function TransactionHistoryWorking() {
           const file = new File([blob], 'Bank-of-Ireland-Receipt.png', { type: 'image/png' });
           console.log('File created:', file.name, file.type, file.size);
 
-          // Check basic share support first
-          if (!navigator.share) {
-            alert('Web Share API not available on this browser');
-            return;
-          }
-
-          // Check if files can be shared
-          if (!navigator.canShare) {
-            console.log('canShare not available, trying direct share');
-            // Try direct share without canShare check
-            navigator.share({
-              title: 'Bank of Ireland Receipt',
-              text: 'Transaction Confirmation Attached',
-              files: [file]
-            }).catch(error => {
-              console.error('Direct share failed:', error);
-              if (error.name !== 'AbortError') {
-                alert('Share failed: ' + error.message);
-              }
-            });
-            return;
-          }
-
-          // Use canShare to check file support
-          const canShareFiles = navigator.canShare({ files: [file] });
-          console.log('Can share files:', canShareFiles);
-          
-          if (canShareFiles) {
-            navigator.share({
-              title: 'Bank of Ireland Receipt',
-              text: 'Transaction Confirmation Attached',
-              files: [file]
-            }).catch(error => {
-              console.error('Share with files failed:', error);
-              if (error.name !== 'AbortError') {
-                alert('Share failed: ' + error.message);
-              }
-            });
-          } else {
-            // Fallback to sharing just text/title without files
-            console.log('File sharing not supported, trying text only');
-            if (navigator.canShare({ title: 'Bank of Ireland Receipt', text: 'Transaction Confirmation' })) {
+          // Try Web Share API first
+          if (navigator.share && window.isSecureContext) {
+            console.log('Attempting Web Share API...');
+            
+            // Check if files can be shared
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+              console.log('File sharing supported, attempting share...');
               navigator.share({
                 title: 'Bank of Ireland Receipt',
-                text: 'Transaction Confirmation - Receipt cannot be attached on this device'
+                text: 'Transaction Confirmation Attached',
+                files: [file]
               }).catch(error => {
+                console.error('Share with files failed:', error);
                 if (error.name !== 'AbortError') {
-                  alert('Share failed: ' + error.message);
+                  // If Web Share API fails, fall back to download
+                  console.log('Falling back to download...');
+                  downloadImage(canvas, 'Bank-of-Ireland-Receipt.png');
                 }
               });
             } else {
-              alert('Sharing not supported on this device');
+              console.log('File sharing not supported, trying text only share...');
+              navigator.share({
+                title: 'Bank of Ireland Receipt',
+                text: 'Transaction Confirmation - Please save the receipt image separately'
+              }).catch(error => {
+                if (error.name !== 'AbortError') {
+                  console.log('Text share failed, falling back to download...');
+                  downloadImage(canvas, 'Bank-of-Ireland-Receipt.png');
+                }
+              });
             }
+          } else {
+            console.log('Web Share API not available, using download fallback...');
+            downloadImage(canvas, 'Bank-of-Ireland-Receipt.png');
           }
         }, 'image/png');
       }).catch(error => {
