@@ -172,8 +172,16 @@ export async function sendTransferConfirmation(
     // Generate email content (simple HTML without logo)
     const { subject, body } = generateTransferConfirmationEmail(details);
     
-    // Generate PDF with BOI logo and transfer details
-    const pdfBuffer = await generateTransferConfirmationPDF(details, transferData);
+    // Generate PDF with BOI logo and transfer details using new template-based system
+    const pdfBuffer = await generateTransferConfirmationPDF(
+      details.senderName,
+      details.recipientName,
+      details.amount,
+      details.currency,
+      details.transactionReference,
+      details.accountInfo,
+      transferData
+    );
     
     // Send email with PDF attachment
     const success = await sendEmailWithPDF(userEmail, subject, body, pdfBuffer, `TransferConfirmation-${transferData?.id || details.transactionReference}.pdf`);
