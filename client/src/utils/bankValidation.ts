@@ -3,6 +3,9 @@ const sortCodeMap = {
   // High Street Banks
   "110062": "Halifax",
   "309783": "Lloyds Bank",
+  "300000": "Lloyds Bank",
+  "390000": "Lloyds Bank", 
+  "770000": "Lloyds Bank",
   "200003": "Barclays",
   "400515": "HSBC UK",
   "600001": "NatWest",

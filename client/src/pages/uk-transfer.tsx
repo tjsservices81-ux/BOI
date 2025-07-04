@@ -13,6 +13,8 @@ import { formatCurrency, getUserCurrency, getCurrencySymbol, type Currency } fro
 const knownSortCodes: Record<string, string> = {
   "20": "Barclays",
   "30": "Lloyds Bank",
+  "39": "Lloyds Bank",
+  "77": "Lloyds Bank",
   "11": "Halifax",
   "40": "HSBC",
   "60": "NatWest",

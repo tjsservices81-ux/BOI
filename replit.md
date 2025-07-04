@@ -95,6 +95,10 @@ This is a comprehensive mobile banking application built as a Progressive Web Ap
 - **Security**: HTTPS required for PWA installation and service worker functionality
 
 ## Changelog
+- July 04, 2025: SORT CODE ENHANCEMENT - Added Lloyds Bank sort code prefixes to validation system
+  - Added Lloyds Bank prefixes: 30, 39, 77 (recognizes any sort code starting with these numbers)
+  - Updated both bankValidation.ts and knownSortCodes in uk-transfer.tsx
+  - Lloyds Bank now properly identified during UK transfers with these prefix ranges
 - July 04, 2025: SORT CODE ENHANCEMENT - Added NatWest sort codes to validation system
   - Added NatWest sort codes: 01-10-01, 50-00-00, 53-61-07, 55-70-13, 60-60-04, 60-08-46, 60-30-30
   - Updated both bankValidation.ts and knownSortCodes in uk-transfer.tsx
