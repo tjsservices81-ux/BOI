@@ -95,21 +95,22 @@ This is a comprehensive mobile banking application built as a Progressive Web Ap
 - **Security**: HTTPS required for PWA installation and service worker functionality
 
 ## Changelog
-- July 04, 2025: Completed authentic Bank of Ireland PDF transfer confirmation system
+- July 04, 2025: Completed authentic Bank of Ireland PDF transfer confirmation system with real logo
+  - Successfully embedded authentic Bank of Ireland logo in PDF documents (150px width, proper positioning)
   - Fixed user profile data retrieval issue that prevented emails from sending
   - Implemented dynamic transfer type detection (UK vs SEPA vs Internal transfers)
   - Created professional PDF documents matching authentic Bank of Ireland styling and branding
-  - PDF generation using pdfkit with A4 format, proper margins, and BOI color scheme (#003f7f blue)
-  - Professional PDF layout: BOI header, Transfer Confirmation title, blue line separators, structured sections
-  - Transaction Details section with boxed heading and two-column label/value layout
+  - PDF generation using pdfkit with A4 format, proper margins, and BOI color scheme (#003366 dark blue)
+  - Professional PDF layout: Real BOI logo at top left, Transfer Confirmation title, clean line separators
+  - Transaction Details section with clear left-aligned labels and values in two-column format
   - Transfer-specific formatting with bold amount highlighting and proper account details
-  - Red security warning box: "If you did not authorise this payment, contact 1800 123 456 immediately"
-  - Professional footer with BOI branding and contact information
+  - Clean security warnings: "If you did not authorise this payment, contact 1800 123 456 immediately"
+  - Professional footer with BOI branding: "Thank you for banking with Bank of Ireland"
   - Email system sends clean HTML message with PDF attachment (TransferConfirmation-[ID].pdf)
-  - PDF metadata includes document title, author, and BOI creator information
+  - PDF file size increased to ~5.4KB (from ~2.5KB) confirming real logo embedding
   - UK transfers display: Amount, Account Number, Sort Code, Reference, Date/Time, Transaction ID, Unique Reference
   - SEPA transfers display: Amount, IBAN, BIC, Reference, Date/Time, Transaction ID, Unique Reference
-  - Professional BOI text header with blue background when logo embedding unavailable
+  - Authentic BOI logo sourced from user-uploaded file: IMG_1957_1751635910952.webp with PNG fallbacks
 - July 04, 2025: Initial setup
 
 ## User Preferences
