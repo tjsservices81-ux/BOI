@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useRoute } from "wouter";
-import { ChevronLeft, ArrowUpRight, CreditCard, Building2, Zap, Check, Clock, MapPin, Globe, Share, Upload } from "lucide-react";
+import { ChevronLeft, ArrowUpRight, CreditCard, Building2, Zap, Check, Clock, MapPin, Globe, Share } from "lucide-react";
 import MiniSpendingChart from "../components/MiniSpendingChart";
 import { UserDataManager } from "../utils/userDataManager.ts";
 import { StateManager } from "../utils/stateManager";
@@ -23,72 +23,39 @@ export default function TransactionHistoryWorking() {
   
   const accountId = params?.accountId ? parseInt(params.accountId) : 1;
 
-  // Helper function to download image when sharing is not available
-  const downloadImage = (canvas: HTMLCanvasElement, filename: string) => {
-    const link = document.createElement('a');
-    link.download = filename;
-    link.href = canvas.toDataURL('image/png');
-    link.click();
-    
-    // Show user-friendly message
-    setTimeout(() => {
-      alert('Receipt saved to Downloads. You can now share it from your photo gallery.');
-    }, 100);
-  };
-
   // Share receipt functionality - captures receipt screen and opens native share
   const shareReceipt = async () => {
     if (!selectedTransaction) return;
     
     try {
-      console.log('Starting share process...');
-      console.log('Selected transaction:', selectedTransaction);
-      
       // Create a professional bank statement style receipt
       const receiptHtml = generateBankStatementHtml(selectedTransaction);
-      console.log('Generated HTML:', receiptHtml.substring(0, 200) + '...');
       
-      // Create a temporary container for rendering (off-screen)
+      // Create a temporary container that's visible on screen
       const tempContainer = document.createElement('div');
       tempContainer.innerHTML = receiptHtml;
       tempContainer.style.position = 'fixed';
-      tempContainer.style.left = '-9999px'; // Off-screen but still rendered
+      tempContainer.style.left = '0px';
       tempContainer.style.top = '0px';
       tempContainer.style.background = 'white';
       tempContainer.style.width = '400px';
       tempContainer.style.padding = '20px';
       tempContainer.style.zIndex = '9999';
-      tempContainer.style.visibility = 'hidden'; // Hidden but still rendered
+      tempContainer.style.opacity = '0';
+      tempContainer.style.pointerEvents = 'none';
       document.body.appendChild(tempContainer);
-      
-      // Wait for fonts and styles to load
-      await new Promise(resolve => setTimeout(resolve, 100));
       
       // Use html2canvas to capture the styled receipt
       const html2canvas = (await import('html2canvas')).default;
-      
-      console.log('Container dimensions:', {
-        width: tempContainer.offsetWidth,
-        height: tempContainer.offsetHeight,
-        scrollHeight: tempContainer.scrollHeight
-      });
       
       html2canvas(tempContainer, {
         backgroundColor: '#ffffff',
         scale: 2,
         useCORS: true,
         allowTaint: true,
-        width: tempContainer.offsetWidth,
-        height: tempContainer.scrollHeight,
-        logging: true, // Enable logging for debugging
-        removeContainer: false // Keep container for debugging
+        width: 440,
+        height: tempContainer.scrollHeight + 40
       }).then(canvas => {
-        console.log('Canvas created:', {
-          width: canvas.width,
-          height: canvas.height,
-          dataURL: canvas.toDataURL().substring(0, 100) + '...'
-        });
-        
         // Remove temporary container
         document.body.removeChild(tempContainer);
         
@@ -98,53 +65,20 @@ export default function TransactionHistoryWorking() {
             return;
           }
 
-          console.log('Blob created successfully, size:', blob.size);
           const file = new File([blob], 'Bank-of-Ireland-Receipt.png', { type: 'image/png' });
-          console.log('File created:', file.name, file.type, file.size);
 
-          // Try Web Share API - force direct share sheet without file preview
-          if (navigator.share && window.isSecureContext) {
-            console.log('Attempting direct Web Share API...');
-            
-            // Try sharing with a data URL instead of a file to bypass file preview
-            const dataUrl = canvas.toDataURL('image/png');
-            
-            // First try: Share as text with image data embedded
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
             navigator.share({
               title: 'Bank of Ireland Receipt',
-              text: `Transaction Confirmation\n\nAmount: ${getCurrencySymbol(userCurrency)}${selectedTransaction.amount}\nDate: ${new Date(selectedTransaction.timestamp).toLocaleDateString()}\nReference: ${selectedTransaction.reference || 'N/A'}\n\nBank of Ireland - Official Receipt`
-            }).then(() => {
-              console.log('Text share completed successfully');
-              // After text share, try to share the image separately if possible
-              if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                setTimeout(() => {
-                  navigator.share({
-                    files: [file]
-                  }).catch(() => {
-                    // Silent fail - user already got the text
-                  });
-                }, 1000);
-              }
+              text: 'Transaction Confirmation Attached',
+              files: [file]
             }).catch(error => {
-              console.error('Text share failed:', error);
               if (error.name !== 'AbortError') {
-                // Fallback: Try file sharing
-                if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                  console.log('Trying file share...');
-                  navigator.share({
-                    title: 'Bank of Ireland Receipt',
-                    files: [file]
-                  }).catch(() => {
-                    downloadImage(canvas, 'Bank-of-Ireland-Receipt.png');
-                  });
-                } else {
-                  downloadImage(canvas, 'Bank-of-Ireland-Receipt.png');
-                }
+                alert('Share failed: ' + error.message);
               }
             });
           } else {
-            console.log('Web Share API not available, using download fallback...');
-            downloadImage(canvas, 'Bank-of-Ireland-Receipt.png');
+            alert('Sharing not supported on this device.');
           }
         }, 'image/png');
       }).catch(error => {
@@ -182,27 +116,21 @@ export default function TransactionHistoryWorking() {
 
     return `
       <div style="
-        font-family: 'Arial', sans-serif;
+        font-family: 'Roboto', 'Arial', sans-serif;
         background: white;
         max-width: 400px;
         margin: 0 auto;
         padding: 30px 20px 20px 20px;
         color: #333;
-        border: 1px solid #ddd;
       ">
         <!-- Bank Logo and Header -->
         <div style="text-align: center; margin-bottom: 25px;">
-          <div style="
-            background: #000DFF;
-            color: white;
-            padding: 12px 20px;
+          <img src="/attached_assets/IMG_1908_1751574344262.webp" alt="Bank of Ireland" style="
+            width: 130px; 
+            height: auto; 
+            display: block;
             margin: 0 auto 15px auto;
-            border-radius: 8px;
-            font-size: 18px;
-            font-weight: bold;
-            letter-spacing: 1px;
-            width: fit-content;
-          ">BANK OF IRELAND</div>
+          " />
           <div style="
             font-size: 12px;
             font-weight: 300;
@@ -290,6 +218,13 @@ export default function TransactionHistoryWorking() {
         </div>
       </div>
     `;
+  };
+
+  const downloadImage = (canvas: HTMLCanvasElement, filename: string) => {
+    const link = document.createElement('a');
+    link.download = `${filename}.pdf`;
+    link.href = canvas.toDataURL();
+    link.click();
   };
 
   // Enhanced navigation with smooth animations
@@ -618,20 +553,7 @@ export default function TransactionHistoryWorking() {
                   className="w-8 h-8 bg-[#126987] rounded-full flex items-center justify-center active:scale-95 transition-transform"
                   title="Share Receipt"
                 >
-                  {/* iOS/Android native share icon - square with arrow pointing up */}
-                  <svg 
-                    className="w-4 h-4 text-white" 
-                    viewBox="0 0 24 24" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    strokeWidth="2" 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round"
-                  >
-                    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
-                    <polyline points="16,6 12,2 8,6" />
-                    <line x1="12" y1="2" x2="12" y2="15" />
-                  </svg>
+                  <Share className="w-4 h-4 text-white" />
                 </button>
                 <button 
                   onClick={() => setSelectedTransaction(null)}
