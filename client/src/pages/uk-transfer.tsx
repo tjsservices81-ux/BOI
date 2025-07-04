@@ -846,18 +846,16 @@ export default function UkTransfer() {
                       form.clearErrors('sortCode');
                     }
                     
-                    // Identify bank when sort code is complete (6 digits) or partial matches
-                    if (cleanValue.length >= 2) {
+                    // Identify bank only when sort code is complete (6 digits)
+                    if (cleanValue.length === 6) {
                       // Try predefined list first
                       const bank = identifyBankFromSortCode(cleanValue);
                       if (bank) {
                         setIdentifiedBank(bank);
-                      } else if (cleanValue.length >= 6) {
+                      } else {
                         // Fall back to existing EISCD validation for complete sort codes
                         const fallbackBank = validateUKSortCode(cleanValue);
                         setIdentifiedBank(fallbackBank || '');
-                      } else {
-                        setIdentifiedBank('');
                       }
                     } else {
                       setIdentifiedBank('');
@@ -879,17 +877,15 @@ export default function UkTransfer() {
                           input.value = newFormattedValue;
                           form.setValue('sortCode', newCleanValue, { shouldValidate: true });
                           
-                          if (newCleanValue.length >= 2) {
+                          if (newCleanValue.length === 6) {
                             // Try predefined list first
                             const bank = identifyBankFromSortCode(newCleanValue);
                             if (bank) {
                               setIdentifiedBank(bank);
-                            } else if (newCleanValue.length >= 6) {
+                            } else {
                               // Fall back to existing EISCD validation for complete sort codes
                               const fallbackBank = validateUKSortCode(newCleanValue);
                               setIdentifiedBank(fallbackBank || '');
-                            } else {
-                              setIdentifiedBank('');
                             }
                           } else {
                             setIdentifiedBank('');
