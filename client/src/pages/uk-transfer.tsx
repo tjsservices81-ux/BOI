@@ -28,6 +28,7 @@ const knownSortCodes: Record<string, string> = {
   "60-30-30": "NatWest",
   "09": "Santander",
   "07": "Nationwide",
+  "87": "TSB Bank",
   "83": "Royal Bank of Scotland",
   "80": "Bank of Scotland",
   "80-20-00": "Bank of Scotland",
