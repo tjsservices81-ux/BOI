@@ -13,8 +13,8 @@ interface TransferPDFData {
 }
 
 /**
- * Generate authentic Bank of Ireland transfer confirmation PDF
- * matching the exact styling of real BOI statements
+ * Generate a professional Bank of Ireland transfer confirmation PDF
+ * that matches authentic BOI document styling
  */
 export async function generateTransferConfirmationPDF(
   details: TransferPDFData,
@@ -22,10 +22,10 @@ export async function generateTransferConfirmationPDF(
 ): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     try {
-      console.log('🔵 GENERATING AUTHENTIC BOI TRANSFER CONFIRMATION PDF');
+      console.log('🔵 GENERATING PROFESSIONAL BOI PDF DOCUMENT');
       
       const doc = new PDFDocument({ 
-        margin: 50,
+        margin: 60,
         size: 'A4',
         info: {
           Title: `Transfer Confirmation - ${transferData?.id}`,
@@ -39,78 +39,87 @@ export async function generateTransferConfirmationPDF(
       doc.on('data', buffers.push.bind(buffers));
       doc.on('end', () => {
         const pdfBuffer = Buffer.concat(buffers);
-        console.log('✅ Authentic BOI transfer confirmation PDF completed, size:', pdfBuffer.length);
+        console.log('✅ Professional BOI PDF completed, size:', pdfBuffer.length);
         resolve(pdfBuffer);
       });
 
-      // Use the uploaded BOI logo that matches the statement
-      const logoPath = path.join(process.cwd(), 'attached_assets', 'IMG_1957_1751635310015.webp');
+      // Add Bank of Ireland logo with proper spacing
       let logoAdded = false;
+      let startY = 80;
 
-      try {
-        if (fs.existsSync(logoPath)) {
-          // Add BOI logo at top left exactly like the statement
-          doc.image(logoPath, 50, 50, { width: 150, height: 40 });
-          logoAdded = true;
-          console.log('✅ Authentic BOI logo embedded in transfer confirmation');
+      // Try multiple logo file formats
+      const logoOptions = [
+        path.join(process.cwd(), 'BOI_logo.png'),
+        path.join(process.cwd(), 'boi_app_icon.png'),
+        path.join(process.cwd(), 'client', 'public', 'icons', 'boi-icon-192.png')
+      ];
+
+      for (const logoPath of logoOptions) {
+        try {
+          if (fs.existsSync(logoPath)) {
+            // Add logo at top left with professional spacing
+            doc.image(logoPath, 60, 60, { width: 180, height: 50 });
+            logoAdded = true;
+            startY = 140;
+            console.log('✅ Authentic BOI logo embedded in PDF from:', logoPath);
+            break;
+          }
+        } catch (logoError) {
+          console.log('⚠️ Logo attempt failed for', logoPath, ':', logoError.message);
+          continue;
         }
-      } catch (logoError) {
-        console.log('⚠️ Logo embedding failed, using BOI text header');
       }
 
-      // Professional BOI text header if logo fails (matches statement styling)
+      // Professional fallback header if logo fails
       if (!logoAdded) {
+        // Create a professional text-based header with BOI styling
+        doc.rect(60, 60, 475, 50)
+           .fillAndStroke('#003f7f', '#003f7f');
+        
         doc.font('Helvetica-Bold')
-           .fontSize(20)
-           .fillColor('#0066B2')
-           .text('Bank of Ireland', 50, 50);
+           .fontSize(28)
+           .fillColor('#ffffff')
+           .text('Bank of Ireland', 80, 75, { align: 'left' });
+           
+        doc.font('Helvetica')
+           .fontSize(12)
+           .fillColor('#ffffff')
+           .text('Digital Banking Services', 80, 100, { align: 'left' });
+        
+        startY = 140;
+        console.log('✅ Professional BOI text header created');
       }
 
-      // Transfer summary section (right side like statement header)
-      const currentDate = new Date().toLocaleDateString('en-IE', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric'
-      });
+      let currentY = startY;
 
+      // Main heading with professional spacing
       doc.font('Helvetica-Bold')
-         .fontSize(12)
+         .fontSize(24)
          .fillColor('#000000')
-         .text('Transfer Type:', 300, 60)
-         .font('Helvetica')
-         .text('Transfer Confirmation', 400, 60);
+         .text('Transfer Confirmation', 60, currentY, { align: 'left' });
+      
+      currentY += 50;
 
-      doc.font('Helvetica-Bold')
-         .text('Transfer Date:', 300, 80)
-         .font('Helvetica')
-         .text(currentDate, 400, 80);
-
-      doc.font('Helvetica-Bold')
-         .text('Recipient Name:', 300, 100)
-         .font('Helvetica')
-         .text(details.recipientName, 400, 100);
-
-      doc.font('Helvetica-Bold')
-         .text('Amount:', 300, 120)
-         .font('Helvetica-Bold')
-         .fillColor('#0066B2')
-         .text(`${details.currency}${details.amount}`, 400, 120);
-
-      // Main title (like statement title)
-      doc.font('Helvetica-Bold')
-         .fontSize(18)
-         .fillColor('#000000')
-         .text('Transfer Confirmation', 50, 170, { align: 'center' });
-
-      // Horizontal line separator (like in statement)
-      doc.strokeColor('#000000')
-         .lineWidth(1)
-         .moveTo(50, 200)
-         .lineTo(545, 200)
+      // Professional blue line separator
+      doc.strokeColor('#003f7f')
+         .lineWidth(3)
+         .moveTo(60, currentY)
+         .lineTo(535, currentY)
          .stroke();
+      
+      currentY += 30;
 
-      // Transfer Details section with clean horizontal layout
-      let currentY = 230;
+      // Transaction Details heading with box styling
+      doc.rect(60, currentY, 475, 30)
+         .fillAndStroke('#f8f9fa', '#003f7f')
+         .lineWidth(1);
+
+      doc.font('Helvetica-Bold')
+         .fontSize(16)
+         .fillColor('#003f7f')
+         .text('Transaction Details', 75, currentY + 8);
+      
+      currentY += 50;
 
       // Determine transfer type for proper formatting
       const isUKTransfer = transferData?.paymentMethod === 'UK Transfer' || 
@@ -122,104 +131,127 @@ export async function generateTransferConfirmationPDF(
                             transferData?.bicCode ||
                             details.currency === '€';
 
-      // Build details array for clean layout
-      const transferDetails = [
-        { label: 'Amount', value: `${details.currency}${details.amount}` },
-        { label: 'To Account', value: details.recipientName }
-      ];
+      // Build details array for structured layout
+      const transactionDetails = [];
+      
+      // Common details
+      transactionDetails.push(
+        { label: 'Amount:', value: `${details.currency}${details.amount}`, bold: true },
+        { label: 'To Account:', value: details.recipientName, bold: false }
+      );
 
-      // Add account-specific details
+      // Add transfer-specific details
       if (isUKTransfer) {
-        transferDetails.push(
-          { label: 'Account Number', value: transferData?.recipientAccountNumber || 'Not available' },
-          { label: 'Sort Code', value: transferData?.recipientSortCode || 'Not available' }
+        transactionDetails.push(
+          { label: 'Account Number:', value: transferData?.recipientAccountNumber || 'Not available', bold: false },
+          { label: 'Sort Code:', value: transferData?.recipientSortCode || 'Not available', bold: false }
         );
       } else if (isSEPATransfer) {
-        transferDetails.push(
-          { label: 'IBAN', value: transferData?.iban || 'Not available' },
-          { label: 'BIC', value: transferData?.bicCode || 'Not available' }
+        transactionDetails.push(
+          { label: 'IBAN:', value: transferData?.iban || 'Not available', bold: false },
+          { label: 'BIC:', value: transferData?.bicCode || 'Not available', bold: false }
         );
       }
 
       // Add remaining details
-      const fullDateTime = new Date().toLocaleString('en-IE', {
+      const currentDate = new Date().toLocaleString('en-IE', {
         day: '2-digit',
-        month: '2-digit',
+        month: '2-digit', 
         year: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
         timeZone: 'Europe/Dublin'
       });
 
-      transferDetails.push(
-        { label: 'Reference', value: details.transactionReference },
-        { label: 'Date/Time', value: fullDateTime },
-        { label: 'Transaction ID', value: transferData?.id || 'Not available' },
-        { label: 'Unique Reference', value: `BOI-${transferData?.id}-${isUKTransfer ? 'UK' : isSEPATransfer ? 'SEPA' : 'INT'}` }
+      transactionDetails.push(
+        { label: 'Reference:', value: details.transactionReference, bold: false },
+        { label: 'Date/Time:', value: currentDate, bold: false },
+        { label: 'Transaction ID:', value: transferData?.id || 'Not available', bold: false },
+        { label: 'Unique Reference:', value: `BOI-${transferData?.id}-${isUKTransfer ? 'UK' : isSEPATransfer ? 'SEPA' : 'INT'}`, bold: false }
       );
 
-      // Render details in clean horizontal format (like statement)
-      for (const detail of transferDetails) {
+      // Render details in professional two-column layout
+      for (const detail of transactionDetails) {
+        // Label column (bold, right-aligned)
         doc.font('Helvetica-Bold')
            .fontSize(11)
-           .fillColor('#000000')
-           .text(detail.label + ':', 70, currentY);
+           .fillColor('#333333')
+           .text(detail.label, 80, currentY, { width: 150, align: 'left' });
         
-        doc.font('Helvetica')
+        // Value column
+        doc.font(detail.bold ? 'Helvetica-Bold' : 'Helvetica')
            .fontSize(11)
-           .fillColor('#000000')
-           .text(detail.value, 200, currentY);
+           .fillColor(detail.bold ? '#003f7f' : '#000000')
+           .text(detail.value, 240, currentY, { width: 280, align: 'left' });
         
-        currentY += 18;
+        currentY += 20;
       }
 
-      currentY += 30;
-
-      // Horizontal separator
-      doc.strokeColor('#cccccc')
-         .lineWidth(1)
-         .moveTo(50, currentY)
-         .lineTo(545, currentY)
-         .stroke();
-      
       currentY += 40;
 
-      // Security warning (matching BOI footer style)
+      // Professional separator
+      doc.strokeColor('#cccccc')
+         .lineWidth(1)
+         .moveTo(60, currentY)
+         .lineTo(535, currentY)
+         .stroke();
+      
+      currentY += 30;
+
+      // Security warning in red alert box
+      doc.rect(60, currentY, 475, 35)
+         .fillAndStroke('#fff5f5', '#dc3545')
+         .lineWidth(2);
+      
       doc.font('Helvetica-Bold')
-         .fontSize(10)
+         .fontSize(11)
          .fillColor('#dc3545')
-         .text('If you did not authorise this payment, contact 1800 123 456 immediately.', 50, currentY, { align: 'center' });
+         .text('⚠ If you did not authorise this payment, contact 1800 123 456 immediately.', 
+               80, currentY + 12, { width: 435, align: 'center' });
       
-      currentY += 20;
+      currentY += 55;
 
+      // Automated message disclaimer
       doc.font('Helvetica')
          .fontSize(9)
-         .fillColor('#666666')
-         .text('This is an automated confirmation from Bank of Ireland. Do not reply.', 50, currentY, { align: 'center' });
+         .fillColor('#6c757d')
+         .text('This is an automated confirmation from Bank of Ireland. Please retain this document for your records.', 
+               60, currentY, { width: 475, align: 'center' });
       
-      currentY += 20;
+      currentY += 30;
 
+      // Professional footer section with BOI branding
+      doc.strokeColor('#003f7f')
+         .lineWidth(2)
+         .moveTo(60, currentY)
+         .lineTo(535, currentY)
+         .stroke();
+      
+      currentY += 25;
+
+      // Footer content
       doc.font('Helvetica-Bold')
-         .fontSize(10)
-         .fillColor('#000000')
-         .text('Thank you for banking with Bank of Ireland.', 50, currentY, { align: 'center' });
+         .fontSize(14)
+         .fillColor('#003f7f')
+         .text('Thank you for banking with Bank of Ireland', 60, currentY, { align: 'center' });
       
-      currentY += 15;
+      currentY += 25;
 
       doc.font('Helvetica')
-         .fontSize(9)
-         .fillColor('#000000')
-         .text('BOI Customer Service | www.bankofireland.com', 50, currentY, { align: 'center' });
+         .fontSize(10)
+         .fillColor('#333333')
+         .text('BOI Customer Service | www.bankofireland.com | 1800 123 456', 60, currentY, { align: 'center' });
 
-      // Footer like BOI statement
+      // Document metadata at bottom
       doc.font('Helvetica')
          .fontSize(8)
          .fillColor('#999999')
-         .text(`Page 1 of 1`, 50, 750, { align: 'right' });
+         .text(`Document generated: ${new Date().toLocaleDateString('en-IE')} | Ref: ${transferData?.id || 'N/A'}`, 
+               60, 760, { align: 'center' });
 
       doc.end();
     } catch (error) {
-      console.error('❌ Error generating authentic BOI transfer confirmation:', error);
+      console.error('❌ Error generating professional BOI PDF:', error);
       reject(error);
     }
   });

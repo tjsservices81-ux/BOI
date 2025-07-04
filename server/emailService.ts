@@ -47,7 +47,7 @@ const createTransporter = () => {
 };
 
 /**
- * Send email with PDF attachment with comprehensive logging
+ * Send email with PDF attachment
  */
 export async function sendEmailWithPDF(
   to: string, 
@@ -61,116 +61,44 @@ export async function sendEmailWithPDF(
   console.log(`To: ${to}`);
   console.log(`Subject: ${subject}`);
   console.log(`PDF Filename: ${pdfFilename}`);
-  console.log(`PDF Size: ${pdfBuffer.length} bytes (${(pdfBuffer.length / 1024).toFixed(2)} KB)`);
-  
-  // Check PDF size limit (1MB = 1,048,576 bytes)
-  if (pdfBuffer.length > 1048576) {
-    console.error('❌ PDF too large for email attachment:', pdfBuffer.length, 'bytes');
-    return false;
-  }
   
   const transporter = createTransporter();
   
   if (!transporter) {
-    console.error('❌ SMTP transporter not configured');
-    console.log('SMTP Config Check:');
-    console.log('- SMTP_HOST:', process.env.SMTP_HOST || 'NOT SET');
-    console.log('- SMTP_PORT:', process.env.SMTP_PORT || 'NOT SET');
-    console.log('- SMTP_USER:', process.env.SMTP_USER ? 'SET' : 'NOT SET');
-    console.log('- SMTP_PASS:', process.env.SMTP_PASS ? 'SET' : 'NOT SET');
+    console.log('SMTP not configured. Email with PDF would be sent to:', { to, subject, pdfFilename });
     return false;
   }
 
   try {
-    // Create simple fallback email body
-    const simplifiedBody = `
-<html>
-<body style="font-family: Arial, sans-serif; margin: 20px;">
-  <h2 style="color: #0066B2;">Bank of Ireland</h2>
-  <p>Dear Valued Customer,</p>
-  <p>Your transfer confirmation is attached as a PDF document.</p>
-  <p>Thank you for banking with Bank of Ireland.</p>
-  <p style="font-size: 12px; color: #666;">BOI Customer Service | www.bankofireland.com</p>
-</body>
-</html>`;
-
     const mailOptions = {
       from: {
         name: 'Bank of Ireland',
-        address: process.env.SMTP_USER || 'noreply@bankofireland.com'
+        address: 'bankofireland2007@gmail.com'
       },
       to: to,
       subject: subject,
-      html: simplifiedBody,
-      text: 'Your transfer confirmation is attached as a PDF. Thank you for banking with Bank of Ireland.',
+      html: body,
+      text: body.replace(/<[^>]*>/g, ''), // Strip HTML tags for text version
       attachments: [
         {
           filename: pdfFilename,
           content: pdfBuffer,
-          contentType: 'application/pdf',
-          encoding: 'base64'
+          contentType: 'application/pdf'
         }
-      ]
+      ],
+      headers: {
+        'X-Priority': '1',
+        'X-MSMail-Priority': 'High',
+        'Importance': 'high'
+      }
     };
 
-    console.log('📧 Attempting to send email with options:', {
-      from: mailOptions.from,
-      to: mailOptions.to,
-      subject: mailOptions.subject,
-      attachmentSize: pdfBuffer.length,
-      attachmentType: 'application/pdf'
-    });
-
-    const result = await transporter.sendMail(mailOptions);
-    
-    console.log('✅ Email sent successfully with result:', {
-      messageId: result.messageId,
-      response: result.response,
-      accepted: result.accepted,
-      rejected: result.rejected
-    });
-    
+    await transporter.sendMail(mailOptions);
+    console.log(`✅ Email with PDF attachment sent successfully to: ${to}`);
     return true;
-  } catch (error: any) {
-    console.error('❌ DETAILED EMAIL SEND ERROR:', {
-      message: error.message,
-      code: error.code,
-      command: error.command,
-      response: error.response,
-      responseCode: error.responseCode
-    });
-    
-    // Try sending without attachment as fallback
-    console.log('🔄 Attempting fallback email without PDF attachment...');
-    try {
-      const fallbackOptions = {
-        from: {
-          name: 'Bank of Ireland',
-          address: process.env.SMTP_USER || 'noreply@bankofireland.com'
-        },
-        to: to,
-        subject: 'Transfer Confirmation - Bank of Ireland (PDF Generation Failed)',
-        text: 'Your transfer has been processed successfully. Please contact customer service for confirmation details. Thank you for banking with Bank of Ireland.',
-        html: `
-<html>
-<body style="font-family: Arial, sans-serif; margin: 20px;">
-  <h2 style="color: #0066B2;">Bank of Ireland</h2>
-  <p>Dear Valued Customer,</p>
-  <p>Your transfer has been processed successfully.</p>
-  <p style="color: #ff6600;">Note: PDF confirmation document could not be attached. Please contact customer service if you need a copy.</p>
-  <p>Thank you for banking with Bank of Ireland.</p>
-  <p style="font-size: 12px; color: #666;">BOI Customer Service | www.bankofireland.com | 1800 123 456</p>
-</body>
-</html>`
-      };
-      
-      const fallbackResult = await transporter.sendMail(fallbackOptions);
-      console.log('✅ Fallback email sent successfully:', fallbackResult.messageId);
-      return true;
-    } catch (fallbackError: any) {
-      console.error('❌ Fallback email also failed:', fallbackError.message);
-      return false;
-    }
+  } catch (error) {
+    console.error('Failed to send email with PDF:', error);
+    return false;
   }
 }
 
