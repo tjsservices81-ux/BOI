@@ -1428,13 +1428,9 @@ export default function Login() {
                   value={newUserData.name}
                   onChange={(e) => setNewUserData({...newUserData, name: e.target.value})}
                   className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  style={{ fontFamily: 'OpenSans, sans-serif', WebkitAppearance: 'none', fontSize: '16px' }}
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
                   placeholder="Enter your full name"
                   autoComplete="name"
-                  autoCorrect="off"
-                  autoCapitalize="words"
-                  spellCheck="false"
-                  inputMode="text"
                   required
                 />
               </div>
@@ -1449,13 +1445,9 @@ export default function Login() {
                   value={newUserData.email}
                   onChange={(e) => setNewUserData({...newUserData, email: e.target.value})}
                   className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  style={{ fontFamily: 'OpenSans, sans-serif', WebkitAppearance: 'none', fontSize: '16px' }}
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
                   placeholder="Enter your email address"
                   autoComplete="email"
-                  autoCorrect="off"
-                  autoCapitalize="none"
-                  spellCheck="false"
-                  inputMode="email"
                   required
                 />
               </div>
@@ -1470,13 +1462,9 @@ export default function Login() {
                   value={newUserData.phone}
                   onChange={(e) => setNewUserData({...newUserData, phone: e.target.value})}
                   className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  style={{ fontFamily: 'OpenSans, sans-serif', WebkitAppearance: 'none', fontSize: '16px' }}
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
                   placeholder="+353 XX XXX XXXX"
                   autoComplete="tel"
-                  autoCorrect="off"
-                  autoCapitalize="none"
-                  spellCheck="false"
-                  inputMode="tel"
                   required
                 />
               </div>
@@ -1643,13 +1631,8 @@ export default function Login() {
                     setOtcCode(value);
                   }}
                   className="w-full p-4 border border-gray-300 rounded-xl text-center text-2xl font-mono tracking-widest"
-                  style={{ WebkitAppearance: 'none', fontSize: '24px' }}
                   placeholder="000000"
                   maxLength={6}
-                  autoCorrect="off"
-                  autoCapitalize="none"
-                  spellCheck="false"
-                  inputMode="numeric"
                 />
               </div>
 

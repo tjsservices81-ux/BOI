@@ -816,11 +816,7 @@ export default function UkTransfer() {
                 type="text"
                 placeholder="Enter recipient's full name"
                 className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
-                style={{ fontFamily: 'OpenSans, sans-serif', WebkitAppearance: 'none', fontSize: '16px' }}
-                autoCorrect="off"
-                autoCapitalize="words"
-                spellCheck="false"
-                inputMode="text"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
               />
               {form.formState.errors.recipientName && (
                 <p className="text-red-500 text-xs mt-2 font-medium">{form.formState.errors.recipientName.message}</p>
@@ -843,11 +839,7 @@ export default function UkTransfer() {
                   placeholder="12-34-56"
                   maxLength={8}
                   className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
-                  style={{ fontFamily: 'OpenSans, sans-serif', WebkitAppearance: 'none', fontSize: '16px' }}
-                  autoCorrect="off"
-                  autoCapitalize="none"
-                  spellCheck="false"
-                  inputMode="numeric"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
                   onChange={(e) => {
                     const value = e.target.value;
                     const cleanValue = value.replace(/\D/g, '');
@@ -953,11 +945,7 @@ export default function UkTransfer() {
                   placeholder="12345678"
                   maxLength={8}
                   className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
-                  style={{ fontFamily: 'OpenSans, sans-serif', WebkitAppearance: 'none', fontSize: '16px' }}
-                  autoCorrect="off"
-                  autoCapitalize="none"
-                  spellCheck="false"
-                  inputMode="numeric"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
                 />
                 {form.formState.errors.accountNumber && (
                   <p className="text-red-500 text-xs mt-2 font-medium">{form.formState.errors.accountNumber.message}</p>
@@ -973,11 +961,7 @@ export default function UkTransfer() {
                 type="text"
                 placeholder="0.00"
                 className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
-                style={{ fontFamily: 'OpenSans, sans-serif', WebkitAppearance: 'none', fontSize: '16px' }}
-                autoCorrect="off"
-                autoCapitalize="none"
-                spellCheck="false"
-                inputMode="decimal"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
                 onChange={(e) => {
                   const value = e.target.value;
                   form.setValue('amount', value);
@@ -996,11 +980,7 @@ export default function UkTransfer() {
                 type="text"
                 placeholder="Payment description"
                 className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
-                style={{ fontFamily: 'OpenSans, sans-serif', WebkitAppearance: 'none', fontSize: '16px' }}
-                autoCorrect="off"
-                autoCapitalize="sentences"
-                spellCheck="false"
-                inputMode="text"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
                 onChange={(e) => {
                   const value = e.target.value;
                   form.setValue('reference', value);
