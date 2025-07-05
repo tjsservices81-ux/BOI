@@ -130,7 +130,7 @@ export class StatementService {
 
   private addHeader(doc: PDFKit.PDFDocument) {
     // Bank of Ireland Blue Color
-    const boiBlue = '#1a5490';
+    const boiBlue = '#0000FF';
     
     // Account Statement text - positioned just below BOI logo
     doc.fontSize(18)
@@ -157,7 +157,7 @@ export class StatementService {
     const startY = 265; // Positioned higher for more transaction space
     
     doc.fontSize(14)
-       .fillColor('#1a5490')
+       .fillColor('#0000FF')
        .font('Helvetica-Bold')
        .text('Account Information', 50, startY);
     
@@ -204,7 +204,7 @@ export class StatementService {
     const endDateStr = endDate.toLocaleDateString('en-IE');
     
     doc.fontSize(14)
-       .fillColor('#1a5490')
+       .fillColor('#0000FF')
        .font('Helvetica-Bold')
        .text('Statement Period', 50, startY);
     
@@ -235,7 +235,7 @@ export class StatementService {
       closingBalance;
     
     doc.fontSize(14)
-       .fillColor('#1a5490')
+       .fillColor('#0000FF')
        .font('Helvetica-Bold')
        .text('Account Summary', 50, startY);
     
@@ -273,7 +273,7 @@ export class StatementService {
     let currentY = 550; // Positioned higher - starts just below account summary
     
     doc.fontSize(14)
-       .fillColor('#1a5490')
+       .fillColor('#0000FF')
        .font('Helvetica-Bold')
        .text('Transaction Details', 50, currentY);
     
@@ -338,7 +338,7 @@ export class StatementService {
         
         // Add header on new page
         doc.fontSize(14)
-           .fillColor('#1a5490')
+           .fillColor('#0000FF')
            .font('Helvetica-Bold')
            .text('Transaction Details (continued)', 50, currentY);
         
@@ -425,7 +425,7 @@ export class StatementService {
     // Footer line
     doc.moveTo(50, footerY)
        .lineTo(545, footerY)
-       .strokeColor('#1a5490')
+       .strokeColor('#0000FF')
        .lineWidth(1)
        .stroke();
     

@@ -50,7 +50,7 @@ export async function generateTransferConfirmationPDF(
         doc.rect(0, 0, 595, 842).fill('#f8f9fa');
         doc.font('Helvetica-Bold')
            .fontSize(24)
-           .fillColor('#1a5490')
+           .fillColor('#0000FF')
            .text('Bank of Ireland', 400, 50);
       }
 
@@ -65,17 +65,17 @@ export async function generateTransferConfirmationPDF(
 
       // Blue line under title
       doc.rect(50, 330, 495, 2)
-         .fill('#1a5490');
+         .fill('#0000FF');
 
       // Transaction Details Header Box
       doc.rect(50, 350, 495, 30)
          .fill('#f0f0f0')
-         .stroke('#1a5490')
+         .stroke('#0000FF')
          .lineWidth(1);
 
       doc.font('Helvetica-Bold')
          .fontSize(14)
-         .fillColor('#1a5490')
+         .fillColor('#0000FF')
          .text('Transaction Details', 60, 360);
 
       // Transfer details content with improved spacing
@@ -91,7 +91,7 @@ export async function generateTransferConfirmationPDF(
       
       doc.font('Helvetica-Bold')
          .fontSize(12)
-         .fillColor('#1a5490')
+         .fillColor('#0000FF')
          .text(`${currency}${amount}`, rightCol, yPos);
       
       yPos += 30;
@@ -105,7 +105,7 @@ export async function generateTransferConfirmationPDF(
         
         doc.font('Helvetica')
            .fontSize(12)
-           .fillColor('#1a5490')
+           .fillColor('#0000FF')
            .text(`${transferData.convertedCurrency}${transferData.convertedAmount} (Rate: ${transferData.exchangeRate})`, rightCol, yPos);
         
         yPos += 30;
@@ -254,7 +254,7 @@ export async function generateTransferConfirmationPDF(
 
       // Footer section with blue background
       doc.rect(50, 750, 495, 40)
-         .fill('#1a5490');
+         .fill('#0000FF');
 
       doc.font('Helvetica-Bold')
          .fontSize(12)
