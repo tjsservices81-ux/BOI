@@ -8,6 +8,7 @@ interface StatementRequest {
   startDate: string;
   endDate: string;
   dateRange: string;
+  customerName?: string;
   userTransactions?: Array<{
     id: string | number;
     accountId: number;
@@ -163,11 +164,21 @@ export class StatementService {
     
     doc.fontSize(11)
        .fillColor('#333333')
-       .font('Helvetica')
-       .text(`Account Name: ${account.displayName}`, 50, startY + 25)
-       .text(`Account Number: ${account.accountNumber}`, 50, startY + 45)
-       .text(`Sort Code: ${account.sortCode}`, 50, startY + 65)
-       .text(`Account Type: ${account.accountType}`, 50, startY + 85);
+       .font('Helvetica');
+    
+    // Add customer name if available (using authentic user data)
+    if (request.customerName) {
+      doc.text(`Customer Name: ${request.customerName}`, 50, startY + 25)
+         .text(`Account Name: ${account.displayName}`, 50, startY + 45)
+         .text(`Account Number: ${account.accountNumber}`, 50, startY + 65)
+         .text(`Sort Code: ${account.sortCode}`, 50, startY + 85)
+         .text(`Account Type: ${account.accountType}`, 50, startY + 105);
+    } else {
+      doc.text(`Account Name: ${account.displayName}`, 50, startY + 25)
+         .text(`Account Number: ${account.accountNumber}`, 50, startY + 45)
+         .text(`Sort Code: ${account.sortCode}`, 50, startY + 65)
+         .text(`Account Type: ${account.accountType}`, 50, startY + 85);
+    }
     
     // Statement date
     const statementDate = new Date().toLocaleDateString('en-IE', {
