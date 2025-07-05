@@ -364,12 +364,29 @@ export default function BankStatements() {
           </div>
           
           {/* PDF Content */}
-          <div className="flex-1 bg-white">
-            <iframe
-              src={pdfUrl}
-              className="w-full h-full border-0"
-              title="Bank Statement PDF"
-            />
+          <div className="flex-1 bg-white flex flex-col items-center justify-center p-8">
+            <div className="bg-green-50 border border-green-200 rounded-2xl p-6 max-w-sm text-center">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle2 className="w-8 h-8 text-green-600" />
+              </div>
+              <h3 className="text-green-900 font-semibold mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Statement Ready
+              </h3>
+              <p className="text-green-800 text-sm mb-6" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Your Bank of Ireland statement has been generated successfully.
+              </p>
+              <button 
+                onClick={downloadPDF}
+                className="w-full bg-[#126987] hover:bg-[#0d4e63] text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 active:scale-98 flex items-center justify-center"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              >
+                <Download className="w-5 h-5 mr-2" />
+                Download PDF Statement
+              </button>
+              <p className="text-xs text-green-600 mt-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Official Bank of Ireland document
+              </p>
+            </div>
           </div>
         </div>
       )}
