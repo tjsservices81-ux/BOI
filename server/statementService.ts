@@ -255,10 +255,10 @@ export class StatementService {
     
     // Right-align amounts matching your statement format
     doc.font('Helvetica-Bold')
-       .text(`€${openingBalance.toFixed(2)}`, 450, startY + 45)
-       .text(`€${totalCredits.toFixed(2)}`, 450, startY + 65)
-       .text(`€${totalDebits.toFixed(2)}`, 450, startY + 85)
-       .text(`€${closingBalance.toFixed(2)}`, 450, startY + 105);
+       .text(`€ ${openingBalance.toFixed(2)}`, 450, startY + 45)
+       .text(`€ ${totalCredits.toFixed(2)}`, 450, startY + 65)
+       .text(`€ ${totalDebits.toFixed(2)}`, 450, startY + 85)
+       .text(`€ ${closingBalance.toFixed(2)}`, 450, startY + 105);
   }
 
   private addTransactionDetails(doc: PDFKit.PDFDocument, transactions: StatementTransaction[]) {
@@ -357,8 +357,8 @@ export class StatementService {
       // Format and render the complete transaction row
       const date = new Date(transaction.date).toLocaleDateString('en-US');
       const amount = transaction.type === 'credit' ? 
-        `+€${transaction.amount.toFixed(2)}` : 
-        `-€${transaction.amount.toFixed(2)}`;
+        `+€ ${transaction.amount.toFixed(2)}` : 
+        `-€ ${transaction.amount.toFixed(2)}`;
       
       // Render all fields of this transaction on the same line
       doc.fillColor('#333333')
@@ -378,7 +378,7 @@ export class StatementService {
       // Continue with standard font size for amount and balance
       doc.fontSize(9)
          .text(amount, 400, currentY)
-         .text(`€${transaction.balance.toFixed(2)}`, 480, currentY);
+         .text(`€ ${transaction.balance.toFixed(2)}`, 480, currentY);
       
       currentY += 20;
     }
