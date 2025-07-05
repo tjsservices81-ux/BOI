@@ -158,8 +158,25 @@ export class StatementService {
   private addStatementPeriod(doc: PDFKit.PDFDocument, request: StatementRequest) {
     const startY = 340;
     
-    const startDate = new Date(request.startDate).toLocaleDateString('en-IE');
-    const endDate = new Date(request.endDate).toLocaleDateString('en-IE');
+    // Calculate actual current period dates based on range selection
+    const endDate = new Date();
+    const startDate = new Date();
+    
+    switch (request.dateRange) {
+      case '1week':
+        startDate.setDate(endDate.getDate() - 7);
+        break;
+      case '2weeks':
+        startDate.setDate(endDate.getDate() - 14);
+        break;
+      case '1month':
+      default:
+        startDate.setDate(endDate.getDate() - 30);
+        break;
+    }
+    
+    const startDateStr = startDate.toLocaleDateString('en-IE');
+    const endDateStr = endDate.toLocaleDateString('en-IE');
     
     doc.fontSize(14)
        .fillColor('#1a5490')
@@ -169,7 +186,7 @@ export class StatementService {
     doc.fontSize(11)
        .fillColor('#333333')
        .font('Helvetica')
-       .text(`From: ${startDate} to ${endDate}`, 50, startY + 25);
+       .text(`From: ${startDateStr} to ${endDateStr}`, 50, startY + 25);
   }
 
   private addAccountSummary(doc: PDFKit.PDFDocument, account: Account, transactions: StatementTransaction[]) {
@@ -369,14 +386,27 @@ export class StatementService {
   }
 
   private async getTransactions(request: StatementRequest): Promise<StatementTransaction[]> {
-    const startDate = new Date(request.startDate);
-    const endDate = new Date(request.endDate);
-    
     // Generate sample transactions for demonstration
     // In production, this would fetch from your actual database
     
-    // Create sample transactions within the requested date range
-    const daysDiff = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    // Always use current dates for realistic statement period
+    const endDate = new Date(); // Today
+    const startDate = new Date();
+    
+    // Calculate proper start date based on date range
+    switch (request.dateRange) {
+      case '1week':
+        startDate.setDate(endDate.getDate() - 7);
+        break;
+      case '2weeks':
+        startDate.setDate(endDate.getDate() - 14);
+        break;
+      case '1month':
+      default:
+        startDate.setDate(endDate.getDate() - 30);
+        break;
+    }
+    
     const baseDate = new Date(startDate);
     
     const sampleTransactions: StatementTransaction[] = [
