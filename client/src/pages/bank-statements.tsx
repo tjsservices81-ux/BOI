@@ -28,6 +28,8 @@ export default function BankStatements() {
   const [selectedDateRange, setSelectedDateRange] = useState<DateRange>('1month');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationProgress, setGenerationProgress] = useState(0);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [showPdfViewer, setShowPdfViewer] = useState(false);
 
   useEffect(() => {
     // Load user accounts
@@ -91,20 +93,12 @@ export default function BankStatements() {
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.style.display = 'none';
-        a.href = url;
         
-        const selectedAccountData = accounts.find(acc => String(acc.id) === selectedAccount);
-        const fileName = `BOI_Statement_${selectedAccountData?.accountNumber}_${selectedDateRange}_${new Date().toISOString().split('T')[0]}.pdf`;
-        a.download = fileName;
-        
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
+        // Store PDF URL for viewing in iframe
+        setPdfUrl(url);
+        setShowPdfViewer(true);
 
-        // Reset state after successful download
+        // Reset generation state
         setTimeout(() => {
           setIsGenerating(false);
           setGenerationProgress(0);
@@ -117,6 +111,29 @@ export default function BankStatements() {
       setIsGenerating(false);
       setGenerationProgress(0);
       alert('Failed to generate statement. Please try again.');
+    }
+  };
+
+  const downloadPDF = () => {
+    if (!pdfUrl) return;
+    
+    const selectedAccountData = accounts.find(acc => String(acc.id) === selectedAccount);
+    const fileName = `BOI_Statement_${selectedAccountData?.accountNumber}_${selectedDateRange}_${new Date().toISOString().split('T')[0]}.pdf`;
+    
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = pdfUrl;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
+  const closePdfViewer = () => {
+    setShowPdfViewer(false);
+    if (pdfUrl) {
+      window.URL.revokeObjectURL(pdfUrl);
+      setPdfUrl(null);
     }
   };
 
@@ -300,7 +317,7 @@ export default function BankStatements() {
             </Button>
             
             <p className="text-xs text-gray-500 text-center mt-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Your statement will be downloaded as a PDF file
+              Your statement will be displayed for viewing and download
             </p>
           </div>
 
@@ -320,6 +337,41 @@ export default function BankStatements() {
           </div>
         </div>
       </div>
+
+      {/* PDF Viewer Modal */}
+      {showPdfViewer && pdfUrl && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex flex-col">
+          {/* PDF Viewer Header */}
+          <div className="bg-[#126987] px-4 py-3 flex items-center justify-between text-white">
+            <button 
+              onClick={closePdfViewer}
+              className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center active:scale-95 transition-all duration-200"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+            
+            <h2 className="text-lg font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              Bank Statement
+            </h2>
+            
+            <button 
+              onClick={downloadPDF}
+              className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center active:scale-95 transition-all duration-200"
+            >
+              <Download className="w-5 h-5" />
+            </button>
+          </div>
+          
+          {/* PDF Content */}
+          <div className="flex-1 bg-white">
+            <iframe
+              src={pdfUrl}
+              className="w-full h-full border-0"
+              title="Bank Statement PDF"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
