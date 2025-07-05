@@ -95,13 +95,6 @@ This is a comprehensive mobile banking application built as a Progressive Web Ap
 - **Security**: HTTPS required for PWA installation and service worker functionality
 
 ## Changelog
-- July 05, 2025: OPTIMIZED PDF PAGINATION - Fixed blank pages and transaction splitting issues  
-  - Eliminated 5+ blank pages: PDF now generates optimal page count (reduced from 9 pages to 4 pages)
-  - Fixed transaction integrity: Transaction rows no longer split across pages (date/description/amount stay together)
-  - Improved pagination logic: Page breaks only occur between complete transactions, not within transaction fields
-  - Enhanced layout positioning: All content moved higher on page (just below BOI logo) for maximum transaction space
-  - Conservative page breaks: Only creates new page when absolutely necessary (currentY + 20 > 770)
-  - Professional format maintained: Bank of Ireland template and authentic data system preserved
 - July 05, 2025: AUTHENTIC BANKING SYSTEM - Complete real bank statement generation with app reset handling
   - ZERO hardcoded data: All balances, transactions, account details come from actual user banking activity
   - App reset awareness: System detects when app has been reset to defaults and provides proper messaging

@@ -382,8 +382,9 @@ export class StatementService {
   }
 
   private addFooter(doc: PDFKit.PDFDocument) {
-    // Footer at bottom of page but don't force page creation
-    const footerY = 750; // Fixed position that won't create extra pages
+    const pageHeight = doc.page.height;
+    const footerY = pageHeight - 100;
+    console.log(`Adding footer at page height: ${pageHeight}, footerY: ${footerY}`);
     
     // Footer line
     doc.moveTo(50, footerY)
