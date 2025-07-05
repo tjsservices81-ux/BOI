@@ -365,8 +365,18 @@ export class StatementService {
          .font('Helvetica')
          .fontSize(9)
          .text(date, 50, currentY)
-         .text(transaction.description.substring(0, 30), 120, currentY)
-         .text(transaction.reference || '-', 300, currentY)
+         .text(transaction.description.substring(0, 30), 120, currentY);
+      
+      // Use smaller font size for BOI references to prevent overlap with Amount column
+      const reference = transaction.reference || '-';
+      if (reference.startsWith('BOI')) {
+        doc.fontSize(8).text(reference, 300, currentY);
+      } else {
+        doc.fontSize(9).text(reference, 300, currentY);
+      }
+      
+      // Continue with standard font size for amount and balance
+      doc.fontSize(9)
          .text(amount, 400, currentY)
          .text(`€${transaction.balance.toFixed(2)}`, 480, currentY);
       
