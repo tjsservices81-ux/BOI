@@ -66,10 +66,13 @@ export default function BankStatements() {
       const startDate = new Date();
       startDate.setDate(endDate.getDate() - (dateRange?.days || 30));
 
-      // Get real user transactions
+      // Get real user data (transactions and accounts)
       const userTransactions = UserDataManager.getUserTransactions();
+      const userAccounts = UserDataManager.getUserAccounts();
       
-      // Generate and download PDF with real transaction data
+      console.log(`Generating statement for account ${selectedAccount} with ${userTransactions.length} transactions and ${userAccounts.length} accounts`);
+      
+      // Generate and download PDF with complete real user data
       const response = await fetch('/api/generate-statement', {
         method: 'POST',
         headers: {
@@ -80,7 +83,8 @@ export default function BankStatements() {
           startDate: startDate.toISOString(),
           endDate: endDate.toISOString(),
           dateRange: selectedDateRange,
-          userTransactions: userTransactions // Include real transaction data
+          userTransactions: userTransactions, // Real transaction data
+          userAccounts: userAccounts // Real account data with balances
         }),
       });
 

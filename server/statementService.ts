@@ -24,6 +24,14 @@ interface StatementRequest {
     iban?: string;
     bicCode?: string;
   }>;
+  userAccounts?: Array<{
+    id: number;
+    displayName: string;
+    accountNumber: string;
+    balance: string;
+    accountType: string;
+    sortCode?: string;
+  }>;
 }
 
 interface StatementTransaction {
@@ -89,8 +97,8 @@ export class StatementService {
 
   private async buildStatement(doc: PDFKit.PDFDocument, request: StatementRequest) {
     try {
-      // Get account and transaction data first
-      const accountData = await this.getAccountData(request.accountId);
+      // Get account and transaction data using real user data
+      const accountData = await this.getAccountData(request.accountId, request.userAccounts);
       const transactions = await this.getTransactions(request);
       
       // Validate data
@@ -209,7 +217,7 @@ export class StatementService {
   private addAccountSummary(doc: PDFKit.PDFDocument, account: Account, transactions: StatementTransaction[]) {
     const startY = 560; // Moved much lower
     
-    // Calculate totals matching your statement format
+    // Calculate totals from real transaction data
     const totalCredits = transactions
       .filter(t => t.type === 'credit')
       .reduce((sum, t) => sum + t.amount, 0);
@@ -218,9 +226,9 @@ export class StatementService {
       .filter(t => t.type === 'debit')
       .reduce((sum, t) => sum + t.amount, 0);
     
-    // Use real balance figures from your statement
-    const openingBalance = 6504.55; // From your statement
-    const closingBalance = 6459.67; // From your statement
+    // Use real account balance data
+    const closingBalance = parseFloat(account.balance.replace(/,/g, ''));
+    const openingBalance = closingBalance + totalDebits - totalCredits;
     
     doc.fontSize(14)
        .fillColor('#1a5490')
@@ -361,61 +369,24 @@ export class StatementService {
        .text(`Generated on: ${new Date().toLocaleString('en-IE')}`, 50, footerY + 60);
   }
 
-  private async getAccountData(accountId: string): Promise<Account> {
-    try {
-      // Try to get real account data from storage first
-      const users = await storage.getAllUsers();
-      if (users.length > 0) {
-        // Get the first user's account data (in production, this would be user-specific)
-        const userData = users[0];
-        
-        // Simulate getting account data from user storage
-        // In production, this would query the actual user's accounts
-        const realAccountMap: Record<string, Account> = {
-          "1": {
-            id: "1",
-            displayName: "Current Account",
-            accountNumber: "****2091",
-            sortCode: "90-12-34",
-            balance: "6504.55",
-            accountType: "current"
-          },
-          "2": {
-            id: "2", 
-            displayName: "Credit Card",
-            accountNumber: "****1820",
-            sortCode: "90-12-34",
-            balance: "1,250.00",
-            accountType: "credit"
-          },
-          "3": {
-            id: "3",
-            displayName: "Savings Account", 
-            accountNumber: "****0978",
-            sortCode: "90-12-34",
-            balance: "15,750.25",
-            accountType: "savings"
-          }
+  private async getAccountData(accountId: string, userAccounts?: any[]): Promise<Account> {
+    // Use real account data passed from frontend
+    if (userAccounts && userAccounts.length > 0) {
+      const selectedAccount = userAccounts.find(acc => acc.id.toString() === accountId);
+      if (selectedAccount) {
+        return {
+          id: accountId,
+          displayName: selectedAccount.displayName,
+          accountNumber: selectedAccount.accountNumber,
+          sortCode: selectedAccount.sortCode || "90-12-34",
+          balance: selectedAccount.balance,
+          accountType: selectedAccount.accountType
         };
-
-        const account = realAccountMap[accountId];
-        if (account) {
-          return account;
-        }
       }
-    } catch (error) {
-      console.log('Could not fetch real account data, using fallback');
     }
 
-    // Fallback to default account structure matching your app's format
-    return {
-      id: accountId,
-      displayName: "Current Account",
-      accountNumber: "****2091",
-      sortCode: "90-12-34", 
-      balance: "6504.55",
-      accountType: "current"
-    };
+    // If no account data provided, throw error - no fallback data
+    throw new Error(`Account ${accountId} not found in user data. Real account data required.`);
   }
 
   private async getTransactions(request: StatementRequest): Promise<StatementTransaction[]> {
@@ -438,8 +409,13 @@ export class StatementService {
           break;
       }
 
-      // Get transactions from request or use mock data
-      const userTransactions = request.userTransactions || this.getMockUserTransactions(request.accountId);
+      // Only use real transaction data - no mock data fallback
+      if (!request.userTransactions || request.userTransactions.length === 0) {
+        console.log('No real transaction data provided - returning empty statement');
+        return [];
+      }
+      
+      const userTransactions = request.userTransactions;
       
       // Filter transactions for the specified account and date range
       const filteredTransactions = userTransactions
@@ -464,8 +440,10 @@ export class StatementService {
         }))
         .sort((a: StatementTransaction, b: StatementTransaction) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-      // Calculate running balances
-      let runningBalance = this.getAccountStartingBalance(request.accountId);
+      // Calculate running balances using real account data
+      const currentAccountBalance = this.getRealAccountBalance(request.accountId, request.userAccounts);
+      let runningBalance = this.calculateOpeningBalance(currentAccountBalance, statementTransactions);
+      
       const transactionsWithBalance = statementTransactions.map(tx => {
         if (tx.type === 'debit') {
           runningBalance -= tx.amount;
@@ -478,7 +456,7 @@ export class StatementService {
       // Return in reverse chronological order (newest first)
       const finalTransactions = transactionsWithBalance.reverse();
       
-      console.log(`Returning ${finalTransactions.length} real user transactions for statement (${(request as any).userTransactions ? 'from frontend' : 'mock data'})`);
+      console.log(`Returning ${finalTransactions.length} real user transactions for statement with authentic balances`);
       return finalTransactions;
       
     } catch (error) {
@@ -487,50 +465,35 @@ export class StatementService {
     }
   }
 
-  private getMockUserTransactions(accountId: string) {
-    // This simulates the data that would come from UserDataManager.getUserTransactions()
-    // In a real implementation, this would be passed from the frontend or fetched from database
-    return [
-      {
-        id: Date.now() - 86400000,
-        accountId: parseInt(accountId),
-        amount: '-120.45',
-        description: 'Utility Bill - Electric Ireland',
-        category: 'utilities',
-        type: 'debit',
-        reference: 'EI001',
-        timestamp: new Date(Date.now() - 86400000).toISOString()
-      },
-      {
-        id: Date.now() - 172800000,
-        accountId: parseInt(accountId),
-        amount: '-74.34',
-        description: 'Grocery Store - Tesco',
-        category: 'groceries',
-        type: 'debit',
-        reference: 'TSC001',
-        timestamp: new Date(Date.now() - 172800000).toISOString()
-      },
-      {
-        id: Date.now() - 259200000,
-        accountId: parseInt(accountId),
-        amount: '3200.00',
-        description: 'Salary Payment',
-        category: 'income',
-        type: 'credit',
-        reference: 'SAL001',
-        timestamp: new Date(Date.now() - 259200000).toISOString()
-      }
-    ];
+  private getRealAccountBalance(accountId: string, userAccounts?: any[]): number {
+    if (!userAccounts) {
+      throw new Error('User account data required for authentic balance calculation');
+    }
+    
+    const selectedAccount = userAccounts.find(acc => acc.id.toString() === accountId);
+    if (!selectedAccount) {
+      throw new Error(`Account ${accountId} not found in user accounts`);
+    }
+    
+    // Parse actual account balance, removing commas and converting to number
+    const balance = parseFloat(selectedAccount.balance.replace(/,/g, ''));
+    console.log(`Real account ${accountId} balance: €${balance.toFixed(2)}`);
+    return balance;
   }
 
-  private getAccountStartingBalance(accountId: string): number {
-    // Return realistic starting balance based on account
-    const balanceMap: Record<string, number> = {
-      "1": 6504.55, // Current Account
-      "2": 1250.00, // Credit Card
-      "3": 15750.25, // Savings Account
-    };
-    return balanceMap[accountId] || 2000.00;
+  private calculateOpeningBalance(currentBalance: number, transactions: StatementTransaction[]): number {
+    // Calculate opening balance by reversing all transactions from current balance
+    let openingBalance = currentBalance;
+    
+    for (const tx of transactions) {
+      if (tx.type === 'debit') {
+        openingBalance += tx.amount; // Add back debits
+      } else {
+        openingBalance -= tx.amount; // Subtract back credits
+      }
+    }
+    
+    console.log(`Calculated opening balance: €${openingBalance.toFixed(2)} (current: €${currentBalance.toFixed(2)})`);
+    return openingBalance;
   }
 }

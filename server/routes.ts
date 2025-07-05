@@ -1678,6 +1678,15 @@ No transfers found yet on your account.`;
           recipientSortCode: z.string().optional(),
           iban: z.string().optional(),
           bicCode: z.string().optional()
+        })).optional(),
+        // Accept real user account data from frontend
+        userAccounts: z.array(z.object({
+          id: z.number(),
+          displayName: z.string(),
+          accountNumber: z.string(),
+          balance: z.string(),
+          accountType: z.string(),
+          sortCode: z.string().optional()
         })).optional()
       });
 
