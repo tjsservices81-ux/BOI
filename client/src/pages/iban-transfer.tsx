@@ -621,7 +621,11 @@ export default function IbanTransfer() {
                 type="text"
                 placeholder="Enter recipient's full name"
                 className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
+                style={{ fontFamily: 'OpenSans, sans-serif', WebkitAppearance: 'none', fontSize: '16px' }}
+                autoCorrect="off"
+                autoCapitalize="words"
+                spellCheck="false"
+                inputMode="text"
               />
               {form.formState.errors.recipientName && (
                 <p className="text-red-500 text-xs mt-2 font-medium">{form.formState.errors.recipientName.message}</p>
@@ -637,7 +641,11 @@ export default function IbanTransfer() {
                 type="text"
                 placeholder="GB29 NWBK 6016 1331 9268 19"
                 className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
+                style={{ fontFamily: 'OpenSans, sans-serif', WebkitAppearance: 'none', fontSize: '16px' }}
+                autoCorrect="off"
+                autoCapitalize="characters"
+                spellCheck="false"
+                inputMode="text"
                 onChange={(e) => {
                   // Format IBAN with spaces for better readability
                   const value = e.target.value.replace(/\s/g, '').toUpperCase();
@@ -660,7 +668,11 @@ export default function IbanTransfer() {
                 type="text"
                 placeholder="NWBKGB2L"
                 className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
+                style={{ fontFamily: 'OpenSans, sans-serif', WebkitAppearance: 'none', fontSize: '16px' }}
+                autoCorrect="off"
+                autoCapitalize="characters"
+                spellCheck="false"
+                inputMode="text"
                 onChange={(e) => {
                   // Format BIC code to uppercase
                   const value = e.target.value.replace(/\s/g, '').toUpperCase();
@@ -682,7 +694,11 @@ export default function IbanTransfer() {
                 type="text"
                 placeholder="0.00"
                 className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
+                style={{ fontFamily: 'OpenSans, sans-serif', WebkitAppearance: 'none', fontSize: '16px' }}
+                autoCorrect="off"
+                autoCapitalize="none"
+                spellCheck="false"
+                inputMode="decimal"
               />
               {form.formState.errors.amount && (
                 <p className="text-red-500 text-xs mt-2 font-medium">{form.formState.errors.amount.message}</p>
@@ -698,7 +714,11 @@ export default function IbanTransfer() {
                 type="text"
                 placeholder="Payment description"
                 className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
+                style={{ fontFamily: 'OpenSans, sans-serif', WebkitAppearance: 'none', fontSize: '16px' }}
+                autoCorrect="off"
+                autoCapitalize="sentences"
+                spellCheck="false"
+                inputMode="text"
               />
               {form.formState.errors.reference && (
                 <p className="text-red-500 text-xs mt-2 font-medium">{form.formState.errors.reference.message}</p>
