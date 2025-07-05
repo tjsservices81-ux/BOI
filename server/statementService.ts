@@ -173,26 +173,36 @@ export class StatementService {
          .text(`Account Number: ${account.accountNumber}`, 50, startY + 65)
          .text(`Sort Code: ${account.sortCode}`, 50, startY + 85)
          .text(`Account Type: ${account.accountType}`, 50, startY + 105);
+      
+      // Statement date (positioned to avoid overlap with customer name)
+      const statementDate = new Date().toLocaleDateString('en-IE', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+      
+      doc.text(`Statement Date: ${statementDate}`, 350, startY + 65)
+         .text(`Statement Period: ${request.dateRange}`, 350, startY + 85);
     } else {
       doc.text(`Account Name: ${account.displayName}`, 50, startY + 25)
          .text(`Account Number: ${account.accountNumber}`, 50, startY + 45)
          .text(`Sort Code: ${account.sortCode}`, 50, startY + 65)
          .text(`Account Type: ${account.accountType}`, 50, startY + 85);
+      
+      // Statement date (original positioning when no customer name)
+      const statementDate = new Date().toLocaleDateString('en-IE', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+      
+      doc.text(`Statement Date: ${statementDate}`, 350, startY + 25)
+         .text(`Statement Period: ${request.dateRange}`, 350, startY + 45);
     }
-    
-    // Statement date
-    const statementDate = new Date().toLocaleDateString('en-IE', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
-    
-    doc.text(`Statement Date: ${statementDate}`, 350, startY + 25)
-       .text(`Statement Period: ${request.dateRange}`, 350, startY + 45);
   }
 
   private addStatementPeriod(doc: PDFKit.PDFDocument, request: StatementRequest) {
-    const startY = 370; // Positioned higher for more transaction space
+    const startY = 390; // Positioned lower to accommodate customer name in Account Information
     
     // Calculate actual current period dates based on range selection
     const endDate = new Date();
@@ -226,7 +236,7 @@ export class StatementService {
   }
 
   private addAccountSummary(doc: PDFKit.PDFDocument, account: Account, transactions: StatementTransaction[]) {
-    const startY = 420; // Positioned higher for more transaction space
+    const startY = 440; // Positioned lower to accommodate customer name and statement period adjustments
     
     // Calculate totals from real transaction data
     const totalCredits = transactions
@@ -281,7 +291,7 @@ export class StatementService {
   }
 
   private addTransactionDetails(doc: PDFKit.PDFDocument, transactions: StatementTransaction[]) {
-    let currentY = 550; // Positioned higher - starts just below account summary
+    let currentY = 570; // Positioned lower to accommodate customer name and adjusted sections above
     
     doc.fontSize(14)
        .fillColor('#0000FF')
