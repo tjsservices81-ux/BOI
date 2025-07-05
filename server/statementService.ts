@@ -107,34 +107,29 @@ export class StatementService {
     // Bank of Ireland Blue Color
     const boiBlue = '#1a5490';
     
-    // Bank logo and title
-    doc.fontSize(24)
-       .fillColor(boiBlue)
-       .font('Helvetica-Bold')
-       .text('Bank of Ireland', 50, 50);
-    
+    // Account Statement text - moved down significantly
     doc.fontSize(18)
        .fillColor(boiBlue)
        .font('Helvetica')
-       .text('Account Statement', 400, 55);
+       .text('Account Statement', 400, 150);
     
-    // Bank address
+    // Bank address - moved down significantly
     doc.fontSize(10)
        .fillColor('#666666')
        .font('Helvetica')
-       .text('Head Office: 40 Mespil Road, Dublin 4, Ireland', 50, 85)
-       .text('Phone: +353 1 611 1111 | www.bankofireland.com', 50, 100);
+       .text('Head Office: 40 Mespil Road, Dublin 4, Ireland', 50, 180)
+       .text('Phone: +353 1 611 1111 | www.bankofireland.com', 50, 195);
     
-    // Horizontal line
-    doc.moveTo(50, 120)
-       .lineTo(545, 120)
+    // Horizontal line - moved down
+    doc.moveTo(50, 215)
+       .lineTo(545, 215)
        .strokeColor(boiBlue)
        .lineWidth(2)
        .stroke();
   }
 
   private addAccountInfo(doc: PDFKit.PDFDocument, account: Account, request: StatementRequest) {
-    const startY = 140;
+    const startY = 235;
     
     doc.fontSize(14)
        .fillColor('#1a5490')
@@ -161,7 +156,7 @@ export class StatementService {
   }
 
   private addStatementPeriod(doc: PDFKit.PDFDocument, request: StatementRequest) {
-    const startY = 260;
+    const startY = 340;
     
     const startDate = new Date(request.startDate).toLocaleDateString('en-IE');
     const endDate = new Date(request.endDate).toLocaleDateString('en-IE');
@@ -178,7 +173,7 @@ export class StatementService {
   }
 
   private addAccountSummary(doc: PDFKit.PDFDocument, account: Account, transactions: StatementTransaction[]) {
-    const startY = 320;
+    const startY = 390;
     
     // Calculate totals
     const totalCredits = transactions
@@ -220,7 +215,7 @@ export class StatementService {
   }
 
   private addTransactionDetails(doc: PDFKit.PDFDocument, transactions: StatementTransaction[]) {
-    let currentY = 460;
+    let currentY = 500;
     
     doc.fontSize(14)
        .fillColor('#1a5490')
