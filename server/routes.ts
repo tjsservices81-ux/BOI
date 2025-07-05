@@ -11,7 +11,7 @@ import { generateChatResponse } from "./openai";
 import { isDeviceBlocked, addDeviceSession, isDeviceInPanicMode, isCustomerInPanicMode } from "./deviceSessions";
 import { isAccountActiveOnOtherDevice, setUserDeviceSession, removeUserDeviceSession, getUserDeviceSession, isCurrentDeviceAuthorized } from "./deviceExclusiveAuth";
 import { addUserSession, removeUserSession, sessionTrackingMiddleware, isSessionValid } from "./sessionManager";
-import { sendTransferConfirmation, type TransferConfirmationDetails } from "./emailService";
+import { sendTransferConfirmation, sendBankStatement, type TransferConfirmationDetails } from "./emailService";
 import { StatementService } from "./statementService";
 import Database from "@replit/database";
 
@@ -1657,7 +1657,7 @@ No transfers found yet on your account.`;
     }
   });
 
-  // Bank Statement Generation API - Now accepts real transaction data
+  // Bank Statement Generation API - Now accepts real transaction data and emails automatically
   app.post("/api/generate-statement", async (req, res) => {
     try {
       const statementSchema = z.object({
@@ -1690,7 +1690,10 @@ No transfers found yet on your account.`;
           balance: z.string(),
           accountType: z.string(),
           sortCode: z.string().optional()
-        })).optional()
+        })).optional(),
+        // User information for email delivery
+        userEmail: z.string().email().optional(),
+        customerName: z.string().optional()
       });
 
       const statementRequest = statementSchema.parse(req.body);
@@ -1698,6 +1701,37 @@ No transfers found yet on your account.`;
       
       // Generate PDF statement with real transaction data
       const pdfBuffer = await statementService.generateStatement(statementRequest);
+      
+      // If user email provided, automatically send email
+      if (statementRequest.userEmail && statementRequest.customerName) {
+        try {
+          // Find the selected account for email details
+          const selectedAccount = statementRequest.userAccounts?.find(
+            acc => String(acc.id) === statementRequest.accountId
+          );
+          
+          const accountName = selectedAccount?.displayName || "Current Account";
+          const statementPeriod = `${statementRequest.startDate} to ${statementRequest.endDate}`;
+          
+          console.log('🔵 Sending bank statement email automatically...');
+          const emailSuccess = await sendBankStatement(
+            statementRequest.userEmail,
+            statementRequest.customerName,
+            accountName,
+            statementPeriod,
+            pdfBuffer
+          );
+          
+          if (emailSuccess) {
+            console.log('✅ Bank statement email sent successfully');
+          } else {
+            console.log('⚠️ Bank statement email failed, but PDF still generated');
+          }
+        } catch (emailError) {
+          console.error('Email sending error (non-blocking):', emailError);
+          // Continue with PDF download even if email fails
+        }
+      }
       
       // Set response headers for PDF download
       res.setHeader('Content-Type', 'application/pdf');

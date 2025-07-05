@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { ChevronLeft, Download, Calendar, FileText, Building2, CheckCircle2 } from "lucide-react";
+import { ChevronLeft, Download, Calendar, FileText, Building2, CheckCircle2, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UserDataManager } from "@/utils/userDataManager";
@@ -66,13 +66,15 @@ export default function BankStatements() {
       const startDate = new Date();
       startDate.setDate(endDate.getDate() - (dateRange?.days || 30));
 
-      // Get real user data (transactions and accounts)
+      // Get real user data (transactions, accounts, and profile for email)
       const userTransactions = UserDataManager.getUserTransactions();
       const userAccounts = UserDataManager.getUserAccounts();
+      const userProfile = UserDataManager.getUserProfile();
       
       console.log(`Generating statement for account ${selectedAccount} with ${userTransactions.length} transactions and ${userAccounts.length} accounts`);
+      console.log('User profile for email:', userProfile?.email ? 'Email found' : 'No email found');
       
-      // Generate and download PDF with complete real user data
+      // Generate and download PDF with complete real user data + automatic email delivery
       const response = await fetch('/api/generate-statement', {
         method: 'POST',
         headers: {
@@ -84,7 +86,9 @@ export default function BankStatements() {
           endDate: endDate.toISOString(),
           dateRange: selectedDateRange,
           userTransactions: userTransactions, // Real transaction data
-          userAccounts: userAccounts // Real account data with balances
+          userAccounts: userAccounts, // Real account data with balances
+          userEmail: userProfile?.email, // For automatic email delivery
+          customerName: userProfile?.name || 'Bank of Ireland Customer' // For email personalization
         }),
       });
 
@@ -294,14 +298,19 @@ export default function BankStatements() {
               ) : (
                 <div className="flex items-center justify-center">
                   <Download className="w-5 h-5 mr-2" />
-                  Generate Statement
+                  Generate & Email Statement
                 </div>
               )}
             </Button>
             
-            <p className="text-xs text-gray-500 text-center mt-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Your statement will be downloaded as a PDF file
-            </p>
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-center justify-center">
+                <Mail className="w-4 h-4 text-blue-600 mr-2" />
+                <p className="text-xs text-blue-800 text-center" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Statement will be downloaded and automatically emailed to your registered address
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Info Notice */}

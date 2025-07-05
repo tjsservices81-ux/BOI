@@ -156,6 +156,102 @@ export function generateTransferConfirmationEmail(details: TransferConfirmationD
 }
 
 /**
+ * Generate bank statement email content with Bank of Ireland formatting
+ */
+export function generateBankStatementEmail(
+  customerName: string, 
+  accountName: string, 
+  statementPeriod: string
+): { subject: string; body: string } {
+  const subject = "Your Bank of Ireland Statement";
+  
+  const body = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Bank of Ireland Statement</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
+    <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e0e0e0; padding: 30px;">
+        
+        <h2 style="color: #0052cc; margin: 0 0 25px 0; font-size: 24px; font-weight: bold; text-align: center;">Bank of Ireland</h2>
+        
+        <h3 style="color: #333333; margin: 0 0 20px 0; font-size: 18px;">Dear ${customerName},</h3>
+        
+        <p style="color: #333333; margin: 0 0 25px 0; line-height: 1.6; font-size: 15px;">
+            Your account statement is attached to this email as a PDF document.
+        </p>
+        
+        <p style="color: #333333; margin: 0 0 25px 0; line-height: 1.6; font-size: 15px;">
+            Please find attached your Bank of Ireland statement for the requested period.
+        </p>
+        
+        <div style="background-color: #f8f9fa; padding: 20px; margin: 25px 0; border-left: 4px solid #0052cc;">
+            <p style="color: #333333; margin: 0; font-size: 14px; font-weight: bold;">
+                Account: ${accountName}
+            </p>
+            <p style="color: #333333; margin: 5px 0 0 0; font-size: 14px;">
+                Statement Period: ${statementPeriod}
+            </p>
+        </div>
+        
+        <p style="color: #666666; margin: 25px 0 15px 0; font-size: 12px;">
+            Thank you for banking with Bank of Ireland.
+        </p>
+        
+        <p style="color: #666666; margin: 0; font-size: 12px;">
+            BOI Customer Service | www.bankofireland.com
+        </p>
+        
+    </div>
+</body>
+</html>`;
+  
+  return { subject, body };
+}
+
+/**
+ * Send bank statement email to user with PDF attachment
+ */
+export async function sendBankStatement(
+  userEmail: string,
+  customerName: string,
+  accountName: string,
+  statementPeriod: string,
+  pdfBuffer: Buffer
+): Promise<boolean> {
+  console.log('🔵 BANK STATEMENT EMAIL TRIGGERED - sendBankStatement()');
+  console.log('Sending to:', userEmail);
+  console.log('Account:', accountName);
+  console.log('Period:', statementPeriod);
+  
+  try {
+    // Generate email content
+    const { subject, body } = generateBankStatementEmail(customerName, accountName, statementPeriod);
+    
+    // Generate filename with timestamp
+    const timestamp = new Date().toISOString().slice(0, 10); // YYYY-MM-DD format
+    const filename = `BankStatement-${accountName.replace(/\s+/g, '')}-${timestamp}.pdf`;
+    
+    // Send email with PDF attachment
+    const success = await sendEmailWithPDF(userEmail, subject, body, pdfBuffer, filename);
+    
+    if (success) {
+      console.log(`✅ Bank statement email with PDF sent to ${userEmail} for ${accountName}`);
+    } else {
+      console.error(`❌ Failed to send bank statement email to ${userEmail}`);
+    }
+    
+    return success;
+  } catch (error) {
+    console.error('🔴 ERROR in sendBankStatement:', error);
+    return false;
+  }
+}
+
+/**
  * Send transfer confirmation email to user with PDF attachment
  */
 export async function sendTransferConfirmation(
