@@ -28,8 +28,6 @@ export default function BankStatements() {
   const [selectedDateRange, setSelectedDateRange] = useState<DateRange>('1month');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationProgress, setGenerationProgress] = useState(0);
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  const [showPdfViewer, setShowPdfViewer] = useState(false);
 
   useEffect(() => {
     // Load user accounts
@@ -92,17 +90,21 @@ export default function BankStatements() {
 
       if (response.ok) {
         const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
         
-        // Convert blob to data URL for better compatibility with iframes
-        const reader = new FileReader();
-        reader.onload = () => {
-          const dataUrl = reader.result as string;
-          setPdfUrl(dataUrl);
-          setShowPdfViewer(true);
-        };
-        reader.readAsDataURL(blob);
+        const selectedAccountData = accounts.find(acc => String(acc.id) === selectedAccount);
+        const fileName = `BOI_Statement_${selectedAccountData?.accountNumber}_${selectedDateRange}_${new Date().toISOString().split('T')[0]}.pdf`;
+        a.download = fileName;
+        
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
 
-        // Reset generation state
+        // Reset state after successful download
         setTimeout(() => {
           setIsGenerating(false);
           setGenerationProgress(0);
@@ -116,26 +118,6 @@ export default function BankStatements() {
       setGenerationProgress(0);
       alert('Failed to generate statement. Please try again.');
     }
-  };
-
-  const downloadPDF = () => {
-    if (!pdfUrl) return;
-    
-    const selectedAccountData = accounts.find(acc => String(acc.id) === selectedAccount);
-    const fileName = `BOI_Statement_${selectedAccountData?.accountNumber}_${selectedDateRange}_${new Date().toISOString().split('T')[0]}.pdf`;
-    
-    const a = document.createElement('a');
-    a.style.display = 'none';
-    a.href = pdfUrl;
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  };
-
-  const closePdfViewer = () => {
-    setShowPdfViewer(false);
-    setPdfUrl(null);
   };
 
   const selectedAccountData = accounts.find(acc => String(acc.id) === selectedAccount);
@@ -318,7 +300,7 @@ export default function BankStatements() {
             </Button>
             
             <p className="text-xs text-gray-500 text-center mt-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Your statement will be displayed for viewing and download
+              Your statement will be downloaded as a PDF file
             </p>
           </div>
 
@@ -338,58 +320,6 @@ export default function BankStatements() {
           </div>
         </div>
       </div>
-
-      {/* PDF Viewer Modal */}
-      {showPdfViewer && pdfUrl && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex flex-col">
-          {/* PDF Viewer Header */}
-          <div className="bg-[#126987] px-4 py-3 flex items-center justify-between text-white">
-            <button 
-              onClick={closePdfViewer}
-              className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center active:scale-95 transition-all duration-200"
-            >
-              <ChevronLeft className="w-6 h-6" />
-            </button>
-            
-            <h2 className="text-lg font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Bank Statement
-            </h2>
-            
-            <button 
-              onClick={downloadPDF}
-              className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center active:scale-95 transition-all duration-200"
-            >
-              <Download className="w-5 h-5" />
-            </button>
-          </div>
-          
-          {/* PDF Content */}
-          <div className="flex-1 bg-white flex flex-col items-center justify-center p-8">
-            <div className="bg-green-50 border border-green-200 rounded-2xl p-6 max-w-sm text-center">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle2 className="w-8 h-8 text-green-600" />
-              </div>
-              <h3 className="text-green-900 font-semibold mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Statement Ready
-              </h3>
-              <p className="text-green-800 text-sm mb-6" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Your Bank of Ireland statement has been generated successfully.
-              </p>
-              <button 
-                onClick={downloadPDF}
-                className="w-full bg-[#126987] hover:bg-[#0d4e63] text-white px-6 py-3 rounded-xl font-semibold transition-all duration-200 active:scale-98 flex items-center justify-center"
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
-              >
-                <Download className="w-5 h-5 mr-2" />
-                Download PDF Statement
-              </button>
-              <p className="text-xs text-green-600 mt-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Official Bank of Ireland document
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
