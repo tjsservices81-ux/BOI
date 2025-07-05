@@ -56,13 +56,14 @@
         "customerNumber": "BOI298567197",
         "pin": "000000",
         "name": "John",
-        "email": "ahahajjs@gmail.com",
+        "email": "ethanw2111@gmail.com",
         "phone": "454554",
-        "address": null,
-        "dateOfBirth": null,
+        "address": "",
+        "dateOfBirth": "",
         "joinDate": "2025-07-05T16:23:58.527Z",
         "dateCreated": "2025-07-05T16:23:58.527Z",
-        "isDisabled": false
+        "isDisabled": false,
+        "currency": "EUR"
       }
     ]
   ],
