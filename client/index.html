@@ -619,22 +619,10 @@
       }
 
       function hideLoadingScreen() {
-        console.log('Hiding loading screen...');
         const loader = document.getElementById('loading-screen');
-        const pwaLoader = document.getElementById('pwa-loading');
-        
         if (loader) {
           loader.style.display = 'none';
-          console.log('Loading screen hidden');
         }
-        
-        if (pwaLoader) {
-          pwaLoader.style.display = 'none';
-          console.log('PWA loading screen hidden');
-        }
-        
-        // Initialize the app after hiding loading screen
-        setTimeout(initializeApp, 100);
       }
 
       // Periodic access validation to check for revocation

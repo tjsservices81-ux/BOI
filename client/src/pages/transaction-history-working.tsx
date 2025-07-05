@@ -474,9 +474,9 @@ export default function TransactionHistoryWorking() {
 
                     {/* Reference for IBAN Transfers */}
                     {selectedTransaction.paymentMethod === 'SEPA Transfer' && selectedTransaction.reference && (
-                      <div className="flex justify-between items-start">
+                      <div className="flex justify-between">
                         <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Reference:</span>
-                        <span className="font-semibold text-gray-900 text-xs text-right break-all max-w-[60%]" style={{ fontFamily: 'OpenSans, sans-serif', lineHeight: '1.3' }}>
+                        <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                           {selectedTransaction.reference}
                         </span>
                       </div>
@@ -503,9 +503,9 @@ export default function TransactionHistoryWorking() {
 
                     {/* Payment Reference for UK Transfers only */}
                     {selectedTransaction.paymentMethod === 'UK Transfer' && selectedTransaction.reference && (
-                      <div className="flex justify-between items-start">
+                      <div className="flex justify-between">
                         <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Reference:</span>
-                        <span className="font-semibold text-gray-900 text-xs text-right break-all max-w-[60%]" style={{ fontFamily: 'OpenSans, sans-serif', lineHeight: '1.3' }}>
+                        <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                           {selectedTransaction.reference}
                         </span>
                       </div>
