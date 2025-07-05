@@ -264,8 +264,8 @@ export class StatementService {
   private addTransactionDetails(doc: PDFKit.PDFDocument, transactions: StatementTransaction[]) {
     const startY = 690; // Start position below other content
     const pageHeight = 842; // A4 page height
-    const bottomMargin = 120; // Space for footer
-    const maxY = pageHeight - bottomMargin; // Maximum Y before footer (722)
+    const bottomMargin = 80; // Reduced space for footer to allow more transactions
+    const maxY = pageHeight - bottomMargin; // Maximum Y before footer (762)
     const rowHeight = 20; // Height per transaction row
     
     let currentY = startY;
@@ -276,11 +276,11 @@ export class StatementService {
        .font('Helvetica-Bold')
        .text('Transaction Details', 50, currentY);
     
-    currentY += 30;
+    currentY += 30; // currentY = 720
     
     // Add table headers
     this.addTableHeaders(doc, currentY);
-    currentY += 25; // Space for headers and line (now at Y=745)
+    currentY += 25; // Space for headers and line (currentY = 745)
     
     // Handle empty transaction list (app reset or new account)
     if (transactions.length === 0) {
