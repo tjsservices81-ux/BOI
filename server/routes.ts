@@ -915,6 +915,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Generate editable PDF statement (fills form fields instead of text overlay)
+  app.post("/api/generate-editable-statement", async (req, res) => {
+    try {
+      console.log('🔵 Editable PDF statement generation request received');
+      console.log('📊 Request body:', req.body);
+      
+      const { accountInfo, transactions, period } = req.body;
+      
+      // Validate required data
+      if (!accountInfo || !transactions || !period) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Missing required data: accountInfo, transactions, and period are required" 
+        });
+      }
+
+      // Import the editable PDF service
+      const { generateEditableStatement } = await import('./editablePdfService');
+      
+      // Prepare user data structure
+      const userData = {
+        firstName: accountInfo.accountHolder?.split(' ')[0] || 'Account',
+        lastName: accountInfo.accountHolder?.split(' ').slice(1).join(' ') || 'Holder',
+        customerNumber: '12345678', // Could be extracted from accountInfo if available
+        accountNumber: accountInfo.accountNumber,
+        sortCode: '90-11-77', // Could be extracted from accountInfo if available
+        currentBalance: parseFloat(accountInfo.balance) || 0,
+        transactions: transactions
+      };
+
+      console.log('📋 Processing editable PDF with user data:', userData.firstName, userData.lastName);
+      
+      // Generate the editable PDF
+      const pdfBuffer = await generateEditableStatement(userData, period);
+      
+      // Generate filename
+      const lastName = userData.lastName || 'Statement';
+      const filename = `BOI_Editable_Statement_${lastName}_${new Date().toLocaleDateString('en-GB', { month: '2-digit', year: 'numeric' }).replace('/', '')}.pdf`;
+      
+      console.log(`✅ Editable PDF statement generated: ${filename}, Size: ${pdfBuffer.length} bytes`);
+      
+      // Set headers for PDF download
+      res.set({
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="${filename}"`,
+        'Content-Length': pdfBuffer.length.toString()
+      });
+      
+      res.send(pdfBuffer);
+      
+    } catch (error) {
+      console.error('❌ Editable PDF statement generation error:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: `Failed to generate editable statement: ${(error as Error).message}` 
+      });
+    }
+  });
+
   // Get statements
   app.get("/api/statements/:accountId", async (req, res) => {
     try {
