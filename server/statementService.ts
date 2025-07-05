@@ -320,8 +320,8 @@ export class StatementService {
     
     for (const transaction of transactions) {
       // Check if we need a new page BEFORE rendering this complete transaction row
-      // A4 page is 842 points tall, use almost all available space
-      if (currentY + 20 > 800) {
+      // A4 page is 842 points tall, need 20 points for transaction row + margin
+      if (currentY + 20 > 770) {
         doc.addPage();
         currentY = 50;
         
@@ -383,7 +383,7 @@ export class StatementService {
 
   private addFooter(doc: PDFKit.PDFDocument) {
     const pageHeight = doc.page.height;
-    const footerY = pageHeight - 50; // Reduced footer margin to save space
+    const footerY = pageHeight - 100;
     console.log(`Adding footer at page height: ${pageHeight}, footerY: ${footerY}`);
     
     // Footer line
