@@ -132,29 +132,29 @@ export class StatementService {
     // Bank of Ireland Blue Color
     const boiBlue = '#1a5490';
     
-    // Account Statement text - moved much lower to avoid template overlap
+    // Account Statement text - positioned just below BOI logo
     doc.fontSize(18)
        .fillColor(boiBlue)
        .font('Helvetica')
-       .text('Account Statement', 400, 320);
+       .text('Account Statement', 400, 180);
     
-    // Bank address - moved much lower
+    // Bank address - positioned below statement header
     doc.fontSize(10)
        .fillColor('#666666')
        .font('Helvetica')
-       .text('Head Office: 40 Mespil Road, Dublin 4, Ireland', 50, 350)
-       .text('Phone: +353 1 611 1111 | www.bankofireland.com', 50, 365);
+       .text('Head Office: 40 Mespil Road, Dublin 4, Ireland', 50, 210)
+       .text('Phone: +353 1 611 1111 | www.bankofireland.com', 50, 225);
     
-    // Horizontal line - moved much lower
-    doc.moveTo(50, 385)
-       .lineTo(545, 385)
+    // Horizontal line - positioned below bank address
+    doc.moveTo(50, 245)
+       .lineTo(545, 245)
        .strokeColor(boiBlue)
        .lineWidth(2)
        .stroke();
   }
 
   private addAccountInfo(doc: PDFKit.PDFDocument, account: Account, request: StatementRequest) {
-    const startY = 405; // Moved much lower
+    const startY = 265; // Positioned higher for more transaction space
     
     doc.fontSize(14)
        .fillColor('#1a5490')
@@ -181,7 +181,7 @@ export class StatementService {
   }
 
   private addStatementPeriod(doc: PDFKit.PDFDocument, request: StatementRequest) {
-    const startY = 510; // Moved much lower
+    const startY = 370; // Positioned higher for more transaction space
     
     // Calculate actual current period dates based on range selection
     const endDate = new Date();
@@ -215,7 +215,7 @@ export class StatementService {
   }
 
   private addAccountSummary(doc: PDFKit.PDFDocument, account: Account, transactions: StatementTransaction[]) {
-    const startY = 560; // Moved much lower
+    const startY = 420; // Positioned higher for more transaction space
     
     // Calculate totals from real transaction data
     const totalCredits = transactions
@@ -262,7 +262,7 @@ export class StatementService {
   }
 
   private addTransactionDetails(doc: PDFKit.PDFDocument, transactions: StatementTransaction[]) {
-    let currentY = 690; // Moved much lower to avoid overlap
+    let currentY = 550; // Positioned higher - starts just below account summary
     
     doc.fontSize(14)
        .fillColor('#1a5490')
