@@ -54,7 +54,7 @@ export class StatementService {
     const chunks: Buffer[] = [];
     doc.on('data', chunk => chunks.push(chunk));
     
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       doc.on('end', () => {
         const pdfBuffer = Buffer.concat(chunks);
         resolve(pdfBuffer);
@@ -63,7 +63,7 @@ export class StatementService {
       doc.on('error', reject);
 
       try {
-        this.buildStatement(doc, request);
+        await this.buildStatement(doc, request);
         doc.end();
       } catch (error) {
         reject(error);
@@ -72,64 +72,65 @@ export class StatementService {
   }
 
   private async buildStatement(doc: PDFKit.PDFDocument, request: StatementRequest) {
-    // Add Bank of Ireland template as background
-    if (fs.existsSync(this.templatePath)) {
-      doc.image(this.templatePath, 0, 0, { 
-        width: 595, 
-        height: 842
-      });
-    }
+    try {
+      // Get account and transaction data first
+      const accountData = await this.getAccountData(request.accountId);
+      const transactions = await this.getTransactions(request);
+      
+      // Validate data
+      if (!accountData) {
+        throw new Error('Account data not found');
+      }
+      
+      // Add Bank of Ireland template as background
+      if (fs.existsSync(this.templatePath)) {
+        doc.image(this.templatePath, 0, 0, { 
+          width: 595, 
+          height: 842
+        });
+      }
 
-    // Bank of Ireland Header
-    this.addHeader(doc);
-    
-    // Get account and transaction data
-    const accountData = await this.getAccountData(request.accountId);
-    const transactions = await this.getTransactions(request);
-    
-    // Account information section
-    this.addAccountInfo(doc, accountData, request);
-    
-    // Statement period
-    this.addStatementPeriod(doc, request);
-    
-    // Account summary
-    this.addAccountSummary(doc, accountData, transactions);
-    
-    // Transaction details
-    this.addTransactionDetails(doc, transactions);
-    
-    // Footer with Bank of Ireland contact info
-    this.addFooter(doc);
+      // Add all content sections synchronously to avoid race conditions
+      this.addHeader(doc);
+      this.addAccountInfo(doc, accountData, request);
+      this.addStatementPeriod(doc, request);
+      this.addAccountSummary(doc, accountData, transactions);
+      this.addTransactionDetails(doc, transactions);
+      this.addFooter(doc);
+      
+    } catch (error) {
+      console.error('Error building statement:', error);
+      throw error;
+    }
   }
 
   private addHeader(doc: PDFKit.PDFDocument) {
     // Bank of Ireland Blue Color
     const boiBlue = '#1a5490';
     
-    // Account Statement text - moved down significantly
+    // Account Statement text - moved much lower to avoid template overlap
     doc.fontSize(18)
        .fillColor(boiBlue)
        .font('Helvetica')
-       .text('Account Statement', 400, 150);
+       .text('Account Statement', 400, 320);
     
-    // Bank address - moved down significantly
+    // Bank address - moved much lower
     doc.fontSize(10)
        .fillColor('#666666')
        .font('Helvetica')
-       .text('Head Office: 40 Mespil Road, Dublin 4, Ireland', 50, 180)
-       .text('Phone: +353 1 611 1111 | www.bankofireland.com', 50, 195);
+       .text('Head Office: 40 Mespil Road, Dublin 4, Ireland', 50, 350)
+       .text('Phone: +353 1 611 1111 | www.bankofireland.com', 50, 365);
     
-    // Horizontal line - moved down
-    doc.moveTo(50, 215)
-       .lineTo(545, 215)
+    // Horizontal line - moved much lower
+    doc.moveTo(50, 385)
+       .lineTo(545, 385)
        .strokeColor(boiBlue)
        .lineWidth(2)
        .stroke();
   }
 
   private addAccountInfo(doc: PDFKit.PDFDocument, account: Account, request: StatementRequest) {
-    const startY = 235;
+    const startY = 405; // Moved much lower
     
     doc.fontSize(14)
        .fillColor('#1a5490')
@@ -156,7 +157,7 @@ export class StatementService {
   }
 
   private addStatementPeriod(doc: PDFKit.PDFDocument, request: StatementRequest) {
-    const startY = 340;
+    const startY = 510; // Moved much lower
     
     // Calculate actual current period dates based on range selection
     const endDate = new Date();
@@ -190,9 +191,9 @@ export class StatementService {
   }
 
   private addAccountSummary(doc: PDFKit.PDFDocument, account: Account, transactions: StatementTransaction[]) {
-    const startY = 390;
+    const startY = 560; // Moved much lower
     
-    // Calculate totals
+    // Calculate totals with error handling
     const totalCredits = transactions
       .filter(t => t.type === 'credit')
       .reduce((sum, t) => sum + Math.abs(t.amount), 0);
@@ -201,9 +202,10 @@ export class StatementService {
       .filter(t => t.type === 'debit')
       .reduce((sum, t) => sum + Math.abs(t.amount), 0);
     
+    const accountBalance = parseFloat(account.balance.replace(/,/g, '')) || 0;
     const openingBalance = transactions.length > 0 ? 
-      parseFloat(account.balance) - (totalCredits - totalDebits) : 
-      parseFloat(account.balance);
+      accountBalance - (totalCredits - totalDebits) : 
+      accountBalance;
     
     doc.fontSize(14)
        .fillColor('#1a5490')
@@ -228,11 +230,11 @@ export class StatementService {
        .text(`€${openingBalance.toFixed(2)}`, 450, startY + 45)
        .text(`€${totalCredits.toFixed(2)}`, 450, startY + 65)
        .text(`€${totalDebits.toFixed(2)}`, 450, startY + 85)
-       .text(`€${account.balance}`, 450, startY + 105);
+       .text(`€${accountBalance.toFixed(2)}`, 450, startY + 105);
   }
 
   private addTransactionDetails(doc: PDFKit.PDFDocument, transactions: StatementTransaction[]) {
-    let currentY = 500;
+    let currentY = 690; // Moved much lower to avoid overlap
     
     doc.fontSize(14)
        .fillColor('#1a5490')
@@ -317,6 +319,8 @@ export class StatementService {
     if (transactions.length === 0) {
       doc.fillColor('#666666')
          .text('No transactions found for this period.', 50, currentY);
+    } else {
+      console.log(`Successfully rendered ${transactions.length} transactions in PDF`);
     }
   }
 
@@ -409,6 +413,9 @@ export class StatementService {
     
     const baseDate = new Date(startDate);
     
+    // Generate transactions with proper running balance calculation
+    let currentBalance = 1500.00; // Starting balance for period
+    
     const sampleTransactions: StatementTransaction[] = [
       {
         id: 'tx001',
@@ -416,7 +423,7 @@ export class StatementService {
         description: 'Online Purchase - Amazon',
         amount: 45.99,
         type: 'debit',
-        balance: 2450.67,
+        balance: currentBalance -= 45.99,
         reference: 'AMZ001',
         category: 'Shopping'
       },
@@ -426,7 +433,7 @@ export class StatementService {
         description: 'Salary Payment',
         amount: 3200.00,
         type: 'credit',
-        balance: 2496.66,
+        balance: currentBalance += 3200.00,
         reference: 'SAL001',
         category: 'Income'
       },
@@ -436,7 +443,7 @@ export class StatementService {
         description: 'Grocery Store - Tesco',
         amount: 78.34,
         type: 'debit',
-        balance: 1703.34,
+        balance: currentBalance -= 78.34,
         reference: 'TSC001',
         category: 'Groceries'
       },
@@ -446,7 +453,7 @@ export class StatementService {
         description: 'Utility Bill - Electric Ireland',
         amount: 120.45,
         type: 'debit',
-        balance: 1781.68,
+        balance: currentBalance -= 120.45,
         reference: 'EI001',
         category: 'Utilities'
       },
@@ -456,7 +463,7 @@ export class StatementService {
         description: 'ATM Withdrawal',
         amount: 100.00,
         type: 'debit',
-        balance: 1681.68,
+        balance: currentBalance -= 100.00,
         reference: 'ATM001',
         category: 'Cash'
       },
@@ -466,7 +473,7 @@ export class StatementService {
         description: 'Direct Debit - Mortgage',
         amount: 1250.00,
         type: 'debit',
-        balance: 431.68,
+        balance: currentBalance -= 1250.00,
         reference: 'MTG001',
         category: 'Housing'
       },
@@ -476,7 +483,7 @@ export class StatementService {
         description: 'Online Transfer - Savings',
         amount: 500.00,
         type: 'debit',
-        balance: 1181.68,
+        balance: currentBalance -= 500.00,
         reference: 'TRF001',
         category: 'Transfer'
       },
@@ -486,20 +493,28 @@ export class StatementService {
         description: 'Pension Payment',
         amount: 800.00,
         type: 'credit',
-        balance: 1981.68,
+        balance: currentBalance += 800.00,
         reference: 'PEN001',
         category: 'Income'
       }
     ];
     
-    // Filter transactions by date range
+    // Filter transactions by date range with debugging
     const filteredTransactions = sampleTransactions
       .filter(transaction => {
         const transactionDate = new Date(transaction.date);
-        return transactionDate >= startDate && transactionDate <= endDate;
+        const isInRange = transactionDate >= startDate && transactionDate <= endDate;
+        return isInRange;
       })
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     
+    // Ensure we always have transactions for demonstration
+    if (filteredTransactions.length === 0) {
+      console.log('No transactions in date range, returning all sample transactions');
+      return sampleTransactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    }
+    
+    console.log(`Returning ${filteredTransactions.length} transactions for statement`);
     return filteredTransactions;
   }
 }
