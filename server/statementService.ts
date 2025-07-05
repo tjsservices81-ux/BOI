@@ -374,10 +374,15 @@ export class StatementService {
     
     // Generate sample transactions for demonstration
     // In production, this would fetch from your actual database
+    
+    // Create sample transactions within the requested date range
+    const daysDiff = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    const baseDate = new Date(startDate);
+    
     const sampleTransactions: StatementTransaction[] = [
       {
         id: 'tx001',
-        date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+        date: new Date(baseDate.getTime() + 1 * 24 * 60 * 60 * 1000).toISOString(),
         description: 'Online Purchase - Amazon',
         amount: 45.99,
         type: 'debit',
@@ -387,7 +392,7 @@ export class StatementService {
       },
       {
         id: 'tx002',
-        date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+        date: new Date(baseDate.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString(),
         description: 'Salary Payment',
         amount: 3200.00,
         type: 'credit',
@@ -397,7 +402,7 @@ export class StatementService {
       },
       {
         id: 'tx003',
-        date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+        date: new Date(baseDate.getTime() + 5 * 24 * 60 * 60 * 1000).toISOString(),
         description: 'Grocery Store - Tesco',
         amount: 78.34,
         type: 'debit',
@@ -407,13 +412,53 @@ export class StatementService {
       },
       {
         id: 'tx004',
-        date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+        date: new Date(baseDate.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString(),
         description: 'Utility Bill - Electric Ireland',
         amount: 120.45,
         type: 'debit',
         balance: 1781.68,
         reference: 'EI001',
         category: 'Utilities'
+      },
+      {
+        id: 'tx005',
+        date: new Date(baseDate.getTime() + 10 * 24 * 60 * 60 * 1000).toISOString(),
+        description: 'ATM Withdrawal',
+        amount: 100.00,
+        type: 'debit',
+        balance: 1681.68,
+        reference: 'ATM001',
+        category: 'Cash'
+      },
+      {
+        id: 'tx006',
+        date: new Date(baseDate.getTime() + 12 * 24 * 60 * 60 * 1000).toISOString(),
+        description: 'Direct Debit - Mortgage',
+        amount: 1250.00,
+        type: 'debit',
+        balance: 431.68,
+        reference: 'MTG001',
+        category: 'Housing'
+      },
+      {
+        id: 'tx007',
+        date: new Date(baseDate.getTime() + 15 * 24 * 60 * 60 * 1000).toISOString(),
+        description: 'Online Transfer - Savings',
+        amount: 500.00,
+        type: 'debit',
+        balance: 1181.68,
+        reference: 'TRF001',
+        category: 'Transfer'
+      },
+      {
+        id: 'tx008',
+        date: new Date(baseDate.getTime() + 18 * 24 * 60 * 60 * 1000).toISOString(),
+        description: 'Pension Payment',
+        amount: 800.00,
+        type: 'credit',
+        balance: 1981.68,
+        reference: 'PEN001',
+        category: 'Income'
       }
     ];
     
