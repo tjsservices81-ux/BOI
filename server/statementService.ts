@@ -313,8 +313,8 @@ export class StatementService {
     for (let i = 0; i < transactions.length; i++) {
       const transaction = transactions[i];
       
-      // Check if current transaction will fit on current page
-      if (currentY + rowHeight > maxY) {
+      // Check if current transaction will fit on current page (but not on very first transaction)
+      if (i > 0 && currentY + rowHeight > maxY) {
         // Create new page only if needed
         doc.addPage();
         currentY = 50;
@@ -330,8 +330,6 @@ export class StatementService {
         currentY += 25;
         doc.font('Helvetica').fontSize(9);
       }
-      
-      isFirstPage = false;
       
       // Render transaction row
       const date = new Date(transaction.date).toLocaleDateString('en-US');
