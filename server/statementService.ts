@@ -326,7 +326,10 @@ export class StatementService {
     // Transaction rows
     doc.font('Helvetica').fontSize(9);
     
-    for (const transaction of transactions) {
+    for (let i = 0; i < transactions.length; i++) {
+      const transaction = transactions[i];
+      const isLastTransaction = i === transactions.length - 1;
+      
       // Check if we need a new page BEFORE rendering this complete transaction row
       // A4 page is 842 points tall, need 20 points for transaction row + margin
       if (currentY + 20 > 770) {
@@ -394,14 +397,16 @@ export class StatementService {
       
       currentY += 15;
       
-      // Add horizontal divider line between transaction rows
-      doc.moveTo(50, currentY)
-         .lineTo(545, currentY)
-         .strokeColor('#eeeeee')
-         .lineWidth(0.5)
-         .stroke();
-      
-      currentY += 5;
+      // Add horizontal divider line between transaction rows (but not after the last one)
+      if (!isLastTransaction) {
+        doc.strokeColor('#cccccc')
+           .lineWidth(0.5)
+           .moveTo(50, currentY)
+           .lineTo(545, currentY)
+           .stroke();
+        
+        currentY += 5;
+      }
     }
     
     if (transactions.length === 0) {
