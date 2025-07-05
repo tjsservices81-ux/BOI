@@ -319,8 +319,9 @@ export class StatementService {
     doc.font('Helvetica').fontSize(9);
     
     for (const transaction of transactions) {
-      // Check if we need a new page
-      if (currentY > 720) {
+      // Check if we need a new page (allow more room on first page)
+      // Standard A4 page height is 842 points, leave 50 points margin at bottom
+      if (currentY > 790) {
         doc.addPage();
         currentY = 50;
         
