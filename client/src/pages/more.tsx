@@ -122,8 +122,7 @@ export default function More() {
               {!isLoadingChat && <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />}
             </button>
 
-            {/* Statements - DISABLED */}
-            {/*
+            {/* Statements - TEMPORARILY ENABLED FOR TESTING */}
             <button 
               className="w-full bg-white border border-gray-100 rounded-2xl p-5 flex items-center space-x-4 hover:bg-gray-50 shadow-lg transition-all duration-200 active:scale-98 stagger-item" 
               style={{ animationDelay: '0.3s' }}
@@ -143,7 +142,6 @@ export default function More() {
               </div>
               <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />
             </button>
-            */}
 
             {/* Settings */}
             <button 
