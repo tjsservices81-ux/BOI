@@ -265,11 +265,10 @@ export class StatementService {
     const startY = 690; // Start position below other content
     const pageHeight = 842; // A4 page height
     const bottomMargin = 120; // Space for footer
-    const maxY = pageHeight - bottomMargin; // Maximum Y before footer
+    const maxY = pageHeight - bottomMargin; // Maximum Y before footer (722)
     const rowHeight = 20; // Height per transaction row
     
     let currentY = startY;
-    let isFirstPage = true;
     
     // Add transaction section header
     doc.fontSize(14)
@@ -281,7 +280,7 @@ export class StatementService {
     
     // Add table headers
     this.addTableHeaders(doc, currentY);
-    currentY += 25; // Space for headers and line
+    currentY += 25; // Space for headers and line (now at Y=745)
     
     // Handle empty transaction list (app reset or new account)
     if (transactions.length === 0) {
@@ -307,28 +306,50 @@ export class StatementService {
       return;
     }
     
-    // Process transactions with precise pagination
+    // Process transactions - render as many as fit on first page
     doc.font('Helvetica').fontSize(9);
+    let hasCreatedNewPage = false;
     
     for (let i = 0; i < transactions.length; i++) {
       const transaction = transactions[i];
       
-      // Check if current transaction will fit on current page (but not on very first transaction)
-      if (i > 0 && currentY + rowHeight > maxY) {
-        // Create new page only if needed
-        doc.addPage();
-        currentY = 50;
-        
-        // Add continuation header
-        doc.fontSize(14)
-           .fillColor('#1a5490')
-           .font('Helvetica-Bold')
-           .text('Transaction Details (continued)', 50, currentY);
-        
-        currentY += 30;
-        this.addTableHeaders(doc, currentY);
-        currentY += 25;
-        doc.font('Helvetica').fontSize(9);
+      // Check if current transaction will fit on current page
+      // Only create new page if we would exceed the limit AND it's not the first transaction ever
+      if (currentY + rowHeight > maxY) {
+        if (!hasCreatedNewPage) {
+          // Create new page
+          doc.addPage();
+          hasCreatedNewPage = true;
+          currentY = 50;
+          
+          // Add continuation header
+          doc.fontSize(14)
+             .fillColor('#1a5490')
+             .font('Helvetica-Bold')
+             .text('Transaction Details (continued)', 50, currentY);
+          
+          currentY += 30;
+          this.addTableHeaders(doc, currentY);
+          currentY += 25;
+          doc.font('Helvetica').fontSize(9);
+        } else {
+          // Already on continuation page, check if we need another page
+          if (currentY + rowHeight > maxY) {
+            doc.addPage();
+            currentY = 50;
+            
+            // Add continuation header
+            doc.fontSize(14)
+               .fillColor('#1a5490')
+               .font('Helvetica-Bold')
+               .text('Transaction Details (continued)', 50, currentY);
+            
+            currentY += 30;
+            this.addTableHeaders(doc, currentY);
+            currentY += 25;
+            doc.font('Helvetica').fontSize(9);
+          }
+        }
       }
       
       // Render transaction row
@@ -347,7 +368,7 @@ export class StatementService {
       currentY += rowHeight;
     }
     
-    console.log(`Successfully rendered ${transactions.length} transactions in PDF with precise pagination`);
+    console.log(`Successfully rendered ${transactions.length} transactions in PDF - filled first page completely`);
   }
   
   private addTableHeaders(doc: PDFKit.PDFDocument, y: number) {
