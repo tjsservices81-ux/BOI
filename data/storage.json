@@ -48,54 +48,6 @@
         "isDisabled": false,
         "currency": "EUR"
       }
-    ],
-    [
-      4,
-      {
-        "id": 4,
-        "customerNumber": "BOI478347406",
-        "pin": "000000",
-        "name": "Jjj",
-        "email": "jjj@gmail.com",
-        "phone": "456464",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "2025-07-04T18:58:27.971Z",
-        "dateCreated": "2025-07-04T18:58:27.971Z",
-        "isDisabled": false
-      }
-    ],
-    [
-      5,
-      {
-        "id": 5,
-        "customerNumber": "BOI150798675",
-        "pin": "000000",
-        "name": "Aaahaahhaha",
-        "email": "ahahaha@gmail.com",
-        "phone": "8484646",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "2025-07-04T19:53:49.700Z",
-        "dateCreated": "2025-07-04T19:53:49.700Z",
-        "isDisabled": false
-      }
-    ],
-    [
-      6,
-      {
-        "id": 6,
-        "customerNumber": "BOI016716304",
-        "pin": "000000",
-        "name": "John",
-        "email": "shshsh@gmail.com",
-        "phone": "45546464",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "2025-07-04T21:10:44.684Z",
-        "dateCreated": "2025-07-04T21:10:44.684Z",
-        "isDisabled": false
-      }
     ]
   ],
   "accounts": [],
@@ -107,7 +59,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 7,
+    "currentUserId": 4,
     "currentAccountId": 1,
     "currentTransactionId": 1,
     "currentPayeeId": 1,

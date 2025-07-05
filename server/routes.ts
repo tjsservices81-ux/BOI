@@ -12,7 +12,6 @@ import { isDeviceBlocked, addDeviceSession, isDeviceInPanicMode, isCustomerInPan
 import { isAccountActiveOnOtherDevice, setUserDeviceSession, removeUserDeviceSession, getUserDeviceSession, isCurrentDeviceAuthorized } from "./deviceExclusiveAuth";
 import { addUserSession, removeUserSession, sessionTrackingMiddleware, isSessionValid } from "./sessionManager";
 import { sendTransferConfirmation, type TransferConfirmationDetails } from "./emailService";
-// Old statementService removed - now using editablePdfService only
 import Database from "@replit/database";
 
 // Initialize Replit Database for access codes
@@ -166,7 +165,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userAgent = req.headers['user-agent'] || '';
       const isIOS = isIOSDevice(userAgent);
       
-      if (!code || typeof code !== 'string' || !code.startsWith('BOI')) {
+      if (!code || typeof code !== 'string') {
         return res.status(400).json({ 
           success: false, 
           error: "Invalid access code format" 
@@ -296,7 +295,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { code } = req.body;
       
-      if (!code || typeof code !== 'string' || !code.startsWith('BOI')) {
+      if (!code || typeof code !== 'string') {
         return res.status(400).json({ 
           success: false, 
           error: "Access code required" 
@@ -831,150 +830,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Test email error:', error);
       res.status(500).json({ success: false, message: "Internal server error" });
-    }
-  });
-
-  // OLD STATEMENT ROUTE REMOVED - Using editable PDF system only
-  
-  // Generate editable PDF statement with real user data
-  app.post("/api/generate-statement", async (req, res) => {
-    try {
-      console.log('🔵 Statement generation request received');
-      console.log('📊 Request body:', req.body);
-      
-      const { accountInfo, transactions, period } = req.body;
-      
-      // Validate required data
-      if (!accountInfo || !transactions || !period) {
-        return res.status(400).json({ 
-          success: false, 
-          message: "Missing required data: accountInfo, transactions, period" 
-        });
-      }
-
-      console.log('📋 Processing', transactions.length, 'transactions for period:', period);
-      
-      // Filter and validate transactions (remove any invalid entries)
-      const validTransactions = transactions.filter((tx: any) => {
-        const txDate = new Date(tx.date);
-        return !isNaN(txDate.getTime()) && tx.description && tx.amount;
-      });
-      
-      console.log('✅ Valid transactions:', validTransactions.length);
-      
-      if (validTransactions.length === 0) {
-        return res.status(400).json({
-          success: false,
-          message: "Error: Unable to generate statement. Please confirm transactions are available."
-        });
-      }
-      
-      // Create userData object from passed account info and transactions
-      const nameParts = (accountInfo.accountHolder || 'Account Holder').split(' ');
-      const userData = {
-        firstName: nameParts[0] || 'Account',
-        lastName: nameParts.slice(1).join(' ') || 'Holder',
-        accounts: [{
-          accountNumber: accountInfo.accountNumber || '****2091',
-          balance: accountInfo.balance || '1640.31'
-        }],
-        transactions: validTransactions
-      };
-
-      // Import and use the editable PDF service
-      const { generateEditableStatement } = await import('./editablePdfService');
-      
-      // Prepare user data for editable PDF generation
-      const editableUserData = {
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        customerNumber: (req as any).session?.user?.customerNumber || '12345678',
-        accountNumber: userData.accounts[0]?.accountNumber || '****2091',
-        sortCode: '90-11-77',
-        currentBalance: parseFloat(userData.accounts[0]?.balance || '1640.31'),
-        transactions: userData.transactions
-      };
-      
-      // Generate PDF buffer using editable PDF system
-      const pdfBuffer = await generateEditableStatement(editableUserData, period);
-      
-      // Generate filename
-      const lastName = nameParts.slice(1).join('') || 'Statement';
-      const filename = `BOI_Statement_${lastName}_${new Date().toLocaleDateString('en-GB', { month: '2-digit', year: 'numeric' }).replace('/', '')}.pdf`;
-      
-      console.log(`✅ Statement PDF generated: ${filename}, Size: ${pdfBuffer.length} bytes`);
-      
-      // Set headers for PDF download
-      res.set({
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${filename}"`,
-        'Content-Length': pdfBuffer.length.toString()
-      });
-      
-      res.send(pdfBuffer);
-      
-    } catch (error) {
-      console.error('❌ Statement generation error:', error);
-      res.status(500).json({ success: false, message: "Failed to generate statement" });
-    }
-  });
-
-  // Generate editable PDF statement (fills form fields instead of text overlay)
-  app.post("/api/generate-editable-statement", async (req, res) => {
-    try {
-      console.log('🔵 Editable PDF statement generation request received');
-      console.log('📊 Request body:', req.body);
-      
-      const { accountInfo, transactions, period } = req.body;
-      
-      // Validate required data
-      if (!accountInfo || !transactions || !period) {
-        return res.status(400).json({ 
-          success: false, 
-          message: "Missing required data: accountInfo, transactions, and period are required" 
-        });
-      }
-
-      // Import the editable PDF service
-      const { generateEditableStatement } = await import('./editablePdfService');
-      
-      // Extract real user data from account info and transactions
-      const userData = {
-        firstName: accountInfo.accountHolder?.split(' ')[0] || 'Account',
-        lastName: accountInfo.accountHolder?.split(' ').slice(1).join(' ') || 'Holder',
-        customerNumber: accountInfo.customerNumber || (req as any).session?.user?.customerNumber || '12345678',
-        accountNumber: accountInfo.accountNumber || '****2091',
-        sortCode: accountInfo.sortCode || '90-11-77',
-        currentBalance: parseFloat(accountInfo.balance) || 0,
-        transactions: transactions || []
-      };
-
-      console.log('📋 Processing editable PDF with user data:', userData.firstName, userData.lastName);
-      
-      // Generate the editable PDF
-      const pdfBuffer = await generateEditableStatement(userData, period);
-      
-      // Generate filename
-      const lastName = userData.lastName || 'Statement';
-      const filename = `BOI_Editable_Statement_${lastName}_${new Date().toLocaleDateString('en-GB', { month: '2-digit', year: 'numeric' }).replace('/', '')}.pdf`;
-      
-      console.log(`✅ Editable PDF statement generated: ${filename}, Size: ${pdfBuffer.length} bytes`);
-      
-      // Set headers for PDF download
-      res.set({
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${filename}"`,
-        'Content-Length': pdfBuffer.length.toString()
-      });
-      
-      res.send(pdfBuffer);
-      
-    } catch (error) {
-      console.error('❌ Editable PDF statement generation error:', error);
-      res.status(500).json({ 
-        success: false, 
-        message: `Failed to generate editable statement: ${(error as Error).message}` 
-      });
     }
   });
 
