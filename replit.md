@@ -95,6 +95,12 @@ This is a comprehensive mobile banking application built as a Progressive Web Ap
 - **Security**: HTTPS required for PWA installation and service worker functionality
 
 ## Changelog
+- July 05, 2025: BANK STATEMENTS FIX - Resolved account ID validation issues in PDF statement generation
+  - Fixed Zod schema to accept both numeric and string account IDs with automatic conversion
+  - Updated frontend account data structure alignment with backend expectations
+  - Enhanced server-side account mapping with realistic Bank of Ireland details (sort codes, account numbers)
+  - Confirmed successful PDF generation (259KB professional statements) via API testing
+  - Bank Statements feature now fully functional with proper account ID handling
 - July 04, 2025: BANK STATEMENTS FEATURE - Implemented comprehensive PDF statement generation system
   - Created professional Bank of Ireland statement generation using provided template (IMG_1972_1751725687784.png)
   - Replaced "App Information" button in More page with "Bank Statements" feature

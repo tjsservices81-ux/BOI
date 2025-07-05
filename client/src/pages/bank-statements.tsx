@@ -6,12 +6,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { UserDataManager } from "@/utils/userDataManager";
 
 interface Account {
-  id: string;
-  name: string;
+  id: number | string;
+  displayName: string;
   accountNumber: string;
-  sortCode: string;
   balance: string;
-  type: string;
+  accountType: string;
 }
 
 type DateRange = '1week' | '2weeks' | '1month';
@@ -37,7 +36,7 @@ export default function BankStatements() {
     
     // Set default account if available
     if (userAccounts.length > 0) {
-      setSelectedAccount(userAccounts[0].id);
+      setSelectedAccount(String(userAccounts[0].id));
     }
   }, []);
 
@@ -88,7 +87,7 @@ export default function BankStatements() {
         a.style.display = 'none';
         a.href = url;
         
-        const selectedAccountData = accounts.find(acc => acc.id === selectedAccount);
+        const selectedAccountData = accounts.find(acc => String(acc.id) === selectedAccount);
         const fileName = `BOI_Statement_${selectedAccountData?.accountNumber}_${selectedDateRange}_${new Date().toISOString().split('T')[0]}.pdf`;
         a.download = fileName;
         
@@ -113,7 +112,7 @@ export default function BankStatements() {
     }
   };
 
-  const selectedAccountData = accounts.find(acc => acc.id === selectedAccount);
+  const selectedAccountData = accounts.find(acc => String(acc.id) === selectedAccount);
 
   return (
     <div className="h-screen bg-gradient-to-br from-[#126987] to-[#0d4e63] flex flex-col overflow-hidden page-slide-up">
@@ -178,11 +177,11 @@ export default function BankStatements() {
               </SelectTrigger>
               <SelectContent>
                 {accounts.map((account) => (
-                  <SelectItem key={account.id} value={account.id}>
+                  <SelectItem key={account.id} value={String(account.id)}>
                     <div className="flex flex-col">
-                      <span className="font-medium">{account.name}</span>
+                      <span className="font-medium">{account.displayName}</span>
                       <span className="text-sm text-gray-500">
-                        {account.sortCode} • {account.accountNumber}
+                        {account.accountNumber}
                       </span>
                     </div>
                   </SelectItem>

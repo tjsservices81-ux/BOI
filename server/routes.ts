@@ -1658,7 +1658,7 @@ No transfers found yet on your account.`;
   app.post("/api/generate-statement", async (req, res) => {
     try {
       const statementSchema = z.object({
-        accountId: z.string(),
+        accountId: z.union([z.string(), z.number()]).transform(val => String(val)),
         startDate: z.string(),
         endDate: z.string(),
         dateRange: z.enum(['1week', '2weeks', '1month'])

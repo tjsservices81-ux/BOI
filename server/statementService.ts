@@ -327,16 +327,48 @@ export class StatementService {
   }
 
   private async getAccountData(accountId: string): Promise<Account> {
-    // Create a mock account for demonstration
-    // In production, this would fetch from your actual database
-    return {
-      id: accountId,
-      name: "Current Account",
-      accountNumber: "12345678",
-      sortCode: "901234",
-      balance: "2,450.67",
-      type: "Current Account"
+    // Map account IDs to realistic account data
+    const accountMap: Record<string, Account> = {
+      "1": {
+        id: "1",
+        name: "Current Account",
+        accountNumber: "12345091",
+        sortCode: "90-12-34",
+        balance: "2,450.67",
+        type: "Current Account"
+      },
+      "2": {
+        id: "2", 
+        name: "Credit Card",
+        accountNumber: "12341820",
+        sortCode: "90-12-34",
+        balance: "1,250.00",
+        type: "Credit Card"
+      },
+      "3": {
+        id: "3",
+        name: "Savings Account", 
+        accountNumber: "12340978",
+        sortCode: "90-12-34",
+        balance: "15,750.25",
+        type: "Savings Account"
+      }
     };
+
+    const account = accountMap[accountId];
+    if (!account) {
+      // Default account if ID not found
+      return {
+        id: accountId,
+        name: "Current Account",
+        accountNumber: "12345678",
+        sortCode: "90-12-34", 
+        balance: "2,450.67",
+        type: "Current Account"
+      };
+    }
+
+    return account;
   }
 
   private async getTransactions(request: StatementRequest): Promise<Transaction[]> {
