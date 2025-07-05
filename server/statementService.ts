@@ -319,9 +319,9 @@ export class StatementService {
     doc.font('Helvetica').fontSize(9);
     
     for (const transaction of transactions) {
-      // Only create new page if we absolutely can't fit this transaction
-      // A4 page is 842 points tall, leaving 50 points margin at bottom = 792 max
-      if (currentY > 770) { // Conservative check - only break when really needed
+      // Check if we need a new page BEFORE rendering this complete transaction row
+      // A4 page is 842 points tall, need 20 points for transaction row + margin
+      if (currentY + 20 > 770) {
         doc.addPage();
         currentY = 50;
         
@@ -354,13 +354,16 @@ export class StatementService {
         doc.font('Helvetica').fontSize(9);
       }
       
-      // Format date to match your statement (5/7/2025 format)
+      // Format and render the complete transaction row
       const date = new Date(transaction.date).toLocaleDateString('en-US');
       const amount = transaction.type === 'credit' ? 
         `+€${transaction.amount.toFixed(2)}` : 
         `-€${transaction.amount.toFixed(2)}`;
       
+      // Render all fields of this transaction on the same line
       doc.fillColor('#333333')
+         .font('Helvetica')
+         .fontSize(9)
          .text(date, 50, currentY)
          .text(transaction.description.substring(0, 30), 120, currentY)
          .text(transaction.reference || '-', 300, currentY)
