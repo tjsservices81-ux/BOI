@@ -617,9 +617,9 @@ export default function UkTransfer() {
               <>
                 <div className="bg-gray-50 rounded-xl p-3 mb-4 text-left animate-fade-in">
                   <div className="space-y-3">
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-start">
                       <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Reference:</span>
-                      <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{transferReference}</span>
+                      <span className="font-semibold text-gray-900 text-xs text-right break-all max-w-[60%]" style={{ fontFamily: 'OpenSans, sans-serif', lineHeight: '1.3' }}>{transferReference}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Amount:</span>

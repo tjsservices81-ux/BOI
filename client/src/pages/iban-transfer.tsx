@@ -197,7 +197,7 @@ export default function IbanTransfer() {
           clearInterval(interval);
           
           // Process the transfer using the user's payment reference
-          const transferSuccess = processConfirmedTransfer(
+          processConfirmedTransfer(
             `IBAN_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             formData.fromAccount,
             parseFloat(formData.amount),
@@ -209,26 +209,26 @@ export default function IbanTransfer() {
               iban: formData.iban,
               bicCode: formData.bicCode
             }
-          );
-          
-          if (transferSuccess) {
-            // Add successful payee to recent payees
-            const payee = {
-              name: formData.recipientName,
-              accountInfo: formData.iban,
-              bicCode: formData.bicCode,
-              transferType: 'SEPA Transfer',
-              reference: formData.reference || '',
-              timestamp: new Date().toISOString()
-            };
-            UserDataManager.addRecentPayee(payee);
-            
-            // Dispatch events to update all components
-            window.dispatchEvent(new CustomEvent('transactionUpdate'));
-            window.dispatchEvent(new CustomEvent('balanceUpdate'));
-            
-            setShowReference(true);
-          }
+          ).then(transferSuccess => {
+            if (transferSuccess) {
+              // Add successful payee to recent payees
+              const payee = {
+                name: formData.recipientName,
+                accountInfo: formData.iban,
+                bicCode: formData.bicCode,
+                transferType: 'SEPA Transfer',
+                reference: formData.reference || '',
+                timestamp: new Date().toISOString()
+              };
+              UserDataManager.addRecentPayee(payee);
+              
+              // Dispatch events to update all components
+              window.dispatchEvent(new CustomEvent('transactionUpdate'));
+              window.dispatchEvent(new CustomEvent('balanceUpdate'));
+              
+              setShowReference(true);
+            }
+          });
           
           return 100;
         }
@@ -336,9 +336,9 @@ export default function IbanTransfer() {
               <>
                 <div className="bg-gray-50 rounded-xl p-4 mb-6 text-left">
                   <div className="space-y-3">
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-start">
                       <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Reference:</span>
-                      <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{transferReference}</span>
+                      <span className="font-semibold text-gray-900 text-xs text-right break-all max-w-[60%]" style={{ fontFamily: 'OpenSans, sans-serif', lineHeight: '1.3' }}>{transferReference}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Amount:</span>
