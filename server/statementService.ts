@@ -319,10 +319,9 @@ export class StatementService {
     doc.font('Helvetica').fontSize(9);
     
     for (const transaction of transactions) {
-      // Check if we need a new page - only add if we actually need space for content
-      // Standard A4 page height is 842 points, leave 50 points margin at bottom
-      if (currentY + 20 > 790) { // +20 for transaction row height
-        console.log(`Adding new page at currentY: ${currentY} for transaction ${transaction.id}`);
+      // Only create new page if we absolutely can't fit this transaction
+      // A4 page is 842 points tall, leaving 50 points margin at bottom = 792 max
+      if (currentY > 770) { // Conservative check - only break when really needed
         doc.addPage();
         currentY = 50;
         
