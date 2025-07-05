@@ -8,6 +8,22 @@ interface StatementRequest {
   startDate: string;
   endDate: string;
   dateRange: string;
+  userTransactions?: Array<{
+    id: string | number;
+    accountId: number;
+    amount: string;
+    description: string;
+    category: string;
+    type: 'credit' | 'debit';
+    reference?: string;
+    timestamp: string;
+    recipientName?: string;
+    paymentMethod?: string;
+    recipientAccountNumber?: string;
+    recipientSortCode?: string;
+    iban?: string;
+    bicCode?: string;
+  }>;
 }
 
 interface StatementTransaction {
@@ -403,93 +419,118 @@ export class StatementService {
   }
 
   private async getTransactions(request: StatementRequest): Promise<StatementTransaction[]> {
-    // Generate realistic banking transactions matching your statement format
-    const endDate = new Date();
-    const startDate = new Date();
-    
-    // Calculate proper start date based on date range
-    switch (request.dateRange) {
-      case '1week':
-        startDate.setDate(endDate.getDate() - 7);
-        break;
-      case '2weeks':
-        startDate.setDate(endDate.getDate() - 14);
-        break;
-      case '1month':
-      default:
-        startDate.setDate(endDate.getDate() - 30);
-        break;
+    // Use real transaction data from frontend if provided, otherwise use mock data
+    try {
+      const endDate = new Date();
+      const startDate = new Date();
+      
+      // Calculate date range
+      switch (request.dateRange) {
+        case '1week':
+          startDate.setDate(endDate.getDate() - 7);
+          break;
+        case '2weeks':
+          startDate.setDate(endDate.getDate() - 14);
+          break;
+        case '1month':
+        default:
+          startDate.setDate(endDate.getDate() - 30);
+          break;
+      }
+
+      // Get transactions from request or use mock data
+      const userTransactions = request.userTransactions || this.getMockUserTransactions(request.accountId);
+      
+      // Filter transactions for the specified account and date range
+      const filteredTransactions = userTransactions
+        .filter((tx) => {
+          const transactionDate = new Date(tx.timestamp);
+          const matchesAccount = tx.accountId.toString() === request.accountId;
+          const inDateRange = transactionDate >= startDate && transactionDate <= endDate;
+          return matchesAccount && inDateRange;
+        });
+
+      // Convert to statement format
+      const statementTransactions: StatementTransaction[] = filteredTransactions
+        .map((tx: any) => ({
+          id: tx.id.toString(),
+          date: tx.timestamp,
+          description: tx.description,
+          amount: Math.abs(parseFloat(tx.amount.replace('-', ''))),
+          type: tx.type as 'credit' | 'debit',
+          balance: 0, // Will be calculated below
+          reference: tx.reference || `TXN${tx.id}`,
+          category: tx.category
+        }))
+        .sort((a: StatementTransaction, b: StatementTransaction) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+      // Calculate running balances
+      let runningBalance = this.getAccountStartingBalance(request.accountId);
+      const transactionsWithBalance = statementTransactions.map(tx => {
+        if (tx.type === 'debit') {
+          runningBalance -= tx.amount;
+        } else {
+          runningBalance += tx.amount;
+        }
+        return { ...tx, balance: runningBalance };
+      });
+
+      // Return in reverse chronological order (newest first)
+      const finalTransactions = transactionsWithBalance.reverse();
+      
+      console.log(`Returning ${finalTransactions.length} real user transactions for statement (${(request as any).userTransactions ? 'from frontend' : 'mock data'})`);
+      return finalTransactions;
+      
+    } catch (error) {
+      console.error('Error processing transactions:', error);
+      return [];
     }
-    
-    // Real transaction data matching your banking statement format
-    let currentBalance = 6504.55; // Opening balance from your statement
-    
-    const realTransactions: StatementTransaction[] = [
+  }
+
+  private getMockUserTransactions(accountId: string) {
+    // This simulates the data that would come from UserDataManager.getUserTransactions()
+    // In a real implementation, this would be passed from the frontend or fetched from database
+    return [
       {
-        id: 'E001',
-        date: new Date(2025, 4, 7).toISOString(), // 5/7/2025
-        description: 'Utility Bill - Electric I',
-        amount: 120.45,
+        id: Date.now() - 86400000,
+        accountId: parseInt(accountId),
+        amount: '-120.45',
+        description: 'Utility Bill - Electric Ireland',
+        category: 'utilities',
         type: 'debit',
-        balance: currentBalance -= 120.45,
-        reference: 'E001',
-        category: 'Utilities'
+        reference: 'EI001',
+        timestamp: new Date(Date.now() - 86400000).toISOString()
       },
       {
-        id: 'TSC001',
-        date: new Date(2025, 4, 7).toISOString(), // 5/7/2025
+        id: Date.now() - 172800000,
+        accountId: parseInt(accountId),
+        amount: '-74.34',
         description: 'Grocery Store - Tesco',
-        amount: 74.34,
+        category: 'groceries',
         type: 'debit',
-        balance: currentBalance -= 74.34,
         reference: 'TSC001',
-        category: 'Groceries'
+        timestamp: new Date(Date.now() - 172800000).toISOString()
       },
       {
-        id: 'SAL001',
-        date: new Date(2025, 4, 17).toISOString(), // 1/7/2025
+        id: Date.now() - 259200000,
+        accountId: parseInt(accountId),
+        amount: '3200.00',
         description: 'Salary Payment',
-        amount: 6200.00,
+        category: 'income',
         type: 'credit',
-        balance: currentBalance += 6200.00,
         reference: 'SAL001',
-        category: 'Income'
-      },
-      {
-        id: 'AMZ001',
-        date: new Date(2025, 4, 30).toISOString(), // 5/30/2025
-        description: 'Online Purchase - Amazon',
-        amount: 65.99,
-        type: 'debit',
-        balance: currentBalance -= 65.99,
-        reference: 'AMZ001',
-        category: 'Shopping'
+        timestamp: new Date(Date.now() - 259200000).toISOString()
       }
     ];
+  }
 
-    // Filter transactions to match the requested date range
-    const filteredTransactions = realTransactions
-      .filter(transaction => {
-        const transactionDate = new Date(transaction.date);
-        return transactionDate >= startDate && transactionDate <= endDate;
-      })
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()); // Chronological order
-
-    // Recalculate running balances in chronological order
-    let runningBalance = 6504.55; // Starting balance
-    const transactionsWithCorrectBalance = filteredTransactions.map(tx => {
-      if (tx.type === 'debit') {
-        runningBalance -= tx.amount;
-      } else {
-        runningBalance += tx.amount;
-      }
-      return { ...tx, balance: runningBalance };
-    });
-
-    // Return in reverse chronological order for statement display (newest first)
-    const finalTransactions = transactionsWithCorrectBalance.reverse();
-
-    console.log(`Returning ${finalTransactions.length} real transactions for statement`);
-    return finalTransactions;
+  private getAccountStartingBalance(accountId: string): number {
+    // Return realistic starting balance based on account
+    const balanceMap: Record<string, number> = {
+      "1": 6504.55, // Current Account
+      "2": 1250.00, // Credit Card
+      "3": 15750.25, // Savings Account
+    };
+    return balanceMap[accountId] || 2000.00;
   }
 }

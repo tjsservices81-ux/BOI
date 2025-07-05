@@ -1654,20 +1654,37 @@ No transfers found yet on your account.`;
     }
   });
 
-  // Bank Statement Generation API
+  // Bank Statement Generation API - Now accepts real transaction data
   app.post("/api/generate-statement", async (req, res) => {
     try {
       const statementSchema = z.object({
         accountId: z.union([z.string(), z.number()]).transform(val => String(val)),
         startDate: z.string(),
         endDate: z.string(),
-        dateRange: z.enum(['1week', '2weeks', '1month'])
+        dateRange: z.enum(['1week', '2weeks', '1month']),
+        // Accept real user transactions from frontend
+        userTransactions: z.array(z.object({
+          id: z.union([z.string(), z.number()]),
+          accountId: z.number(),
+          amount: z.string(),
+          description: z.string(),
+          category: z.string(),
+          type: z.enum(['credit', 'debit']),
+          reference: z.string().optional(),
+          timestamp: z.string(),
+          recipientName: z.string().optional(),
+          paymentMethod: z.string().optional(),
+          recipientAccountNumber: z.string().optional(),
+          recipientSortCode: z.string().optional(),
+          iban: z.string().optional(),
+          bicCode: z.string().optional()
+        })).optional()
       });
 
       const statementRequest = statementSchema.parse(req.body);
       const statementService = new StatementService();
       
-      // Generate PDF statement
+      // Generate PDF statement with real transaction data
       const pdfBuffer = await statementService.generateStatement(statementRequest);
       
       // Set response headers for PDF download
