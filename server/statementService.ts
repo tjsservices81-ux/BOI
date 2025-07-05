@@ -226,9 +226,13 @@ export class StatementService {
       .filter(t => t.type === 'debit')
       .reduce((sum, t) => sum + t.amount, 0);
     
-    // Use real account balance data
+    // Use real account balance data and handle app reset scenarios
     const closingBalance = parseFloat(account.balance.replace(/,/g, ''));
-    const openingBalance = closingBalance + totalDebits - totalCredits;
+    
+    // If no transactions (app reset or new account), opening and closing balance are the same
+    const openingBalance = transactions.length > 0 ? 
+      closingBalance + totalDebits - totalCredits : 
+      closingBalance;
     
     doc.fontSize(14)
        .fillColor('#1a5490')
@@ -286,6 +290,30 @@ export class StatementService {
        .stroke();
     
     currentY += 10;
+    
+    // Handle empty transaction list (app reset or new account)
+    if (transactions.length === 0) {
+      currentY += 20;
+      doc.fontSize(11)
+         .fillColor('#666666')
+         .font('Helvetica')
+         .text('No transactions found for the selected period.', 50, currentY);
+      
+      currentY += 15;
+      doc.fontSize(10)
+         .fillColor('#888888')
+         .font('Helvetica')
+         .text('This may indicate:', 50, currentY);
+      
+      currentY += 12;
+      doc.text('• Account was recently opened', 70, currentY);
+      currentY += 12;
+      doc.text('• No banking activity during this period', 70, currentY);
+      currentY += 12;
+      doc.text('• Application data was reset to defaults', 70, currentY);
+      
+      return;
+    }
     
     // Transaction rows
     doc.font('Helvetica').fontSize(9);
@@ -370,23 +398,27 @@ export class StatementService {
   }
 
   private async getAccountData(accountId: string, userAccounts?: any[]): Promise<Account> {
-    // Use real account data passed from frontend
-    if (userAccounts && userAccounts.length > 0) {
-      const selectedAccount = userAccounts.find(acc => acc.id.toString() === accountId);
-      if (selectedAccount) {
-        return {
-          id: accountId,
-          displayName: selectedAccount.displayName,
-          accountNumber: selectedAccount.accountNumber,
-          sortCode: selectedAccount.sortCode || "90-12-34",
-          balance: selectedAccount.balance,
-          accountType: selectedAccount.accountType
-        };
-      }
+    // Handle app reset scenarios - check for account data
+    if (!userAccounts || userAccounts.length === 0) {
+      throw new Error('No account data available. App may have been reset to defaults or user has no accounts configured.');
     }
-
-    // If no account data provided, throw error - no fallback data
-    throw new Error(`Account ${accountId} not found in user data. Real account data required.`);
+    
+    // Use real account data passed from frontend
+    const selectedAccount = userAccounts.find(acc => acc.id.toString() === accountId);
+    if (!selectedAccount) {
+      const availableIds = userAccounts.map(acc => acc.id).join(', ');
+      throw new Error(`Account ${accountId} not found. Available accounts: ${availableIds}. App may need to be restored from backup.`);
+    }
+    
+    // Return real account data
+    return {
+      id: accountId,
+      displayName: selectedAccount.displayName,
+      accountNumber: selectedAccount.accountNumber,
+      sortCode: selectedAccount.sortCode || "90-12-34",
+      balance: selectedAccount.balance,
+      accountType: selectedAccount.accountType
+    };
   }
 
   private async getTransactions(request: StatementRequest): Promise<StatementTransaction[]> {
@@ -409,9 +441,9 @@ export class StatementService {
           break;
       }
 
-      // Only use real transaction data - no mock data fallback
+      // Handle app reset and new account scenarios properly
       if (!request.userTransactions || request.userTransactions.length === 0) {
-        console.log('No real transaction data provided - returning empty statement');
+        console.log('No transaction history found - app may have been reset to defaults or account has no activity');
         return [];
       }
       

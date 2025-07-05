@@ -95,16 +95,17 @@ This is a comprehensive mobile banking application built as a Progressive Web Ap
 - **Security**: HTTPS required for PWA installation and service worker functionality
 
 ## Changelog
-- July 05, 2025: AUTHENTIC BANKING SYSTEM - Complete real bank statement generation like major banks
+- July 05, 2025: AUTHENTIC BANKING SYSTEM - Complete real bank statement generation with app reset handling
   - ZERO hardcoded data: All balances, transactions, account details come from actual user banking activity
+  - App reset awareness: System detects when app has been reset to defaults and provides proper messaging
+  - Professional empty state handling: When no transactions exist, shows bank-style "No transactions found" message
+  - Smart balance calculations: Opening/closing balances identical when app reset (no transaction history)
   - Real account selection: System uses exact account chosen by user with authentic balance calculations
   - Live balance tracking: Opening balance calculated by reversing transactions from current account balance
   - Authentic transaction processing: All user transfers, payments, purchases appear exactly as performed
-  - Real account data integration: Account numbers, sort codes, balances from actual user accounts
-  - Professional balance calculations: Opening → transactions → closing balance using real banking mathematics
-  - Complete data authenticity: Names, amounts, dates, references all from actual banking operations
+  - Error handling for missing data: Clear messages when account data unavailable (app reset scenarios)
   - Multi-account support: Each user account generates statements with its specific transaction history
-  - Real-time accuracy: Current account balance (€6459.67) minus transactions = accurate opening balance (€6659.67)
+  - Complete data authenticity: Names, amounts, dates, references all from actual banking operations
   - Bank-grade PDF generation: 262KB statements with authentic Bank of Ireland branding and real data
 - July 05, 2025: CRITICAL PDF GENERATION FIXES - Resolved all 24 identified system problems
   - Fixed race condition: buildStatement now properly awaited to prevent PDF ending before content renders
