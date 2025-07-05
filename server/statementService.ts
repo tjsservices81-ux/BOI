@@ -253,12 +253,20 @@ export class StatementService {
        .text('Total Debits:', 70, startY + 85)
        .text('Closing Balance:', 70, startY + 105);
     
-    // Right-align amounts matching your statement format
-    doc.font('Helvetica-Bold')
-       .text(`€\u00A0${openingBalance.toFixed(2)}`, 450, startY + 45)
-       .text(`€\u00A0${totalCredits.toFixed(2)}`, 450, startY + 65)
-       .text(`€\u00A0${totalDebits.toFixed(2)}`, 450, startY + 85)
-       .text(`€\u00A0${closingBalance.toFixed(2)}`, 450, startY + 105);
+    // Right-align amounts with explicit euro symbol positioning
+    doc.font('Helvetica-Bold');
+    
+    // Opening Balance with spaced euro symbol
+    doc.text('€', 450, startY + 45).text(openingBalance.toFixed(2), 460, startY + 45);
+    
+    // Total Credits with spaced euro symbol  
+    doc.text('€', 450, startY + 65).text(totalCredits.toFixed(2), 460, startY + 65);
+    
+    // Total Debits with spaced euro symbol
+    doc.text('€', 450, startY + 85).text(totalDebits.toFixed(2), 460, startY + 85);
+    
+    // Closing Balance with spaced euro symbol
+    doc.text('€', 450, startY + 105).text(closingBalance.toFixed(2), 460, startY + 105);
   }
 
   private addTransactionDetails(doc: PDFKit.PDFDocument, transactions: StatementTransaction[]) {
@@ -356,9 +364,6 @@ export class StatementService {
       
       // Format and render the complete transaction row
       const date = new Date(transaction.date).toLocaleDateString('en-US');
-      const amount = transaction.type === 'credit' ? 
-        `+€\u00A0${transaction.amount.toFixed(2)}` : 
-        `-€\u00A0${transaction.amount.toFixed(2)}`;
       
       // Render all fields of this transaction on the same line
       doc.fillColor('#333333')
@@ -375,10 +380,17 @@ export class StatementService {
         doc.fontSize(9).text(reference, 300, currentY);
       }
       
-      // Continue with standard font size for amount and balance
-      doc.fontSize(9)
-         .text(amount, 400, currentY)
-         .text(`€\u00A0${transaction.balance.toFixed(2)}`, 480, currentY);
+      // Render amount with proper euro symbol spacing
+      doc.fontSize(9);
+      if (transaction.type === 'credit') {
+        doc.text('+€', 400, currentY).text(transaction.amount.toFixed(2), 413, currentY);
+      } else {
+        doc.text('-€', 400, currentY).text(transaction.amount.toFixed(2), 413, currentY);
+      }
+      
+      // Render euro symbol and balance with explicit spacing
+      doc.text('€', 480, currentY)
+         .text(transaction.balance.toFixed(2), 490, currentY);
       
       currentY += 20;
     }
