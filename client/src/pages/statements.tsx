@@ -11,19 +11,24 @@ export default function Statements() {
   const [generationComplete, setGenerationComplete] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [accounts, setAccounts] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const currentUser = UserDataManager.getCurrentUser();
     setUser(currentUser);
     
-    // Load user's bank accounts
-    const userAccounts = UserDataManager.getUserData('bankAccounts', []);
+    // Load user's bank accounts with proper null checking
+    const userAccounts = UserDataManager.getUserData('bankAccounts', []) || [];
+    console.log('📊 User accounts loaded:', userAccounts.length);
     setAccounts(userAccounts);
     
     // Set default account to the first account
-    if (userAccounts.length > 0 && selectedAccountId === null) {
+    if (userAccounts && userAccounts.length > 0 && selectedAccountId === null) {
       setSelectedAccountId(userAccounts[0].id);
     }
+    
+    // Mark loading as complete
+    setIsLoading(false);
   }, []);
 
   const getStatementPeriod = () => {
@@ -85,17 +90,19 @@ export default function Statements() {
     try {
       const { startDate, endDate } = getStatementPeriod();
       
-      // Get the selected account
-      const selectedAccount = accounts.find((acc: any) => acc.id === selectedAccountId);
+      // Get the selected account with null safety
+      const selectedAccount = accounts && accounts.find((acc: any) => acc && acc.id === selectedAccountId);
       
       if (!selectedAccount) {
-        alert('Selected account not found for statement generation');
+        console.error('❌ Selected account not found for statement generation');
+        alert('Unable to find the selected account. Please refresh and try again.');
+        setIsGenerating(false);
         return;
       }
 
-      // Ensure transaction data exists for this account
-      const allTransactionsBefore = UserDataManager.getUserData('bankTransactions', []);
-      const accountTransactionsBefore = allTransactionsBefore.filter((t: any) => t.accountId === selectedAccountId);
+      // Ensure transaction data exists for this account with null safety
+      const allTransactionsBefore = UserDataManager.getUserData('bankTransactions', []) || [];
+      const accountTransactionsBefore = allTransactionsBefore.filter((t: any) => t && t.accountId === selectedAccountId);
       
       if (accountTransactionsBefore.length === 0) {
         console.log('No transactions found for account', selectedAccountId, '- generating realistic transaction history');
@@ -271,6 +278,18 @@ export default function Statements() {
     }
   };
 
+  // Show loading state while data is being loaded
+  if (isLoading) {
+    return (
+      <div className="page-container page-fade-in h-screen bg-gray-50 flex flex-col items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#126987] mx-auto mb-4"></div>
+          <p className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Loading statements...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="page-container page-fade-in h-screen bg-gray-50 flex flex-col overflow-hidden">
       {/* Header */}
@@ -328,11 +347,15 @@ export default function Statements() {
                 style={{ fontFamily: 'OpenSans, sans-serif' }}
               >
                 <option value="">Choose an account...</option>
-                {accounts.map((account) => (
-                  <option key={account.id} value={account.id}>
-                    {account.displayName} - {account.accountNumber} - €{account.balance}
-                  </option>
-                ))}
+                {accounts && accounts.length > 0 ? accounts.map((account) => (
+                  account ? (
+                    <option key={account.id} value={account.id}>
+                      {account.displayName} - {account.accountNumber} - €{account.balance}
+                    </option>
+                  ) : null
+                )) : (
+                  <option value="" disabled>No accounts available</option>
+                )}
               </select>
             </div>
 

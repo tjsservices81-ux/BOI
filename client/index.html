@@ -542,21 +542,24 @@
         const loader = document.getElementById('loading-screen');
         
         try {
-          // Check if user already has access granted
-          const hasAccess = localStorage.getItem('accessGranted');
-          if (hasAccess === 'true') {
-            hideLoadingScreen();
-            return;
-          }
-
-          // Check for access code in URL
+          // Check for access code in URL first (always process URL codes)
           const urlParams = new URLSearchParams(window.location.search);
           const accessCode = urlParams.get('access');
           
-          if (!accessCode) {
-            // No access code and no stored access - show "Not available"
-            showAccessDenied("Not available");
-            return;
+          if (accessCode) {
+            console.log('🔑 Processing access code from URL:', accessCode);
+          } else {
+            // Check if user already has stored access
+            const hasAccess = localStorage.getItem('accessGranted');
+            if (hasAccess === 'true') {
+              console.log('✅ User has existing access');
+              hideLoadingScreen();
+              return;
+            } else {
+              // No access code and no stored access - show "Not available"
+              showAccessDenied("Not available");
+              return;
+            }
           }
 
           // Verify access code with backend
