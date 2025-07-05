@@ -262,10 +262,10 @@ export class StatementService {
   }
 
   private addTransactionDetails(doc: PDFKit.PDFDocument, transactions: StatementTransaction[]) {
-    const startY = 650; // Move transaction section higher up
+    const startY = 680; // Position after Account Summary (560+125=685)
     const pageHeight = 842; // A4 page height
-    const bottomMargin = 80; // Space for footer
-    const maxY = pageHeight - bottomMargin; // Maximum Y before footer (762)
+    const bottomMargin = 50; // Reduced space for footer to maximize first page
+    const maxY = pageHeight - bottomMargin; // Maximum Y before footer (792)
     const rowHeight = 20; // Height per transaction row
     
     let currentY = startY;
