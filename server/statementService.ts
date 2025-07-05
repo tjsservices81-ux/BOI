@@ -420,7 +420,7 @@ export class StatementService {
       id: accountId,
       displayName: selectedAccount.displayName,
       accountNumber: selectedAccount.accountNumber,
-      sortCode: selectedAccount.sortCode || "90-78-68",
+      sortCode: "90-78-68", // Always use this sort code for statements
       balance: selectedAccount.balance,
       accountType: selectedAccount.accountType
     };
