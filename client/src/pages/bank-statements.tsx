@@ -165,7 +165,7 @@ export default function BankStatements() {
         borderTopRightRadius: '1.5rem',
         marginTop: '-1.5rem'
       }}>
-        <div className="p-6 space-y-6 pb-32">
+        <div className="p-6 space-y-6 pb-40">
           
           {/* Account Selection */}
           <div className="bg-white rounded-2xl p-6 shadow-sm">
