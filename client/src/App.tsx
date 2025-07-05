@@ -32,6 +32,7 @@ import BillPay from "@/pages/bill-pay";
 import TransactionHistoryWorking from "@/pages/transaction-history-working";
 
 import Statements from "@/pages/statements";
+import BankStatements from "@/pages/bank-statements";
 import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
 
@@ -511,6 +512,11 @@ function AppRoutes() {
             </ProtectedRoute>
           </Route>
 
+          <Route path="/bank-statements">
+            <ProtectedRoute>
+              <BankStatements />
+            </ProtectedRoute>
+          </Route>
           <Route path="/profile">
             <ProtectedRoute>
               <Profile />

@@ -12,6 +12,7 @@ import { isDeviceBlocked, addDeviceSession, isDeviceInPanicMode, isCustomerInPan
 import { isAccountActiveOnOtherDevice, setUserDeviceSession, removeUserDeviceSession, getUserDeviceSession, isCurrentDeviceAuthorized } from "./deviceExclusiveAuth";
 import { addUserSession, removeUserSession, sessionTrackingMiddleware, isSessionValid } from "./sessionManager";
 import { sendTransferConfirmation, type TransferConfirmationDetails } from "./emailService";
+import { StatementService } from "./statementService";
 import Database from "@replit/database";
 
 // Initialize Replit Database for access codes
@@ -1650,6 +1651,38 @@ No transfers found yet on your account.`;
         success: false, 
         message: "Failed to validate account status" 
       });
+    }
+  });
+
+  // Bank Statement Generation API
+  app.post("/api/generate-statement", async (req, res) => {
+    try {
+      const statementSchema = z.object({
+        accountId: z.string(),
+        startDate: z.string(),
+        endDate: z.string(),
+        dateRange: z.enum(['1week', '2weeks', '1month'])
+      });
+
+      const statementRequest = statementSchema.parse(req.body);
+      const statementService = new StatementService();
+      
+      // Generate PDF statement
+      const pdfBuffer = await statementService.generateStatement(statementRequest);
+      
+      // Set response headers for PDF download
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Length', pdfBuffer.length);
+      res.setHeader('Content-Disposition', `attachment; filename="BOI_Statement_${statementRequest.accountId}_${statementRequest.dateRange}.pdf"`);
+      
+      // Send PDF buffer
+      res.send(pdfBuffer);
+    } catch (error) {
+      console.error('Statement generation failed:', error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid statement request data" });
+      }
+      res.status(500).json({ message: "Failed to generate statement" });
     }
   });
 

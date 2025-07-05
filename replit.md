@@ -95,6 +95,18 @@ This is a comprehensive mobile banking application built as a Progressive Web Ap
 - **Security**: HTTPS required for PWA installation and service worker functionality
 
 ## Changelog
+- July 04, 2025: BANK STATEMENTS FEATURE - Implemented comprehensive PDF statement generation system
+  - Created professional Bank of Ireland statement generation using provided template (IMG_1972_1751725687784.png)
+  - Replaced "App Information" button in More page with "Bank Statements" feature
+  - Multi-page PDF support with automatic pagination for large transaction lists
+  - Date range filtering: 1 week, 2 weeks, 1 month options
+  - Official Bank of Ireland branding, contact info, and professional formatting
+  - Dynamic account information display with sort codes and account numbers
+  - Transaction categorization and running balance calculations
+  - Downloadable PDF files with proper Bank of Ireland styling and headers
+  - API endpoint: POST /api/generate-statement with account selection and date filtering
+  - Template-based generation ensuring authentic Bank of Ireland document appearance
+  - Page route: /bank-statements with full account selection and date range UI
 - July 04, 2025: PDF ENHANCEMENT - Added IBAN and BIC display for SEPA transfer confirmations
   - PDF generation now includes IBAN and BIC codes for SEPA transfers alongside existing account/sort code for UK transfers
   - Professional formatting with proper labels and Bank of Ireland styling
