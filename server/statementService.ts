@@ -262,25 +262,34 @@ export class StatementService {
   }
 
   private addTransactionDetails(doc: PDFKit.PDFDocument, transactions: StatementTransaction[]) {
-    const startY = 680; // Position after Account Summary (560+125=685)
-    const pageHeight = 842; // A4 page height
-    const bottomMargin = 50; // Reduced space for footer to maximize first page
-    const maxY = pageHeight - bottomMargin; // Maximum Y before footer (792)
-    const rowHeight = 20; // Height per transaction row
+    let currentY = 690; // Moved much lower to avoid overlap
     
-    let currentY = startY;
-    
-    // Add transaction section header
     doc.fontSize(14)
        .fillColor('#1a5490')
        .font('Helvetica-Bold')
        .text('Transaction Details', 50, currentY);
     
-    currentY += 30; // currentY = 680
+    currentY += 30;
     
-    // Add table headers
-    this.addTableHeaders(doc, currentY);
-    currentY += 25; // Space for headers and line (currentY = 705)
+    // Table headers matching your statement format
+    doc.fontSize(10)
+       .fillColor('#333333')
+       .font('Helvetica-Bold')
+       .text('Date', 50, currentY)
+       .text('Description', 120, currentY)
+       .text('Reference', 300, currentY)
+       .text('Amount', 400, currentY)
+       .text('Balance', 480, currentY);
+    
+    // Header line
+    currentY += 15;
+    doc.moveTo(50, currentY)
+       .lineTo(545, currentY)
+       .strokeColor('#cccccc')
+       .lineWidth(1)
+       .stroke();
+    
+    currentY += 10;
     
     // Handle empty transaction list (app reset or new account)
     if (transactions.length === 0) {
@@ -306,53 +315,46 @@ export class StatementService {
       return;
     }
     
-    // Process transactions - render as many as fit on first page
+    // Transaction rows
     doc.font('Helvetica').fontSize(9);
-    let hasCreatedNewPage = false;
     
-    for (let i = 0; i < transactions.length; i++) {
-      const transaction = transactions[i];
-      
-      // Check if current transaction will fit on current page
-      // Only create new page if we would exceed the limit AND it's not the first transaction ever
-      if (currentY + rowHeight > maxY) {
-        if (!hasCreatedNewPage) {
-          // Create new page
-          doc.addPage();
-          hasCreatedNewPage = true;
-          currentY = 50;
-          
-          // Add continuation header
-          doc.fontSize(14)
-             .fillColor('#1a5490')
-             .font('Helvetica-Bold')
-             .text('Transaction Details (continued)', 50, currentY);
-          
-          currentY += 30;
-          this.addTableHeaders(doc, currentY);
-          currentY += 25;
-          doc.font('Helvetica').fontSize(9);
-        } else {
-          // Already on continuation page, check if we need another page
-          if (currentY + rowHeight > maxY) {
-            doc.addPage();
-            currentY = 50;
-            
-            // Add continuation header
-            doc.fontSize(14)
-               .fillColor('#1a5490')
-               .font('Helvetica-Bold')
-               .text('Transaction Details (continued)', 50, currentY);
-            
-            currentY += 30;
-            this.addTableHeaders(doc, currentY);
-            currentY += 25;
-            doc.font('Helvetica').fontSize(9);
-          }
-        }
+    for (const transaction of transactions) {
+      // Check if we need a new page (allow more room on first page)
+      // Standard A4 page height is 842 points, leave 50 points margin at bottom
+      if (currentY > 790) {
+        doc.addPage();
+        currentY = 50;
+        
+        // Add header on new page
+        doc.fontSize(14)
+           .fillColor('#1a5490')
+           .font('Helvetica-Bold')
+           .text('Transaction Details (continued)', 50, currentY);
+        
+        currentY += 40;
+        
+        // Repeat table headers
+        doc.fontSize(10)
+           .fillColor('#333333')
+           .font('Helvetica-Bold')
+           .text('Date', 50, currentY)
+           .text('Description', 120, currentY)
+           .text('Reference', 300, currentY)
+           .text('Amount', 400, currentY)
+           .text('Balance', 480, currentY);
+        
+        currentY += 15;
+        doc.moveTo(50, currentY)
+           .lineTo(545, currentY)
+           .strokeColor('#cccccc')
+           .lineWidth(1)
+           .stroke();
+        
+        currentY += 10;
+        doc.font('Helvetica').fontSize(9);
       }
       
-      // Render transaction row
+      // Format date to match your statement (5/7/2025 format)
       const date = new Date(transaction.date).toLocaleDateString('en-US');
       const amount = transaction.type === 'credit' ? 
         `+€${transaction.amount.toFixed(2)}` : 
@@ -365,29 +367,15 @@ export class StatementService {
          .text(amount, 400, currentY)
          .text(`€${transaction.balance.toFixed(2)}`, 480, currentY);
       
-      currentY += rowHeight;
+      currentY += 20;
     }
     
-    console.log(`Successfully rendered ${transactions.length} transactions in PDF - filled first page completely`);
-  }
-  
-  private addTableHeaders(doc: PDFKit.PDFDocument, y: number) {
-    doc.fontSize(10)
-       .fillColor('#333333')
-       .font('Helvetica-Bold')
-       .text('Date', 50, y)
-       .text('Description', 120, y)
-       .text('Reference', 300, y)
-       .text('Amount', 400, y)
-       .text('Balance', 480, y);
-    
-    // Header line
-    const lineY = y + 15;
-    doc.moveTo(50, lineY)
-       .lineTo(545, lineY)
-       .strokeColor('#cccccc')
-       .lineWidth(1)
-       .stroke();
+    if (transactions.length === 0) {
+      doc.fillColor('#666666')
+         .text('No transactions found for this period.', 50, currentY);
+    } else {
+      console.log(`Successfully rendered ${transactions.length} transactions in PDF`);
+    }
   }
 
   private addFooter(doc: PDFKit.PDFDocument) {
