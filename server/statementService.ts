@@ -392,7 +392,16 @@ export class StatementService {
       doc.text('€', 480, currentY)
          .text(transaction.balance.toFixed(2), 490, currentY);
       
-      currentY += 20;
+      currentY += 15;
+      
+      // Add horizontal divider line between transaction rows
+      doc.moveTo(50, currentY)
+         .lineTo(545, currentY)
+         .strokeColor('#eeeeee')
+         .lineWidth(0.5)
+         .stroke();
+      
+      currentY += 5;
     }
     
     if (transactions.length === 0) {
