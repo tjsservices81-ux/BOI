@@ -31,7 +31,6 @@ import Transfer from "@/pages/transfer";
 import BillPay from "@/pages/bill-pay";
 import TransactionHistoryWorking from "@/pages/transaction-history-working";
 
-import Statements from "@/pages/statements";
 import BankStatements from "@/pages/bank-statements";
 import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
@@ -501,11 +500,7 @@ function AppRoutes() {
               <Insights />
             </ProtectedRoute>
           </Route>
-          <Route path="/statements">
-            <ProtectedRoute>
-              <Statements />
-            </ProtectedRoute>
-          </Route>
+
           <Route path="/transactions/:accountId">
             <ProtectedRoute>
               <TransactionHistoryWorking />

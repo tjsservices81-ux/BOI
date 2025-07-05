@@ -10,7 +10,7 @@ interface StatementRequest {
   dateRange: string;
 }
 
-interface Transaction {
+interface StatementTransaction {
   id: string;
   date: string;
   description: string;
@@ -21,13 +21,15 @@ interface Transaction {
   category?: string;
 }
 
+
+
 interface Account {
   id: string;
-  name: string;
+  displayName: string;
   accountNumber: string;
   sortCode: string;
   balance: string;
-  type: string;
+  accountType: string;
 }
 
 export class StatementService {
@@ -142,10 +144,10 @@ export class StatementService {
     doc.fontSize(11)
        .fillColor('#333333')
        .font('Helvetica')
-       .text(`Account Name: ${account.name}`, 50, startY + 25)
+       .text(`Account Name: ${account.displayName}`, 50, startY + 25)
        .text(`Account Number: ${account.accountNumber}`, 50, startY + 45)
        .text(`Sort Code: ${account.sortCode}`, 50, startY + 65)
-       .text(`Account Type: ${account.type}`, 50, startY + 85);
+       .text(`Account Type: ${account.accountType}`, 50, startY + 85);
     
     // Statement date
     const statementDate = new Date().toLocaleDateString('en-IE', {
@@ -175,7 +177,7 @@ export class StatementService {
        .text(`From: ${startDate} to ${endDate}`, 50, startY + 25);
   }
 
-  private addAccountSummary(doc: PDFKit.PDFDocument, account: Account, transactions: Transaction[]) {
+  private addAccountSummary(doc: PDFKit.PDFDocument, account: Account, transactions: StatementTransaction[]) {
     const startY = 320;
     
     // Calculate totals
@@ -217,7 +219,7 @@ export class StatementService {
        .text(`€${account.balance}`, 450, startY + 105);
   }
 
-  private addTransactionDetails(doc: PDFKit.PDFDocument, transactions: Transaction[]) {
+  private addTransactionDetails(doc: PDFKit.PDFDocument, transactions: StatementTransaction[]) {
     let currentY = 460;
     
     doc.fontSize(14)
@@ -331,27 +333,27 @@ export class StatementService {
     const accountMap: Record<string, Account> = {
       "1": {
         id: "1",
-        name: "Current Account",
+        displayName: "Current Account",
         accountNumber: "12345091",
         sortCode: "90-12-34",
         balance: "2,450.67",
-        type: "Current Account"
+        accountType: "current"
       },
       "2": {
         id: "2", 
-        name: "Credit Card",
+        displayName: "Credit Card",
         accountNumber: "12341820",
         sortCode: "90-12-34",
         balance: "1,250.00",
-        type: "Credit Card"
+        accountType: "credit"
       },
       "3": {
         id: "3",
-        name: "Savings Account", 
+        displayName: "Savings Account", 
         accountNumber: "12340978",
         sortCode: "90-12-34",
         balance: "15,750.25",
-        type: "Savings Account"
+        accountType: "savings"
       }
     };
 
@@ -360,24 +362,24 @@ export class StatementService {
       // Default account if ID not found
       return {
         id: accountId,
-        name: "Current Account",
+        displayName: "Current Account",
         accountNumber: "12345678",
         sortCode: "90-12-34", 
         balance: "2,450.67",
-        type: "Current Account"
+        accountType: "current"
       };
     }
 
     return account;
   }
 
-  private async getTransactions(request: StatementRequest): Promise<Transaction[]> {
+  private async getTransactions(request: StatementRequest): Promise<StatementTransaction[]> {
     const startDate = new Date(request.startDate);
     const endDate = new Date(request.endDate);
     
     // Generate sample transactions for demonstration
     // In production, this would fetch from your actual database
-    const sampleTransactions: Transaction[] = [
+    const sampleTransactions: StatementTransaction[] = [
       {
         id: 'tx001',
         date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),

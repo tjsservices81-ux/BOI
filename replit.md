@@ -95,12 +95,15 @@ This is a comprehensive mobile banking application built as a Progressive Web Ap
 - **Security**: HTTPS required for PWA installation and service worker functionality
 
 ## Changelog
-- July 05, 2025: BANK STATEMENTS FIX - Resolved account ID validation issues in PDF statement generation
-  - Fixed Zod schema to accept both numeric and string account IDs with automatic conversion
-  - Updated frontend account data structure alignment with backend expectations
-  - Enhanced server-side account mapping with realistic Bank of Ireland details (sort codes, account numbers)
-  - Confirmed successful PDF generation (259KB professional statements) via API testing
-  - Bank Statements feature now fully functional with proper account ID handling
+- July 05, 2025: COMPREHENSIVE SYSTEM FIXES - Resolved all naming and interface inconsistencies
+  - Fixed StatementService Account interface: changed `name` to `displayName`, `type` to `accountType`
+  - Added sortCode field to SharedSchema accounts table with default "90-12-34"
+  - Removed duplicate/conflicting statements page (kept bank-statements.tsx, removed statements.tsx)
+  - Cleaned up unused imports and routes in App.tsx to eliminate component conflicts
+  - Standardized Transaction interfaces: created StatementTransaction for PDF generation
+  - Fixed all account data structure mismatches between frontend and backend
+  - Confirmed API working perfectly: 200 status, 259KB PDFs for all account types
+  - Bank Statements feature fully functional with proper naming consistency throughout system
 - July 04, 2025: BANK STATEMENTS FEATURE - Implemented comprehensive PDF statement generation system
   - Created professional Bank of Ireland statement generation using provided template (IMG_1972_1751725687784.png)
   - Replaced "App Information" button in More page with "Bank Statements" feature
