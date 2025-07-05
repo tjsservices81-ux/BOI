@@ -92,11 +92,15 @@ export default function BankStatements() {
 
       if (response.ok) {
         const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
         
-        // Store PDF URL for viewing in iframe
-        setPdfUrl(url);
-        setShowPdfViewer(true);
+        // Convert blob to data URL for better compatibility with iframes
+        const reader = new FileReader();
+        reader.onload = () => {
+          const dataUrl = reader.result as string;
+          setPdfUrl(dataUrl);
+          setShowPdfViewer(true);
+        };
+        reader.readAsDataURL(blob);
 
         // Reset generation state
         setTimeout(() => {
@@ -131,10 +135,7 @@ export default function BankStatements() {
 
   const closePdfViewer = () => {
     setShowPdfViewer(false);
-    if (pdfUrl) {
-      window.URL.revokeObjectURL(pdfUrl);
-      setPdfUrl(null);
-    }
+    setPdfUrl(null);
   };
 
   const selectedAccountData = accounts.find(acc => String(acc.id) === selectedAccount);
