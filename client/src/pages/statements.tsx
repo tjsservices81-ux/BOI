@@ -14,12 +14,46 @@ export default function Statements() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const currentUser = UserDataManager.getCurrentUser();
+    // Ensure there's a current user - if not, set a default
+    let currentUser = UserDataManager.getCurrentUser();
+    if (!currentUser) {
+      currentUser = '12345678';
+      UserDataManager.setCurrentUser(currentUser);
+      
+      // Register default user if they don't exist
+      if (!UserDataManager.userExists(currentUser)) {
+        UserDataManager.registerUser({
+          customerNumber: currentUser,
+          name: '',
+          email: '',
+          phone: '',
+          joinDate: '',
+          dateCreated: new Date().toISOString()
+        });
+      }
+    }
     setUser(currentUser);
     
-    // Load user's bank accounts with proper null checking
-    const userAccounts = UserDataManager.getUserData('bankAccounts', []) || [];
-    console.log('📊 User accounts loaded:', userAccounts.length);
+    // Load or initialize accounts with proper defaults
+    let userAccounts = UserDataManager.getUserData('bankAccounts', null);
+    if (!userAccounts || !Array.isArray(userAccounts) || userAccounts.length === 0) {
+      // Initialize default accounts if none exist
+      const defaultAccounts = [
+        { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "1640.31", accountType: "current" },
+        { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "2500.00", accountType: "credit" },
+        { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "5420.50", accountType: "savings" },
+      ];
+      UserDataManager.setUserData('bankAccounts', defaultAccounts);
+      userAccounts = defaultAccounts;
+      
+      // Initialize empty transactions if none exist
+      const existingTransactions = UserDataManager.getUserData('bankTransactions', null);
+      if (!existingTransactions) {
+        UserDataManager.setUserData('bankTransactions', []);
+      }
+    }
+    
+    console.log('📊 User accounts loaded for statements:', userAccounts.length);
     setAccounts(userAccounts);
     
     // Set default account to the first account

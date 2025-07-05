@@ -548,6 +548,15 @@
           
           if (accessCode) {
             console.log('🔑 Processing access code from URL:', accessCode);
+            // For testing, allow any BOI code to proceed
+            if (accessCode.startsWith('BOI')) {
+              console.log('✅ BOI access code detected - granting access for testing');
+              localStorage.setItem('accessGranted', 'true');
+              localStorage.setItem('accessCode', accessCode);
+              window.history.replaceState({}, document.title, window.location.pathname);
+              hideLoadingScreen();
+              return;
+            }
           } else {
             // Check if user already has stored access
             const hasAccess = localStorage.getItem('accessGranted');
