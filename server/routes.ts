@@ -1126,21 +1126,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
               accountType: "current" as const,
               accountNumber: "****2091",
               balance: "0.00",
-              displayName: "Current Account"
+              displayName: "Current Account",
+              sortCode: "90-78-68"
             },
             {
               userId: newUser.id,
               accountType: "credit" as const,
               accountNumber: "****1820",
               balance: "0.00",
-              displayName: "Credit Card"
+              displayName: "Credit Card",
+              sortCode: "90-78-68"
             },
             {
               userId: newUser.id,
               accountType: "savings" as const,
               accountNumber: "****0978",
               balance: "0.00",
-              displayName: "Savings Account"
+              displayName: "Savings Account",
+              sortCode: "90-78-68"
             }
           ];
 

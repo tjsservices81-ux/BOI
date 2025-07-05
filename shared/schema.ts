@@ -22,7 +22,7 @@ export const accounts = pgTable("accounts", {
   userId: integer("user_id").notNull(),
   accountType: text("account_type").notNull(), // 'current', 'savings'
   accountNumber: text("account_number").notNull(),
-  sortCode: text("sort_code").notNull().default("90-12-34"),
+  sortCode: text("sort_code").notNull().default("90-78-68"),
   balance: decimal("balance", { precision: 10, scale: 2 }).notNull(),
   displayName: text("display_name").notNull(),
 });
