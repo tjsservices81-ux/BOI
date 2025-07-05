@@ -319,9 +319,10 @@ export class StatementService {
     doc.font('Helvetica').fontSize(9);
     
     for (const transaction of transactions) {
-      // Check if we need a new page (allow more room on first page)
+      // Check if we need a new page - only add if we actually need space for content
       // Standard A4 page height is 842 points, leave 50 points margin at bottom
-      if (currentY > 790) {
+      if (currentY + 20 > 790) { // +20 for transaction row height
+        console.log(`Adding new page at currentY: ${currentY} for transaction ${transaction.id}`);
         doc.addPage();
         currentY = 50;
         
@@ -381,6 +382,7 @@ export class StatementService {
   private addFooter(doc: PDFKit.PDFDocument) {
     const pageHeight = doc.page.height;
     const footerY = pageHeight - 100;
+    console.log(`Adding footer at page height: ${pageHeight}, footerY: ${footerY}`);
     
     // Footer line
     doc.moveTo(50, footerY)
