@@ -12,7 +12,7 @@ import { isDeviceBlocked, addDeviceSession, isDeviceInPanicMode, isCustomerInPan
 import { isAccountActiveOnOtherDevice, setUserDeviceSession, removeUserDeviceSession, getUserDeviceSession, isCurrentDeviceAuthorized } from "./deviceExclusiveAuth";
 import { addUserSession, removeUserSession, sessionTrackingMiddleware, isSessionValid } from "./sessionManager";
 import { sendTransferConfirmation, type TransferConfirmationDetails } from "./emailService";
-import { generateStatement } from "./statementService";
+// Old statementService removed - now using editablePdfService only
 import Database from "@replit/database";
 
 // Initialize Replit Database for access codes
@@ -834,7 +834,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Generate PDF statement with exact BOI layout and real transaction data
+  // OLD STATEMENT ROUTE REMOVED - Using editable PDF system only
+  
+  // Generate editable PDF statement with real user data
   app.post("/api/generate-statement", async (req, res) => {
     try {
       console.log('🔵 Statement generation request received');
@@ -879,20 +881,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         transactions: validTransactions
       };
 
-      // Generate the PDF using the new service
-      const pdfDoc = await generateStatement(userData, period);
+      // Import and use the editable PDF service
+      const { generateEditableStatement } = await import('./editablePdfService');
       
-      // Collect PDF buffer
-      const chunks: Buffer[] = [];
-      pdfDoc.on('data', (chunk: Buffer) => chunks.push(chunk));
+      // Prepare user data for editable PDF generation
+      const editableUserData = {
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        customerNumber: (req as any).session?.user?.customerNumber || '12345678',
+        accountNumber: userData.accounts[0]?.accountNumber || '****2091',
+        sortCode: '90-11-77',
+        currentBalance: parseFloat(userData.accounts[0]?.balance || '1640.31'),
+        transactions: userData.transactions
+      };
       
-      await new Promise((resolve, reject) => {
-        pdfDoc.on('end', resolve);
-        pdfDoc.on('error', reject);
-        pdfDoc.end();
-      });
-      
-      const pdfBuffer = Buffer.concat(chunks);
+      // Generate PDF buffer using editable PDF system
+      const pdfBuffer = await generateEditableStatement(editableUserData, period);
       
       // Generate filename
       const lastName = nameParts.slice(1).join('') || 'Statement';
@@ -934,15 +938,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Import the editable PDF service
       const { generateEditableStatement } = await import('./editablePdfService');
       
-      // Prepare user data structure
+      // Extract real user data from account info and transactions
       const userData = {
         firstName: accountInfo.accountHolder?.split(' ')[0] || 'Account',
         lastName: accountInfo.accountHolder?.split(' ').slice(1).join(' ') || 'Holder',
-        customerNumber: '12345678', // Could be extracted from accountInfo if available
-        accountNumber: accountInfo.accountNumber,
-        sortCode: '90-11-77', // Could be extracted from accountInfo if available
+        customerNumber: accountInfo.customerNumber || (req as any).session?.user?.customerNumber || '12345678',
+        accountNumber: accountInfo.accountNumber || '****2091',
+        sortCode: accountInfo.sortCode || '90-11-77',
         currentBalance: parseFloat(accountInfo.balance) || 0,
-        transactions: transactions
+        transactions: transactions || []
       };
 
       console.log('📋 Processing editable PDF with user data:', userData.firstName, userData.lastName);

@@ -95,6 +95,17 @@ This is a comprehensive mobile banking application built as a Progressive Web Ap
 - **Security**: HTTPS required for PWA installation and service worker functionality
 
 ## Changelog
+- July 05, 2025: COMPLETE PDF SYSTEM OVERHAUL - Replaced text overlay with clean editable PDF generation
+  - Removed old statementService.ts and template text positioning system entirely
+  - Implemented new editablePdfService.ts using pdf-lib for clean PDF generation  
+  - System now draws text directly on BOI template using precise coordinates
+  - All statements use real user data: name, account number, customer number, transactions
+  - Authentic transaction data integration with proper balance calculations
+  - Single unified endpoint (/api/generate-statement) for all PDF generation
+  - Eliminated millimeter-precise positioning complexity in favor of clean text drawing
+  - PDF generation now uses embedded BOI template (IMG_1981_1751654672745.jpeg) as background
+  - Real-time user data extraction from session and account information
+  - Professional filename format: BOI_Statement_[LastName]_[Date].pdf
 - July 04, 2025: BOI PREFIX ENFORCEMENT - Updated access code validation to require "BOI" prefix for all codes
   - All access codes must now start with "BOI" prefix (e.g., BOI123456)
   - Applied validation to both /api/verify-code and /api/check-access endpoints

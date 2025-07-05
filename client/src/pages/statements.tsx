@@ -207,8 +207,8 @@ export default function Statements() {
 
       console.log('🔵 Sending statement request with real data:', statementRequestData);
 
-      // Generate PDF with real transaction data
-      const response = await fetch('/api/generate-statement', {
+      // Generate PDF with real transaction data using editable PDF system
+      const response = await fetch('/api/generate-editable-statement', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
