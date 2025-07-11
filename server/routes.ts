@@ -72,8 +72,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log(`Manifest requested - Access code: ${accessCode || 'none'}, Start URL: ${startUrl}`);
     
     const manifest = {
-      "name": "BOI Mobile",
-      "short_name": "BOI Mobile", 
+      "name": "",
+      "short_name": "", 
       "description": "BOI Mobile Banking Application",
       "start_url": startUrl,
       "display": "standalone",
