@@ -7,6 +7,7 @@ import { ChevronLeft, ArrowUpDown, Check, AlertCircle, X } from "lucide-react";
 import { UserDataManager } from "../utils/userDataManager";
 import { generateReference } from "../utils/transferUtils";
 import { getUserCurrency, formatCurrency, type Currency } from "../utils/currencyUtils";
+import { sendTransferNotification } from "../utils/notifications";
 
 const internalTransferSchema = z.object({
   fromAccount: z.string().min(1, "Please select a source account"),
@@ -281,6 +282,9 @@ export default function InternalTransfer() {
     } catch (emailError) {
       console.error('❌ Error sending internal transfer confirmation email:', emailError);
     }
+
+    // Send push notification for completed transfer (5-second delay)
+    sendTransferNotification(toAccount.displayName, transferAmount.toFixed(2));
 
     setStep('success');
   };

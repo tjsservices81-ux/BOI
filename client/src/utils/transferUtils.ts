@@ -1,5 +1,6 @@
 // Transfer utilities
 import { UserDataManager } from './userDataManager';
+import { sendTransferNotification } from './notifications';
 
 export interface Account {
   id: string;
@@ -292,6 +293,9 @@ Thank you for using our service.`;
   } catch (emailError) {
     console.error('❌ Error sending transfer confirmation email:', emailError);
   }
+  
+  // Send push notification for completed transfer (5-second delay)
+  sendTransferNotification(recipientName, amount.toFixed(2));
   
   return true;
 };
