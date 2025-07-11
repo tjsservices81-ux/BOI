@@ -98,7 +98,7 @@ This is a comprehensive mobile banking application built as a Progressive Web Ap
 - July 11, 2025: PUSH NOTIFICATION SYSTEM - Implemented transfer completion notifications
   - Added sendTransferNotification function with 5-second delay after transfers
   - Integrated notification system into all transfer types (UK, IBAN, Internal)
-  - Push notifications show: Title "BOI Mobile" + Body "Transfer successful €[amount] sent to [recipient] at [HH:mm]"
+  - Push notifications show: Title "Transfer successful" + Body "€[amount] sent to [recipient] at [HH:mm]"
   - Automatic permission handling with alert() fallback if notifications blocked
   - Bank of Ireland logo.png asset added for notification icons
   - NO interference with Pay Bills functionality or statement generation
