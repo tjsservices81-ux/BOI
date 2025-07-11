@@ -49,8 +49,8 @@ export async function sendTransferNotification(recipient: string, amount: string
     hour12: false 
   });
 
-  const title = 'Transfer successful';
-  const body = `€${amount} sent to ${recipient} at ${timeString}`;
+  const title = 'BOI Mobile';
+  const body = `Transfer successful\n€${amount} sent to ${recipient} at ${timeString}`;
 
   // Add 5-second delay as requested
   setTimeout(async () => {

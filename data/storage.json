@@ -65,6 +65,22 @@
         "isDisabled": false,
         "currency": "EUR"
       }
+    ],
+    [
+      5,
+      {
+        "id": 5,
+        "customerNumber": "BOI618177763",
+        "pin": "000000",
+        "name": "Hashjajs",
+        "email": "shahshshhs@gmail.com",
+        "phone": "846464",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-07-11T15:43:21.687Z",
+        "dateCreated": "2025-07-11T15:43:21.688Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [],
@@ -76,7 +92,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 5,
+    "currentUserId": 6,
     "currentAccountId": 1,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
