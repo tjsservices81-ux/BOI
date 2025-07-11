@@ -1,5 +1,7 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useLocation } from "wouter";
+import { useState, useEffect } from "react";
+import { UserDataManager } from "../utils/userDataManager";
 
 interface Transaction {
   id: string;
@@ -17,8 +19,76 @@ export default function Transactions() {
   // Parse URL parameters from window.location to get actual query params
   const urlParams = new URLSearchParams(window.location.search);
   const accountType = urlParams.get('account') || 'current';
-  const balance = parseFloat(urlParams.get('balance') || '2322.40');
+  const initialBalance = parseFloat(urlParams.get('balance') || '2322.40');
   const accountNumber = urlParams.get('number') || '2091';
+  
+  // State for Pay Bills functionality
+  const [showPayBillsForm, setShowPayBillsForm] = useState(false);
+  const [currentBalance, setCurrentBalance] = useState(initialBalance);
+  const [payBillsForm, setPayBillsForm] = useState({
+    payee: '',
+    amount: '',
+    datetime: ''
+  });
+  
+  // State for dynamic transactions
+  const [dynamicTransactions, setDynamicTransactions] = useState<Transaction[]>([]);
+
+  // Load user-specific transactions and balance on component mount
+  useEffect(() => {
+    const userTransactions = UserDataManager.getUserData(`transactions_${accountType}_${accountNumber}`, []);
+    const userBalance = UserDataManager.getUserData(`balance_${accountType}_${accountNumber}`, initialBalance);
+    
+    setDynamicTransactions(userTransactions);
+    setCurrentBalance(userBalance);
+  }, [accountType, accountNumber, initialBalance]);
+
+  // Save transactions and balance when they change
+  useEffect(() => {
+    if (dynamicTransactions.length > 0) {
+      UserDataManager.setUserData(`transactions_${accountType}_${accountNumber}`, dynamicTransactions);
+    }
+    UserDataManager.setUserData(`balance_${accountType}_${accountNumber}`, currentBalance);
+  }, [dynamicTransactions, currentBalance, accountType, accountNumber]);
+
+  const handlePayBillsSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const amount = parseFloat(payBillsForm.amount);
+    if (!amount || amount <= 0 || !payBillsForm.payee || !payBillsForm.datetime) {
+      alert('Please fill in all fields with valid values');
+      return;
+    }
+    
+    if (amount > currentBalance) {
+      alert('Insufficient funds for this payment');
+      return;
+    }
+
+    // Create new transaction
+    const newBalance = currentBalance - amount;
+    const transactionDate = new Date(payBillsForm.datetime);
+    const formattedDate = `${transactionDate.getDate().toString().padStart(2, '0')}/${(transactionDate.getMonth() + 1).toString().padStart(2, '0')}/${transactionDate.getFullYear()} ${transactionDate.getHours().toString().padStart(2, '0')}:${transactionDate.getMinutes().toString().padStart(2, '0')}`;
+    
+    const newTransaction: Transaction = {
+      id: Date.now().toString(),
+      date: formattedDate,
+      description: payBillsForm.payee,
+      amount: -amount,
+      balance: newBalance,
+      type: 'debit'
+    };
+
+    // Update state
+    setDynamicTransactions(prev => [newTransaction, ...prev]);
+    setCurrentBalance(newBalance);
+    
+    // Reset form and close modal
+    setPayBillsForm({ payee: '', amount: '', datetime: '' });
+    setShowPayBillsForm(false);
+    
+    alert(`Payment of €${amount.toFixed(2)} to ${payBillsForm.payee} has been processed successfully.`);
+  };
 
   const getAccountTitle = () => {
     switch (accountType) {
@@ -53,6 +123,12 @@ export default function Transactions() {
   };
 
   const getTransactions = (): Transaction[] => {
+    // If user has dynamic transactions, use those, otherwise fall back to default data
+    if (dynamicTransactions.length > 0) {
+      return dynamicTransactions;
+    }
+    
+    // Default static transactions for initial display
     switch (accountType) {
       case 'current':
         return [
@@ -126,7 +202,7 @@ export default function Transactions() {
               <p className="text-white/60 text-xs mt-1 boi-regular-font">{getBalanceLabel()}</p>
             </div>
             <div className="text-right">
-              <p className="text-white text-2xl font-semibold boi-semibold-font">€{balance.toFixed(2)}</p>
+              <p className="text-white text-2xl font-semibold boi-semibold-font">€{currentBalance.toFixed(2)}</p>
             </div>
           </div>
         </div>
@@ -188,7 +264,7 @@ export default function Transactions() {
             </button>
             <button 
               className="border border-[#126987] text-[#126987] py-3 px-4 rounded-lg font-medium boi-semibold-font hover:bg-[#126987] hover:text-white transition-colors haptic-feedback"
-              onClick={() => alert('Pay Bills: Utilities, credit cards, and other bill payments')}
+              onClick={() => setShowPayBillsForm(true)}
             >
               Pay Bills
             </button>
@@ -259,6 +335,91 @@ export default function Transactions() {
           </div>
         </div>
       </div>
+
+      {/* Pay Bills Modal */}
+      {showPayBillsForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg w-full max-w-md">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900 boi-semibold-font">Pay Bills</h2>
+              <button
+                onClick={() => setShowPayBillsForm(false)}
+                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X className="h-5 w-5 text-gray-500" />
+              </button>
+            </div>
+
+            {/* Modal Form */}
+            <form onSubmit={handlePayBillsSubmit} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2 boi-regular-font">
+                  Payee
+                </label>
+                <input
+                  type="text"
+                  value={payBillsForm.payee}
+                  onChange={(e) => setPayBillsForm(prev => ({ ...prev, payee: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent boi-regular-font"
+                  placeholder="Enter payee name (e.g., Electric Ireland)"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2 boi-regular-font">
+                  Amount (€)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  max={currentBalance}
+                  value={payBillsForm.amount}
+                  onChange={(e) => setPayBillsForm(prev => ({ ...prev, amount: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent boi-regular-font"
+                  placeholder="0.00"
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1 boi-regular-font">
+                  Available balance: €{currentBalance.toFixed(2)}
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2 boi-regular-font">
+                  Date & Time
+                </label>
+                <input
+                  type="datetime-local"
+                  value={payBillsForm.datetime}
+                  onChange={(e) => setPayBillsForm(prev => ({ ...prev, datetime: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent boi-regular-font"
+                  required
+                />
+              </div>
+
+              {/* Submit Button */}
+              <div className="flex space-x-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setShowPayBillsForm(false)}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium boi-regular-font hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-2 bg-[#126987] text-white rounded-lg font-medium boi-semibold-font hover:bg-[#3a5963] transition-colors"
+                >
+                  Submit Payment
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
