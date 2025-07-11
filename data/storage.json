@@ -81,6 +81,22 @@
         "dateCreated": "2025-07-11T15:43:21.688Z",
         "isDisabled": false
       }
+    ],
+    [
+      6,
+      {
+        "id": 6,
+        "customerNumber": "BOI254484596",
+        "pin": "000000",
+        "name": "Ahahaha",
+        "email": "ahahah@gmail.com",
+        "phone": "4545464",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-07-11T16:14:50.192Z",
+        "dateCreated": "2025-07-11T16:14:50.192Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [],
@@ -92,7 +108,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 6,
+    "currentUserId": 7,
     "currentAccountId": 1,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
