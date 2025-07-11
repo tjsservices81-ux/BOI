@@ -95,6 +95,20 @@ This is a comprehensive mobile banking application built as a Progressive Web Ap
 - **Security**: HTTPS required for PWA installation and service worker functionality
 
 ## Changelog
+- July 11, 2025: PUSH NOTIFICATION SYSTEM - Implemented transfer completion notifications
+  - Added sendTransferNotification function with 5-second delay after transfers
+  - Integrated notification system into all transfer types (UK, IBAN, Internal)
+  - Push notifications show: "Transfer successful" + "€[amount] sent to [recipient] at [HH:mm]"
+  - Automatic permission handling with alert() fallback if notifications blocked
+  - Bank of Ireland logo.png asset added for notification icons
+  - NO interference with Pay Bills functionality or statement generation
+  - Comprehensive system scan completed - all components working perfectly
+- July 11, 2025: PAY BILLS CHRONOLOGICAL ORDERING - Fixed transaction display order
+  - Bill payments now sort by actual date/time instead of always appearing at top
+  - Transactions display in proper chronological order (newest first)
+  - Clean payee-only descriptions (e.g., "UBER" instead of "Bill Payment - UBER")
+  - Fixed implementation in correct transaction page (transaction-history-working.tsx)
+  - Real-time balance validation and transaction creation working perfectly
 - July 05, 2025: AUTHENTIC BANKING SYSTEM - Complete real bank statement generation with app reset handling
   - ZERO hardcoded data: All balances, transactions, account details come from actual user banking activity
   - App reset awareness: System detects when app has been reset to defaults and provides proper messaging
