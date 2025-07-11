@@ -178,9 +178,6 @@ export default function Transactions() {
 
   const transactions = getTransactions();
 
-  // Debug log to check modal state
-  console.log('showPayBillsForm state:', showPayBillsForm);
-
   return (
     <div className="h-screen bg-[#f5f5f5] overflow-hidden flex flex-col ios-safe-top ios-safe-bottom page-fade-in" style={{ maxHeight: '100vh' }}>
       {/* Header - BOI Style */}
@@ -267,11 +264,7 @@ export default function Transactions() {
             </button>
             <button 
               className="border border-[#126987] text-[#126987] py-3 px-4 rounded-lg font-medium boi-semibold-font hover:bg-[#126987] hover:text-white transition-colors haptic-feedback"
-              onClick={() => {
-                console.log('Pay Bills button clicked');
-                setShowPayBillsForm(true);
-                console.log('showPayBillsForm set to true');
-              }}
+              onClick={() => setShowPayBillsForm(true)}
             >
               Pay Bills
             </button>

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useRoute } from "wouter";
-import { ChevronLeft, ArrowUpRight, CreditCard, Building2, Zap, Check, Clock, MapPin, Globe } from "lucide-react";
+import { ChevronLeft, ArrowUpRight, CreditCard, Building2, Zap, Check, Clock, MapPin, Globe, X } from "lucide-react";
 import MiniSpendingChart from "../components/MiniSpendingChart";
 import { UserDataManager } from "../utils/userDataManager.ts";
 import { StateManager } from "../utils/stateManager";
@@ -19,6 +19,14 @@ export default function TransactionHistoryWorking() {
   const [isNavigating, setIsNavigating] = useState(false);
   const [userCurrency, setUserCurrency] = useState<Currency>('EUR');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  
+  // Pay Bills state
+  const [showPayBillsForm, setShowPayBillsForm] = useState(false);
+  const [payBillsForm, setPayBillsForm] = useState({
+    payee: '',
+    amount: '',
+    datetime: ''
+  });
   
   const accountId = params?.accountId ? parseInt(params.accountId) : 1;
 
@@ -44,6 +52,64 @@ export default function TransactionHistoryWorking() {
       document.body.classList.remove('page-transitioning');
       currentPage.classList.remove('page-slide-out-left', 'page-slide-out-right');
     }, 200);
+  };
+
+  const handlePayBillsSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const amount = parseFloat(payBillsForm.amount);
+    if (!amount || amount <= 0 || !payBillsForm.payee || !payBillsForm.datetime) {
+      alert('Please fill in all fields with valid values');
+      return;
+    }
+    
+    const currentBalance = parseFloat(balance);
+    if (amount > currentBalance) {
+      alert('Insufficient funds for this payment');
+      return;
+    }
+
+    // Create new transaction
+    const newBalance = currentBalance - amount;
+    const transactionDate = new Date(payBillsForm.datetime);
+    
+    const newTransaction = {
+      id: Date.now(),
+      accountId: accountId,
+      amount: `-${amount.toFixed(2)}`,
+      description: `Bill Payment - ${payBillsForm.payee}`,
+      category: 'bill_payment',
+      type: 'debit',
+      paymentMethod: 'Bill Payment',
+      reference: `BP${Date.now()}`,
+      timestamp: transactionDate.toISOString(),
+      payee: payBillsForm.payee
+    };
+
+    // Update transactions
+    const currentTransactions = UserDataManager.getUserData('bankTransactions', []);
+    const updatedTransactions = [newTransaction, ...currentTransactions];
+    UserDataManager.setUserData('bankTransactions', updatedTransactions);
+    
+    // Update balance
+    const newBalanceString = newBalance.toFixed(2);
+    setBalance(newBalanceString);
+    
+    // Update account balance in accounts list
+    const accounts = UserDataManager.getUserAccounts();
+    const updatedAccounts = accounts.map(acc => 
+      acc.id === accountId ? { ...acc, balance: newBalanceString } : acc
+    );
+    UserDataManager.setUserData('bankAccounts', updatedAccounts);
+    
+    // Refresh transactions display
+    setTransactions(updatedTransactions.filter(t => t.accountId === accountId));
+    
+    // Reset form and close modal
+    setPayBillsForm({ payee: '', amount: '', datetime: '' });
+    setShowPayBillsForm(false);
+    
+    alert(`Payment of €${amount.toFixed(2)} to ${payBillsForm.payee} has been processed successfully.`);
   };
 
   const handleDeleteTransaction = () => {
@@ -309,6 +375,7 @@ export default function TransactionHistoryWorking() {
             Transfer
           </button>
           <button 
+            onClick={() => setShowPayBillsForm(true)}
             className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-lg font-semibold text-sm"
             style={{ fontFamily: 'OpenSans, sans-serif' }}
           >
@@ -576,6 +643,97 @@ export default function TransactionHistoryWorking() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Pay Bills Modal */}
+      {showPayBillsForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+             style={{ zIndex: 9999 }}>
+          <div className="bg-white rounded-lg w-full max-w-md">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>Pay Bills</h2>
+              <button
+                onClick={() => setShowPayBillsForm(false)}
+                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X className="h-5 w-5 text-gray-500" />
+              </button>
+            </div>
+
+            {/* Modal Form */}
+            <form onSubmit={handlePayBillsSubmit} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Payee
+                </label>
+                <input
+                  type="text"
+                  value={payBillsForm.payee}
+                  onChange={(e) => setPayBillsForm(prev => ({ ...prev, payee: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  placeholder="Enter payee name (e.g., Electric Ireland)"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Amount (€)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  max={parseFloat(balance)}
+                  value={payBillsForm.amount}
+                  onChange={(e) => setPayBillsForm(prev => ({ ...prev, amount: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  placeholder="0.00"
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Available balance: €{balance}
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Date & Time
+                </label>
+                <input
+                  type="datetime-local"
+                  value={payBillsForm.datetime}
+                  onChange={(e) => setPayBillsForm(prev => ({ ...prev, datetime: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  required
+                />
+              </div>
+
+              {/* Submit Button */}
+              <div className="flex space-x-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setShowPayBillsForm(false)}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-2 bg-[#126987] text-white rounded-lg font-medium hover:bg-[#3a5963] transition-colors"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  Submit Payment
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
