@@ -77,7 +77,7 @@ export default function TransactionHistoryWorking() {
       id: Date.now(),
       accountId: accountId,
       amount: `-${amount.toFixed(2)}`,
-      description: `Bill Payment - ${payBillsForm.payee}`,
+      description: payBillsForm.payee,
       category: 'bill_payment',
       type: 'debit',
       paymentMethod: 'Bill Payment',
