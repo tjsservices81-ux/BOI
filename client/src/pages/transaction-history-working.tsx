@@ -88,7 +88,11 @@ export default function TransactionHistoryWorking() {
 
     // Update transactions
     const currentTransactions = UserDataManager.getUserData('bankTransactions', []);
-    const updatedTransactions = [newTransaction, ...currentTransactions];
+    const updatedTransactions = [...currentTransactions, newTransaction];
+    
+    // Sort all transactions by timestamp (newest first)
+    updatedTransactions.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    
     UserDataManager.setUserData('bankTransactions', updatedTransactions);
     
     // Update balance
@@ -102,8 +106,9 @@ export default function TransactionHistoryWorking() {
     );
     UserDataManager.setUserData('bankAccounts', updatedAccounts);
     
-    // Refresh transactions display
-    setTransactions(updatedTransactions.filter(t => t.accountId === accountId));
+    // Refresh transactions display with sorted transactions for this account
+    const accountTransactions = updatedTransactions.filter(t => t.accountId === accountId);
+    setTransactions(accountTransactions);
     
     // Reset form and close modal
     setPayBillsForm({ payee: '', amount: '', datetime: '' });
