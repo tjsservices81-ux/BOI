@@ -168,6 +168,13 @@ function AppRoutes() {
         const { UserDataManager } = await import('./utils/userDataManager');
         UserDataManager.initializeCachePersistence();
         
+        // Store access code from URL for revocation checking
+        const urlParams = new URLSearchParams(window.location.search);
+        const accessCode = urlParams.get('access');
+        if (accessCode) {
+          localStorage.setItem('currentAccessCode', accessCode);
+        }
+        
         // Use platform detection for accurate cold/warm start determination
         const startType = PlatformDetection.getCurrentStartType();
         const isColdStart = startType === 'cold' || startType === 'uncertain';

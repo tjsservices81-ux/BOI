@@ -26,10 +26,32 @@ function startSessionHeartbeat() {
   
   heartbeatInterval = setInterval(() => {
     localStorage.setItem('lastSessionActivity', Date.now().toString());
+    
+    // Get current access code for revocation checking
+    const urlParams = new URLSearchParams(window.location.search);
+    const accessCode = urlParams.get('access') || localStorage.getItem('currentAccessCode');
+    
     // Send heartbeat to server to refresh session
     fetch('/api/auth/heartbeat', {
       method: 'POST',
-      credentials: 'include'
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(accessCode && { 'X-Access-Code': accessCode })
+      },
+      body: JSON.stringify({ accessCode })
+    }).then(response => {
+      if (response.status === 403) {
+        return response.json().then(data => {
+          if (data.forceDisconnect) {
+            console.log('🔴 ACCESS REVOKED - Force disconnecting user');
+            // Clear all local data and redirect to access code page
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.href = '/';
+          }
+        });
+      }
     }).catch(() => {
       // Ignore heartbeat failures - user stays logged in locally
     });

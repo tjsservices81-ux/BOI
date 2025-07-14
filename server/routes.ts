@@ -131,10 +131,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Session heartbeat endpoint to maintain active sessions
-  app.post("/api/auth/heartbeat", (req, res) => {
+  app.post("/api/auth/heartbeat", async (req, res) => {
     // This endpoint refreshes the session without requiring authentication
     // Sessions are maintained indefinitely until admin deletion
     if (req.session) {
+      // Check for force revocation of current access code
+      const accessCode = req.headers['x-access-code'] as string || 
+                        req.query.access as string ||
+                        req.body.accessCode as string;
+      
+      if (accessCode) {
+        try {
+          // Check if this access code has been force revoked
+          const revokedFlag = await db.get(`revoked_${accessCode}`);
+          const accessCodes = await db.get('access_codes') || {};
+          const codeInfo = accessCodes[accessCode];
+          
+          if (revokedFlag?.revoked || codeInfo?.revoked || codeInfo?.forceDisconnect) {
+            console.log(`🔴 FORCE REVOCATION DETECTED: ${accessCode} - Disconnecting PWA user`);
+            
+            // Destroy session immediately
+            req.session.destroy((err) => {
+              if (err) console.error('Session destruction error:', err);
+            });
+            
+            return res.status(403).json({ 
+              status: "access_revoked", 
+              message: "Access denied or revoked",
+              forceDisconnect: true,
+              timestamp: new Date().toISOString()
+            });
+          }
+        } catch (error) {
+          console.error('Revocation check error:', error);
+        }
+      }
+      
       req.session.touch(); // Refresh session expiry
       (req.session as any).lastHeartbeat = new Date().toISOString();
       
