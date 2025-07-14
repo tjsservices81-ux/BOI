@@ -44,18 +44,27 @@ function startSessionHeartbeat() {
       if (response.status === 403) {
         return response.json().then(data => {
           if (data.forceDisconnect) {
-            console.log('🔴 ACCESS REVOKED - Force disconnecting user');
-            // Clear all local data and redirect to access code page
+            console.log('🔴 ACCESS REVOKED - Force disconnecting PWA user');
+            // Aggressive data clearing for PWA apps
             localStorage.clear();
             sessionStorage.clear();
-            window.location.href = '/';
+            
+            // Clear service worker caches if available
+            if ('caches' in window) {
+              caches.keys().then(names => {
+                names.forEach(name => caches.delete(name));
+              });
+            }
+            
+            // Force reload to clear any cached authentication
+            window.location.replace('/');
           }
         });
       }
     }).catch(() => {
       // Ignore heartbeat failures - user stays logged in locally
     });
-  }, 60000); // Every minute
+  }, 15000); // Every 15 seconds for faster PWA revocation detection
 }
 
 function stopSessionHeartbeat() {

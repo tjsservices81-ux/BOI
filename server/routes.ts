@@ -130,6 +130,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Direct revocation check endpoint for PWA apps
+  app.post("/api/check-revocation", async (req, res) => {
+    try {
+      const { accessCode } = req.body;
+      
+      if (!accessCode) {
+        return res.status(400).json({ error: "Access code required" });
+      }
+      
+      // Check if this access code has been revoked
+      const revokedFlag = await db.get(`revoked_${accessCode}`);
+      const accessCodes = await db.get('access_codes') || {};
+      const codeInfo = accessCodes[accessCode];
+      
+      if (revokedFlag?.revoked || codeInfo?.revoked || codeInfo?.forceDisconnect) {
+        console.log(`🔴 REVOCATION CHECK: ${accessCode} is REVOKED`);
+        return res.status(403).json({ 
+          revoked: true,
+          message: "Access code has been revoked",
+          timestamp: new Date().toISOString()
+        });
+      }
+      
+      res.json({ 
+        revoked: false,
+        valid: true,
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error) {
+      console.error('Revocation check error:', error);
+      res.status(500).json({ error: "Server error" });
+    }
+  });
+
   // Session heartbeat endpoint to maintain active sessions
   app.post("/api/auth/heartbeat", async (req, res) => {
     // This endpoint refreshes the session without requiring authentication

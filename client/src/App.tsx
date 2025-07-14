@@ -175,6 +175,13 @@ function AppRoutes() {
           localStorage.setItem('currentAccessCode', accessCode);
         }
         
+        // Start PWA-specific revocation checking
+        const { startPWARevocationChecker, isPWA } = await import('./utils/pwaRevocationChecker');
+        if (isPWA()) {
+          console.log('PWA detected - starting aggressive revocation checker');
+          startPWARevocationChecker();
+        }
+        
         // Use platform detection for accurate cold/warm start determination
         const startType = PlatformDetection.getCurrentStartType();
         const isColdStart = startType === 'cold' || startType === 'uncertain';
