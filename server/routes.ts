@@ -240,6 +240,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Check permanent blacklist - codes that can never be used again
+      const blacklist = await db.get('permanent_blacklist') || [];
+      if (blacklist.includes(code)) {
+        console.log(`🚫 BLACKLISTED CODE ATTEMPT: ${code} - PERMANENTLY DENIED`);
+        return res.status(403).json({ 
+          success: false, 
+          error: "Access code permanently revoked",
+          message: "This access code has been permanently disabled" 
+        });
+      }
+
       // Get access code data from database
       const codeData = await db.get(`access_code_${code}`);
       
