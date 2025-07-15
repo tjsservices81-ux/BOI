@@ -151,11 +151,62 @@ router.post('/login', (req, res) => {
 // Admin panel main page with enhanced features
 router.get('/panel', adminAuth, async (req, res) => {
   try {
-    // Get data from both legacy and new sync systems
+    console.log('🔍 Scanning all user data sources for admin panel recovery...');
+    
+    // Get data from all possible sources
     const userSessions = await getUserSessions();
-    const { getAllVerifiedUsers, getAdminStats } = await import('./adminSyncManager');
+    const { getAllVerifiedUsers, getAdminStats, addUserToAdminPanel } = await import('./adminSyncManager');
+    const { storage } = await import('./storage');
+    const { persistentManager } = await import('./persistentStorage');
+    
+    // Load users from all sources
+    let allSourceUsers = [];
+    
+    // 1. Get users from database/memory storage
+    try {
+      const storageUsers = await storage.getAllUsers();
+      console.log(`💾 Found ${storageUsers.length} users in memory storage`);
+      allSourceUsers = allSourceUsers.concat(storageUsers.map(u => ({...u, source: 'memory'})));
+    } catch (e) {
+      console.log('Database access failed, falling back to memory storage:', e.message);
+    }
+    
+    // 2. Get users from persistent storage file
+    try {
+      const persistentData = persistentManager.loadData();
+      const persistentUsers = Array.from(persistentData.users.values());
+      console.log(`📁 Found ${persistentUsers.length} users in persistent storage file`);
+      allSourceUsers = allSourceUsers.concat(persistentUsers.map(u => ({...u, source: 'persistent'})));
+    } catch (e) {
+      console.log('Persistent storage access failed:', e.message);
+    }
+    
+    // 3. Get users from device sessions
+    const deviceUsers = userSessions.filter(s => s.source === 'device_session_only');
+    console.log(`📱 Found ${deviceUsers.length} users in device sessions`);
+    
+    // Sync all unique users to admin sync manager
+    const uniqueUsers = new Map();
+    allSourceUsers.forEach(user => {
+      if (user.customerNumber && !uniqueUsers.has(user.customerNumber)) {
+        uniqueUsers.set(user.customerNumber, user);
+      }
+    });
+    
+    // Add all unique users to sync manager
+    for (const [customerNumber, user] of uniqueUsers) {
+      try {
+        await addUserToAdminPanel(user, user.source || 'recovery');
+      } catch (e) {
+        // User might already exist, that's okay
+      }
+    }
+    
     const verifiedUsers = getAllVerifiedUsers();
     const stats = getAdminStats();
+    
+    console.log(`✅ User recovery complete: ${verifiedUsers.length} total users, ${userSessions.filter(s => s.isLoggedIn).length} currently authenticated`);
+    console.log(`📋 Data sources: database, memory, device sessions, persistent files`);
     
     // Merge users from both systems (prioritize sync manager)
     const combinedUsers = [...verifiedUsers];

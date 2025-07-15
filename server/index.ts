@@ -121,6 +121,27 @@ app.use((req, res, next) => {
 (async () => {
   // Register API routes first
   const server = await registerRoutes(app);
+  
+  // Initialize admin sync manager with all existing users on startup
+  try {
+    const { storage } = await import('./storage');
+    const { addUserToAdminPanel } = await import('./adminSyncManager');
+    
+    const allUsers = await storage.getAllUsers();
+    console.log(`🔄 Syncing ${allUsers.length} existing users to admin panel on startup...`);
+    
+    for (const user of allUsers) {
+      try {
+        await addUserToAdminPanel(user, 'startup_sync');
+      } catch (e) {
+        // User might already exist, that's okay
+      }
+    }
+    
+    console.log('✅ Admin panel sync initialization complete');
+  } catch (e) {
+    console.log('Admin sync initialization skipped:', e.message);
+  }
 
   // Add admin routes
   app.use('/admin', adminRoutes);
