@@ -95,6 +95,18 @@ This is a comprehensive mobile banking application built as a Progressive Web Ap
 - **Security**: HTTPS required for PWA installation and service worker functionality
 
 ## Changelog
+- July 15, 2025: ENHANCED ADMIN PANEL - Comprehensive admin panel overhaul with professional UI and instant syncing
+  - Created adminSyncManager.ts for real-time user synchronization between registration/login/verification and admin panel
+  - Added instant admin panel sync functionality to routes.ts for user registration, login, and PIN verification
+  - Enhanced admin panel UI with professional statistics dashboard showing Total Users, Active Logins, Verified Users, and Added Today
+  - Implemented real-time search functionality allowing admins to search by name, email, or customer number
+  - Combined legacy user data with new sync manager data for complete user visibility
+  - Enhanced delete functionality with proper cleanup of sync manager, sessions, and browser storage
+  - Added auto-refresh every 5 seconds to catch real-time profile updates
+  - Professional Bank of Ireland branding with responsive design and modern UI elements
+  - Comprehensive user details display including phone, date of birth, device model, IP address, and verification status
+  - Maintained all existing app features (splash screen, fingerprint login, dashboard, animations)
+  - Admin access: http://localhost:5000/admin/login with password BOI_ADMIN_2025_SECURE
 - July 11, 2025: PUSH NOTIFICATION SYSTEM - Implemented transfer completion notifications
   - Added sendTransferNotification function with 5-second delay after transfers
   - Integrated notification system into all transfer types (UK, IBAN, Internal)

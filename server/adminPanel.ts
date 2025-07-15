@@ -148,10 +148,39 @@ router.post('/login', (req, res) => {
   }
 });
 
-// Admin panel main page
+// Admin panel main page with enhanced features
 router.get('/panel', adminAuth, async (req, res) => {
   try {
+    // Get data from both legacy and new sync systems
     const userSessions = await getUserSessions();
+    const { getAllVerifiedUsers, getAdminStats } = await import('./adminSyncManager');
+    const verifiedUsers = getAllVerifiedUsers();
+    const stats = getAdminStats();
+    
+    // Merge users from both systems (prioritize sync manager)
+    const combinedUsers = [...verifiedUsers];
+    
+    // Add legacy users that aren't in sync manager
+    userSessions.forEach(session => {
+      if (!combinedUsers.find(u => u.customerNumber === session.customerNumber)) {
+        combinedUsers.push({
+          id: session.userId || `legacy_${session.sessionId}`,
+          customerNumber: session.customerNumber,
+          name: session.username || 'Unknown User',
+          email: session.email || 'No email provided',
+          phone: session.phone || 'N/A',
+          dateOfBirth: session.dateOfBirth || 'Not provided',
+          source: 'legacy',
+          addedAt: new Date().toISOString(),
+          verificationStatus: 'pending',
+          loginStatus: session.isLoggedIn ? 'active' : 'registered',
+          lastActivity: session.loginTime || new Date().toISOString(),
+          deviceModel: session.deviceInfo || 'Unknown Device',
+          ipAddress: session.ipAddress || 'N/A',
+          sessionId: session.sessionId
+        });
+      }
+    });
     
     const panelPage = `<!DOCTYPE html>
     <html lang="en">
@@ -245,11 +274,38 @@ router.get('/panel', adminAuth, async (req, res) => {
           background: #f8fafc;
           padding: 20px;
           border-bottom: 1px solid #e2e8f0;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 20px;
         }
         .section-title {
           font-size: 20px;
           font-weight: 600;
           color: #1a202c;
+        }
+        .search-bar {
+          flex: 1;
+          max-width: 400px;
+        }
+        .search-bar input {
+          width: 100%;
+          padding: 10px 15px;
+          border: 1px solid #e2e8f0;
+          border-radius: 8px;
+          font-size: 14px;
+          background: white;
+        }
+        .search-bar input:focus {
+          outline: none;
+          border-color: #126987;
+          box-shadow: 0 0 0 3px rgba(18, 105, 135, 0.1);
+        }
+        .user-customer {
+          color: #64748b;
+          font-size: 12px;
+          margin-bottom: 10px;
+          font-family: monospace;
         }
         .user-list {
           max-height: 70vh;
@@ -458,57 +514,76 @@ router.get('/panel', adminAuth, async (req, res) => {
         
         <div class="stats">
           <div class="stat-card">
-            <div class="stat-number">${userSessions.length}</div>
-            <div class="stat-label">Total Accounts</div>
+            <div class="stat-number">${combinedUsers.length}</div>
+            <div class="stat-label">Total Users</div>
           </div>
           <div class="stat-card">
-            <div class="stat-number">${userSessions.filter((s: any) => s.isLoggedIn).length}</div>
-            <div class="stat-label">Logged In</div>
+            <div class="stat-number">${combinedUsers.filter((u: any) => u.loginStatus === 'active').length}</div>
+            <div class="stat-label">Active Logins</div>
           </div>
           <div class="stat-card">
-            <div class="stat-number">${userSessions.filter((s: any) => !s.isLoggedIn).length}</div>
-            <div class="stat-label">Never Logged In</div>
+            <div class="stat-number">${combinedUsers.filter((u: any) => u.verificationStatus === 'verified').length}</div>
+            <div class="stat-label">Verified Users</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">${combinedUsers.filter((u: any) => {
+              const today = new Date().toDateString();
+              return new Date(u.addedAt).toDateString() === today;
+            }).length}</div>
+            <div class="stat-label">Added Today</div>
           </div>
         </div>
         
         <div class="users-section">
           <div class="section-header">
             <div class="section-title">User Accounts</div>
+            <div class="search-bar">
+              <input type="text" id="searchInput" placeholder="Search users..." onkeyup="searchUsers()" />
+            </div>
           </div>
           
-          <div class="user-list">
-            ${userSessions.length === 0 ? `
+          <div class="user-list" id="userList">
+            ${combinedUsers.length === 0 ? `
               <div class="empty-state">
                 <div class="empty-icon">👥</div>
-                <div>No active user sessions found</div>
+                <div>No users found</div>
               </div>
-            ` : userSessions.map((session: any) => `
-              <div class="user-item ${session.isLoggedIn ? 'logged-in' : 'not-logged-in'}" id="user-${session.sessionId}">
+            ` : combinedUsers.map((user: any) => `
+              <div class="user-item ${user.loginStatus === 'active' ? 'logged-in' : 'not-logged-in'}" id="user-${user.customerNumber}" data-name="${user.name.toLowerCase()}" data-email="${user.email.toLowerCase()}" data-customer="${user.customerNumber.toLowerCase()}">
                 <div class="user-header">
                   <div class="user-info">
-                    <div class="user-name">${session.username || 'Unknown User'} ${session.isLoggedIn ? '🟢' : '🔴'}</div>
-                    <div class="user-email">${session.email || 'No email provided'}</div>
+                    <div class="user-name">${user.name} ${user.loginStatus === 'active' ? '🟢' : '🔴'}</div>
+                    <div class="user-email">${user.email}</div>
+                    <div class="user-customer">Customer: ${user.customerNumber}</div>
                     
                     <div class="user-details">
                       <div class="detail-item">
+                        <div class="detail-label">Phone</div>
+                        <div class="detail-value">${user.phone || 'Not provided'}</div>
+                      </div>
+                      <div class="detail-item">
                         <div class="detail-label">Date of Birth</div>
-                        <div class="detail-value">${session.dateOfBirth || 'Not provided'}</div>
+                        <div class="detail-value">${user.dateOfBirth || 'Not provided'}</div>
                       </div>
                       <div class="detail-item">
                         <div class="detail-label">Device Model</div>
-                        <div class="detail-value">${session.deviceInfo || 'Unknown Device'}</div>
+                        <div class="detail-value">${user.deviceModel || 'Unknown Device'}</div>
                       </div>
                       <div class="detail-item">
                         <div class="detail-label">IP Address</div>
-                        <div class="detail-value">${session.ipAddress || 'Unknown'}</div>
+                        <div class="detail-value">${user.ipAddress || 'Unknown'}</div>
                       </div>
                       <div class="detail-item">
-                        <div class="detail-label">Login Time</div>
-                        <div class="detail-value">${session.loginTime ? new Date(session.loginTime).toLocaleString() : 'Unknown'}</div>
+                        <div class="detail-label">Last Activity</div>
+                        <div class="detail-value">${user.lastActivity ? new Date(user.lastActivity).toLocaleString() : 'Unknown'}</div>
+                      </div>
+                      <div class="detail-item">
+                        <div class="detail-label">Status</div>
+                        <div class="detail-value">${user.verificationStatus === 'verified' ? 'Verified' : 'Pending'} • ${user.source || 'Unknown'}</div>
                       </div>
                     </div>
                   </div>
-                  <button class="delete-btn" onclick="confirmDelete('${session.customerNumber}', '${session.username || 'Unknown User'}')">
+                  <button class="delete-btn" onclick="confirmDelete('${user.customerNumber}', '${user.name}')">
                     Delete Account
                   </button>
                 </div>
@@ -695,6 +770,25 @@ router.get('/panel', adminAuth, async (req, res) => {
           window.location.href = '/admin/logout';
         }
         
+        // Search functionality
+        function searchUsers() {
+          const searchInput = document.getElementById('searchInput');
+          const searchTerm = searchInput.value.toLowerCase();
+          const userItems = document.querySelectorAll('.user-item');
+          
+          userItems.forEach(item => {
+            const name = item.getAttribute('data-name') || '';
+            const email = item.getAttribute('data-email') || '';
+            const customer = item.getAttribute('data-customer') || '';
+            
+            if (name.includes(searchTerm) || email.includes(searchTerm) || customer.includes(searchTerm)) {
+              item.style.display = 'block';
+            } else {
+              item.style.display = 'none';
+            }
+          });
+        }
+        
         // Close modal when clicking outside
         document.getElementById('deleteModal').addEventListener('click', function(e) {
           if (e.target === this) {
@@ -715,9 +809,40 @@ router.get('/panel', adminAuth, async (req, res) => {
 // API endpoint for admin panel data refresh
 router.get('/panel-data', adminAuth, async (req, res) => {
   try {
+    // Get data from both legacy and new sync systems
     const userSessions = await getUserSessions();
+    const { getAllVerifiedUsers, getAdminStats } = await import('./adminSyncManager');
+    const verifiedUsers = getAllVerifiedUsers();
+    const stats = getAdminStats();
+    
+    // Merge users from both systems (prioritize sync manager)
+    const combinedUsers = [...verifiedUsers];
+    
+    // Add legacy users that aren't in sync manager
+    userSessions.forEach(session => {
+      if (!combinedUsers.find(u => u.customerNumber === session.customerNumber)) {
+        combinedUsers.push({
+          id: session.userId || `legacy_${session.sessionId}`,
+          customerNumber: session.customerNumber,
+          name: session.username || 'Unknown User',
+          email: session.email || 'No email provided',
+          phone: session.phone || 'N/A',
+          dateOfBirth: session.dateOfBirth || 'Not provided',
+          source: 'legacy',
+          addedAt: new Date().toISOString(),
+          verificationStatus: 'pending',
+          loginStatus: session.isLoggedIn ? 'active' : 'registered',
+          lastActivity: session.loginTime || new Date().toISOString(),
+          deviceModel: session.deviceInfo || 'Unknown Device',
+          ipAddress: session.ipAddress || 'N/A',
+          sessionId: session.sessionId
+        });
+      }
+    });
+    
     res.json({
-      users: userSessions,
+      users: combinedUsers,
+      stats: stats,
       timestamp: new Date().toISOString()
     });
   } catch (error) {
@@ -755,9 +880,14 @@ router.post('/delete-user', adminAuth, async (req, res) => {
       // Remove all device sessions for this customer
       await deleteAllUserSessions(customerNumber);
       
+      // Remove user from admin sync manager
+      const { removeUserFromAdminPanel } = await import('./adminSyncManager');
+      const removedFromAdmin = await removeUserFromAdminPanel(customerNumber);
+      
       console.log(`Admin successfully deleted user account: ${customerNumber}`);
       console.log(`Database deletion: ${userDeleted ? 'SUCCESS' : 'FAILED'}`);
       console.log(`Invalidated ${invalidatedSessions.length} active sessions`);
+      console.log(`Admin panel sync removal: ${removedFromAdmin ? 'SUCCESS' : 'ALREADY_REMOVED'}`);
       
       // CRITICAL FIX: Signal frontend to clear new cold/warm start localStorage keys
       // This ensures deleted users don't retain session markers
