@@ -139,16 +139,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Access code required" });
       }
       
-      // Check if this access code has been revoked
+      // Check if this access code has been revoked or blacklisted
+      function processBlacklist(data) {
+        if (!data) return [];
+        if (Array.isArray(data)) return data;
+        if (data.value && Array.isArray(data.value)) return data.value;
+        return [];
+      }
+      
       const revokedFlag = await db.get(`revoked_${accessCode}`);
+      const forceLogoutFlag = await db.get(`force_logout_${accessCode}`);
+      const blacklistData = await db.get('permanent_blacklist');
+      const pwaBlacklistData = await db.get('pwa_blacklist');
+      const blacklist = processBlacklist(blacklistData);
+      const pwaBlacklist = processBlacklist(pwaBlacklistData);
       const accessCodes = await db.get('access_codes') || {};
       const codeInfo = accessCodes[accessCode];
       
-      if (revokedFlag?.revoked || codeInfo?.revoked || codeInfo?.forceDisconnect) {
-        console.log(`🔴 REVOCATION CHECK: ${accessCode} is REVOKED`);
+      const isRevoked = revokedFlag?.revoked || 
+                       revokedFlag?.nuked || 
+                       forceLogoutFlag?.forced ||
+                       blacklist.includes(accessCode) ||
+                       pwaBlacklist.includes(accessCode) ||
+                       codeInfo?.revoked || 
+                       codeInfo?.forceDisconnect;
+      
+      if (isRevoked) {
+        console.log(`🔴 NUCLEAR REVOCATION CHECK: ${accessCode} is PERMANENTLY REVOKED`);
         return res.status(403).json({ 
           revoked: true,
-          message: "Access code has been revoked",
+          nuked: true,
+          message: "Access code permanently destroyed",
           timestamp: new Date().toISOString()
         });
       }
@@ -178,12 +199,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (accessCode) {
         try {
           // Check if this access code has been force revoked
+          function processBlacklist(data) {
+            if (!data) return [];
+            if (Array.isArray(data)) return data;
+            if (data.value && Array.isArray(data.value)) return data.value;
+            return [];
+          }
+          
           const revokedFlag = await db.get(`revoked_${accessCode}`);
+          const forceLogoutFlag = await db.get(`force_logout_${accessCode}`);
+          const blacklistData = await db.get('permanent_blacklist');
+          const pwaBlacklistData = await db.get('pwa_blacklist');
+          const blacklist = processBlacklist(blacklistData);
+          const pwaBlacklist = processBlacklist(pwaBlacklistData);
           const accessCodes = await db.get('access_codes') || {};
           const codeInfo = accessCodes[accessCode];
           
-          if (revokedFlag?.revoked || codeInfo?.revoked || codeInfo?.forceDisconnect) {
-            console.log(`🔴 FORCE REVOCATION DETECTED: ${accessCode} - Disconnecting PWA user`);
+          const isRevoked = revokedFlag?.revoked || 
+                           revokedFlag?.nuked || 
+                           forceLogoutFlag?.forced ||
+                           blacklist.includes(accessCode) ||
+                           pwaBlacklist.includes(accessCode) ||
+                           codeInfo?.revoked || 
+                           codeInfo?.forceDisconnect;
+          
+          if (isRevoked) {
+            console.log(`🔴 NUCLEAR REVOCATION DETECTED: ${accessCode} - DESTROYING PWA SESSION`);
             
             // Destroy session immediately
             req.session.destroy((err) => {
@@ -192,8 +233,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             
             return res.status(403).json({ 
               status: "access_revoked", 
-              message: "Access denied or revoked",
+              message: "Access permanently revoked",
               forceDisconnect: true,
+              nukeCaches: true,
               timestamp: new Date().toISOString()
             });
           }
@@ -241,8 +283,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Check permanent blacklist - codes that can never be used again
-      const blacklist = await db.get('permanent_blacklist') || [];
-      if (blacklist.includes(code)) {
+      function processBlacklist(data) {
+        if (!data) return [];
+        if (Array.isArray(data)) return data;
+        if (data.value && Array.isArray(data.value)) return data.value;
+        return [];
+      }
+      
+      const blacklistData = await db.get('permanent_blacklist');
+      const pwaBlacklistData = await db.get('pwa_blacklist');
+      const blacklist = processBlacklist(blacklistData);
+      const pwaBlacklist = processBlacklist(pwaBlacklistData);
+      const isBlacklisted = blacklist.includes(code) || pwaBlacklist.includes(code);
+      
+      if (isBlacklisted) {
         console.log(`🚫 BLACKLISTED CODE ATTEMPT: ${code} - PERMANENTLY DENIED`);
         return res.status(403).json({ 
           success: false, 

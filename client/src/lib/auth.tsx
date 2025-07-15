@@ -43,21 +43,31 @@ function startSessionHeartbeat() {
     }).then(response => {
       if (response.status === 403) {
         return response.json().then(data => {
-          if (data.forceDisconnect) {
-            console.log('🔴 ACCESS REVOKED - Force disconnecting PWA user');
-            // Aggressive data clearing for PWA apps
+          if (data.forceDisconnect || data.nukeCaches) {
+            console.log('🔴 NUCLEAR ACCESS REVOCATION - Destroying PWA session completely');
+            
+            // Nuclear data clearing for PWA apps
             localStorage.clear();
             sessionStorage.clear();
             
-            // Clear service worker caches if available
+            // Clear all possible caches
             if ('caches' in window) {
               caches.keys().then(names => {
                 names.forEach(name => caches.delete(name));
               });
             }
             
-            // Force reload to clear any cached authentication
-            window.location.replace('/');
+            // Clear IndexedDB
+            if ('indexedDB' in window) {
+              indexedDB.databases().then(databases => {
+                databases.forEach(db => {
+                  if (db.name) indexedDB.deleteDatabase(db.name);
+                });
+              }).catch(() => {});
+            }
+            
+            // Force complete reload to destroy any cached state
+            window.location.replace('/?nuked=true');
           }
         });
       }

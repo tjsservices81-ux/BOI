@@ -31,9 +31,9 @@ export function startPWARevocationChecker(): void {
 
         if (response.status === 403) {
           const data = await response.json();
-          if (data.revoked) {
-            console.log('🔴 PWA REVOCATION DETECTED - Immediate logout');
-            await forceLogoutPWA();
+          if (data.revoked || data.nuked) {
+            console.log('🔴 PWA NUCLEAR REVOCATION DETECTED - Complete destruction');
+            await forceLogoutPWA(true);
           }
         }
       } catch (error) {
@@ -73,7 +73,7 @@ function getActiveAccessCode(): string | null {
 /**
  * Forces immediate logout for PWA users
  */
-async function forceLogoutPWA(): Promise<void> {
+async function forceLogoutPWA(nuclear: boolean = false): Promise<void> {
   try {
     // Clear all storage
     localStorage.clear();
@@ -111,7 +111,8 @@ async function forceLogoutPWA(): Promise<void> {
     }));
     
     // Force navigation to access code page
-    window.location.replace('/?revoked=true');
+    const urlSuffix = nuclear ? '?nuked=true' : '?revoked=true';
+    window.location.replace('/' + urlSuffix);
     
   } catch (error) {
     console.error('Force logout failed:', error);
