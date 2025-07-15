@@ -177,10 +177,13 @@ function AppRoutes() {
         
         // Start PWA-specific revocation checking
         const { startPWARevocationChecker, isPWA } = await import('./utils/pwaRevocationChecker');
-        if (isPWA()) {
-          console.log('PWA detected - starting aggressive revocation checker');
-          startPWARevocationChecker();
-        }
+        console.log('Checking PWA status...');
+        const isPWAApp = isPWA();
+        console.log('PWA detected:', isPWAApp);
+        
+        // Always start revocation checker for enhanced protection
+        console.log('Starting enhanced revocation checker for all devices');
+        startPWARevocationChecker();
         
         // Use platform detection for accurate cold/warm start determination
         const startType = PlatformDetection.getCurrentStartType();

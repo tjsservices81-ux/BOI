@@ -13,7 +13,9 @@ export function startPWARevocationChecker(): void {
     clearInterval(revocationCheckInterval);
   }
 
-  // Check every 10 seconds for PWA installations
+  console.log('🔴 Starting aggressive revocation checker - checking every 10 seconds');
+  
+  // Check every 10 seconds for all installations (enhanced protection)
   revocationCheckInterval = setInterval(async () => {
     const accessCode = getActiveAccessCode();
     
@@ -29,10 +31,19 @@ export function startPWARevocationChecker(): void {
           body: JSON.stringify({ accessCode })
         });
 
+        console.log(`Revocation check for ${accessCode}: Status ${response.status}`);
+        
         if (response.status === 403) {
           const data = await response.json();
+          console.log('Revocation response:', data);
           if (data.revoked || data.nuked) {
-            console.log('🔴 PWA NUCLEAR REVOCATION DETECTED - Complete destruction');
+            console.log('🔴 NUCLEAR REVOCATION DETECTED - Complete destruction initiated');
+            await forceLogoutPWA(true);
+          }
+        } else if (response.ok) {
+          const data = await response.json();
+          if (data.revoked) {
+            console.log('🔴 REVOCATION DETECTED via success response - logging out');
             await forceLogoutPWA(true);
           }
         }
