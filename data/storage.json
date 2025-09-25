@@ -105,13 +105,14 @@
         "customerNumber": "BOI245714000",
         "pin": "000000",
         "name": "Jsjsjsisisia",
-        "email": "anjajajaia@gmail.com",
+        "email": "bankofireland2007@gmail.com",
         "phone": "46464664",
-        "address": null,
-        "dateOfBirth": null,
+        "address": "",
+        "dateOfBirth": "",
         "joinDate": "2025-09-25T19:36:46.915Z",
         "dateCreated": "2025-09-25T19:36:46.915Z",
-        "isDisabled": false
+        "isDisabled": false,
+        "currency": "EUR"
       }
     ]
   ],
