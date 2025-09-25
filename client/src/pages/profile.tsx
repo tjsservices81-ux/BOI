@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin, Calendar, CreditCard, X, RefreshCw, Plus, MessageCircle, Trash2, PhoneCall } from "lucide-react";
+import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin, Calendar, CreditCard, X, RefreshCw, Plus, MessageCircle, Trash2, PhoneCall, Database } from "lucide-react";
 import { UserDataManager } from "@/utils/userDataManager";
 import { useAuth } from "@/lib/auth";
 import { motion, AnimatePresence } from "framer-motion";
@@ -22,6 +22,7 @@ export default function Profile() {
 
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [showAddTransaction, setShowAddTransaction] = useState(false);
+  const [showSampleTransactions, setShowSampleTransactions] = useState(false);
   const [newAccountData, setNewAccountData] = useState({
     displayName: '',
     accountType: 'current',
@@ -876,12 +877,7 @@ export default function Profile() {
     alert(`${editingAccount.displayName} balance updated to ${currencySymbol}${numericBalance.toFixed(2)}`);
   };
 
-  const addSampleTransactions = (count: number) => {
-    if (!accounts || accounts.length === 0) {
-      alert('No accounts available. Please add an account first.');
-      return;
-    }
-
+  const addSampleTransactions = (accountId: number, count: number) => {
     // Clear all caches first to ensure we get the most current data
     UserDataManager.clearCache();
 
@@ -893,16 +889,19 @@ export default function Profile() {
       return;
     }
 
+    const targetAccount = currentAccounts.find((acc: any) => acc.id === accountId);
+    if (!targetAccount) {
+      alert('Error: Account not found. Please refresh the page.');
+      return;
+    }
+
     const currentTransactions = UserDataManager.getUserData('bankTransactions', []);
     const newTransactions = [];
-    const updatedAccounts = [...currentAccounts];
+    let currentBalance = parseFloat(targetAccount.balance) || 0;
 
     for (let i = 0; i < count; i++) {
       // Randomly select a transaction template
       const randomTransaction = sampleTransactions[Math.floor(Math.random() * sampleTransactions.length)];
-      
-      // Randomly select an account
-      const randomAccount = updatedAccounts[Math.floor(Math.random() * updatedAccounts.length)];
       
       // Create a random date within the last 30 days
       const transactionDate = new Date();
@@ -911,25 +910,15 @@ export default function Profile() {
       const randomMinutes = Math.floor(Math.random() * 60);
       transactionDate.setHours(randomHours, randomMinutes, 0, 0);
       
-      // Parse current account balance
-      const currentBalance = parseFloat(randomAccount.balance) || 0;
+      // Calculate transaction amount and new balance
       const rawAmount = Math.abs(randomTransaction.amount);
       const transactionAmount = randomTransaction.type === 'credit' ? rawAmount : -rawAmount;
-      const newBalance = currentBalance + transactionAmount;
-      
-      // Update account balance
-      const accountIndex = updatedAccounts.findIndex(acc => acc.id === randomAccount.id);
-      if (accountIndex !== -1) {
-        updatedAccounts[accountIndex] = {
-          ...updatedAccounts[accountIndex],
-          balance: newBalance.toFixed(2)
-        };
-      }
+      currentBalance += transactionAmount;
       
       // Create properly formatted transaction
       const transaction = {
         id: Date.now() + i, // Ensure unique IDs
-        accountId: randomAccount.id,
+        accountId: accountId,
         amount: transactionAmount >= 0 ? `+${transactionAmount.toFixed(2)}` : transactionAmount.toFixed(2),
         description: randomTransaction.description,
         category: randomTransaction.type === 'credit' ? 'income' : 'expense',
@@ -939,6 +928,14 @@ export default function Profile() {
       
       newTransactions.push(transaction);
     }
+
+    // Update account with new balance
+    const updatedAccounts = currentAccounts.map((acc: any) => {
+      if (acc.id === accountId) {
+        return { ...acc, balance: currentBalance.toFixed(2) };
+      }
+      return acc;
+    });
 
     // Combine with existing transactions
     const allTransactions = [...currentTransactions, ...newTransactions];
@@ -953,23 +950,25 @@ export default function Profile() {
     // Clear cache again after updates
     UserDataManager.clearCache();
 
-    console.log(`Added ${count} sample transactions across ${updatedAccounts.length} accounts`);
+    console.log(`Added ${count} sample transactions to ${targetAccount.displayName}`);
 
     // Notify all components of the changes
     window.dispatchEvent(new CustomEvent('transactionUpdate'));
     window.dispatchEvent(new CustomEvent('transactionAdded', {
-      detail: { transactions: newTransactions, count }
+      detail: { transactions: newTransactions, count, accountId }
     }));
     window.dispatchEvent(new CustomEvent('balanceUpdate', {
       detail: { 
-        accounts: updatedAccounts,
-        source: 'sampleTransactions'
+        accountId, 
+        newBalance: currentBalance.toFixed(2), 
+        accounts: updatedAccounts 
       }
     }));
     
+    setShowSampleTransactions(false);
     const currentCurrency = getUserCurrency();
     const currencySymbol = currentCurrency === 'EUR' ? '€' : '£';
-    alert(`Successfully added ${count} sample transaction${count === 1 ? '' : 's'}!\n\nTransactions distributed across your accounts with updated balances.`);
+    alert(`Successfully added ${count} sample transaction${count === 1 ? '' : 's'} to ${targetAccount.displayName}!\n\nNew Balance: ${currencySymbol}${currentBalance.toFixed(2)}`);
   };
 
   const resetToDefaults = () => {
@@ -1448,50 +1447,41 @@ export default function Profile() {
                   </h3>
                   
                   <div className="space-y-3">
-                    {/* Add Sample Transactions */}
-                    <div>
-                      <p className="font-semibold text-blue-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        Add Sample Transactions
-                      </p>
-                      <div className="grid grid-cols-5 gap-2">
-                        <button 
-                          onClick={() => addSampleTransactions(1)}
-                          className="flex flex-col items-center justify-center p-3 bg-blue-50 border border-blue-200 rounded-xl active:scale-95 transition-transform hover:bg-blue-100"
-                        >
-                          <span className="text-lg font-bold text-blue-900">1</span>
-                          <span className="text-xs text-blue-600 mt-1">transaction</span>
-                        </button>
-                        <button 
-                          onClick={() => addSampleTransactions(5)}
-                          className="flex flex-col items-center justify-center p-3 bg-blue-50 border border-blue-200 rounded-xl active:scale-95 transition-transform hover:bg-blue-100"
-                        >
-                          <span className="text-lg font-bold text-blue-900">5</span>
-                          <span className="text-xs text-blue-600 mt-1">transactions</span>
-                        </button>
-                        <button 
-                          onClick={() => addSampleTransactions(10)}
-                          className="flex flex-col items-center justify-center p-3 bg-blue-50 border border-blue-200 rounded-xl active:scale-95 transition-transform hover:bg-blue-100"
-                        >
-                          <span className="text-lg font-bold text-blue-900">10</span>
-                          <span className="text-xs text-blue-600 mt-1">transactions</span>
-                        </button>
-                        <button 
-                          onClick={() => addSampleTransactions(20)}
-                          className="flex flex-col items-center justify-center p-3 bg-blue-50 border border-blue-200 rounded-xl active:scale-95 transition-transform hover:bg-blue-100"
-                        >
-                          <span className="text-lg font-bold text-blue-900">20</span>
-                          <span className="text-xs text-blue-600 mt-1">transactions</span>
-                        </button>
-                        <button 
-                          onClick={() => addSampleTransactions(50)}
-                          className="flex flex-col items-center justify-center p-3 bg-blue-50 border border-blue-200 rounded-xl active:scale-95 transition-transform hover:bg-blue-100"
-                        >
-                          <span className="text-lg font-bold text-blue-900">50</span>
-                          <span className="text-xs text-blue-600 mt-1">transactions</span>
-                        </button>
+                    {/* Add Single Transaction */}
+                    <button 
+                      onClick={() => setShowAddTransaction(true)}
+                      className="w-full flex items-center space-x-3 p-4 bg-green-50 border border-green-200 rounded-xl active:scale-98 transition-transform"
+                    >
+                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                        <Plus className="w-5 h-5 text-green-600" />
                       </div>
-                    </div>
+                      <div className="flex-1 text-left">
+                        <p className="font-semibold text-green-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Add Single Transaction
+                        </p>
+                        <p className="text-sm text-green-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Add one random sample transaction
+                        </p>
+                      </div>
+                    </button>
 
+                    {/* Add Multiple Sample Transactions */}
+                    <button 
+                      onClick={() => setShowSampleTransactions(true)}
+                      className="w-full flex items-center space-x-3 p-4 bg-blue-50 border border-blue-200 rounded-xl active:scale-98 transition-transform"
+                    >
+                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                        <Database className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <p className="font-semibold text-blue-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Add Sample Transactions
+                        </p>
+                        <p className="text-sm text-blue-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Add multiple transactions (1, 5, 10, 20, or 50)
+                        </p>
+                      </div>
+                    </button>
                   </div>
                 </div>
 
@@ -1889,6 +1879,115 @@ export default function Profile() {
         </div>
       )}
 
+      {/* Sample Transactions Modal */}
+      {showSampleTransactions && (
+        <div className="modal-overlay bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Add Sample Transactions
+                </h2>
+                <button
+                  onClick={() => setShowSampleTransactions(false)}
+                  className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+                >
+                  <X className="w-4 h-4 text-gray-600" />
+                </button>
+              </div>
+
+              <p className="text-gray-600 mb-6" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Select an account and number of transactions to add:
+              </p>
+
+              <div className="space-y-4">
+                {/* Account Selection */}
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Choose Account:
+                  </h3>
+                  <div className="space-y-2">
+                    {accounts && Array.isArray(accounts) ? (
+                      accounts.map((account) => (
+                        <div key={account.id}>
+                          <div className="bg-gray-50 p-3 rounded-xl border">
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="text-left">
+                                <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                                  {account.displayName}
+                                </p>
+                                <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                                  {account.accountNumber}
+                                </p>
+                                <p className="text-sm font-medium text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                                  Current: {formatCurrency(account.balance, userCurrency)}
+                                </p>
+                              </div>
+                            </div>
+                            
+                            {/* Transaction Count Buttons */}
+                            <div className="grid grid-cols-5 gap-2">
+                              <button
+                                onClick={() => addSampleTransactions(account.id, 1)}
+                                className="flex flex-col items-center justify-center p-2 bg-blue-50 border border-blue-200 rounded-lg active:scale-95 transition-transform hover:bg-blue-100"
+                              >
+                                <span className="text-sm font-bold text-blue-900">1</span>
+                                <span className="text-xs text-blue-600">txn</span>
+                              </button>
+                              <button
+                                onClick={() => addSampleTransactions(account.id, 5)}
+                                className="flex flex-col items-center justify-center p-2 bg-blue-50 border border-blue-200 rounded-lg active:scale-95 transition-transform hover:bg-blue-100"
+                              >
+                                <span className="text-sm font-bold text-blue-900">5</span>
+                                <span className="text-xs text-blue-600">txns</span>
+                              </button>
+                              <button
+                                onClick={() => addSampleTransactions(account.id, 10)}
+                                className="flex flex-col items-center justify-center p-2 bg-blue-50 border border-blue-200 rounded-lg active:scale-95 transition-transform hover:bg-blue-100"
+                              >
+                                <span className="text-sm font-bold text-blue-900">10</span>
+                                <span className="text-xs text-blue-600">txns</span>
+                              </button>
+                              <button
+                                onClick={() => addSampleTransactions(account.id, 20)}
+                                className="flex flex-col items-center justify-center p-2 bg-blue-50 border border-blue-200 rounded-lg active:scale-95 transition-transform hover:bg-blue-100"
+                              >
+                                <span className="text-sm font-bold text-blue-900">20</span>
+                                <span className="text-xs text-blue-600">txns</span>
+                              </button>
+                              <button
+                                onClick={() => addSampleTransactions(account.id, 50)}
+                                className="flex flex-col items-center justify-center p-2 bg-blue-50 border border-blue-200 rounded-lg active:scale-95 transition-transform hover:bg-blue-100"
+                              >
+                                <span className="text-sm font-bold text-blue-900">50</span>
+                                <span className="text-xs text-blue-600">txns</span>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-8 text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        No account data found
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <button
+                  onClick={() => setShowSampleTransactions(false)}
+                  className="w-full py-3 bg-gray-200 text-gray-800 rounded-xl font-semibold hover:bg-gray-300 transition-colors"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Delete Transaction Modal */}
       {showDeleteTransaction && (
