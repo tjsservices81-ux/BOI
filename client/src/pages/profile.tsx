@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin, Calendar, CreditCard, X, RefreshCw, Plus, MessageCircle, Trash2, PhoneCall, Database } from "lucide-react";
+import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin, Calendar, CreditCard, X, RefreshCw, Plus, MessageCircle, Trash2, PhoneCall, HardDrive } from "lucide-react";
 import { UserDataManager } from "@/utils/userDataManager";
 import { useAuth } from "@/lib/auth";
 import { motion, AnimatePresence } from "framer-motion";
@@ -1471,7 +1471,7 @@ export default function Profile() {
                       className="w-full flex items-center space-x-3 p-4 bg-blue-50 border border-blue-200 rounded-xl active:scale-98 transition-transform"
                     >
                       <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                        <Database className="w-5 h-5 text-blue-600" />
+                        <HardDrive className="w-5 h-5 text-blue-600" />
                       </div>
                       <div className="flex-1 text-left">
                         <p className="font-semibold text-blue-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
