@@ -155,7 +155,7 @@ const identifyBankFromSortCode = (sortCode: string): string => {
 export default function UkTransfer() {
   const locationHook = useLocation();
   const [, navigate] = locationHook || [null, () => {}];
-  const [step, setStep] = useState<'form' | 'confirm' | 'success' | 'cancelled'>('form');
+  const [step, setStep] = useState<'form' | 'verifying' | 'confirm' | 'success' | 'cancelled'>('form');
   const [transferReference, setTransferReference] = useState<string>('');
   const [identifiedBank, setIdentifiedBank] = useState<string>('');
   const [showReference, setShowReference] = useState<boolean>(false);
@@ -168,6 +168,8 @@ export default function UkTransfer() {
   const [gbpAmount, setGbpAmount] = useState<string>('0.00');
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('left');
   const [userCurrency, setUserCurrency] = useState<Currency>('EUR');
+  const [verificationProgress, setVerificationProgress] = useState<number>(0);
+  const [showTick, setShowTick] = useState<boolean>(false);
 
   const form = useForm<UkTransferData>({
     resolver: zodResolver(ukTransferSchema),
@@ -321,8 +323,33 @@ export default function UkTransfer() {
     // Fetch exchange rate
     await fetchExchangeRate();
     
-    // Move to confirmation step
-    setStep('confirm');
+    // Move to verification step first
+    setStep('verifying');
+    
+    // Start verification process (5-7 seconds)
+    setVerificationProgress(0);
+    setShowTick(false);
+    
+    const verificationInterval = setInterval(() => {
+      setVerificationProgress(prev => {
+        const newProgress = prev + (100 / 60); // 60 intervals over ~6 seconds
+        
+        if (newProgress >= 85 && !showTick) {
+          setShowTick(true);
+        }
+        
+        if (newProgress >= 100) {
+          clearInterval(verificationInterval);
+          // Move to confirmation step after verification complete
+          setTimeout(() => {
+            setStep('confirm');
+          }, 1000); // Small delay after tick shows
+          return 100;
+        }
+        
+        return newProgress;
+      });
+    }, 100); // Update every 100ms
   };
 
   const executeTransfer = async () => {
