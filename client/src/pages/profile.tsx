@@ -58,6 +58,17 @@ export default function Profile() {
   const [accountTransactions, setAccountTransactions] = useState<any[]>([]);
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  
+  // Date range selection for sample transactions
+  const [startDate, setStartDate] = useState(() => {
+    const today = new Date();
+    const thirtyDaysAgo = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000));
+    return thirtyDaysAgo.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+  });
+  const [endDate, setEndDate] = useState(() => {
+    const today = new Date();
+    return today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+  });
   const [profileData, setProfileData] = useState(() => {
     const currentCustomerNumber = UserDataManager.getCurrentUser();
     // Try to get cached data first to prevent flash
