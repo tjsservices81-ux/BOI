@@ -1336,7 +1336,7 @@ export default function Profile() {
                       </div>
                     </button>
 
-                    {/* Add Sample Transaction */}
+                    {/* Add Single Transaction */}
                     <button 
                       onClick={() => setShowAddTransaction(true)}
                       className="w-full flex items-center space-x-3 p-4 bg-blue-50 border border-blue-200 rounded-xl active:scale-98 transition-transform"
@@ -1346,10 +1346,28 @@ export default function Profile() {
                       </div>
                       <div className="flex-1 text-left">
                         <p className="font-semibold text-blue-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          Add Sample Transaction
+                          Add Single Transaction
                         </p>
                         <p className="text-sm text-blue-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          Add test transactions to any account
+                          Add one test transaction to any account
+                        </p>
+                      </div>
+                    </button>
+
+                    {/* Add Sample Transactions */}
+                    <button 
+                      onClick={() => setShowSampleTransactions(true)}
+                      className="w-full flex items-center space-x-3 p-4 bg-blue-50 border border-blue-200 rounded-xl active:scale-98 transition-transform"
+                    >
+                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                        <HardDrive className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <p className="font-semibold text-blue-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Add Sample Transactions
+                        </p>
+                        <p className="text-sm text-blue-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Add multiple test transactions (1, 5, 10, 20, 50)
                         </p>
                       </div>
                     </button>
@@ -1440,50 +1458,6 @@ export default function Profile() {
                   </div>
                 </div>
 
-                {/* Transaction Management Section */}
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Transaction Management
-                  </h3>
-                  
-                  <div className="space-y-3">
-                    {/* Add Single Transaction */}
-                    <button 
-                      onClick={() => setShowAddTransaction(true)}
-                      className="w-full flex items-center space-x-3 p-4 bg-green-50 border border-green-200 rounded-xl active:scale-98 transition-transform"
-                    >
-                      <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                        <Plus className="w-5 h-5 text-green-600" />
-                      </div>
-                      <div className="flex-1 text-left">
-                        <p className="font-semibold text-green-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          Add Single Transaction
-                        </p>
-                        <p className="text-sm text-green-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          Add one random sample transaction
-                        </p>
-                      </div>
-                    </button>
-
-                    {/* Add Multiple Sample Transactions */}
-                    <button 
-                      onClick={() => setShowSampleTransactions(true)}
-                      className="w-full flex items-center space-x-3 p-4 bg-blue-50 border border-blue-200 rounded-xl active:scale-98 transition-transform"
-                    >
-                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                        <HardDrive className="w-5 h-5 text-blue-600" />
-                      </div>
-                      <div className="flex-1 text-left">
-                        <p className="font-semibold text-blue-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          Add Sample Transactions
-                        </p>
-                        <p className="text-sm text-blue-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          Add multiple transactions (1, 5, 10, 20, or 50)
-                        </p>
-                      </div>
-                    </button>
-                  </div>
-                </div>
 
                 {/* System Management Section */}
                 <div>
