@@ -888,7 +888,7 @@ export default function Profile() {
     alert(`${editingAccount.displayName} balance updated to ${currencySymbol}${numericBalance.toFixed(2)}`);
   };
 
-  const addSampleTransactions = (accountId: number, count: number) => {
+  const addSampleTransactions = (accountId: number, count: number, startDateStr: string = startDate, endDateStr: string = endDate) => {
     // Clear all caches first to ensure we get the most current data
     UserDataManager.clearCache();
 
@@ -914,9 +914,12 @@ export default function Profile() {
       // Randomly select a transaction template
       const randomTransaction = sampleTransactions[Math.floor(Math.random() * sampleTransactions.length)];
       
-      // Create a random date within the last 30 days
-      const transactionDate = new Date();
-      transactionDate.setDate(transactionDate.getDate() - Math.floor(Math.random() * 30));
+      // Create a random date within the specified date range
+      const startDateObj = new Date(startDateStr);
+      const endDateObj = new Date(endDateStr);
+      const timeDiff = endDateObj.getTime() - startDateObj.getTime();
+      const randomTime = Math.random() * timeDiff;
+      const transactionDate = new Date(startDateObj.getTime() + randomTime);
       const randomHours = Math.floor(Math.random() * 24);
       const randomMinutes = Math.floor(Math.random() * 60);
       transactionDate.setHours(randomHours, randomMinutes, 0, 0);
@@ -1945,35 +1948,35 @@ export default function Profile() {
                             {/* Transaction Count Buttons */}
                             <div className="grid grid-cols-5 gap-2">
                               <button
-                                onClick={() => addSampleTransactions(account.id, 1)}
+                                onClick={() => addSampleTransactions(account.id, 1, startDate, endDate)}
                                 className="flex flex-col items-center justify-center p-2 bg-blue-50 border border-blue-200 rounded-lg active:scale-95 transition-transform hover:bg-blue-100"
                               >
                                 <span className="text-sm font-bold text-blue-900">1</span>
                                 <span className="text-xs text-blue-600">txn</span>
                               </button>
                               <button
-                                onClick={() => addSampleTransactions(account.id, 5)}
+                                onClick={() => addSampleTransactions(account.id, 5, startDate, endDate)}
                                 className="flex flex-col items-center justify-center p-2 bg-blue-50 border border-blue-200 rounded-lg active:scale-95 transition-transform hover:bg-blue-100"
                               >
                                 <span className="text-sm font-bold text-blue-900">5</span>
                                 <span className="text-xs text-blue-600">txns</span>
                               </button>
                               <button
-                                onClick={() => addSampleTransactions(account.id, 10)}
+                                onClick={() => addSampleTransactions(account.id, 10, startDate, endDate)}
                                 className="flex flex-col items-center justify-center p-2 bg-blue-50 border border-blue-200 rounded-lg active:scale-95 transition-transform hover:bg-blue-100"
                               >
                                 <span className="text-sm font-bold text-blue-900">10</span>
                                 <span className="text-xs text-blue-600">txns</span>
                               </button>
                               <button
-                                onClick={() => addSampleTransactions(account.id, 20)}
+                                onClick={() => addSampleTransactions(account.id, 20, startDate, endDate)}
                                 className="flex flex-col items-center justify-center p-2 bg-blue-50 border border-blue-200 rounded-lg active:scale-95 transition-transform hover:bg-blue-100"
                               >
                                 <span className="text-sm font-bold text-blue-900">20</span>
                                 <span className="text-xs text-blue-600">txns</span>
                               </button>
                               <button
-                                onClick={() => addSampleTransactions(account.id, 50)}
+                                onClick={() => addSampleTransactions(account.id, 50, startDate, endDate)}
                                 className="flex flex-col items-center justify-center p-2 bg-blue-50 border border-blue-200 rounded-lg active:scale-95 transition-transform hover:bg-blue-100"
                               >
                                 <span className="text-sm font-bold text-blue-900">50</span>
