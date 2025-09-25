@@ -152,6 +152,32 @@ const identifyBankFromSortCode = (sortCode: string): string => {
   return '';
 };
 
+// Bank icon based on sort code
+const getBankIcon = (sortCode: string): { name: string; color: string } => {
+  const cleanSortCode = sortCode.replace(/\D/g, '');
+  const firstFour = cleanSortCode.substring(0, 4);
+  
+  if (firstFour.startsWith('04')) {
+    return { name: 'Lloyds Bank', color: '#00853e' };
+  } else if (firstFour.startsWith('77')) {
+    return { name: 'Lloyds Bank', color: '#00853e' };
+  } else if (firstFour.startsWith('20')) {
+    return { name: 'Barclays', color: '#00aeef' };
+  } else if (firstFour.startsWith('60')) {
+    return { name: 'NatWest', color: '#5a287b' };
+  } else if (firstFour.startsWith('80')) {
+    return { name: 'Bank of Scotland', color: '#00549f' };
+  } else if (firstFour.startsWith('30')) {
+    return { name: 'Lloyds Bank', color: '#00853e' };
+  } else if (firstFour.startsWith('16')) {
+    return { name: 'Starling Bank', color: '#6c2c91' };
+  } else if (firstFour.startsWith('23')) {
+    return { name: 'Monzo', color: '#ff6b6b' };
+  }
+  
+  return { name: 'UK Bank', color: '#126987' }; // Default fallback
+};
+
 export default function UkTransfer() {
   const locationHook = useLocation();
   const [, navigate] = locationHook || [null, () => {}];
