@@ -152,36 +152,10 @@ const identifyBankFromSortCode = (sortCode: string): string => {
   return '';
 };
 
-// Bank information based on sort code
-const getBankInfo = (sortCode: string): { name: string; color: string } => {
-  const cleanSortCode = sortCode.replace(/\D/g, '');
-  const firstFour = cleanSortCode.substring(0, 4);
-  
-  if (firstFour.startsWith('04')) {
-    return { name: 'Lloyds Bank', color: '#00853e' };
-  } else if (firstFour.startsWith('77')) {
-    return { name: 'Lloyds Bank', color: '#00853e' };
-  } else if (firstFour.startsWith('20')) {
-    return { name: 'Barclays', color: '#00aeef' };
-  } else if (firstFour.startsWith('60')) {
-    return { name: 'NatWest', color: '#5a287b' };
-  } else if (firstFour.startsWith('80')) {
-    return { name: 'Bank of Scotland', color: '#00549f' };
-  } else if (firstFour.startsWith('30')) {
-    return { name: 'Lloyds Bank', color: '#00853e' };
-  } else if (firstFour.startsWith('16')) {
-    return { name: 'Starling Bank', color: '#6c2c91' };
-  } else if (firstFour.startsWith('23')) {
-    return { name: 'Monzo', color: '#ff6b6b' };
-  }
-  
-  return { name: 'UK Bank', color: '#126987' }; // Default fallback
-};
-
 export default function UkTransfer() {
   const locationHook = useLocation();
   const [, navigate] = locationHook || [null, () => {}];
-  const [step, setStep] = useState<'form' | 'verifying' | 'confirm' | 'success' | 'cancelled'>('form');
+  const [step, setStep] = useState<'form' | 'confirm' | 'success' | 'cancelled'>('form');
   const [transferReference, setTransferReference] = useState<string>('');
   const [identifiedBank, setIdentifiedBank] = useState<string>('');
   const [showReference, setShowReference] = useState<boolean>(false);
@@ -194,8 +168,6 @@ export default function UkTransfer() {
   const [gbpAmount, setGbpAmount] = useState<string>('0.00');
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('left');
   const [userCurrency, setUserCurrency] = useState<Currency>('EUR');
-  const [verificationProgress, setVerificationProgress] = useState<number>(0);
-  const [showTick, setShowTick] = useState<boolean>(false);
 
   const form = useForm<UkTransferData>({
     resolver: zodResolver(ukTransferSchema),
@@ -349,33 +321,8 @@ export default function UkTransfer() {
     // Fetch exchange rate
     await fetchExchangeRate();
     
-    // Move to verification step first
-    setStep('verifying');
-    
-    // Start verification process (5-7 seconds)
-    setVerificationProgress(0);
-    setShowTick(false);
-    
-    const verificationInterval = setInterval(() => {
-      setVerificationProgress(prev => {
-        const newProgress = prev + (100 / 60); // 60 intervals over ~6 seconds
-        
-        if (newProgress >= 85 && !showTick) {
-          setShowTick(true);
-        }
-        
-        if (newProgress >= 100) {
-          clearInterval(verificationInterval);
-          // Move to confirmation step after verification complete
-          setTimeout(() => {
-            setStep('confirm');
-          }, 1000); // Small delay after tick shows
-          return 100;
-        }
-        
-        return newProgress;
-      });
-    }, 100); // Update every 100ms
+    // Move to confirmation step
+    setStep('confirm');
   };
 
   const executeTransfer = async () => {
@@ -478,160 +425,6 @@ export default function UkTransfer() {
 
 
 
-
-  // Verification step
-  if (step === 'verifying' && formData) {
-    const bankInfo = getBankInfo(formData.sortCode);
-    
-    return (
-      <div className="page-container page-fade-in" style={{ 
-        position: 'fixed', 
-        top: 0, 
-        left: 0, 
-        right: 0, 
-        bottom: 0, 
-        display: 'flex', 
-        flexDirection: 'column',
-        backgroundColor: '#f9fafb',
-        zIndex: 1000
-      }}>
-        {/* Verification Modal */}
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '2rem'
-        }}>
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '16px',
-            padding: '3rem',
-            maxWidth: '400px',
-            width: '100%',
-            textAlign: 'center',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
-          }}>
-            <h2 style={{ 
-              fontFamily: 'OpenSans, sans-serif',
-              fontSize: '1.5rem',
-              fontWeight: '600',
-              color: '#1f2937',
-              marginBottom: '1.5rem'
-            }}>
-              Verifying Details
-            </h2>
-            
-            <div style={{
-              position: 'relative',
-              width: '120px',
-              height: '120px',
-              margin: '0 auto 2rem',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              {/* Bank Icon Circle */}
-              <div style={{
-                width: '100px',
-                height: '100px',
-                borderRadius: '50%',
-                backgroundColor: bankInfo.color,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white',
-                fontSize: '1.5rem',
-                fontWeight: '600',
-                transform: showTick ? 'scale(0.8)' : 'scale(1)',
-                opacity: showTick ? 0 : 1,
-                transition: 'all 0.5s ease'
-              }}>
-                {bankInfo.name.charAt(0)}
-              </div>
-              
-              {/* Tick Animation */}
-              {showTick && (
-                <div style={{
-                  position: 'absolute',
-                  width: '100px',
-                  height: '100px',
-                  borderRadius: '50%',
-                  backgroundColor: '#10b981',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transform: showTick ? 'scale(1)' : 'scale(0.8)',
-                  opacity: showTick ? 1 : 0,
-                  transition: 'all 0.5s ease'
-                }}>
-                  <div style={{
-                    width: '24px',
-                    height: '24px',
-                    border: '3px solid white',
-                    borderTop: 'none',
-                    borderRight: 'none',
-                    transform: 'rotate(-45deg)',
-                    marginTop: '-6px'
-                  }} />
-                </div>
-              )}
-              
-              {/* Progress Ring */}
-              <svg style={{
-                position: 'absolute',
-                width: '120px',
-                height: '120px',
-                transform: 'rotate(-90deg)'
-              }}>
-                <circle
-                  cx="60"
-                  cy="60"
-                  r="55"
-                  fill="none"
-                  stroke="#e5e7eb"
-                  strokeWidth="4"
-                />
-                <circle
-                  cx="60"
-                  cy="60"
-                  r="55"
-                  fill="none"
-                  stroke={bankInfo.color}
-                  strokeWidth="4"
-                  strokeDasharray={`${2 * Math.PI * 55}`}
-                  strokeDashoffset={`${2 * Math.PI * 55 * (1 - verificationProgress / 100)}`}
-                  style={{ transition: 'stroke-dashoffset 0.1s ease' }}
-                />
-              </svg>
-            </div>
-            
-            <p style={{ 
-              fontFamily: 'OpenSans, sans-serif',
-              color: '#6b7280',
-              fontSize: '1rem',
-              marginBottom: '0.5rem'
-            }}>
-              Verifying details with {bankInfo.name}
-            </p>
-            
-            <p style={{ 
-              fontFamily: 'OpenSans, sans-serif',
-              color: '#9ca3af',
-              fontSize: '0.875rem'
-            }}>
-              Please wait while we confirm the recipient details...
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   if (step === 'confirm' && formData) {
     const selectedAccount = accounts.find(acc => acc.id === formData.fromAccount);
