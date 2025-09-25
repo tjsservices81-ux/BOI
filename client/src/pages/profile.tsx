@@ -1882,10 +1882,42 @@ export default function Profile() {
               </div>
 
               <p className="text-gray-600 mb-6" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Select an account and number of transactions to add:
+                Select date range, account, and number of transactions to add:
               </p>
 
               <div className="space-y-4">
+                {/* Date Range Selection */}
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Transaction Date Range:
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        From Date:
+                      </label>
+                      <input
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        style={{ fontFamily: 'OpenSans, sans-serif' }}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        To Date:
+                      </label>
+                      <input
+                        type="date"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        style={{ fontFamily: 'OpenSans, sans-serif' }}
+                      />
+                    </div>
+                  </div>
+                </div>
                 {/* Account Selection */}
                 <div>
                   <h3 className="text-lg font-medium text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
