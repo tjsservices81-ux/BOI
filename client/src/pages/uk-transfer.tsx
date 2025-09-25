@@ -152,8 +152,8 @@ const identifyBankFromSortCode = (sortCode: string): string => {
   return '';
 };
 
-// Bank icon based on sort code
-const getBankIcon = (sortCode: string): { name: string; color: string } => {
+// Bank information based on sort code
+const getBankInfo = (sortCode: string): { name: string; color: string } => {
   const cleanSortCode = sortCode.replace(/\D/g, '');
   const firstFour = cleanSortCode.substring(0, 4);
   
@@ -478,6 +478,160 @@ export default function UkTransfer() {
 
 
 
+
+  // Verification step
+  if (step === 'verifying' && formData) {
+    const bankInfo = getBankInfo(formData.sortCode);
+    
+    return (
+      <div className="page-container page-fade-in" style={{ 
+        position: 'fixed', 
+        top: 0, 
+        left: 0, 
+        right: 0, 
+        bottom: 0, 
+        display: 'flex', 
+        flexDirection: 'column',
+        backgroundColor: '#f9fafb',
+        zIndex: 1000
+      }}>
+        {/* Verification Modal */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '2rem'
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '16px',
+            padding: '3rem',
+            maxWidth: '400px',
+            width: '100%',
+            textAlign: 'center',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+          }}>
+            <h2 style={{ 
+              fontFamily: 'OpenSans, sans-serif',
+              fontSize: '1.5rem',
+              fontWeight: '600',
+              color: '#1f2937',
+              marginBottom: '1.5rem'
+            }}>
+              Verifying Details
+            </h2>
+            
+            <div style={{
+              position: 'relative',
+              width: '120px',
+              height: '120px',
+              margin: '0 auto 2rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              {/* Bank Icon Circle */}
+              <div style={{
+                width: '100px',
+                height: '100px',
+                borderRadius: '50%',
+                backgroundColor: bankInfo.color,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                fontSize: '1.5rem',
+                fontWeight: '600',
+                transform: showTick ? 'scale(0.8)' : 'scale(1)',
+                opacity: showTick ? 0 : 1,
+                transition: 'all 0.5s ease'
+              }}>
+                {bankInfo.name.charAt(0)}
+              </div>
+              
+              {/* Tick Animation */}
+              {showTick && (
+                <div style={{
+                  position: 'absolute',
+                  width: '100px',
+                  height: '100px',
+                  borderRadius: '50%',
+                  backgroundColor: '#10b981',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transform: showTick ? 'scale(1)' : 'scale(0.8)',
+                  opacity: showTick ? 1 : 0,
+                  transition: 'all 0.5s ease'
+                }}>
+                  <div style={{
+                    width: '24px',
+                    height: '24px',
+                    border: '3px solid white',
+                    borderTop: 'none',
+                    borderRight: 'none',
+                    transform: 'rotate(-45deg)',
+                    marginTop: '-6px'
+                  }} />
+                </div>
+              )}
+              
+              {/* Progress Ring */}
+              <svg style={{
+                position: 'absolute',
+                width: '120px',
+                height: '120px',
+                transform: 'rotate(-90deg)'
+              }}>
+                <circle
+                  cx="60"
+                  cy="60"
+                  r="55"
+                  fill="none"
+                  stroke="#e5e7eb"
+                  strokeWidth="4"
+                />
+                <circle
+                  cx="60"
+                  cy="60"
+                  r="55"
+                  fill="none"
+                  stroke={bankInfo.color}
+                  strokeWidth="4"
+                  strokeDasharray={`${2 * Math.PI * 55}`}
+                  strokeDashoffset={`${2 * Math.PI * 55 * (1 - verificationProgress / 100)}`}
+                  style={{ transition: 'stroke-dashoffset 0.1s ease' }}
+                />
+              </svg>
+            </div>
+            
+            <p style={{ 
+              fontFamily: 'OpenSans, sans-serif',
+              color: '#6b7280',
+              fontSize: '1rem',
+              marginBottom: '0.5rem'
+            }}>
+              Verifying details with {bankInfo.name}
+            </p>
+            
+            <p style={{ 
+              fontFamily: 'OpenSans, sans-serif',
+              color: '#9ca3af',
+              fontSize: '0.875rem'
+            }}>
+              Please wait while we confirm the recipient details...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (step === 'confirm' && formData) {
     const selectedAccount = accounts.find(acc => acc.id === formData.fromAccount);
