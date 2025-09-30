@@ -3,7 +3,10 @@ import { useLocation } from "wouter";
 import { ChevronLeft, Download, Calendar, FileText, Building2, CheckCircle2, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { UserDataManager } from "@/utils/userDataManager";
+import { format } from "date-fns";
 
 interface Account {
   id: number | string;
@@ -13,19 +16,12 @@ interface Account {
   accountType: string;
 }
 
-type DateRange = '1week' | '2weeks' | '1month';
-
-const dateRangeOptions = [
-  { value: '1week', label: '1 Week', days: 7 },
-  { value: '2weeks', label: '2 Weeks', days: 14 },
-  { value: '1month', label: '1 Month', days: 30 }
-];
-
 export default function BankStatements() {
   const [, navigate] = useLocation();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [selectedAccount, setSelectedAccount] = useState<string>("");
-  const [selectedDateRange, setSelectedDateRange] = useState<DateRange>('1month');
+  const [startDate, setStartDate] = useState<Date>(new Date(new Date().setDate(new Date().getDate() - 30)));
+  const [endDate, setEndDate] = useState<Date>(new Date());
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationProgress, setGenerationProgress] = useState(0);
 
@@ -60,12 +56,6 @@ export default function BankStatements() {
         setGenerationProgress(step.progress);
       }
 
-      // Get date range
-      const dateRange = dateRangeOptions.find(range => range.value === selectedDateRange);
-      const endDate = new Date();
-      const startDate = new Date();
-      startDate.setDate(endDate.getDate() - (dateRange?.days || 30));
-
       // Get real user data (transactions, accounts, and profile for email)
       const userTransactions = UserDataManager.getUserTransactions();
       const userAccounts = UserDataManager.getUserAccounts();
@@ -84,11 +74,12 @@ export default function BankStatements() {
           accountId: selectedAccount,
           startDate: startDate.toISOString(),
           endDate: endDate.toISOString(),
-          dateRange: selectedDateRange,
+          dateRange: `${format(startDate, 'dd/MM/yyyy')} - ${format(endDate, 'dd/MM/yyyy')}`,
           userTransactions: userTransactions, // Real transaction data
           userAccounts: userAccounts, // Real account data with balances
           userEmail: userProfile?.email, // For automatic email delivery
-          customerName: userProfile?.name || 'Bank of Ireland Customer' // For email personalization
+          customerName: userProfile?.name || 'Bank of Ireland Customer', // For email personalization
+          userAddress: userProfile?.address // Include user address
         }),
       });
 
@@ -100,7 +91,7 @@ export default function BankStatements() {
         a.href = url;
         
         const selectedAccountData = accounts.find(acc => String(acc.id) === selectedAccount);
-        const fileName = `BOI_Statement_${selectedAccountData?.accountNumber}_${selectedDateRange}_${new Date().toISOString().split('T')[0]}.pdf`;
+        const fileName = `BOI_Statement_${selectedAccountData?.accountNumber}_${format(startDate, 'ddMMyyyy')}-${format(endDate, 'ddMMyyyy')}.pdf`;
         a.download = fileName;
         
         document.body.appendChild(a);
@@ -226,27 +217,72 @@ export default function BankStatements() {
                   Date Range
                 </h2>
                 <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Select statement period
+                  Select custom statement period
                 </p>
               </div>
             </div>
             
-            <Select value={selectedDateRange} onValueChange={(value: DateRange) => setSelectedDateRange(value)}>
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {dateRangeOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="space-y-3">
+              {/* Start Date Picker */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Start Date
+                </label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-left font-normal"
+                      data-testid="button-start-date"
+                    >
+                      <Calendar className="mr-2 h-4 w-4" />
+                      {startDate ? format(startDate, 'PPP') : <span>Pick a date</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <CalendarComponent
+                      mode="single"
+                      selected={startDate}
+                      onSelect={(date) => date && setStartDate(date)}
+                      initialFocus
+                      disabled={(date) => date > new Date() || date > endDate}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {/* End Date Picker */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  End Date
+                </label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-left font-normal"
+                      data-testid="button-end-date"
+                    >
+                      <Calendar className="mr-2 h-4 w-4" />
+                      {endDate ? format(endDate, 'PPP') : <span>Pick a date</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <CalendarComponent
+                      mode="single"
+                      selected={endDate}
+                      onSelect={(date) => date && setEndDate(date)}
+                      initialFocus
+                      disabled={(date) => date > new Date() || date < startDate}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
 
             <div className="mt-3 p-3 bg-blue-50 rounded-lg">
               <p className="text-sm text-blue-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Statement will include transactions from the last {dateRangeOptions.find(r => r.value === selectedDateRange)?.label.toLowerCase()}
+                Statement will include transactions from {format(startDate, 'dd/MM/yyyy')} to {format(endDate, 'dd/MM/yyyy')}
               </p>
             </div>
           </div>

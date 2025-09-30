@@ -1836,7 +1836,7 @@ No transfers found yet on your account.`;
         accountId: z.union([z.string(), z.number()]).transform(val => String(val)),
         startDate: z.string(),
         endDate: z.string(),
-        dateRange: z.enum(['1week', '2weeks', '1month']),
+        dateRange: z.string(),
         // Accept real user transactions from frontend
         userTransactions: z.array(z.object({
           id: z.union([z.string(), z.number()]),
@@ -1863,9 +1863,10 @@ No transfers found yet on your account.`;
           accountType: z.string(),
           sortCode: z.string().optional()
         })).optional(),
-        // User information for email delivery
+        // User information for email delivery and address
         userEmail: z.string().email().optional(),
-        customerName: z.string().optional()
+        customerName: z.string().optional(),
+        userAddress: z.string().optional()
       });
 
       const statementRequest = statementSchema.parse(req.body);

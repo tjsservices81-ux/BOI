@@ -9,6 +9,7 @@ interface StatementRequest {
   endDate: string;
   dateRange: string;
   customerName?: string;
+  userAddress?: string;
   userTransactions?: Array<{
     id: string | number;
     accountId: number;
@@ -168,11 +169,20 @@ export class StatementService {
     
     // Add customer name if available (using authentic user data)
     if (request.customerName) {
-      doc.text(`Customer Name: ${request.customerName}`, 50, startY + 25)
-         .text(`Account Name: ${account.displayName}`, 50, startY + 45)
-         .text(`Account Number: ${account.accountNumber}`, 50, startY + 65)
-         .text(`Sort Code: ${account.sortCode}`, 50, startY + 85)
-         .text(`Account Type: ${account.accountType}`, 50, startY + 105);
+      let currentY = startY + 25;
+      doc.text(`Customer Name: ${request.customerName}`, 50, currentY);
+      currentY += 20;
+      
+      // Add customer address if available
+      if (request.userAddress) {
+        doc.text(`Address: ${request.userAddress}`, 50, currentY);
+        currentY += 20;
+      }
+      
+      doc.text(`Account Name: ${account.displayName}`, 50, currentY)
+         .text(`Account Number: ${account.accountNumber}`, 50, currentY + 20)
+         .text(`Sort Code: ${account.sortCode}`, 50, currentY + 40)
+         .text(`Account Type: ${account.accountType}`, 50, currentY + 60);
       
       // Statement date (positioned to avoid overlap with customer name)
       const statementDate = new Date().toLocaleDateString('en-IE', {
@@ -204,22 +214,9 @@ export class StatementService {
   private addStatementPeriod(doc: PDFKit.PDFDocument, request: StatementRequest) {
     const startY = 390; // Positioned lower to accommodate customer name in Account Information
     
-    // Calculate actual current period dates based on range selection
-    const endDate = new Date();
-    const startDate = new Date();
-    
-    switch (request.dateRange) {
-      case '1week':
-        startDate.setDate(endDate.getDate() - 7);
-        break;
-      case '2weeks':
-        startDate.setDate(endDate.getDate() - 14);
-        break;
-      case '1month':
-      default:
-        startDate.setDate(endDate.getDate() - 30);
-        break;
-    }
+    // Use actual dates from request
+    const startDate = new Date(request.startDate);
+    const endDate = new Date(request.endDate);
     
     const startDateStr = startDate.toLocaleDateString('en-IE');
     const endDateStr = endDate.toLocaleDateString('en-IE');
@@ -486,22 +483,9 @@ export class StatementService {
   private async getTransactions(request: StatementRequest): Promise<StatementTransaction[]> {
     // Use real transaction data from frontend if provided, otherwise use mock data
     try {
-      const endDate = new Date();
-      const startDate = new Date();
-      
-      // Calculate date range
-      switch (request.dateRange) {
-        case '1week':
-          startDate.setDate(endDate.getDate() - 7);
-          break;
-        case '2weeks':
-          startDate.setDate(endDate.getDate() - 14);
-          break;
-        case '1month':
-        default:
-          startDate.setDate(endDate.getDate() - 30);
-          break;
-      }
+      // Use actual dates from request
+      const startDate = new Date(request.startDate);
+      const endDate = new Date(request.endDate);
 
       // Handle app reset and new account scenarios properly
       if (!request.userTransactions || request.userTransactions.length === 0) {
