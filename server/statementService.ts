@@ -368,7 +368,7 @@ export class StatementService {
       }
       
       // Format and render the complete transaction row
-      const date = new Date(transaction.date).toLocaleDateString('en-US');
+      const date = new Date(transaction.date).toLocaleDateString('en-IE');
       
       // Render all fields of this transaction on the same line
       doc.fillColor('#333333')
