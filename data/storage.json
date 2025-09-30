@@ -130,6 +130,22 @@
         "isDisabled": false,
         "currency": "EUR"
       }
+    ],
+    [
+      9,
+      {
+        "id": 9,
+        "customerNumber": "BOI002282560",
+        "pin": "000000",
+        "name": "Shehahjajai",
+        "email": "ahahauja@gmail.com",
+        "phone": "155454",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-09-30T21:04:26.336Z",
+        "dateCreated": "2025-09-30T21:04:26.336Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [
@@ -178,7 +194,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 9,
+    "currentUserId": 10,
     "currentAccountId": 4,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
