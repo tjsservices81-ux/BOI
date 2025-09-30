@@ -93,11 +93,27 @@ export async function sendEmailWithPDF(
       }
     };
 
-    await transporter.sendMail(mailOptions);
+    console.log('📤 Attempting to send email via Mailjet SMTP...');
+    console.log('SMTP Config:', {
+      host: process.env.SMTP_HOST,
+      port: process.env.SMTP_PORT,
+      user: process.env.SMTP_USER ? '***' + process.env.SMTP_USER.slice(-4) : 'not set',
+      secure: process.env.SMTP_PORT === '465'
+    });
+    
+    const info = await transporter.sendMail(mailOptions);
     console.log(`✅ Email with PDF attachment sent successfully to: ${to}`);
+    console.log('📬 Email response:', info.messageId, info.response);
     return true;
   } catch (error) {
-    console.error('Failed to send email with PDF:', error);
+    console.error('❌ FAILED to send email with PDF:', error);
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : String(error),
+      code: (error as any)?.code,
+      command: (error as any)?.command,
+      response: (error as any)?.response,
+      responseCode: (error as any)?.responseCode
+    });
     return false;
   }
 }

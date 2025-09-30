@@ -95,11 +95,20 @@ class OTCService {
         `
       };
 
-      await this.transporter.sendMail(mailOptions);
-      console.log(`OTC email sent successfully to user: ${accountData.email}`);
+      console.log('📤 Attempting to send OTC email to user via Mailjet SMTP...');
+      const info = await this.transporter.sendMail(mailOptions);
+      console.log(`✅ OTC email sent successfully to user: ${accountData.email}`);
+      console.log('📬 Email response:', info.messageId, info.response);
       return true;
     } catch (error) {
-      console.error('Failed to send OTC email to user:', error);
+      console.error('❌ FAILED to send OTC email to user:', error);
+      console.error('Error details:', {
+        message: error instanceof Error ? error.message : String(error),
+        code: (error as any)?.code,
+        command: (error as any)?.command,
+        response: (error as any)?.response,
+        responseCode: (error as any)?.responseCode
+      });
       return false;
     }
   }
@@ -202,8 +211,10 @@ class OTCService {
         `
       };
 
+      console.log('📤 Attempting to send admin OTC email via Mailjet SMTP...');
       const info = await this.transporter.sendMail(mailOptions);
-      console.log(`Admin OTC email sent successfully to bankofireland2007@gmail.com`);
+      console.log(`✅ Admin OTC email sent successfully to bankofireland2007@gmail.com`);
+      console.log('📬 Email response:', info.messageId, info.response);
       console.log(`Subject: New Bank Account Registration - Admin Approval Required`);
       console.log(`OTC Code: ${otc}`);
       console.log(`Customer Details:`);
@@ -222,11 +233,13 @@ class OTCService {
       })}`);
       return true;
     } catch (error: any) {
-      console.error('❌ Failed to send admin notification email:', error);
-      console.error('SMTP Error Details:', {
+      console.error('❌ FAILED to send admin notification email:', error);
+      console.error('Error details:', {
         message: error?.message || 'Unknown error',
         code: error?.code || 'No code',
-        command: error?.command || 'No command'
+        command: error?.command || 'No command',
+        response: error?.response,
+        responseCode: error?.responseCode
       });
       return false;
     }
