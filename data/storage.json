@@ -113,9 +113,63 @@
         "dateCreated": "2025-09-25T19:36:46.915Z",
         "isDisabled": false
       }
+    ],
+    [
+      8,
+      {
+        "id": 8,
+        "customerNumber": "BOI231064631",
+        "pin": "000000",
+        "name": "Jajaksk",
+        "email": "ajajjs@gmail.com",
+        "phone": "4546464",
+        "address": "John Street 19",
+        "dateOfBirth": "",
+        "joinDate": "2025-09-30T18:40:01.217Z",
+        "dateCreated": "2025-09-30T18:40:01.217Z",
+        "isDisabled": false,
+        "currency": "EUR"
+      }
     ]
   ],
-  "accounts": [],
+  "accounts": [
+    [
+      1,
+      {
+        "id": 1,
+        "userId": 8,
+        "accountType": "current",
+        "accountNumber": "****2091",
+        "balance": "0.00",
+        "displayName": "Current Account",
+        "sortCode": "90-78-68"
+      }
+    ],
+    [
+      2,
+      {
+        "id": 2,
+        "userId": 8,
+        "accountType": "credit",
+        "accountNumber": "****1820",
+        "balance": "0.00",
+        "displayName": "Credit Card",
+        "sortCode": "90-78-68"
+      }
+    ],
+    [
+      3,
+      {
+        "id": 3,
+        "userId": 8,
+        "accountType": "savings",
+        "accountNumber": "****0978",
+        "balance": "0.00",
+        "displayName": "Savings Account",
+        "sortCode": "90-78-68"
+      }
+    ]
+  ],
   "transactions": [],
   "payees": [],
   "scheduledPayments": [],
@@ -124,8 +178,8 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 8,
-    "currentAccountId": 1,
+    "currentUserId": 9,
+    "currentAccountId": 4,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
     "currentScheduledPaymentId": 1,

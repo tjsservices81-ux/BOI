@@ -184,15 +184,16 @@ export class StatementService {
          .text(`Sort Code: ${account.sortCode}`, 50, currentY + 40)
          .text(`Account Type: ${account.accountType}`, 50, currentY + 60);
       
-      // Statement date (positioned to avoid overlap with customer name)
+      // Statement date (positioned on the right, aligned with account details)
       const statementDate = new Date().toLocaleDateString('en-IE', {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric'
       });
       
-      doc.text(`Statement Date: ${statementDate}`, 350, startY + 65)
-         .text(`Statement Period: ${request.dateRange}`, 350, startY + 85);
+      // Position Statement Date and Period based on where Account Number and Sort Code are
+      doc.text(`Statement Date: ${statementDate}`, 350, currentY + 20)
+         .text(`Statement Period: ${request.dateRange}`, 350, currentY + 40);
     } else {
       doc.text(`Account Name: ${account.displayName}`, 50, startY + 25)
          .text(`Account Number: ${account.accountNumber}`, 50, startY + 45)
