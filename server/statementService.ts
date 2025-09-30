@@ -170,23 +170,23 @@ export class StatementService {
     // Add customer name if available (using authentic user data)
     if (request.customerName) {
       let currentY = startY + 25;
-      doc.text(`Customer Name: ${request.customerName}`, 50, currentY);
+      doc.text(request.customerName, 50, currentY);
       currentY += 20;
       
       // Add customer address if available
       if (request.userAddress) {
-        doc.text(`Address: ${request.userAddress}`, 50, currentY);
+        doc.text(request.userAddress, 50, currentY);
         currentY += 20;
       }
       
-      doc.text(`Account Name: ${account.displayName}`, 50, currentY)
+      doc.text(account.displayName, 50, currentY)
          .text(`Account Number: ${account.accountNumber}`, 50, currentY + 20)
          .text(`Sort Code: ${account.sortCode}`, 50, currentY + 40);
       
       // Removed Statement Date and Statement Period from top-right
       // Removed Account Type line
     } else {
-      doc.text(`Account Name: ${account.displayName}`, 50, startY + 25)
+      doc.text(account.displayName, 50, startY + 25)
          .text(`Account Number: ${account.accountNumber}`, 50, startY + 45)
          .text(`Sort Code: ${account.sortCode}`, 50, startY + 65);
       
