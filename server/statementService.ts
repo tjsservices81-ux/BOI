@@ -367,8 +367,12 @@ export class StatementService {
         doc.font('Helvetica').fontSize(9);
       }
       
-      // Format and render the complete transaction row
-      const date = new Date(transaction.date).toLocaleDateString('en-IE');
+      // Format and render the complete transaction row - DD/MM/YYYY format
+      const transactionDate = new Date(transaction.date);
+      const day = String(transactionDate.getDate()).padStart(2, '0');
+      const month = String(transactionDate.getMonth() + 1).padStart(2, '0');
+      const year = transactionDate.getFullYear();
+      const date = `${day}/${month}/${year}`;
       
       // Render all fields of this transaction on the same line
       doc.fillColor('#333333')
