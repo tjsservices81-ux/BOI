@@ -119,7 +119,6 @@ export class StatementService {
       // Add all content sections synchronously to avoid race conditions
       this.addHeader(doc);
       this.addAccountInfo(doc, accountData, request);
-      this.addStatementPeriod(doc, request);
       this.addAccountSummary(doc, accountData, transactions);
       this.addTransactionDetails(doc, transactions);
       this.addFooter(doc);
@@ -181,8 +180,7 @@ export class StatementService {
       
       doc.text(`Account Name: ${account.displayName}`, 50, currentY)
          .text(`Account Number: ${account.accountNumber}`, 50, currentY + 20)
-         .text(`Sort Code: ${account.sortCode}`, 50, currentY + 40)
-         .text(`Account Type: ${account.accountType}`, 50, currentY + 60);
+         .text(`Sort Code: ${account.sortCode}`, 50, currentY + 40);
       
       // Statement date (positioned on the right, aligned with account details)
       const statementDate = new Date().toLocaleDateString('en-IE', {
@@ -197,8 +195,7 @@ export class StatementService {
     } else {
       doc.text(`Account Name: ${account.displayName}`, 50, startY + 25)
          .text(`Account Number: ${account.accountNumber}`, 50, startY + 45)
-         .text(`Sort Code: ${account.sortCode}`, 50, startY + 65)
-         .text(`Account Type: ${account.accountType}`, 50, startY + 85);
+         .text(`Sort Code: ${account.sortCode}`, 50, startY + 65);
       
       // Statement date (original positioning when no customer name)
       const statementDate = new Date().toLocaleDateString('en-IE', {
@@ -234,7 +231,7 @@ export class StatementService {
   }
 
   private addAccountSummary(doc: PDFKit.PDFDocument, account: Account, transactions: StatementTransaction[]) {
-    const startY = 440; // Positioned lower to accommodate customer name and statement period adjustments
+    const startY = 380; // Positioned after Account Information section
     
     // Calculate totals from real transaction data
     const totalCredits = transactions
@@ -289,7 +286,7 @@ export class StatementService {
   }
 
   private addTransactionDetails(doc: PDFKit.PDFDocument, transactions: StatementTransaction[]) {
-    let currentY = 570; // Positioned lower to accommodate customer name and adjusted sections above
+    let currentY = 510; // Positioned after Account Summary section
     
     doc.fontSize(14)
        .fillColor('#0000FF')
