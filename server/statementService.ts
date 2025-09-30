@@ -99,9 +99,25 @@ export class StatementService {
 
   private async buildStatement(doc: PDFKit.PDFDocument, request: StatementRequest) {
     try {
+      console.log('🔷 Starting statement generation with request:', {
+        accountId: request.accountId,
+        startDate: request.startDate,
+        endDate: request.endDate,
+        hasCustomerName: !!request.customerName,
+        hasUserAddress: !!request.userAddress,
+        numAccounts: request.userAccounts?.length || 0,
+        numTransactions: request.userTransactions?.length || 0
+      });
+      
       // Get account and transaction data using real user data
       const accountData = await this.getAccountData(request.accountId, request.userAccounts);
       const transactions = await this.getTransactions(request);
+      
+      console.log('✅ Account data retrieved:', {
+        accountName: accountData.displayName,
+        balance: accountData.balance
+      });
+      console.log('✅ Transactions retrieved:', transactions.length);
       
       // Validate data
       if (!accountData) {
@@ -114,9 +130,12 @@ export class StatementService {
           width: 595, 
           height: 842
         });
+      } else {
+        console.warn('⚠️ Bank of Ireland template image not found at:', this.templatePath);
       }
 
       // Add all content sections synchronously to avoid race conditions
+      console.log('📄 Adding statement sections...');
       this.addHeader(doc);
       this.addAccountInfo(doc, accountData, request);
       this.addStatementPeriod(doc, request);
@@ -124,8 +143,11 @@ export class StatementService {
       this.addTransactionDetails(doc, transactions);
       this.addFooter(doc);
       
+      console.log('✅ Statement built successfully');
+      
     } catch (error) {
-      console.error('Error building statement:', error);
+      console.error('❌ Error building statement:', error);
+      console.error('Request data at time of failure:', JSON.stringify(request, null, 2));
       throw error;
     }
   }
@@ -198,12 +220,24 @@ export class StatementService {
   private addStatementPeriod(doc: PDFKit.PDFDocument, request: StatementRequest) {
     const startY = 390; // Positioned lower to accommodate customer name in Account Information
     
-    // Use actual dates from request
-    const startDate = new Date(request.startDate);
-    const endDate = new Date(request.endDate);
+    // Use actual dates from request with safe formatting
+    let startDateStr = 'N/A';
+    let endDateStr = 'N/A';
     
-    const startDateStr = startDate.toLocaleDateString('en-IE');
-    const endDateStr = endDate.toLocaleDateString('en-IE');
+    try {
+      const startDate = new Date(request.startDate);
+      const endDate = new Date(request.endDate);
+      
+      if (!isNaN(startDate.getTime())) {
+        startDateStr = startDate.toLocaleDateString('en-IE');
+      }
+      
+      if (!isNaN(endDate.getTime())) {
+        endDateStr = endDate.toLocaleDateString('en-IE');
+      }
+    } catch (err) {
+      console.error('Error formatting statement period dates:', err);
+    }
     
     doc.fontSize(14)
        .fillColor('#0000FF')
@@ -450,30 +484,46 @@ export class StatementService {
       throw new Error('No account data available. App may have been reset to defaults or user has no accounts configured.');
     }
     
-    // Use real account data passed from frontend
-    const selectedAccount = userAccounts.find(acc => acc.id.toString() === accountId);
+    // Use real account data passed from frontend - with safe ID comparison
+    const selectedAccount = userAccounts.find(acc => {
+      const accId = acc?.id;
+      if (accId === null || accId === undefined) return false;
+      return String(accId) === String(accountId);
+    });
+    
     if (!selectedAccount) {
-      const availableIds = userAccounts.map(acc => acc.id).join(', ');
+      const availableIds = userAccounts.map(acc => acc?.id ?? 'unknown').join(', ');
       throw new Error(`Account ${accountId} not found. Available accounts: ${availableIds}. App may need to be restored from backup.`);
     }
     
-    // Return real account data
+    // Return real account data with safe defaults
     return {
       id: accountId,
-      displayName: selectedAccount.displayName,
-      accountNumber: selectedAccount.accountNumber,
+      displayName: selectedAccount.displayName || 'Personal Account',
+      accountNumber: selectedAccount.accountNumber || 'Not Available',
       sortCode: "90-78-68", // Always use this sort code for statements
-      balance: selectedAccount.balance,
-      accountType: selectedAccount.accountType
+      balance: selectedAccount.balance || '0.00',
+      accountType: selectedAccount.accountType || 'Current Account'
     };
   }
 
   private async getTransactions(request: StatementRequest): Promise<StatementTransaction[]> {
     // Use real transaction data from frontend if provided, otherwise use mock data
     try {
-      // Use actual dates from request
+      // Use actual dates from request with validation
       const startDate = new Date(request.startDate);
       const endDate = new Date(request.endDate);
+      
+      // Validate dates
+      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        console.error('Invalid date range provided:', request.startDate, request.endDate);
+        return [];
+      }
+      
+      if (startDate > endDate) {
+        console.error('Start date is after end date');
+        return [];
+      }
 
       // Handle app reset and new account scenarios properly
       if (!request.userTransactions || request.userTransactions.length === 0) {
@@ -483,28 +533,50 @@ export class StatementService {
       
       const userTransactions = request.userTransactions;
       
-      // Filter transactions for the specified account and date range
+      // Filter transactions for the specified account and date range - with safe null checks
       const filteredTransactions = userTransactions
         .filter((tx) => {
-          const transactionDate = new Date(tx.timestamp);
-          const matchesAccount = tx.accountId.toString() === request.accountId;
-          const inDateRange = transactionDate >= startDate && transactionDate <= endDate;
-          return matchesAccount && inDateRange;
+          if (!tx || !tx.timestamp || !tx.accountId) return false;
+          
+          try {
+            const transactionDate = new Date(tx.timestamp);
+            if (isNaN(transactionDate.getTime())) return false;
+            
+            const matchesAccount = String(tx.accountId) === String(request.accountId);
+            const inDateRange = transactionDate >= startDate && transactionDate <= endDate;
+            return matchesAccount && inDateRange;
+          } catch (err) {
+            console.error('Error filtering transaction:', err);
+            return false;
+          }
         });
 
-      // Convert to statement format
-      const statementTransactions: StatementTransaction[] = filteredTransactions
-        .map((tx: any) => ({
-          id: tx.id.toString(),
-          date: tx.timestamp,
-          description: tx.description,
-          amount: Math.abs(parseFloat(tx.amount.replace('-', ''))),
-          type: tx.type as 'credit' | 'debit',
-          balance: 0, // Will be calculated below
-          reference: tx.reference || `TXN${tx.id}`,
-          category: tx.category
-        }))
-        .sort((a: StatementTransaction, b: StatementTransaction) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      // Convert to statement format with safe parsing
+      const mappedTransactions = filteredTransactions
+        .map((tx: any) => {
+          try {
+            const amountStr = String(tx.amount || '0').replace('-', '').replace(/,/g, '');
+            const amount = Math.abs(parseFloat(amountStr)) || 0;
+            
+            return {
+              id: String(tx.id || 'unknown'),
+              date: tx.timestamp,
+              description: tx.description || 'Transaction',
+              amount: amount,
+              type: (tx.type as 'credit' | 'debit') || 'debit',
+              balance: 0, // Will be calculated below
+              reference: tx.reference || `TXN${tx.id || ''}`,
+              category: tx.category || 'Other'
+            } as StatementTransaction;
+          } catch (err) {
+            console.error('Error mapping transaction:', err, tx);
+            return null;
+          }
+        })
+        .filter((tx: StatementTransaction | null): tx is StatementTransaction => tx !== null);
+      
+      const statementTransactions = mappedTransactions
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
       // Calculate running balances using real account data
       const currentAccountBalance = this.getRealAccountBalance(request.accountId, request.userAccounts);
@@ -532,19 +604,36 @@ export class StatementService {
   }
 
   private getRealAccountBalance(accountId: string, userAccounts?: any[]): number {
-    if (!userAccounts) {
-      throw new Error('User account data required for authentic balance calculation');
+    if (!userAccounts || userAccounts.length === 0) {
+      console.warn('No user account data available, using default balance of 0');
+      return 0;
     }
     
-    const selectedAccount = userAccounts.find(acc => acc.id.toString() === accountId);
+    const selectedAccount = userAccounts.find(acc => {
+      const accId = acc?.id;
+      if (accId === null || accId === undefined) return false;
+      return String(accId) === String(accountId);
+    });
+    
     if (!selectedAccount) {
-      throw new Error(`Account ${accountId} not found in user accounts`);
+      console.warn(`Account ${accountId} not found in user accounts, using default balance of 0`);
+      return 0;
     }
     
-    // Parse actual account balance, removing commas and converting to number
-    const balance = parseFloat(selectedAccount.balance.replace(/,/g, ''));
-    console.log(`Real account ${accountId} balance: €${balance.toFixed(2)}`);
-    return balance;
+    // Parse actual account balance safely, removing commas and converting to number
+    try {
+      const balanceStr = String(selectedAccount.balance || '0').replace(/,/g, '');
+      const balance = parseFloat(balanceStr);
+      if (isNaN(balance)) {
+        console.warn(`Invalid balance format for account ${accountId}, using default balance of 0`);
+        return 0;
+      }
+      console.log(`Real account ${accountId} balance: €${balance.toFixed(2)}`);
+      return balance;
+    } catch (err) {
+      console.error('Error parsing account balance:', err);
+      return 0;
+    }
   }
 
   private calculateOpeningBalance(currentBalance: number, transactions: StatementTransaction[]): number {
