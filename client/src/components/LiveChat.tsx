@@ -86,36 +86,36 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
 
     // 30 unique agents with distinct personalities and behaviors
     const agentProfiles = [
-      { name: 'Emma', specialty: 'General Support', personality: 'friendly' },
-      { name: 'James', specialty: 'Transfer Support', personality: 'formal' },
-      { name: 'Sarah', specialty: 'Account Security', personality: 'overly_helpful' },
-      { name: 'Zoe', specialty: 'Technical Support', personality: 'sarcastic' },
-      { name: 'Aoife', specialty: 'General Support', personality: 'relaxed' },
-      { name: 'Liam', specialty: 'Cards & Payments', personality: 'quick_texter' },
-      { name: 'Rachel', specialty: 'Account Services', personality: 'slow_typer' },
-      { name: 'Connor', specialty: 'Digital Banking', personality: 'emoji_lover' },
-      { name: 'Sophie', specialty: 'Customer Care', personality: 'bubbly' },
-      { name: 'David', specialty: 'International Banking', personality: 'professional' },
-      { name: 'Claire', specialty: 'Loan Services', personality: 'patient' },
-      { name: 'Ryan', specialty: 'Business Banking', personality: 'direct' },
-      { name: 'Rebecca', specialty: 'Mobile Banking', personality: 'tech_savvy' },
-      { name: 'Sean', specialty: 'Transfer Support', personality: 'chatty' },
-      { name: 'Katie', specialty: 'Account Security', personality: 'cautious' },
-      { name: 'Adam', specialty: 'Technical Support', personality: 'laid_back' },
-      { name: 'Niamh', specialty: 'General Support', personality: 'enthusiastic' },
-      { name: 'Daniel', specialty: 'Cards & Payments', personality: 'punctual' },
-      { name: 'Amy', specialty: 'Customer Care', personality: 'empathetic' },
-      { name: 'Jack', specialty: 'Digital Banking', personality: 'trendy' },
-      { name: 'Laura', specialty: 'Account Services', personality: 'methodical' },
-      { name: 'Thomas', specialty: 'International Banking', personality: 'worldly' },
-      { name: 'Hannah', specialty: 'Mobile Banking', personality: 'millennial' },
-      { name: 'Mark', specialty: 'Business Banking', personality: 'no_nonsense' },
-      { name: 'Grace', specialty: 'Loan Services', personality: 'reassuring' },
-      { name: 'Oliver', specialty: 'Transfer Support', personality: 'witty' },
-      { name: 'Ella', specialty: 'Account Security', personality: 'thorough' },
-      { name: 'Luke', specialty: 'Technical Support', personality: 'geeky' },
-      { name: 'Chloe', specialty: 'Customer Care', personality: 'warm' },
-      { name: 'Ben', specialty: 'General Support', personality: 'curious' }
+      { name: 'Emma', personality: 'friendly' },
+      { name: 'James', personality: 'formal' },
+      { name: 'Sarah', personality: 'overly_helpful' },
+      { name: 'Zoe', personality: 'sarcastic' },
+      { name: 'Aoife', personality: 'relaxed' },
+      { name: 'Liam', personality: 'quick_texter' },
+      { name: 'Rachel', personality: 'slow_typer' },
+      { name: 'Connor', personality: 'emoji_lover' },
+      { name: 'Sophie', personality: 'bubbly' },
+      { name: 'David', personality: 'professional' },
+      { name: 'Claire', personality: 'patient' },
+      { name: 'Ryan', personality: 'direct' },
+      { name: 'Rebecca', personality: 'tech_savvy' },
+      { name: 'Sean', personality: 'chatty' },
+      { name: 'Katie', personality: 'cautious' },
+      { name: 'Adam', personality: 'laid_back' },
+      { name: 'Niamh', personality: 'enthusiastic' },
+      { name: 'Daniel', personality: 'punctual' },
+      { name: 'Amy', personality: 'empathetic' },
+      { name: 'Jack', personality: 'trendy' },
+      { name: 'Laura', personality: 'methodical' },
+      { name: 'Thomas', personality: 'worldly' },
+      { name: 'Hannah', personality: 'millennial' },
+      { name: 'Mark', personality: 'no_nonsense' },
+      { name: 'Grace', personality: 'reassuring' },
+      { name: 'Oliver', personality: 'witty' },
+      { name: 'Ella', personality: 'thorough' },
+      { name: 'Luke', personality: 'geeky' },
+      { name: 'Chloe', personality: 'warm' },
+      { name: 'Ben', personality: 'curious' }
     ];
     const randomAgent = agentProfiles[Math.floor(Math.random() * agentProfiles.length)].name;
     const waitTime = Math.floor(Math.random() * 90000) + 30000; // 30 seconds to 2 minutes
@@ -1134,7 +1134,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
         setTimeout(() => {
           const errorMessage: ChatMessage = {
             id: (Date.now() + 1).toString(),
-            text: "I'm experiencing some technical difficulties at the moment. Please bear with me while I resolve this, or feel free to try your question again.",
+            text: "Sorry, I wasn't able to bring that up just now. Would you like me to try again or connect you with another agent?",
             isUser: false,
             timestamp: new Date(),
             agentName: chatState.agentName,
@@ -1274,39 +1274,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
               ) : (
                 <>
                   <h3 className="text-white font-semibold text-lg" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {chatState.agentName} – {(() => {
-                      const specialties: { [key: string]: string } = {
-                        'Emma': 'General Support',
-                        'James': 'Transfer Specialist',
-                        'Sarah': 'Security Specialist',
-                        'Michael': 'Technical Support',
-                        'Aoife': 'General Support',
-                        'Liam': 'Cards & Payments',
-                        'Rachel': 'Account Services',
-                        'Connor': 'Digital Banking',
-                        'Sophie': 'Customer Care',
-                        'David': 'International Banking',
-                        'Claire': 'Loan Services',
-                        'Ryan': 'Business Banking',
-                        'Rebecca': 'Mobile Banking',
-                        'Sean': 'Transfer Specialist',
-                        'Katie': 'Security Specialist',
-                        'Adam': 'Technical Support',
-                        'Niamh': 'General Support',
-                        'Daniel': 'Cards & Payments',
-                        'Amy': 'Customer Care',
-                        'Jack': 'Digital Banking',
-                        'Laura': 'Account Services',
-                        'Thomas': 'International Banking',
-                        'Hannah': 'Mobile Banking',
-                        'Mark': 'Business Banking',
-                        'Grace': 'Loan Services',
-                        'Matthew': 'Transfer Specialist',
-                        'Ella': 'Security Specialist',
-                        'Luke': 'Technical Support'
-                      };
-                      return specialties[chatState.agentName] || 'Support Specialist';
-                    })()}
+                    {chatState.agentName} – Customer Support
                   </h3>
                   <p className="text-white/80 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     {isTyping ? typingText : 'Online now'}
@@ -1356,7 +1324,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
                 <div className="flex items-center justify-center mb-1">
                   <div className="w-3 h-3 bg-green-400 rounded-full mr-2"></div>
                   <p className="font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    You're now connected with {chatState.agentName} – Support Specialist
+                    You're now connected with {chatState.agentName} – Customer Support
                   </p>
                 </div>
                 <p className="text-xs text-green-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
