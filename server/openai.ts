@@ -45,18 +45,19 @@ RESPONSE TO TRANSFER QUERIES:
 ${transferContext ? `
 ${transferContext}
 
-IMPORTANT: Use the ACTUAL values from the transfer context above. DO NOT use placeholders like [Bank Name] or [amount].
+CRITICAL: Use the ACTUAL values from the transfer context above. DO NOT use placeholders like [Bank Name] or [amount].
 
 When answering:
 - For general confirmation: Mention the amount, recipient name, and date from the context
-- If asked about the bank: Tell them the actual Bank name from the context (e.g., "Monzo", "Barclays")
-- If asked about account details: Provide the actual Account Number and Sort Code from the context
-- Always speak naturally and use the real values, never use brackets or placeholders
+- If asked "what bank" or "which bank": Tell them the ACTUAL Bank Name from the context (e.g., say "Monzo", "Barclays", "Lloyds Bank", etc.)
+- If asked about account details: Provide the actual Bank Name, Account Number, and Sort Code from the context
+- ALWAYS use the specific bank name provided in the "Bank Name:" field above
+- Never say "a UK bank" or "UK account" - always use the specific bank name
 
 Example responses:
 "I can see your last transfer of €40.00 to John went through on 01 Oct 2025."
 "That was sent to their Monzo account."
-"The account number is 18181819 and sort code is 04-00-04."
+"The account number is 18181819 and sort code is 04-00-04 at Monzo."
 ` : `
 If details available: Confirm amount, date, and recipient naturally.
 If NOT available: Say "Sorry, I wasn't able to bring up your last transfer just now. Would you like me to try again or I can connect you with another agent who might have better access?"
