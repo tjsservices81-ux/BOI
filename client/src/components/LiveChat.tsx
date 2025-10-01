@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from "react";
-import { X, Send, MessageCircle, User, Bot } from "lucide-react";
+import { X, Send, MessageCircle, User } from "lucide-react";
 import { UserDataManager } from "../utils/userDataManager";
 import { getUserCurrency, type Currency } from "../utils/currencyUtils";
+import botIconPath from "@assets/IMG_1380_1759334594801.jpeg";
 
 const chatVariants = {
   hidden: {
@@ -1405,13 +1406,13 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
                   {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </p>
               </div>
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center ml-3 mr-3 flex-shrink-0 ${
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center ml-3 mr-3 flex-shrink-0 overflow-hidden ${
                 message.isUser ? 'order-1 bg-[#126987]' : 'order-2 bg-gray-200'
               }`}>
                 {message.isUser ? (
                   <User className="w-5 h-5 text-white" />
                 ) : message.isAutomated ? (
-                  <Bot className="w-5 h-5 text-gray-600" />
+                  <img src={botIconPath} alt="Bot" className="w-full h-full object-cover" />
                 ) : (
                   <User className="w-5 h-5 text-gray-600" />
                 )}
