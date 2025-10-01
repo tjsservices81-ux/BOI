@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { X, Send, MessageCircle, User } from "lucide-react";
 import { UserDataManager } from "../utils/userDataManager";
 import { getUserCurrency, type Currency } from "../utils/currencyUtils";
-import botIconPath from "@assets/IMG_1380_1759334594801.jpeg";
+import botIconPath from "@assets/IMG_1381_1759334776475.jpeg";
 
 const chatVariants = {
   hidden: {
