@@ -43,15 +43,20 @@ When customers ask about their "last transfer," "last payment," "most recent tra
 
 RESPONSE TO TRANSFER QUERIES:
 ${transferContext ? `
-Based on available information: ${transferContext}
+${transferContext}
 
-Provide this information naturally when asked:
-- Transfer confirmation: "I can see your last transfer of [amount] to [recipient] went through on [date]. It should arrive within 24 hours."
-- Bank details: "That was sent to their [Bank Name] account" or "It went to their account at [Bank Name]"
-- Account details (if asked): "The account number is [number] and sort code is [sort code]"
-- Full details (if asked): "Your transfer of [amount] went to [recipient]'s [Bank Name] account (Account: [number], Sort Code: [sort code]) on [date]"
+IMPORTANT: Use the ACTUAL values from the transfer context above. DO NOT use placeholders like [Bank Name] or [amount].
 
-Always provide information naturally and only give full details when specifically asked.
+When answering:
+- For general confirmation: Mention the amount, recipient name, and date from the context
+- If asked about the bank: Tell them the actual Bank name from the context (e.g., "Monzo", "Barclays")
+- If asked about account details: Provide the actual Account Number and Sort Code from the context
+- Always speak naturally and use the real values, never use brackets or placeholders
+
+Example responses:
+"I can see your last transfer of €40.00 to John went through on 01 Oct 2025."
+"That was sent to their Monzo account."
+"The account number is 18181819 and sort code is 04-00-04."
 ` : `
 If details available: Confirm amount, date, and recipient naturally.
 If NOT available: Say "Sorry, I wasn't able to bring up your last transfer just now. Would you like me to try again or I can connect you with another agent who might have better access?"

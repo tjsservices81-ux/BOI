@@ -841,6 +841,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         type: "debit",
         paymentMethod: "Online Transfer",
         reference: transactionReference,
+        recipientName: transferData.toAccount,
+        recipientAccountNumber: transferData.recipientDetails?.accountNumber,
+        recipientSortCode: transferData.recipientDetails?.sortCode,
         timestamp: new Date()
       });
 
