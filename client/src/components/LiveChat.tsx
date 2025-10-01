@@ -1007,7 +1007,30 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
         });
         const reference = lastTransfer.reference || 'N/A';
         
-        transferContext = `LAST TRANSFER: ${currency}${amount} to ${recipient} on ${date} (Ref: ${reference}). Status: Completed`;
+        // Get recipient bank details
+        const recipientAccountNumber = lastTransfer.recipientAccountNumber || 'Not available';
+        const recipientSortCode = lastTransfer.recipientSortCode || 'Not available';
+        
+        // Identify bank from sort code
+        let recipientBank = 'UK Bank';
+        if (recipientSortCode && recipientSortCode !== 'Not available') {
+          const sortPrefix = recipientSortCode.replace(/-/g, '').substring(0, 6);
+          
+          // Map sort codes to banks
+          if (sortPrefix.startsWith('04')) recipientBank = 'Monzo';
+          else if (sortPrefix.startsWith('20')) recipientBank = 'Barclays';
+          else if (sortPrefix.startsWith('30') || sortPrefix.startsWith('60')) recipientBank = 'Lloyds Bank';
+          else if (sortPrefix.startsWith('77')) recipientBank = 'TSB Bank';
+          else if (sortPrefix.startsWith('83')) recipientBank = 'NatWest';
+          else if (sortPrefix.startsWith('80')) recipientBank = 'Bank of Scotland';
+          else if (sortPrefix.startsWith('40')) recipientBank = 'HSBC';
+          else if (sortPrefix.startsWith('16')) recipientBank = 'Starling Bank';
+          else if (sortPrefix.startsWith('23')) recipientBank = 'Metro Bank';
+          else if (sortPrefix.startsWith('60-83')) recipientBank = 'Santander';
+        }
+        
+        transferContext = `LAST TRANSFER: ${currency}${amount} to ${recipient} on ${date} (Ref: ${reference}). Status: Completed. 
+RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNumber}, Sort Code: ${recipientSortCode}`;
       }
 
       // If asking about transactions and there are none, use agent-specific response
