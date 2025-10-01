@@ -1592,29 +1592,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           let accountDetails = '';
           
           if (lastTransfer.paymentMethod === 'UK Transfer') {
-            // Identify bank from sort code
-            let bankName = 'UK Bank';
-            if (lastTransfer.recipientSortCode) {
-              const sortPrefix = lastTransfer.recipientSortCode.replace(/-/g, '').substring(0, 6);
-              
-              if (sortPrefix.startsWith('04')) bankName = 'Monzo';
-              else if (sortPrefix.startsWith('20')) bankName = 'Barclays';
-              else if (sortPrefix.startsWith('30') || sortPrefix.startsWith('60')) bankName = 'Lloyds Bank';
-              else if (sortPrefix.startsWith('77')) bankName = 'TSB Bank';
-              else if (sortPrefix.startsWith('83')) bankName = 'NatWest';
-              else if (sortPrefix.startsWith('80')) bankName = 'Bank of Scotland';
-              else if (sortPrefix.startsWith('40')) bankName = 'HSBC';
-              else if (sortPrefix.startsWith('16')) bankName = 'Starling Bank';
-              else if (sortPrefix.startsWith('23')) bankName = 'Metro Bank';
-              else if (sortPrefix.startsWith('6083')) bankName = 'Santander';
-            }
-            
             transferTypeContext = `
 TRANSFER TYPE: UK Transfer (sent to a UK account)
 DELIVERY TIME: Takes up to 24 hours to arrive
 CURRENCY: May include currency conversion if relevant`;
             accountDetails = `
-Bank Name: ${bankName}
 Sort Code: ${lastTransfer.recipientSortCode || 'Not available'}
 Account Number: ${lastTransfer.recipientAccountNumber || 'Not available'}`;
           } else if (lastTransfer.paymentMethod === 'SEPA Transfer') {
