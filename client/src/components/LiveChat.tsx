@@ -975,17 +975,43 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
 
   const generateAIResponse = async (userMessage: string): Promise<{ text: string; category: string }> => {
     try {
-      // Check if user is asking about transactions with no results
-      const transactionKeywords = ['transaction', 'payment', 'transfer', 'recent activity', 'account activity', 'movement'];
-      const isTransactionQuery = transactionKeywords.some(keyword => 
+      // Check if user is asking about transactions/transfers/payments
+      const transferKeywords = [
+        'transaction', 'payment', 'transfer', 'recent activity', 'account activity', 'movement',
+        'last transfer', 'last payment', 'most recent', 'recent transfer', 'recent payment',
+        'confirm my transfer', 'confirm transfer', 'show my transfer', 'my transfer',
+        'did my transfer', 'has my transfer', 'transfer go through', 'payment go through'
+      ];
+      const isTransferQuery = transferKeywords.some(keyword => 
         userMessage.toLowerCase().includes(keyword)
       );
 
-      // Get current user's transaction data from UserDataManager
+      // Always get current user's transaction data from UserDataManager
       const userTransactions = currentUser ? UserDataManager.getUserTransactions() : [];
+      
+      // Get the most recent outgoing transfer (debit with transfer category)
+      const lastTransfer = userTransactions
+        .filter((tx: any) => tx.type === 'debit' && tx.category === 'transfer')
+        .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0];
+
+      // Build transfer context for AI if we have transfer data
+      let transferContext = '';
+      if (lastTransfer && isTransferQuery) {
+        const amount = Math.abs(parseFloat(lastTransfer.amount.replace('-', ''))).toFixed(2);
+        const currency = lastTransfer.convertedCurrency === 'GBP' ? '£' : '€';
+        const recipient = lastTransfer.recipientName || 'recipient';
+        const date = new Date(lastTransfer.timestamp).toLocaleDateString('en-IE', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric'
+        });
+        const reference = lastTransfer.reference || 'N/A';
+        
+        transferContext = `LAST TRANSFER: ${currency}${amount} to ${recipient} on ${date} (Ref: ${reference}). Status: Completed`;
+      }
 
       // If asking about transactions and there are none, use agent-specific response
-      if (isTransactionQuery && userTransactions.length === 0) {
+      if (isTransferQuery && userTransactions.length === 0) {
         return {
           text: getPersonalityResponse(chatState.agentName, 'no_transactions'),
           category: 'no-transactions'
@@ -1034,6 +1060,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
           conversationHistory: conversationHistory,
           agentName: chatState.agentName,
           customerNumber: currentUser,
+          transferContext: transferContext, // Always send transfer context
           transactionData: userTransactions
         }),
       });
