@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { ChevronLeft, ChevronRight, User, ArrowUpDown, Globe, MapPin, Clock, Users, X, Trash2 } from "lucide-react";
 import { UserDataManager } from "../utils/userDataManager";
+import { getUserCurrency, getCurrencySymbol } from "../utils/currencyUtils";
 
 export default function Payments() {
   const [, navigate] = useLocation() || ['/', () => {}];
@@ -256,8 +257,8 @@ export default function Payments() {
                     <div className="text-right">
                       <p className={`font-semibold ${isDebit ? 'text-gray-900' : 'text-green-600'}`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
                         {(() => {
-                          const userCurrency = localStorage.getItem('userCurrency') || 'EUR';
-                          const currencySymbol = userCurrency === 'GBP' ? '£' : '€';
+                          const userCurrency = getUserCurrency();
+                          const currencySymbol = getCurrencySymbol(userCurrency);
                           return `${currencySymbol} ${displayAmount.replace('-', '')}`;
                         })()}
                       </p>
