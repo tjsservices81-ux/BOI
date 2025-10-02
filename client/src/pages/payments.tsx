@@ -259,7 +259,7 @@ export default function Payments() {
                         {(() => {
                           const userCurrency = getUserCurrency();
                           const currencySymbol = getCurrencySymbol(userCurrency);
-                          return `${currencySymbol} ${displayAmount.replace('-', '')}`;
+                          return `${currencySymbol}${displayAmount.replace('-', '')}`;
                         })()}
                       </p>
                       <p className="text-xs text-gray-500 mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>
