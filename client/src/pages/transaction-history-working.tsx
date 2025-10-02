@@ -114,7 +114,8 @@ export default function TransactionHistoryWorking() {
     setPayBillsForm({ payee: '', amount: '', datetime: '' });
     setShowPayBillsForm(false);
     
-    alert(`Payment of €${amount.toFixed(2)} to ${payBillsForm.payee} has been processed successfully.`);
+    const currencySymbol = getCurrencySymbol(userCurrency);
+    alert(`Payment of ${currencySymbol} ${amount.toFixed(2)} to ${payBillsForm.payee} has been processed successfully.`);
   };
 
   const handleDeleteTransaction = () => {
