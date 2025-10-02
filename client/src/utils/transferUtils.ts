@@ -45,11 +45,15 @@ export const getAccounts = (): Account[] => {
   // Ensure we have valid account data
   const accounts = (Array.isArray(storedAccounts) && storedAccounts.length > 0) ? storedAccounts : defaultAccounts;
   
+  // Get user currency for proper display
+  const userCurrency = localStorage.getItem('userCurrency') || 'EUR';
+  const currencySymbol = userCurrency === 'GBP' ? '£' : '€';
+  
   return accounts.map((acc: any) => ({
     id: acc.id.toString(),
     name: acc.displayName,
     number: acc.accountNumber.replace('****', '-'),
-    balance: `€${parseFloat(acc.balance || '0.00').toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+    balance: `${currencySymbol}${parseFloat(acc.balance || '0.00').toLocaleString('en-IE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
   }));
 };
 

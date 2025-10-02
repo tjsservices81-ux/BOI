@@ -255,7 +255,11 @@ export default function Payments() {
                     </div>
                     <div className="text-right">
                       <p className={`font-semibold ${isDebit ? 'text-gray-900' : 'text-green-600'}`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        €{displayAmount.replace('-', '')}
+                        {(() => {
+                          const userCurrency = localStorage.getItem('userCurrency') || 'EUR';
+                          const currencySymbol = userCurrency === 'GBP' ? '£' : '€';
+                          return `${currencySymbol}${displayAmount.replace('-', '')}`;
+                        })()}
                       </p>
                       <p className="text-xs text-gray-500 mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                         {formatDate(payment.timestamp)}

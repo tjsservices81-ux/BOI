@@ -4,7 +4,7 @@ import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin
 import { UserDataManager } from "@/utils/userDataManager";
 import { useAuth } from "@/lib/auth";
 import { motion, AnimatePresence } from "framer-motion";
-import { getUserCurrency, formatCurrency, type Currency } from "@/utils/currencyUtils";
+import { getUserCurrency, formatCurrency, getCurrencySymbol, type Currency } from "@/utils/currencyUtils";
 
 export default function Profile() {
   const locationHook = useLocation();
@@ -1677,7 +1677,7 @@ export default function Profile() {
 
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  New Balance (€)
+                  New Balance ({getCurrencySymbol(getUserCurrency())})
                 </label>
                 <input
                   type="number"

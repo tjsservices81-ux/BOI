@@ -7,6 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { UserDataManager } from "@/utils/userDataManager";
 import { format } from "date-fns";
+import { getUserCurrency, formatCurrency } from "@/utils/currencyUtils";
 
 interface Account {
   id: number | string;
@@ -200,7 +201,7 @@ export default function BankStatements() {
                     Current Balance
                   </span>
                   <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    €{selectedAccountData.balance}
+                    {formatCurrency(parseFloat(selectedAccountData.balance || '0'), getUserCurrency())}
                   </span>
                 </div>
               </div>

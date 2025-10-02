@@ -113,7 +113,7 @@ export default function Transfer() {
                       <div>
                         <p className="font-medium text-[var(--boi-gray)]">{selectedAccount.displayName}</p>
                         <p className="text-sm text-[var(--boi-light-gray)]">
-                          Available: €{parseFloat(selectedAccount.balance).toFixed(2)}
+                          Available: {getCurrencySymbol(getUserCurrency())}{parseFloat(selectedAccount.balance).toFixed(2)}
                         </p>
                       </div>
                     </div>
@@ -127,7 +127,7 @@ export default function Transfer() {
                       <PiggyBank className="text-[var(--boi-green)] mr-3" />
                       <div>
                         <p className="font-medium">{account.displayName}</p>
-                        <p className="text-sm text-gray-500">€{parseFloat(account.balance).toFixed(2)}</p>
+                        <p className="text-sm text-gray-500">{getCurrencySymbol(getUserCurrency())}{parseFloat(account.balance).toFixed(2)}</p>
                       </div>
                     </div>
                   </SelectItem>

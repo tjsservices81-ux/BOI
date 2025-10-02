@@ -49,8 +49,12 @@ export async function sendTransferNotification(recipient: string, amount: string
     hour12: false 
   });
 
+  // Get user currency for proper display
+  const userCurrency = localStorage.getItem('userCurrency') || 'EUR';
+  const currencySymbol = userCurrency === 'GBP' ? '£' : '€';
+
   const title = '';
-  const body = `Transfer successful\n€${amount} sent to ${recipient} at ${timeString}`;
+  const body = `Transfer successful\n${currencySymbol}${amount} sent to ${recipient} at ${timeString}`;
 
   // Add 5-second delay as requested
   setTimeout(async () => {
