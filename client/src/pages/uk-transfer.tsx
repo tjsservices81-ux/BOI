@@ -505,7 +505,9 @@ export default function UkTransfer() {
                 UK Bank Transfer
               </p>
               <p className="text-xs text-blue-700 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                This transfer will be processed within 1-2 business days due to international banking regulations.
+                {userCurrency === 'EUR' 
+                  ? 'This international transfer will be processed within 24 hours.'
+                  : 'This transfer will be processed within 24 hours.'}
               </p>
             </div>
           </div>
@@ -659,7 +661,9 @@ export default function UkTransfer() {
                     </div>
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
                       <p className="text-sm text-blue-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        <strong>International Transfer:</strong> UK transfers from Bank of Ireland typically take 1-2 business days to reach the recipient due to cross-border banking regulations.
+                        {userCurrency === 'EUR' 
+                          ? <><strong>International Transfer:</strong> UK transfers from Bank of Ireland typically take 24 hours to reach the recipient.</>
+                          : <>UK transfers from Bank of Ireland typically take 24 hours to reach the recipient.</>}
                       </p>
                     </div>
                     <div className="bg-red-50 border border-red-200 rounded-lg p-3 mt-3">
