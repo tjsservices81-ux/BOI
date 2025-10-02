@@ -147,6 +147,23 @@
         "dateCreated": "2025-09-30T21:04:26.336Z",
         "isDisabled": false
       }
+    ],
+    [
+      10,
+      {
+        "id": 10,
+        "customerNumber": "BOI877874232",
+        "pin": "000000",
+        "name": "john Moore",
+        "email": "maughantj81@gmail.com",
+        "phone": "111111",
+        "address": "",
+        "dateOfBirth": "",
+        "joinDate": "2025-10-02T13:01:18.955Z",
+        "dateCreated": "2025-10-02T13:01:18.956Z",
+        "isDisabled": false,
+        "currency": "GBP"
+      }
     ]
   ],
   "accounts": [
@@ -185,6 +202,42 @@
         "displayName": "Savings Account",
         "sortCode": "90-78-68"
       }
+    ],
+    [
+      4,
+      {
+        "id": 4,
+        "userId": 10,
+        "accountType": "current",
+        "accountNumber": "****2091",
+        "balance": "0.00",
+        "displayName": "Current Account",
+        "sortCode": "90-78-68"
+      }
+    ],
+    [
+      5,
+      {
+        "id": 5,
+        "userId": 10,
+        "accountType": "credit",
+        "accountNumber": "****1820",
+        "balance": "0.00",
+        "displayName": "Credit Card",
+        "sortCode": "90-78-68"
+      }
+    ],
+    [
+      6,
+      {
+        "id": 6,
+        "userId": 10,
+        "accountType": "savings",
+        "accountNumber": "****0978",
+        "balance": "0.00",
+        "displayName": "Savings Account",
+        "sortCode": "90-78-68"
+      }
     ]
   ],
   "transactions": [],
@@ -195,8 +248,8 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 10,
-    "currentAccountId": 4,
+    "currentUserId": 11,
+    "currentAccountId": 7,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
     "currentScheduledPaymentId": 1,
