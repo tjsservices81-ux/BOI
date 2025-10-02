@@ -212,14 +212,16 @@ export async function generateTransferConfirmationPDF(
             month: '2-digit',
             year: 'numeric',
             hour: '2-digit',
-            minute: '2-digit'
+            minute: '2-digit',
+            timeZone: 'Europe/Dublin'
           })
         : new Date().toLocaleDateString('en-GB', {
             day: '2-digit',
             month: '2-digit',
             year: 'numeric',
             hour: '2-digit',
-            minute: '2-digit'
+            minute: '2-digit',
+            timeZone: 'Europe/Dublin'
           });
       
       doc.font('Helvetica')

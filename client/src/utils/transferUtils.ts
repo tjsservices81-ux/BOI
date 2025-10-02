@@ -258,7 +258,7 @@ export const processTransfer = (
       });
       
       const transactionReference = newTransaction.reference || `BOI${Date.now()}`;
-      const currency = userProfile.currency === 'GBP' ? '£' : '€';
+      const currency = userCurrency === 'GBP' ? '£' : '€';
       
       // Use exact format specified by user
       const emailBody = `Hello ${userProfile.name},
