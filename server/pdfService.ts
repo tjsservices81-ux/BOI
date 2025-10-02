@@ -94,8 +94,8 @@ export async function generateTransferConfirmationPDF(
       
       doc.font('Helvetica-Bold')
          .fontSize(12)
-         .fillColor('#0000FF')
-         .text(`${currencySymbol}${amount}`, rightCol, yPos);
+         .fillColor('#000000')
+         .text(`${currencySymbol} ${amount}`, rightCol, yPos);
       
       yPos += 30;
 
