@@ -1568,8 +1568,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let userCurrency: 'EUR' | 'GBP' = 'EUR';
       if (customerNumber) {
         const user = await storage.getUserByCustomerNumber(customerNumber);
-        if (user) {
-          userCurrency = user.currency || 'EUR';
+        if (user && user.currency) {
+          userCurrency = user.currency as 'EUR' | 'GBP';
         }
       }
 
@@ -1881,7 +1881,8 @@ No transfers found yet on your account.`;
         // User information for email delivery and address
         userEmail: z.string().email().optional(),
         customerName: z.string().optional(),
-        userAddress: z.string().optional()
+        userAddress: z.string().optional(),
+        userCurrency: z.enum(['EUR', 'GBP']).optional()
       });
 
       const statementRequest = statementSchema.parse(req.body);
