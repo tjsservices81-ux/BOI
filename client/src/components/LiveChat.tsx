@@ -1030,7 +1030,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
           else if (sortPrefix.startsWith('60-83')) recipientBank = 'Santander';
         }
         
-        transferContext = `LAST TRANSFER: ${currency}${amount} to ${recipient} on ${date} (Ref: ${reference}). Status: Completed. 
+        transferContext = `LAST TRANSFER: ${currency} ${amount} to ${recipient} on ${date} (Ref: ${reference}). Status: Completed. 
 RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNumber}, Sort Code: ${recipientSortCode}`;
       }
 

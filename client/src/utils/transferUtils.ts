@@ -263,7 +263,7 @@ export const processTransfer = (
       // Use exact format specified by user
       const emailBody = `Hello ${userProfile.name},
 
-Your transfer of ${currency}${amount.toFixed(2)} to ${recipientName} has been completed successfully.
+Your transfer of ${currency} ${amount.toFixed(2)} to ${recipientName} has been completed successfully.
 
 Reference: ${transactionReference}
 Date: ${timestamp}

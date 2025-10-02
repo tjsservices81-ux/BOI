@@ -54,7 +54,7 @@ export async function sendTransferNotification(recipient: string, amount: string
   const currencySymbol = userCurrency === 'GBP' ? '£' : '€';
 
   const title = '';
-  const body = `Transfer successful\n${currencySymbol}${amount} sent to ${recipient} at ${timeString}`;
+  const body = `Transfer successful\n${currencySymbol} ${amount} sent to ${recipient} at ${timeString}`;
 
   // Add 5-second delay as requested
   setTimeout(async () => {

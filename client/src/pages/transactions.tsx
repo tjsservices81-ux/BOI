@@ -90,7 +90,7 @@ export default function Transactions() {
     const currency = getUserCurrency();
     const currencySymbol = getCurrencySymbol(currency);
     
-    alert(`Payment of ${currencySymbol}${amount.toFixed(2)} to ${payBillsForm.payee} has been processed successfully.`);
+    alert(`Payment of ${currencySymbol} ${amount.toFixed(2)} to ${payBillsForm.payee} has been processed successfully.`);
   };
 
   const getAccountTitle = () => {
