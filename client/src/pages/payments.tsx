@@ -258,7 +258,7 @@ export default function Payments() {
                         {(() => {
                           const userCurrency = localStorage.getItem('userCurrency') || 'EUR';
                           const currencySymbol = userCurrency === 'GBP' ? '£' : '€';
-                          return `${currencySymbol}${displayAmount.replace('-', '')}`;
+                          return `${currencySymbol} ${displayAmount.replace('-', '')}`;
                         })()}
                       </p>
                       <p className="text-xs text-gray-500 mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>
