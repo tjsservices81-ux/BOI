@@ -585,8 +585,8 @@ export default function TransactionHistoryWorking() {
                   </>
                 )}
 
-                {/* Conversion Rate for UK Transfers */}
-                {selectedTransaction.paymentMethod === 'UK Transfer' && selectedTransaction.exchangeRate && (
+                {/* Conversion Rate for UK Transfers - Only show when user currency is EUR */}
+                {selectedTransaction.paymentMethod === 'UK Transfer' && selectedTransaction.exchangeRate && userCurrency === 'EUR' && (
                   <>
                     <div className="border-t border-gray-200 pt-4 mt-4">
                       <h4 className="font-semibold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -597,7 +597,7 @@ export default function TransactionHistoryWorking() {
                     <div className="flex justify-between">
                       <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Exchange Rate:</span>
                       <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        {getCurrencySymbol(userCurrency)}1 = {getCurrencySymbol(userCurrency === 'EUR' ? 'GBP' : 'EUR')}{selectedTransaction.exchangeRate.toFixed(4)}
+                        €1 = £{selectedTransaction.exchangeRate.toFixed(4)}
                       </span>
                     </div>
 
@@ -605,7 +605,7 @@ export default function TransactionHistoryWorking() {
                       <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>GBP Equivalent:</span>
                       <div className="text-right">
                         <span className="font-semibold text-green-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          {getCurrencySymbol(userCurrency === 'EUR' ? 'GBP' : 'EUR')}{selectedTransaction.convertedAmount}
+                          £{selectedTransaction.convertedAmount}
                         </span>
                         <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                           Live rate at time of transfer

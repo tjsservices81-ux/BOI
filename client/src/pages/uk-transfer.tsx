@@ -483,9 +483,11 @@ export default function UkTransfer() {
                 <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Amount:</span>
                 <div className="text-right">
                   <span className="font-semibold text-[#126987] text-xl" style={{ fontFamily: 'OpenSans, sans-serif' }}>{formatCurrency(parseFloat(formData?.amount || '0'), userCurrency)}</span>
-                  <p className="text-sm text-green-700 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    ≈ {userCurrency === 'EUR' ? '£' : '€'}{formData?.amount ? (parseFloat(formData.amount) * exchangeRate).toFixed(2) : '0.00'} {userCurrency === 'EUR' ? 'GBP' : 'EUR'}
-                  </p>
+                  {userCurrency === 'EUR' && (
+                    <p className="text-sm text-green-700 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      ≈ £{formData?.amount ? (parseFloat(formData.amount) * exchangeRate).toFixed(2) : '0.00'} GBP
+                    </p>
+                  )}
                 </div>
               </div>
               
@@ -625,17 +627,19 @@ export default function UkTransfer() {
                       <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Amount:</span>
                       <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{formatCurrency(form.getValues('amount') || '0', userCurrency)}</span>
                     </div>
-                    <div className="flex justify-between border-t border-gray-200 pt-3">
-                      <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>GBP Equivalent:</span>
-                      <div className="text-right">
-                        <span className="font-semibold text-green-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          {getCurrencySymbol(userCurrency === 'EUR' ? 'GBP' : 'EUR')}{(parseFloat(form.getValues('amount')) * exchangeRate).toFixed(2)}
-                        </span>
-                        <p className="text-xs text-gray-500 mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          Rate: {getCurrencySymbol(userCurrency)}1 = {getCurrencySymbol(userCurrency === 'EUR' ? 'GBP' : 'EUR')}{exchangeRate.toFixed(4)} • Live rate
-                        </p>
+                    {userCurrency === 'EUR' && (
+                      <div className="flex justify-between border-t border-gray-200 pt-3">
+                        <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>GBP Equivalent:</span>
+                        <div className="text-right">
+                          <span className="font-semibold text-green-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                            £{(parseFloat(form.getValues('amount')) * exchangeRate).toFixed(2)}
+                          </span>
+                          <p className="text-xs text-gray-500 mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                            Rate: €1 = £{exchangeRate.toFixed(4)} • Live rate
+                          </p>
+                        </div>
                       </div>
-                    </div>
+                    )}
                     <div className="flex justify-between">
                       <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>To:</span>
                       <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{form.getValues('recipientName')}</span>

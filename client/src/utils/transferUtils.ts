@@ -263,7 +263,8 @@ Thank you for using our service.`;
         currency: currency,
         transactionReference: transactionReference,
         accountInfo: `${selectedAccount.displayName} (${selectedAccount.accountNumber})`,
-        transferData: newTransaction
+        transferData: newTransaction,
+        userCurrency: userProfile.currency || 'EUR'
       };
 
       // Send email confirmation after successful transfer

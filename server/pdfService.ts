@@ -9,7 +9,8 @@ export async function generateTransferConfirmationPDF(
   currency: string,
   transactionReference: string,
   accountInfo: string,
-  transferData: any
+  transferData: any,
+  userCurrency?: 'EUR' | 'GBP'
 ): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     try {
@@ -96,8 +97,9 @@ export async function generateTransferConfirmationPDF(
       
       yPos += 30;
 
-      // Add currency conversion for UK transfers ONLY if conversion data exists
-      if (transferData && transferData.exchangeRate && transferData.convertedAmount && transferData.convertedCurrency) {
+      // Add currency conversion for UK transfers ONLY if conversion data exists AND user currency is EUR
+      // When user currency is GBP, don't show conversion
+      if (transferData && transferData.exchangeRate && transferData.convertedAmount && transferData.convertedCurrency && userCurrency === 'EUR') {
         doc.font('Helvetica-Bold')
            .fontSize(12)
            .fillColor('#000000')

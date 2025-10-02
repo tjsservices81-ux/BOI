@@ -273,12 +273,14 @@ export async function sendBankStatement(
 export async function sendTransferConfirmation(
   userEmail: string, 
   details: TransferConfirmationDetails,
-  transferData?: any
+  transferData?: any,
+  userCurrency?: 'EUR' | 'GBP'
 ): Promise<boolean> {
   console.log('🔵 TRANSFER CONFIRMATION EMAIL TRIGGERED - sendTransferConfirmation()');
   console.log('Sending to:', userEmail);
   console.log('Transfer:', details.amount, details.recipientName, details.transactionReference);
   console.log('Transfer data:', transferData);
+  console.log('User currency:', userCurrency);
   
   try {
     // Generate email content (simple HTML without logo)
@@ -292,7 +294,8 @@ export async function sendTransferConfirmation(
       details.currency,
       details.transactionReference,
       details.accountInfo,
-      transferData
+      transferData,
+      userCurrency
     );
     
     // Send email with PDF attachment
