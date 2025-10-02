@@ -1564,6 +1564,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const { message, conversationHistory, agentName, customerNumber } = requestSchema.parse(req.body);
 
+      // Get user data to access their currency preference
+      let userCurrency: 'EUR' | 'GBP' = 'EUR';
+      if (customerNumber) {
+        const user = await storage.getUserByCustomerNumber(customerNumber);
+        if (user) {
+          userCurrency = user.currency || 'EUR';
+        }
+      }
+
       // Get customer's recent transfer data from request body if available
       let transferContext = '';
       
@@ -1610,8 +1619,7 @@ BIC Code: ${lastTransfer.bicCode || 'Not available'}
 Unique Reference: ${lastTransfer.reference || 'Not specified'}`;
           }
           
-          // Get user currency for proper display
-          const userCurrency = currentUser?.currency || 'EUR';
+          // Use user currency for proper display
           const currencySymbol = userCurrency === 'GBP' ? '£' : '€';
           
           transferContext = `\n\nCUSTOMER'S RECENT TRANSFER CONTEXT:
@@ -1640,7 +1648,7 @@ No transfers found yet on your account.`;
         { role: 'user' as const, content: message }
       ];
 
-      const aiResponse = await generateChatResponse(messages, agentName, transferContext);
+      const aiResponse = await generateChatResponse(messages, agentName, transferContext, userCurrency);
       
       res.json({ 
         response: aiResponse,

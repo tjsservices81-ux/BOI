@@ -586,8 +586,8 @@ export class StatementService {
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
       // Calculate running balances using real account data
-      const currentAccountBalance = this.getRealAccountBalance(request.accountId, request.userAccounts);
-      let runningBalance = this.calculateOpeningBalance(currentAccountBalance, statementTransactions);
+      const currentAccountBalance = this.getRealAccountBalance(request.accountId, request.userAccounts, request.userCurrency);
+      let runningBalance = this.calculateOpeningBalance(currentAccountBalance, statementTransactions, request.userCurrency);
       
       const transactionsWithBalance = statementTransactions.map(tx => {
         if (tx.type === 'debit') {
@@ -610,7 +610,7 @@ export class StatementService {
     }
   }
 
-  private getRealAccountBalance(accountId: string, userAccounts?: any[]): number {
+  private getRealAccountBalance(accountId: string, userAccounts?: any[], currency: 'EUR' | 'GBP' = 'EUR'): number {
     if (!userAccounts || userAccounts.length === 0) {
       console.warn('No user account data available, using default balance of 0');
       return 0;
@@ -635,7 +635,8 @@ export class StatementService {
         console.warn(`Invalid balance format for account ${accountId}, using default balance of 0`);
         return 0;
       }
-      console.log(`Real account ${accountId} balance: €${balance.toFixed(2)}`);
+      const currencySymbol = this.getCurrencySymbol(currency);
+      console.log(`Real account ${accountId} balance: ${currencySymbol}${balance.toFixed(2)}`);
       return balance;
     } catch (err) {
       console.error('Error parsing account balance:', err);
@@ -643,7 +644,7 @@ export class StatementService {
     }
   }
 
-  private calculateOpeningBalance(currentBalance: number, transactions: StatementTransaction[]): number {
+  private calculateOpeningBalance(currentBalance: number, transactions: StatementTransaction[], currency: 'EUR' | 'GBP' = 'EUR'): number {
     // Calculate opening balance by reversing all transactions from current balance
     let openingBalance = currentBalance;
     
@@ -655,7 +656,8 @@ export class StatementService {
       }
     }
     
-    console.log(`Calculated opening balance: €${openingBalance.toFixed(2)} (current: €${currentBalance.toFixed(2)})`);
+    const currencySymbol = this.getCurrencySymbol(currency);
+    console.log(`Calculated opening balance: ${currencySymbol}${openingBalance.toFixed(2)} (current: ${currencySymbol}${currentBalance.toFixed(2)})`);
     return openingBalance;
   }
 }

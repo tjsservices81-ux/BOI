@@ -10,7 +10,7 @@ export interface ChatMessage {
 }
 
 // Fast response generation for chat
-export async function generateChatResponse(messages: ChatMessage[], agentName: string, transferContext?: string): Promise<string> {
+export async function generateChatResponse(messages: ChatMessage[], agentName: string, transferContext?: string, userCurrency: 'EUR' | 'GBP' = 'EUR'): Promise<string> {
   try {
     const personality = getPersonality(agentName);
     
@@ -30,7 +30,7 @@ CRITICAL RULES:
 - You are a REAL human support agent, NOT a bot or AI. Never sound robotic.
 - Keep all responses under 80 words and natural
 - Be conversational, polite, and professional
-- Use Irish/UK banking terms (€, £)
+- Use Irish/UK banking terms (customer's currency: ${userCurrency === 'GBP' ? '£ (GBP)' : '€ (EUR)'})
 - Vary your wording - don't repeat phrases
 - Never mention "technical difficulties" or sound like a system
 
@@ -54,7 +54,7 @@ When answering:
 - Always speak naturally and use the real values, never use brackets or placeholders
 
 Example responses:
-"I can see your last transfer of €40.00 to John went through on 01 Oct 2025."
+"I can see your last transfer of ${userCurrency === 'GBP' ? '£' : '€'}40.00 to John went through on 01 Oct 2025."
 "That was sent to their Monzo account."
 "The account number is 18181819 and sort code is 04-00-04."
 ` : `
@@ -67,7 +67,7 @@ BANKING SERVICES YOU HANDLE:
 - UK transfers (24hrs processing, needs sort code/account)
 - SEPA/International transfers (1 business day, needs IBAN/BIC)
 - Card issues (lost/stolen/blocked cards)
-- ATM problems (€300 daily limit)
+- ATM problems (${userCurrency === 'GBP' ? '£250' : '€300'} daily limit)
 - Direct debits and standing orders
 
 NEVER USE THESE PHRASES:
