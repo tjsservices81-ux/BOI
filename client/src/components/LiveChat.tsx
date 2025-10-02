@@ -463,7 +463,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   const getDefaultResponses = (): ChatResponse[] => {
     const currencySymbol = getCurrencySymbol();
     const amounts = getCurrencyAmounts();
-    const bankName = getBankName(userCurrency);
+    const bankName = getBankName();
     
     return [
     {
@@ -634,7 +634,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
 
   // Comprehensive personality-based responses for all 30 agents
   const getPersonalityResponse = (agentName: string, messageType: string, userMessage?: string): string => {
-    const bankName = getBankName(userCurrency);
+    const bankName = getBankName();
     const personalityResponses: { [key: string]: { [key: string]: string[] } } = {
       'Emma': {
         welcome: [`Hi, this is Emma from ${bankName} Customer Support. How can I help you today?`, "Hello, you're speaking with Emma from Customer Support. What can I do for you?"],
