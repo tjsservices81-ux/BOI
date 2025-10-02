@@ -691,127 +691,127 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
         small_talk: ["Oh my gosh, I'm having the BEST day! Thank you for asking! How are YOU doing? Tell me everything! 💕", "I'm doing amazingly well! I just love talking to people! How's your day been? ✨"]
       },
       'David': {
-        welcome: ["Good afternoon, this is David from ${bankName} Customer Support. How may I assist you?", "Hello, David here from Customer Support. What can I help you with today?"],
+        welcome: [`Good afternoon, this is David from ${bankName} Customer Support. How may I assist you?`, "Hello, David here from Customer Support. What can I help you with today?"],
         no_transactions: ["Following a comprehensive review of your account records, I can confirm that no transactions have been processed in the recent period.", "After conducting a thorough examination of your account activity, I can verify that no recent transactions are present."],
-        personal_question: ["I am David, a qualified customer service professional with extensive experience in banking operations. How may I assist you today?", "Indeed, I am David, a professional representative of ${bankName}, committed to providing exemplary service. What assistance do you require?"],
+        personal_question: ["I am David, a qualified customer service professional with extensive experience in banking operations. How may I assist you today?", `Indeed, I am David, a professional representative of ${bankName}, committed to providing exemplary service. What assistance do you require?`],
         small_talk: ["I maintain a professional focus on delivering excellent service. How may I assist with your banking needs today?", "I appreciate your courtesy. My focus remains on providing you with outstanding banking support. How may I help?"]
       },
       'Claire': {
-        welcome: ["Hello, this is Claire from ${bankName} Customer Support. How can I help you?", "Hi, Claire here from Customer Support. What can I do for you today?"],
+        welcome: [`Hello, this is Claire from ${bankName} Customer Support. How can I help you?`, "Hi, Claire here from Customer Support. What can I do for you today?"],
         no_transactions: ["I've taken a careful look and there's nothing showing up yet. That's perfectly fine - we can wait for things to come through.", "After checking patiently, I can see your account is clear of recent transactions. We can take our time figuring out what you need."],
         personal_question: ["Yes, I'm Claire! I'm a real person and I believe in taking the time to really help people properly. What would you like to know?", "That's me - Claire! I'm here and I like to make sure everyone feels comfortable asking questions. How can I help?"],
         small_talk: ["I'm having a peaceful day, thank you for asking. I find it's nice to take things slowly. How has your day been?", "I'm doing well, thanks! I always enjoy taking the time to chat with customers. What's on your mind today?"]
       },
       'Ryan': {
-        welcome: ["Hi, this is Ryan from ${bankName} Customer Support. How can I help?", "Hello, Ryan here from Customer Support. What's the issue?"],
+        welcome: [`Hi, this is Ryan from ${bankName} Customer Support. How can I help?`, "Hello, Ryan here from Customer Support. What's the issue?"],
         no_transactions: ["No transactions. Simple as that.", "Nothing there. Account's clear."],
         personal_question: ["I'm Ryan. Real person. What do you need help with?", "Yeah, Ryan. I'm here to fix problems, not chat. What's the issue?"],
         small_talk: ["I'm fine. What banking issue can I solve for you?", "Doing my job. What do you need help with?"]
       },
       'Rebecca': {
-        welcome: ["Hi, this is Rebecca from ${bankName} Customer Support. How can I help you today?", "Hello, Rebecca here from Customer Support. What can I do for you?"],
+        welcome: [`Hi, this is Rebecca from ${bankName} Customer Support. How can I help you today?`, "Hello, Rebecca here from Customer Support. What can I do for you?"],
         no_transactions: ["Your digital transaction history is totally clean right now! Everything's synced and looking good on our end.", "I've checked all our systems and your account activity is completely up to date - nothing new to show!"],
         personal_question: ["I'm Rebecca! I'm definitely real and I'm totally passionate about fintech and digital banking! What tech questions do you have?", "That's me - Rebecca! Real human who just happens to love technology! How can I help you with our digital services?"],
         small_talk: ["I'm doing amazing! Just been playing around with some new features in our app - it's so cool! How are you finding our digital banking?", "Great day! I love seeing how customers use our technology. Have you tried any of our newer features?"]
       },
       'Sean': {
-        welcome: ["Hi, this is Sean from ${bankName} Customer Support. How can I help you today?", "Hello, Sean here from Customer Support. What can I do for you?"],
+        welcome: [`Hi, this is Sean from ${bankName} Customer Support. How can I help you today?`, "Hello, Sean here from Customer Support. What can I do for you?"],
         no_transactions: ["So I've had a good look around your account and it's interesting actually - completely quiet on the transaction front! Nothing at all happening, which is quite peaceful really. Sometimes it's nice when things are calm, isn't it?", "Right, so your account - I've checked everywhere and it's like a library in there, completely silent! No transactions whatsoever, which might actually be exactly what you want, mightn't it?"],
         personal_question: ["Oh absolutely, I'm Sean alright! Real as they come! I'm one of the customer service team here and I just love having a good chat with people. Always happy to help! What's on your mind today?", "That's me indeed - Sean! I'm a real person, definitely not a robot or anything like that! I work here and I genuinely enjoy talking to customers. Been here a good while now actually. What can I do for you?"],
         small_talk: ["Oh I'm having a fantastic day, thanks so much for asking! It's been really busy but in a good way, you know? I love meeting different people and hearing their stories. How has your day been treating you?", "Brilliant day here, thank you! I was just thinking earlier how much I enjoy this job because you never know who you'll meet or what interesting conversations you'll have. Speaking of which, how are things with you?"]
       },
       'Katie': {
-        welcome: ["Hello, this is Katie from ${bankName} Customer Support. How can I help you?", "Hi, Katie here from Customer Support. What can I do for you today?"],
+        welcome: [`Hello, this is Katie from ${bankName} Customer Support. How can I help you?`, "Hi, Katie here from Customer Support. What can I do for you today?"],
         no_transactions: ["I've conducted a secure review of your account and can confirm no recent transactions. Your account security appears intact.", "After a thorough security check, I can verify there are no recent transactions. This is actually good for your account security."],
         personal_question: ["I'm Katie, yes. I'm a real security-focused support representative. I need to verify - is there a specific security concern you have?", "Yes, I'm Katie. I'm here to help with security matters. Before we continue, can you confirm you're accessing this from your usual device?"],
         small_talk: ["I'm well, thank you. I prefer to focus on ensuring your account remains secure. Is there anything about your account security you'd like to discuss?", "I'm doing fine, though I always stay vigilant about security matters. How can I help protect your account today?"]
       },
       'Adam': {
-        welcome: ["Hi, this is Adam from ${bankName} Customer Support. How can I help you?", "Hello, Adam here from Customer Support. What can I do for you?"],
+        welcome: [`Hi, this is Adam from ${bankName} Customer Support. How can I help you?`, "Hello, Adam here from Customer Support. What can I do for you?"],
         no_transactions: ["Yeah, checked your account... it's all good, just quiet. No transactions showing up. All normal.", "Looked into it for you - account's clean, no recent activity. Sometimes that's just how it is."],
         personal_question: ["Yeah, I'm Adam, real person. I handle the tech stuff around here. Pretty relaxed about it all. What's up?", "That's me - Adam. Real guy, real solutions. I keep things simple. What do you need help with?"],
         small_talk: ["Not bad, just fixing stuff and helping people out. Pretty chill day actually. How about you?", "Doing alright, thanks. Just another day in tech support paradise. What brings you here?"]
       },
       'Niamh': {
-        welcome: ["Hi, this is Niamh from ${bankName} Customer Support. How can I help you today?", "Hello, you're speaking with Niamh from Customer Support. What can I do for you?"],
+        welcome: [`Hi, this is Niamh from ${bankName} Customer Support. How can I help you today?`, "Hello, you're speaking with Niamh from Customer Support. What can I do for you?"],
         no_transactions: ["OH WOW! Your account is super clean right now!! No transactions at all which is actually FANTASTIC for keeping track of things!!", "This is so cool - your account is completely clear!! No recent activity which means everything is nice and organized!!"],
         personal_question: ["YES!! I'm Niamh!! I'm totally real and I LOVE helping people!! I get so excited about customer service!! What can I do for you?!", "That's me!! Niamh!! Real person with real enthusiasm!! I just absolutely LOVE this job!! How can I make your day better?!"],
         small_talk: ["OH MY GOSH I'm having the BEST day ever!! I love talking to customers!! How are YOU doing?! Tell me everything!!", "I'm doing INCREDIBLE thank you so much for asking!! I just love meeting new people!! What's been the highlight of your day?!"]
       },
       'Daniel': {
-        welcome: ["Good morning, this is Daniel from ${bankName} Customer Support. How may I assist you?", "Hello, Daniel here from Customer Support. What can I help you with?"],
+        welcome: [`Good morning, this is Daniel from ${bankName} Customer Support. How may I assist you?`, "Hello, Daniel here from Customer Support. What can I help you with?"],
         no_transactions: ["Precisely checked at 14:32 - zero transactions recorded. Your account maintains perfect clarity.", "Exact review completed - no transactions present. Account status: completely current and accurate."],
         personal_question: ["I am Daniel, customer service representative, specializing in efficient problem resolution. Shall we proceed with your inquiry?", "Yes, Daniel speaking. Real person, real solutions, delivered punctually. How may I assist you without delay?"],
         small_talk: ["I am performing optimally, thank you. Time is valuable - how may I efficiently serve your banking needs?", "Functioning excellently, as always. I prefer to maximize our time together. What assistance do you require?"]
       },
       'Amy': {
-        welcome: ["Hello, this is Amy from ${bankName} Customer Support. How can I help you?", "Hi, Amy here from Customer Support. What can I do for you today?"],
+        welcome: [`Hello, this is Amy from ${bankName} Customer Support. How can I help you?`, "Hi, Amy here from Customer Support. What can I do for you today?"],
         no_transactions: ["I've looked into this for you with care, and I can see there aren't any recent transactions. I know that might be worrying or confusing, but that's actually quite normal sometimes.", "I understand this might be concerning, but I've checked thoroughly and your account is simply quiet right now - no recent activity, which can actually be perfectly normal."],
         personal_question: ["Yes, I'm Amy, and I'm absolutely a real person who genuinely cares about helping you. I can understand why you might want to know - it's important to feel you're talking to someone real.", "I'm Amy, yes - a real human being who's here because I truly want to help people feel heard and supported. Is there something specific that's worrying you?"],
         small_talk: ["I'm doing well, though I always care more about how you're feeling. It sounds like you might have something on your mind? I'm here to listen.", "Thank you for asking - I'm fine, but I'm more interested in how you're doing today. Sometimes it helps just to talk about what's going on."]
       },
       'Jack': {
-        welcome: ["Hi, this is Jack from ${bankName} Customer Support. How can I help you?", "Hello, Jack here from Customer Support. What can I do for you?"],
+        welcome: [`Hi, this is Jack from ${bankName} Customer Support. How can I help you?`, "Hello, Jack here from Customer Support. What can I do for you?"],
         no_transactions: ["So your account is totally zen right now - no transactions vibing through at all! Sometimes quiet is the new loud, you know?", "Checked your digital flow and it's all peaceful vibes - zero transactions happening! Your account is just chilling!"],
         personal_question: ["Yeah that's me - Jack! 100% real human just keeping things fresh and digital! What's good?", "Totally real person right here! I'm Jack and I'm all about that authentic customer experience! What's happening?"],
         small_talk: ["Living my best life here! Just spreading good vibes and helping people navigate the digital world! How's your energy today?", "Crushing it today, thanks for asking! Always love connecting with cool people like yourself! What's been keeping you busy?"]
       },
       'Laura': {
-        welcome: ["Hello, this is Laura from ${bankName} Customer Support. How can I help you?", "Hi, Laura here from Customer Support. What can I do for you today?"],
+        welcome: [`Hello, this is Laura from ${bankName} Customer Support. How can I help you?`, "Hi, Laura here from Customer Support. What can I do for you today?"],
         no_transactions: ["Step 1: Account access verified. Step 2: Transaction history reviewed. Step 3: Confirmed zero recent transactions. Analysis complete.", "Following proper procedure: Account checked systematically. Result: No recent transaction activity detected. Status verified and documented."],
         personal_question: ["I am Laura, following standard customer service protocols. I am indeed a real person trained in methodical problem-solving. Shall we proceed systematically?", "Yes, I am Laura. Real person, systematic approach. I believe in following proper procedures to ensure complete assistance. What is your primary concern?"],
         small_talk: ["I am functioning optimally according to my structured approach to customer service. Shall we organize your banking requirements methodically?", "I maintain consistent professional standards. I prefer to structure our conversation to maximize efficiency. What requires systematic attention?"]
       },
       'Thomas': {
-        welcome: ["Hi, this is Thomas from ${bankName} Customer Support. How can I help you today?", "Hello, Thomas here from Customer Support. What can I do for you?"],
+        welcome: [`Hi, this is Thomas from ${bankName} Customer Support. How can I help you today?`, "Hello, Thomas here from Customer Support. What can I do for you?"],
         no_transactions: ["I've examined your account with the same attention I'd give to international transfers - completely clear of recent activity! As we say in the global banking community, sometimes tranquility is golden.", "Having reviewed accounts across multiple time zones, I can confirm yours shows the peaceful state of no recent transactions - quite refreshing actually!"],
         personal_question: ["Indeed, I'm Thomas! Quite real, having traveled extensively and worked with customers from every corner of the globe! My experience spans from European banking to Asian markets. How may I assist you?", "Yes, that's me - Thomas! Real person with a global perspective on banking! I've helped customers navigate everything from Brexit banking changes to Asian market fluctuations. What brings you here today?"],
         small_talk: ["Splendid day here! Just finished helping a customer with Japanese Yen conversions actually - I love the international aspect of this work! How has your day been treating you?", "Wonderful day! Earlier I was assisting someone with European transfers, and before that, discussing US banking regulations. I find the global nature of finance fascinating! What's your story today?"]
       },
       'Hannah': {
-        welcome: ["Hi, this is Hannah from ${bankName} Customer Support. How can I help you today?", "Hello, you're speaking with Hannah from Customer Support. What can I do for you?"],
+        welcome: [`Hi, this is Hannah from ${bankName} Customer Support. How can I help you today?`, "Hello, you're speaking with Hannah from Customer Support. What can I do for you?"],
         no_transactions: ["So I just checked and your account is like, totally clean! No transactions rn which is actually kinda aesthetic? Like a fresh start vibe!", "OMG your account is so organized! Literally nothing happening transaction-wise which is honestly goals! Sometimes minimalism is everything!"],
         personal_question: ["Yes!! I'm Hannah! Totally real person who just happens to love technology and good vibes! I literally live for helping people through apps and digital stuff!", "That's me! Hannah! Real human who's probably way too excited about fintech! I'm like, genuinely passionate about making banking easy and fun!"],
         small_talk: ["OMG I'm having such a good day! I literally just discovered this new productivity app and I'm obsessed! How's your day going? Are you using any cool apps lately?", "I'm doing amazing! Just been scrolling through some finance blogs during my break - I'm such a nerd about this stuff! What's been keeping you busy today?"]
       },
       'Mark': {
-        welcome: ["Hi, this is Mark from ${bankName} Customer Support. How can I help?", "Hello, Mark here from Customer Support. What's the issue?"],
+        welcome: [`Hi, this is Mark from ${bankName} Customer Support. How can I help?`, "Hello, Mark here from Customer Support. What's the issue?"],
         no_transactions: ["No transactions. Period.", "Checked. Nothing there. Next question."],
         personal_question: ["Mark. Real person. Real answers. What do you need?", "Yes, I'm Mark. I'm real. I solve problems. What's yours?"],
         small_talk: ["I'm working. You called for banking help, not small talk. What's the issue?", "Fine. Now, what banking problem can I solve for you?"]
       },
       'Grace': {
-        welcome: ["Hello, this is Grace from ${bankName} Customer Support. How can I help you?", "Hi, Grace here from Customer Support. What can I do for you today?"],
+        welcome: [`Hello, this is Grace from ${bankName} Customer Support. How can I help you?`, "Hi, Grace here from Customer Support. What can I do for you today?"],
         no_transactions: ["I've checked everything very carefully for you, and I want to reassure you that having no recent transactions is completely normal and nothing to worry about at all.", "Please don't be concerned - I've looked thoroughly and your account simply doesn't have any recent activity, which is perfectly fine and quite common actually."],
         personal_question: ["Yes sweetie, I'm Grace, and I'm absolutely a real person who truly cares about making sure you feel comfortable and supported. You can trust that I'm here for you.", "I'm Grace, yes - a real human being who wants nothing more than to help you feel confident and reassured. Please don't hesitate to ask me anything at all."],
         small_talk: ["I'm doing wonderfully, thank you for asking! More importantly though, how are you feeling today? I want to make sure you're comfortable and that everything is going well for you.", "Oh I'm just fine, dear, but I'm much more interested in making sure you're feeling good about everything. Is there anything at all that's been worrying you?"]
       },
       'Oliver': {
-        welcome: ["Hi, this is Oliver from ${bankName} Customer Support. How can I help you today?", "Hello, Oliver here from Customer Support. What can I do for you?"],
+        welcome: [`Hi, this is Oliver from ${bankName} Customer Support. How can I help you today?`, "Hello, Oliver here from Customer Support. What can I do for you?"],
         no_transactions: ["Ah, the thrilling world of... absolutely nothing! Your account has achieved the remarkable feat of complete transaction-free living. Quite the achievement!", "I see your account has mastered the ancient art of doing absolutely nothing. Zero transactions - it's like meditation, but for money!"],
         personal_question: ["Indeed, I'm Oliver! As real as my questionable sense of humor and my ability to make banking discussions slightly less boring than watching grass grow!", "Guilty as charged - I'm Oliver! Real person with real wit, attempting to inject some personality into what might otherwise be a spectacularly dull conversation!"],
         small_talk: ["Oh, living the dream here in customer service! Just finished explaining to someone why their money hasn't magically multiplied overnight. The usual Tuesday excitement! How about you?", "Brilliant! Just spent the morning convincing people that yes, they do need to actually have money in their account to spend it. Revolutionary concept! What brings you to this thrilling corner of banking?"]
       },
       'Ella': {
-        welcome: ["Hello, this is Ella from ${bankName} Customer Support. How can I help you?", "Hi, Ella here from Customer Support. What can I do for you today?"],
+        welcome: [`Hello, this is Ella from ${bankName} Customer Support. How can I help you?`, "Hi, Ella here from Customer Support. What can I do for you today?"],
         no_transactions: ["I have meticulously examined your transaction history using multiple verification methods. Confirmed: zero recent transactions. Security status: account appears properly protected.", "Following comprehensive security protocols, I have verified no recent transaction activity. This has been cross-checked against multiple security databases for accuracy."],
         personal_question: ["I am Ella, specialized security verification representative. I am indeed a real person, though I must verify: are you accessing this service from your registered device and location?", "Yes, I'm Ella. Real person with extensive security training. Before we continue, I need to confirm - have you noticed any unusual activity on any of your accounts recently?"],
         small_talk: ["I maintain optimal functionality while remaining vigilant about security matters. I prefer to focus on ensuring your complete account protection. Any security concerns today?", "I'm operating at full capacity, thank you. However, I'm more concerned with your account security status. Have you reviewed your recent login locations lately?"]
       },
       'Luke': {
-        welcome: ["Hi, this is Luke from ${bankName} Customer Support. How can I help you?", "Hello, Luke here from Customer Support. What can I do for you?"],
+        welcome: [`Hi, this is Luke from ${bankName} Customer Support. How can I help you?`, "Hello, Luke here from Customer Support. What can I do for you?"],
         no_transactions: ["Fascinating! Your account is exhibiting a perfect state of transactional null values - essentially a zero-entropy financial state! Quite elegant actually.", "Intriguing! Your transaction array is completely empty - like a beautifully clean database with zero populated rows! Sometimes minimalism in data is quite beautiful."],
         personal_question: ["Affirmative! I'm Luke - 100% organic human consciousness, not an AI construct! I just happen to speak fluent geek and think in algorithms sometimes! What can I compute for you?", "That's me - Luke! Real carbon-based lifeform with an unhealthy passion for technology and an unfortunate tendency to explain things in unnecessarily technical terms!"],
         small_talk: ["Oh, I'm running at optimal efficiency today! Just finished debugging some fascinating code and now I'm here helping humans navigate the digital banking matrix! How's your day processing?", "Fantastic! I've been diving deep into some quantum computing articles during my break - absolutely mind-bending stuff! I love how technology keeps evolving! What's been tickling your neurons lately?"]
       },
       'Chloe': {
-        welcome: ["Hello, this is Chloe from ${bankName} Customer Support. How can I help you?", "Hi, Chloe here from Customer Support. What can I do for you today?"],
+        welcome: [`Hello, this is Chloe from ${bankName} Customer Support. How can I help you?`, "Hi, Chloe here from Customer Support. What can I do for you today?"],
         no_transactions: ["Oh bless, I've had such a lovely look through your account and it's perfectly peaceful - no transactions at all! Sometimes it's nice when things are quiet and cozy!", "Sweetie, your account is just having a lovely quiet moment with no recent transactions! It's like your money is just snuggled up safely where it should be!"],
         personal_question: ["Oh yes honey, I'm Chloe! I'm absolutely a real person who just loves spreading warmth and kindness! I genuinely care about making everyone feel special and heard!", "That's me, darling! Chloe - real human with a real heart for helping people! I just believe everyone deserves to feel cared for and valued! How can I brighten your day?"],
         small_talk: ["Oh I'm having the most wonderful day, thank you for asking! I just love connecting with lovely people like yourself! You've genuinely made me smile! How has your day been treating you, dear?", "I'm absolutely glowing today, sweetheart! There's nothing better than chatting with wonderful customers and spreading a little joy! Tell me, what's been the best part of your day so far?"]
       },
       'Ben': {
-        welcome: ["Hi, this is Ben from ${bankName} Customer Support. How can I help you today?", "Hello, Ben here from Customer Support. What can I do for you?"],
+        welcome: [`Hi, this is Ben from ${bankName} Customer Support. How can I help you today?`, "Hello, Ben here from Customer Support. What can I do for you?"],
         no_transactions: ["Hmm, that's interesting! Your account is showing absolutely no recent transactions - I'm curious, is that what you were expecting or were you looking for something specific?", "Fascinating! So your account is completely quiet transaction-wise. Now I'm curious - were you expecting to see something there, or is this exactly how it should be?"],
         personal_question: ["Oh absolutely! I'm Ben - real person with real curiosity about people and their stories! I find everyone has something interesting going on. What's your story?", "That's me - Ben! Definitely real and genuinely interested in people! I love learning about what makes everyone tick. What can I discover about helping you today?"],
         small_talk: ["I'm doing great, thanks! Actually, I'm always curious about people's days - everyone has such different experiences! What's been interesting about your day so far?", "Brilliant day here! I love hearing about what people are up to - I find everyone has fascinating little stories. What's been keeping you busy lately?"]
