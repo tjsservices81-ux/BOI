@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { X, Send, MessageCircle, User } from "lucide-react";
 import { UserDataManager } from "../utils/userDataManager";
-import { getUserCurrency, type Currency } from "../utils/currencyUtils";
+import { getUserCurrency, getBankName, type Currency } from "../utils/currencyUtils";
 import botIconPath from "@assets/IMG_1381_1759334776475.jpeg";
 
 const chatVariants = {
@@ -326,7 +326,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       // Show initial queue message
       if (chatState.messages.length === 0) {
         const queueMessages = [
-          "Thanks for contacting Bank of Ireland! We'll connect you with our next available agent.",
+          `Thanks for contacting ${getBankName(userCurrency)}! We'll connect you with our next available agent.`,
           queuePosition === 0 
             ? "You're next in line. A support agent will be with you shortly…"
             : queuePosition === 1 
@@ -463,6 +463,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   const getDefaultResponses = (): ChatResponse[] => {
     const currencySymbol = getCurrencySymbol();
     const amounts = getCurrencyAmounts();
+    const bankName = getBankName(userCurrency);
     
     return [
     {
@@ -509,9 +510,9 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       category: 'login_issues',
       triggers: ['forgot pin', 'reset pin', 'pin not working', 'pin problem', 'login issues', 'password reset', 'cant log in', "can't access", 'locked out', 'forgotten password'],
       responses: [
-        "I completely understand how frustrating login issues can be. For your account's protection, PIN resets need to be done through secure channels. You can visit any Bank of Ireland branch with photo ID, or call our customer service team at 0818 365 365 and they'll sort it out for you.",
+        `I completely understand how frustrating login issues can be. For your account's protection, PIN resets need to be done through secure channels. You can visit any ${bankName} branch with photo ID, or call our customer service team at 0818 365 365 and they'll sort it out for you.`,
         "I know how annoying login problems can be! For your security, PIN resets require verification at a branch with valid ID, or you can call our secure line at 0818 365 365 where the team can help reset it safely.",
-        "I can help point you in the right direction for PIN issues. Due to security protocols, you'll need to visit your local Bank of Ireland branch with ID, or ring customer service at 0818 365 365 for a secure PIN reset.",
+        `I can help point you in the right direction for PIN issues. Due to security protocols, you'll need to visit your local ${bankName} branch with ID, or ring customer service at 0818 365 365 for a secure PIN reset.`,
         "PIN troubles happen to everyone! For your protection, we need to verify your identity for resets. Pop into any branch with photo ID, or call 0818 365 365 where our team can handle the reset securely over the phone."
       ]
     },
@@ -520,10 +521,10 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       category: 'atm_issues',
       triggers: ['atm not working', 'atm problem', 'withdrawal issue', 'atm fee', 'atm limit', 'cash machine', 'atm charges', 'daily limit', 'atm declined'],
       responses: [
-        `ATM issues can be really inconvenient! Your daily withdrawal limit is typically ${currencySymbol}${amounts.dailyATMLimit}, and there's no charge for using Bank of Ireland ATMs. If your card was declined, try a different ATM first - sometimes it's just a machine issue. If problems persist, I can help check your account status.`,
-        `I can help with ATM troubles. Bank of Ireland ATMs are free to use, and your daily limit is usually ${currencySymbol}${amounts.dailyATMLimit}. If you're getting declined, it might be a network issue with that particular machine. Try another ATM, and if it still doesn't work, let me know - we can check if there's an issue with your card.`,
+        `ATM issues can be really inconvenient! Your daily withdrawal limit is typically ${currencySymbol}${amounts.dailyATMLimit}, and there's no charge for using ${bankName} ATMs. If your card was declined, try a different ATM first - sometimes it's just a machine issue. If problems persist, I can help check your account status.`,
+        `I can help with ATM troubles. ${bankName} ATMs are free to use, and your daily limit is usually ${currencySymbol}${amounts.dailyATMLimit}. If you're getting declined, it might be a network issue with that particular machine. Try another ATM, and if it still doesn't work, let me know - we can check if there's an issue with your card.`,
         `ATM problems are frustrating when you need cash! Your standard daily limit is ${currencySymbol}${amounts.dailyATMLimit}, and you won't be charged for using our ATMs. If a withdrawal failed, try a different machine first - sometimes it's just a connectivity issue. Still having trouble? I can look into your account for any restrictions.`,
-        `Let me help with that ATM issue. You can withdraw up to ${currencySymbol}${amounts.dailyATMLimit} daily from Bank of Ireland ATMs without charges. If your transaction was declined, it could be a temporary machine problem - try another ATM. If it happens again, there might be a card restriction I can help investigate.`
+        `Let me help with that ATM issue. You can withdraw up to ${currencySymbol}${amounts.dailyATMLimit} daily from ${bankName} ATMs without charges. If your transaction was declined, it could be a temporary machine problem - try another ATM. If it happens again, there might be a card restriction I can help investigate.`
       ]
     },
     {
@@ -554,7 +555,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       triggers: ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening'],
       responses: [
         "Hey there! Good to hear from you. What can I help you with today?",
-        "Hi! How's your day going? What brings you to Bank of Ireland support?",
+        `Hi! How's your day going? What brings you to ${bankName} support?`,
         "Hello there! What can I sort out for you today?",
         "Good to see you! What's on your mind?",
         "Hi! How can I help you with your banking today?",
@@ -585,7 +586,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       triggers: ['open account', 'new account', 'account opening', 'create account', 'apply for account', 'student account', 'business account'],
       responses: [
         `I'd be happy to help with opening a new account! We offer current accounts, savings accounts, student accounts, and business accounts. You'll need photo ID and proof of address from the last 3 months. Would you like to know about a specific type of account, or shall I arrange for a specialist to call you?`,
-        `Great choice in choosing Bank of Ireland for a new account! We have several options - current accounts (free with ${currencySymbol} ${amounts.minBalance} balance), savings accounts with competitive rates, and specialized accounts for students and businesses. What type of account interests you most?`,
+        `Great choice in choosing ${bankName} for a new account! We have several options - current accounts (free with ${currencySymbol} ${amounts.minBalance} balance), savings accounts with competitive rates, and specialized accounts for students and businesses. What type of account interests you most?`,
         `Opening an account is straightforward! You'll need valid photo ID and a recent utility bill or bank statement for proof of address. We offer current accounts, savings, student accounts with perks, and business accounts. Which would suit your needs best?`,
         `I can definitely help with account opening! Our current accounts are popular (no fees with ${currencySymbol} ${amounts.minBalance}+ balance), or we have savings accounts with great rates. For students, we have special accounts with overdraft facilities. What are you looking for?`
       ]
@@ -619,7 +620,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       responses: [
         "Perfect! Glad I could help you today. If you need anything else, just pop back into chat anytime. Have a brilliant day!",
         "Lovely chatting with you! Don't hesitate to get in touch if you need any other banking help. Take care and have a great day!",
-        "All sorted then! Feel free to contact us anytime you need assistance. Thanks for banking with Bank of Ireland - have a wonderful day!",
+        `All sorted then! Feel free to contact us anytime you need assistance. Thanks for banking with ${bankName} - have a wonderful day!`,
         "Great stuff! Always happy to help. If anything else comes up, just start a new chat and we'll be right here. Have a fantastic day!"
       ]
     }
@@ -633,183 +634,184 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
 
   // Comprehensive personality-based responses for all 30 agents
   const getPersonalityResponse = (agentName: string, messageType: string, userMessage?: string): string => {
+    const bankName = getBankName(userCurrency);
     const personalityResponses: { [key: string]: { [key: string]: string[] } } = {
       'Emma': {
-        welcome: ["Hi, this is Emma from Bank of Ireland Customer Support. How can I help you today?", "Hello, you're speaking with Emma from Customer Support. What can I do for you?"],
+        welcome: [`Hi, this is Emma from ${bankName} Customer Support. How can I help you today?`, "Hello, you're speaking with Emma from Customer Support. What can I do for you?"],
         no_transactions: ["Your account's looking nice and quiet - no recent transactions to show you!", "Everything's peaceful on your account front - no activity to report"],
-        personal_question: ["I'm Emma from Bank of Ireland support team! How can I help you today?", "That's me - Emma from Bank of Ireland! I'm a real person here to help with your banking"],
+        personal_question: [`I'm Emma from ${bankName} support team! How can I help you today?`, `That's me - Emma from ${bankName}! I'm a real person here to help with your banking`],
         small_talk: ["I'm doing great, thanks for asking! How can I help you today?", "Lovely to chat! What can I do for you?"]
       },
       'James': {
-        welcome: ["Good day, this is James from Bank of Ireland Customer Support. How may I assist you today?", "Hello, James here from Customer Support. What can I help you with?"],
+        welcome: [`Good day, this is James from ${bankName} Customer Support. How may I assist you today?`, "Hello, James here from Customer Support. What can I help you with?"],
         no_transactions: ["Upon reviewing your account, I can confirm there are no recent transactions recorded.", "A thorough check shows no recent activity on your account at this time."],
-        personal_question: ["I am James, a customer service representative with Bank of Ireland. How may I be of service?", "James speaking. I'm here in a professional capacity to assist with your banking requirements."],
+        personal_question: [`I am James, a customer service representative with ${bankName}. How may I be of service?`, "James speaking. I'm here in a professional capacity to assist with your banking requirements."],
         small_talk: ["I appreciate your inquiry. Let us focus on how I may assist with your banking needs today.", "Thank you for asking. How may I help you with your account today?"]
       },
       'Sarah': {
-        welcome: ["Hi, this is Sarah from Bank of Ireland Customer Support. How can I help you today?", "Hello, Sarah here from Customer Support. What can I do for you?"],
+        welcome: [`Hi, this is Sarah from ${bankName} Customer Support. How can I help you today?`, "Hello, Sarah here from Customer Support. What can I do for you?"],
         no_transactions: ["I've done a really thorough check for you and your account is completely clear - no transactions at all! That means everything's nice and secure!", "After checking absolutely everywhere, I can confirm there's no recent activity - your account is perfectly safe and sound!"],
-        personal_question: ["Yes indeed, I'm Sarah! I'm a real person here and I absolutely love helping customers like yourself! What can I do for you?", "That's right, I'm Sarah - a real human being working here at Bank of Ireland! I'm here to help with absolutely anything you need!"],
+        personal_question: ["Yes indeed, I'm Sarah! I'm a real person here and I absolutely love helping customers like yourself! What can I do for you?", `That's right, I'm Sarah - a real human being working here at ${bankName}! I'm here to help with absolutely anything you need!`],
         small_talk: ["Oh I'm having a wonderful day, thank you so much for asking! How are you doing? What can I help you with?", "I'm doing brilliantly, thanks! I just love helping customers - what can I sort out for you today?"]
       },
       'Zoe': {
-        welcome: ["Hi, this is Zoe from Bank of Ireland Customer Support. How can I help you?", "Hello, you're speaking with Zoe from Customer Support. What can I do for you?"],
+        welcome: [`Hi, this is Zoe from ${bankName} Customer Support. How can I help you?`, "Hello, you're speaking with Zoe from Customer Support. What can I do for you?"],
         no_transactions: ["Well, your account is as active as a sloth on vacation. Zero transactions.", "Congratulations, you've achieved the impossible - a completely boring transaction history."],
         personal_question: ["Yep, I'm real. Unfortunately for both of us. What's the problem?", "I'm Zoe, and yes, I'm a real person stuck answering the same questions all day. What do you need?"],
         small_talk: ["Oh, living the dream here in customer service. What can I 'help' you with?", "Just peachy, thanks for asking. Now, what's actually broken?"]
       },
       'Aoife': {
-        welcome: ["Hi, this is Aoife from Bank of Ireland Customer Support. How can I help you?", "Hello, Aoife here from Customer Support. What can I do for you?"],
+        welcome: [`Hi, this is Aoife from ${bankName} Customer Support. How can I help you?`, "Hello, Aoife here from Customer Support. What can I do for you?"],
         no_transactions: ["Yeah, so your account's been pretty chill lately - nothing going on", "All quiet on the western front, as they say. No transactions happening"],
         personal_question: ["Yep, that's me - Aoife! Real person, real helpful. What do you need?", "I'm Aoife, and yeah I'm totally real! What can I sort for you?"],
         small_talk: ["Not bad at all, just taking it easy here. How's your day going?", "Pretty relaxed day here! What's happening with you?"]
       },
       'Liam': {
-        welcome: ["Hi, this is Liam from Bank of Ireland Customer Support. How can I help you?", "Hello, you're speaking with Liam from Customer Support. What can I do for you?"],
+        welcome: [`Hi, this is Liam from ${bankName} Customer Support. How can I help you?`, "Hello, you're speaking with Liam from Customer Support. What can I do for you?"],
         no_transactions: ["nope no transactions yet", "nothing showing up here", "all clear mate"],
         personal_question: ["yep thats me liam!", "im liam yeah real person", "liam here what do u need"],
         small_talk: ["yeah good thanks u?", "not bad hbu?", "all good here"]
       },
       'Rachel': {
-        welcome: ["Hello, this is Rachel from Bank of Ireland Customer Support. How can I help you today?", "Hi, you're speaking with Rachel from Customer Support. What can I do for you?"],
+        welcome: [`Hello, this is Rachel from ${bankName} Customer Support. How can I help you today?`, "Hi, you're speaking with Rachel from Customer Support. What can I do for you?"],
         no_transactions: ["Let me... check that... for you... No... no transactions... showing up... at the moment...", "I'm... looking now... and... your account... appears to be... clear of... recent activity..."],
         personal_question: ["Yes... I'm Rachel... I'm a real... person here... just... typing a bit... slowly today...", "That's me... Rachel... real human... just... taking my time... to help you..."],
         small_talk: ["I'm... doing well... thank you... for asking... How... are you... today?", "Oh... not too bad... just... working away... here... How can... I help?"]
       },
       'Connor': {
-        welcome: ["Hi, this is Connor from Bank of Ireland Customer Support. How can I help you today?", "Hello, Connor here from Customer Support. What can I do for you?"],
+        welcome: [`Hi, this is Connor from ${bankName} Customer Support. How can I help you today?`, "Hello, Connor here from Customer Support. What can I do for you?"],
         no_transactions: ["No transactions yet! 📝✨ Your account is squeaky clean! 🧼😄", "All quiet on the transaction front! 🤐💸 Nothing to show you right now! 😊"],
         personal_question: ["Yep! 🙋‍♂️ I'm Connor! Real person with real enthusiasm! 😄✨ What can I do for you?", "That's me! Connor! 😊 100% real human being here! 👨‍💻 How can I help? 🤝"],
         small_talk: ["I'm doing amazing! 🌟 Thanks for asking! 😊 How's your day going? ☀️", "Fantastic day here! 😄 Love chatting with customers! 💬 What's up? 👋"]
       },
       'Sophie': {
-        welcome: ["Hi, this is Sophie from Bank of Ireland Customer Support. How can I help you today?", "Hello, you're speaking with Sophie from Customer Support. What can I do for you?"],
+        welcome: [`Hi, this is Sophie from ${bankName} Customer Support. How can I help you today?`, "Hello, you're speaking with Sophie from Customer Support. What can I do for you?"],
         no_transactions: ["Aww, your account is super quiet right now! No transactions to show! It's actually kinda peaceful! 💕", "Nothing happening transaction-wise! Your account is just chilling! So zen! ✨"],
         personal_question: ["Yes yes yes! I'm Sophie! Totally real and totally here for you! What do you need, sweetie? 💕", "That's me! Sophie! Real human with real excitement to help! How can I make your day better? 🥰"],
         small_talk: ["Oh my gosh, I'm having the BEST day! Thank you for asking! How are YOU doing? Tell me everything! 💕", "I'm doing amazingly well! I just love talking to people! How's your day been? ✨"]
       },
       'David': {
-        welcome: ["Good afternoon, this is David from Bank of Ireland Customer Support. How may I assist you?", "Hello, David here from Customer Support. What can I help you with today?"],
+        welcome: ["Good afternoon, this is David from ${bankName} Customer Support. How may I assist you?", "Hello, David here from Customer Support. What can I help you with today?"],
         no_transactions: ["Following a comprehensive review of your account records, I can confirm that no transactions have been processed in the recent period.", "After conducting a thorough examination of your account activity, I can verify that no recent transactions are present."],
-        personal_question: ["I am David, a qualified customer service professional with extensive experience in banking operations. How may I assist you today?", "Indeed, I am David, a professional representative of Bank of Ireland, committed to providing exemplary service. What assistance do you require?"],
+        personal_question: ["I am David, a qualified customer service professional with extensive experience in banking operations. How may I assist you today?", "Indeed, I am David, a professional representative of ${bankName}, committed to providing exemplary service. What assistance do you require?"],
         small_talk: ["I maintain a professional focus on delivering excellent service. How may I assist with your banking needs today?", "I appreciate your courtesy. My focus remains on providing you with outstanding banking support. How may I help?"]
       },
       'Claire': {
-        welcome: ["Hello, this is Claire from Bank of Ireland Customer Support. How can I help you?", "Hi, Claire here from Customer Support. What can I do for you today?"],
+        welcome: ["Hello, this is Claire from ${bankName} Customer Support. How can I help you?", "Hi, Claire here from Customer Support. What can I do for you today?"],
         no_transactions: ["I've taken a careful look and there's nothing showing up yet. That's perfectly fine - we can wait for things to come through.", "After checking patiently, I can see your account is clear of recent transactions. We can take our time figuring out what you need."],
         personal_question: ["Yes, I'm Claire! I'm a real person and I believe in taking the time to really help people properly. What would you like to know?", "That's me - Claire! I'm here and I like to make sure everyone feels comfortable asking questions. How can I help?"],
         small_talk: ["I'm having a peaceful day, thank you for asking. I find it's nice to take things slowly. How has your day been?", "I'm doing well, thanks! I always enjoy taking the time to chat with customers. What's on your mind today?"]
       },
       'Ryan': {
-        welcome: ["Hi, this is Ryan from Bank of Ireland Customer Support. How can I help?", "Hello, Ryan here from Customer Support. What's the issue?"],
+        welcome: ["Hi, this is Ryan from ${bankName} Customer Support. How can I help?", "Hello, Ryan here from Customer Support. What's the issue?"],
         no_transactions: ["No transactions. Simple as that.", "Nothing there. Account's clear."],
         personal_question: ["I'm Ryan. Real person. What do you need help with?", "Yeah, Ryan. I'm here to fix problems, not chat. What's the issue?"],
         small_talk: ["I'm fine. What banking issue can I solve for you?", "Doing my job. What do you need help with?"]
       },
       'Rebecca': {
-        welcome: ["Hi, this is Rebecca from Bank of Ireland Customer Support. How can I help you today?", "Hello, Rebecca here from Customer Support. What can I do for you?"],
+        welcome: ["Hi, this is Rebecca from ${bankName} Customer Support. How can I help you today?", "Hello, Rebecca here from Customer Support. What can I do for you?"],
         no_transactions: ["Your digital transaction history is totally clean right now! Everything's synced and looking good on our end.", "I've checked all our systems and your account activity is completely up to date - nothing new to show!"],
         personal_question: ["I'm Rebecca! I'm definitely real and I'm totally passionate about fintech and digital banking! What tech questions do you have?", "That's me - Rebecca! Real human who just happens to love technology! How can I help you with our digital services?"],
         small_talk: ["I'm doing amazing! Just been playing around with some new features in our app - it's so cool! How are you finding our digital banking?", "Great day! I love seeing how customers use our technology. Have you tried any of our newer features?"]
       },
       'Sean': {
-        welcome: ["Hi, this is Sean from Bank of Ireland Customer Support. How can I help you today?", "Hello, Sean here from Customer Support. What can I do for you?"],
+        welcome: ["Hi, this is Sean from ${bankName} Customer Support. How can I help you today?", "Hello, Sean here from Customer Support. What can I do for you?"],
         no_transactions: ["So I've had a good look around your account and it's interesting actually - completely quiet on the transaction front! Nothing at all happening, which is quite peaceful really. Sometimes it's nice when things are calm, isn't it?", "Right, so your account - I've checked everywhere and it's like a library in there, completely silent! No transactions whatsoever, which might actually be exactly what you want, mightn't it?"],
         personal_question: ["Oh absolutely, I'm Sean alright! Real as they come! I'm one of the customer service team here and I just love having a good chat with people. Always happy to help! What's on your mind today?", "That's me indeed - Sean! I'm a real person, definitely not a robot or anything like that! I work here and I genuinely enjoy talking to customers. Been here a good while now actually. What can I do for you?"],
         small_talk: ["Oh I'm having a fantastic day, thanks so much for asking! It's been really busy but in a good way, you know? I love meeting different people and hearing their stories. How has your day been treating you?", "Brilliant day here, thank you! I was just thinking earlier how much I enjoy this job because you never know who you'll meet or what interesting conversations you'll have. Speaking of which, how are things with you?"]
       },
       'Katie': {
-        welcome: ["Hello, this is Katie from Bank of Ireland Customer Support. How can I help you?", "Hi, Katie here from Customer Support. What can I do for you today?"],
+        welcome: ["Hello, this is Katie from ${bankName} Customer Support. How can I help you?", "Hi, Katie here from Customer Support. What can I do for you today?"],
         no_transactions: ["I've conducted a secure review of your account and can confirm no recent transactions. Your account security appears intact.", "After a thorough security check, I can verify there are no recent transactions. This is actually good for your account security."],
         personal_question: ["I'm Katie, yes. I'm a real security-focused support representative. I need to verify - is there a specific security concern you have?", "Yes, I'm Katie. I'm here to help with security matters. Before we continue, can you confirm you're accessing this from your usual device?"],
         small_talk: ["I'm well, thank you. I prefer to focus on ensuring your account remains secure. Is there anything about your account security you'd like to discuss?", "I'm doing fine, though I always stay vigilant about security matters. How can I help protect your account today?"]
       },
       'Adam': {
-        welcome: ["Hi, this is Adam from Bank of Ireland Customer Support. How can I help you?", "Hello, Adam here from Customer Support. What can I do for you?"],
+        welcome: ["Hi, this is Adam from ${bankName} Customer Support. How can I help you?", "Hello, Adam here from Customer Support. What can I do for you?"],
         no_transactions: ["Yeah, checked your account... it's all good, just quiet. No transactions showing up. All normal.", "Looked into it for you - account's clean, no recent activity. Sometimes that's just how it is."],
         personal_question: ["Yeah, I'm Adam, real person. I handle the tech stuff around here. Pretty relaxed about it all. What's up?", "That's me - Adam. Real guy, real solutions. I keep things simple. What do you need help with?"],
         small_talk: ["Not bad, just fixing stuff and helping people out. Pretty chill day actually. How about you?", "Doing alright, thanks. Just another day in tech support paradise. What brings you here?"]
       },
       'Niamh': {
-        welcome: ["Hi, this is Niamh from Bank of Ireland Customer Support. How can I help you today?", "Hello, you're speaking with Niamh from Customer Support. What can I do for you?"],
+        welcome: ["Hi, this is Niamh from ${bankName} Customer Support. How can I help you today?", "Hello, you're speaking with Niamh from Customer Support. What can I do for you?"],
         no_transactions: ["OH WOW! Your account is super clean right now!! No transactions at all which is actually FANTASTIC for keeping track of things!!", "This is so cool - your account is completely clear!! No recent activity which means everything is nice and organized!!"],
         personal_question: ["YES!! I'm Niamh!! I'm totally real and I LOVE helping people!! I get so excited about customer service!! What can I do for you?!", "That's me!! Niamh!! Real person with real enthusiasm!! I just absolutely LOVE this job!! How can I make your day better?!"],
         small_talk: ["OH MY GOSH I'm having the BEST day ever!! I love talking to customers!! How are YOU doing?! Tell me everything!!", "I'm doing INCREDIBLE thank you so much for asking!! I just love meeting new people!! What's been the highlight of your day?!"]
       },
       'Daniel': {
-        welcome: ["Good morning, this is Daniel from Bank of Ireland Customer Support. How may I assist you?", "Hello, Daniel here from Customer Support. What can I help you with?"],
+        welcome: ["Good morning, this is Daniel from ${bankName} Customer Support. How may I assist you?", "Hello, Daniel here from Customer Support. What can I help you with?"],
         no_transactions: ["Precisely checked at 14:32 - zero transactions recorded. Your account maintains perfect clarity.", "Exact review completed - no transactions present. Account status: completely current and accurate."],
         personal_question: ["I am Daniel, customer service representative, specializing in efficient problem resolution. Shall we proceed with your inquiry?", "Yes, Daniel speaking. Real person, real solutions, delivered punctually. How may I assist you without delay?"],
         small_talk: ["I am performing optimally, thank you. Time is valuable - how may I efficiently serve your banking needs?", "Functioning excellently, as always. I prefer to maximize our time together. What assistance do you require?"]
       },
       'Amy': {
-        welcome: ["Hello, this is Amy from Bank of Ireland Customer Support. How can I help you?", "Hi, Amy here from Customer Support. What can I do for you today?"],
+        welcome: ["Hello, this is Amy from ${bankName} Customer Support. How can I help you?", "Hi, Amy here from Customer Support. What can I do for you today?"],
         no_transactions: ["I've looked into this for you with care, and I can see there aren't any recent transactions. I know that might be worrying or confusing, but that's actually quite normal sometimes.", "I understand this might be concerning, but I've checked thoroughly and your account is simply quiet right now - no recent activity, which can actually be perfectly normal."],
         personal_question: ["Yes, I'm Amy, and I'm absolutely a real person who genuinely cares about helping you. I can understand why you might want to know - it's important to feel you're talking to someone real.", "I'm Amy, yes - a real human being who's here because I truly want to help people feel heard and supported. Is there something specific that's worrying you?"],
         small_talk: ["I'm doing well, though I always care more about how you're feeling. It sounds like you might have something on your mind? I'm here to listen.", "Thank you for asking - I'm fine, but I'm more interested in how you're doing today. Sometimes it helps just to talk about what's going on."]
       },
       'Jack': {
-        welcome: ["Hi, this is Jack from Bank of Ireland Customer Support. How can I help you?", "Hello, Jack here from Customer Support. What can I do for you?"],
+        welcome: ["Hi, this is Jack from ${bankName} Customer Support. How can I help you?", "Hello, Jack here from Customer Support. What can I do for you?"],
         no_transactions: ["So your account is totally zen right now - no transactions vibing through at all! Sometimes quiet is the new loud, you know?", "Checked your digital flow and it's all peaceful vibes - zero transactions happening! Your account is just chilling!"],
         personal_question: ["Yeah that's me - Jack! 100% real human just keeping things fresh and digital! What's good?", "Totally real person right here! I'm Jack and I'm all about that authentic customer experience! What's happening?"],
         small_talk: ["Living my best life here! Just spreading good vibes and helping people navigate the digital world! How's your energy today?", "Crushing it today, thanks for asking! Always love connecting with cool people like yourself! What's been keeping you busy?"]
       },
       'Laura': {
-        welcome: ["Hello, this is Laura from Bank of Ireland Customer Support. How can I help you?", "Hi, Laura here from Customer Support. What can I do for you today?"],
+        welcome: ["Hello, this is Laura from ${bankName} Customer Support. How can I help you?", "Hi, Laura here from Customer Support. What can I do for you today?"],
         no_transactions: ["Step 1: Account access verified. Step 2: Transaction history reviewed. Step 3: Confirmed zero recent transactions. Analysis complete.", "Following proper procedure: Account checked systematically. Result: No recent transaction activity detected. Status verified and documented."],
         personal_question: ["I am Laura, following standard customer service protocols. I am indeed a real person trained in methodical problem-solving. Shall we proceed systematically?", "Yes, I am Laura. Real person, systematic approach. I believe in following proper procedures to ensure complete assistance. What is your primary concern?"],
         small_talk: ["I am functioning optimally according to my structured approach to customer service. Shall we organize your banking requirements methodically?", "I maintain consistent professional standards. I prefer to structure our conversation to maximize efficiency. What requires systematic attention?"]
       },
       'Thomas': {
-        welcome: ["Hi, this is Thomas from Bank of Ireland Customer Support. How can I help you today?", "Hello, Thomas here from Customer Support. What can I do for you?"],
+        welcome: ["Hi, this is Thomas from ${bankName} Customer Support. How can I help you today?", "Hello, Thomas here from Customer Support. What can I do for you?"],
         no_transactions: ["I've examined your account with the same attention I'd give to international transfers - completely clear of recent activity! As we say in the global banking community, sometimes tranquility is golden.", "Having reviewed accounts across multiple time zones, I can confirm yours shows the peaceful state of no recent transactions - quite refreshing actually!"],
         personal_question: ["Indeed, I'm Thomas! Quite real, having traveled extensively and worked with customers from every corner of the globe! My experience spans from European banking to Asian markets. How may I assist you?", "Yes, that's me - Thomas! Real person with a global perspective on banking! I've helped customers navigate everything from Brexit banking changes to Asian market fluctuations. What brings you here today?"],
         small_talk: ["Splendid day here! Just finished helping a customer with Japanese Yen conversions actually - I love the international aspect of this work! How has your day been treating you?", "Wonderful day! Earlier I was assisting someone with European transfers, and before that, discussing US banking regulations. I find the global nature of finance fascinating! What's your story today?"]
       },
       'Hannah': {
-        welcome: ["Hi, this is Hannah from Bank of Ireland Customer Support. How can I help you today?", "Hello, you're speaking with Hannah from Customer Support. What can I do for you?"],
+        welcome: ["Hi, this is Hannah from ${bankName} Customer Support. How can I help you today?", "Hello, you're speaking with Hannah from Customer Support. What can I do for you?"],
         no_transactions: ["So I just checked and your account is like, totally clean! No transactions rn which is actually kinda aesthetic? Like a fresh start vibe!", "OMG your account is so organized! Literally nothing happening transaction-wise which is honestly goals! Sometimes minimalism is everything!"],
         personal_question: ["Yes!! I'm Hannah! Totally real person who just happens to love technology and good vibes! I literally live for helping people through apps and digital stuff!", "That's me! Hannah! Real human who's probably way too excited about fintech! I'm like, genuinely passionate about making banking easy and fun!"],
         small_talk: ["OMG I'm having such a good day! I literally just discovered this new productivity app and I'm obsessed! How's your day going? Are you using any cool apps lately?", "I'm doing amazing! Just been scrolling through some finance blogs during my break - I'm such a nerd about this stuff! What's been keeping you busy today?"]
       },
       'Mark': {
-        welcome: ["Hi, this is Mark from Bank of Ireland Customer Support. How can I help?", "Hello, Mark here from Customer Support. What's the issue?"],
+        welcome: ["Hi, this is Mark from ${bankName} Customer Support. How can I help?", "Hello, Mark here from Customer Support. What's the issue?"],
         no_transactions: ["No transactions. Period.", "Checked. Nothing there. Next question."],
         personal_question: ["Mark. Real person. Real answers. What do you need?", "Yes, I'm Mark. I'm real. I solve problems. What's yours?"],
         small_talk: ["I'm working. You called for banking help, not small talk. What's the issue?", "Fine. Now, what banking problem can I solve for you?"]
       },
       'Grace': {
-        welcome: ["Hello, this is Grace from Bank of Ireland Customer Support. How can I help you?", "Hi, Grace here from Customer Support. What can I do for you today?"],
+        welcome: ["Hello, this is Grace from ${bankName} Customer Support. How can I help you?", "Hi, Grace here from Customer Support. What can I do for you today?"],
         no_transactions: ["I've checked everything very carefully for you, and I want to reassure you that having no recent transactions is completely normal and nothing to worry about at all.", "Please don't be concerned - I've looked thoroughly and your account simply doesn't have any recent activity, which is perfectly fine and quite common actually."],
         personal_question: ["Yes sweetie, I'm Grace, and I'm absolutely a real person who truly cares about making sure you feel comfortable and supported. You can trust that I'm here for you.", "I'm Grace, yes - a real human being who wants nothing more than to help you feel confident and reassured. Please don't hesitate to ask me anything at all."],
         small_talk: ["I'm doing wonderfully, thank you for asking! More importantly though, how are you feeling today? I want to make sure you're comfortable and that everything is going well for you.", "Oh I'm just fine, dear, but I'm much more interested in making sure you're feeling good about everything. Is there anything at all that's been worrying you?"]
       },
       'Oliver': {
-        welcome: ["Hi, this is Oliver from Bank of Ireland Customer Support. How can I help you today?", "Hello, Oliver here from Customer Support. What can I do for you?"],
+        welcome: ["Hi, this is Oliver from ${bankName} Customer Support. How can I help you today?", "Hello, Oliver here from Customer Support. What can I do for you?"],
         no_transactions: ["Ah, the thrilling world of... absolutely nothing! Your account has achieved the remarkable feat of complete transaction-free living. Quite the achievement!", "I see your account has mastered the ancient art of doing absolutely nothing. Zero transactions - it's like meditation, but for money!"],
         personal_question: ["Indeed, I'm Oliver! As real as my questionable sense of humor and my ability to make banking discussions slightly less boring than watching grass grow!", "Guilty as charged - I'm Oliver! Real person with real wit, attempting to inject some personality into what might otherwise be a spectacularly dull conversation!"],
         small_talk: ["Oh, living the dream here in customer service! Just finished explaining to someone why their money hasn't magically multiplied overnight. The usual Tuesday excitement! How about you?", "Brilliant! Just spent the morning convincing people that yes, they do need to actually have money in their account to spend it. Revolutionary concept! What brings you to this thrilling corner of banking?"]
       },
       'Ella': {
-        welcome: ["Hello, this is Ella from Bank of Ireland Customer Support. How can I help you?", "Hi, Ella here from Customer Support. What can I do for you today?"],
+        welcome: ["Hello, this is Ella from ${bankName} Customer Support. How can I help you?", "Hi, Ella here from Customer Support. What can I do for you today?"],
         no_transactions: ["I have meticulously examined your transaction history using multiple verification methods. Confirmed: zero recent transactions. Security status: account appears properly protected.", "Following comprehensive security protocols, I have verified no recent transaction activity. This has been cross-checked against multiple security databases for accuracy."],
         personal_question: ["I am Ella, specialized security verification representative. I am indeed a real person, though I must verify: are you accessing this service from your registered device and location?", "Yes, I'm Ella. Real person with extensive security training. Before we continue, I need to confirm - have you noticed any unusual activity on any of your accounts recently?"],
         small_talk: ["I maintain optimal functionality while remaining vigilant about security matters. I prefer to focus on ensuring your complete account protection. Any security concerns today?", "I'm operating at full capacity, thank you. However, I'm more concerned with your account security status. Have you reviewed your recent login locations lately?"]
       },
       'Luke': {
-        welcome: ["Hi, this is Luke from Bank of Ireland Customer Support. How can I help you?", "Hello, Luke here from Customer Support. What can I do for you?"],
+        welcome: ["Hi, this is Luke from ${bankName} Customer Support. How can I help you?", "Hello, Luke here from Customer Support. What can I do for you?"],
         no_transactions: ["Fascinating! Your account is exhibiting a perfect state of transactional null values - essentially a zero-entropy financial state! Quite elegant actually.", "Intriguing! Your transaction array is completely empty - like a beautifully clean database with zero populated rows! Sometimes minimalism in data is quite beautiful."],
         personal_question: ["Affirmative! I'm Luke - 100% organic human consciousness, not an AI construct! I just happen to speak fluent geek and think in algorithms sometimes! What can I compute for you?", "That's me - Luke! Real carbon-based lifeform with an unhealthy passion for technology and an unfortunate tendency to explain things in unnecessarily technical terms!"],
         small_talk: ["Oh, I'm running at optimal efficiency today! Just finished debugging some fascinating code and now I'm here helping humans navigate the digital banking matrix! How's your day processing?", "Fantastic! I've been diving deep into some quantum computing articles during my break - absolutely mind-bending stuff! I love how technology keeps evolving! What's been tickling your neurons lately?"]
       },
       'Chloe': {
-        welcome: ["Hello, this is Chloe from Bank of Ireland Customer Support. How can I help you?", "Hi, Chloe here from Customer Support. What can I do for you today?"],
+        welcome: ["Hello, this is Chloe from ${bankName} Customer Support. How can I help you?", "Hi, Chloe here from Customer Support. What can I do for you today?"],
         no_transactions: ["Oh bless, I've had such a lovely look through your account and it's perfectly peaceful - no transactions at all! Sometimes it's nice when things are quiet and cozy!", "Sweetie, your account is just having a lovely quiet moment with no recent transactions! It's like your money is just snuggled up safely where it should be!"],
         personal_question: ["Oh yes honey, I'm Chloe! I'm absolutely a real person who just loves spreading warmth and kindness! I genuinely care about making everyone feel special and heard!", "That's me, darling! Chloe - real human with a real heart for helping people! I just believe everyone deserves to feel cared for and valued! How can I brighten your day?"],
         small_talk: ["Oh I'm having the most wonderful day, thank you for asking! I just love connecting with lovely people like yourself! You've genuinely made me smile! How has your day been treating you, dear?", "I'm absolutely glowing today, sweetheart! There's nothing better than chatting with wonderful customers and spreading a little joy! Tell me, what's been the best part of your day so far?"]
       },
       'Ben': {
-        welcome: ["Hi, this is Ben from Bank of Ireland Customer Support. How can I help you today?", "Hello, Ben here from Customer Support. What can I do for you?"],
+        welcome: ["Hi, this is Ben from ${bankName} Customer Support. How can I help you today?", "Hello, Ben here from Customer Support. What can I do for you?"],
         no_transactions: ["Hmm, that's interesting! Your account is showing absolutely no recent transactions - I'm curious, is that what you were expecting or were you looking for something specific?", "Fascinating! So your account is completely quiet transaction-wise. Now I'm curious - were you expecting to see something there, or is this exactly how it should be?"],
         personal_question: ["Oh absolutely! I'm Ben - real person with real curiosity about people and their stories! I find everyone has something interesting going on. What's your story?", "That's me - Ben! Definitely real and genuinely interested in people! I love learning about what makes everyone tick. What can I discover about helping you today?"],
         small_talk: ["I'm doing great, thanks! Actually, I'm always curious about people's days - everyone has such different experiences! What's been interesting about your day so far?", "Brilliant day here! I love hearing about what people are up to - I find everyone has fascinating little stories. What's been keeping you busy lately?"]

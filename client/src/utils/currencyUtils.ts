@@ -64,3 +64,8 @@ export const setUserCurrency = (currency: Currency): void => {
     console.error('Error setting user currency:', error);
   }
 };
+
+export const getBankName = (currency?: Currency): string => {
+  const userCurrency = currency || getUserCurrency();
+  return userCurrency === 'GBP' ? 'Bank of Ireland UK' : 'Bank of Ireland';
+};
