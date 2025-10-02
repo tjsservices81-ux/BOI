@@ -1610,8 +1610,12 @@ BIC Code: ${lastTransfer.bicCode || 'Not available'}
 Unique Reference: ${lastTransfer.reference || 'Not specified'}`;
           }
           
+          // Get user currency for proper display
+          const userCurrency = currentUser?.currency || 'EUR';
+          const currencySymbol = userCurrency === 'GBP' ? '£' : '€';
+          
           transferContext = `\n\nCUSTOMER'S RECENT TRANSFER CONTEXT:
-Last transfer: €${transferAmount.toFixed(2)} to ${recipientName} on ${transferDate}
+Last transfer: ${currencySymbol}${transferAmount.toFixed(2)} to ${recipientName} on ${transferDate}
 Reference: ${lastTransfer.reference || 'Not specified'}
 Transaction ID: ${lastTransfer.id}
 Status: Confirmed and processed${transferTypeContext}${accountDetails}
