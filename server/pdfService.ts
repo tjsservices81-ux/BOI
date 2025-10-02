@@ -84,7 +84,9 @@ export async function generateTransferConfirmationPDF(
       const leftCol = 60;
       const rightCol = 280;
 
-      // Amount (highlighted)
+      // Amount (highlighted) - Use userCurrency to determine symbol
+      const currencySymbol = userCurrency === 'GBP' ? '£' : '€';
+      
       doc.font('Helvetica-Bold')
          .fontSize(12)
          .fillColor('#000000')
@@ -93,7 +95,7 @@ export async function generateTransferConfirmationPDF(
       doc.font('Helvetica-Bold')
          .fontSize(12)
          .fillColor('#0000FF')
-         .text(`${currency}${amount}`, rightCol, yPos);
+         .text(`${currencySymbol}${amount}`, rightCol, yPos);
       
       yPos += 30;
 
