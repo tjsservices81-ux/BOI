@@ -232,6 +232,21 @@ export const processTransfer = (
       userProfile = UserDataManager.getUserProfile();
     }
     
+    // Get currency from bankUsers location (where it's actually saved)
+    let userCurrency = 'EUR'; // default
+    try {
+      const currentUser = localStorage.getItem('currentUser');
+      if (currentUser) {
+        const allUsers = JSON.parse(localStorage.getItem('bankUsers') || '{}');
+        if (allUsers[currentUser] && allUsers[currentUser].currency) {
+          userCurrency = allUsers[currentUser].currency;
+          console.log('User currency from bankUsers:', userCurrency);
+        }
+      }
+    } catch (e) {
+      console.log('Failed to get currency from bankUsers, using default EUR');
+    }
+    
     console.log('User profile found:', userProfile ? 'YES' : 'NO');
     console.log('User email:', userProfile?.email);
     
@@ -264,7 +279,7 @@ Thank you for using our service.`;
         transactionReference: transactionReference,
         accountInfo: `${selectedAccount.displayName} (${selectedAccount.accountNumber})`,
         transferData: newTransaction,
-        userCurrency: userProfile.currency || 'EUR'
+        userCurrency: userCurrency
       };
 
       // Send email confirmation after successful transfer
