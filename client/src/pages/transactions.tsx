@@ -2,6 +2,7 @@ import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useLocation } from "wouter";
 import { useState, useEffect } from "react";
 import { UserDataManager } from "../utils/userDataManager";
+import { getUserCurrency, getCurrencySymbol, formatCurrency } from "../utils/currencyUtils";
 
 interface Transaction {
   id: string;
@@ -86,8 +87,10 @@ export default function Transactions() {
     // Reset form and close modal
     setPayBillsForm({ payee: '', amount: '', datetime: '' });
     setShowPayBillsForm(false);
+    const currency = getUserCurrency();
+    const currencySymbol = getCurrencySymbol(currency);
     
-    alert(`Payment of €${amount.toFixed(2)} to ${payBillsForm.payee} has been processed successfully.`);
+    alert(`Payment of ${currencySymbol}${amount.toFixed(2)} to ${payBillsForm.payee} has been processed successfully.`);
   };
 
   const getAccountTitle = () => {
@@ -202,7 +205,7 @@ export default function Transactions() {
               <p className="text-white/60 text-xs mt-1 boi-regular-font">{getBalanceLabel()}</p>
             </div>
             <div className="text-right">
-              <p className="text-white text-2xl font-semibold boi-semibold-font">€{currentBalance.toFixed(2)}</p>
+              <p className="text-white text-2xl font-semibold boi-semibold-font">{formatCurrency(currentBalance, getUserCurrency())}</p>
             </div>
           </div>
         </div>
@@ -221,7 +224,11 @@ export default function Transactions() {
                 key={transaction.id}
                 className="px-4 py-4 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer haptic-feedback stagger-item"
                 style={{ animationDelay: `${index * 0.05}s` }}
-                onClick={() => alert(`Transaction details: ${transaction.description}\nAmount: €${Math.abs(transaction.amount).toFixed(2)}\nDate: ${transaction.date}\nBalance after: €${transaction.balance.toFixed(2)}`)}
+                onClick={() => {
+                  const currency = getUserCurrency();
+                  const currencySymbol = getCurrencySymbol(currency);
+                  alert(`Transaction details: ${transaction.description}\nAmount: ${currencySymbol}${Math.abs(transaction.amount).toFixed(2)}\nDate: ${transaction.date}\nBalance after: ${currencySymbol}${transaction.balance.toFixed(2)}`);
+                }}
               >
                 <div className="flex justify-between items-start">
                   {/* Left side - Transaction info */}
@@ -241,7 +248,7 @@ export default function Transactions() {
                         ? 'text-green-600' 
                         : 'text-gray-900'
                     }`}>
-                      {transaction.type === 'credit' ? '+' : ''}€{transaction.amount.toFixed(2)}
+                      {transaction.type === 'credit' ? '+' : ''}{formatCurrency(transaction.amount, getUserCurrency())}
                     </p>
                   </div>
                 </div>
@@ -370,7 +377,7 @@ export default function Transactions() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2 boi-regular-font">
-                  Amount (€)
+                  Amount ({getCurrencySymbol(getUserCurrency())})
                 </label>
                 <input
                   type="number"
@@ -384,7 +391,7 @@ export default function Transactions() {
                   required
                 />
                 <p className="text-xs text-gray-500 mt-1 boi-regular-font">
-                  Available balance: €{currentBalance.toFixed(2)}
+                  Available balance: {formatCurrency(currentBalance, getUserCurrency())}
                 </p>
               </div>
 

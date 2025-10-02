@@ -79,7 +79,8 @@ export default function BankStatements() {
           userAccounts: userAccounts, // Real account data with balances
           userEmail: userProfile?.email, // For automatic email delivery
           customerName: userProfile?.name || 'Bank of Ireland Customer', // For email personalization
-          userAddress: userProfile?.address // Include user address
+          userAddress: userProfile?.address, // Include user address
+          userCurrency: userProfile?.currency // Include user currency preference
         }),
       });
 

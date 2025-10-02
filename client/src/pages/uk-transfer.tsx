@@ -482,9 +482,9 @@ export default function UkTransfer() {
               <div className="flex justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Amount:</span>
                 <div className="text-right">
-                  <span className="font-semibold text-[#126987] text-xl" style={{ fontFamily: 'OpenSans, sans-serif' }}>€{formData?.amount}</span>
+                  <span className="font-semibold text-[#126987] text-xl" style={{ fontFamily: 'OpenSans, sans-serif' }}>{formatCurrency(parseFloat(formData?.amount || '0'), userCurrency)}</span>
                   <p className="text-sm text-green-700 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    ≈ £{formData?.amount ? (parseFloat(formData.amount) * exchangeRate).toFixed(2) : '0.00'} GBP
+                    ≈ {userCurrency === 'EUR' ? '£' : '€'}{formData?.amount ? (parseFloat(formData.amount) * exchangeRate).toFixed(2) : '0.00'} {userCurrency === 'EUR' ? 'GBP' : 'EUR'}
                   </p>
                 </div>
               </div>

@@ -10,6 +10,7 @@ interface StatementRequest {
   dateRange: string;
   customerName?: string;
   userAddress?: string;
+  userCurrency?: 'EUR' | 'GBP';
   userTransactions?: Array<{
     id: string | number;
     accountId: number;
@@ -63,6 +64,10 @@ export class StatementService {
 
   constructor() {
     this.templatePath = path.join(process.cwd(), 'attached_assets', 'IMG_1972_1751725687784.png');
+  }
+
+  private getCurrencySymbol(currency?: 'EUR' | 'GBP'): string {
+    return currency === 'GBP' ? '£' : '€';
   }
 
   async generateStatement(request: StatementRequest): Promise<Buffer> {
@@ -139,8 +144,8 @@ export class StatementService {
       this.addHeader(doc);
       this.addAccountInfo(doc, accountData, request);
       this.addStatementPeriod(doc, request);
-      this.addAccountSummary(doc, accountData, transactions);
-      this.addTransactionDetails(doc, transactions);
+      this.addAccountSummary(doc, accountData, transactions, request.userCurrency);
+      this.addTransactionDetails(doc, transactions, request.userCurrency);
       this.addFooter(doc);
       
       console.log('✅ Statement built successfully');
@@ -250,8 +255,9 @@ export class StatementService {
        .text(`From: ${startDateStr} to ${endDateStr}`, 50, startY + 25);
   }
 
-  private addAccountSummary(doc: PDFKit.PDFDocument, account: Account, transactions: StatementTransaction[]) {
+  private addAccountSummary(doc: PDFKit.PDFDocument, account: Account, transactions: StatementTransaction[], currency?: 'EUR' | 'GBP') {
     const startY = 440; // Positioned lower to accommodate customer name and statement period adjustments
+    const currencySymbol = this.getCurrencySymbol(currency);
     
     // Calculate totals from real transaction data
     const totalCredits = transactions
@@ -289,24 +295,25 @@ export class StatementService {
        .text('Total Debits:', 70, startY + 85)
        .text('Closing Balance:', 70, startY + 105);
     
-    // Right-align amounts with explicit euro symbol positioning
+    // Right-align amounts with explicit currency symbol positioning
     doc.font('Helvetica-Bold');
     
-    // Opening Balance with spaced euro symbol
-    doc.text('€', 450, startY + 45).text(openingBalance.toFixed(2), 460, startY + 45);
+    // Opening Balance with spaced currency symbol
+    doc.text(currencySymbol, 450, startY + 45).text(openingBalance.toFixed(2), 460, startY + 45);
     
-    // Total Credits with spaced euro symbol  
-    doc.text('€', 450, startY + 65).text(totalCredits.toFixed(2), 460, startY + 65);
+    // Total Credits with spaced currency symbol  
+    doc.text(currencySymbol, 450, startY + 65).text(totalCredits.toFixed(2), 460, startY + 65);
     
-    // Total Debits with spaced euro symbol
-    doc.text('€', 450, startY + 85).text(totalDebits.toFixed(2), 460, startY + 85);
+    // Total Debits with spaced currency symbol
+    doc.text(currencySymbol, 450, startY + 85).text(totalDebits.toFixed(2), 460, startY + 85);
     
-    // Closing Balance with spaced euro symbol
-    doc.text('€', 450, startY + 105).text(closingBalance.toFixed(2), 460, startY + 105);
+    // Closing Balance with spaced currency symbol
+    doc.text(currencySymbol, 450, startY + 105).text(closingBalance.toFixed(2), 460, startY + 105);
   }
 
-  private addTransactionDetails(doc: PDFKit.PDFDocument, transactions: StatementTransaction[]) {
+  private addTransactionDetails(doc: PDFKit.PDFDocument, transactions: StatementTransaction[], currency?: 'EUR' | 'GBP') {
     let currentY = 570; // Positioned lower to accommodate customer name and adjusted sections above
+    const currencySymbol = this.getCurrencySymbol(currency);
     
     doc.fontSize(14)
        .fillColor('#0000FF')
@@ -423,16 +430,16 @@ export class StatementService {
         doc.fontSize(9).text(reference, 300, currentY);
       }
       
-      // Render amount with proper euro symbol spacing
+      // Render amount with proper currency symbol spacing
       doc.fontSize(9);
       if (transaction.type === 'credit') {
-        doc.text('+€', 400, currentY).text(transaction.amount.toFixed(2), 413, currentY);
+        doc.text(`+${currencySymbol}`, 400, currentY).text(transaction.amount.toFixed(2), 413, currentY);
       } else {
-        doc.text('-€', 400, currentY).text(transaction.amount.toFixed(2), 413, currentY);
+        doc.text(`-${currencySymbol}`, 400, currentY).text(transaction.amount.toFixed(2), 413, currentY);
       }
       
-      // Render euro symbol and balance with explicit spacing
-      doc.text('€', 480, currentY)
+      // Render currency symbol and balance with explicit spacing
+      doc.text(currencySymbol, 480, currentY)
          .text(transaction.balance.toFixed(2), 490, currentY);
       
       currentY += 15;
