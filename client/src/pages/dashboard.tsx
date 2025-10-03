@@ -255,7 +255,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className={`page-container h-screen bg-white overflow-hidden flex flex-col ios-safe-bottom relative page-fade-slide-in ${isNavigating ? 'dashboard-exit' : ''}`} style={{ maxHeight: '100vh', position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}>
+    <div className={`page-container h-screen bg-white overflow-hidden flex flex-col ios-safe-bottom relative page-fade-slide-in ${isNavigating ? 'dashboard-exit' : ''}`} style={{ maxHeight: '100vh' }}>
       {/* Ambient spending visualization background */}
       <SpendingVisualization />
       
@@ -299,7 +299,7 @@ export default function Dashboard() {
       {/* Main content area - white card with rounded top corners */}
       <div 
         ref={scrollContainerRef}
-        className="main-scroll-container flex-1 px-0 -mt-8 overflow-hidden ios-scroll" 
+        className="main-scroll-container flex-1 px-0 -mt-8 overflow-y-auto ios-scroll" 
         style={{ maxHeight: 'calc(100vh - 200px)' }}
         data-scroll-container
         data-scroll-route="/dashboard"
