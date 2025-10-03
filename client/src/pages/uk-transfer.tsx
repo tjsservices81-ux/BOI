@@ -449,7 +449,7 @@ export default function UkTransfer() {
 
         <div style={{ 
           flex: 1, 
-          overflowY: 'auto', 
+          overflow: 'hidden', 
           WebkitOverflowScrolling: 'touch',
           padding: '1rem'
         }}>
@@ -777,7 +777,7 @@ export default function UkTransfer() {
 
       <div style={{ 
         flex: 1, 
-        overflowY: 'auto', 
+        overflow: 'hidden', 
         WebkitOverflowScrolling: 'touch',
         padding: '1rem'
       }}>

@@ -488,7 +488,7 @@ export default function IbanTransfer() {
 
         <div style={{ 
           flex: 1, 
-          overflowY: 'auto', 
+          overflow: 'hidden', 
           WebkitOverflowScrolling: 'touch',
           padding: '1rem'
         }}>
@@ -574,7 +574,7 @@ export default function IbanTransfer() {
 
       <div style={{ 
         flex: 1, 
-        overflowY: 'auto', 
+        overflow: 'hidden', 
         WebkitOverflowScrolling: 'touch',
         padding: '1rem'
       }}>
