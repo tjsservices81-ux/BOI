@@ -255,24 +255,12 @@ export default function Dashboard() {
   };
 
   return (
-    <div className={`page-container h-screen bg-white overflow-hidden flex flex-col ios-safe-bottom relative page-fade-slide-in ${isNavigating ? 'dashboard-exit' : ''}`} style={{ 
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      maxHeight: '100vh',
-      overflow: 'hidden'
-    }}>
+    <div className={`page-container h-screen bg-white overflow-hidden flex flex-col ios-safe-bottom relative page-fade-slide-in ${isNavigating ? 'dashboard-exit' : ''}`} style={{ maxHeight: '100vh' }}>
       {/* Ambient spending visualization background */}
       <SpendingVisualization />
       
-      {/* Blue header bar - FIXED */}
-      <div className="bg-[#126987] flex items-end justify-between px-4 pb-3 flex-shrink-0" style={{ 
-        paddingTop: 'max(env(safe-area-inset-top, 0px) + 12px, 56px)',
-        position: 'relative',
-        zIndex: 10
-      }}>
+      {/* Blue header bar */}
+      <div className="bg-[#126987] flex items-end justify-between px-4 pb-3 flex-shrink-0" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px) + 12px, 56px)' }}>
         <div className="flex items-center">
           <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-6 filter brightness-0 invert" />
         </div>
@@ -282,8 +270,7 @@ export default function Dashboard() {
             onClick={() => navigateWithAnimation('/profile', 'slide-up')}
             style={{
               WebkitTapHighlightColor: 'transparent',
-              outline: 'none',
-              touchAction: 'auto'
+              outline: 'none'
             }}
           >
             <User className="h-5 w-5" />
@@ -313,11 +300,7 @@ export default function Dashboard() {
       <div 
         ref={scrollContainerRef}
         className="main-scroll-container flex-1 px-0 -mt-8 overflow-y-auto ios-scroll" 
-        style={{ 
-          maxHeight: 'calc(100vh - 200px)',
-          touchAction: 'pan-y',
-          WebkitOverflowScrolling: 'touch'
-        }}
+        style={{ maxHeight: 'calc(100vh - 200px)' }}
         data-scroll-container
         data-scroll-route="/dashboard"
       >
@@ -331,8 +314,7 @@ export default function Dashboard() {
                 style={{ 
                   animationDelay: `${index * 0.1}s`,
                   WebkitTapHighlightColor: 'transparent',
-                  outline: 'none',
-                  touchAction: 'auto'
+                  outline: 'none'
                 }}
               >
                 {/* Colored side bar */}

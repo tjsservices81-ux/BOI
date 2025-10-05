@@ -224,10 +224,16 @@ input[type="text"], input[type="email"], input[type="password"], textarea {
     /* Prevent bounce scrolling in PWA mode */
     overscroll-behavior: none;
     -webkit-overflow-scrolling: touch;
+    /* Ensure proper viewport handling */
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
   }
   
   #root {
     height: 100vh;
+    overflow: hidden;
     -webkit-overflow-scrolling: touch;
   }
 }
@@ -1818,7 +1824,7 @@ html, body {
 
 #root {
   height: 100%;
-  overflow: hidden;
+  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   background: transparent !important;
 }
@@ -1826,6 +1832,7 @@ html, body {
 /* Force enable scrolling on mobile */
 body {
   overflow: hidden !important;
+  position: fixed !important;
   width: 100% !important;
   height: 100% !important;
   background: transparent !important;
@@ -2250,7 +2257,22 @@ input, textarea, select {
   user-select: auto;
 }
 
-/* Removed duplicate body and #root rules - consolidated above */
+body {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
+  position: fixed;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+#root {
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
 
 /* Native iOS button effects - Android optimized */
 button {
