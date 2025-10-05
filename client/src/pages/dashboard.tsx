@@ -255,7 +255,16 @@ export default function Dashboard() {
   };
 
   return (
-    <div className={`page-container h-screen bg-white overflow-hidden flex flex-col ios-safe-bottom relative page-fade-slide-in ${isNavigating ? 'dashboard-exit' : ''}`} style={{ maxHeight: '100vh' }}>
+    <div className={`page-container h-screen bg-white overflow-hidden flex flex-col ios-safe-bottom relative page-fade-slide-in ${isNavigating ? 'dashboard-exit' : ''}`} style={{ 
+      maxHeight: '100vh',
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      touchAction: 'none',
+      overscrollBehavior: 'none'
+    }}>
       {/* Ambient spending visualization background */}
       <SpendingVisualization />
       
@@ -270,7 +279,8 @@ export default function Dashboard() {
             onClick={() => navigateWithAnimation('/profile', 'slide-up')}
             style={{
               WebkitTapHighlightColor: 'transparent',
-              outline: 'none'
+              outline: 'none',
+              touchAction: 'auto'
             }}
           >
             <User className="h-5 w-5" />
@@ -300,7 +310,11 @@ export default function Dashboard() {
       <div 
         ref={scrollContainerRef}
         className="main-scroll-container flex-1 px-0 -mt-8 overflow-y-auto ios-scroll" 
-        style={{ maxHeight: 'calc(100vh - 200px)' }}
+        style={{ 
+          maxHeight: 'calc(100vh - 200px)',
+          touchAction: 'pan-y',
+          WebkitOverflowScrolling: 'touch'
+        }}
         data-scroll-container
         data-scroll-route="/dashboard"
       >
@@ -314,7 +328,8 @@ export default function Dashboard() {
                 style={{ 
                   animationDelay: `${index * 0.1}s`,
                   WebkitTapHighlightColor: 'transparent',
-                  outline: 'none'
+                  outline: 'none',
+                  touchAction: 'auto'
                 }}
               >
                 {/* Colored side bar */}
