@@ -128,9 +128,16 @@ export default function Cards() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-white ios-safe-top ios-safe-bottom page-fade-in">
+    <div className="h-screen flex flex-col bg-white ios-safe-top ios-safe-bottom page-fade-in" style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      overflow: 'hidden'
+    }}>
       
-      {/* Header */}
+      {/* Header - FIXED */}
       <div className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0">
         <button 
           onClick={() => navigate("/dashboard")}

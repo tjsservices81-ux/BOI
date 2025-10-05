@@ -256,13 +256,23 @@ export default function Dashboard() {
 
   return (
     <div className={`page-container h-screen bg-white overflow-hidden flex flex-col ios-safe-bottom relative page-fade-slide-in ${isNavigating ? 'dashboard-exit' : ''}`} style={{ 
-      maxHeight: '100vh'
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      maxHeight: '100vh',
+      overflow: 'hidden'
     }}>
       {/* Ambient spending visualization background */}
       <SpendingVisualization />
       
-      {/* Blue header bar */}
-      <div className="bg-[#126987] flex items-end justify-between px-4 pb-3 flex-shrink-0" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px) + 12px, 56px)' }}>
+      {/* Blue header bar - FIXED */}
+      <div className="bg-[#126987] flex items-end justify-between px-4 pb-3 flex-shrink-0" style={{ 
+        paddingTop: 'max(env(safe-area-inset-top, 0px) + 12px, 56px)',
+        position: 'relative',
+        zIndex: 10
+      }}>
         <div className="flex items-center">
           <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-6 filter brightness-0 invert" />
         </div>

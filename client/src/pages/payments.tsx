@@ -116,8 +116,15 @@ export default function Payments() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-white ios-safe-top ios-safe-bottom page-container page-fade-in">
-      {/* Header */}
+    <div className="h-screen flex flex-col bg-white ios-safe-top ios-safe-bottom page-container page-fade-in" style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      overflow: 'hidden'
+    }}>
+      {/* Header - FIXED */}
       <div className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0">
         <button 
           onClick={() => navigate("/dashboard")}
