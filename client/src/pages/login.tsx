@@ -108,6 +108,70 @@ export default function Login() {
     }, 50);
   };
 
+  // Universal scroll lock for modals and processing screens - prevents unwanted scrolling in PWA
+  useEffect(() => {
+    const anyModalOrProcessing = showSignUp || showOtcVerification || 
+                                  isLoginAnimating || showAdminLogin || showATMLocator;
+    
+    if (anyModalOrProcessing) {
+      // Lock html, body, AND #root to prevent all levels of scrolling
+      document.documentElement.style.overflow = 'hidden';
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.position = 'fixed';
+      document.documentElement.style.width = '100%';
+      document.documentElement.style.height = '100%';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+      document.body.style.height = '100%';
+      
+      const rootElement = document.getElementById('root');
+      if (rootElement) {
+        rootElement.style.overflow = 'hidden';
+        rootElement.style.position = 'fixed';
+        rootElement.style.width = '100%';
+        rootElement.style.height = '100%';
+      }
+    } else {
+      // Restore scrolling when all modals are closed
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
+      document.documentElement.style.position = '';
+      document.documentElement.style.width = '';
+      document.documentElement.style.height = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.height = '';
+      
+      const rootElement = document.getElementById('root');
+      if (rootElement) {
+        rootElement.style.overflow = '';
+        rootElement.style.position = '';
+        rootElement.style.width = '';
+        rootElement.style.height = '';
+      }
+    }
+
+    // Cleanup function to restore scrolling on component unmount
+    return () => {
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
+      document.documentElement.style.position = '';
+      document.documentElement.style.width = '';
+      document.documentElement.style.height = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.height = '';
+      
+      const rootElement = document.getElementById('root');
+      if (rootElement) {
+        rootElement.style.overflow = '';
+        rootElement.style.position = '';
+        rootElement.style.width = '';
+        rootElement.style.height = '';
+      }
+    };
+  }, [showSignUp, showOtcVerification, isLoginAnimating, showAdminLogin, showATMLocator]);
+
   // PWA Modal Focus Management - Ensures proper input mounting
   useEffect(() => {
     if (showSignUp) {

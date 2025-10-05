@@ -221,6 +221,72 @@ export default function Profile() {
     }
   };
 
+  // Universal scroll lock for ALL modals - prevents unwanted scrolling in PWA mode
+  useEffect(() => {
+    const anyModalOpen = showAdminPanel || showAddAccount || showEditProfile || 
+                         showAddTransaction || showSampleTransactions || 
+                         showDeleteTransaction || showChatResponses;
+    
+    if (anyModalOpen) {
+      // Lock html, body, AND #root to prevent all levels of scrolling
+      document.documentElement.style.overflow = 'hidden';
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.position = 'fixed';
+      document.documentElement.style.width = '100%';
+      document.documentElement.style.height = '100%';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+      document.body.style.height = '100%';
+      
+      const rootElement = document.getElementById('root');
+      if (rootElement) {
+        rootElement.style.overflow = 'hidden';
+        rootElement.style.position = 'fixed';
+        rootElement.style.width = '100%';
+        rootElement.style.height = '100%';
+      }
+    } else {
+      // Restore scrolling when all modals are closed
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
+      document.documentElement.style.position = '';
+      document.documentElement.style.width = '';
+      document.documentElement.style.height = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.height = '';
+      
+      const rootElement = document.getElementById('root');
+      if (rootElement) {
+        rootElement.style.overflow = '';
+        rootElement.style.position = '';
+        rootElement.style.width = '';
+        rootElement.style.height = '';
+      }
+    }
+
+    // Cleanup function to restore scrolling on component unmount
+    return () => {
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
+      document.documentElement.style.position = '';
+      document.documentElement.style.width = '';
+      document.documentElement.style.height = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.height = '';
+      
+      const rootElement = document.getElementById('root');
+      if (rootElement) {
+        rootElement.style.overflow = '';
+        rootElement.style.position = '';
+        rootElement.style.width = '';
+        rootElement.style.height = '';
+      }
+    };
+  }, [showAdminPanel, showAddAccount, showEditProfile, showAddTransaction, 
+      showSampleTransactions, showDeleteTransaction, showChatResponses]);
+
   // Admin panel functions - Load accounts when panel opens and on changes
   useEffect(() => {
     if (showAdminPanel) {
@@ -235,7 +301,6 @@ export default function Profile() {
         if (bottomNav && bottomNav instanceof HTMLElement) {
           bottomNav.style.display = 'none';
         }
-        document.body.style.overflow = 'hidden';
       } catch (error) {
         console.error('Error initializing admin panel:', error);
         // Set default empty accounts if there's an error
@@ -248,7 +313,6 @@ export default function Profile() {
       if (bottomNav && bottomNav instanceof HTMLElement) {
         bottomNav.style.display = '';
       }
-      document.body.style.overflow = '';
     }
   }, [showAdminPanel]);
 

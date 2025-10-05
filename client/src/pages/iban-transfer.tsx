@@ -44,6 +44,67 @@ export default function IbanTransfer() {
 
   const [accounts, setAccounts] = useState<any[]>([]);
 
+  // Lock scrolling during confirmation, security, and success screens to prevent unwanted scrolling in PWA
+  useEffect(() => {
+    if (step === 'confirm' || step === 'security' || step === 'success') {
+      // Lock html, body, AND #root to prevent all levels of scrolling
+      document.documentElement.style.overflow = 'hidden';
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.position = 'fixed';
+      document.documentElement.style.width = '100%';
+      document.documentElement.style.height = '100%';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+      document.body.style.height = '100%';
+      
+      const rootElement = document.getElementById('root');
+      if (rootElement) {
+        rootElement.style.overflow = 'hidden';
+        rootElement.style.position = 'fixed';
+        rootElement.style.width = '100%';
+        rootElement.style.height = '100%';
+      }
+    } else {
+      // Restore scrolling when not in confirm/security/success
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
+      document.documentElement.style.position = '';
+      document.documentElement.style.width = '';
+      document.documentElement.style.height = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.height = '';
+      
+      const rootElement = document.getElementById('root');
+      if (rootElement) {
+        rootElement.style.overflow = '';
+        rootElement.style.position = '';
+        rootElement.style.width = '';
+        rootElement.style.height = '';
+      }
+    }
+
+    // Cleanup function to restore scrolling on component unmount
+    return () => {
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
+      document.documentElement.style.position = '';
+      document.documentElement.style.width = '';
+      document.documentElement.style.height = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.height = '';
+      
+      const rootElement = document.getElementById('root');
+      if (rootElement) {
+        rootElement.style.overflow = '';
+        rootElement.style.position = '';
+        rootElement.style.width = '';
+        rootElement.style.height = '';
+      }
+    };
+  }, [step]);
+
   useEffect(() => {
     const loadAccounts = () => {
       UserDataManager.clearCache('bankAccounts');
