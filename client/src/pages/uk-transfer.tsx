@@ -596,7 +596,10 @@ export default function UkTransfer() {
         display: 'flex', 
         flexDirection: 'column',
         backgroundColor: '#f9fafb',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        touchAction: 'none',
+        overscrollBehavior: 'none',
+        WebkitOverflowScrolling: 'auto'
       }}>
         <div className="bg-[#126987] px-4 py-3 flex items-center justify-between" style={{ flexShrink: 0 }}>
           <span className="font-medium text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
