@@ -351,7 +351,10 @@ export default function IbanTransfer() {
                 alignItems: 'flex-start',
                 justifyContent: 'center',
                 padding: '2rem',
-                paddingTop: '25vh'
+                paddingTop: '25vh',
+                touchAction: 'none',
+                overscrollBehavior: 'none',
+                WebkitOverflowScrolling: 'auto'
               }}>
                 <div className="text-center max-w-sm w-full">
                   {/* Bank of Ireland Professional Logo Area */}
