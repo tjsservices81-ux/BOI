@@ -302,14 +302,24 @@ export default function IbanTransfer() {
 
   if (step === 'success') {
     return (
-      <div>
-        <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
+      <div style={{ 
+        position: 'fixed', 
+        top: 0, 
+        left: 0, 
+        right: 0, 
+        bottom: 0, 
+        display: 'flex', 
+        flexDirection: 'column',
+        backgroundColor: '#f9fafb',
+        overflow: 'hidden'
+      }}>
+        <div className="bg-[#126987] px-4 py-3 flex items-center justify-between" style={{ flexShrink: 0 }}>
           <span className="font-medium text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
             Transfer Complete
           </span>
         </div>
 
-        <div className="px-4 py-4">
+        <div className="px-4 py-4" style={{ flex: 1, overflow: 'hidden' }}>
           <div className="text-center max-w-sm mx-auto">
             {showReference && (
               <>
