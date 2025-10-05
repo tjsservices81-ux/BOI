@@ -152,6 +152,25 @@ const identifyBankFromSortCode = (sortCode: string): string => {
   return '';
 };
 
+// Helper function to clean up scroll locks before navigation
+const cleanupScrollLocks = () => {
+  document.documentElement.style.overflow = '';
+  document.body.style.overflow = '';
+  document.documentElement.style.position = '';
+  document.documentElement.style.width = '';
+  document.documentElement.style.height = '';
+  document.body.style.position = '';
+  document.body.style.width = '';
+  document.body.style.height = '';
+  const rootElement = document.getElementById('root');
+  if (rootElement) {
+    rootElement.style.overflow = '';
+    rootElement.style.position = '';
+    rootElement.style.width = '';
+    rootElement.style.height = '';
+  }
+};
+
 export default function UkTransfer() {
   const locationHook = useLocation();
   const [, navigate] = locationHook || [null, () => {}];
@@ -754,7 +773,10 @@ export default function UkTransfer() {
                 {/* Show buttons only after reference is revealed */}
                 <div className="flex space-x-3 mt-4">
                   <button 
-                    onClick={() => navigate('/dashboard')}
+                    onClick={() => {
+                      cleanupScrollLocks();
+                      navigate('/dashboard');
+                    }}
                     className="flex-1 bg-[#126987] text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform text-sm"
                     style={{ fontFamily: 'OpenSans, sans-serif' }}
                   >
@@ -814,7 +836,10 @@ export default function UkTransfer() {
 
             <div className="flex space-x-3">
               <button 
-                onClick={() => navigate('/dashboard')}
+                onClick={() => {
+                  cleanupScrollLocks();
+                  navigate('/dashboard');
+                }}
                 className="flex-1 bg-[#126987] text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform text-sm"
                 style={{ fontFamily: 'OpenSans, sans-serif' }}
               >
