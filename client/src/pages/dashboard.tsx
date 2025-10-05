@@ -256,14 +256,7 @@ export default function Dashboard() {
 
   return (
     <div className={`page-container h-screen bg-white overflow-hidden flex flex-col ios-safe-bottom relative page-fade-slide-in ${isNavigating ? 'dashboard-exit' : ''}`} style={{ 
-      maxHeight: '100vh',
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      touchAction: 'none',
-      overscrollBehavior: 'none'
+      maxHeight: '100vh'
     }}>
       {/* Ambient spending visualization background */}
       <SpendingVisualization />
