@@ -231,66 +231,16 @@ export default function UkTransfer() {
     }
   };
 
-  // Lock scrolling during confirmation and success screens to prevent unwanted scrolling in PWA
+  // Cleanup global scroll locks on component mount and unmount
   useEffect(() => {
-    if (step === 'confirm' || step === 'success') {
-      // Lock html, body, AND #root to prevent all levels of scrolling
-      document.documentElement.style.overflow = 'hidden';
-      document.body.style.overflow = 'hidden';
-      document.documentElement.style.position = 'fixed';
-      document.documentElement.style.width = '100%';
-      document.documentElement.style.height = '100%';
-      document.body.style.position = 'fixed';
-      document.body.style.width = '100%';
-      document.body.style.height = '100%';
-      
-      const rootElement = document.getElementById('root');
-      if (rootElement) {
-        rootElement.style.overflow = 'hidden';
-        rootElement.style.position = 'fixed';
-        rootElement.style.width = '100%';
-        rootElement.style.height = '100%';
-      }
-    } else {
-      // Restore scrolling when not in confirm/success
-      document.documentElement.style.overflow = '';
-      document.body.style.overflow = '';
-      document.documentElement.style.position = '';
-      document.documentElement.style.width = '';
-      document.documentElement.style.height = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
-      document.body.style.height = '';
-      
-      const rootElement = document.getElementById('root');
-      if (rootElement) {
-        rootElement.style.overflow = '';
-        rootElement.style.position = '';
-        rootElement.style.width = '';
-        rootElement.style.height = '';
-      }
-    }
-
-    // Cleanup function to restore scrolling on component unmount
+    // Clean up any leftover scroll locks from previous pages
+    cleanupScrollLocks();
+    
+    // Cleanup on unmount
     return () => {
-      document.documentElement.style.overflow = '';
-      document.body.style.overflow = '';
-      document.documentElement.style.position = '';
-      document.documentElement.style.width = '';
-      document.documentElement.style.height = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
-      document.body.style.height = '';
-      
-      const rootElement = document.getElementById('root');
-      if (rootElement) {
-        rootElement.style.overflow = '';
-        rootElement.style.position = '';
-        rootElement.style.width = '';
-        rootElement.style.height = '';
-      }
+      cleanupScrollLocks();
     };
-  }, [step]);
+  }, []);
 
   useEffect(() => {
     const loadAccounts = () => {
@@ -774,13 +724,8 @@ export default function UkTransfer() {
                 <div className="flex space-x-3 mt-4">
                   <button 
                     onClick={() => {
-                      // Defer cleanup until after modal unmounts
-                      requestAnimationFrame(() => {
-                        cleanupScrollLocks();
-                        requestAnimationFrame(() => {
-                          navigate('/dashboard');
-                        });
-                      });
+                      cleanupScrollLocks();
+                      navigate('/dashboard');
                     }}
                     className="flex-1 bg-[#126987] text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform text-sm"
                     style={{ fontFamily: 'OpenSans, sans-serif' }}
@@ -842,13 +787,8 @@ export default function UkTransfer() {
             <div className="flex space-x-3">
               <button 
                 onClick={() => {
-                  // Defer cleanup until after modal unmounts
-                  requestAnimationFrame(() => {
-                    cleanupScrollLocks();
-                    requestAnimationFrame(() => {
-                      navigate('/dashboard');
-                    });
-                  });
+                  cleanupScrollLocks();
+                  navigate('/dashboard');
                 }}
                 className="flex-1 bg-[#126987] text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform text-sm"
                 style={{ fontFamily: 'OpenSans, sans-serif' }}
