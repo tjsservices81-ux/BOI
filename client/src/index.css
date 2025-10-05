@@ -1818,7 +1818,7 @@ html, body {
 
 #root {
   height: 100%;
-  overflow-y: auto;
+  overflow: hidden;
   -webkit-overflow-scrolling: touch;
   background: transparent !important;
 }
@@ -1826,7 +1826,6 @@ html, body {
 /* Force enable scrolling on mobile */
 body {
   overflow: hidden !important;
-  position: fixed !important;
   width: 100% !important;
   height: 100% !important;
   background: transparent !important;
@@ -2251,22 +2250,7 @@ input, textarea, select {
   user-select: auto;
 }
 
-body {
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: none;
-  position: fixed;
-  width: 100%;
-  height: 100vh;
-  height: 100dvh;
-  overflow: hidden;
-}
-
-#root {
-  width: 100%;
-  height: 100vh;
-  height: 100dvh;
-  overflow: hidden;
-}
+/* Removed duplicate body and #root rules - consolidated above */
 
 /* Native iOS button effects - Android optimized */
 button {
