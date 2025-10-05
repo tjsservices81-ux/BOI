@@ -36,6 +36,7 @@ Preferred communication style: Simple, everyday language.
 - Responsive design for optimal viewing across various devices.
 - Integration of accessible components via Radix UI.
 - Use of specific Bank of Ireland color schemes (e.g., #1a5490) in PDF generation.
+- **PWA Scroll Locking**: Comprehensive multi-layer scroll prevention during modal states and transfer processing screens. Uses JavaScript inline styles on html, body, and #root elements combined with conditional overflow control on inner scrollable containers to prevent unwanted page scrolling during processing animations in PWA mode.
 
 ## External Dependencies
 
