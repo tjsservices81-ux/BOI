@@ -227,22 +227,13 @@ export default function Dashboard() {
     localStorage.setItem('bankAccounts', JSON.stringify(accounts));
   }, [accounts]);
 
-  // Handle scroll position persistence
+  // Always reset scroll to top when returning to dashboard
   useEffect(() => {
-    // Restore scroll position after component mounts
-    StateManager.restoreScrollPosition('/dashboard', '.main-scroll-container');
+    // Clear any saved scroll position and reset to top
+    StateManager.saveScrollPosition('/dashboard', 0);
     
-    // Save scroll position on scroll
-    const handleScroll = () => {
-      if (scrollContainerRef.current) {
-        StateManager.saveScrollPosition('/dashboard', scrollContainerRef.current.scrollTop);
-      }
-    };
-
-    const scrollContainer = scrollContainerRef.current;
-    if (scrollContainer) {
-      scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
-      return () => scrollContainer.removeEventListener('scroll', handleScroll);
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = 0;
     }
   }, []);
 
