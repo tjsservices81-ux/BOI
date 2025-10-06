@@ -212,6 +212,32 @@ input[type="text"], input[type="email"], input[type="password"], textarea {
   animation: fadeSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
+/* iOS PWA Support for proper app lifecycle detection */
+@media (display-mode: standalone) {
+  html {
+    /* Enable iOS app lifecycle events */
+    -webkit-app-region: no-drag;
+    -webkit-user-select: none;
+  }
+  
+  body {
+    /* Prevent bounce scrolling in PWA mode */
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+    /* Ensure proper viewport handling */
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+  
+  #root {
+    height: 100vh;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
 /* Enhanced iOS standalone mode detection */
 @supports (-webkit-touch-callout: none) {
   .ios-app-mode {
@@ -248,11 +274,7 @@ html, body {
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
   width: 100%;
-  height: 100vh;
-  height: 100dvh;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
+  height: 100%;
   /* Comprehensive zoom prevention */
   -webkit-text-size-adjust: 100%;
   -moz-text-size-adjust: 100%;
@@ -261,10 +283,9 @@ html, body {
 }
 
 #root {
-  width: 100%;
   height: 100vh;
-  height: 100dvh;
-  overflow-y: auto;
+  max-height: 100vh;
+  overflow: auto;
   -webkit-overflow-scrolling: touch;
   touch-action: manipulation;
 }
@@ -1788,6 +1809,35 @@ button:focus, a:focus, input:focus, select:focus, textarea:focus {
   box-sizing: border-box;
 }
 
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  background: transparent !important;
+}
+
+#root {
+  height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background: transparent !important;
+}
+
+/* Force enable scrolling on mobile */
+body {
+  overflow: hidden !important;
+  position: fixed !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: transparent !important;
+}
+
 /* Mobile specific fixes */
 @supports (-webkit-touch-callout: none) {
   #root {
@@ -2207,6 +2257,23 @@ input, textarea, select {
   user-select: auto;
 }
 
+body {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
+  position: fixed;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+#root {
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
 /* Native iOS button effects - Android optimized */
 button {
   -webkit-appearance: none;
@@ -2298,10 +2365,16 @@ input {
   }
 }
 
-/* Page container base styles */
-.page-container {
-  height: 100vh;
-  height: -webkit-fill-available;
+/* PWA viewport adjustments for iOS */
+@media (display-mode: standalone) {
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .page-container {
+    height: 100vh;
+    height: -webkit-fill-available;
+  }
 }
 
 /* Ensure no white gaps at top on iOS */
