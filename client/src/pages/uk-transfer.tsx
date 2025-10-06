@@ -312,78 +312,6 @@ export default function UkTransfer() {
     };
   }, []); // Only run once on mount
 
-  // Freeze scrolling during transfer success screen (PWA-critical)
-  useEffect(() => {
-    if (step === 'success') {
-      // Lock everything - html, body, and #root
-      document.documentElement.style.overflow = 'hidden';
-      document.documentElement.style.position = 'fixed';
-      document.documentElement.style.width = '100%';
-      document.documentElement.style.height = '100%';
-      
-      document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.width = '100%';
-      document.body.style.height = '100%';
-      document.body.classList.add('transfer-processing-active');
-      
-      const root = document.getElementById('root');
-      if (root) {
-        root.style.overflow = 'hidden';
-        root.style.position = 'fixed';
-        root.style.width = '100%';
-        root.style.height = '100%';
-        root.style.top = '0';
-        root.style.left = '0';
-      }
-    } else {
-      // Unlock everything
-      document.documentElement.style.overflow = '';
-      document.documentElement.style.position = '';
-      document.documentElement.style.width = '';
-      document.documentElement.style.height = '';
-      
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
-      document.body.style.height = '';
-      document.body.classList.remove('transfer-processing-active');
-      
-      const root = document.getElementById('root');
-      if (root) {
-        root.style.overflow = '';
-        root.style.position = '';
-        root.style.width = '';
-        root.style.height = '';
-        root.style.top = '';
-        root.style.left = '';
-      }
-    }
-    
-    return () => {
-      document.documentElement.style.overflow = '';
-      document.documentElement.style.position = '';
-      document.documentElement.style.width = '';
-      document.documentElement.style.height = '';
-      
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
-      document.body.style.height = '';
-      document.body.classList.remove('transfer-processing-active');
-      
-      const root = document.getElementById('root');
-      if (root) {
-        root.style.overflow = '';
-        root.style.position = '';
-        root.style.width = '';
-        root.style.height = '';
-        root.style.top = '';
-        root.style.left = '';
-      }
-    };
-  }, [step]);
-
   const onSubmit = async (data: UkTransferData) => {
     console.log('Form submitted with data:', data);
     setFormData(data);
@@ -598,17 +526,7 @@ export default function UkTransfer() {
 
   if (step === 'success') {
     return (
-      <div style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        display: 'flex',
-        flexDirection: 'column',
-        backgroundColor: '#f9fafb',
-        overflow: 'hidden'
-      }}>
+      <div>
         <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
           <span className="font-medium text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
             Transfer Complete
@@ -759,18 +677,7 @@ export default function UkTransfer() {
                 {/* Show buttons only after reference is revealed */}
                 <div className="flex space-x-3 mt-4">
                   <button 
-                    onClick={() => {
-                      document.body.classList.remove('transfer-processing-active');
-                      document.documentElement.style.overflow = '';
-                      document.body.style.overflow = '';
-                      // Unlock #root in case of PWA
-                      const root = document.getElementById('root');
-                      if (root) {
-                        root.style.overflow = '';
-                        root.style.height = '';
-                      }
-                      navigate('/dashboard');
-                    }}
+                    onClick={() => navigate('/dashboard')}
                     className="flex-1 bg-[#126987] text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform text-sm"
                     style={{ fontFamily: 'OpenSans, sans-serif' }}
                   >
