@@ -311,7 +311,8 @@ export default function Dashboard() {
           marginTop: 'calc(env(safe-area-inset-top, 0px) + 200px)',
           paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))',
           overscrollBehavior: 'contain',
-          overflow: 'hidden'
+          overflowY: 'auto',
+          overflowX: 'hidden'
         }}
         data-scroll-container
         data-scroll-route="/dashboard"
