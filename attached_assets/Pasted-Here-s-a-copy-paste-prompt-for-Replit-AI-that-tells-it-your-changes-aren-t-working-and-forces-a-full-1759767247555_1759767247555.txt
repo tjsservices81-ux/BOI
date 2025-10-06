@@ -1,0 +1,52 @@
+Here’s a copy-paste prompt for Replit AI that tells it your changes aren’t working and forces a full change audit around the bank statements + currency work — including anything it touched that could affect scrolling, layout, or navigation. It must not change code yet.
+
+⸻
+
+Prompt for Replit AI — Change Audit (no code changes)
+
+Context: Things I report still aren’t fixed. I need an exact audit of everything you changed when you were “fixing bank statements” and “the currency thing”. Since then I’m seeing PWA-only scroll regressions (Processing, Success, Dashboard-after-Back) and bottom nav unlocks.
+
+Do this now (diagnose only):
+	1.	Produce a Change Log (past 7–14 days):
+	•	List every file you added/edited/removed while working on:
+	•	Bank statements (statement rendering, filters, date/format, download/share, statement “back” behavior)
+	•	Currency selection/formatting/conversion (symbols, locales, rounding, exchange logic, feature flags)
+	•	For each file: show path, lines changed, commit/time, summary of what changed, and why it was needed.
+	•	Include any changes to global layout and styles that may be side-effects: html/body/#root, app shell, router outlet, wrappers, BottomNav, modals, toasts, CSS resets, Tailwind config, PostCSS, global CSS, utility classes, viewport meta, service worker, PWA manifest.
+	2.	Call out risky edits that could cause scroll/nav bugs:
+	•	Any use of overflow: auto|scroll or h-screen/100vh added/modified on shells/wrappers; presence of 100dvh/svh/lvh media rules.
+	•	Movement of BottomNav into a scrollable ancestor, or changes to its position: fixed|sticky, z-index, or safe-area padding.
+	•	JS that toggles scroll lock (document.body.style.overflow, body classes) during transfer Processing/Success and on Back.
+	•	Display-mode specific rules: @media (display-mode: standalone) or platform hacks for iOS/Android.
+	•	Service Worker/manifest changes that could be serving stale CSS/JS only in PWA.
+	3.	Inventory of non-code changes:
+	•	Dependencies added/updated/removed (npm/pnpm), build scripts, env vars, feature flags, runtime config, ESLint/Prettier that could reformat CSS.
+	•	Any asset hashing/caching policy changes.
+	4.	Diff snippets (do not apply):
+	•	For each risky edit above, show a unified diff (with ± lines) that isolates the change. Add a short note: “Possible impact: could introduce page scroll in PWA by…”.
+	5.	Answer these explicitly:
+	•	What else (besides statements & currency) did you change while doing that work?
+	•	Did you touch layout wrappers or global CSS?
+	•	Did you change BottomNav placement, positioning, or parent container?
+	•	Did you add any overflow/height rules that could differ in standalone/PWA?
+	•	Are Processing/Success using a different shell or transition wrapper than Dashboard?
+	•	Is the Service Worker serving an older stylesheet in PWA?
+	6.	Verification plan (no code changes):
+	•	Provide a step-by-step repro matrix (device, PWA vs browser, route path) and a console snippet that enumerates scrollable ancestors. Include its output per screen.
+	•	State what you believe is the root cause and list two patch options (minimal vs structural), but do not commit.
+
+Rules:
+	•	Do not modify files yet. Deliver a markdown report with: Change Log, Risky Edits, Diffs, Answers, Repro Matrix, Root Cause hypothesis, Patch Options, and Rollback Plan.
+	•	If git history isn’t available, build a synthetic diff by comparing current files to the last deployed build artifacts or cached assets and still produce the report.
+
+Helpful commands (use where available, include outputs in the report):
+
+git --no-pager log --since="14 days ago" --name-status --pretty=format:"%h %ad %s" --date=iso
+git --no-pager diff HEAD~10 -- staticsrc src styles public | cat
+npm ls --depth=0 || pnpm ls --depth=0
+grep -RIn "overflow-y" src styles || true
+grep -RIn "100vh\|h-screen\|100dvh\|svh\|lvh" src styles || true
+grep -RIn "display-mode:\|standalone" src styles || true
+grep -RIn "BottomNav" src || true
+
+Acceptance to proceed: I will review your report. Only after I say “Apply the fix” may you implement the selected patch and purge any stale caches.
