@@ -306,17 +306,18 @@ export default function Dashboard() {
       {/* Main content area - white card with rounded top corners */}
       <div 
         ref={scrollContainerRef}
-        className="main-scroll-container flex-1 px-0 overflow-y-auto ios-scroll" 
+        className="main-scroll-container flex-1 px-0 ios-scroll" 
         style={{ 
           marginTop: 'calc(env(safe-area-inset-top, 0px) + 200px)',
           paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))',
-          overscrollBehavior: 'contain'
+          overscrollBehavior: 'contain',
+          overflow: 'hidden'
         }}
         data-scroll-container
         data-scroll-route="/dashboard"
       >
         <div className="bg-white rounded-t-3xl h-full">
-          <div className="pt-6 pb-24" style={{ overscrollBehavior: 'contain' }}>
+          <div className="pt-6" style={{ overscrollBehavior: 'contain' }}>
             {(accounts && Array.isArray(accounts)) && accounts.map((account, index) => (
               <button 
                 key={account.id}
