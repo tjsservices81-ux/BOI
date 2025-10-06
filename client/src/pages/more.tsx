@@ -25,7 +25,7 @@ export default function More() {
   };
 
   return (
-    <div className="h-screen bg-gradient-to-br from-[#126987] to-[#0d4e63] flex flex-col overflow-hidden page-slide-up relative">
+    <div className="h-full bg-gradient-to-br from-[#126987] to-[#0d4e63] flex flex-col overflow-hidden page-slide-up relative" style={{ minHeight: '100dvh' }}>
       {/* Loading overlay for smooth transitions */}
       {isNavigating && (
         <div className="fixed inset-0 bg-black bg-opacity-30 z-50 flex items-center justify-center backdrop-blur-sm">

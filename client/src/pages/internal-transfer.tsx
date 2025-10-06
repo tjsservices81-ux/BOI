@@ -54,6 +54,19 @@ export default function InternalTransfer() {
     setUserCurrency(getUserCurrency());
   }, []);
 
+  // Freeze scrolling during transfer processing and success screens
+  useEffect(() => {
+    if (step === 'success') {
+      document.body.classList.add('transfer-processing-active');
+    } else {
+      document.body.classList.remove('transfer-processing-active');
+    }
+    
+    return () => {
+      document.body.classList.remove('transfer-processing-active');
+    };
+  }, [step]);
+
   useEffect(() => {
     const fromAccountId = form.watch('fromAccount');
     const toAccountId = form.watch('toAccount');
