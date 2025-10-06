@@ -164,22 +164,6 @@
         "isDisabled": false,
         "currency": "GBP"
       }
-    ],
-    [
-      11,
-      {
-        "id": 11,
-        "customerNumber": "BOI691891902",
-        "pin": "000000",
-        "name": "John",
-        "email": "john@gmail.com",
-        "phone": "45464",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "2025-10-05T21:42:28.038Z",
-        "dateCreated": "2025-10-05T21:42:28.038Z",
-        "isDisabled": false
-      }
     ]
   ],
   "accounts": [
@@ -264,7 +248,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 12,
+    "currentUserId": 11,
     "currentAccountId": 7,
     "currentTransactionId": 1,
     "currentPayeeId": 1,

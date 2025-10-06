@@ -212,67 +212,6 @@ export default function UkTransfer() {
     }
   };
 
-  // Lock scrolling during confirmation and success screens to prevent unwanted scrolling in PWA
-  useEffect(() => {
-    if (step === 'confirm' || step === 'success') {
-      // Lock html, body, AND #root to prevent all levels of scrolling
-      document.documentElement.style.overflow = 'hidden';
-      document.body.style.overflow = 'hidden';
-      document.documentElement.style.position = 'fixed';
-      document.documentElement.style.width = '100%';
-      document.documentElement.style.height = '100%';
-      document.body.style.position = 'fixed';
-      document.body.style.width = '100%';
-      document.body.style.height = '100%';
-      
-      const rootElement = document.getElementById('root');
-      if (rootElement) {
-        rootElement.style.overflow = 'hidden';
-        rootElement.style.position = 'fixed';
-        rootElement.style.width = '100%';
-        rootElement.style.height = '100%';
-      }
-    } else {
-      // Restore scrolling when not in confirm/success
-      document.documentElement.style.overflow = '';
-      document.body.style.overflow = '';
-      document.documentElement.style.position = '';
-      document.documentElement.style.width = '';
-      document.documentElement.style.height = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
-      document.body.style.height = '';
-      
-      const rootElement = document.getElementById('root');
-      if (rootElement) {
-        rootElement.style.overflow = '';
-        rootElement.style.position = '';
-        rootElement.style.width = '';
-        rootElement.style.height = '';
-      }
-    }
-
-    // Cleanup function to restore scrolling on component unmount
-    return () => {
-      document.documentElement.style.overflow = '';
-      document.body.style.overflow = '';
-      document.documentElement.style.position = '';
-      document.documentElement.style.width = '';
-      document.documentElement.style.height = '';
-      document.body.style.position = '';
-      document.body.style.width = '';
-      document.body.style.height = '';
-      
-      const rootElement = document.getElementById('root');
-      if (rootElement) {
-        rootElement.style.overflow = '';
-        rootElement.style.position = '';
-        rootElement.style.width = '';
-        rootElement.style.height = '';
-      }
-    };
-  }, [step]);
-
   useEffect(() => {
     const loadAccounts = () => {
       // Use UserDataManager to get consistent account data
@@ -510,7 +449,7 @@ export default function UkTransfer() {
 
         <div style={{ 
           flex: 1, 
-          overflowY: animationProgress > 0 ? 'hidden' : 'auto',
+          overflowY: 'auto', 
           WebkitOverflowScrolling: 'touch',
           padding: '1rem'
         }}>
@@ -587,27 +526,14 @@ export default function UkTransfer() {
 
   if (step === 'success') {
     return (
-      <div style={{ 
-        position: 'fixed', 
-        top: 0, 
-        left: 0, 
-        right: 0, 
-        bottom: 0, 
-        display: 'flex', 
-        flexDirection: 'column',
-        backgroundColor: '#f9fafb',
-        overflow: 'hidden',
-        touchAction: 'none',
-        overscrollBehavior: 'none',
-        WebkitOverflowScrolling: 'auto'
-      }}>
-        <div className="bg-[#126987] px-4 py-3 flex items-center justify-between" style={{ flexShrink: 0 }}>
+      <div>
+        <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
           <span className="font-medium text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
             Transfer Complete
           </span>
         </div>
 
-        <div className="px-4 py-4" style={{ flex: 1, overflow: 'hidden' }}>
+        <div className="px-4 py-4">
           <div className="text-center max-w-sm mx-auto">
             {showReference && (
               <>
@@ -639,10 +565,7 @@ export default function UkTransfer() {
                 alignItems: 'flex-start',
                 justifyContent: 'center',
                 padding: '2rem',
-                paddingTop: '25vh',
-                touchAction: 'none',
-                overscrollBehavior: 'none',
-                WebkitOverflowScrolling: 'auto'
+                paddingTop: '25vh'
               }}>
                 <div className="text-center max-w-sm w-full">
                   {/* Bank of Ireland Professional Logo Area */}
