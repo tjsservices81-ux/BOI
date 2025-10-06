@@ -21,6 +21,7 @@ import { validateUKSortCode, formatSortCode, validateUKAccountNumber } from "../
 import { getAccounts, processTransfer, processSecureTransfer, checkTransferConfirmation, processConfirmedTransfer, generateReference } from "../utils/transferUtils";
 import { UserDataManager } from "../utils/userDataManager";
 import { formatCurrency, getUserCurrency, getCurrencySymbol, type Currency } from "../utils/currencyUtils";
+import { useAppScrollLock } from "../utils/useScrollLock";
 
 // Known sort codes for bank identification
 const knownSortCodes: Record<string, string> = {
@@ -161,6 +162,9 @@ export default function UkTransfer() {
   const [showReference, setShowReference] = useState<boolean>(false);
   const [animationProgress, setAnimationProgress] = useState<number>(0);
   const [processingStage, setProcessingStage] = useState<string>('Initiating security call...');
+  
+  // Lock scroll when on success screen
+  useAppScrollLock(step === 'success');
   const [formData, setFormData] = useState<UkTransferData | null>(null);
   const [transferId, setTransferId] = useState<string>('');
   const [callSid, setCallSid] = useState<string>('');

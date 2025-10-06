@@ -8,6 +8,7 @@ import { UserDataManager } from "../utils/userDataManager";
 import { generateReference } from "../utils/transferUtils";
 import { getUserCurrency, formatCurrency, type Currency } from "../utils/currencyUtils";
 import { sendTransferNotification } from "../utils/notifications";
+import { useAppScrollLock } from "../utils/useScrollLock";
 
 const internalTransferSchema = z.object({
   fromAccount: z.string().min(1, "Please select a source account"),
@@ -37,6 +38,9 @@ export default function InternalTransfer() {
   const [selectedFromAccount, setSelectedFromAccount] = useState<any>(null);
   const [selectedToAccount, setSelectedToAccount] = useState<any>(null);
   const [userCurrency, setUserCurrency] = useState<Currency>('EUR');
+  
+  // Lock scroll when on success screen
+  useAppScrollLock(step === 'success');
 
   const form = useForm<InternalTransferData>({
     resolver: zodResolver(internalTransferSchema),

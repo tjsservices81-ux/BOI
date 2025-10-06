@@ -6,6 +6,7 @@ import SpendingInsights from "../components/SpendingInsights";
 import { UserDataManager } from "../utils/userDataManager";
 import { StateManager } from "../utils/stateManager";
 import { formatCurrency, getUserCurrency, type Currency } from "../utils/currencyUtils";
+import { useAppScrollLock } from "../utils/useScrollLock";
 
 interface Account {
   id: number;
@@ -18,6 +19,9 @@ interface Account {
 export default function Dashboard() {
   const [, setLocation] = useLocation();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  
+  // Ensure scroll is unlocked on Dashboard
+  useAppScrollLock(false);
   
   // Local state for account balances that can be updated by transfers
   const [accounts, setAccounts] = useState<Account[]>([]);

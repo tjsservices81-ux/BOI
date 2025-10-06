@@ -7,6 +7,7 @@ import { z } from "zod";
 import { getAccounts, processTransfer, processSecureTransfer, checkTransferConfirmation, processConfirmedTransfer, generateReference } from "../utils/transferUtils";
 import { UserDataManager } from "../utils/userDataManager";
 import { formatCurrency, getUserCurrency, type Currency } from "../utils/currencyUtils";
+import { useAppScrollLock } from "../utils/useScrollLock";
 
 const ibanTransferSchema = z.object({
   recipientName: z.string().min(2, "Recipient name is required"),
@@ -29,6 +30,9 @@ export default function IbanTransfer() {
   const [processingStage, setProcessingStage] = useState<string>('Verifying transfer details...');
   const [formData, setFormData] = useState<IbanTransferData | null>(null);
   const [userCurrency, setUserCurrency] = useState<Currency>('EUR');
+  
+  // Lock scroll when on success screen
+  useAppScrollLock(step === 'success');
 
   const form = useForm<IbanTransferData>({
     resolver: zodResolver(ibanTransferSchema),

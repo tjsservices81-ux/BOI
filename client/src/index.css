@@ -44,6 +44,20 @@ input[type="text"], input[type="email"], input[type="password"], textarea {
   }
 }
 
+/* App shell scroll lock for Processing/Success screens */
+.app-shell.locked,
+#app.locked, #root.locked {
+  height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: none;
+}
+
+/* Safety: ensure inner panels don't re-enable scroll */
+.app-shell.locked * {
+  overscroll-behavior: contain;
+}
+
 @keyframes slideIn {
   0% {
     opacity: 0;
