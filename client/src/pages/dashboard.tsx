@@ -229,7 +229,12 @@ export default function Dashboard() {
 
   // Always reset scroll to top when returning to dashboard
   useEffect(() => {
-    // Clear any saved scroll position and reset to top
+    // Reset window/body scroll to top
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    
+    // Clear any saved scroll position and reset container to top
     StateManager.saveScrollPosition('/dashboard', 0);
     
     if (scrollContainerRef.current) {
