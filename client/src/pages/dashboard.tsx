@@ -259,8 +259,8 @@ export default function Dashboard() {
       {/* Ambient spending visualization background */}
       <SpendingVisualization />
       
-      {/* Blue header bar */}
-      <div className="bg-[#126987] flex items-end justify-between px-4 pb-3 flex-shrink-0" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px) + 12px, 56px)' }}>
+      {/* Blue header bar - Fixed at top */}
+      <div className="bg-[#126987] flex items-end justify-between px-4 pb-3 flex-shrink-0 fixed top-0 left-0 right-0 z-50" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px) + 12px, 56px)' }}>
         <div className="flex items-center">
           <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-6 filter brightness-0 invert" />
         </div>
@@ -277,6 +277,9 @@ export default function Dashboard() {
           </button>
         </div>
       </div>
+      
+      {/* Spacer for fixed header */}
+      <div style={{ paddingTop: 'max(env(safe-area-inset-top, 0px) + 68px, 112px)' }}></div>
       
       {/* Header with scenic background */}
       <div className="text-white relative flex-shrink-0 h-36">
@@ -300,7 +303,7 @@ export default function Dashboard() {
       <div 
         ref={scrollContainerRef}
         className="main-scroll-container flex-1 px-0 -mt-8 overflow-hidden" 
-        style={{ maxHeight: 'calc(100vh - 200px)', minHeight: 0 }}
+        style={{ maxHeight: 'calc(100vh - 256px)', minHeight: 0 }}
         data-scroll-container
         data-scroll-route="/dashboard"
       >
