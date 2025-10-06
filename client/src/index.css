@@ -299,8 +299,7 @@ html, body {
 #root {
   height: 100vh;
   max-height: 100vh;
-  overflow: auto;
-  -webkit-overflow-scrolling: touch;
+  overflow: hidden;
   touch-action: manipulation;
 }
 
@@ -1838,8 +1837,7 @@ html, body {
 
 #root {
   height: 100%;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  overflow: hidden;
   background: transparent !important;
 }
 
