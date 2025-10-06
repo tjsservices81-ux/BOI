@@ -163,24 +163,6 @@
         }
       }
       
-      /* PWA-specific styles */
-      @media all and (display-mode: standalone) {
-        html, body { 
-          height: 100vh;
-          height: calc(var(--vh, 1vh) * 100);
-          padding-top: env(safe-area-inset-top);
-          padding-bottom: env(safe-area-inset-bottom);
-          padding-left: env(safe-area-inset-left);
-          padding-right: env(safe-area-inset-right);
-          overflow-x: hidden;
-        }
-        
-        #root {
-          min-height: 100vh;
-          min-height: calc(var(--vh, 1vh) * 100);
-        }
-      }
-      
       /* Fix for iOS viewport issues */
       @supports (-webkit-touch-callout: none) {
         html, body {

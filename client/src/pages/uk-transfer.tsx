@@ -312,6 +312,35 @@ export default function UkTransfer() {
     };
   }, []); // Only run once on mount
 
+  // Freeze scrolling during transfer success screen (PWA-critical)
+  useEffect(() => {
+    if (step === 'success') {
+      document.body.classList.add('transfer-processing-active');
+      // Also lock #root in case of PWA mode
+      const root = document.getElementById('root');
+      if (root) {
+        root.style.overflow = 'hidden';
+        root.style.height = '100%';
+      }
+    } else {
+      document.body.classList.remove('transfer-processing-active');
+      const root = document.getElementById('root');
+      if (root) {
+        root.style.overflow = '';
+        root.style.height = '';
+      }
+    }
+    
+    return () => {
+      document.body.classList.remove('transfer-processing-active');
+      const root = document.getElementById('root');
+      if (root) {
+        root.style.overflow = '';
+        root.style.height = '';
+      }
+    };
+  }, [step]);
+
   const onSubmit = async (data: UkTransferData) => {
     console.log('Form submitted with data:', data);
     setFormData(data);
@@ -691,6 +720,12 @@ export default function UkTransfer() {
                       document.body.classList.remove('transfer-processing-active');
                       document.documentElement.style.overflow = '';
                       document.body.style.overflow = '';
+                      // Unlock #root in case of PWA
+                      const root = document.getElementById('root');
+                      if (root) {
+                        root.style.overflow = '';
+                        root.style.height = '';
+                      }
                       navigate('/dashboard');
                     }}
                     className="flex-1 bg-[#126987] text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform text-sm"
