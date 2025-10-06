@@ -18,7 +18,6 @@ interface Account {
 
 export default function Dashboard() {
   const [, setLocation] = useLocation();
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   // Ensure scroll is unlocked on Dashboard
   useAppScrollLock(false);
@@ -234,12 +233,8 @@ export default function Dashboard() {
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
     
-    // Clear any saved scroll position and reset container to top
+    // Clear any saved scroll position
     StateManager.saveScrollPosition('/dashboard', 0);
-    
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTop = 0;
-    }
   }, []);
 
   // Get color for account type
@@ -299,16 +294,12 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Main content area - white card with rounded top corners */}
+      {/* Main content area - white card with rounded top corners - NO SCROLL */}
       <div 
-        ref={scrollContainerRef}
-        className="main-scroll-container flex-1 px-0 -mt-8 overflow-hidden" 
-        style={{ maxHeight: 'calc(100vh - 256px)', minHeight: 0 }}
-        data-scroll-container
-        data-scroll-route="/dashboard"
+        className="flex-1 px-0 -mt-8 overflow-hidden"
       >
-        <div className="bg-white rounded-t-3xl min-h-full">
-          <div className="pt-6 pb-24" style={{ overscrollBehavior: 'contain' }}>
+        <div className="bg-white rounded-t-3xl h-full overflow-hidden">
+          <div className="pt-6 pb-20">
             {(accounts && Array.isArray(accounts)) && accounts.map((account, index) => (
               <button 
                 key={account.id}
