@@ -871,6 +871,18 @@ button svg, button .lucide {
   transition: none;
 }
 
+/* Transfer processing scroll lock */
+.transfer-processing-active {
+  overflow: hidden !important;
+  position: fixed !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.transfer-processing-active #root {
+  overflow: hidden !important;
+}
+
 /* Form field instant rendering */
 input, textarea, select {
   font-family: 'OpenSans', -apple-system, BlinkMacSystemFont, sans-serif;

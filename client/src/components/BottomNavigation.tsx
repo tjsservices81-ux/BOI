@@ -107,6 +107,10 @@ export default function BottomNavigation() {
     <div 
       data-bottom-nav
       className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 ios-safe-bottom z-50 bottom-nav-container bottom-navigation"
+      style={{ 
+        paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))',
+        zIndex: 9999
+      }}
     >
       <div className="flex justify-around items-center h-12">
         {navigationItems.map((item) => (

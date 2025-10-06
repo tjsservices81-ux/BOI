@@ -526,7 +526,17 @@ export default function UkTransfer() {
 
   if (step === 'success') {
     return (
-      <div>
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        backgroundColor: '#f9fafb',
+        overflow: 'hidden'
+      }}>
         <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
           <span className="font-medium text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
             Transfer Complete
@@ -677,7 +687,12 @@ export default function UkTransfer() {
                 {/* Show buttons only after reference is revealed */}
                 <div className="flex space-x-3 mt-4">
                   <button 
-                    onClick={() => navigate('/dashboard')}
+                    onClick={() => {
+                      document.body.classList.remove('transfer-processing-active');
+                      document.documentElement.style.overflow = '';
+                      document.body.style.overflow = '';
+                      navigate('/dashboard');
+                    }}
                     className="flex-1 bg-[#126987] text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform text-sm"
                     style={{ fontFamily: 'OpenSans, sans-serif' }}
                   >
