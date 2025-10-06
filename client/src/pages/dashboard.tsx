@@ -299,7 +299,7 @@ export default function Dashboard() {
       {/* Main content area - white card with rounded top corners */}
       <div 
         ref={scrollContainerRef}
-        className="main-scroll-container flex-1 px-0 -mt-8 overflow-y-auto ios-scroll" 
+        className="main-scroll-container flex-1 px-0 -mt-8 overflow-hidden" 
         style={{ maxHeight: 'calc(100vh - 200px)', minHeight: 0 }}
         data-scroll-container
         data-scroll-route="/dashboard"
