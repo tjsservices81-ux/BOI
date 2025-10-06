@@ -255,7 +255,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className={`page-container h-screen bg-white overflow-hidden flex flex-col ios-safe-bottom relative page-fade-slide-in ${isNavigating ? 'dashboard-exit' : ''}`} style={{ maxHeight: '100vh' }}>
+    <div className={`page-container h-screen bg-white overflow-hidden flex flex-col ios-safe-bottom relative page-fade-slide-in ${isNavigating ? 'dashboard-exit' : ''}`} style={{ maxHeight: '100vh', position: 'fixed', width: '100%', top: 0, left: 0 }}>
       {/* Ambient spending visualization background */}
       <SpendingVisualization />
       
@@ -300,11 +300,11 @@ export default function Dashboard() {
       <div 
         ref={scrollContainerRef}
         className="main-scroll-container flex-1 px-0 -mt-8 overflow-y-auto ios-scroll" 
-        style={{ maxHeight: 'calc(100vh - 200px)' }}
+        style={{ maxHeight: 'calc(100vh - 200px)', minHeight: 0 }}
         data-scroll-container
         data-scroll-route="/dashboard"
       >
-        <div className="bg-white rounded-t-3xl h-full">
+        <div className="bg-white rounded-t-3xl min-h-full">
           <div className="pt-6 pb-24" style={{ overscrollBehavior: 'contain' }}>
             {(accounts && Array.isArray(accounts)) && accounts.map((account, index) => (
               <button 
