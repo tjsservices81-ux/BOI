@@ -255,12 +255,12 @@ export default function Dashboard() {
   };
 
   return (
-    <div className={`page-container h-full bg-white overflow-hidden flex flex-col ios-safe-bottom relative page-fade-slide-in ${isNavigating ? 'dashboard-exit' : ''}`} style={{ minHeight: '100dvh' }}>
+    <div className={`page-container h-screen bg-white overflow-hidden flex flex-col ios-safe-bottom relative page-fade-slide-in ${isNavigating ? 'dashboard-exit' : ''}`} style={{ maxHeight: '100vh' }}>
       {/* Ambient spending visualization background */}
       <SpendingVisualization />
       
       {/* Blue header bar */}
-      <div className="bg-[#126987] flex items-end justify-between flex-shrink-0" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px) + 12px, 56px)' }}>
+      <div className="bg-[#126987] flex items-end justify-between px-4 pb-3 flex-shrink-0" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px) + 12px, 56px)' }}>
         <div className="flex items-center">
           <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-6 filter brightness-0 invert" />
         </div>
@@ -288,7 +288,7 @@ export default function Dashboard() {
           }}
         />
         
-        <div className="relative z-10 h-full flex flex-col justify-center">
+        <div className="relative z-10 h-full flex flex-col justify-center px-4">
           <h1 className="text-2xl font-light mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>Welcome</h1>
           <p className="text-white/90 text-sm font-light" style={{ fontFamily: 'OpenSans, sans-serif' }}>
             Last login: {UserDataManager.getLastLoginTime()}
@@ -320,7 +320,7 @@ export default function Dashboard() {
                 {/* Colored side bar */}
                 <div className={`absolute left-0 top-0 bottom-0 w-1 ${getAccountColor(account.accountType)}`}></div>
                 
-                <div className="flex items-center justify-between w-full">
+                <div className="flex items-center justify-between w-full px-6 py-4">
                   <div className="text-left">
                     <p className="font-medium text-sm text-gray-800 boi-regular-font">{account.displayName.toUpperCase()}</p>
                     <p className="text-xs text-gray-500 mt-0.5 boi-regular-font">{account.accountNumber}</p>

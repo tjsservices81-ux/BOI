@@ -54,19 +54,6 @@ export default function InternalTransfer() {
     setUserCurrency(getUserCurrency());
   }, []);
 
-  // Freeze scrolling during transfer processing and success screens
-  useEffect(() => {
-    if (step === 'success') {
-      document.body.classList.add('transfer-processing-active');
-    } else {
-      document.body.classList.remove('transfer-processing-active');
-    }
-    
-    return () => {
-      document.body.classList.remove('transfer-processing-active');
-    };
-  }, [step]);
-
   useEffect(() => {
     const fromAccountId = form.watch('fromAccount');
     const toAccountId = form.watch('toAccount');
@@ -317,7 +304,7 @@ export default function InternalTransfer() {
           </button>
         </div>
 
-        <div className="flex-1 flex items-center justify-center">
+        <div className="flex-1 flex items-center justify-center p-6">
           <div className="text-center max-w-sm">
             <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <Check className="w-10 h-10 text-green-600" />

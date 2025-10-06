@@ -25,7 +25,7 @@ export default function More() {
   };
 
   return (
-    <div className="h-full bg-gradient-to-br from-[#126987] to-[#0d4e63] flex flex-col overflow-hidden page-slide-up relative" style={{ minHeight: '100dvh' }}>
+    <div className="h-screen bg-gradient-to-br from-[#126987] to-[#0d4e63] flex flex-col overflow-hidden page-slide-up relative">
       {/* Loading overlay for smooth transitions */}
       {isNavigating && (
         <div className="fixed inset-0 bg-black bg-opacity-30 z-50 flex items-center justify-center backdrop-blur-sm">
@@ -34,7 +34,7 @@ export default function More() {
       )}
       
       {/* Header */}
-      <div className="bg-[#126987] pt-12 flex-shrink-0 shadow-lg">
+      <div className="bg-[#126987] px-4 py-6 pt-12 flex-shrink-0 shadow-lg">
         <div className="flex items-center justify-between">
           <button 
             onClick={() => handleNavigation('/dashboard')}

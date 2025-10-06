@@ -136,19 +136,6 @@ export default function IbanTransfer() {
     };
   }, [form]);
 
-  // Freeze scrolling during transfer processing and success screens
-  useEffect(() => {
-    if (step === 'success') {
-      document.body.classList.add('transfer-processing-active');
-    } else {
-      document.body.classList.remove('transfer-processing-active');
-    }
-    
-    return () => {
-      document.body.classList.remove('transfer-processing-active');
-    };
-  }, [step]);
-
   const onSubmit = (data: IbanTransferData) => {
     setFormData(data);
     setStep('confirm');
@@ -261,7 +248,7 @@ export default function IbanTransfer() {
           </span>
         </div>
 
-        <div>
+        <div className="px-4 py-4">
           <div className="text-center max-w-sm mx-auto">
             {showReference && (
               <>
@@ -290,9 +277,10 @@ export default function IbanTransfer() {
                 background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
                 zIndex: 1000,
                 display: 'flex',
-                alignItems: 'center',
+                alignItems: 'flex-start',
                 justifyContent: 'center',
-                overflow: 'hidden'
+                padding: '2rem',
+                paddingTop: '25vh'
               }}>
                 <div className="text-center max-w-sm w-full">
                   {/* Bank of Ireland Professional Logo Area */}
