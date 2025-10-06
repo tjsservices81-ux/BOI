@@ -34,7 +34,7 @@ export default function More() {
       )}
       
       {/* Header */}
-      <div className="bg-[#126987] px-4 py-6 pt-12 flex-shrink-0 shadow-lg">
+      <div className="bg-[#126987] pt-12 flex-shrink-0 shadow-lg">
         <div className="flex items-center justify-between">
           <button 
             onClick={() => handleNavigation('/dashboard')}

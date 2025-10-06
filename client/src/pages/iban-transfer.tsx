@@ -261,7 +261,7 @@ export default function IbanTransfer() {
           </span>
         </div>
 
-        <div className="px-4 py-4">
+        <div>
           <div className="text-center max-w-sm mx-auto">
             {showReference && (
               <>
@@ -290,10 +290,9 @@ export default function IbanTransfer() {
                 background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
                 zIndex: 1000,
                 display: 'flex',
-                alignItems: 'flex-start',
+                alignItems: 'center',
                 justifyContent: 'center',
-                padding: '2rem',
-                paddingTop: '25vh'
+                overflow: 'hidden'
               }}>
                 <div className="text-center max-w-sm w-full">
                   {/* Bank of Ireland Professional Logo Area */}

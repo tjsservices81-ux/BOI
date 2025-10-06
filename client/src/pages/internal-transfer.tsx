@@ -317,7 +317,7 @@ export default function InternalTransfer() {
           </button>
         </div>
 
-        <div className="flex-1 flex items-center justify-center p-6">
+        <div className="flex-1 flex items-center justify-center">
           <div className="text-center max-w-sm">
             <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <Check className="w-10 h-10 text-green-600" />

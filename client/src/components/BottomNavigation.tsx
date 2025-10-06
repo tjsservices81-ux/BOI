@@ -106,14 +106,13 @@ export default function BottomNavigation() {
   return (
     <div 
       data-bottom-nav
-      className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 ios-safe-bottom z-50 bottom-nav-container bottom-navigation"
-      style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
+      className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 ios-safe-bottom z-50 bottom-nav-container bottom-navigation"
     >
       <div className="flex justify-around items-center h-12">
         {navigationItems.map((item) => (
           <button
             key={item.id}
-            className={`navigation-item flex flex-col items-center space-y-1 py-2 px-3 rounded-lg touch-manipulation relative android-no-highlight ${
+            className={`navigation-item flex flex-col items-center rounded-lg touch-manipulation relative android-no-highlight ${
               item.isActive ? 'text-[#126987]' : 'text-gray-400 hover:text-[#126987]'
             }`}
             onClick={() => setLocation(item.path)}
