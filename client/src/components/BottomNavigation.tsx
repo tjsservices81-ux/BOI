@@ -48,7 +48,10 @@ export default function BottomNavigation() {
     // Don't show on root path during initial loading
     if (location === '/') return false;
     
-    // Show on all other authenticated pages (including transfer pages)
+    // Don't show on transfer pages
+    if (location.includes('/transfer') || location.includes('/iban-transfer') || location.includes('/uk-transfer')) return false;
+    
+    // Show on all other authenticated pages
     return true;
   };
 

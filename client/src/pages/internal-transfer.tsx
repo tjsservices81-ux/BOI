@@ -301,7 +301,7 @@ export default function InternalTransfer() {
   if (step === 'success') {
     return (
       <div className="h-screen flex flex-col bg-white page-slide-in-right">
-        <div className="bg-[#126987] px-4 py-3 flex items-center justify-between fixed top-0 left-0 right-0 z-50" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px) + 12px, 12px)' }}>
+        <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
           <button onClick={() => navigate('/payments')} className="flex items-center text-white">
             <ChevronLeft className="w-5 h-5 mr-2" />
             <span className="font-semibold text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>Transfer Complete</span>
@@ -363,14 +363,14 @@ export default function InternalTransfer() {
     
     return (
       <div className="h-screen flex flex-col bg-white page-slide-in-right">
-        <div className="bg-[#126987] px-4 py-3 flex items-center justify-between fixed top-0 left-0 right-0 z-50" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px) + 12px, 12px)' }}>
+        <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
           <button onClick={() => setStep('form')} className="flex items-center text-white">
             <ChevronLeft className="w-5 h-5 mr-2" />
             <span className="font-semibold text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>Confirm Transfer</span>
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px) + 60px, 60px)' }}>
+        <div className="flex-1 overflow-y-auto p-6">
           <div className="bg-white rounded-2xl p-6 shadow-sm border mb-6">
             <h2 className="font-semibold text-gray-900 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
               Transfer Details
@@ -462,7 +462,7 @@ export default function InternalTransfer() {
   if (step === 'cancelled') {
     return (
       <div className="h-screen flex flex-col bg-white page-fade-in">
-        <div className="bg-[#126987] px-4 py-3 flex items-center justify-between fixed top-0 left-0 right-0 z-50" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px) + 12px, 12px)' }}>
+        <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
           <button onClick={() => setStep('form')} className="flex items-center text-white">
             <ChevronLeft className="w-6 h-6 mr-2" />
             <span className="font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Transfer Failed</span>
@@ -507,14 +507,14 @@ export default function InternalTransfer() {
 
   return (
     <div className="h-screen flex flex-col bg-white page-slide-in-right">
-      <div className="bg-[#126987] px-4 py-3 flex items-center justify-between fixed top-0 left-0 right-0 z-50" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px) + 12px, 12px)' }}>
+      <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
         <button onClick={() => navigate('/payments')} className="flex items-center text-white">
           <ChevronLeft className="w-5 h-5 mr-2" />
           <span className="font-semibold text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>Between BOI Accounts</span>
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-6" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px) + 60px, 60px)' }}>
+      <div className="flex-1 overflow-y-auto p-6">
         <div className="bg-white rounded-2xl p-6 shadow-sm border mb-6">
           <div className="flex items-center mb-6">
             <div className="w-12 h-12 bg-gradient-to-br from-[#126987] to-[#5a7b85] rounded-xl flex items-center justify-center mr-4">

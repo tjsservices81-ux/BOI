@@ -18,6 +18,7 @@ interface Account {
 
 export default function Dashboard() {
   const [, setLocation] = useLocation();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   // Ensure scroll is unlocked on Dashboard
   useAppScrollLock(false);
@@ -226,15 +227,23 @@ export default function Dashboard() {
     localStorage.setItem('bankAccounts', JSON.stringify(accounts));
   }, [accounts]);
 
-  // Always reset scroll to top when returning to dashboard
+  // Handle scroll position persistence
   useEffect(() => {
-    // Reset window/body scroll to top
-    window.scrollTo(0, 0);
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
+    // Restore scroll position after component mounts
+    StateManager.restoreScrollPosition('/dashboard', '.main-scroll-container');
     
-    // Clear any saved scroll position
-    StateManager.saveScrollPosition('/dashboard', 0);
+    // Save scroll position on scroll
+    const handleScroll = () => {
+      if (scrollContainerRef.current) {
+        StateManager.saveScrollPosition('/dashboard', scrollContainerRef.current.scrollTop);
+      }
+    };
+
+    const scrollContainer = scrollContainerRef.current;
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+      return () => scrollContainer.removeEventListener('scroll', handleScroll);
+    }
   }, []);
 
   // Get color for account type
@@ -250,56 +259,65 @@ export default function Dashboard() {
   };
 
   return (
-    <div className={`page-container h-screen bg-white overflow-hidden flex flex-col ios-safe-bottom relative page-fade-slide-in ${isNavigating ? 'dashboard-exit' : ''}`} style={{ maxHeight: '100vh', position: 'fixed', width: '100%', top: 0, left: 0 }}>
+    <div className={`page-container h-screen bg-white flex flex-col ios-safe-bottom relative page-fade-slide-in ${isNavigating ? 'dashboard-exit' : ''}`} style={{ height: '100dvh', overflow: 'hidden' }}>
       {/* Ambient spending visualization background */}
       <SpendingVisualization />
       
-      {/* Blue header bar - Fixed at top */}
-      <div className="bg-[#126987] flex items-end justify-between px-4 pb-3 flex-shrink-0 fixed top-0 left-0 right-0 z-50" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px) + 12px, 56px)' }}>
-        <div className="flex items-center">
-          <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-6 filter brightness-0 invert" />
+      {/* Fixed header section */}
+      <div className="fixed top-0 left-0 right-0 z-40">
+        {/* Blue header bar */}
+        <div className="bg-[#126987] flex items-end justify-between px-4 pb-3" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px) + 12px, 56px)' }}>
+          <div className="flex items-center">
+            <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-6 filter brightness-0 invert" />
+          </div>
+          <div className="flex items-center">
+            <button 
+              className="text-white hover:bg-white/20 h-8 w-8 rounded-full flex items-center justify-center touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-95 android-no-highlight"
+              onClick={() => navigateWithAnimation('/profile', 'slide-up')}
+              style={{
+                WebkitTapHighlightColor: 'transparent',
+                outline: 'none'
+              }}
+            >
+              <User className="h-5 w-5" />
+            </button>
+          </div>
         </div>
-        <div className="flex items-center">
-          <button 
-            className="text-white hover:bg-white/20 h-8 w-8 rounded-full flex items-center justify-center touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-95 android-no-highlight"
-            onClick={() => navigateWithAnimation('/profile', 'slide-up')}
-            style={{
-              WebkitTapHighlightColor: 'transparent',
-              outline: 'none'
-            }}
-          >
-            <User className="h-5 w-5" />
-          </button>
-        </div>
-      </div>
-      
-      {/* Spacer for fixed header */}
-      <div style={{ paddingTop: 'max(env(safe-area-inset-top, 0px) + 68px, 112px)' }}></div>
-      
-      {/* Header with scenic background */}
-      <div className="text-white relative flex-shrink-0 h-36">
-        {/* Full scenic background image */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center"
-          style={{
-            backgroundImage: `url('/background.jpg')`
-          }}
-        />
         
-        <div className="relative z-10 h-full flex flex-col justify-center px-4">
-          <h1 className="text-2xl font-light mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>Welcome</h1>
-          <p className="text-white/90 text-sm font-light" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-            Last login: {UserDataManager.getLastLoginTime()}
-          </p>
+        {/* Header with scenic background */}
+        <div className="text-white relative h-36">
+          {/* Full scenic background image */}
+          <div 
+            className="absolute inset-0 bg-cover bg-center"
+            style={{
+              backgroundImage: `url('/background.jpg')`
+            }}
+          />
+          
+          <div className="relative z-10 h-full flex flex-col justify-center px-4">
+            <h1 className="text-2xl font-light mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>Welcome</h1>
+            <p className="text-white/90 text-sm font-light" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              Last login: {UserDataManager.getLastLoginTime()}
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Main content area - white card with rounded top corners - NO SCROLL */}
+      {/* Main content area - white card with rounded top corners */}
       <div 
-        className="flex-1 px-0 -mt-8 overflow-hidden"
+        ref={scrollContainerRef}
+        className="main-scroll-container flex-1 px-0 ios-scroll" 
+        style={{ 
+          marginTop: 'calc(env(safe-area-inset-top, 0px) + 200px)',
+          paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))',
+          overscrollBehavior: 'contain',
+          overflow: 'hidden'
+        }}
+        data-scroll-container
+        data-scroll-route="/dashboard"
       >
-        <div className="bg-white rounded-t-3xl h-full overflow-hidden">
-          <div className="pt-6 pb-20">
+        <div className="bg-white rounded-t-3xl h-full">
+          <div className="pt-6" style={{ overscrollBehavior: 'contain' }}>
             {(accounts && Array.isArray(accounts)) && accounts.map((account, index) => (
               <button 
                 key={account.id}

@@ -299,7 +299,8 @@ html, body {
 #root {
   height: 100vh;
   max-height: 100vh;
-  overflow: hidden;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
   touch-action: manipulation;
 }
 
@@ -1837,7 +1838,8 @@ html, body {
 
 #root {
   height: 100%;
-  overflow: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   background: transparent !important;
 }
 
@@ -2272,18 +2274,19 @@ input, textarea, select {
 body {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: none;
-  position: fixed;
   width: 100%;
   height: 100vh;
   height: 100dvh;
-  overflow: hidden;
+  margin: 0;
+  padding: 0;
 }
 
 #root {
   width: 100%;
   height: 100vh;
   height: 100dvh;
-  overflow: hidden;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Native iOS button effects - Android optimized */
