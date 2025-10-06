@@ -444,7 +444,7 @@ export default function UkTransfer() {
         flexDirection: 'column',
         backgroundColor: '#f9fafb'
       }}>
-        <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
+        <div className="bg-[#126987] px-4 py-3 flex items-center justify-between fixed top-0 left-0 right-0 z-50" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px) + 12px, 12px)' }}>
           <button onClick={() => setStep('form')} className="flex items-center text-white">
             <ChevronLeft className="w-6 h-6 mr-2" />
             <span className="font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Confirm Transfer</span>
@@ -455,7 +455,8 @@ export default function UkTransfer() {
           flex: 1, 
           overflowY: 'auto', 
           WebkitOverflowScrolling: 'touch',
-          padding: '1rem'
+          padding: '1rem',
+          paddingTop: 'max(env(safe-area-inset-top, 0px) + 60px, 60px)'
         }}>
           <div className="bg-white rounded-2xl p-6 shadow-sm border mb-6">
             <h2 className="font-semibold text-gray-900 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -718,7 +719,7 @@ export default function UkTransfer() {
         flexDirection: 'column',
         backgroundColor: '#f9fafb'
       }}>
-        <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
+        <div className="bg-[#126987] px-4 py-3 flex items-center justify-between fixed top-0 left-0 right-0 z-50" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px) + 12px, 12px)' }}>
           <button onClick={() => setStep('form')} className="flex items-center text-white">
             <ChevronLeft className="w-6 h-6 mr-2" />
             <span className="font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Transfer Failed</span>
@@ -772,7 +773,7 @@ export default function UkTransfer() {
       flexDirection: 'column',
       backgroundColor: '#f9fafb'
     }}>
-      <div className="bg-[#126987] px-4 py-3 flex items-center justify-between" style={{ flexShrink: 0 }}>
+      <div className="bg-[#126987] px-4 py-3 flex items-center justify-between fixed top-0 left-0 right-0 z-50" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px) + 12px, 12px)' }}>
         <button onClick={() => navigate('/payments')} className="flex items-center text-white">
           <ChevronLeft className="w-5 h-5 mr-2" />
           <span className="font-semibold text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>UK Bank Transfer</span>
@@ -783,7 +784,8 @@ export default function UkTransfer() {
         flex: 1, 
         overflowY: 'auto', 
         WebkitOverflowScrolling: 'touch',
-        padding: '1rem'
+        padding: '1rem',
+        paddingTop: 'max(env(safe-area-inset-top, 0px) + 60px, 60px)'
       }}>
         <div style={{ backgroundColor: 'white', borderRadius: '0.75rem', padding: '1.5rem', marginBottom: '2rem' }}>
           <div className="flex items-center mb-6">

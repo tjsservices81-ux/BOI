@@ -117,8 +117,8 @@ export default function Payments() {
 
   return (
     <div className="h-screen flex flex-col bg-white ios-safe-top ios-safe-bottom page-container page-fade-in">
-      {/* Header */}
-      <div className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0">
+      {/* Header - Fixed at top */}
+      <div className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0 fixed top-0 left-0 right-0 z-50" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px) + 12px, 12px)' }}>
         <button 
           onClick={() => navigate("/dashboard")}
           className="flex items-center text-white active:scale-95 transition-transform"
@@ -137,7 +137,7 @@ export default function Payments() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 bg-gray-50 px-4 py-6 pb-32 ios-scroll overflow-y-auto">
+      <div className="flex-1 bg-gray-50 px-4 py-6 pb-32 ios-scroll overflow-y-auto" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px) + 60px, 60px)' }}>
         {/* Header Section */}
         <div className="mb-6">
           <h1 className="text-2xl font-semibold text-gray-900 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
