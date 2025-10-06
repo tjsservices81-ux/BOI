@@ -531,14 +531,14 @@ export default function UkTransfer() {
 
   if (step === 'success') {
     return (
-      <div className="h-screen flex flex-col bg-white overflow-hidden" style={{ position: 'fixed', width: '100%', top: 0, left: 0 }}>
+      <div className="h-screen flex flex-col bg-white">
         <div className="bg-[#126987] px-4 py-3 flex items-center justify-between fixed top-0 left-0 right-0 z-50" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px) + 12px, 12px)' }}>
           <span className="font-medium text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
             Transfer Complete
           </span>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-4 py-4" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px) + 60px, 60px)', paddingBottom: '6rem' }}>
+        <div className="flex-1 overflow-y-auto px-4 py-4" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 60px)', paddingBottom: '6rem' }}>
           <div className="text-center max-w-sm mx-auto">
             {showReference && (
               <>
