@@ -1,0 +1,38 @@
+Goal: Recently, main screens that were previously non-scrollable started scrolling after updates from the last few days. The bottom navigation must stay locked to the bottom at all times. Do not lock the inner content container.
+Perform a deep scan, identify the exact cause(s), and prepare a patch plan — but do not modify files until I explicitly approve.
+
+Scope
+	•	Framework & layout: root shell, main screens (Home/Dashboard/Account), routing shell, global styles, utility classes (including Tailwind if used).
+	•	Time window: Only consider changes introduced in the last 3–7 days of commits/edits.
+
+What to deliver (no changes yet)
+	1.	Diagnosis Report (markdown) with:
+	•	A list of actual scrollable ancestors of the main screens (document which elements have scrollHeight > clientHeight and which CSS rules/classes (e.g., overflow-y: auto|scroll, h-screen/min-h-screen, 100vh) are causing it).
+	•	All global styles touching html, body, #root/#app, main wrappers, and any layout shells. Include filenames + line numbers + the exact rules.
+	•	Whether the bottom nav is placed inside a scrollable container (it must not be). Confirm its positioning (fixed or sticky), stacking (z-index), and safe-area handling.
+	•	Any recent diffs (files/lines) that changed overflow/height/positioning (CSS, Tailwind config, layout components, modal/route code toggling document.body.style.overflow, etc.).
+	•	Mobile viewport unit issues: usage of 100vh/h-screen vs 100dvh/100svh, keyboard resize effects, or new wrappers that introduced scroll chaining.
+	•	Third-party widgets or analytics injecting styles that altered body/html overflow.
+	2.	Repro Steps to see the unwanted scroll on at least one main screen (include viewport/device and steps).
+	3.	Patch Plan (unified diff snippets) that would fix it, but do not apply them yet. Separate each change by file with context.
+	4.	Side-effects checklist (elements at risk of clipping after the fix).
+
+Acceptance criteria (for the eventual fix — do not apply now)
+	•	Bottom navigation stays locked to the viewport bottom at all times.
+	•	The main screen itself does not scroll; only intended inner regions (e.g., lists, chats, modals) may scroll.
+	•	No overflow: auto|scroll on html, body, root shell, or main wrapper unless explicitly required for an intended scroll region.
+	•	Layout remains responsive; no cut-off content; safe-areas respected.
+
+Specific checks to run
+	•	Enumerate all elements where scrollHeight > clientHeight and overflow-y is not visible. Map them to CSS rules/classes and file:line.
+	•	Verify root height strategy:
+	•	html, body, #root/#app heights (100%, min-height: 100dvh), and any h-screen/min-h-screen (Tailwind) that might create extra scroll.
+	•	Any global overflow on html/body or a high-level wrapper.
+	•	Verify nav placement & containment:
+	•	Nav must not be inside a scrolling wrapper.
+	•	Nav uses position: fixed (or sticky with proper parent), correct bottom: 0, width: 100%, z-index, and padding for env(safe-area-inset-bottom).
+	•	Check route/modals that toggle body.style.overflow — confirm it resets correctly on close/navigation.
+	•	Check for new CSS resets, library updates, or injected styles that affect overflow/height.
+	•	Note any overscroll-behavior or scroll chaining issues.
+
+Important: Produce only the report, repro, and patch plan. Do not commit or change files until I explicitly say “Apply the fix”.
