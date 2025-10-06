@@ -300,7 +300,7 @@ export default function InternalTransfer() {
 
   if (step === 'success') {
     return (
-      <div className="h-screen flex flex-col bg-white page-slide-in-right">
+      <div className="h-screen flex flex-col bg-white page-slide-in-right overflow-hidden" style={{ position: 'fixed', width: '100%', top: 0, left: 0 }}>
         <div className="bg-[#126987] px-4 py-3 flex items-center justify-between fixed top-0 left-0 right-0 z-50" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px) + 12px, 12px)' }}>
           <button onClick={() => navigate('/payments')} className="flex items-center text-white">
             <ChevronLeft className="w-5 h-5 mr-2" />
@@ -308,7 +308,7 @@ export default function InternalTransfer() {
           </button>
         </div>
 
-        <div className="flex-1 flex items-center justify-center p-6">
+        <div className="flex-1 flex items-center justify-center p-6" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px) + 60px, 60px)', paddingBottom: '6rem' }}>
           <div className="text-center max-w-sm">
             <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <Check className="w-10 h-10 text-green-600" />

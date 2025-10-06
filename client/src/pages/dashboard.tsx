@@ -70,6 +70,7 @@ export default function Dashboard() {
           name: '',
           email: '',
           phone: '',
+          pin: '0000',
           joinDate: '',
           dateCreated: new Date().toISOString()
         });
