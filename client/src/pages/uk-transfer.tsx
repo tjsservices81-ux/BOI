@@ -315,28 +315,71 @@ export default function UkTransfer() {
   // Freeze scrolling during transfer success screen (PWA-critical)
   useEffect(() => {
     if (step === 'success') {
+      // Lock everything - html, body, and #root
+      document.documentElement.style.overflow = 'hidden';
+      document.documentElement.style.position = 'fixed';
+      document.documentElement.style.width = '100%';
+      document.documentElement.style.height = '100%';
+      
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+      document.body.style.height = '100%';
       document.body.classList.add('transfer-processing-active');
-      // Also lock #root in case of PWA mode
+      
       const root = document.getElementById('root');
       if (root) {
         root.style.overflow = 'hidden';
+        root.style.position = 'fixed';
+        root.style.width = '100%';
         root.style.height = '100%';
+        root.style.top = '0';
+        root.style.left = '0';
       }
     } else {
+      // Unlock everything
+      document.documentElement.style.overflow = '';
+      document.documentElement.style.position = '';
+      document.documentElement.style.width = '';
+      document.documentElement.style.height = '';
+      
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.height = '';
       document.body.classList.remove('transfer-processing-active');
+      
       const root = document.getElementById('root');
       if (root) {
         root.style.overflow = '';
+        root.style.position = '';
+        root.style.width = '';
         root.style.height = '';
+        root.style.top = '';
+        root.style.left = '';
       }
     }
     
     return () => {
+      document.documentElement.style.overflow = '';
+      document.documentElement.style.position = '';
+      document.documentElement.style.width = '';
+      document.documentElement.style.height = '';
+      
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.height = '';
       document.body.classList.remove('transfer-processing-active');
+      
       const root = document.getElementById('root');
       if (root) {
         root.style.overflow = '';
+        root.style.position = '';
+        root.style.width = '';
         root.style.height = '';
+        root.style.top = '';
+        root.style.left = '';
       }
     };
   }, [step]);
