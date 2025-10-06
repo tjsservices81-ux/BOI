@@ -9,8 +9,12 @@ export function useAppScrollLock(locked: boolean) {
 
     if (locked) {
       el.classList.add('locked');
+      // prevent accidental document scroll position jumps
+      document.documentElement.style.scrollBehavior = 'auto';
+      window.scrollTo(0, 0);
     } else {
       el.classList.remove('locked');
+      document.documentElement.style.scrollBehavior = '';
     }
 
     return () => {
