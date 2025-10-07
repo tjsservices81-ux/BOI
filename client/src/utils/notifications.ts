@@ -50,8 +50,9 @@ export async function sendTransferNotification(recipient: string, amount: string
   });
 
   // Get user currency for proper display
-  const userCurrency = localStorage.getItem('userCurrency') || 'EUR';
-  const currencySymbol = userCurrency === 'GBP' ? '£' : '€';
+  const { getUserCurrency, getCurrencySymbol } = await import('./currencyUtils');
+  const userCurrency = getUserCurrency();
+  const currencySymbol = getCurrencySymbol(userCurrency);
 
   const title = '';
   const body = `Transfer successful\n${currencySymbol} ${amount} sent to ${recipient} at ${timeString}`;
