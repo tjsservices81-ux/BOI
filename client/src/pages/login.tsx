@@ -468,10 +468,6 @@ export default function Login() {
               setCustomerNumber(targetUser);
             }
 
-            toast({
-              title: "Face ID Verified",
-              description: "Authentication successful",
-            });
             return;
           } catch (webAuthnError) {
             // WebAuthn failed or was cancelled
@@ -498,11 +494,6 @@ export default function Login() {
         if (!customerNumber) {
           setCustomerNumber(targetUser);
         }
-
-        toast({
-          title: "Face ID Verified",
-          description: "Authentication successful",
-        });
       } catch (error) {
         setIsScanning(false);
         toast({
