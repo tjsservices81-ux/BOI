@@ -1299,6 +1299,55 @@ export default function Profile() {
                 </button>
               </div>
 
+              {/* Currency Selector */}
+              <div className="mb-6">
+                <h3 className="text-sm font-medium text-gray-700 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Select Currency
+                </h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => {
+                      setUserCurrency('EUR');
+                      setProfileData({ ...profileData, currency: 'EUR' });
+                      setEditProfileData({ ...editProfileData, currency: 'EUR' });
+                      UserDataManager.updateUserProfile({ ...profileData, currency: 'EUR' });
+                    }}
+                    className={`p-4 rounded-xl border-2 transition-all ${
+                      userCurrency === 'EUR' 
+                        ? 'border-blue-500 bg-blue-50' 
+                        : 'border-gray-200 bg-white hover:bg-gray-50'
+                    }`}
+                  >
+                    <p className={`font-semibold ${userCurrency === 'EUR' ? 'text-blue-900' : 'text-gray-900'}`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      BOI Euro
+                    </p>
+                    <p className={`text-sm ${userCurrency === 'EUR' ? 'text-blue-600' : 'text-gray-500'}`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      EUR (€)
+                    </p>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setUserCurrency('GBP');
+                      setProfileData({ ...profileData, currency: 'GBP' });
+                      setEditProfileData({ ...editProfileData, currency: 'GBP' });
+                      UserDataManager.updateUserProfile({ ...profileData, currency: 'GBP' });
+                    }}
+                    className={`p-4 rounded-xl border-2 transition-all ${
+                      userCurrency === 'GBP' 
+                        ? 'border-blue-500 bg-blue-50' 
+                        : 'border-gray-200 bg-white hover:bg-gray-50'
+                    }`}
+                  >
+                    <p className={`font-semibold ${userCurrency === 'GBP' ? 'text-blue-900' : 'text-gray-900'}`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      BOI UK GBP
+                    </p>
+                    <p className={`text-sm ${userCurrency === 'GBP' ? 'text-blue-600' : 'text-gray-500'}`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      GBP (£)
+                    </p>
+                  </button>
+                </div>
+              </div>
+
               <div className="space-y-6">
                 {/* Profile Management Section */}
                 <div>
@@ -1521,26 +1570,6 @@ export default function Profile() {
               </div>
 
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Currency Display
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => setEditProfileData({ 
-                      ...editProfileData, 
-                      currency: editProfileData.currency === 'EUR' ? 'GBP' : 'EUR' 
-                    })}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white hover:bg-gray-50 transition-colors flex items-center justify-between"
-                    style={{ fontFamily: 'OpenSans, sans-serif' }}
-                  >
-                    <span>Currency: {editProfileData.currency === 'EUR' ? 'EUR (€)' : 'GBP (£)'}</span>
-                    <span className="text-blue-600 font-semibold">
-                      {editProfileData.currency === 'EUR' ? '€' : '£'}
-                    </span>
-                  </button>
-                </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     Name *
