@@ -576,7 +576,7 @@ export default function Payments() {
                 )}
 
                 {/* Buttons inside scrollable area */}
-                <div className="flex space-x-3 pt-6 pb-24">
+                <div className="flex space-x-3 pt-6 pb-32">
                   <button
                     onClick={() => setShowAddPayee(false)}
                     className="flex-1 px-4 py-3 border border-gray-300 rounded-xl text-gray-700 font-medium"
