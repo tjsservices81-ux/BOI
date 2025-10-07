@@ -599,23 +599,73 @@ class MemStorage implements IStorage {
         const sampleTransactions = [
           {
             accountId: account.id,
-            type: "credit" as const,
-            amount: "500.00",
-            currency: "EUR" as const,
-            description: "Salary deposit",
-            reference: "SAL001",
-            date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-            balance: account.balance
+            type: "debit" as const,
+            amount: "-85.50",
+            description: "TESCO STORES",
+            category: "Shopping",
+            paymentMethod: "Card",
+            reference: "POS001",
+            timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000)
           },
           {
             accountId: account.id,
             type: "debit" as const,
-            amount: "125.50",
-            currency: "EUR" as const,
-            description: "Grocery shopping",
-            reference: "POS001",
-            date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-            balance: (parseFloat(account.balance) - 125.50).toString()
+            amount: "-42.30",
+            description: "ELECTRIC IRELAND",
+            category: "Bills",
+            paymentMethod: "Direct Debit",
+            reference: "DD001",
+            timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)
+          },
+          {
+            accountId: account.id,
+            type: "credit" as const,
+            amount: "2500.00",
+            description: "Salary Payment",
+            category: "Income",
+            paymentMethod: "Transfer",
+            reference: "SAL001",
+            timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)
+          },
+          {
+            accountId: account.id,
+            type: "debit" as const,
+            amount: "-65.00",
+            description: "ATM Withdrawal",
+            category: "Cash",
+            paymentMethod: "ATM",
+            reference: "ATM001",
+            timestamp: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000)
+          },
+          {
+            accountId: account.id,
+            type: "debit" as const,
+            amount: "-124.99",
+            description: "AMAZON ONLINE PURCHASE",
+            category: "Shopping",
+            paymentMethod: "Card",
+            reference: "POS002",
+            timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000)
+          },
+          {
+            accountId: account.id,
+            type: "debit" as const,
+            amount: "-45.80",
+            description: "RESTAURANT PAYMENT",
+            category: "Dining",
+            paymentMethod: "Card",
+            reference: "POS003",
+            timestamp: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000)
+          },
+          {
+            accountId: account.id,
+            type: "debit" as const,
+            amount: "-35.20",
+            description: "Transfer to Savings",
+            category: "Transfers",
+            paymentMethod: "Transfer",
+            reference: "TRF001",
+            timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
           }
         ];
 

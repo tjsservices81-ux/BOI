@@ -47,15 +47,21 @@ export default function SpendingInsights() {
       // Calculate daily spending for trend analysis
       const dailySpending: { [key: string]: number } = {};
       debits.forEach((tx: any) => {
-        const date = new Date(tx.timestamp).toDateString();
-        const amount = Math.abs(parseFloat(tx.amount));
-        dailySpending[date] = (dailySpending[date] || 0) + amount;
+        // Support both timestamp and date fields for compatibility
+        const txDate = tx.timestamp || tx.date;
+        if (txDate) {
+          const date = new Date(txDate).toDateString();
+          const amount = Math.abs(parseFloat(tx.amount));
+          dailySpending[date] = (dailySpending[date] || 0) + amount;
+        }
       });
 
       // Simple trend calculation (comparing recent vs older transactions)
-      const sortedTransactions = debits.sort((a: any, b: any) => 
-        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      );
+      const sortedTransactions = debits.sort((a: any, b: any) => {
+        const dateA = new Date(a.timestamp || a.date || 0).getTime();
+        const dateB = new Date(b.timestamp || b.date || 0).getTime();
+        return dateB - dateA;
+      });
       
       const recentHalf = sortedTransactions.slice(0, Math.floor(sortedTransactions.length / 2));
       const olderHalf = sortedTransactions.slice(Math.floor(sortedTransactions.length / 2));
@@ -95,18 +101,25 @@ export default function SpendingInsights() {
   const formatCurrency = (amount: number) => 
     formatCurrencyUtil(amount, userCurrency);
 
-  if (!spendingData) return null;
-
   return (
-    <div className="fixed top-20 right-4 z-20">
+    <div className="fixed top-20 right-4 z-50">
       <button
         onClick={() => setIsVisible(!isVisible)}
         className="bg-white/90 backdrop-blur-sm border border-gray-200 rounded-full p-3 shadow-lg hover:bg-white transition-all duration-200"
+        data-testid="spending-insights-toggle"
       >
         {isVisible ? <EyeOff className="w-5 h-5 text-gray-600" /> : <Eye className="w-5 h-5 text-gray-600" />}
       </button>
 
-      {isVisible && (
+      {isVisible && !spendingData && (
+        <div className="mt-2 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-2xl p-4 shadow-xl w-80">
+          <p className="text-sm text-gray-600 text-center" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+            No spending data available yet. Make some transactions to see insights!
+          </p>
+        </div>
+      )}
+
+      {isVisible && spendingData && (
         <div className="mt-2 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-2xl p-4 shadow-xl w-80 animate-in slide-in-from-right duration-300">
           <h3 className="font-semibold text-gray-900 mb-4 flex items-center" style={{ fontFamily: 'OpenSans, sans-serif' }}>
             <DollarSign className="w-4 h-4 mr-2 text-[#126987]" />

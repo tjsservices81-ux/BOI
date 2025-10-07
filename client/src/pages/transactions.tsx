@@ -3,6 +3,8 @@ import { useLocation } from "wouter";
 import { useState, useEffect } from "react";
 import { UserDataManager } from "../utils/userDataManager";
 import { getUserCurrency, getCurrencySymbol, formatCurrency } from "../utils/currencyUtils";
+import MiniSpendingChart from "../components/MiniSpendingChart";
+import SpendingInsights from "../components/SpendingInsights";
 
 interface Transaction {
   id: string;
@@ -183,6 +185,9 @@ export default function Transactions() {
 
   return (
     <div className="h-screen bg-[#f5f5f5] overflow-hidden flex flex-col ios-safe-top ios-safe-bottom page-fade-in">
+      {/* Spending Insights floating widget */}
+      <SpendingInsights />
+      
       {/* Header - BOI Style */}
       <div className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0">
         <div className="flex items-center mb-4">
@@ -214,6 +219,11 @@ export default function Transactions() {
       {/* Transaction List - BOI Style */}
       <div className="flex-1 overflow-y-auto bg-white ios-scroll -mt-2" style={{ overscrollBehavior: 'contain' }}>
         <div className="bg-white rounded-t-2xl pt-6">
+          {/* Mini Spending Chart */}
+          <div className="px-4">
+            <MiniSpendingChart accountId={1} />
+          </div>
+          
           <div className="px-4 pb-2">
             <h2 className="text-lg font-medium text-gray-800 mb-3 boi-regular-font">Recent Transactions</h2>
           </div>

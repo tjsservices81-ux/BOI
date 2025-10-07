@@ -42,7 +42,10 @@ export default function MiniSpendingChart({ accountId }: MiniSpendingChartProps)
 
       const dailySpending: ChartData[] = last7Days.map(dateString => {
         const dayTotal = accountTransactions
-          .filter((tx: any) => new Date(tx.timestamp).toDateString() === dateString)
+          .filter((tx: any) => {
+            const txDate = tx.timestamp || tx.date;
+            return txDate && new Date(txDate).toDateString() === dateString;
+          })
           .reduce((sum: number, tx: any) => sum + Math.abs(parseFloat(tx.amount) || 0), 0);
 
         return {
