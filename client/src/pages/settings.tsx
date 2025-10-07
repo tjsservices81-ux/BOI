@@ -101,8 +101,8 @@ export default function Settings() {
         },
         user: {
           id: userId,
-          name: currentUser,
-          displayName: currentUser,
+          name: "BOI Customer Login",
+          displayName: "BOI Customer Login",
         },
         pubKeyCredParams: [
           { alg: -7, type: "public-key" as const },
