@@ -469,16 +469,8 @@ export default function IbanTransfer() {
     const selectedAccount = accounts.find(acc => acc.id === formData.fromAccount);
 
     return (
-      <div className="page-container page-slide-in-right" style={{ 
-        position: 'fixed', 
-        top: 0, 
-        left: 0, 
-        right: 0, 
-        bottom: 0, 
-        display: 'flex', 
-        flexDirection: 'column',
-        backgroundColor: '#f9fafb',
-        zIndex: 1000
+      <div className="page-container page-slide-in-right h-screen overflow-hidden flex flex-col" style={{ 
+        backgroundColor: '#f9fafb'
       }}>
         <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
           <button onClick={() => setStep('form')} className="flex items-center text-white">
