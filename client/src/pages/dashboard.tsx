@@ -6,7 +6,7 @@ import SpendingInsights from "../components/SpendingInsights";
 import { UserDataManager } from "../utils/userDataManager";
 import { StateManager } from "../utils/stateManager";
 import { formatCurrency, getUserCurrency, type Currency } from "../utils/currencyUtils";
-import ukLogoPath from "@assets/IMG_1504_1759859071758.png";
+import ukLogoPath from "@assets/IMG_1505_1759859367310.png";
 
 interface Account {
   id: number;

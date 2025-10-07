@@ -9,7 +9,7 @@ import { User, ExternalLink, HelpCircle, Phone, Settings, Shield, MapPin, MoreHo
 import { useToast } from "@/hooks/use-toast";
 import { UserDataManager } from "@/utils/userDataManager";
 import { getUserCurrency } from "@/utils/currencyUtils";
-import ukLogoPath from "@assets/IMG_1504_1759859071758.png";
+import ukLogoPath from "@assets/IMG_1505_1759859367310.png";
 
 export default function Login() {
   const [customerNumber, setCustomerNumber] = useState("");
