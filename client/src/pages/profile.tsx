@@ -1531,6 +1531,8 @@ export default function Profile() {
                         const newSettings = { ...transferSettings, showSepaTransfer: !transferSettings.showSepaTransfer };
                         setTransferSettings(newSettings);
                         UserDataManager.setUserData('transferSettings', newSettings);
+                        UserDataManager.clearCache('transferSettings');
+                        window.dispatchEvent(new CustomEvent('transferSettingsUpdate'));
                       }}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                         transferSettings.showSepaTransfer ? 'bg-green-600' : 'bg-gray-300'
@@ -1559,6 +1561,8 @@ export default function Profile() {
                         const newSettings = { ...transferSettings, showUkTransfer: !transferSettings.showUkTransfer };
                         setTransferSettings(newSettings);
                         UserDataManager.setUserData('transferSettings', newSettings);
+                        UserDataManager.clearCache('transferSettings');
+                        window.dispatchEvent(new CustomEvent('transferSettingsUpdate'));
                       }}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                         transferSettings.showUkTransfer ? 'bg-green-600' : 'bg-gray-300'
@@ -1587,6 +1591,8 @@ export default function Profile() {
                         const newSettings = { ...transferSettings, showInternalTransfer: !transferSettings.showInternalTransfer };
                         setTransferSettings(newSettings);
                         UserDataManager.setUserData('transferSettings', newSettings);
+                        UserDataManager.clearCache('transferSettings');
+                        window.dispatchEvent(new CustomEvent('transferSettingsUpdate'));
                       }}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                         transferSettings.showInternalTransfer ? 'bg-green-600' : 'bg-gray-300'

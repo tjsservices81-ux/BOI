@@ -11,13 +11,13 @@ export default function Payments() {
   const [showRecentPayees, setShowRecentPayees] = useState(false);
   const [recentPayees, setRecentPayees] = useState<any[]>([]);
   const [deleteConfirm, setDeleteConfirm] = useState<{name: string, accountInfo: string} | null>(null);
-
-  // Get transfer visibility settings
-  const transferSettings = UserDataManager.getUserData('transferSettings', null) || {
-    showSepaTransfer: true,
-    showUkTransfer: true,
-    showInternalTransfer: true
-  };
+  const [transferSettings, setTransferSettings] = useState(() => 
+    UserDataManager.getUserData('transferSettings', null) || {
+      showSepaTransfer: true,
+      showUkTransfer: true,
+      showInternalTransfer: true
+    }
+  );
 
   const allPaymentOptions = [
     {
@@ -68,6 +68,16 @@ export default function Payments() {
       setRecentPayees(UserDataManager.getRecentPayees());
     };
 
+    const loadTransferSettings = () => {
+      UserDataManager.clearCache('transferSettings');
+      const settings = UserDataManager.getUserData('transferSettings', null) || {
+        showSepaTransfer: true,
+        showUkTransfer: true,
+        showInternalTransfer: true
+      };
+      setTransferSettings(settings);
+    };
+
     loadRecentPayments();
     loadRecentPayees();
     
@@ -77,8 +87,17 @@ export default function Payments() {
       loadRecentPayees();
     };
 
+    // Listen for transfer settings changes
+    const handleTransferSettingsUpdate = () => {
+      loadTransferSettings();
+    };
+
     window.addEventListener('transactionUpdate', handleTransactionUpdate);
-    return () => window.removeEventListener('transactionUpdate', handleTransactionUpdate);
+    window.addEventListener('transferSettingsUpdate', handleTransferSettingsUpdate);
+    return () => {
+      window.removeEventListener('transactionUpdate', handleTransactionUpdate);
+      window.removeEventListener('transferSettingsUpdate', handleTransferSettingsUpdate);
+    };
   }, []);
 
   const formatDate = (timestamp: string) => {
