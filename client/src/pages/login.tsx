@@ -425,7 +425,98 @@ export default function Login() {
       });
       return;
     }
+
+    // Face ID flow - trigger browser biometric authentication
+    if (faceIdEnabled) {
+      setIsScanning(true);
+      
+      try {
+        // Check if Web Authentication API is available
+        if (window.PublicKeyCredential) {
+          try {
+            // Use Web Authentication API for real biometric authentication
+            const publicKeyCredentialCreationOptions = {
+              challenge: new Uint8Array(32),
+              rp: {
+                name: "Bank of Ireland",
+                id: window.location.hostname,
+              },
+              user: {
+                id: new Uint8Array(16),
+                name: targetUser,
+                displayName: targetUser,
+              },
+              pubKeyCredParams: [{alg: -7, type: "public-key" as const}],
+              authenticatorSelection: {
+                authenticatorAttachment: "platform" as const,
+                userVerification: "required" as const,
+              },
+              timeout: 60000,
+            };
+
+            // Trigger Face ID / Touch ID authentication
+            await navigator.credentials.create({
+              publicKey: publicKeyCredentialCreationOptions
+            });
+
+            // Success - Face ID verified
+            setBiometricVerified(true);
+            setIsScanning(false);
+            
+            // Set user and initialize account
+            UserDataManager.setCurrentUser(targetUser);
+            UserDataManager.initializeFreshAccount(targetUser);
+            if (!customerNumber) {
+              setCustomerNumber(targetUser);
+            }
+
+            toast({
+              title: "Face ID Verified",
+              description: "Authentication successful",
+            });
+            return;
+          } catch (webAuthnError) {
+            // WebAuthn failed or was cancelled
+            setIsScanning(false);
+            toast({
+              title: "Face ID Cancelled",
+              description: "Authentication was cancelled",
+              variant: "destructive",
+            });
+            return;
+          }
+        }
+        
+        // Fallback: Simulate Face ID authentication for browsers without WebAuthn
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        // Success - Face ID verified
+        setBiometricVerified(true);
+        setIsScanning(false);
+        
+        // Set user and initialize account
+        UserDataManager.setCurrentUser(targetUser);
+        UserDataManager.initializeFreshAccount(targetUser);
+        if (!customerNumber) {
+          setCustomerNumber(targetUser);
+        }
+
+        toast({
+          title: "Face ID Verified",
+          description: "Authentication successful",
+        });
+      } catch (error) {
+        setIsScanning(false);
+        toast({
+          title: "Face ID Failed",
+          description: "Authentication failed",
+          variant: "destructive",
+        });
+      }
+      return;
+    }
     
+    // Fingerprint flow - original hold-to-scan
     setIsScanning(true);
     setHoldProgress(0);
     
@@ -1090,11 +1181,16 @@ export default function Login() {
                           ? 'bg-gradient-to-br from-blue-50 to-blue-100' 
                           : 'bg-gradient-to-br from-gray-50 to-gray-100 hover:from-blue-50 hover:to-blue-100'
                     }`}
-                    onMouseDown={handleBiometricHoldStart}
-                    onMouseUp={handleBiometricHoldEnd}
-                    onMouseLeave={handleBiometricHoldEnd}
-                    onTouchStart={handleBiometricHoldStart}
-                    onTouchEnd={handleBiometricHoldEnd}
+                    {...(faceIdEnabled 
+                      ? { onClick: handleBiometricHoldStart } 
+                      : {
+                          onMouseDown: handleBiometricHoldStart,
+                          onMouseUp: handleBiometricHoldEnd,
+                          onMouseLeave: handleBiometricHoldEnd,
+                          onTouchStart: handleBiometricHoldStart,
+                          onTouchEnd: handleBiometricHoldEnd
+                        }
+                    )}
                     style={{
                       touchAction: 'manipulation',
                       userSelect: 'none',
@@ -1103,8 +1199,8 @@ export default function Login() {
                       WebkitTapHighlightColor: 'transparent'
                     }}
                   >
-                    {/* Progress ring for holding */}
-                    {isScanning && (
+                    {/* Progress ring for holding - only show for fingerprint */}
+                    {isScanning && !faceIdEnabled && (
                       <div className="absolute inset-0 rounded-full">
                         <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
                           <circle
