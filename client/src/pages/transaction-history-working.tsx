@@ -298,7 +298,7 @@ export default function TransactionHistoryWorking() {
 
   return (
     <div className="page-container h-screen bg-gray-50 flex flex-col overflow-hidden page-slide-in-right"
-      style={{ backgroundColor: '#f9fafb' }}>
+      style={{ backgroundColor: '#f9fafb', height: '100vh', maxHeight: '100vh' }}>
       <div className="bg-[#126987] text-white p-6 flex-shrink-0">
         <div className="flex items-center justify-between mb-4">
           <button onClick={() => navigateWithAnimation('/dashboard', 'slide-left')} className="flex items-center text-white">
@@ -327,7 +327,9 @@ export default function TransactionHistoryWorking() {
         ref={scrollContainerRef}
         className="transaction-scroll-container flex-1 overflow-y-auto p-4"
         style={{ 
-          minHeight: 0
+          minHeight: 0,
+          maxHeight: 'calc(100vh - 200px)',
+          paddingBottom: '100px'
         }}
         data-scroll-container
         data-scroll-route={`/transactions/${accountId}`}

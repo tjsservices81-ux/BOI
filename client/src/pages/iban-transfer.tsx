@@ -7,6 +7,7 @@ import { z } from "zod";
 import { getAccounts, processTransfer, processSecureTransfer, checkTransferConfirmation, processConfirmedTransfer, generateReference } from "../utils/transferUtils";
 import { UserDataManager } from "../utils/userDataManager";
 import { formatCurrency, getUserCurrency, type Currency } from "../utils/currencyUtils";
+import { useAppScrollLock } from "../utils/useScrollLock";
 
 const ibanTransferSchema = z.object({
   recipientName: z.string().min(2, "Recipient name is required"),
@@ -29,6 +30,9 @@ export default function IbanTransfer() {
   const [processingStage, setProcessingStage] = useState<string>('Verifying transfer details...');
   const [formData, setFormData] = useState<IbanTransferData | null>(null);
   const [userCurrency, setUserCurrency] = useState<Currency>('EUR');
+  
+  // Lock scroll when on success or confirm screen
+  useAppScrollLock(step === 'success' || step === 'confirm');
 
   const form = useForm<IbanTransferData>({
     resolver: zodResolver(ibanTransferSchema),
@@ -412,7 +416,14 @@ export default function IbanTransfer() {
 
   if (step === 'cancelled') {
     return (
-      <div className="h-screen overflow-hidden flex flex-col page-fade-in" style={{ 
+      <div className="page-container page-fade-in" style={{ 
+        position: 'fixed', 
+        top: 0, 
+        left: 0, 
+        right: 0, 
+        bottom: 0, 
+        display: 'flex', 
+        flexDirection: 'column',
         backgroundColor: '#f9fafb'
       }}>
         <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
@@ -462,8 +473,16 @@ export default function IbanTransfer() {
     const selectedAccount = accounts.find(acc => acc.id === formData.fromAccount);
 
     return (
-      <div className="h-screen overflow-hidden flex flex-col page-slide-in-right" style={{ 
-        backgroundColor: '#f9fafb'
+      <div className="page-container page-slide-in-right" style={{ 
+        position: 'fixed', 
+        top: 0, 
+        left: 0, 
+        right: 0, 
+        bottom: 0, 
+        display: 'flex', 
+        flexDirection: 'column',
+        backgroundColor: '#f9fafb',
+        zIndex: 1000
       }}>
         <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
           <button onClick={() => setStep('form')} className="flex items-center text-white">
@@ -541,7 +560,14 @@ export default function IbanTransfer() {
   }
 
   return (
-    <div className="h-screen overflow-hidden flex flex-col page-slide-in-right" style={{ 
+    <div className="page-container page-slide-in-right" style={{ 
+      position: 'fixed', 
+      top: 0, 
+      left: 0, 
+      right: 0, 
+      bottom: 0, 
+      display: 'flex', 
+      flexDirection: 'column',
       backgroundColor: '#f9fafb'
     }}>
       <div className="bg-[#126987] px-4 py-3 flex items-center justify-between" style={{ flexShrink: 0 }}>
