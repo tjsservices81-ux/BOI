@@ -21,7 +21,6 @@ import { validateUKSortCode, formatSortCode, validateUKAccountNumber } from "../
 import { getAccounts, processTransfer, processSecureTransfer, checkTransferConfirmation, processConfirmedTransfer, generateReference } from "../utils/transferUtils";
 import { UserDataManager } from "../utils/userDataManager";
 import { formatCurrency, getUserCurrency, getCurrencySymbol, type Currency } from "../utils/currencyUtils";
-import { useAppScrollLock } from "../utils/useScrollLock";
 
 // Known sort codes for bank identification
 const knownSortCodes: Record<string, string> = {
@@ -162,9 +161,6 @@ export default function UkTransfer() {
   const [showReference, setShowReference] = useState<boolean>(false);
   const [animationProgress, setAnimationProgress] = useState<number>(0);
   const [processingStage, setProcessingStage] = useState<string>('Initiating security call...');
-  
-  // Lock scroll when on success or confirm screen
-  useAppScrollLock(step === 'success' || step === 'confirm');
   const [formData, setFormData] = useState<UkTransferData | null>(null);
   const [transferId, setTransferId] = useState<string>('');
   const [callSid, setCallSid] = useState<string>('');
@@ -442,8 +438,7 @@ export default function UkTransfer() {
         bottom: 0, 
         display: 'flex', 
         flexDirection: 'column',
-        backgroundColor: '#f9fafb',
-        zIndex: 1000
+        backgroundColor: '#f9fafb'
       }}>
         <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
           <button onClick={() => setStep('form')} className="flex items-center text-white">
