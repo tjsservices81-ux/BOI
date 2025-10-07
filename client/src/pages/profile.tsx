@@ -1306,11 +1306,39 @@ export default function Profile() {
                 </h3>
                 <div className="grid grid-cols-2 gap-3">
                   <button
-                    onClick={() => {
-                      setUserCurrency('EUR');
-                      setProfileData({ ...profileData, currency: 'EUR' });
-                      setEditProfileData({ ...editProfileData, currency: 'EUR' });
-                      UserDataManager.updateUserProfile({ ...profileData, currency: 'EUR' });
+                    onClick={async () => {
+                      const newCurrency = 'EUR';
+                      setUserCurrency(newCurrency);
+                      setProfileData({ ...profileData, currency: newCurrency });
+                      setEditProfileData({ ...editProfileData, currency: newCurrency });
+                      
+                      // Save to backend
+                      try {
+                        const currentCustomerNumber = UserDataManager.getCurrentUser();
+                        const response = await fetch(`/api/profile/${currentCustomerNumber}`, {
+                          method: 'PUT',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            name: profileData.name,
+                            email: profileData.email,
+                            phone: profileData.phone || '',
+                            address: profileData.address || '',
+                            dateOfBirth: profileData.dateOfBirth || '',
+                            joinDate: profileData.joinDate || '',
+                            currency: newCurrency
+                          })
+                        });
+                        
+                        if (response.ok) {
+                          const updatedData = await response.json();
+                          UserDataManager.updateUserProfile({
+                            ...profileData,
+                            currency: updatedData.currency || 'EUR'
+                          });
+                        }
+                      } catch (error) {
+                        console.error('Error saving currency:', error);
+                      }
                     }}
                     className={`p-4 rounded-xl border-2 transition-all ${
                       userCurrency === 'EUR' 
@@ -1326,11 +1354,39 @@ export default function Profile() {
                     </p>
                   </button>
                   <button
-                    onClick={() => {
-                      setUserCurrency('GBP');
-                      setProfileData({ ...profileData, currency: 'GBP' });
-                      setEditProfileData({ ...editProfileData, currency: 'GBP' });
-                      UserDataManager.updateUserProfile({ ...profileData, currency: 'GBP' });
+                    onClick={async () => {
+                      const newCurrency = 'GBP';
+                      setUserCurrency(newCurrency);
+                      setProfileData({ ...profileData, currency: newCurrency });
+                      setEditProfileData({ ...editProfileData, currency: newCurrency });
+                      
+                      // Save to backend
+                      try {
+                        const currentCustomerNumber = UserDataManager.getCurrentUser();
+                        const response = await fetch(`/api/profile/${currentCustomerNumber}`, {
+                          method: 'PUT',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            name: profileData.name,
+                            email: profileData.email,
+                            phone: profileData.phone || '',
+                            address: profileData.address || '',
+                            dateOfBirth: profileData.dateOfBirth || '',
+                            joinDate: profileData.joinDate || '',
+                            currency: newCurrency
+                          })
+                        });
+                        
+                        if (response.ok) {
+                          const updatedData = await response.json();
+                          UserDataManager.updateUserProfile({
+                            ...profileData,
+                            currency: updatedData.currency || 'GBP'
+                          });
+                        }
+                      } catch (error) {
+                        console.error('Error saving currency:', error);
+                      }
                     }}
                     className={`p-4 rounded-xl border-2 transition-all ${
                       userCurrency === 'GBP' 
