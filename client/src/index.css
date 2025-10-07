@@ -303,8 +303,9 @@ input, textarea, [contenteditable="true"] {
 
 /* Prevent overscroll and bounce effects selectively */
 html, body {
-  overscroll-behavior-x: none;
-  overscroll-behavior-y: contain;
+  overscroll-behavior: none !important;
+  overflow: hidden !important;
+  position: fixed !important;
   -webkit-overflow-scrolling: touch;
   width: 100%;
   height: 100%;
@@ -313,6 +314,7 @@ html, body {
   -moz-text-size-adjust: 100%;
   -ms-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  touch-action: none;
 }
 
 #root {
@@ -642,7 +644,12 @@ html {
 
 body {
   -webkit-overflow-scrolling: touch;
-  overscroll-behavior: none;
+  overscroll-behavior: none !important;
+  overflow: hidden !important;
+  position: fixed !important;
+  width: 100% !important;
+  height: 100% !important;
+  touch-action: none !important;
 }
 
 /* Prevent layout shifts during interactions */
@@ -2304,12 +2311,15 @@ input, textarea, select {
 
 body {
   -webkit-overflow-scrolling: touch;
-  overscroll-behavior: none;
+  overscroll-behavior: none !important;
+  overflow: hidden !important;
+  position: fixed !important;
   width: 100%;
   height: 100vh;
   height: 100dvh;
   margin: 0;
   padding: 0;
+  touch-action: none !important;
 }
 
 #root {
