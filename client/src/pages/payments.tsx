@@ -408,8 +408,8 @@ export default function Payments() {
 
       {/* Recent Payees Modal */}
       {showRecentPayees && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md max-h-[80vh] overflow-hidden">
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end">
+          <div className="bg-white rounded-t-2xl w-full max-h-[80vh] overflow-hidden pb-safe">
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <h3 className="font-bold text-gray-900 text-lg" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                 Recent Payees
@@ -480,8 +480,8 @@ export default function Payments() {
 
       {/* Add Payee Modal */}
       {showAddPayee && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end">
+          <div className="bg-white rounded-t-2xl p-6 w-full max-h-[90vh] overflow-y-auto pb-safe">
             <div className="flex items-center justify-between mb-6">
               <h3 className="font-bold text-gray-900 text-xl" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                 Add Payee
