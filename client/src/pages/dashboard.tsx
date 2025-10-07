@@ -1,4 +1,4 @@
-import { ChevronRight, User } from "lucide-react";
+import { ChevronRight, User, Loader2 } from "lucide-react";
 import { useLocation } from "wouter";
 import { useState, useEffect, useRef } from "react";
 import SpendingVisualization from "../components/SpendingVisualization";
@@ -23,6 +23,12 @@ export default function Dashboard() {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [isNavigating, setIsNavigating] = useState(false);
   const [userCurrency, setUserCurrency] = useState<Currency>('EUR');
+  
+  // Touch-safe interaction state
+  const [loadingAccountId, setLoadingAccountId] = useState<number | null>(null);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+  const lastTapTimeRef = useRef<number>(0);
+  const touchStartRef = useRef<{ x: number; y: number; accountId: number } | null>(null);
 
   // Enhanced navigation with smooth animations
   const navigateWithAnimation = (path: string, animationType: 'slide-right' | 'slide-left' | 'slide-up' = 'slide-right') => {
@@ -93,6 +99,16 @@ export default function Dashboard() {
     
     // Load user's currency preference
     setUserCurrency(getUserCurrency());
+    
+    // Detect touch device
+    const checkTouchDevice = () => {
+      setIsTouchDevice(
+        'ontouchstart' in window || 
+        navigator.maxTouchPoints > 0 || 
+        (navigator as any).msMaxTouchPoints > 0
+      );
+    };
+    checkTouchDevice();
   }, []);
 
   // Listen for balance updates from transfers and admin profile updates
@@ -254,6 +270,68 @@ export default function Dashboard() {
     }
   };
 
+  // Touch-safe navigation with tap guard and loading state
+  const handleAccountTap = (accountId: number) => {
+    const now = Date.now();
+    const TAP_GUARD_MS = 400;
+    
+    // Ignore rapid repeat taps
+    if (now - lastTapTimeRef.current < TAP_GUARD_MS) {
+      return;
+    }
+    
+    // Ignore if already loading or navigating
+    if (loadingAccountId !== null || isNavigating) {
+      return;
+    }
+    
+    // Update state atomically
+    lastTapTimeRef.current = now;
+    setLoadingAccountId(accountId);
+    
+    // Navigate after showing loading state
+    setTimeout(() => {
+      navigateWithAnimation(`/transactions/${accountId}`, 'slide-right');
+      // Reset loading state after navigation
+      setTimeout(() => setLoadingAccountId(null), 300);
+    }, 50);
+  };
+
+  // Touch event handlers for drag detection
+  const handleTouchStart = (e: React.TouchEvent, accountId: number) => {
+    if (isTouchDevice) {
+      const touch = e.touches[0];
+      touchStartRef.current = {
+        x: touch.clientX,
+        y: touch.clientY,
+        accountId
+      };
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent, accountId: number) => {
+    if (!isTouchDevice || !touchStartRef.current) return;
+    
+    const touch = e.changedTouches[0];
+    const deltaX = Math.abs(touch.clientX - touchStartRef.current.x);
+    const deltaY = Math.abs(touch.clientY - touchStartRef.current.y);
+    const DRAG_THRESHOLD = 10; // pixels
+    
+    // Only trigger tap if movement is below threshold
+    if (deltaX < DRAG_THRESHOLD && deltaY < DRAG_THRESHOLD && touchStartRef.current.accountId === accountId) {
+      handleAccountTap(accountId);
+    }
+    
+    touchStartRef.current = null;
+  };
+
+  const handleTouchMove = () => {
+    // Clear touch start on scroll/drag to prevent accidental taps
+    if (touchStartRef.current) {
+      touchStartRef.current = null;
+    }
+  };
+
   return (
     <div className={`page-container h-screen bg-white overflow-hidden flex flex-col ios-safe-bottom relative page-fade-slide-in ${isNavigating ? 'dashboard-exit' : ''}`}>
       {/* Ambient spending visualization background */}
@@ -305,32 +383,54 @@ export default function Dashboard() {
       >
         <div className="bg-white rounded-t-3xl h-full">
           <div className="pt-6" style={{ overscrollBehavior: 'contain' }}>
-            {(accounts && Array.isArray(accounts)) && accounts.map((account, index) => (
-              <button 
-                key={account.id}
-                className={`w-full flex items-center justify-between border-b border-gray-100 hover:bg-gray-50 touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-98 haptic-feedback relative stagger-item card-interactive android-no-highlight ${isNavigating ? 'opacity-50 pointer-events-none' : ''}`}
-                onClick={() => navigateWithAnimation(`/transactions/${account.id}`, 'slide-right')}
-                style={{ 
-                  animationDelay: `${index * 0.1}s`,
-                  WebkitTapHighlightColor: 'transparent',
-                  outline: 'none'
-                }}
-              >
-                {/* Colored side bar */}
-                <div className={`absolute left-0 top-0 bottom-0 w-1 ${getAccountColor(account.accountType)}`}></div>
-                
-                <div className="flex items-center justify-between w-full px-6 py-4">
-                  <div className="text-left">
-                    <p className="font-medium text-sm text-gray-800 boi-regular-font">{account.displayName.toUpperCase()}</p>
-                    <p className="text-xs text-gray-500 mt-0.5 boi-regular-font">{account.accountNumber}</p>
+            {(accounts && Array.isArray(accounts)) && accounts.map((account, index) => {
+              const isLoading = loadingAccountId === account.id;
+              const isDisabled = loadingAccountId !== null || isNavigating;
+              
+              return (
+                <button 
+                  key={account.id}
+                  className={`w-full flex items-center justify-between border-b border-gray-100 touch-manipulation relative stagger-item android-no-highlight ${
+                    isTouchDevice 
+                      ? '' // No hover/pressed on touch devices
+                      : 'hover:bg-gray-50 transition-all duration-150 ease-out active:scale-98 card-interactive' // Desktop interactions
+                  } ${
+                    isDisabled ? 'opacity-50 pointer-events-none' : ''
+                  }`}
+                  onClick={isTouchDevice ? undefined : () => handleAccountTap(account.id)}
+                  onTouchStart={isTouchDevice ? (e) => handleTouchStart(e, account.id) : undefined}
+                  onTouchEnd={isTouchDevice ? (e) => handleTouchEnd(e, account.id) : undefined}
+                  onTouchMove={isTouchDevice ? handleTouchMove : undefined}
+                  disabled={isDisabled}
+                  style={{ 
+                    animationDelay: `${index * 0.1}s`,
+                    WebkitTapHighlightColor: 'transparent',
+                    outline: 'none'
+                  }}
+                  data-testid={`account-button-${account.id}`}
+                >
+                  {/* Colored side bar */}
+                  <div className={`absolute left-0 top-0 bottom-0 w-1 ${getAccountColor(account.accountType)}`}></div>
+                  
+                  <div className="flex items-center justify-between w-full px-6 py-4">
+                    <div className="text-left">
+                      <p className="font-medium text-sm text-gray-800 boi-regular-font">{account.displayName.toUpperCase()}</p>
+                      <p className="text-xs text-gray-500 mt-0.5 boi-regular-font">{account.accountNumber}</p>
+                    </div>
+                    <div className="flex items-center">
+                      {isLoading ? (
+                        <Loader2 className="h-5 w-5 text-[#126987] animate-spin mr-3" data-testid={`loader-${account.id}`} />
+                      ) : (
+                        <>
+                          <p className="text-lg font-semibold text-[#126987] boi-semibold-font">{formatCurrency(account.balance, userCurrency)}</p>
+                          <ChevronRight className="h-4 w-4 ml-3 text-gray-400" />
+                        </>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center">
-                    <p className="text-lg font-semibold text-[#126987] boi-semibold-font">{formatCurrency(account.balance, userCurrency)}</p>
-                    <ChevronRight className="h-4 w-4 ml-3 text-gray-400" />
-                  </div>
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
