@@ -1,10 +1,18 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useRoute } from "wouter";
-import { ChevronLeft, ArrowUpRight, CreditCard, Building2, Zap, Check, Clock, MapPin, Globe, X } from "lucide-react";
+import { ChevronLeft, ArrowUpRight, CreditCard, Building2, Zap, Check, Clock, MapPin, Globe, X, FileText } from "lucide-react";
 import MiniSpendingChart from "../components/MiniSpendingChart";
 import { UserDataManager } from "../utils/userDataManager.ts";
 import { StateManager } from "../utils/stateManager";
 import { formatCurrency, getUserCurrency, getCurrencySymbol, type Currency } from "../utils/currencyUtils";
+
+interface Account {
+  id: number;
+  displayName: string;
+  accountNumber: string;
+  balance: string;
+  accountType: string;
+}
 
 export default function TransactionHistoryWorking() {
   const locationHook = useLocation();
@@ -27,6 +35,15 @@ export default function TransactionHistoryWorking() {
     amount: '',
     datetime: ''
   });
+  
+  // Statement Generation state
+  const [showStatementModal, setShowStatementModal] = useState(false);
+  const [statementDateRange, setStatementDateRange] = useState({
+    from: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0],
+    to: new Date().toISOString().split('T')[0]
+  });
+  const [isGeneratingStatement, setIsGeneratingStatement] = useState(false);
+  const [statementError, setStatementError] = useState<string>('');
   
   const accountId = params?.accountId ? parseInt(params.accountId) : 1;
 
@@ -101,7 +118,7 @@ export default function TransactionHistoryWorking() {
     
     // Update account balance in accounts list
     const accounts = UserDataManager.getUserAccounts();
-    const updatedAccounts = accounts.map(acc => 
+    const updatedAccounts = accounts.map((acc: Account) => 
       acc.id === accountId ? { ...acc, balance: newBalanceString } : acc
     );
     UserDataManager.setUserData('bankAccounts', updatedAccounts);
@@ -116,6 +133,77 @@ export default function TransactionHistoryWorking() {
     
     const currencySymbol = getCurrencySymbol(userCurrency);
     alert(`Payment of ${currencySymbol} ${amount.toFixed(2)} to ${payBillsForm.payee} has been processed successfully.`);
+  };
+
+  const handleGenerateStatement = async () => {
+    // Validate date range
+    const fromDate = new Date(statementDateRange.from);
+    const toDate = new Date(statementDateRange.to);
+    
+    if (fromDate > toDate) {
+      setStatementError('From date must be before or equal to To date');
+      return;
+    }
+    
+    setIsGeneratingStatement(true);
+    setStatementError('');
+    
+    try {
+      // Get user data
+      const userData = UserDataManager.getUserProfile();
+      const allTransactions = UserDataManager.getUserData('bankTransactions', []);
+      const allAccounts = UserDataManager.getUserAccounts();
+      
+      // Prepare request payload
+      const requestPayload = {
+        accountId: String(accountId),
+        startDate: statementDateRange.from,
+        endDate: statementDateRange.to,
+        dateRange: `${fromDate.toLocaleDateString('en-IE')} to ${toDate.toLocaleDateString('en-IE')}`,
+        customerName: userData?.name || '',
+        userAddress: userData?.address || '',
+        userCurrency: userCurrency,
+        userTransactions: allTransactions,
+        userAccounts: allAccounts
+      };
+      
+      // Call the backend API
+      const response = await fetch('/api/generate-statement', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestPayload),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to generate statement');
+      }
+      
+      // Download the PDF
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `statement_${accountInfo?.displayName?.replace(/\s+/g, '_')}_${statementDateRange.from}_to_${statementDateRange.to}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      // Close modal on success
+      setShowStatementModal(false);
+      setStatementError('');
+      
+      // Show success message
+      alert(`Statement generated successfully for ${accountInfo?.displayName || 'account'}`);
+      
+    } catch (error) {
+      console.error('Error generating statement:', error);
+      setStatementError('Failed to generate statement. Please try again.');
+    } finally {
+      setIsGeneratingStatement(false);
+    }
   };
 
   const handleDeleteTransaction = () => {
@@ -306,6 +394,14 @@ export default function TransactionHistoryWorking() {
             <span className="font-semibold text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
               {accountInfo?.displayName || 'Account'}
             </span>
+          </button>
+          <button
+            onClick={() => setShowStatementModal(true)}
+            className="p-2 hover:bg-white/10 rounded-full transition-colors"
+            aria-label="Generate statement"
+            data-testid="button-generate-statement"
+          >
+            <FileText className="w-5 h-5 text-white" />
           </button>
         </div>
         <div className="flex justify-between items-center">
@@ -740,6 +836,123 @@ export default function TransactionHistoryWorking() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Generate Statement Modal */}
+      {showStatementModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+             style={{ zIndex: 9999 }}>
+          <div className="bg-white rounded-lg w-full max-w-md">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Generate Statement
+              </h2>
+              <button
+                onClick={() => {
+                  setShowStatementModal(false);
+                  setStatementError('');
+                }}
+                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                data-testid="button-close-statement-modal"
+              >
+                <X className="h-5 w-5 text-gray-500" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 space-y-4">
+              {/* Account Info - Read Only */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <p className="text-sm text-gray-600 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>Account</p>
+                <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  {accountInfo?.displayName || 'Current Account'}
+                </p>
+                <p className="text-sm text-gray-600 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  {accountInfo?.accountNumber || '****0000'} • Sort Code: 90-78-68
+                </p>
+              </div>
+
+              {/* Date Range Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  From Date
+                </label>
+                <input
+                  type="date"
+                  value={statementDateRange.from}
+                  onChange={(e) => {
+                    setStatementDateRange(prev => ({ ...prev, from: e.target.value }));
+                    setStatementError('');
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  data-testid="input-statement-from-date"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  To Date
+                </label>
+                <input
+                  type="date"
+                  value={statementDateRange.to}
+                  onChange={(e) => {
+                    setStatementDateRange(prev => ({ ...prev, to: e.target.value }));
+                    setStatementError('');
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  data-testid="input-statement-to-date"
+                />
+              </div>
+
+              {/* Error Message */}
+              {statementError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                  <p className="text-sm text-red-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {statementError}
+                  </p>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex space-x-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowStatementModal(false);
+                    setStatementError('');
+                  }}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  disabled={isGeneratingStatement}
+                  data-testid="button-cancel-statement"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleGenerateStatement}
+                  className="flex-1 px-4 py-2 bg-[#126987] text-white rounded-lg font-medium hover:bg-[#3a5963] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  disabled={isGeneratingStatement}
+                  data-testid="button-generate-statement"
+                >
+                  {isGeneratingStatement ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Generating...
+                    </>
+                  ) : (
+                    'Generate'
+                  )}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

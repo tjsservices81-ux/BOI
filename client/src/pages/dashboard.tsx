@@ -70,6 +70,7 @@ export default function Dashboard() {
       if (!UserDataManager.userExists(currentUser)) {
         UserDataManager.registerUser({
           customerNumber: currentUser,
+          pin: '0000',
           name: '',
           email: '',
           phone: '',

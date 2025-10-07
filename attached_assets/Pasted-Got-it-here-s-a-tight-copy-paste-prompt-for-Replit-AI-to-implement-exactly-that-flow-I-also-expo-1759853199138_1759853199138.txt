@@ -1,0 +1,58 @@
+Got it — here’s a tight, copy-paste prompt for Replit AI to implement exactly that flow. I also exported your icon to a handy PNG you can drop into the app: Download the icon
+
+Replit AI Prompt (copy-paste)
+
+Build/modify the app so users can generate a Bank Statement directly from Transaction History for the currently viewed account.
+
+Scope
+	•	Keep the existing global “Generate Statement” screen as-is.
+	•	Add a second generate-statement entry point inside Transaction History that:
+	•	Auto-uses the currently selected account (no account switcher here).
+	•	Lets the user pick a From and To date (date-range picker).
+	•	Has a single Generate button that produces the statement using the same pipeline as the global generator.
+	•	Does not navigate to the global statement screen or duplicate its header; this is an in-context panel/modal/route dedicated to the current account.
+	•	Use this icon for the entry point (e.g., small toolbar button in the Transaction History header): assets/statement-generate-icon.png (add it to assets and reference it).
+
+Functional requirements
+	1.	From Transaction History:
+	•	Tap the new Statement icon → open “Generate Statement (This Account)” UI.
+	•	UI shows: Account name/last-4 IBAN/sortcode (read-only), From date, To date, Generate button.
+	•	Default dates: From = first day of current month, To = today.
+	•	Validate: From ≤ To; show a friendly inline error otherwise.
+	2.	On Generate:
+	•	Reuse the existing statement generation service/utilities (same formatting, filters, and export options).
+	•	Filter transactions by the picked date range and this exact account id.
+	•	Produce the same outputs as the global flow (PDF and any existing share/save actions).
+	3.	Navigation rules:
+	•	This in-history flow must not jump to the global statement screen.
+	•	After generating, show success + quick actions (Open/Share/Save), then close back to Transaction History.
+	4.	Accessibility/UX:
+	•	The statement icon has accessible label “Generate statement”.
+	•	Respect light/dark mode and existing typography.
+	•	Disable the Generate button while processing; show a small inline spinner/state.
+
+Data/logic (reuse, don’t duplicate)
+	•	Use the same statement formatter, transaction query/filter, and PDF builder used by the existing global generator.
+	•	Inject the accountId from the current Transaction History context; do not ask the user to pick an account here.
+	•	Date range is the only variable from this UI.
+
+Placement & styling
+	•	Put the icon button in the Transaction History header/right-side action area (or top toolbar for that view).
+	•	New route/modal id (names are examples—use your project’s conventions):
+	•	Route: transactions/:accountId/statement or Modal: StatementGenerateModal.
+	•	Use the app’s existing button/input components.
+
+Telemetry (if present)
+	•	Log: statement.generate.from_tx_history with { accountId, from, to, result }.
+
+Tests / Acceptance criteria
+	•	From Transaction History for Account A, open the panel, pick a range, generate → PDF only contains Account A’s transactions within range.
+	•	Switching to Account B and repeating generates for B without offering an account switcher.
+	•	Invalid ranges (From > To) show inline error and block generate.
+	•	Global “Generate Statement” still works unchanged.
+	•	Icon is visible, tappable, and reads “Generate statement” to screen readers.
+
+Assets
+	•	Add the icon to your assets as assets/statement-generate-icon.png. (Use the provided PNG.)
+
+That’s it—paste that into Replit AI and let it apply changes. If you want, I can also give you a super-short “commit message” line for the PR. ￼
