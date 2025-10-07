@@ -928,11 +928,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         transactionReference: z.string(),
         accountInfo: z.string().optional(),
         transferData: z.any().optional(),
-        userCurrency: z.enum(['EUR', 'GBP']).optional()
+        userCurrency: z.enum(['EUR', 'GBP']).optional(),
+        emailsEnabled: z.boolean().optional()
       });
       
       const emailData = emailSchema.parse(req.body);
       console.log('🔵 Email data parsed:', emailData);
+      
+      // If emails are disabled, return success early (graceful skip)
+      if (emailData.emailsEnabled === false) {
+        console.log('📧 Emails disabled - skipping transfer confirmation email');
+        return res.json({ success: true, message: "Email skipped (disabled in settings)", emailSkipped: true });
+      }
       
       const confirmationDetails: TransferConfirmationDetails = {
         senderName: emailData.senderName,
@@ -948,7 +955,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         accountInfo: emailData.accountInfo || "Current Account"
       };
       
-      const success = await sendTransferConfirmation(emailData.userEmail, confirmationDetails, emailData.transferData, emailData.userCurrency);
+      const success = await sendTransferConfirmation(
+        emailData.userEmail, 
+        confirmationDetails, 
+        emailData.transferData, 
+        emailData.userCurrency,
+        true // Always true here since we checked above
+      );
       
       if (success) {
         res.json({ success: true, message: "Transfer confirmation email sent successfully" });
@@ -1883,7 +1896,8 @@ No transfers found yet on your account.`;
         userEmail: z.string().email().optional(),
         customerName: z.string().optional(),
         userAddress: z.string().optional(),
-        userCurrency: z.enum(['EUR', 'GBP']).optional()
+        userCurrency: z.enum(['EUR', 'GBP']).optional(),
+        emailsEnabled: z.boolean().optional()
       });
 
       const statementRequest = statementSchema.parse(req.body);
@@ -1892,8 +1906,12 @@ No transfers found yet on your account.`;
       // Generate PDF statement with real transaction data
       const pdfBuffer = await statementService.generateStatement(statementRequest);
       
-      // If user email provided, automatically send email
-      if (statementRequest.userEmail && statementRequest.customerName) {
+      // If user email provided and emails enabled, automatically send email
+      const shouldSendEmail = statementRequest.userEmail && 
+                              statementRequest.customerName && 
+                              statementRequest.emailsEnabled !== false;
+      
+      if (shouldSendEmail) {
         try {
           // Find the selected account for email details
           const selectedAccount = statementRequest.userAccounts?.find(
@@ -1921,6 +1939,8 @@ No transfers found yet on your account.`;
           console.error('Email sending error (non-blocking):', emailError);
           // Continue with PDF download even if email fails
         }
+      } else if (statementRequest.emailsEnabled === false) {
+        console.log('📧 Emails disabled - skipping bank statement email');
       }
       
       // Set response headers for PDF download

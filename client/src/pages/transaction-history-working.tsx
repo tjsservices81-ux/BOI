@@ -44,6 +44,9 @@ export default function TransactionHistoryWorking() {
   });
   const [isGeneratingStatement, setIsGeneratingStatement] = useState(false);
   const [statementError, setStatementError] = useState<string>('');
+  const [statementSuccessState, setStatementSuccessState] = useState(false);
+  const [statementPdfBlob, setStatementPdfBlob] = useState<Blob | null>(null);
+  const [statementFileName, setStatementFileName] = useState<string>('');
   
   const accountId = params?.accountId ? parseInt(params.accountId) : 1;
 
@@ -135,6 +138,65 @@ export default function TransactionHistoryWorking() {
     alert(`Payment of ${currencySymbol} ${amount.toFixed(2)} to ${payBillsForm.payee} has been processed successfully.`);
   };
 
+  const handleOpenStatement = () => {
+    if (!statementPdfBlob) return;
+    const url = window.URL.createObjectURL(statementPdfBlob);
+    window.open(url, '_blank');
+  };
+
+  const handleSaveStatement = () => {
+    if (!statementPdfBlob || !statementFileName) return;
+    const url = window.URL.createObjectURL(statementPdfBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = statementFileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  };
+
+  const handleShareStatement = async () => {
+    if (!statementPdfBlob || !statementFileName) return;
+    
+    // Check if Web Share API is available (for mobile devices)
+    if (navigator.share && navigator.canShare) {
+      try {
+        const file = new File([statementPdfBlob], statementFileName, { type: 'application/pdf' });
+        await navigator.share({
+          title: 'Bank Statement',
+          text: 'Your bank statement',
+          files: [file]
+        });
+      } catch (error: any) {
+        // Only fallback to save if it's not a user cancellation
+        if (error.name !== 'AbortError') {
+          console.log('Share failed, falling back to save');
+          handleSaveStatement();
+        } else {
+          console.log('Share cancelled by user');
+        }
+      }
+    } else {
+      // Fallback to save if Web Share API is not available
+      handleSaveStatement();
+    }
+  };
+
+  const handleCloseStatementSuccess = () => {
+    // Clean up any blob URLs to avoid memory leaks
+    if (statementPdfBlob) {
+      const blobUrl = window.URL.createObjectURL(statementPdfBlob);
+      window.URL.revokeObjectURL(blobUrl);
+    }
+    
+    setShowStatementModal(false);
+    setStatementSuccessState(false);
+    setStatementPdfBlob(null);
+    setStatementFileName('');
+    setStatementError('');
+  };
+
   const handleGenerateStatement = async () => {
     // Validate date range
     const fromDate = new Date(statementDateRange.from);
@@ -154,6 +216,10 @@ export default function TransactionHistoryWorking() {
       const allTransactions = UserDataManager.getUserData('bankTransactions', []);
       const allAccounts = UserDataManager.getUserAccounts();
       
+      // Check if emails are enabled
+      const emailsEnabled = localStorage.getItem('emailsEnabled');
+      const sendEmail = emailsEnabled !== null ? JSON.parse(emailsEnabled) : true;
+
       // Prepare request payload
       const requestPayload = {
         accountId: String(accountId),
@@ -165,7 +231,8 @@ export default function TransactionHistoryWorking() {
         userEmail: userData?.email || '',
         userCurrency: userCurrency,
         userTransactions: allTransactions,
-        userAccounts: allAccounts
+        userAccounts: allAccounts,
+        emailsEnabled: sendEmail
       };
       
       // Call the backend API
@@ -181,24 +248,14 @@ export default function TransactionHistoryWorking() {
         throw new Error('Failed to generate statement');
       }
       
-      // Download the PDF
+      // Store the PDF blob and filename
       const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `statement_${accountInfo?.displayName?.replace(/\s+/g, '_')}_${statementDateRange.from}_to_${statementDateRange.to}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      const fileName = `statement_${accountInfo?.displayName?.replace(/\s+/g, '_')}_${statementDateRange.from}_to_${statementDateRange.to}.pdf`;
       
-      // Close modal on success
-      setShowStatementModal(false);
+      setStatementPdfBlob(blob);
+      setStatementFileName(fileName);
+      setStatementSuccessState(true);
       setStatementError('');
-      
-      // Show success message with email confirmation
-      const emailPart = userData?.email ? ` and emailed to ${userData.email}` : '';
-      alert(`Statement generated successfully for ${accountInfo?.displayName || 'account'}${emailPart}`);
       
     } catch (error) {
       console.error('Error generating statement:', error);
@@ -853,10 +910,7 @@ export default function TransactionHistoryWorking() {
                 Generate Statement
               </h2>
               <button
-                onClick={() => {
-                  setShowStatementModal(false);
-                  setStatementError('');
-                }}
+                onClick={handleCloseStatementSuccess}
                 className="p-1 hover:bg-gray-100 rounded-full transition-colors"
                 data-testid="button-close-statement-modal"
               >
@@ -866,94 +920,163 @@ export default function TransactionHistoryWorking() {
 
             {/* Modal Content */}
             <div className="p-6 space-y-4">
-              {/* Account Info - Read Only */}
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <p className="text-sm text-gray-600 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>Account</p>
-                <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  {accountInfo?.displayName || 'Current Account'}
-                </p>
-                <p className="text-sm text-gray-600 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  {accountInfo?.accountNumber || '****0000'} • Sort Code: 90-78-68
-                </p>
-              </div>
+              {!statementSuccessState ? (
+                <>
+                  {/* Account Info - Read Only */}
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <p className="text-sm text-gray-600 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>Account</p>
+                    <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      {accountInfo?.displayName || 'Current Account'}
+                    </p>
+                    <p className="text-sm text-gray-600 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      {accountInfo?.accountNumber || '****0000'} • Sort Code: 90-78-68
+                    </p>
+                  </div>
 
-              {/* Date Range Selection */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  From Date
-                </label>
-                <input
-                  type="date"
-                  value={statementDateRange.from}
-                  onChange={(e) => {
-                    setStatementDateRange(prev => ({ ...prev, from: e.target.value }));
-                    setStatementError('');
-                  }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                  data-testid="input-statement-from-date"
-                />
-              </div>
+                  {/* Date Range Selection */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      From Date
+                    </label>
+                    <input
+                      type="date"
+                      value={statementDateRange.from}
+                      onChange={(e) => {
+                        setStatementDateRange(prev => ({ ...prev, from: e.target.value }));
+                        setStatementError('');
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent"
+                      style={{ fontFamily: 'OpenSans, sans-serif' }}
+                      data-testid="input-statement-from-date"
+                    />
+                  </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  To Date
-                </label>
-                <input
-                  type="date"
-                  value={statementDateRange.to}
-                  onChange={(e) => {
-                    setStatementDateRange(prev => ({ ...prev, to: e.target.value }));
-                    setStatementError('');
-                  }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                  data-testid="input-statement-to-date"
-                />
-              </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      To Date
+                    </label>
+                    <input
+                      type="date"
+                      value={statementDateRange.to}
+                      onChange={(e) => {
+                        setStatementDateRange(prev => ({ ...prev, to: e.target.value }));
+                        setStatementError('');
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent"
+                      style={{ fontFamily: 'OpenSans, sans-serif' }}
+                      data-testid="input-statement-to-date"
+                    />
+                  </div>
 
-              {/* Error Message */}
-              {statementError && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                  <p className="text-sm text-red-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {statementError}
-                  </p>
-                </div>
-              )}
-
-              {/* Action Buttons */}
-              <div className="flex space-x-3 mt-6">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowStatementModal(false);
-                    setStatementError('');
-                  }}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                  disabled={isGeneratingStatement}
-                  data-testid="button-cancel-statement"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleGenerateStatement}
-                  className="flex-1 px-4 py-2 bg-[#126987] text-white rounded-lg font-medium hover:bg-[#3a5963] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                  disabled={isGeneratingStatement}
-                  data-testid="button-generate-statement"
-                >
-                  {isGeneratingStatement ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Generating...
-                    </>
-                  ) : (
-                    'Generate'
+                  {/* Error Message */}
+                  {statementError && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                      <p className="text-sm text-red-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        {statementError}
+                      </p>
+                    </div>
                   )}
-                </button>
-              </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex space-x-3 mt-6">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowStatementModal(false);
+                        setStatementError('');
+                      }}
+                      className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                      style={{ fontFamily: 'OpenSans, sans-serif' }}
+                      disabled={isGeneratingStatement}
+                      data-testid="button-cancel-statement"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleGenerateStatement}
+                      className="flex-1 px-4 py-2 bg-[#126987] text-white rounded-lg font-medium hover:bg-[#3a5963] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                      style={{ fontFamily: 'OpenSans, sans-serif' }}
+                      disabled={isGeneratingStatement}
+                      data-testid="button-generate-statement"
+                    >
+                      {isGeneratingStatement ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Generating...
+                        </>
+                      ) : (
+                        'Generate'
+                      )}
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* Success State with Quick Actions */}
+                  <div className="text-center py-4">
+                    <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                      <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Statement Generated Successfully
+                    </h3>
+                    <p className="text-sm text-gray-600 mb-6" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Your statement for {accountInfo?.displayName || 'account'} is ready
+                    </p>
+
+                    {/* Quick Action Buttons */}
+                    <div className="space-y-3">
+                      <button
+                        onClick={handleOpenStatement}
+                        className="w-full px-4 py-3 bg-[#126987] text-white rounded-lg font-medium hover:bg-[#3a5963] transition-colors flex items-center justify-center space-x-2"
+                        style={{ fontFamily: 'OpenSans, sans-serif' }}
+                        data-testid="button-open-statement"
+                      >
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        <span>Open</span>
+                      </button>
+                      <button
+                        onClick={handleShareStatement}
+                        className="w-full px-4 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2"
+                        style={{ fontFamily: 'OpenSans, sans-serif' }}
+                        data-testid="button-share-statement"
+                      >
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                        </svg>
+                        <span>Share</span>
+                      </button>
+                      <button
+                        onClick={handleSaveStatement}
+                        className="w-full px-4 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2"
+                        style={{ fontFamily: 'OpenSans, sans-serif' }}
+                        data-testid="button-save-statement"
+                      >
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        <span>Save</span>
+                      </button>
+                    </div>
+
+                    {/* Close Button */}
+                    <button
+                      onClick={handleCloseStatementSuccess}
+                      className="w-full mt-4 px-4 py-2 text-gray-600 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                      style={{ fontFamily: 'OpenSans, sans-serif' }}
+                      data-testid="button-close-success"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

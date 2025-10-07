@@ -270,6 +270,10 @@ Date: ${timestamp}
 
 Thank you for using our service.`;
 
+      // Check if emails are enabled
+      const emailsEnabled = localStorage.getItem('emailsEnabled');
+      const sendEmail = emailsEnabled !== null ? JSON.parse(emailsEnabled) : true;
+
       const emailRequest = {
         userEmail: userProfile.email,
         senderName: userProfile.name,
@@ -279,12 +283,14 @@ Thank you for using our service.`;
         transactionReference: transactionReference,
         accountInfo: `${selectedAccount.displayName} (${selectedAccount.accountNumber})`,
         transferData: newTransaction,
-        userCurrency: userCurrency
+        userCurrency: userCurrency,
+        emailsEnabled: sendEmail
       };
 
-      // Send email confirmation after successful transfer
+      // Send email confirmation after successful transfer (if enabled)
       console.log('🔵 Making email API request to:', '/api/send-transfer-email');
       console.log('🔵 Email request payload:', emailRequest);
+      console.log('📧 Emails enabled:', sendEmail);
       
       fetch('/api/send-transfer-email', {
         method: 'POST',
@@ -314,8 +320,15 @@ Thank you for using our service.`;
     console.error('❌ Error sending transfer confirmation email:', emailError);
   }
   
-  // Send push notification for completed transfer (5-second delay)
-  sendTransferNotification(recipientName, amount.toFixed(2));
+  // Send push notification for completed transfer (5-second delay) - only if enabled
+  const notificationsEnabled = localStorage.getItem('notificationsEnabled');
+  const sendNotification = notificationsEnabled !== null ? JSON.parse(notificationsEnabled) : true;
+  
+  if (sendNotification) {
+    sendTransferNotification(recipientName, amount.toFixed(2));
+  } else {
+    console.log('🔕 Notifications disabled - skipping transfer notification');
+  }
   
   return true;
 };

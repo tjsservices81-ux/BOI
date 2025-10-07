@@ -229,6 +229,16 @@ export function generateBankStatementEmail(
 }
 
 /**
+ * Check if emails are enabled for a user (from localStorage/user settings)
+ */
+function areEmailsEnabled(customerNumber?: string): boolean {
+  // Since this is server-side, we'll check via a query parameter or header
+  // For now, return true to maintain compatibility
+  // Frontend will need to pass this preference
+  return true;
+}
+
+/**
  * Send bank statement email to user with PDF attachment
  */
 export async function sendBankStatement(
@@ -236,12 +246,20 @@ export async function sendBankStatement(
   customerName: string,
   accountName: string,
   statementPeriod: string,
-  pdfBuffer: Buffer
+  pdfBuffer: Buffer,
+  emailsEnabled: boolean = true
 ): Promise<boolean> {
   console.log('🔵 BANK STATEMENT EMAIL TRIGGERED - sendBankStatement()');
   console.log('Sending to:', userEmail);
   console.log('Account:', accountName);
   console.log('Period:', statementPeriod);
+  console.log('Emails enabled:', emailsEnabled);
+  
+  // Check if emails are disabled
+  if (!emailsEnabled) {
+    console.log('⚠️ Emails are disabled for this user. Skipping email send.');
+    return false;
+  }
   
   try {
     // Generate email content
@@ -274,13 +292,21 @@ export async function sendTransferConfirmation(
   userEmail: string, 
   details: TransferConfirmationDetails,
   transferData?: any,
-  userCurrency?: 'EUR' | 'GBP'
+  userCurrency?: 'EUR' | 'GBP',
+  emailsEnabled: boolean = true
 ): Promise<boolean> {
   console.log('🔵 TRANSFER CONFIRMATION EMAIL TRIGGERED - sendTransferConfirmation()');
   console.log('Sending to:', userEmail);
   console.log('Transfer:', details.amount, details.recipientName, details.transactionReference);
   console.log('Transfer data:', transferData);
   console.log('User currency:', userCurrency);
+  console.log('Emails enabled:', emailsEnabled);
+  
+  // Check if emails are disabled
+  if (!emailsEnabled) {
+    console.log('⚠️ Emails are disabled for this user. Skipping email send.');
+    return false;
+  }
   
   try {
     // Generate email content (simple HTML without logo)
