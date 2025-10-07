@@ -279,7 +279,7 @@ export default function Profile() {
     {
       id: '1',
       triggers: ['unblock card', 'card blocked', 'card not working', 'blocked card'],
-      response: "To unblock your card, go to Profile > Admin Panel and tap 'Unblock Card'. The card will be immediately available for use. If you need further assistance, please let me know!"
+      response: "To unblock your card, go to Profile > Customer Panel and tap 'Unblock Card'. The card will be immediately available for use. If you need further assistance, please let me know!"
     },
     {
       id: '2',
@@ -1270,10 +1270,10 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* Admin Panel Modal */}
+      {/* Customer Panel Modal */}
       {showAdminPanel && (
         <div 
-          className="admin-panel bg-black bg-opacity-50 flex items-center justify-center p-4"
+          className="admin-panel bg-black bg-opacity-50 flex items-center justify-center"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setShowAdminPanel(false);
@@ -1281,7 +1281,7 @@ export default function Profile() {
           }}
         >
           <div 
-            className="bg-white rounded-2xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto modal-content"
+            className="bg-white w-full h-full overflow-y-auto modal-content"
             onClick={(e) => e.stopPropagation()}
             onTouchStart={(e) => e.stopPropagation()}
             onTouchEnd={(e) => e.stopPropagation()}
@@ -1289,7 +1289,7 @@ export default function Profile() {
             <div className="p-6 pb-12">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Admin Panel
+                  Customer Panel
                 </h2>
                 <button
                   onClick={() => setShowAdminPanel(false)}
