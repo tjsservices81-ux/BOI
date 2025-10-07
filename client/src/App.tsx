@@ -437,7 +437,7 @@ function AppRoutes() {
   return (
     <SecurityWrapper>
       <ErrorBoundary>
-        <div className="app-shell fixed inset-0 overflow-hidden">
+        <div className="fixed inset-0 overflow-hidden">
           <Switch>
             <Route path="/splash" component={Splash} />
             <Route path="/login" component={Login} />

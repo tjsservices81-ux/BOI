@@ -44,33 +44,6 @@ input[type="text"], input[type="email"], input[type="password"], textarea {
   }
 }
 
-/* App shell scroll lock for Processing/Success screens */
-.app-shell.locked,
-#app.locked, #root.locked {
-  height: 100dvh;
-  overflow: hidden !important;
-  overscroll-behavior: none !important;
-  touch-action: none !important;
-  position: fixed !important;
-}
-
-/* Safety: ensure inner panels don't re-enable scroll */
-.app-shell.locked * {
-  overscroll-behavior: contain;
-}
-
-/* Prevent any scrolling on html/body when locked */
-html:has(.app-shell.locked),
-body:has(.app-shell.locked),
-html.scroll-locked,
-body.scroll-locked {
-  overflow: hidden !important;
-  position: fixed !important;
-  width: 100% !important;
-  height: 100% !important;
-  touch-action: none !important;
-}
-
 @keyframes slideIn {
   0% {
     opacity: 0;
@@ -259,15 +232,9 @@ body.scroll-locked {
   }
   
   #root {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
     height: 100vh;
-    overflow: hidden !important;
+    overflow: hidden;
     -webkit-overflow-scrolling: touch;
-    touch-action: none;
   }
 }
 
@@ -303,9 +270,8 @@ input, textarea, [contenteditable="true"] {
 
 /* Prevent overscroll and bounce effects selectively */
 html, body {
-  overscroll-behavior: none !important;
-  overflow: hidden !important;
-  position: fixed !important;
+  overscroll-behavior-x: none;
+  overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
   width: 100%;
   height: 100%;
@@ -314,21 +280,14 @@ html, body {
   -moz-text-size-adjust: 100%;
   -ms-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  touch-action: none;
 }
 
 #root {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
   height: 100vh;
   max-height: 100vh;
-  overflow: hidden !important;
+  overflow: hidden;
   -webkit-overflow-scrolling: touch;
-  touch-action: none;
-  width: 100%;
+  touch-action: manipulation;
 }
 
 /* Prevent double-tap zoom on interactive elements only */
@@ -644,12 +603,7 @@ html {
 
 body {
   -webkit-overflow-scrolling: touch;
-  overscroll-behavior: none !important;
-  overflow: hidden !important;
-  position: fixed !important;
-  width: 100% !important;
-  height: 100% !important;
-  touch-action: none !important;
+  overscroll-behavior: none;
 }
 
 /* Prevent layout shifts during interactions */
@@ -1869,15 +1823,9 @@ html, body {
 }
 
 #root {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
   height: 100%;
-  overflow: hidden !important;
+  overflow: hidden;
   -webkit-overflow-scrolling: touch;
-  touch-action: none;
   background: transparent !important;
 }
 
@@ -2311,29 +2259,19 @@ input, textarea, select {
 
 body {
   -webkit-overflow-scrolling: touch;
-  overscroll-behavior: none !important;
-  overflow: hidden !important;
-  position: fixed !important;
+  overscroll-behavior: none;
+  position: fixed;
   width: 100%;
   height: 100vh;
   height: 100dvh;
-  margin: 0;
-  padding: 0;
-  touch-action: none !important;
+  overflow: hidden;
 }
 
 #root {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
   width: 100%;
   height: 100vh;
   height: 100dvh;
-  overflow: hidden !important;
-  -webkit-overflow-scrolling: touch;
-  touch-action: none;
+  overflow: hidden;
 }
 
 /* Native iOS button effects - Android optimized */

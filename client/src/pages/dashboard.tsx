@@ -6,7 +6,6 @@ import SpendingInsights from "../components/SpendingInsights";
 import { UserDataManager } from "../utils/userDataManager";
 import { StateManager } from "../utils/stateManager";
 import { formatCurrency, getUserCurrency, type Currency } from "../utils/currencyUtils";
-import { useAppScrollLock } from "../utils/useScrollLock";
 
 interface Account {
   id: number;
@@ -19,9 +18,6 @@ interface Account {
 export default function Dashboard() {
   const [, setLocation] = useLocation();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  
-  // Ensure scroll is unlocked on Dashboard
-  useAppScrollLock(false);
   
   // Local state for account balances that can be updated by transfers
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -259,61 +255,51 @@ export default function Dashboard() {
   };
 
   return (
-    <div className={`page-container h-screen bg-white flex flex-col ios-safe-bottom relative page-fade-slide-in ${isNavigating ? 'dashboard-exit' : ''}`} style={{ height: '100dvh', overflow: 'hidden' }}>
+    <div className={`page-container h-screen bg-white overflow-hidden flex flex-col ios-safe-bottom relative page-fade-slide-in ${isNavigating ? 'dashboard-exit' : ''}`}>
       {/* Ambient spending visualization background */}
       <SpendingVisualization />
       
-      {/* Fixed header section */}
-      <div className="fixed top-0 left-0 right-0 z-40">
-        {/* Blue header bar */}
-        <div className="bg-[#126987] flex items-end justify-between px-4 pb-3" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px) + 12px, 56px)' }}>
-          <div className="flex items-center">
-            <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-6 filter brightness-0 invert" />
-          </div>
-          <div className="flex items-center">
-            <button 
-              className="text-white hover:bg-white/20 h-8 w-8 rounded-full flex items-center justify-center touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-95 android-no-highlight"
-              onClick={() => navigateWithAnimation('/profile', 'slide-up')}
-              style={{
-                WebkitTapHighlightColor: 'transparent',
-                outline: 'none'
-              }}
-            >
-              <User className="h-5 w-5" />
-            </button>
-          </div>
+      {/* Blue header bar */}
+      <div className="bg-[#126987] flex items-end justify-between px-4 pb-3 flex-shrink-0" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
+        <div className="flex items-center">
+          <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-6 filter brightness-0 invert" />
         </div>
-        
-        {/* Header with scenic background */}
-        <div className="text-white relative h-36">
-          {/* Full scenic background image */}
-          <div 
-            className="absolute inset-0 bg-cover bg-center"
+        <div className="flex items-center">
+          <button 
+            className="text-white hover:bg-white/20 h-8 w-8 rounded-full flex items-center justify-center touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-95 android-no-highlight"
+            onClick={() => navigateWithAnimation('/profile', 'slide-up')}
             style={{
-              backgroundImage: `url('/background.jpg')`
+              WebkitTapHighlightColor: 'transparent',
+              outline: 'none'
             }}
-          />
-          
-          <div className="relative z-10 h-full flex flex-col justify-center px-4">
-            <h1 className="text-2xl font-light mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>Welcome</h1>
-            <p className="text-white/90 text-sm font-light" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Last login: {UserDataManager.getLastLoginTime()}
-            </p>
-          </div>
+          >
+            <User className="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+      
+      {/* Header with scenic background */}
+      <div className="text-white relative flex-shrink-0 h-36">
+        {/* Full scenic background image */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage: `url('/background.jpg')`
+          }}
+        />
+        
+        <div className="relative z-10 h-full flex flex-col justify-center px-4">
+          <h1 className="text-2xl font-light mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>Welcome</h1>
+          <p className="text-white/90 text-sm font-light" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+            Last login: {UserDataManager.getLastLoginTime()}
+          </p>
         </div>
       </div>
 
       {/* Main content area - white card with rounded top corners */}
       <div 
         ref={scrollContainerRef}
-        className="main-scroll-container flex-1 px-0 ios-scroll" 
-        style={{ 
-          marginTop: 'calc(env(safe-area-inset-top, 0px) + 200px)',
-          paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))',
-          overscrollBehavior: 'contain',
-          overflowY: 'auto',
-          overflowX: 'hidden'
-        }}
+        className="main-scroll-container flex-1 px-0 -mt-8 overflow-y-auto ios-scroll" 
         data-scroll-container
         data-scroll-route="/dashboard"
       >

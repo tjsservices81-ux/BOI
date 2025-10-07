@@ -8,7 +8,6 @@ import { UserDataManager } from "../utils/userDataManager";
 import { generateReference } from "../utils/transferUtils";
 import { getUserCurrency, formatCurrency, type Currency } from "../utils/currencyUtils";
 import { sendTransferNotification } from "../utils/notifications";
-import { useAppScrollLock } from "../utils/useScrollLock";
 
 const internalTransferSchema = z.object({
   fromAccount: z.string().min(1, "Please select a source account"),
@@ -38,9 +37,6 @@ export default function InternalTransfer() {
   const [selectedFromAccount, setSelectedFromAccount] = useState<any>(null);
   const [selectedToAccount, setSelectedToAccount] = useState<any>(null);
   const [userCurrency, setUserCurrency] = useState<Currency>('EUR');
-  
-  // Lock scroll when on success or confirm screen
-  useAppScrollLock(step === 'success' || step === 'confirm');
 
   const form = useForm<InternalTransferData>({
     resolver: zodResolver(internalTransferSchema),
@@ -362,14 +358,7 @@ export default function InternalTransfer() {
     });
     
     return (
-      <div className="h-screen flex flex-col bg-white page-slide-in-right" style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        zIndex: 1000
-      }}>
+      <div className="h-screen overflow-hidden flex flex-col bg-white page-slide-in-right">
         <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
           <button onClick={() => setStep('form')} className="flex items-center text-white">
             <ChevronLeft className="w-5 h-5 mr-2" />
