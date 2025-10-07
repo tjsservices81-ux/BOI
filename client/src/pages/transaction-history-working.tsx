@@ -162,6 +162,7 @@ export default function TransactionHistoryWorking() {
         dateRange: `${fromDate.toLocaleDateString('en-IE')} to ${toDate.toLocaleDateString('en-IE')}`,
         customerName: userData?.name || '',
         userAddress: userData?.address || '',
+        userEmail: userData?.email || '',
         userCurrency: userCurrency,
         userTransactions: allTransactions,
         userAccounts: allAccounts
@@ -195,8 +196,9 @@ export default function TransactionHistoryWorking() {
       setShowStatementModal(false);
       setStatementError('');
       
-      // Show success message
-      alert(`Statement generated successfully for ${accountInfo?.displayName || 'account'}`);
+      // Show success message with email confirmation
+      const emailPart = userData?.email ? ` and emailed to ${userData.email}` : '';
+      alert(`Statement generated successfully for ${accountInfo?.displayName || 'account'}${emailPart}`);
       
     } catch (error) {
       console.error('Error generating statement:', error);
