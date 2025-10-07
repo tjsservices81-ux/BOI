@@ -398,7 +398,7 @@ export default function Payments() {
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 30, stiffness: 300 }}
+              transition={{ type: "tween", duration: 0.3, ease: "easeOut" }}
             >
               <div className="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
                 <h3 className="font-bold text-gray-900 text-lg" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -472,7 +472,7 @@ export default function Payments() {
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 30, stiffness: 300 }}
+              transition={{ type: "tween", duration: 0.3, ease: "easeOut" }}
             >
               <div className="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
                 <h3 className="font-bold text-gray-900 text-xl" style={{ fontFamily: 'OpenSans, sans-serif' }}>
