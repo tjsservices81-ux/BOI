@@ -259,9 +259,15 @@ body.scroll-locked {
   }
   
   #root {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     height: 100vh;
     overflow: hidden !important;
     -webkit-overflow-scrolling: touch;
+    touch-action: none;
   }
 }
 
@@ -310,11 +316,16 @@ html, body {
 }
 
 #root {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   height: 100vh;
   max-height: 100vh;
   overflow: hidden !important;
   -webkit-overflow-scrolling: touch;
-  touch-action: manipulation;
+  touch-action: none;
   width: 100%;
 }
 
@@ -1851,9 +1862,15 @@ html, body {
 }
 
 #root {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   height: 100%;
   overflow: hidden !important;
   -webkit-overflow-scrolling: touch;
+  touch-action: none;
   background: transparent !important;
 }
 
@@ -2296,11 +2313,17 @@ body {
 }
 
 #root {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   width: 100%;
   height: 100vh;
   height: 100dvh;
   overflow: hidden !important;
   -webkit-overflow-scrolling: touch;
+  touch-action: none;
 }
 
 /* Native iOS button effects - Android optimized */

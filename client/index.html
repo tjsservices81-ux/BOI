@@ -177,9 +177,15 @@
         }
         
         #root {
+          position: fixed !important;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
           min-height: 100vh;
           min-height: calc(var(--vh, 1vh) * 100);
           overflow: hidden !important;
+          touch-action: none !important;
         }
       }
       
@@ -192,8 +198,14 @@
         }
         
         #root {
+          position: fixed !important;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
           min-height: -webkit-fill-available;
           overflow: hidden !important;
+          touch-action: none !important;
         }
       }
       
