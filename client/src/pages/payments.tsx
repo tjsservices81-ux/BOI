@@ -297,7 +297,7 @@ export default function Payments() {
               className="bg-blue-50 rounded-xl p-4 text-center active:scale-95 transition-transform"
             >
               <div className="w-8 h-8 bg-[#126987] rounded-full flex items-center justify-center mx-auto mb-2">
-                <img src="/Add-payee.svg" alt="Add" className="w-4 h-4" />
+                <User className="w-4 h-4 text-white" />
               </div>
               <span className="text-sm font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                 Add Payee
