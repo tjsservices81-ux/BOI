@@ -2,7 +2,7 @@ import { useLocation } from "wouter";
 import { ChevronLeft, User, HelpCircle, FileText, Settings, Shield, Building2, MessageCircle } from "lucide-react";
 import { useState } from "react";
 import { getUserCurrency } from "../utils/currencyUtils";
-import ukLogoPath from "@assets/IMG_1500_1759857711690.png";
+import ukLogoPath from "@assets/IMG_1504_1759859071758.png";
 
 export default function More() {
   const [, setLocation] = useLocation();
