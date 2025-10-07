@@ -260,7 +260,7 @@ export default function Dashboard() {
       <SpendingVisualization />
       
       {/* Blue header bar */}
-      <div className="bg-[#126987] flex items-end justify-between px-4 pb-3 flex-shrink-0" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
+      <div className="bg-[#126987] flex items-end justify-between px-4 pb-3 pt-6 flex-shrink-0" style={{ paddingTop: 'calc(24px + env(safe-area-inset-top, 0px))' }}>
         <div className="flex items-center">
           <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-6 filter brightness-0 invert" />
         </div>
