@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { useState, useEffect, useRef } from "react";
 import SpendingVisualization from "../components/SpendingVisualization";
 import SpendingInsights from "../components/SpendingInsights";
+import MiniSpendingChart from "../components/MiniSpendingChart";
 import { UserDataManager } from "../utils/userDataManager";
 import { StateManager } from "../utils/stateManager";
 import { formatCurrency, getUserCurrency, type Currency } from "../utils/currencyUtils";
@@ -337,6 +338,9 @@ export default function Dashboard() {
       {/* Ambient spending visualization background */}
       <SpendingVisualization />
       
+      {/* Spending Insights floating widget */}
+      <SpendingInsights />
+      
       {/* Blue header bar */}
       <div className="bg-[#126987] flex items-end justify-between px-4 pb-3 pt-8 flex-shrink-0" style={{ paddingTop: 'calc(32px + env(safe-area-inset-top, 0px))' }}>
         <div className="flex items-center">
@@ -382,7 +386,12 @@ export default function Dashboard() {
         data-scroll-route="/dashboard"
       >
         <div className="bg-white rounded-t-3xl h-full">
-          <div className="pt-6" style={{ overscrollBehavior: 'contain' }}>
+          <div className="pt-6 px-4" style={{ overscrollBehavior: 'contain' }}>
+            {/* Mini Spending Chart for primary account */}
+            {accounts.length > 0 && <MiniSpendingChart accountId={accounts[0].id} />}
+            
+          </div>
+          <div className="pt-0" style={{ overscrollBehavior: 'contain' }}>
             {(accounts && Array.isArray(accounts)) && accounts.map((account, index) => {
               const isLoading = loadingAccountId === account.id;
               const isDisabled = loadingAccountId !== null || isNavigating;
