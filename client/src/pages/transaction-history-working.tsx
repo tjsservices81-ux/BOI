@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation, useRoute } from "wouter";
 import { ChevronLeft, ArrowUpRight, CreditCard, Building2, Zap, Check, Clock, MapPin, Globe, X } from "lucide-react";
 import MiniSpendingChart from "../components/MiniSpendingChart";
-import SpendingInsights from "../components/SpendingInsights";
 import { UserDataManager } from "../utils/userDataManager.ts";
 import { StateManager } from "../utils/stateManager";
 import { formatCurrency, getUserCurrency, getCurrencySymbol, type Currency } from "../utils/currencyUtils";
@@ -300,9 +299,6 @@ export default function TransactionHistoryWorking() {
   return (
     <div className="page-container h-screen bg-gray-50 flex flex-col overflow-hidden page-slide-in-right"
       style={{ backgroundColor: '#f9fafb' }}>
-      {/* Spending Insights floating widget */}
-      <SpendingInsights />
-      
       <div className="bg-[#126987] text-white p-6 flex-shrink-0">
         <div className="flex items-center justify-between mb-4">
           <button onClick={() => navigateWithAnimation('/dashboard', 'slide-left')} className="flex items-center text-white">
