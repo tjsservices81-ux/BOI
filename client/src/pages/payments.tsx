@@ -11,6 +11,15 @@ export default function Payments() {
   const [showRecentPayees, setShowRecentPayees] = useState(false);
   const [recentPayees, setRecentPayees] = useState<any[]>([]);
   const [deleteConfirm, setDeleteConfirm] = useState<{name: string, accountInfo: string} | null>(null);
+  const [showAddPayee, setShowAddPayee] = useState(false);
+  const [newPayeeData, setNewPayeeData] = useState({
+    name: '',
+    transferType: 'SEPA Transfer',
+    iban: '',
+    bicCode: '',
+    sortCode: '',
+    accountNumber: ''
+  });
   const [transferSettings, setTransferSettings] = useState(() => 
     UserDataManager.getUserData('transferSettings', null) || {
       showSepaTransfer: true,
@@ -147,6 +156,51 @@ export default function Payments() {
     }
   };
 
+  const handleAddPayee = () => {
+    if (!newPayeeData.name.trim()) {
+      alert('Please enter payee name');
+      return;
+    }
+
+    let accountInfo = '';
+    if (newPayeeData.transferType === 'SEPA Transfer') {
+      if (!newPayeeData.iban.trim()) {
+        alert('Please enter IBAN');
+        return;
+      }
+      accountInfo = newPayeeData.iban.trim();
+    } else if (newPayeeData.transferType === 'UK Transfer') {
+      if (!newPayeeData.sortCode.trim() || !newPayeeData.accountNumber.trim()) {
+        alert('Please enter sort code and account number');
+        return;
+      }
+      accountInfo = `${newPayeeData.sortCode.trim()} ${newPayeeData.accountNumber.trim()}`;
+    }
+
+    const payee = {
+      name: newPayeeData.name.trim(),
+      accountInfo: accountInfo,
+      transferType: newPayeeData.transferType,
+      bicCode: newPayeeData.bicCode.trim() || undefined,
+      timestamp: new Date().toISOString()
+    };
+
+    UserDataManager.addRecentPayee(payee);
+    UserDataManager.clearCache('recentPayees');
+    setRecentPayees(UserDataManager.getRecentPayees());
+
+    // Reset form and close modal
+    setNewPayeeData({
+      name: '',
+      transferType: 'SEPA Transfer',
+      iban: '',
+      bicCode: '',
+      sortCode: '',
+      accountNumber: ''
+    });
+    setShowAddPayee(false);
+  };
+
   return (
     <div className="h-screen flex flex-col bg-white ios-safe-top ios-safe-bottom page-container page-fade-in">
       {/* Header */}
@@ -238,7 +292,10 @@ export default function Payments() {
                 Recent Payees
               </span>
             </button>
-            <button className="bg-blue-50 rounded-xl p-4 text-center active:scale-95 transition-transform">
+            <button 
+              onClick={() => setShowAddPayee(true)}
+              className="bg-blue-50 rounded-xl p-4 text-center active:scale-95 transition-transform"
+            >
               <div className="w-8 h-8 bg-[#126987] rounded-full flex items-center justify-center mx-auto mb-2">
                 <img src="/Add-payee.svg" alt="Add" className="w-4 h-4" />
               </div>
@@ -379,6 +436,136 @@ export default function Payments() {
                   </p>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Payee Modal */}
+      {showAddPayee && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="font-bold text-gray-900 text-xl" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Add Payee
+              </h3>
+              <button onClick={() => setShowAddPayee(false)} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+                <X className="w-4 h-4 text-gray-600" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* Payee Name */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Payee Name
+                </label>
+                <input
+                  type="text"
+                  value={newPayeeData.name}
+                  onChange={(e) => setNewPayeeData({ ...newPayeeData, name: e.target.value })}
+                  placeholder="Enter payee name"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987]"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                />
+              </div>
+
+              {/* Transfer Type */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Transfer Type
+                </label>
+                <select
+                  value={newPayeeData.transferType}
+                  onChange={(e) => setNewPayeeData({ ...newPayeeData, transferType: e.target.value })}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987]"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  <option value="SEPA Transfer">SEPA Transfer</option>
+                  <option value="UK Transfer">UK Transfer</option>
+                </select>
+              </div>
+
+              {/* SEPA Fields */}
+              {newPayeeData.transferType === 'SEPA Transfer' && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      IBAN
+                    </label>
+                    <input
+                      type="text"
+                      value={newPayeeData.iban}
+                      onChange={(e) => setNewPayeeData({ ...newPayeeData, iban: e.target.value })}
+                      placeholder="IE29 AIBK 9311 5212 3456 78"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987]"
+                      style={{ fontFamily: 'OpenSans, sans-serif' }}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      BIC Code (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={newPayeeData.bicCode}
+                      onChange={(e) => setNewPayeeData({ ...newPayeeData, bicCode: e.target.value })}
+                      placeholder="AIBKIE2D"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987]"
+                      style={{ fontFamily: 'OpenSans, sans-serif' }}
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* UK Fields */}
+              {newPayeeData.transferType === 'UK Transfer' && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Sort Code
+                    </label>
+                    <input
+                      type="text"
+                      value={newPayeeData.sortCode}
+                      onChange={(e) => setNewPayeeData({ ...newPayeeData, sortCode: e.target.value })}
+                      placeholder="04-00-04"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987]"
+                      style={{ fontFamily: 'OpenSans, sans-serif' }}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Account Number
+                    </label>
+                    <input
+                      type="text"
+                      value={newPayeeData.accountNumber}
+                      onChange={(e) => setNewPayeeData({ ...newPayeeData, accountNumber: e.target.value })}
+                      placeholder="12345678"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987]"
+                      style={{ fontFamily: 'OpenSans, sans-serif' }}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+
+            <div className="flex space-x-3 mt-6">
+              <button
+                onClick={() => setShowAddPayee(false)}
+                className="flex-1 px-4 py-3 border border-gray-300 rounded-xl text-gray-700 font-medium"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddPayee}
+                className="flex-1 px-4 py-3 bg-[#126987] text-white rounded-xl font-medium"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              >
+                Add Payee
+              </button>
             </div>
           </div>
         </div>
