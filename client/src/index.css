@@ -270,8 +270,9 @@ input, textarea, [contenteditable="true"] {
 
 /* Prevent overscroll and bounce effects selectively */
 html, body {
-  overscroll-behavior-x: none;
-  overscroll-behavior-y: contain;
+  overscroll-behavior: none !important;
+  overflow: hidden !important;
+  position: fixed !important;
   -webkit-overflow-scrolling: touch;
   width: 100%;
   height: 100%;
@@ -603,7 +604,15 @@ html {
 
 body {
   -webkit-overflow-scrolling: touch;
-  overscroll-behavior: none;
+  overscroll-behavior: none !important;
+  overflow: hidden !important;
+  position: fixed !important;
+  width: 100% !important;
+  height: 100% !important;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  touch-action: none !important;
 }
 
 /* Prevent layout shifts during interactions */
