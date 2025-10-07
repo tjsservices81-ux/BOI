@@ -300,7 +300,16 @@ export default function InternalTransfer() {
 
   if (step === 'success') {
     return (
-      <div className="h-screen flex flex-col bg-white page-slide-in-right">
+      <div className="page-container page-slide-in-right" style={{ 
+        position: 'fixed', 
+        top: 0, 
+        left: 0, 
+        right: 0, 
+        bottom: 0, 
+        display: 'flex', 
+        flexDirection: 'column',
+        backgroundColor: '#ffffff'
+      }}>
         <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
           <button onClick={() => navigate('/payments')} className="flex items-center text-white">
             <ChevronLeft className="w-5 h-5 mr-2" />
@@ -308,7 +317,10 @@ export default function InternalTransfer() {
           </button>
         </div>
 
-        <div className="flex-1 flex items-center justify-center p-6">
+        <div className="flex-1 flex items-center justify-center p-6" style={{ 
+          overflowY: 'auto', 
+          WebkitOverflowScrolling: 'touch'
+        }}>
           <div className="text-center max-w-sm">
             <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <Check className="w-10 h-10 text-green-600" />
