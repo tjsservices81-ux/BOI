@@ -1,11 +1,14 @@
 import { useLocation } from "wouter";
 import { ChevronLeft, User, HelpCircle, FileText, Settings, Shield, Building2, MessageCircle } from "lucide-react";
 import { useState } from "react";
+import { getUserCurrency } from "../utils/currencyUtils";
+import ukLogoPath from "@assets/IMG_1500_1759857711690.png";
 
 export default function More() {
   const [, setLocation] = useLocation();
   const [isNavigating, setIsNavigating] = useState(false);
   const [isLoadingChat, setIsLoadingChat] = useState(false);
+  const userCurrency = getUserCurrency();
 
   const handleNavigation = (path: string) => {
     setIsNavigating(true);
@@ -46,8 +49,8 @@ export default function More() {
           
           <div className="flex items-center justify-center">
             <img 
-              src="/boi_logo.svg" 
-              alt="Bank of Ireland" 
+              src={userCurrency === 'GBP' ? ukLogoPath : "/boi_logo.svg"} 
+              alt={userCurrency === 'GBP' ? "Bank of Ireland UK" : "Bank of Ireland"} 
               className="h-8 filter brightness-0 invert"
             />
           </div>

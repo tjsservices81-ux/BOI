@@ -6,6 +6,7 @@ import SpendingInsights from "../components/SpendingInsights";
 import { UserDataManager } from "../utils/userDataManager";
 import { StateManager } from "../utils/stateManager";
 import { formatCurrency, getUserCurrency, type Currency } from "../utils/currencyUtils";
+import ukLogoPath from "@assets/IMG_1500_1759857711690.png";
 
 interface Account {
   id: number;
@@ -341,7 +342,11 @@ export default function Dashboard() {
       {/* Blue header bar */}
       <div className="bg-[#126987] flex items-end justify-between px-4 pb-3 pt-8 flex-shrink-0" style={{ paddingTop: 'calc(32px + env(safe-area-inset-top, 0px))' }}>
         <div className="flex items-center">
-          <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-6 filter brightness-0 invert" />
+          <img 
+            src={userCurrency === 'GBP' ? ukLogoPath : "/boi_logo.svg"} 
+            alt={userCurrency === 'GBP' ? "Bank of Ireland UK" : "Bank of Ireland"} 
+            className="h-6 filter brightness-0 invert" 
+          />
         </div>
         <div className="flex items-center">
           <button 
