@@ -28,6 +28,13 @@ export default function Profile() {
     accountType: 'current',
     balance: '0.00'
   });
+  const [customTransactionData, setCustomTransactionData] = useState({
+    accountId: '',
+    description: '',
+    amount: '',
+    type: 'debit' as 'debit' | 'credit',
+    date: new Date().toISOString().split('T')[0]
+  });
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [editProfileData, setEditProfileData] = useState({
     name: '',
@@ -723,6 +730,97 @@ export default function Profile() {
     { description: "STUDENT GRANT", amount: 750.00, type: "credit" },
     { description: "CHILD BENEFIT", amount: 140.00, type: "credit" }
   ];
+
+  const addCustomTransaction = () => {
+    if (!customTransactionData.accountId) {
+      alert('Please select an account');
+      return;
+    }
+    if (!customTransactionData.description.trim()) {
+      alert('Please enter a description');
+      return;
+    }
+    if (!customTransactionData.amount || parseFloat(customTransactionData.amount) <= 0) {
+      alert('Please enter a valid amount');
+      return;
+    }
+
+    const accountId = parseInt(customTransactionData.accountId);
+    
+    // Clear all caches first to ensure we get the most current data
+    UserDataManager.clearCache();
+    
+    // Get fresh account data
+    const currentAccounts = UserDataManager.getUserData('bankAccounts', []);
+    
+    if (!Array.isArray(currentAccounts) || currentAccounts.length === 0) {
+      alert('Error: No accounts found. Please refresh the page.');
+      return;
+    }
+    
+    const targetAccount = currentAccounts.find((acc: any) => acc.id === accountId);
+    if (!targetAccount) {
+      alert('Error: Account not found. Please refresh the page.');
+      return;
+    }
+
+    const transactionDate = new Date(customTransactionData.date);
+    const transactionAmount = parseFloat(customTransactionData.amount);
+    const isDebit = customTransactionData.type === 'debit';
+    
+    // Calculate new balance
+    const currentBalance = parseFloat(targetAccount.balance) || 0;
+    const amountChange = isDebit ? -transactionAmount : transactionAmount;
+    const newBalance = currentBalance + amountChange;
+    
+    // Create the new transaction
+    const currentTransactions = UserDataManager.getUserData('bankTransactions', []);
+    const newTransactionId = Math.max(...currentTransactions.map((t: any) => t.id), 0) + 1;
+    
+    const newTransaction = {
+      id: newTransactionId,
+      accountId: accountId,
+      description: customTransactionData.description.trim(),
+      amount: isDebit ? `-${transactionAmount.toFixed(2)}` : transactionAmount.toFixed(2),
+      balance: newBalance.toFixed(2),
+      date: transactionDate.toISOString()
+    };
+    
+    const updatedTransactions = [...currentTransactions, newTransaction];
+    UserDataManager.setUserData('bankTransactions', updatedTransactions);
+    
+    // Update account balance
+    const updatedAccounts = currentAccounts.map((acc: any) => 
+      acc.id === accountId ? { ...acc, balance: newBalance.toFixed(2) } : acc
+    );
+    UserDataManager.setUserData('bankAccounts', updatedAccounts);
+    
+    // Update local state
+    setAccounts(updatedAccounts);
+    
+    // Dispatch events for real-time updates
+    window.dispatchEvent(new CustomEvent('accountsUpdate', {
+      detail: { accounts: updatedAccounts, source: 'customTransaction' }
+    }));
+    
+    window.dispatchEvent(new CustomEvent('forceRefresh', {
+      detail: { type: 'transactionAdded', accountId: accountId }
+    }));
+    
+    // Reset form and close modal
+    setCustomTransactionData({
+      accountId: '',
+      description: '',
+      amount: '',
+      type: 'debit',
+      date: new Date().toISOString().split('T')[0]
+    });
+    setShowAddTransaction(false);
+    
+    const currentCurrency = getUserCurrency();
+    const currencySymbol = currentCurrency === 'EUR' ? '€' : '£';
+    alert(`Transaction Added!\n\n${customTransactionData.description}\nAmount: ${currencySymbol}${transactionAmount.toFixed(2)}\nNew Balance: ${currencySymbol}${newBalance.toFixed(2)}`);
+  };
 
   const addSampleTransaction = (accountId: number) => {
     const randomTransaction = sampleTransactions[Math.floor(Math.random() * sampleTransactions.length)];
@@ -1455,7 +1553,7 @@ export default function Profile() {
                       </div>
                     </button>
 
-                    {/* Add Single Transaction */}
+                    {/* Add Custom Transaction */}
                     <button 
                       onClick={() => setShowAddTransaction(true)}
                       className="w-full flex items-center space-x-3 p-4 bg-blue-50 border border-blue-200 rounded-xl active:scale-98 transition-transform"
@@ -1465,10 +1563,10 @@ export default function Profile() {
                       </div>
                       <div className="flex-1 text-left">
                         <p className="font-semibold text-blue-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          Add Single Transaction
+                          Add Custom Transaction
                         </p>
                         <p className="text-sm text-blue-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          Add one test transaction to any account
+                          Create a transaction with your own details
                         </p>
                       </div>
                     </button>
@@ -1887,64 +1985,162 @@ export default function Profile() {
         </div>
       )}
 
-      {/* Add Transaction Modal */}
+      {/* Add Custom Transaction Modal */}
       {showAddTransaction && (
         <div className="modal-overlay bg-black bg-opacity-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Add Sample Transaction
+                  Add Custom Transaction
                 </h2>
                 <button
-                  onClick={() => setShowAddTransaction(false)}
+                  onClick={() => {
+                    setShowAddTransaction(false);
+                    setCustomTransactionData({
+                      accountId: '',
+                      description: '',
+                      amount: '',
+                      type: 'debit',
+                      date: new Date().toISOString().split('T')[0]
+                    });
+                  }}
                   className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
                 >
                   <X className="w-4 h-4 text-gray-600" />
                 </button>
               </div>
 
-              <p className="text-gray-600 mb-6" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Select an account to add a random sample transaction:
-              </p>
+              <div className="space-y-4">
+                {/* Account Selection */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Select Account
+                  </label>
+                  <select
+                    value={customTransactionData.accountId}
+                    onChange={(e) => setCustomTransactionData({ ...customTransactionData, accountId: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  >
+                    <option value="">Choose an account...</option>
+                    {accounts && Array.isArray(accounts) ? accounts.map((account) => (
+                      <option key={account.id} value={account.id.toString()}>
+                        {account.displayName} - {formatCurrency(account.balance, userCurrency)}
+                      </option>
+                    )) : null}
+                  </select>
+                </div>
 
-              <div className="space-y-3">
-                {accounts && Array.isArray(accounts) ? (
-                  accounts.map((account) => (
+                {/* Transaction Type */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Transaction Type
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
                     <button
-                      key={account.id}
-                      onClick={() => addSampleTransaction(account.id)}
-                      className="w-full flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+                      onClick={() => setCustomTransactionData({ ...customTransactionData, type: 'debit' })}
+                      className={`p-3 rounded-xl border-2 transition-all ${
+                        customTransactionData.type === 'debit'
+                          ? 'border-red-500 bg-red-50'
+                          : 'border-gray-200 bg-white hover:bg-gray-50'
+                      }`}
                     >
-                      <div className="text-left">
-                        <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          {account.displayName}
-                        </p>
-                        <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          {account.accountNumber}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-lg font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          {formatCurrency(account.balance, userCurrency)}
-                        </p>
-                      </div>
+                      <p className={`font-semibold ${customTransactionData.type === 'debit' ? 'text-red-900' : 'text-gray-900'}`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Debit
+                      </p>
+                      <p className={`text-xs ${customTransactionData.type === 'debit' ? 'text-red-600' : 'text-gray-500'}`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Money Out
+                      </p>
                     </button>
-                  ))
-                ) : (
-                  <div className="text-center py-8 text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    No account data found
+                    <button
+                      onClick={() => setCustomTransactionData({ ...customTransactionData, type: 'credit' })}
+                      className={`p-3 rounded-xl border-2 transition-all ${
+                        customTransactionData.type === 'credit'
+                          ? 'border-green-500 bg-green-50'
+                          : 'border-gray-200 bg-white hover:bg-gray-50'
+                      }`}
+                    >
+                      <p className={`font-semibold ${customTransactionData.type === 'credit' ? 'text-green-900' : 'text-gray-900'}`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Income
+                      </p>
+                      <p className={`text-xs ${customTransactionData.type === 'credit' ? 'text-green-600' : 'text-gray-500'}`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Money In
+                      </p>
+                    </button>
                   </div>
-                )}
+                </div>
+
+                {/* Description */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Description
+                  </label>
+                  <input
+                    type="text"
+                    value={customTransactionData.description}
+                    onChange={(e) => setCustomTransactionData({ ...customTransactionData, description: e.target.value })}
+                    placeholder="e.g., Salary Payment, Grocery Shopping"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  />
+                </div>
+
+                {/* Amount */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Amount ({getCurrencySymbol(userCurrency)})
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={customTransactionData.amount}
+                    onChange={(e) => setCustomTransactionData({ ...customTransactionData, amount: e.target.value })}
+                    placeholder="0.00"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  />
+                </div>
+
+                {/* Date */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Transaction Date
+                  </label>
+                  <input
+                    type="date"
+                    value={customTransactionData.date}
+                    onChange={(e) => setCustomTransactionData({ ...customTransactionData, date: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  />
+                </div>
               </div>
 
-              <div className="mt-6">
+              <div className="flex space-x-3 mt-6">
                 <button
-                  onClick={() => setShowAddTransaction(false)}
-                  className="w-full py-3 bg-gray-200 text-gray-800 rounded-xl font-semibold hover:bg-gray-300 transition-colors"
+                  onClick={() => {
+                    setShowAddTransaction(false);
+                    setCustomTransactionData({
+                      accountId: '',
+                      description: '',
+                      amount: '',
+                      type: 'debit',
+                      date: new Date().toISOString().split('T')[0]
+                    });
+                  }}
+                  className="flex-1 py-3 bg-gray-200 text-gray-800 rounded-xl font-semibold hover:bg-gray-300 transition-colors"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                 >
                   Cancel
+                </button>
+                <button
+                  onClick={addCustomTransaction}
+                  className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  Add Transaction
                 </button>
               </div>
             </div>
