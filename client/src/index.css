@@ -262,11 +262,6 @@ body.scroll-locked {
     height: 100vh;
     overflow: hidden !important;
     -webkit-overflow-scrolling: touch;
-    position: fixed !important;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
   }
 }
 
@@ -317,14 +312,10 @@ html, body {
 #root {
   height: 100vh;
   max-height: 100vh;
-  overflow: hidden;
+  overflow: hidden !important;
   -webkit-overflow-scrolling: touch;
   touch-action: manipulation;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  width: 100%;
 }
 
 /* Prevent double-tap zoom on interactive elements only */
@@ -1864,11 +1855,6 @@ html, body {
   overflow: hidden !important;
   -webkit-overflow-scrolling: touch;
   background: transparent !important;
-  position: fixed !important;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
 }
 
 /* Force enable scrolling on mobile */
@@ -2315,11 +2301,6 @@ body {
   height: 100dvh;
   overflow: hidden !important;
   -webkit-overflow-scrolling: touch;
-  position: fixed !important;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
 }
 
 /* Native iOS button effects - Android optimized */
