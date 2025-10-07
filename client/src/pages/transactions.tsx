@@ -182,7 +182,7 @@ export default function Transactions() {
   const transactions = getTransactions();
 
   return (
-    <div className="h-screen bg-[#f5f5f5] overflow-hidden flex flex-col ios-safe-top ios-safe-bottom page-fade-in" style={{ maxHeight: '100vh' }}>
+    <div className="h-screen bg-[#f5f5f5] overflow-hidden flex flex-col ios-safe-top ios-safe-bottom page-fade-in">
       {/* Header - BOI Style */}
       <div className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0">
         <div className="flex items-center mb-4">
