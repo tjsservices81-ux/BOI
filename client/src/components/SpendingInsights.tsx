@@ -95,13 +95,12 @@ export default function SpendingInsights() {
   const formatCurrency = (amount: number) => 
     formatCurrencyUtil(amount, userCurrency);
 
-  if (!spendingData) return null;
-
   return (
-    <div className="fixed top-20 right-4 z-20">
+    <div className="fixed top-24 right-4 z-50">
       <button
         onClick={() => setIsVisible(!isVisible)}
         className="bg-white/90 backdrop-blur-sm border border-gray-200 rounded-full p-3 shadow-lg hover:bg-white transition-all duration-200"
+        data-testid="spending-insights-toggle"
       >
         {isVisible ? <EyeOff className="w-5 h-5 text-gray-600" /> : <Eye className="w-5 h-5 text-gray-600" />}
       </button>
@@ -113,6 +112,15 @@ export default function SpendingInsights() {
             Spending Insights
           </h3>
 
+          {!spendingData ? (
+            <div className="text-center py-8">
+              <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                No spending data available yet.
+                <br />
+                Start making transactions to see insights!
+              </p>
+            </div>
+          ) : (
           <div className="space-y-4">
             {/* Total spent and trend */}
             <div className="flex items-center justify-between">
@@ -197,6 +205,7 @@ export default function SpendingInsights() {
               </div>
             </div>
           </div>
+          )}
         </div>
       )}
     </div>
