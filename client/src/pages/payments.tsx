@@ -12,6 +12,7 @@ export default function Payments() {
   const [recentPayees, setRecentPayees] = useState<any[]>([]);
   const [deleteConfirm, setDeleteConfirm] = useState<{name: string, accountInfo: string} | null>(null);
   const [showAddPayee, setShowAddPayee] = useState(false);
+  const [showLoading, setShowLoading] = useState(false);
   const [newPayeeData, setNewPayeeData] = useState({
     name: '',
     transferType: 'SEPA Transfer',
@@ -202,16 +203,21 @@ export default function Payments() {
     UserDataManager.clearCache('recentPayees');
     setRecentPayees(UserDataManager.getRecentPayees());
 
-    // Reset form and close modal
-    setNewPayeeData({
-      name: '',
-      transferType: 'SEPA Transfer',
-      iban: '',
-      bicCode: '',
-      sortCode: '',
-      accountNumber: ''
-    });
-    setShowAddPayee(false);
+    // Show loading before closing
+    setShowLoading(true);
+    setTimeout(() => {
+      // Reset form and close modal
+      setNewPayeeData({
+        name: '',
+        transferType: 'SEPA Transfer',
+        iban: '',
+        bicCode: '',
+        sortCode: '',
+        accountNumber: ''
+      });
+      setShowAddPayee(false);
+      setShowLoading(false);
+    }, 500);
   };
 
   return (
@@ -295,7 +301,13 @@ export default function Payments() {
           </h2>
           <div className="grid grid-cols-2 gap-4">
             <button 
-              onClick={() => setShowRecentPayees(true)}
+              onClick={() => {
+                setShowLoading(true);
+                setTimeout(() => {
+                  setShowLoading(false);
+                  setShowRecentPayees(true);
+                }, 500);
+              }}
               className="bg-blue-50 rounded-xl p-4 text-center active:scale-95 transition-transform"
             >
               <div className="w-8 h-8 bg-[#126987] rounded-full flex items-center justify-center mx-auto mb-2">
@@ -306,7 +318,13 @@ export default function Payments() {
               </span>
             </button>
             <button 
-              onClick={() => setShowAddPayee(true)}
+              onClick={() => {
+                setShowLoading(true);
+                setTimeout(() => {
+                  setShowLoading(false);
+                  setShowAddPayee(true);
+                }, 500);
+              }}
               className="bg-blue-50 rounded-xl p-4 text-center active:scale-95 transition-transform"
             >
               <div className="w-8 h-8 bg-[#126987] rounded-full flex items-center justify-center mx-auto mb-2">
@@ -397,7 +415,13 @@ export default function Payments() {
                 Recent Payees
               </h3>
               <button
-                onClick={() => setShowRecentPayees(false)}
+                onClick={() => {
+                  setShowLoading(true);
+                  setTimeout(() => {
+                    setShowRecentPayees(false);
+                    setShowLoading(false);
+                  }, 500);
+                }}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
               >
                 <X className="w-5 h-5 text-gray-500" />
@@ -462,7 +486,13 @@ export default function Payments() {
               <h3 className="font-bold text-gray-900 text-xl" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                 Add Payee
               </h3>
-              <button onClick={() => setShowAddPayee(false)} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+              <button onClick={() => {
+                setShowLoading(true);
+                setTimeout(() => {
+                  setShowAddPayee(false);
+                  setShowLoading(false);
+                }, 500);
+              }} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
                 <X className="w-4 h-4 text-gray-600" />
               </button>
             </div>
@@ -577,7 +607,13 @@ export default function Payments() {
 
             <div className="flex space-x-3 mt-6">
               <button
-                onClick={() => setShowAddPayee(false)}
+                onClick={() => {
+                  setShowLoading(true);
+                  setTimeout(() => {
+                    setShowAddPayee(false);
+                    setShowLoading(false);
+                  }, 500);
+                }}
                 className="flex-1 px-4 py-3 border border-gray-300 rounded-xl text-gray-700 font-medium"
                 style={{ fontFamily: 'OpenSans, sans-serif' }}
               >
@@ -591,6 +627,18 @@ export default function Payments() {
                 Add Payee
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Loading Modal */}
+      {showLoading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
+          <div className="bg-white rounded-2xl p-8 flex flex-col items-center">
+            <div className="w-16 h-16 border-4 border-[#126987] border-t-transparent rounded-full animate-spin"></div>
+            <p className="mt-4 text-gray-600 font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              Loading...
+            </p>
           </div>
         </div>
       )}
