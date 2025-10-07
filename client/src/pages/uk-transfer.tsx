@@ -434,7 +434,17 @@ export default function UkTransfer() {
         backgroundColor: '#f9fafb'
       }}>
         <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
-          <button onClick={() => setStep('form')} className="flex items-center text-white">
+          <button onClick={() => {
+            if (formData) {
+              form.setValue('recipientName', formData.recipientName);
+              form.setValue('accountNumber', formData.accountNumber);
+              form.setValue('sortCode', formData.sortCode);
+              form.setValue('amount', formData.amount);
+              form.setValue('reference', formData.reference);
+              form.setValue('fromAccount', formData.fromAccount);
+            }
+            setStep('form');
+          }} className="flex items-center text-white">
             <ChevronLeft className="w-6 h-6 mr-2" />
             <span className="font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Confirm Transfer</span>
           </button>
@@ -701,7 +711,17 @@ export default function UkTransfer() {
         backgroundColor: '#f9fafb'
       }}>
         <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
-          <button onClick={() => setStep('form')} className="flex items-center text-white">
+          <button onClick={() => {
+            if (formData) {
+              form.setValue('recipientName', formData.recipientName);
+              form.setValue('accountNumber', formData.accountNumber);
+              form.setValue('sortCode', formData.sortCode);
+              form.setValue('amount', formData.amount);
+              form.setValue('reference', formData.reference);
+              form.setValue('fromAccount', formData.fromAccount);
+            }
+            setStep('form');
+          }} className="flex items-center text-white">
             <ChevronLeft className="w-6 h-6 mr-2" />
             <span className="font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Transfer Failed</span>
           </button>
@@ -730,7 +750,17 @@ export default function UkTransfer() {
                 Back to Dashboard
               </button>
               <button 
-                onClick={() => setStep('form')}
+                onClick={() => {
+                  if (formData) {
+                    form.setValue('recipientName', formData.recipientName);
+                    form.setValue('accountNumber', formData.accountNumber);
+                    form.setValue('sortCode', formData.sortCode);
+                    form.setValue('amount', formData.amount);
+                    form.setValue('reference', formData.reference);
+                    form.setValue('fromAccount', formData.fromAccount);
+                  }
+                  setStep('form');
+                }}
                 className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold active:scale-98 transition-transform text-sm"
                 style={{ fontFamily: 'OpenSans, sans-serif' }}
               >
