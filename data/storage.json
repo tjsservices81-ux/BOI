@@ -190,11 +190,12 @@
         "name": "John",
         "email": "maughantj81@gmail.com",
         "phone": "45464",
-        "address": null,
-        "dateOfBirth": null,
+        "address": "",
+        "dateOfBirth": "",
         "joinDate": "2025-10-05T21:42:28.038Z",
         "dateCreated": "2025-10-07T16:16:08.406Z",
-        "isDisabled": false
+        "isDisabled": false,
+        "currency": "EUR"
       }
     ]
   ],

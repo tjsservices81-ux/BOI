@@ -1319,7 +1319,7 @@ export default function Profile() {
                     }`}
                   >
                     <p className={`font-semibold ${userCurrency === 'EUR' ? 'text-blue-900' : 'text-gray-900'}`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      BOI Euro
+                      BOI
                     </p>
                     <p className={`text-sm ${userCurrency === 'EUR' ? 'text-blue-600' : 'text-gray-500'}`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
                       EUR (€)
@@ -1339,7 +1339,7 @@ export default function Profile() {
                     }`}
                   >
                     <p className={`font-semibold ${userCurrency === 'GBP' ? 'text-blue-900' : 'text-gray-900'}`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      BOI UK GBP
+                      BOI UK
                     </p>
                     <p className={`text-sm ${userCurrency === 'GBP' ? 'text-blue-600' : 'text-gray-500'}`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
                       GBP (£)
