@@ -13,11 +13,11 @@ export default function Payments() {
   const [deleteConfirm, setDeleteConfirm] = useState<{name: string, accountInfo: string} | null>(null);
 
   // Get transfer visibility settings
-  const transferSettings = UserDataManager.getUserData('transferSettings', {
+  const transferSettings = UserDataManager.getUserData('transferSettings', null) || {
     showSepaTransfer: true,
     showUkTransfer: true,
     showInternalTransfer: true
-  });
+  };
 
   const allPaymentOptions = [
     {
