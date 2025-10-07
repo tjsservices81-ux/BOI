@@ -1,9 +1,10 @@
 import { useLocation } from "wouter";
-import { ChevronLeft, Bell, Mail } from "lucide-react";
+import { ChevronLeft, Bell, Mail, ScanFace } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Switch } from "@/components/ui/switch";
 import { getUserCurrency } from "../utils/currencyUtils";
 import ukLogoPath from "@assets/IMG_1505_1759859367310.png";
+import faceIdIconPath from "@assets/IMG_1506_1759859583184.png";
 
 export default function Settings() {
   const [, setLocation] = useLocation();
@@ -20,6 +21,11 @@ export default function Settings() {
     const saved = localStorage.getItem('emailsEnabled');
     return saved !== null ? JSON.parse(saved) : true;
   });
+  
+  const [faceIdEnabled, setFaceIdEnabled] = useState(() => {
+    const saved = localStorage.getItem('faceIdEnabled');
+    return saved !== null ? JSON.parse(saved) : false;
+  });
 
   // Save settings to localStorage when they change
   useEffect(() => {
@@ -29,6 +35,10 @@ export default function Settings() {
   useEffect(() => {
     localStorage.setItem('emailsEnabled', JSON.stringify(emailsEnabled));
   }, [emailsEnabled]);
+
+  useEffect(() => {
+    localStorage.setItem('faceIdEnabled', JSON.stringify(faceIdEnabled));
+  }, [faceIdEnabled]);
 
   const handleNavigation = (path: string) => {
     setIsNavigating(true);
@@ -132,6 +142,34 @@ export default function Settings() {
                   checked={emailsEnabled}
                   onCheckedChange={setEmailsEnabled}
                   data-testid="toggle-emails"
+                />
+              </div>
+            </div>
+
+            {/* Face ID Toggle */}
+            <div className="w-full bg-white border border-gray-100 rounded-2xl p-5 shadow-lg">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-md">
+                    <img 
+                      src={faceIdIconPath} 
+                      alt="Face ID" 
+                      className="w-7 h-7 filter brightness-0 invert"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Face ID
+                    </h3>
+                    <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Use Face ID for login
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={faceIdEnabled}
+                  onCheckedChange={setFaceIdEnabled}
+                  data-testid="toggle-faceid"
                 />
               </div>
             </div>

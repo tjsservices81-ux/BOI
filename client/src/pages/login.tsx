@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { UserDataManager } from "@/utils/userDataManager";
 import { getUserCurrency } from "@/utils/currencyUtils";
 import ukLogoPath from "@assets/IMG_1505_1759859367310.png";
+import faceIdIconPath from "@assets/IMG_1506_1759859583184.png";
 
 export default function Login() {
   const [customerNumber, setCustomerNumber] = useState("");
@@ -47,6 +48,10 @@ export default function Login() {
   const [connectionStatus, setConnectionStatus] = useState<string>('');
   const [offlineStatus, setOfflineStatus] = useState<{hasOfflineAccess: boolean; timeRemaining?: string} | null>(null);
   const [userCurrency, setUserCurrency] = useState<'EUR' | 'GBP'>(() => getUserCurrency());
+  const [faceIdEnabled, setFaceIdEnabled] = useState(() => {
+    const saved = localStorage.getItem('faceIdEnabled');
+    return saved !== null ? JSON.parse(saved) : false;
+  });
   
   // Input refs for proper focus management in PWA
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -63,6 +68,19 @@ export default function Login() {
   
   const toastHook = useToast();
   const toast = toastHook?.toast || (() => {});
+
+  // Listen for Face ID setting changes
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const saved = localStorage.getItem('faceIdEnabled');
+      if (saved !== null) {
+        setFaceIdEnabled(JSON.parse(saved));
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   // Check connection status and offline login availability
   const checkConnectionAndOfflineStatus = async () => {
@@ -1119,12 +1137,12 @@ export default function Login() {
                       <div className="absolute inset-0 rounded-full border-2 border-blue-300 opacity-50"></div>
                     )}
                     
-                    {/* Original Fingerprint icon with effects */}
+                    {/* Biometric icon - Face ID or Fingerprint based on settings */}
                     <div className="relative z-10 w-10 h-10 flex items-center justify-center">
                       <img 
-                        src="/Icons_Fingerprint.svg" 
-                        alt="Fingerprint" 
-                        className="w-8 h-8"
+                        src={faceIdEnabled ? faceIdIconPath : "/Icons_Fingerprint.svg"} 
+                        alt={faceIdEnabled ? "Face ID" : "Fingerprint"} 
+                        className={faceIdEnabled ? "w-9 h-9" : "w-8 h-8"}
                         loading="eager"
                         style={{
                           filter: biometricVerified 
@@ -1148,7 +1166,12 @@ export default function Login() {
                       WebkitTapHighlightColor: 'transparent'
                     }}
                   >
-                    {biometricVerified ? 'Fingerprint verified' : isScanning ? 'Hold to scan fingerprint...' : 'Biometrics login'}
+                    {biometricVerified 
+                      ? (faceIdEnabled ? 'Face ID verified' : 'Fingerprint verified')
+                      : isScanning 
+                        ? (faceIdEnabled ? 'Verifying Face ID...' : 'Hold to scan fingerprint...')
+                        : (faceIdEnabled ? 'Face ID login' : 'Biometrics login')
+                    }
                   </p>
                 </div>
 
