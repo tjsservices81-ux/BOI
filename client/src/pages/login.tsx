@@ -1292,19 +1292,19 @@ export default function Login() {
         <div className="fixed bottom-0 left-0 right-0 bg-[#126987]/95 backdrop-blur-sm px-4 py-3 ios-safe-bottom">
           <div className="flex justify-evenly items-center w-full max-w-xs mx-auto">
             <button 
-              className="flex flex-col items-center space-y-1 py-2 active:scale-95 transition-transform duration-150"
+              className="flex flex-col items-center space-y-1 py-2 transition-opacity duration-150 hover:opacity-80"
               onClick={handleATMLocatorOpen}
               disabled={isNavigating || isLoading}
             >
               <MapPin className="w-5 h-5 text-white" />
               <span className="text-white text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>ATM/Branch</span>
             </button>
-            <button className="flex flex-col items-center space-y-1 py-2 active:scale-95 transition-transform duration-150">
+            <button className="flex flex-col items-center space-y-1 py-2 transition-opacity duration-150 hover:opacity-80">
               <Shield className="w-5 h-5 text-white" />
               <span className="text-white text-xs font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Security</span>
             </button>
             <button 
-              className="flex flex-col items-center space-y-1 py-2 active:scale-95 transition-transform duration-150"
+              className="flex flex-col items-center space-y-1 py-2 transition-opacity duration-150 hover:opacity-80"
               onClick={() => setShowMoreMenu(true)}
               disabled={isNavigating || isLoading}
             >
