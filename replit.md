@@ -23,12 +23,13 @@ Preferred communication style: Simple, everyday language.
 - **Security**: Device-specific one-time access codes, PIN-based authentication, session validation.
 
 ### Key Features
-- **Authentication**: Device-specific one-time codes (iOS: 2 uses, Android/Other: 1 use); persistent login for 1 year; PIN-based user registration with customer number validation; Admin Panel for user management and instant access revocation.
+- **Authentication**: Device-specific one-time codes (iOS: 2 uses, Android/Other: 1 use); persistent login for 1 year; PIN-based user registration with customer number validation; Admin Panel for user management and instant access revocation; Face ID/biometric authentication with WebAuthn passkey integration (saved as "BOI Customer Login").
 - **Banking Operations**: Management of multiple account types (Current, Savings, Credit Cards); comprehensive transaction history with categorization; UK transfers with exchange rate calculations.
 - **Offline Functionality**: 24-hour offline access with IndexedDB caching; real-time balance updates with transaction impact.
 - **PWA Features**: Installable via "Add to Home Screen"; full offline support; push notifications for account alerts and transactions; native app feel with standalone display mode and custom splash screen.
 - **Data Flow**: Secure user authentication flow with device validation and persistent session establishment; robust transaction processing with real-time balance updates; seamless offline synchronization with conflict resolution.
-- **PDF Generation**: Comprehensive PDF statement generation system for bank statements and transfer confirmations, utilizing an authentic Bank of Ireland template image for branding, with dynamic content overlay, multi-page support, and date range filtering.
+- **PDF Generation**: Comprehensive PDF statement generation system for bank statements and transfer confirmations, utilizing an authentic Bank of Ireland template image for branding, with dynamic content overlay, multi-page support, and date range filtering; statement generation UI with success state showing Open/Share/Save quick actions (Share uses Web Share API for mobile devices).
+- **Settings & Preferences**: User-controlled notification and email settings that properly gate email/notification sending; toggles for enabling/disabling transfer confirmations, bank statement emails, and push notifications.
 - **Validation & Enhancements**: Flexible IBAN/BIC validation for international transfers; enhanced sort code validation with identification of various UK banks (e.g., Barclays, Lloyds, TSB, NatWest, Bank of Scotland) including visual bank icons; restoration of "Secure Connection Active" status display during transfer processing.
 
 ### UI/UX Decisions
