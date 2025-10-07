@@ -438,7 +438,8 @@ export default function UkTransfer() {
         bottom: 0, 
         display: 'flex', 
         flexDirection: 'column',
-        backgroundColor: '#f9fafb'
+        backgroundColor: '#f9fafb',
+        zIndex: 1000
       }}>
         <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
           <button onClick={() => setStep('form')} className="flex items-center text-white">
