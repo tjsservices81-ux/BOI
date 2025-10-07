@@ -697,14 +697,7 @@ export default function UkTransfer() {
 
   if (step === 'cancelled') {
     return (
-      <div className="page-container page-fade-in" style={{ 
-        position: 'fixed', 
-        top: 0, 
-        left: 0, 
-        right: 0, 
-        bottom: 0, 
-        display: 'flex', 
-        flexDirection: 'column',
+      <div className="page-container page-fade-in h-screen overflow-hidden flex flex-col" style={{ 
         backgroundColor: '#f9fafb'
       }}>
         <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
@@ -751,14 +744,7 @@ export default function UkTransfer() {
   }
 
   return (
-    <div className="page-container page-slide-in-right" style={{ 
-      position: 'fixed', 
-      top: 0, 
-      left: 0, 
-      right: 0, 
-      bottom: 0, 
-      display: 'flex', 
-      flexDirection: 'column',
+    <div className="page-container page-slide-in-right h-screen overflow-hidden flex flex-col" style={{ 
       backgroundColor: '#f9fafb'
     }}>
       <div className="bg-[#126987] px-4 py-3 flex items-center justify-between" style={{ flexShrink: 0 }}>
