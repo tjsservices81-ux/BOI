@@ -101,6 +101,18 @@
   .dropdown-item:hover {
     background-color: transparent !important;
   }
+  
+  /* Prevent any opacity changes on touch */
+  *:hover {
+    opacity: inherit !important;
+  }
+  
+  /* Prevent touch-triggered transparency */
+  button:active,
+  [role="button"]:active,
+  a:active {
+    opacity: 1 !important;
+  }
 }
 
 /* Mobile keyboard and viewport handling */
@@ -2401,7 +2413,6 @@ button {
 
 button:active {
   transform: scale(0.98);
-  opacity: 0.8;
 }
 
 /* Android-specific button fixes */
