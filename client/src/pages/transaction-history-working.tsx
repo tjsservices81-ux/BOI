@@ -327,8 +327,7 @@ export default function TransactionHistoryWorking() {
         ref={scrollContainerRef}
         className="transaction-scroll-container flex-1 overflow-y-auto p-4"
         style={{ 
-          minHeight: 0,
-          paddingBottom: '64px'
+          minHeight: 0
         }}
         data-scroll-container
         data-scroll-route={`/transactions/${accountId}`}
