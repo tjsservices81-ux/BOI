@@ -634,11 +634,8 @@ export default function Payments() {
       {/* Loading Modal */}
       {showLoading && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
-          <div className="bg-white rounded-2xl p-8 flex flex-col items-center">
+          <div className="bg-white rounded-2xl p-8 flex items-center justify-center">
             <div className="w-16 h-16 border-4 border-[#126987] border-t-transparent rounded-full animate-spin"></div>
-            <p className="mt-4 text-gray-600 font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Loading...
-            </p>
           </div>
         </div>
       )}
