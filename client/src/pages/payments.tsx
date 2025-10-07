@@ -574,24 +574,25 @@ export default function Payments() {
                     </div>
                   </>
                 )}
-              </div>
-            </div>
 
-            <div className="flex space-x-3 p-6 border-t border-gray-200 flex-shrink-0">
-              <button
-                onClick={() => setShowAddPayee(false)}
-                className="flex-1 px-4 py-3 border border-gray-300 rounded-xl text-gray-700 font-medium"
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleAddPayee}
-                className="flex-1 px-4 py-3 bg-[#126987] text-white rounded-xl font-medium"
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
-              >
-                Add Payee
-              </button>
+                {/* Buttons inside scrollable area */}
+                <div className="flex space-x-3 pt-6 pb-24">
+                  <button
+                    onClick={() => setShowAddPayee(false)}
+                    className="flex-1 px-4 py-3 border border-gray-300 rounded-xl text-gray-700 font-medium"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleAddPayee}
+                    className="flex-1 px-4 py-3 bg-[#126987] text-white rounded-xl font-medium"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  >
+                    Add Payee
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
