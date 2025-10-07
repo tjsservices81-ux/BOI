@@ -3,6 +3,8 @@ import { ChevronLeft, Bell, Mail, ScanFace } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Switch } from "@/components/ui/switch";
 import { getUserCurrency } from "../utils/currencyUtils";
+import { UserDataManager } from "../utils/userDataManager";
+import { useToast } from "@/hooks/use-toast";
 import ukLogoPath from "@assets/IMG_1505_1759859367310.png";
 import faceIdIconPath from "@assets/IMG_1506_1759859583184.png";
 
@@ -10,6 +12,8 @@ export default function Settings() {
   const [, setLocation] = useLocation();
   const [isNavigating, setIsNavigating] = useState(false);
   const [userCurrency] = useState(() => getUserCurrency());
+  const { toast } = useToast();
+  const [isRegisteringFaceId, setIsRegisteringFaceId] = useState(false);
   
   // Load settings from localStorage
   const [notificationsEnabled, setNotificationsEnabled] = useState(() => {
@@ -45,6 +49,97 @@ export default function Settings() {
     setTimeout(() => {
       setLocation(path);
     }, 150);
+  };
+
+  const handleFaceIdToggle = async (enabled: boolean) => {
+    if (!enabled) {
+      // Disabling Face ID - just clear the stored credential
+      localStorage.removeItem('faceIdCredentialId');
+      setFaceIdEnabled(false);
+      return;
+    }
+
+    // Enabling Face ID - register passkey
+    const currentUser = UserDataManager.getCurrentUser();
+    if (!currentUser) {
+      toast({
+        title: "Error",
+        description: "Please log in first to enable Face ID",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsRegisteringFaceId(true);
+
+    try {
+      // Check if Web Authentication API is available
+      if (!window.PublicKeyCredential) {
+        // Fallback for browsers without WebAuthn
+        localStorage.setItem('faceIdCredentialId', 'fallback-' + currentUser);
+        setFaceIdEnabled(true);
+        toast({
+          title: "Face ID Enabled",
+          description: "Face ID authentication is now active",
+        });
+        setIsRegisteringFaceId(false);
+        return;
+      }
+
+      // Register passkey using WebAuthn
+      const challenge = new Uint8Array(32);
+      crypto.getRandomValues(challenge);
+
+      const userId = new Uint8Array(16);
+      crypto.getRandomValues(userId);
+
+      const publicKeyCredentialCreationOptions = {
+        challenge,
+        rp: {
+          name: "Bank of Ireland",
+          id: window.location.hostname,
+        },
+        user: {
+          id: userId,
+          name: currentUser,
+          displayName: currentUser,
+        },
+        pubKeyCredParams: [
+          { alg: -7, type: "public-key" as const },
+          { alg: -257, type: "public-key" as const }
+        ],
+        authenticatorSelection: {
+          authenticatorAttachment: "platform" as const,
+          userVerification: "required" as const,
+        },
+        timeout: 60000,
+      };
+
+      const credential = await navigator.credentials.create({
+        publicKey: publicKeyCredentialCreationOptions
+      }) as PublicKeyCredential;
+
+      if (credential && credential.id) {
+        // Store credential ID (base64 encoded) for future authentication
+        const rawIdArray = Array.from(new Uint8Array(credential.rawId));
+        const credentialIdBase64 = btoa(rawIdArray.map(byte => String.fromCharCode(byte)).join(''));
+        localStorage.setItem('faceIdCredentialId', credentialIdBase64);
+        setFaceIdEnabled(true);
+        toast({
+          title: "Face ID Enabled",
+          description: "Passkey registered successfully",
+        });
+      }
+    } catch (error) {
+      console.error('Face ID registration error:', error);
+      toast({
+        title: "Face ID Registration Failed",
+        description: "Could not register passkey. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRegisteringFaceId(false);
+    }
   };
 
   return (
@@ -151,24 +246,29 @@ export default function Settings() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                   <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-md">
-                    <img 
-                      src={faceIdIconPath} 
-                      alt="Face ID" 
-                      className="w-7 h-7 filter brightness-0 invert"
-                    />
+                    {isRegisteringFaceId ? (
+                      <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <img 
+                        src={faceIdIconPath} 
+                        alt="Face ID" 
+                        className="w-7 h-7 filter brightness-0 invert"
+                      />
+                    )}
                   </div>
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                       Face ID
                     </h3>
                     <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Use Face ID for login
+                      {isRegisteringFaceId ? 'Registering passkey...' : 'Use Face ID for login'}
                     </p>
                   </div>
                 </div>
                 <Switch
                   checked={faceIdEnabled}
-                  onCheckedChange={setFaceIdEnabled}
+                  onCheckedChange={handleFaceIdToggle}
+                  disabled={isRegisteringFaceId}
                   data-testid="toggle-faceid"
                 />
               </div>

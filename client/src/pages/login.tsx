@@ -431,32 +431,30 @@ export default function Login() {
       setIsScanning(true);
       
       try {
+        // Check if passkey is registered
+        const credentialId = localStorage.getItem('faceIdCredentialId');
+        
         // Check if Web Authentication API is available
-        if (window.PublicKeyCredential) {
+        if (window.PublicKeyCredential && credentialId && !credentialId.startsWith('fallback-')) {
           try {
-            // Use Web Authentication API for real biometric authentication
-            const publicKeyCredentialCreationOptions = {
-              challenge: new Uint8Array(32),
-              rp: {
-                name: "Bank of Ireland",
-                id: window.location.hostname,
-              },
-              user: {
-                id: new Uint8Array(16),
-                name: targetUser,
-                displayName: targetUser,
-              },
-              pubKeyCredParams: [{alg: -7, type: "public-key" as const}],
-              authenticatorSelection: {
-                authenticatorAttachment: "platform" as const,
-                userVerification: "required" as const,
-              },
+            // Use stored passkey for authentication
+            const challenge = new Uint8Array(32);
+            crypto.getRandomValues(challenge);
+
+            const publicKeyCredentialRequestOptions = {
+              challenge,
+              rpId: window.location.hostname,
+              allowCredentials: [{
+                id: Uint8Array.from(atob(credentialId), c => c.charCodeAt(0)),
+                type: "public-key" as const,
+              }],
+              userVerification: "required" as const,
               timeout: 60000,
             };
 
-            // Trigger Face ID / Touch ID authentication
-            await navigator.credentials.create({
-              publicKey: publicKeyCredentialCreationOptions
+            // Trigger Face ID / Touch ID authentication with stored passkey
+            await navigator.credentials.get({
+              publicKey: publicKeyCredentialRequestOptions
             });
 
             // Success - Face ID verified
@@ -487,7 +485,7 @@ export default function Login() {
           }
         }
         
-        // Fallback: Simulate Face ID authentication for browsers without WebAuthn
+        // Fallback: Simulate Face ID authentication for browsers without WebAuthn or passkey
         await new Promise(resolve => setTimeout(resolve, 1500));
         
         // Success - Face ID verified
