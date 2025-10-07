@@ -48,14 +48,27 @@ input[type="text"], input[type="email"], input[type="password"], textarea {
 .app-shell.locked,
 #app.locked, #root.locked {
   height: 100dvh;
-  overflow: hidden;
-  overscroll-behavior: none;
-  touch-action: none;
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+  touch-action: none !important;
+  position: fixed !important;
 }
 
 /* Safety: ensure inner panels don't re-enable scroll */
 .app-shell.locked * {
   overscroll-behavior: contain;
+}
+
+/* Prevent any scrolling on html/body when locked */
+html:has(.app-shell.locked),
+body:has(.app-shell.locked),
+html.scroll-locked,
+body.scroll-locked {
+  overflow: hidden !important;
+  position: fixed !important;
+  width: 100% !important;
+  height: 100% !important;
+  touch-action: none !important;
 }
 
 @keyframes slideIn {
@@ -299,9 +312,14 @@ html, body {
 #root {
   height: 100vh;
   max-height: 100vh;
-  overflow: auto;
+  overflow: hidden;
   -webkit-overflow-scrolling: touch;
   touch-action: manipulation;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
 
 /* Prevent double-tap zoom on interactive elements only */
