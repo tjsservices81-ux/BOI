@@ -412,7 +412,7 @@ export default function IbanTransfer() {
 
   if (step === 'cancelled') {
     return (
-      <div className="page-container page-fade-in h-screen overflow-hidden flex flex-col" style={{ 
+      <div className="h-screen overflow-hidden flex flex-col page-fade-in" style={{ 
         backgroundColor: '#f9fafb'
       }}>
         <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
@@ -462,7 +462,7 @@ export default function IbanTransfer() {
     const selectedAccount = accounts.find(acc => acc.id === formData.fromAccount);
 
     return (
-      <div className="page-container page-slide-in-right h-screen overflow-hidden flex flex-col" style={{ 
+      <div className="h-screen overflow-hidden flex flex-col page-slide-in-right" style={{ 
         backgroundColor: '#f9fafb'
       }}>
         <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
@@ -541,7 +541,7 @@ export default function IbanTransfer() {
   }
 
   return (
-    <div className="page-container page-slide-in-right h-screen overflow-hidden flex flex-col" style={{ 
+    <div className="h-screen overflow-hidden flex flex-col page-slide-in-right" style={{ 
       backgroundColor: '#f9fafb'
     }}>
       <div className="bg-[#126987] px-4 py-3 flex items-center justify-between" style={{ flexShrink: 0 }}>
