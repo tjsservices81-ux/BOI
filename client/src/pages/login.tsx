@@ -937,7 +937,7 @@ export default function Login() {
               <img 
                 src={userCurrency === 'GBP' ? ukLogoPath : "/boi_logo.svg"} 
                 alt={userCurrency === 'GBP' ? "Bank of Ireland UK" : "Bank of Ireland"} 
-                className="h-12 filter brightness-0 invert mb-2 asset-instant"
+                className={`${userCurrency === 'GBP' ? 'h-12' : 'h-10'} filter brightness-0 invert mb-2 asset-instant`}
                 loading="eager"
                 decoding="sync"
                 style={{ 
@@ -1042,7 +1042,7 @@ export default function Login() {
               <img 
                 src={userCurrency === 'GBP' ? ukLogoPath : "/boi_logo.svg"} 
                 alt={userCurrency === 'GBP' ? "Bank of Ireland UK" : "Bank of Ireland"} 
-                className="h-10 filter brightness-0 invert" 
+                className={`${userCurrency === 'GBP' ? 'h-10' : 'h-8'} filter brightness-0 invert`}
               />
             </button>
           </div>

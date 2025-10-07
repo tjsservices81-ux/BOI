@@ -345,7 +345,7 @@ export default function Dashboard() {
           <img 
             src={userCurrency === 'GBP' ? ukLogoPath : "/boi_logo.svg"} 
             alt={userCurrency === 'GBP' ? "Bank of Ireland UK" : "Bank of Ireland"} 
-            className="h-8 filter brightness-0 invert" 
+            className={`${userCurrency === 'GBP' ? 'h-8' : 'h-6'} filter brightness-0 invert`}
           />
         </div>
         <div className="flex items-center">
