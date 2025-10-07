@@ -8,6 +8,8 @@ import { useAuth } from "@/lib/auth";
 import { User, ExternalLink, HelpCircle, Phone, Settings, Shield, MapPin, MoreHorizontal } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { UserDataManager } from "@/utils/userDataManager";
+import { getUserCurrency } from "@/utils/currencyUtils";
+import ukLogoPath from "@assets/IMG_1500_1759857711690.png";
 
 export default function Login() {
   const [customerNumber, setCustomerNumber] = useState("");
@@ -44,6 +46,7 @@ export default function Login() {
   const [nearbyATMs, setNearbyATMs] = useState<any[]>([]);
   const [connectionStatus, setConnectionStatus] = useState<string>('');
   const [offlineStatus, setOfflineStatus] = useState<{hasOfflineAccess: boolean; timeRemaining?: string} | null>(null);
+  const [userCurrency, setUserCurrency] = useState<'EUR' | 'GBP'>('EUR');
   
   // Input refs for proper focus management in PWA
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -156,6 +159,12 @@ export default function Login() {
       validateAndCleanUsers();
     }
   }, [showAdminLogin]);
+
+  // Check user's currency preference for logo display
+  useEffect(() => {
+    const currency = getUserCurrency();
+    setUserCurrency(currency);
+  }, []);
 
   const handleNavigation = (path: string) => {
     setIsNavigating(true);
@@ -926,9 +935,9 @@ export default function Login() {
             {/* Bank of Ireland Logo with authentic styling - always visible */}
             <div className="mb-8 flex flex-col items-center">
               <img 
-                src="/boi_logo.svg" 
-                alt="Bank of Ireland" 
-                className="h-10 filter brightness-0 invert mb-2 asset-instant"
+                src={userCurrency === 'GBP' ? ukLogoPath : "/boi_logo.svg"} 
+                alt={userCurrency === 'GBP' ? "Bank of Ireland UK" : "Bank of Ireland"} 
+                className="h-12 filter brightness-0 invert mb-2 asset-instant"
                 loading="eager"
                 decoding="sync"
                 style={{ 
@@ -1030,7 +1039,11 @@ export default function Login() {
               onClick={handleLogoTap}
               className="active:scale-95 transition-transform"
             >
-              <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-8 filter brightness-0 invert" />
+              <img 
+                src={userCurrency === 'GBP' ? ukLogoPath : "/boi_logo.svg"} 
+                alt={userCurrency === 'GBP' ? "Bank of Ireland UK" : "Bank of Ireland"} 
+                className="h-10 filter brightness-0 invert" 
+              />
             </button>
           </div>
         </div>

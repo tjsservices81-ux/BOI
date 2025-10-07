@@ -51,7 +51,7 @@ export default function More() {
             <img 
               src={userCurrency === 'GBP' ? ukLogoPath : "/boi_logo.svg"} 
               alt={userCurrency === 'GBP' ? "Bank of Ireland UK" : "Bank of Ireland"} 
-              className="h-8 filter brightness-0 invert"
+              className="h-10 filter brightness-0 invert"
             />
           </div>
           
