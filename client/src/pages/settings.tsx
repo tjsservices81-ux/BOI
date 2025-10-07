@@ -78,10 +78,6 @@ export default function Settings() {
         // Fallback for browsers without WebAuthn
         localStorage.setItem('faceIdCredentialId', 'fallback-' + currentUser);
         setFaceIdEnabled(true);
-        toast({
-          title: "Face ID Enabled",
-          description: "Face ID authentication is now active",
-        });
         setIsRegisteringFaceId(false);
         return;
       }
@@ -125,10 +121,6 @@ export default function Settings() {
         const credentialIdBase64 = btoa(rawIdArray.map(byte => String.fromCharCode(byte)).join(''));
         localStorage.setItem('faceIdCredentialId', credentialIdBase64);
         setFaceIdEnabled(true);
-        toast({
-          title: "Face ID Enabled",
-          description: "Passkey registered successfully",
-        });
       }
     } catch (error) {
       console.error('Face ID registration error:', error);
