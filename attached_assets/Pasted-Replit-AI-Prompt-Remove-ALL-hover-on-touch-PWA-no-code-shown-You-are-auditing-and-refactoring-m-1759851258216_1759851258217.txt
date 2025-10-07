@@ -1,0 +1,48 @@
+Replit AI Prompt — Remove ALL hover on touch/PWA (no code shown)
+
+You are auditing and refactoring my entire project. Do a full repository scan and make these changes WITHOUT showing or relying on specific code snippets in your reply. Summarize what you changed and list affected files with a short description for each.
+
+Goal: On touch devices and in PWA mode, completely eliminate hover effects and hover-triggered behaviors so scrolling never “hovers” over buttons/links. Taps should activate; scrolling should not. Desktop pointer/mouse can keep hover.
+
+Scope of the deep scan
+	1.	Search across all styling systems (CSS, SCSS, CSS modules, CSS-in-JS, utility frameworks, component libraries) for anything that creates visual hover states or hover-based interactions.
+	2.	Search across all JS/TS for logic that simulates hover (e.g., events or props that visually react to pointer proximity).
+	3.	Include 3rd-party UI kits/themes and shared design tokens if present.
+
+What to change (conceptually, not by showing code)
+	•	Keep hover visuals and behaviors only for true mouse/trackpad environments.
+	•	Neutralize or bypass hover visuals and hover-triggered JS on touch devices, and also while the user is actively scrolling/touching.
+	•	Ensure focus/keyboard accessibility is preserved (keyboard users still get visible focus states; touch users don’t see unintended outlines).
+	•	Remove or disable any scripts that “fake” hover on touch.
+	•	Where utilities/classes generate hover variants, stop them from applying on touch/PWA paths.
+	•	Prevent “pressed/active” flashes that appear during scroll on iOS/Android PWAs.
+	•	Do not degrade layout or clickable/tappable hit areas.
+
+Libraries & patterns to consider (adjust as appropriate to the stack)
+	•	Utility frameworks (e.g., hover variants in utility classes).
+	•	Component libraries (props that add hover states, ripple systems, or elevation on hover).
+	•	CSS-in-JS patterns that attach hover styles at runtime.
+	•	Global themes/tokens that define hover state colors, shadows, or transforms.
+	•	Any “hover hint” tooltips or menus that open on hover; make them click/tap-to-open on touch.
+
+Acceptance criteria (must all be true)
+	•	On touch/PWA: Scrolling over interactive elements never produces hover visuals or hover-based behaviors.
+	•	On touch/PWA: Buttons/links only visually respond when tapped; no hover shadows, color shifts, lifts, glows, or transforms during scroll.
+	•	On desktop with mouse: Existing hover affordances remain as before.
+	•	Focus accessibility: Keyboard navigation still shows a clear focus indicator; touch taps don’t leave persistent focus rings unless appropriate.
+	•	No regressions to spacing, hit-targets, or click/tap reliability.
+	•	No performance regressions; scrolling remains smooth.
+
+Testing instructions to run (and to include in your summary)
+	•	Test in a mobile device simulator and a real device if possible (iOS Safari PWA, Android Chrome PWA).
+	•	While slowly scrolling over dense areas (bottom navigation, top app bar, list items with buttons), confirm there are zero hover flashes.
+	•	Tap through all primary controls (buttons, links, nav items, cards) to confirm normal activation and ripple/press behavior (if any) still works as a tap, not a hover.
+	•	Use a desktop browser with a mouse to verify original hover still appears.
+	•	Use keyboard navigation on desktop to ensure focus visibility remains.
+
+Output format (no code; just a clear audit log)
+	•	“Files changed:” list each file/path touched, one line per file, with a human description of what was adjusted (e.g., “removed hover visuals for touch/PWA,” “disabled hover behavior in component X,” “kept keyboard focus styles,” etc.).
+	•	“Behavioral changes:” bullet list summarizing how touch vs. desktop now differ.
+	•	“Follow-ups (if any):” call out any 3rd-party constraints you couldn’t fully neutralize and propose options.
+
+Do all of the above now and return only the audit/summary (no code).

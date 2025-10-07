@@ -2,6 +2,107 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ===== TOUCH/PWA HOVER ELIMINATION ===== */
+/* Disable ALL hover effects on touch devices and PWA */
+@media (hover: none) and (pointer: coarse) {
+  * {
+    /* Neutralize all hover states on touch devices */
+    --tw-hover-opacity: 0 !important;
+  }
+  
+  /* Override Tailwind hover utilities */
+  [class*="hover:"] {
+    pointer-events: auto !important;
+  }
+  
+  .hover\:bg-primary\/90:hover { background-color: inherit !important; }
+  .hover\:bg-destructive\/90:hover { background-color: inherit !important; }
+  .hover\:bg-accent:hover { background-color: inherit !important; }
+  .hover\:text-accent-foreground:hover { color: inherit !important; }
+  .hover\:bg-secondary\/80:hover { background-color: inherit !important; }
+  .hover\:underline:hover { text-decoration: none !important; }
+  .hover\:bg-gray-50:hover { background-color: inherit !important; }
+  .hover\:bg-white\/20:hover { background-color: inherit !important; }
+  .hover\:shadow-sm:hover { box-shadow: none !important; }
+  .hover\:opacity-100:hover { opacity: inherit !important; }
+  
+  /* Prevent any hover transformations */
+  *:hover {
+    transform: none !important;
+    box-shadow: inherit !important;
+    background-color: inherit !important;
+    color: inherit !important;
+    opacity: inherit !important;
+    text-decoration: inherit !important;
+  }
+}
+
+/* Additional PWA-specific hover disabling */
+@media (display-mode: standalone) {
+  * {
+    --tw-hover-opacity: 0 !important;
+  }
+  
+  [class*="hover:"] {
+    pointer-events: auto !important;
+  }
+  
+  .hover\:bg-primary\/90:hover { background-color: inherit !important; }
+  .hover\:bg-destructive\/90:hover { background-color: inherit !important; }
+  .hover\:bg-accent:hover { background-color: inherit !important; }
+  .hover\:text-accent-foreground:hover { color: inherit !important; }
+  .hover\:bg-secondary\/80:hover { background-color: inherit !important; }
+  .hover\:underline:hover { text-decoration: none !important; }
+  .hover\:bg-gray-50:hover { background-color: inherit !important; }
+  .hover\:bg-white\/20:hover { background-color: inherit !important; }
+  .hover\:shadow-sm:hover { box-shadow: none !important; }
+  .hover\:opacity-100:hover { opacity: inherit !important; }
+  
+  *:hover {
+    transform: none !important;
+    box-shadow: inherit !important;
+    background-color: inherit !important;
+    color: inherit !important;
+    opacity: inherit !important;
+    text-decoration: inherit !important;
+  }
+}
+
+/* Preserve keyboard focus for accessibility */
+@media (hover: none) and (pointer: coarse), (display-mode: standalone) {
+  *:focus-visible {
+    outline: 2px solid hsl(var(--ring)) !important;
+    outline-offset: 2px !important;
+  }
+  
+  /* Remove focus ring on tap/touch, only show on keyboard navigation */
+  *:focus:not(:focus-visible) {
+    outline: none !important;
+  }
+  
+  /* Disable hover on interactive card elements */
+  .card-interactive:hover,
+  .haptic-feedback:hover {
+    background-color: transparent !important;
+    transform: none !important;
+    box-shadow: none !important;
+  }
+  
+  /* Bottom navigation - no hover on touch */
+  .bottom-navigation button:hover,
+  .bottom-nav-container button:hover {
+    background-color: transparent !important;
+    opacity: 1 !important;
+  }
+  
+  /* Prevent scroll-hover on lists and menus */
+  [role="menuitem"]:hover,
+  [role="option"]:hover,
+  .dropdown-item:hover {
+    background-color: transparent !important;
+  }
+}
+
 /* Mobile keyboard and viewport handling */
 .chat-container {
   height: 100vh;
