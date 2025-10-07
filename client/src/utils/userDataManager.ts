@@ -327,6 +327,8 @@ export class UserDataManager {
       p.name === payee.name && p.accountInfo === payee.accountInfo
     );
     
+    const isNewPayee = existingIndex === -1;
+    
     if (existingIndex !== -1) {
       // Update existing payee timestamp and move to front
       recentPayees.splice(existingIndex, 1);
@@ -339,6 +341,14 @@ export class UserDataManager {
     const updatedPayees = recentPayees.slice(0, 10);
     
     this.setUserData('recentPayees', updatedPayees);
+    
+    // Send notification only for new payees
+    if (isNewPayee) {
+      import('./notifications').then(({ sendNewPayeeNotification }) => {
+        sendNewPayeeNotification(payee.name, payee.accountInfo);
+      });
+    }
+    
     return updatedPayees;
   }
 

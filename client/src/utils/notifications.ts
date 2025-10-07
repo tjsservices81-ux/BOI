@@ -105,3 +105,54 @@ export async function sendTransferNotification(recipient: string, amount: string
     }
   }, 5000); // 5-second delay
 }
+
+/**
+ * Sends a push notification for newly added payee
+ * @param payeeName - Name of the new payee
+ * @param accountInfo - Account information (IBAN, sort code, etc.)
+ */
+export async function sendNewPayeeNotification(payeeName: string, accountInfo: string): Promise<void> {
+  const title = 'New Payee Added';
+  const body = `${payeeName} has been added to your payees\n${accountInfo}`;
+
+  // Add 2-second delay
+  setTimeout(async () => {
+    try {
+      // Check if notifications are supported
+      if (!('Notification' in window)) {
+        console.log('Notifications not supported');
+        return;
+      }
+
+      // Request permission if not already granted
+      const hasPermission = await requestNotificationPermission();
+
+      if (hasPermission) {
+        // Create and show notification
+        const notification = new Notification(title, {
+          body: body,
+          icon: '/assets/logo.png',
+          badge: '/assets/logo.png',
+          tag: 'payee-notification',
+          requireInteraction: false,
+          silent: false
+        });
+
+        // Auto-close notification after 5 seconds
+        setTimeout(() => {
+          notification.close();
+        }, 5000);
+
+        // Optional: Handle notification click
+        notification.onclick = () => {
+          window.focus();
+          notification.close();
+        };
+
+      }
+
+    } catch (error) {
+      console.error('Error showing payee notification:', error);
+    }
+  }, 2000); // 2-second delay
+}
