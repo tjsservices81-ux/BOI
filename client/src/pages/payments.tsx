@@ -409,8 +409,8 @@ export default function Payments() {
       {/* Recent Payees Modal */}
       {showRecentPayees && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end">
-          <div className="bg-white rounded-t-2xl w-full max-h-[80vh] overflow-hidden pb-safe">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <div className="bg-white rounded-t-2xl w-full h-[75vh] flex flex-col pb-safe">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
               <h3 className="font-bold text-gray-900 text-lg" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                 Recent Payees
               </h3>
@@ -428,7 +428,7 @@ export default function Payments() {
               </button>
             </div>
             
-            <div className="max-h-96 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto">
               {recentPayees.length > 0 ? (
                 <div className="p-4 space-y-3">
                   {recentPayees.map((payee, index) => (
@@ -481,8 +481,8 @@ export default function Payments() {
       {/* Add Payee Modal */}
       {showAddPayee && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end">
-          <div className="bg-white rounded-t-2xl p-6 w-full max-h-[90vh] overflow-y-auto pb-safe">
-            <div className="flex items-center justify-between mb-6">
+          <div className="bg-white rounded-t-2xl w-full h-[75vh] flex flex-col pb-safe">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
               <h3 className="font-bold text-gray-900 text-xl" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                 Add Payee
               </h3>
@@ -497,115 +497,117 @@ export default function Payments() {
               </button>
             </div>
 
-            <div className="space-y-4">
-              {/* Payee Name */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Payee Name
-                </label>
-                <input
-                  type="text"
-                  value={newPayeeData.name}
-                  onChange={(e) => setNewPayeeData({ ...newPayeeData, name: e.target.value })}
-                  placeholder="Enter payee name"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987]"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                />
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="space-y-4">
+                {/* Payee Name */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Payee Name
+                  </label>
+                  <input
+                    type="text"
+                    value={newPayeeData.name}
+                    onChange={(e) => setNewPayeeData({ ...newPayeeData, name: e.target.value })}
+                    placeholder="Enter payee name"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987]"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  />
+                </div>
+
+                {/* Transfer Type */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Transfer Type
+                  </label>
+                  <select
+                    value={newPayeeData.transferType}
+                    onChange={(e) => setNewPayeeData({ ...newPayeeData, transferType: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987]"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  >
+                    <option value="SEPA Transfer">SEPA Transfer</option>
+                    <option value="UK Transfer">UK Transfer</option>
+                  </select>
+                </div>
+
+                {/* SEPA Fields */}
+                {newPayeeData.transferType === 'SEPA Transfer' && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        IBAN
+                      </label>
+                      <input
+                        type="text"
+                        value={newPayeeData.iban}
+                        onChange={(e) => setNewPayeeData({ ...newPayeeData, iban: e.target.value })}
+                        placeholder="IE29 AIBK 9311 5212 3456 78"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987]"
+                        style={{ fontFamily: 'OpenSans, sans-serif' }}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        BIC Code (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        value={newPayeeData.bicCode}
+                        onChange={(e) => setNewPayeeData({ ...newPayeeData, bicCode: e.target.value })}
+                        placeholder="AIBKIE2D"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987]"
+                        style={{ fontFamily: 'OpenSans, sans-serif' }}
+                      />
+                    </div>
+                  </>
+                )}
+
+                {/* UK Fields */}
+                {newPayeeData.transferType === 'UK Transfer' && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Sort Code
+                      </label>
+                      <input
+                        type="text"
+                        value={newPayeeData.sortCode}
+                        onChange={(e) => {
+                          let value = e.target.value.replace(/[^\d]/g, '');
+                          if (value.length >= 2) value = value.slice(0, 2) + '-' + value.slice(2);
+                          if (value.length >= 5) value = value.slice(0, 5) + '-' + value.slice(5);
+                          value = value.slice(0, 8);
+                          setNewPayeeData({ ...newPayeeData, sortCode: value });
+                        }}
+                        placeholder="04-00-04"
+                        maxLength={8}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987]"
+                        style={{ fontFamily: 'OpenSans, sans-serif' }}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Account Number
+                      </label>
+                      <input
+                        type="text"
+                        value={newPayeeData.accountNumber}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/[^\d]/g, '').slice(0, 8);
+                          setNewPayeeData({ ...newPayeeData, accountNumber: value });
+                        }}
+                        placeholder="12345678"
+                        maxLength={8}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987]"
+                        style={{ fontFamily: 'OpenSans, sans-serif' }}
+                      />
+                    </div>
+                  </>
+                )}
               </div>
-
-              {/* Transfer Type */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Transfer Type
-                </label>
-                <select
-                  value={newPayeeData.transferType}
-                  onChange={(e) => setNewPayeeData({ ...newPayeeData, transferType: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987]"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                >
-                  <option value="SEPA Transfer">SEPA Transfer</option>
-                  <option value="UK Transfer">UK Transfer</option>
-                </select>
-              </div>
-
-              {/* SEPA Fields */}
-              {newPayeeData.transferType === 'SEPA Transfer' && (
-                <>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      IBAN
-                    </label>
-                    <input
-                      type="text"
-                      value={newPayeeData.iban}
-                      onChange={(e) => setNewPayeeData({ ...newPayeeData, iban: e.target.value })}
-                      placeholder="IE29 AIBK 9311 5212 3456 78"
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987]"
-                      style={{ fontFamily: 'OpenSans, sans-serif' }}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      BIC Code (Optional)
-                    </label>
-                    <input
-                      type="text"
-                      value={newPayeeData.bicCode}
-                      onChange={(e) => setNewPayeeData({ ...newPayeeData, bicCode: e.target.value })}
-                      placeholder="AIBKIE2D"
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987]"
-                      style={{ fontFamily: 'OpenSans, sans-serif' }}
-                    />
-                  </div>
-                </>
-              )}
-
-              {/* UK Fields */}
-              {newPayeeData.transferType === 'UK Transfer' && (
-                <>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Sort Code
-                    </label>
-                    <input
-                      type="text"
-                      value={newPayeeData.sortCode}
-                      onChange={(e) => {
-                        let value = e.target.value.replace(/[^\d]/g, '');
-                        if (value.length >= 2) value = value.slice(0, 2) + '-' + value.slice(2);
-                        if (value.length >= 5) value = value.slice(0, 5) + '-' + value.slice(5);
-                        value = value.slice(0, 8);
-                        setNewPayeeData({ ...newPayeeData, sortCode: value });
-                      }}
-                      placeholder="04-00-04"
-                      maxLength={8}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987]"
-                      style={{ fontFamily: 'OpenSans, sans-serif' }}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Account Number
-                    </label>
-                    <input
-                      type="text"
-                      value={newPayeeData.accountNumber}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/[^\d]/g, '').slice(0, 8);
-                        setNewPayeeData({ ...newPayeeData, accountNumber: value });
-                      }}
-                      placeholder="12345678"
-                      maxLength={8}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987]"
-                      style={{ fontFamily: 'OpenSans, sans-serif' }}
-                    />
-                  </div>
-                </>
-              )}
             </div>
 
-            <div className="flex space-x-3 mt-6">
+            <div className="flex space-x-3 p-6 border-t border-gray-200 flex-shrink-0">
               <button
                 onClick={() => {
                   setShowLoading(true);
