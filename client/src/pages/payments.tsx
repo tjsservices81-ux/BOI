@@ -634,7 +634,7 @@ export default function Payments() {
       {/* Loading Modal */}
       {showLoading && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]">
-          <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-12 h-12 border-4 border-[#126987] border-t-transparent rounded-full animate-spin"></div>
         </div>
       )}
 
