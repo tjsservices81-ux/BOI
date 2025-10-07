@@ -233,7 +233,7 @@ input[type="text"], input[type="email"], input[type="password"], textarea {
   
   #root {
     height: 100vh;
-    overflow: auto;
+    overflow: hidden;
     -webkit-overflow-scrolling: touch;
   }
 }
@@ -285,7 +285,7 @@ html, body {
 #root {
   height: 100vh;
   max-height: 100vh;
-  overflow: auto;
+  overflow: hidden;
   -webkit-overflow-scrolling: touch;
   touch-action: manipulation;
 }
@@ -1824,7 +1824,7 @@ html, body {
 
 #root {
   height: 100%;
-  overflow-y: auto;
+  overflow: hidden;
   -webkit-overflow-scrolling: touch;
   background: transparent !important;
 }
