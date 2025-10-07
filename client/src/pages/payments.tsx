@@ -12,14 +12,22 @@ export default function Payments() {
   const [recentPayees, setRecentPayees] = useState<any[]>([]);
   const [deleteConfirm, setDeleteConfirm] = useState<{name: string, accountInfo: string} | null>(null);
 
-  const paymentOptions = [
+  // Get transfer visibility settings
+  const transferSettings = UserDataManager.getUserData('transferSettings', {
+    showSepaTransfer: true,
+    showUkTransfer: true,
+    showInternalTransfer: true
+  });
+
+  const allPaymentOptions = [
     {
       id: 'iban',
       title: 'SEPA Transfer',
       subtitle: 'Transfer within the SEPA zone',
       icon: <Globe className="w-6 h-6 text-[#126987]" />,
       description: 'Send money within the SEPA zone using IBAN',
-      popular: true
+      popular: true,
+      visible: transferSettings.showSepaTransfer
     },
     {
       id: 'domestic',
@@ -27,7 +35,8 @@ export default function Payments() {
       subtitle: 'Account number and sort code',
       icon: <MapPin className="w-6 h-6 text-[#126987]" />,
       description: 'Transfer to UK bank accounts',
-      popular: false
+      popular: false,
+      visible: transferSettings.showUkTransfer
     },
     {
       id: 'internal',
@@ -35,9 +44,13 @@ export default function Payments() {
       subtitle: 'Move money between your accounts',
       icon: <ArrowUpDown className="w-6 h-6 text-[#126987]" />,
       description: 'Instant transfer between your BOI accounts',
-      popular: false
+      popular: false,
+      visible: transferSettings.showInternalTransfer
     }
   ];
+
+  // Filter to only show visible payment options
+  const paymentOptions = allPaymentOptions.filter(option => option.visible);
 
   // Load recent payments and payees using UserDataManager
   useEffect(() => {
@@ -150,43 +163,64 @@ export default function Payments() {
 
         {/* Payment Options */}
         <div className="space-y-4 mb-8">
-          {paymentOptions.map((option, index) => (
-            <button
-              key={option.id}
-              onClick={() => {
-                if (option.id === 'iban') navigate('/iban-transfer');
-                else if (option.id === 'domestic') navigate('/uk-transfer');
-                else if (option.id === 'internal') navigate('/internal-transfer');
-                else setSelectedPaymentType(option.id);
-              }}
-              className="w-full bg-white rounded-2xl p-5 shadow-sm active:scale-98 transition-all duration-200 border-2 border-transparent hover:border-[#126987]/20 stagger-item card-interactive"
-              style={{ animationDelay: `${index * 0.1}s` }}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center">
-                    {option.icon}
-                  </div>
-                  <div className="text-left">
-                    <div className="flex items-center space-x-2">
-                      <h3 className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        {option.title}
-                      </h3>
-                      {option.popular && (
-                        <span className="bg-[#126987] text-white text-xs px-2 py-0.5 rounded-full">
-                          Popular
-                        </span>
-                      )}
+          {paymentOptions.length > 0 ? (
+            paymentOptions.map((option, index) => (
+              <button
+                key={option.id}
+                onClick={() => {
+                  if (option.id === 'iban') navigate('/iban-transfer');
+                  else if (option.id === 'domestic') navigate('/uk-transfer');
+                  else if (option.id === 'internal') navigate('/internal-transfer');
+                  else setSelectedPaymentType(option.id);
+                }}
+                className="w-full bg-white rounded-2xl p-5 shadow-sm active:scale-98 transition-all duration-200 border-2 border-transparent hover:border-[#126987]/20 stagger-item card-interactive"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center">
+                      {option.icon}
                     </div>
-                    <p className="text-sm text-gray-600 mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      {option.subtitle}
-                    </p>
+                    <div className="text-left">
+                      <div className="flex items-center space-x-2">
+                        <h3 className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          {option.title}
+                        </h3>
+                        {option.popular && (
+                          <span className="bg-[#126987] text-white text-xs px-2 py-0.5 rounded-full">
+                            Popular
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-600 mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        {option.subtitle}
+                      </p>
+                    </div>
                   </div>
+                  <ChevronRight className="w-5 h-5 text-gray-400" />
                 </div>
-                <ChevronRight className="w-5 h-5 text-gray-400" />
+              </button>
+            ))
+          ) : (
+            <div className="bg-blue-50 rounded-2xl p-8 text-center border-2 border-blue-100">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Globe className="w-8 h-8 text-[#126987]" />
               </div>
-            </button>
-          ))}
+              <h3 className="font-semibold text-gray-900 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                No Transfer Options Available
+              </h3>
+              <p className="text-sm text-gray-600 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                All transfer options are currently hidden. Enable them in the Customer Panel.
+              </p>
+              <button
+                onClick={() => navigate('/profile')}
+                className="bg-[#126987] text-white px-6 py-2 rounded-xl font-medium active:scale-95 transition-transform"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              >
+                Go to Customer Panel
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Quick Actions */}

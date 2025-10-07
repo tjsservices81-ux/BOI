@@ -35,6 +35,14 @@ export default function Profile() {
     type: 'debit' as 'debit' | 'credit',
     date: new Date().toISOString().split('T')[0]
   });
+  const [transferSettings, setTransferSettings] = useState(() => {
+    const saved = UserDataManager.getUserData('transferSettings', null);
+    return saved || {
+      showSepaTransfer: true,
+      showUkTransfer: true,
+      showInternalTransfer: true
+    };
+  });
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [editProfileData, setEditProfileData] = useState({
     name: '',
@@ -1499,6 +1507,98 @@ export default function Profile() {
                       GBP (£)
                     </p>
                   </button>
+                </div>
+              </div>
+
+              {/* Transfer Options Visibility */}
+              <div className="mb-6">
+                <h3 className="text-sm font-medium text-gray-700 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Transfer Options Visibility
+                </h3>
+                <div className="space-y-3 bg-gray-50 p-4 rounded-xl">
+                  {/* SEPA Transfer Toggle */}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        SEPA Transfer
+                      </p>
+                      <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Transfer within SEPA zone
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        const newSettings = { ...transferSettings, showSepaTransfer: !transferSettings.showSepaTransfer };
+                        setTransferSettings(newSettings);
+                        UserDataManager.setUserData('transferSettings', newSettings);
+                      }}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        transferSettings.showSepaTransfer ? 'bg-green-600' : 'bg-gray-300'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          transferSettings.showSepaTransfer ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  {/* UK Transfer Toggle */}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        UK Bank Transfer
+                      </p>
+                      <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Account number and sort code
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        const newSettings = { ...transferSettings, showUkTransfer: !transferSettings.showUkTransfer };
+                        setTransferSettings(newSettings);
+                        UserDataManager.setUserData('transferSettings', newSettings);
+                      }}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        transferSettings.showUkTransfer ? 'bg-green-600' : 'bg-gray-300'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          transferSettings.showUkTransfer ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  {/* Internal Transfer Toggle */}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Between BOI Accounts
+                      </p>
+                      <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Move money between your accounts
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        const newSettings = { ...transferSettings, showInternalTransfer: !transferSettings.showInternalTransfer };
+                        setTransferSettings(newSettings);
+                        UserDataManager.setUserData('transferSettings', newSettings);
+                      }}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        transferSettings.showInternalTransfer ? 'bg-green-600' : 'bg-gray-300'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          transferSettings.showInternalTransfer ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
                 </div>
               </div>
 
