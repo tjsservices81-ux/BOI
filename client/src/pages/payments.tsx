@@ -170,11 +170,24 @@ export default function Payments() {
       }
       accountInfo = newPayeeData.iban.trim();
     } else if (newPayeeData.transferType === 'UK Transfer') {
-      if (!newPayeeData.sortCode.trim() || !newPayeeData.accountNumber.trim()) {
-        alert('Please enter sort code and account number');
+      const sortCode = newPayeeData.sortCode.trim();
+      const accountNumber = newPayeeData.accountNumber.trim();
+      
+      // Validate sort code format: XX-XX-XX (6 digits)
+      const sortCodeRegex = /^\d{2}-\d{2}-\d{2}$/;
+      if (!sortCodeRegex.test(sortCode)) {
+        alert('Sort code must be in format XX-XX-XX (e.g., 04-00-04)');
         return;
       }
-      accountInfo = `${newPayeeData.sortCode.trim()} ${newPayeeData.accountNumber.trim()}`;
+      
+      // Validate account number: exactly 8 digits
+      const accountNumberRegex = /^\d{8}$/;
+      if (!accountNumberRegex.test(accountNumber)) {
+        alert('Account number must be exactly 8 digits');
+        return;
+      }
+      
+      accountInfo = `${sortCode} ${accountNumber}`;
     }
 
     const payee = {
@@ -528,8 +541,15 @@ export default function Payments() {
                     <input
                       type="text"
                       value={newPayeeData.sortCode}
-                      onChange={(e) => setNewPayeeData({ ...newPayeeData, sortCode: e.target.value })}
+                      onChange={(e) => {
+                        let value = e.target.value.replace(/[^\d]/g, '');
+                        if (value.length >= 2) value = value.slice(0, 2) + '-' + value.slice(2);
+                        if (value.length >= 5) value = value.slice(0, 5) + '-' + value.slice(5);
+                        value = value.slice(0, 8);
+                        setNewPayeeData({ ...newPayeeData, sortCode: value });
+                      }}
                       placeholder="04-00-04"
+                      maxLength={8}
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987]"
                       style={{ fontFamily: 'OpenSans, sans-serif' }}
                     />
@@ -541,8 +561,12 @@ export default function Payments() {
                     <input
                       type="text"
                       value={newPayeeData.accountNumber}
-                      onChange={(e) => setNewPayeeData({ ...newPayeeData, accountNumber: e.target.value })}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/[^\d]/g, '').slice(0, 8);
+                        setNewPayeeData({ ...newPayeeData, accountNumber: value });
+                      }}
                       placeholder="12345678"
+                      maxLength={8}
                       className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987]"
                       style={{ fontFamily: 'OpenSans, sans-serif' }}
                     />
