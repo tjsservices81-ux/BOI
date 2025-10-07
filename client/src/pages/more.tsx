@@ -129,7 +129,9 @@ export default function More() {
             <button 
               className="w-full bg-white border border-gray-100 rounded-2xl p-5 flex items-center space-x-4 hover:bg-gray-50 shadow-lg transition-all duration-200 active:scale-98 stagger-item" 
               style={{ animationDelay: '0.3s' }}
+              onClick={() => handleNavigation('/settings')}
               disabled={isNavigating}
+              data-testid="button-settings"
             >
               <div className="w-12 h-12 bg-gradient-to-br from-gray-600 to-gray-700 rounded-2xl flex items-center justify-center shadow-md">
                 <Settings className="w-6 h-6 text-white" />

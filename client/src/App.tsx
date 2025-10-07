@@ -33,6 +33,7 @@ import TransactionHistoryWorking from "@/pages/transaction-history-working";
 
 import BankStatements from "@/pages/bank-statements";
 import Profile from "@/pages/profile";
+import Settings from "@/pages/settings";
 import NotFound from "@/pages/not-found";
 
 function ProtectedRoute({ children, fallback }: { children: React.ReactNode; fallback?: React.ReactNode }) {
@@ -532,6 +533,11 @@ function AppRoutes() {
           <Route path="/profile">
             <ProtectedRoute>
               <Profile />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/settings">
+            <ProtectedRoute>
+              <Settings />
             </ProtectedRoute>
           </Route>
           <Route component={NotFound} />
