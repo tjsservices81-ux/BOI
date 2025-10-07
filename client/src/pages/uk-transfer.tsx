@@ -168,6 +168,7 @@ export default function UkTransfer() {
   const [gbpAmount, setGbpAmount] = useState<string>('0.00');
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('left');
   const [userCurrency, setUserCurrency] = useState<Currency>('EUR');
+  const [displaySortCode, setDisplaySortCode] = useState<string>('');
 
   const form = useForm<UkTransferData>({
     resolver: zodResolver(ukTransferSchema),
@@ -442,6 +443,7 @@ export default function UkTransfer() {
               form.setValue('amount', formData.amount);
               form.setValue('reference', formData.reference);
               form.setValue('fromAccount', formData.fromAccount);
+              setDisplaySortCode(formatSortCode(formData.sortCode));
             }
             setStep('form');
           }} className="flex items-center text-white">
@@ -719,6 +721,7 @@ export default function UkTransfer() {
               form.setValue('amount', formData.amount);
               form.setValue('reference', formData.reference);
               form.setValue('fromAccount', formData.fromAccount);
+              setDisplaySortCode(formatSortCode(formData.sortCode));
             }
             setStep('form');
           }} className="flex items-center text-white">
@@ -758,6 +761,7 @@ export default function UkTransfer() {
                     form.setValue('amount', formData.amount);
                     form.setValue('reference', formData.reference);
                     form.setValue('fromAccount', formData.fromAccount);
+                    setDisplaySortCode(formatSortCode(formData.sortCode));
                   }
                   setStep('form');
                 }}
@@ -855,6 +859,7 @@ export default function UkTransfer() {
                   type="text"
                   placeholder="12-34-56"
                   maxLength={8}
+                  value={displaySortCode}
                   className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                   onChange={(e) => {
@@ -863,7 +868,7 @@ export default function UkTransfer() {
                     const formattedValue = formatSortCode(cleanValue);
                     
                     // Update the display value with formatting
-                    e.target.value = formattedValue;
+                    setDisplaySortCode(formattedValue);
                     
                     // Set the clean value (no hyphens) for form validation
                     form.setValue('sortCode', cleanValue, { shouldValidate: true });
@@ -901,7 +906,7 @@ export default function UkTransfer() {
                         const newFormattedValue = formatSortCode(newCleanValue);
                         
                         // Update immediately without delay
-                        input.value = newFormattedValue;
+                        setDisplaySortCode(newFormattedValue);
                         form.setValue('sortCode', newCleanValue, { shouldValidate: true });
                         
                         if (newCleanValue.length === 6) {
