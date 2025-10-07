@@ -31,8 +31,8 @@ export default function IbanTransfer() {
   const [formData, setFormData] = useState<IbanTransferData | null>(null);
   const [userCurrency, setUserCurrency] = useState<Currency>('EUR');
   
-  // Lock scroll when on success screen
-  useAppScrollLock(step === 'success');
+  // Lock scroll when on success or confirm screen
+  useAppScrollLock(step === 'success' || step === 'confirm');
 
   const form = useForm<IbanTransferData>({
     resolver: zodResolver(ibanTransferSchema),
@@ -481,7 +481,8 @@ export default function IbanTransfer() {
         bottom: 0, 
         display: 'flex', 
         flexDirection: 'column',
-        backgroundColor: '#f9fafb'
+        backgroundColor: '#f9fafb',
+        zIndex: 1000
       }}>
         <div className="bg-[#126987] px-4 py-3 flex items-center justify-between">
           <button onClick={() => setStep('form')} className="flex items-center text-white">
