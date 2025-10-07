@@ -8,7 +8,7 @@ export default function More() {
   const [, setLocation] = useLocation();
   const [isNavigating, setIsNavigating] = useState(false);
   const [isLoadingChat, setIsLoadingChat] = useState(false);
-  const userCurrency = getUserCurrency();
+  const [userCurrency] = useState(() => getUserCurrency());
 
   const handleNavigation = (path: string) => {
     setIsNavigating(true);

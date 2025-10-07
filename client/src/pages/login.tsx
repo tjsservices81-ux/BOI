@@ -46,7 +46,7 @@ export default function Login() {
   const [nearbyATMs, setNearbyATMs] = useState<any[]>([]);
   const [connectionStatus, setConnectionStatus] = useState<string>('');
   const [offlineStatus, setOfflineStatus] = useState<{hasOfflineAccess: boolean; timeRemaining?: string} | null>(null);
-  const [userCurrency, setUserCurrency] = useState<'EUR' | 'GBP'>('EUR');
+  const [userCurrency, setUserCurrency] = useState<'EUR' | 'GBP'>(() => getUserCurrency());
   
   // Input refs for proper focus management in PWA
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -159,12 +159,6 @@ export default function Login() {
       validateAndCleanUsers();
     }
   }, [showAdminLogin]);
-
-  // Check user's currency preference for logo display
-  useEffect(() => {
-    const currency = getUserCurrency();
-    setUserCurrency(currency);
-  }, []);
 
   const handleNavigation = (path: string) => {
     setIsNavigating(true);

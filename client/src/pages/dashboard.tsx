@@ -23,7 +23,7 @@ export default function Dashboard() {
   // Local state for account balances that can be updated by transfers
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [isNavigating, setIsNavigating] = useState(false);
-  const [userCurrency, setUserCurrency] = useState<Currency>('EUR');
+  const [userCurrency, setUserCurrency] = useState<Currency>(() => getUserCurrency());
   
   // Touch-safe interaction state
   const [loadingAccountId, setLoadingAccountId] = useState<number | null>(null);
