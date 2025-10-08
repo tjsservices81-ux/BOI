@@ -511,8 +511,13 @@ export default function Login() {
     }
   };
 
-  const handleBiometricHoldStart = async () => {
+  const handleBiometricHoldStart = async (e?: React.TouchEvent | React.MouseEvent) => {
     if (biometricVerified || isScanning) return;
+    
+    // Prevent default touch behavior to avoid accidental scrolling
+    if (e) {
+      e.preventDefault();
+    }
     
     // Check if any users exist first
     const allUsers = UserDataManager.getAllUsers();
@@ -660,32 +665,26 @@ export default function Login() {
       return;
     }
     
-    // Fingerprint flow - original hold-to-scan
+    // Fingerprint flow - MUST hold for full 4 seconds
     setIsScanning(true);
     setHoldProgress(0);
     
     let progressCount = 0;
     const totalSteps = 80; // 80 steps over 4 seconds (50ms intervals)
-    let isCompleted = false;
     
     const timer = setInterval(() => {
-      if (isCompleted) {
-        clearInterval(timer);
-        return;
-      }
-      
       progressCount++;
       const newProgress = (progressCount / totalSteps) * 100;
       
       setHoldProgress(newProgress);
       
       // Only authenticate when timer completes the full 4 seconds
-      if (progressCount >= totalSteps && !isCompleted) {
-        isCompleted = true;
+      if (progressCount >= totalSteps) {
         clearInterval(timer);
         setBiometricVerified(true);
         setIsScanning(false);
         setHoldProgress(0);
+        setHoldTimer(null);
         
         // Set user and initialize account
         UserDataManager.setCurrentUser(targetUser);
@@ -700,11 +699,12 @@ export default function Login() {
   };
 
   const handleBiometricHoldEnd = () => {
+    // Clear the interval if user releases early
     if (holdTimer) {
       clearInterval(holdTimer);
       setHoldTimer(null);
     }
-    // Reset scanning state immediately when user releases - no authentication on release
+    // Reset scanning state immediately when user releases - CANCEL authentication
     if (isScanning && !biometricVerified) {
       setIsScanning(false);
       setHoldProgress(0);
@@ -777,58 +777,44 @@ export default function Login() {
     setLoginProgress(0);
 
     try {
-      // Stage 1: Checking connection (1 second)
-      setLoginStage('Checking connection...');
-      const progressInterval = setInterval(() => {
-        setLoginProgress(prev => {
-          if (prev < 20) return prev + 2;
-          return prev;
-        });
-      }, 100);
-
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      clearInterval(progressInterval);
-
-      // Stage 2: Authenticating with secure manager (3 seconds)
-      setLoginStage('Authenticating...');
-      setLoginProgress(20);
-      const authInterval = setInterval(() => {
-        setLoginProgress(prev => {
-          if (prev < 70) return prev + 1.67;
-          return prev;
-        });
-      }, 100);
-
-      // Verify user exists locally (biometric already authenticated the user)
+      // Verify user exists locally first
       if (!UserDataManager.userExists(currentUser)) {
-        clearInterval(authInterval);
         throw new Error('User not found in local storage');
       }
 
-      // Online authentication
       const userProfile = UserDataManager.getUserProfile();
       
       if (!userProfile) {
-        clearInterval(authInterval);
         throw new Error('Unable to load user profile');
       }
-        
-      const authResult = {
-        success: true,
-        user: userProfile
-      };
-      
-      clearInterval(authInterval);
 
-      // Stage 3: Loading user data (1.5 seconds)
-      setLoginStage('Loading account data...');
-      setLoginProgress(70);
-      const loadInterval = setInterval(() => {
-        setLoginProgress(prev => {
-          if (prev < 90) return prev + 1.33;
-          return prev;
-        });
-      }, 100);
+      // Smooth single-pass animation: 0% -> 100% over 5 seconds
+      let currentProgress = 0;
+      const totalDuration = 5000; // 5 seconds total
+      const updateInterval = 50; // Update every 50ms
+      const progressStep = 100 / (totalDuration / updateInterval); // ~1% per update
+      
+      const smoothInterval = setInterval(() => {
+        currentProgress += progressStep;
+        
+        if (currentProgress <= 100) {
+          setLoginProgress(currentProgress);
+          
+          // Update stage based on progress
+          if (currentProgress < 20) {
+            setLoginStage('Checking connection...');
+          } else if (currentProgress < 70) {
+            setLoginStage('Authenticating...');
+          } else if (currentProgress < 90) {
+            setLoginStage('Loading account data...');
+          } else {
+            setLoginStage('Welcome to Bank of Ireland');
+          }
+        } else {
+          clearInterval(smoothInterval);
+          setLoginProgress(100);
+        }
+      }, updateInterval);
 
       // Record login time and authenticate through auth context
       UserDataManager.recordLoginTime(currentUser);
@@ -839,26 +825,11 @@ export default function Login() {
         email: userProfile.email
       });
       
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      clearInterval(loadInterval);
-      
-      // Stage 4: Final completion (1 second)
-      setLoginStage('Welcome to Bank of Ireland');
-      setLoginProgress(90);
-      const completeInterval = setInterval(() => {
-        setLoginProgress(prev => {
-          if (prev < 100) return prev + 2;
-          return prev;
-        });
-      }, 100);
-      
-      await new Promise(resolve => setTimeout(resolve, 500));
-      setLoginProgress(100);
-      clearInterval(completeInterval);
+      // Wait for animation to complete
+      await new Promise(resolve => setTimeout(resolve, totalDuration + 300));
+      clearInterval(smoothInterval);
 
       // Authentication successful
-
-      await new Promise(resolve => setTimeout(resolve, 300));
       navigate("/dashboard");
     } catch (error) {
       // Reset animation state immediately

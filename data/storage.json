@@ -520,6 +520,54 @@
         "dateCreated": "2025-10-08T09:22:52.040Z",
         "isDisabled": false
       }
+    ],
+    [
+      40,
+      {
+        "id": 40,
+        "customerNumber": "43007478",
+        "pin": "000000",
+        "name": "John",
+        "email": "ahisks@gmail.com",
+        "phone": "464664",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-08T09:49:27.600Z",
+        "dateCreated": "2025-10-08T09:49:27.600Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      41,
+      {
+        "id": 41,
+        "customerNumber": "87278724",
+        "pin": "000000",
+        "name": "John 3",
+        "email": "ahajjs@gmail.com",
+        "phone": "164664",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-08T09:50:31.249Z",
+        "dateCreated": "2025-10-08T09:50:31.249Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      42,
+      {
+        "id": 42,
+        "customerNumber": "62798414",
+        "pin": "000000",
+        "name": "John 5",
+        "email": "shhwjsja@gmail.com",
+        "phone": "5454",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-08T09:53:01.609Z",
+        "dateCreated": "2025-10-08T09:53:01.610Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [
@@ -846,6 +894,78 @@
         "displayName": "Savings Account",
         "sortCode": "90-78-68"
       }
+    ],
+    [
+      46,
+      {
+        "id": 46,
+        "userId": 40,
+        "accountType": "current",
+        "accountNumber": "****2091",
+        "balance": "0.00",
+        "displayName": "Current Account",
+        "sortCode": "90-78-68"
+      }
+    ],
+    [
+      47,
+      {
+        "id": 47,
+        "userId": 40,
+        "accountType": "credit",
+        "accountNumber": "****1820",
+        "balance": "0.00",
+        "displayName": "Credit Card",
+        "sortCode": "90-78-68"
+      }
+    ],
+    [
+      48,
+      {
+        "id": 48,
+        "userId": 40,
+        "accountType": "savings",
+        "accountNumber": "****0978",
+        "balance": "0.00",
+        "displayName": "Savings Account",
+        "sortCode": "90-78-68"
+      }
+    ],
+    [
+      49,
+      {
+        "id": 49,
+        "userId": 41,
+        "accountType": "current",
+        "accountNumber": "****2091",
+        "balance": "0.00",
+        "displayName": "Current Account",
+        "sortCode": "90-78-68"
+      }
+    ],
+    [
+      50,
+      {
+        "id": 50,
+        "userId": 41,
+        "accountType": "credit",
+        "accountNumber": "****1820",
+        "balance": "0.00",
+        "displayName": "Credit Card",
+        "sortCode": "90-78-68"
+      }
+    ],
+    [
+      51,
+      {
+        "id": 51,
+        "userId": 41,
+        "accountType": "savings",
+        "accountNumber": "****0978",
+        "balance": "0.00",
+        "displayName": "Savings Account",
+        "sortCode": "90-78-68"
+      }
     ]
   ],
   "transactions": [],
@@ -856,8 +976,8 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 40,
-    "currentAccountId": 46,
+    "currentUserId": 43,
+    "currentAccountId": 52,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
     "currentScheduledPaymentId": 1,
