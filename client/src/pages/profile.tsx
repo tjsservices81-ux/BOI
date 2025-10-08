@@ -1303,7 +1303,14 @@ export default function Profile() {
                   {userDetails.name || "User"}
                 </h2>
                 <p className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  {userDetails.joinDate || ""}
+                  {userDetails.joinDate ? (() => {
+                    if (userDetails.joinDate.includes('Member since')) {
+                      return userDetails.joinDate;
+                    }
+                    const match = userDetails.joinDate.match(/\d{4}/);
+                    const year = match ? match[0] : new Date(userDetails.joinDate).getFullYear();
+                    return `Member since ${year}`;
+                  })() : ""}
                 </p>
                 <p className="text-sm text-gray-500 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                   Customer #{userDetails.customerNumber}
