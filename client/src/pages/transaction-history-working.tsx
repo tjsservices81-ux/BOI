@@ -1025,16 +1025,6 @@ export default function TransactionHistoryWorking() {
                         <span>Open</span>
                       </button>
                     </div>
-
-                    {/* Close Button */}
-                    <button
-                      onClick={handleCloseStatementSuccess}
-                      className="w-full mt-4 px-4 py-2 text-gray-600 rounded-lg font-medium hover:bg-gray-50 transition-colors"
-                      style={{ fontFamily: 'OpenSans, sans-serif' }}
-                      data-testid="button-close-success"
-                    >
-                      Close
-                    </button>
                   </div>
                 </>
               )}
