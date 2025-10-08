@@ -241,8 +241,11 @@ export default function CreditScore() {
           <div className="px-6 mb-8">
             <div className="relative h-3 bg-gray-200 rounded-full overflow-hidden">
               <div 
-                className="absolute left-0 top-0 h-full bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 to-emerald-500 transition-all duration-1000"
-                style={{ width: `${((creditScore - 300) / 550) * 100}%` }}
+                className="absolute left-0 top-0 h-full bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 to-emerald-500"
+                style={{ 
+                  width: `${((animatedScore - 300) / 550) * 100}%`,
+                  transition: 'width 0.03s linear'
+                }}
               />
             </div>
             <div className="flex justify-between mt-2 text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
