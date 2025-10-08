@@ -239,39 +239,28 @@ export default function IbanTransfer() {
   };
 
   // Fetch exchange rate from GBP to destination currency
-  const fetchExchangeRate = async (toCurrency: string) => {
+  const fetchExchangeRate = async (toCurrency: string, amount: string): Promise<number> => {
     if (userCurrency !== 'GBP' || toCurrency === 'GBP') {
-      setExchangeRate(1);
-      return;
+      return 1;
     }
 
     try {
       const apiKey = import.meta.env.VITE_EXCHANGERATE_API_KEY;
       if (!apiKey) {
         console.log('No API key provided, using default rate');
-        setExchangeRate(1);
-        return;
+        return 1;
       }
       
       const response = await fetch(`https://v6.exchangerate-api.com/v6/${apiKey}/latest/GBP`);
       const data = await response.json();
       
       if (data.result === 'success' && data.conversion_rates[toCurrency]) {
-        const rate = data.conversion_rates[toCurrency];
-        setExchangeRate(rate);
-        
-        // Update converted amount
-        const currentAmount = formData?.amount || form.getValues('amount');
-        if (currentAmount) {
-          const converted = (parseFloat(currentAmount) * rate).toFixed(2);
-          setConvertedAmount(converted);
-        }
-      } else {
-        setExchangeRate(1);
+        return data.conversion_rates[toCurrency];
       }
+      return 1;
     } catch (error) {
       console.log('Exchange rate fetch failed, using default rate');
-      setExchangeRate(1);
+      return 1;
     }
   };
 
@@ -283,7 +272,11 @@ export default function IbanTransfer() {
     setDestinationCurrency(destCurrency);
     
     if (userCurrency === 'GBP' && destCurrency !== 'GBP') {
-      await fetchExchangeRate(destCurrency);
+      const rate = await fetchExchangeRate(destCurrency, data.amount);
+      setExchangeRate(rate);
+      setConvertedAmount((parseFloat(data.amount) * rate).toFixed(2));
+    } else {
+      setExchangeRate(1);
     }
     
     setStep('confirm');
