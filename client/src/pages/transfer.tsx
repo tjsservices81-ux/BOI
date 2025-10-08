@@ -11,7 +11,6 @@ import { useAuth } from "@/lib/auth";
 import { BottomNavigation } from "@/components/ui/bottom-navigation";
 import { apiRequest } from "@/lib/queryClient";
 import { ArrowLeft, PiggyBank, ChevronDown, Send, Info } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 import type { Account, TransferRequest } from "@shared/schema";
 import { getUserCurrency, getCurrencySymbol } from "@/utils/currencyUtils";
 
@@ -22,8 +21,7 @@ export default function Transfer() {
   const locationHook = useLocation();
   const [, navigate] = locationHook || [null, () => {}];
   
-  const toastHook = useToast();
-  const toast = toastHook?.toast || (() => {});
+  const toast = () => {}; // No-op function to replace all toast notifications
   const queryClient = useQueryClient();
 
   const [selectedAccountId, setSelectedAccountId] = useState<string>("");

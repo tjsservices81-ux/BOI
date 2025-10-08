@@ -1,5 +1,22 @@
 {
-  "users": [],
+  "users": [
+    [
+      50,
+      {
+        "id": 50,
+        "customerNumber": "34545857",
+        "pin": "000000",
+        "name": "Michael Murphy",
+        "email": "michaelmurphy18@icloud.com",
+        "phone": "7310658405",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-08T15:29:55.326Z",
+        "dateCreated": "2025-10-08T15:29:55.326Z",
+        "isDisabled": false
+      }
+    ]
+  ],
   "accounts": [],
   "transactions": [],
   "payees": [],
@@ -9,7 +26,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 50,
+    "currentUserId": 51,
     "currentAccountId": 67,
     "currentTransactionId": 1,
     "currentPayeeId": 1,

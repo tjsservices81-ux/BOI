@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { Switch } from "@/components/ui/switch";
 import { getUserCurrency } from "../utils/currencyUtils";
 import { UserDataManager } from "../utils/userDataManager";
-import { useToast } from "@/hooks/use-toast";
 import ukLogoPath from "@assets/IMG_1505_1759859367310.png";
 import faceIdIconPath from "@assets/IMG_1506_1759859583184.png";
 
@@ -12,7 +11,6 @@ export default function Settings() {
   const [, setLocation] = useLocation();
   const [isNavigating, setIsNavigating] = useState(false);
   const [userCurrency] = useState(() => getUserCurrency());
-  const { toast } = useToast();
   const [isRegisteringFaceId, setIsRegisteringFaceId] = useState(false);
   
   // Load settings from localStorage
@@ -71,41 +69,20 @@ export default function Settings() {
           const permission = await Notification.requestPermission();
           if (permission === 'granted') {
             setNotificationsEnabled(true);
-            toast({
-              title: "Notifications Enabled",
-              description: "You'll now receive account alerts and updates",
-            });
           } else {
-            // User denied permission
-            toast({
-              title: "Permission Denied",
-              description: "Please allow notifications in your browser settings to enable this feature",
-              variant: "destructive",
-            });
+            // User denied permission - don't enable
+            console.log('Notification permission denied');
           }
         } catch (error) {
           console.error('Notification permission error:', error);
-          toast({
-            title: "Error",
-            description: "Could not request notification permission",
-            variant: "destructive",
-          });
         }
       } else if (currentPermission === 'denied') {
         // Previously denied
-        toast({
-          title: "Permission Blocked",
-          description: "Notifications are blocked. Please enable them in your browser settings",
-          variant: "destructive",
-        });
+        console.log('Notifications are blocked');
       }
     } else {
       // Notifications not supported
-      toast({
-        title: "Not Supported",
-        description: "Notifications are not supported in this browser",
-        variant: "destructive",
-      });
+      console.log('Notifications are not supported in this browser');
     }
   };
 
@@ -120,11 +97,7 @@ export default function Settings() {
     // Enabling Face ID - register passkey
     const currentUser = UserDataManager.getCurrentUser();
     if (!currentUser) {
-      toast({
-        title: "Error",
-        description: "Please log in first to enable Face ID",
-        variant: "destructive",
-      });
+      console.error('Please log in first to enable Face ID');
       return;
     }
 
@@ -182,11 +155,6 @@ export default function Settings() {
       }
     } catch (error) {
       console.error('Face ID registration error:', error);
-      toast({
-        title: "Face ID Registration Failed",
-        description: "Could not register passkey. Please try again.",
-        variant: "destructive",
-      });
     } finally {
       setIsRegisteringFaceId(false);
     }

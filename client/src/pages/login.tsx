@@ -6,7 +6,6 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/lib/auth";
 import { User, ExternalLink, HelpCircle, Phone, Settings, Shield, MapPin, MoreHorizontal } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 import { UserDataManager } from "@/utils/userDataManager";
 import { getUserCurrency } from "@/utils/currencyUtils";
 import ukLogoPath from "@assets/IMG_1505_1759859367310.png";
@@ -66,8 +65,7 @@ export default function Login() {
   const [, navigate] = locationHook || [null, () => {}];
   const [validatedUsers, setValidatedUsers] = useState<any>({});
   
-  const toastHook = useToast();
-  const toast = toastHook?.toast || (() => {});
+  const toast = () => {}; // No-op function to replace all toast notifications
 
   // Listen for Face ID setting changes
   useEffect(() => {
