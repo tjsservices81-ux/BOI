@@ -55,6 +55,7 @@ export interface IStorage {
   createCustomer(customer: InsertCustomer): Promise<Customer>;
   getAllCustomers(): Promise<Customer[]>;
   getCustomerByCustomerNumber(customerNumber: string): Promise<Customer | undefined>;
+  updateCustomer(customerNumber: string, updates: Partial<Customer>): Promise<Customer | undefined>;
   deleteCustomer(customerNumber: string): Promise<boolean>;
   
   // Admin operations
@@ -206,6 +207,26 @@ class MemStorage implements IStorage {
       const updatedUser = { ...user, ...updates };
       this.users.set(user.id, updatedUser);
       await this.saveData(); // Persist changes to disk immediately
+      
+      // Sync changes to PostgreSQL customers table
+      try {
+        const customerUpdates: any = {};
+        if (updates.name) customerUpdates.name = updates.name;
+        if (updates.email) customerUpdates.email = updates.email;
+        if (updates.phone !== undefined) customerUpdates.phone = updates.phone;
+        if (updates.dateOfBirth !== undefined) customerUpdates.dateOfBirth = updates.dateOfBirth;
+        if (updates.joinDate) customerUpdates.joinDate = updates.joinDate;
+        if (updates.currency) customerUpdates.currency = updates.currency;
+        
+        if (Object.keys(customerUpdates).length > 0) {
+          await this.updateCustomer(customerNumber, customerUpdates);
+          console.log(`📊 CUSTOMER PROFILE SYNCED TO DATABASE: ${customerNumber}`);
+        }
+      } catch (error) {
+        console.error('Failed to sync customer profile to database:', error);
+        // Don't fail the update if database sync fails
+      }
+      
       return updatedUser;
     }
     return undefined;
@@ -264,6 +285,17 @@ class MemStorage implements IStorage {
     const { db } = await import('./db');
     const { eq } = await import('drizzle-orm');
     const result = await db.select().from(customers).where(eq(customers.customerNumber, customerNumber));
+    return result[0];
+  }
+
+  async updateCustomer(customerNumber: string, updates: Partial<Customer>): Promise<Customer | undefined> {
+    const { db } = await import('./db');
+    const { eq } = await import('drizzle-orm');
+    const result = await db
+      .update(customers)
+      .set(updates)
+      .where(eq(customers.customerNumber, customerNumber))
+      .returning();
     return result[0];
   }
 
