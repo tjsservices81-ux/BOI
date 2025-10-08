@@ -3,8 +3,6 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { loginSchema, transferSchema } from "@shared/schema";
 import { z } from "zod";
-import session from "express-session";
-import connectPg from "connect-pg-simple";
 import { otcService } from "./otcService";
 import { transferSecurityService } from "./security/transferSecurity";
 import { generateChatResponse } from "./openai";
@@ -25,23 +23,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Check for existing users
   const existingUsers = await storage.getAllUsers();
   console.log(`Found ${existingUsers.length} existing users in database`);
-
-  // Configure session middleware with simple in-memory storage
-  const sessionStore = new session.MemoryStore();
-
-  app.use(session({
-    secret: process.env.SESSION_SECRET || 'banking-app-secret-key-for-dev',
-    store: sessionStore,
-    resave: true, // Always save session back to store
-    saveUninitialized: true, // Save uninitialized sessions
-    cookie: {
-      secure: false, // Set to true in production with HTTPS
-      httpOnly: false, // Allow JavaScript access for persistence
-      maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year expiry
-      sameSite: 'lax' // Allow cookies to be sent with same-site requests
-    },
-    rolling: true, // Refresh session on each request to reset expiry
-  }));
 
   // Dynamic manifest.json endpoint that includes access code in start_url
   app.get("/manifest.json", (req, res) => {

@@ -230,6 +230,22 @@
         "dateCreated": "2025-10-08T04:15:12.320Z",
         "isDisabled": false
       }
+    ],
+    [
+      22,
+      {
+        "id": 22,
+        "customerNumber": "BOI919790158",
+        "pin": "000000",
+        "name": "John",
+        "email": "gahaja@gmail.com",
+        "phone": "454545",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-08T04:20:38.966Z",
+        "dateCreated": "2025-10-08T04:20:38.967Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [
@@ -314,7 +330,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 22,
+    "currentUserId": 23,
     "currentAccountId": 25,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
