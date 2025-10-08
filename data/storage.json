@@ -230,22 +230,6 @@
         "dateCreated": "2025-10-08T03:18:38.187Z",
         "isDisabled": false
       }
-    ],
-    [
-      15,
-      {
-        "id": 15,
-        "customerNumber": "BOI815152160",
-        "pin": "000000",
-        "name": "U are him",
-        "email": "ansjjs@gmail.com",
-        "phone": "4564664",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "2025-10-08T03:21:36.388Z",
-        "dateCreated": "2025-10-08T03:21:36.389Z",
-        "isDisabled": false
-      }
     ]
   ],
   "accounts": [
