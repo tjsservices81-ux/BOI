@@ -315,41 +315,56 @@ export default function Login() {
     
     alert(alertMessage);
     
-    // Request location permission
-    try {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            console.log('Location permission granted');
-            toast({
-              title: "Location Enabled",
-              description: "You can now find nearby ATMs using the ATM Locator.",
-              duration: 4000,
-            });
-          },
-          (error) => {
-            console.log('Location permission denied or error:', error);
-          }
-        );
+    // Request location permission - keep asking until granted
+    let locationGranted = false;
+    while (!locationGranted && navigator.geolocation) {
+      try {
+        await new Promise<void>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              locationGranted = true;
+              console.log('Location permission granted');
+              toast({
+                title: "Location Enabled",
+                description: "You can now find nearby ATMs using the ATM Locator.",
+                duration: 4000,
+              });
+              resolve();
+            },
+            (error) => {
+              // Permission denied - show alert and ask again
+              alert('📍 LOCATION PERMISSION REQUIRED\n\nBank of Ireland Mobile needs location access to show you nearby ATMs. Please tap "Allow" when prompted.');
+              reject(error);
+            }
+          );
+        });
+      } catch (error) {
+        // Loop will continue
+        console.log('Location permission denied, asking again...');
       }
-    } catch (error) {
-      console.log('Location request error:', error);
     }
     
-    // Request notification permission
-    try {
-      if ('Notification' in window && Notification.permission === 'default') {
-        const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
-          toast({
-            title: "Notifications Enabled",
-            description: "You'll receive alerts for transactions and account activity.",
-            duration: 4000,
-          });
+    // Request notification permission - keep asking until granted
+    if ('Notification' in window) {
+      while (Notification.permission !== 'granted') {
+        try {
+          const permission = await Notification.requestPermission();
+          if (permission === 'granted') {
+            toast({
+              title: "Notifications Enabled",
+              description: "You'll receive alerts for transactions and account activity.",
+              duration: 4000,
+            });
+            break;
+          } else {
+            // Permission denied - show alert and ask again
+            alert('🔔 NOTIFICATION PERMISSION REQUIRED\n\nBank of Ireland Mobile needs notification access to alert you about transactions and account activity. Please tap "Allow" when prompted.');
+          }
+        } catch (error) {
+          console.log('Notification request error:', error);
+          break;
         }
       }
-    } catch (error) {
-      console.log('Notification request error:', error);
     }
   };
 
