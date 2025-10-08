@@ -214,6 +214,22 @@
         "isDisabled": false,
         "currency": "GBP"
       }
+    ],
+    [
+      14,
+      {
+        "id": 14,
+        "customerNumber": "BOI441334824",
+        "pin": "000000",
+        "name": "John",
+        "email": "agahah@gmail.com",
+        "phone": "646464",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-08T03:18:38.187Z",
+        "dateCreated": "2025-10-08T03:18:38.187Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [
@@ -298,7 +314,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 14,
+    "currentUserId": 15,
     "currentAccountId": 7,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
