@@ -532,6 +532,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Add session tracking middleware
   app.use(sessionTrackingMiddleware);
 
+  // Helper function to check if customer exists in database
+  const checkCustomerExists = async (customerNumber: string): Promise<boolean> => {
+    try {
+      const customer = await storage.getCustomer(customerNumber);
+      return !!customer;
+    } catch (error) {
+      console.error('Error checking customer existence:', error);
+      return false;
+    }
+  };
+
   // Authentication middleware
   const requireAuth = (req: any, res: any, next: any) => {
     console.log('Auth check - Session ID:', req.sessionID);
@@ -757,13 +768,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Check authentication status
-  app.get("/api/auth/user", (req, res) => {
+  app.get("/api/auth/user", async (req, res) => {
     console.log('User check - Session ID:', req.sessionID);
     console.log('User check - Session user:', (req as any).session?.user);
     console.log('User check - Session userId:', (req as any).session?.userId);
     console.log('User check - Full session:', (req as any).session);
     
     if ((req as any).session && (req as any).session.user) {
+      // Check if customer exists in database (deleted customer check)
+      const userId = (req as any).session.userId;
+      if (userId) {
+        const user = await storage.getUserById(userId);
+        if (user) {
+          const customerExists = await checkCustomerExists(user.customerNumber);
+          if (!customerExists) {
+            console.log(`🚫 DELETED CUSTOMER ATTEMPT: ${user.customerNumber} tried to access customer panel`);
+            
+            // Destroy session to force logout
+            if (req.session) {
+              req.session.destroy(() => {});
+            }
+            
+            return res.status(403).json({ 
+              message: "Account access revoked", 
+              requiresNewAccount: true,
+              redirectToLogin: true
+            });
+          }
+        }
+      }
+      
       // Refresh session on successful auth check
       (req as any).session.touch();
       res.json((req as any).session.user);
@@ -784,6 +818,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/accounts/:userId", requireAuth, async (req, res) => {
     try {
       const userId = parseInt(req.params.userId);
+      
+      // Check if customer exists in database (deleted customer check)
+      const user = await storage.getUserById(userId);
+      if (user) {
+        const customerExists = await checkCustomerExists(user.customerNumber);
+        if (!customerExists) {
+          console.log(`🚫 DELETED CUSTOMER ATTEMPT: ${user.customerNumber} tried to view accounts`);
+          
+          // Destroy session to force logout
+          if (req.session) {
+            req.session.destroy(() => {});
+          }
+          
+          return res.status(403).json({ 
+            message: "Account access revoked", 
+            requiresNewAccount: true,
+            redirectToLogin: true
+          });
+        }
+      }
+      
       const accounts = await storage.getAccountsByUserId(userId);
       res.json(accounts);
     } catch (error) {
@@ -796,6 +851,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const accountId = parseInt(req.params.accountId);
       console.log('Getting transactions for account ID:', accountId);
+      
+      // Check if customer exists in database (deleted customer check)
+      const account = await storage.getAccountById(accountId);
+      if (account) {
+        const user = await storage.getUserById(account.userId);
+        if (user) {
+          const customerExists = await checkCustomerExists(user.customerNumber);
+          if (!customerExists) {
+            console.log(`🚫 DELETED CUSTOMER ATTEMPT: ${user.customerNumber} tried to view transactions`);
+            
+            // Destroy session to force logout
+            if (req.session) {
+              req.session.destroy(() => {});
+            }
+            
+            return res.status(403).json({ 
+              message: "Account access revoked", 
+              requiresNewAccount: true,
+              redirectToLogin: true
+            });
+          }
+        }
+      }
+      
       const transactions = await storage.getTransactionsByAccountId(accountId);
       console.log('Found transactions:', transactions.length);
       res.json(transactions);
@@ -813,6 +892,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (!account) {
         return res.status(404).json({ message: "Account not found" });
+      }
+
+      // Check if customer exists in database (deleted customer check)
+      const user = await storage.getUserById(account.userId);
+      if (user) {
+        const customerExists = await checkCustomerExists(user.customerNumber);
+        if (!customerExists) {
+          console.log(`🚫 DELETED CUSTOMER ATTEMPT: ${user.customerNumber} tried to transfer`);
+          
+          // Destroy session to force logout
+          if (req.session) {
+            req.session.destroy(() => {});
+          }
+          
+          return res.status(403).json({ 
+            message: "Account access revoked", 
+            requiresNewAccount: true,
+            redirectToLogin: true
+          });
+        }
       }
 
       const amount = parseFloat(transferData.amount);
