@@ -310,6 +310,23 @@
         "dateCreated": "2025-10-08T04:41:15.665Z",
         "isDisabled": false
       }
+    ],
+    [
+      27,
+      {
+        "id": 27,
+        "customerNumber": "56268938",
+        "pin": "000000",
+        "name": "Johm",
+        "email": "ahajaj@gmail.clm",
+        "phone": "48484",
+        "address": "",
+        "dateOfBirth": "",
+        "joinDate": "2025-10-08T04:43:53.454Z",
+        "dateCreated": "2025-10-08T04:43:53.454Z",
+        "isDisabled": false,
+        "currency": "GBP"
+      }
     ]
   ],
   "accounts": [
@@ -420,6 +437,42 @@
         "displayName": "Savings Account",
         "sortCode": "90-78-68"
       }
+    ],
+    [
+      28,
+      {
+        "id": 28,
+        "userId": 27,
+        "accountType": "current",
+        "accountNumber": "****2091",
+        "balance": "0.00",
+        "displayName": "Current Account",
+        "sortCode": "90-78-68"
+      }
+    ],
+    [
+      29,
+      {
+        "id": 29,
+        "userId": 27,
+        "accountType": "credit",
+        "accountNumber": "****1820",
+        "balance": "0.00",
+        "displayName": "Credit Card",
+        "sortCode": "90-78-68"
+      }
+    ],
+    [
+      30,
+      {
+        "id": 30,
+        "userId": 27,
+        "accountType": "savings",
+        "accountNumber": "****0978",
+        "balance": "0.00",
+        "displayName": "Savings Account",
+        "sortCode": "90-78-68"
+      }
     ]
   ],
   "transactions": [],
@@ -430,8 +483,8 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 27,
-    "currentAccountId": 28,
+    "currentUserId": 28,
+    "currentAccountId": 31,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
     "currentScheduledPaymentId": 1,
