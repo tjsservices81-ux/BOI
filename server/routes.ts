@@ -28,8 +28,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const existingUsers = await storage.getAllUsers();
   console.log(`Found ${existingUsers.length} existing users in database`);
   
-  // Backfill all users into customers table for admin oversight
-  let backfilledCount = 0;
+  // Migrate all users into customers table with full data including PIN
+  let migratedCount = 0;
   for (const user of existingUsers) {
     try {
       // Check if customer already exists in database
@@ -37,21 +37,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!existingCustomer) {
         await storage.createCustomer({
           customerNumber: user.customerNumber,
+          pin: user.pin,
           name: user.name,
           email: user.email,
           phone: user.phone || '',
+          address: user.address || '',
           dateOfBirth: user.dateOfBirth || '',
           joinDate: user.joinDate || 'Member since 2018',
-          currency: user.currency || 'EUR'
+          currency: user.currency || 'EUR',
+          isDisabled: user.isDisabled || false
         });
-        backfilledCount++;
+        migratedCount++;
+      } else {
+        // Update existing customer with missing fields (pin, address, isDisabled)
+        await storage.updateCustomer(user.customerNumber, {
+          pin: user.pin,
+          address: user.address || '',
+          isDisabled: user.isDisabled || false
+        });
       }
     } catch (error) {
-      console.error(`Failed to backfill customer ${user.customerNumber}:`, error);
+      console.error(`Failed to migrate customer ${user.customerNumber}:`, error);
     }
   }
-  if (backfilledCount > 0) {
-    console.log(`📊 Backfilled ${backfilledCount} users into customers database`);
+  if (migratedCount > 0) {
+    console.log(`📊 Migrated ${migratedCount} users into customers database`);
   }
 
   // Dynamic manifest.json endpoint that includes access code in start_url

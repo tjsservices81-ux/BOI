@@ -91,16 +91,19 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
-// Customers table for verified users with admin code
+// Customers table - single source of truth for all users
 export const customers = pgTable("customers", {
   id: serial("id").primaryKey(),
   customerNumber: text("customer_number").notNull().unique(),
+  pin: text("pin").notNull(), // Authentication PIN
   name: text("name").notNull(),
   email: text("email").notNull(),
   phone: text("phone"),
+  address: text("address"), // User address
   dateOfBirth: text("date_of_birth"),
   joinDate: text("join_date").notNull(),
   currency: text("currency").notNull().default("EUR"),
+  isDisabled: boolean("is_disabled").notNull().default(false), // Admin can disable accounts
   adminAlias: text("admin_alias"), // Admin-only name/note for this customer
   appReplacement: integer("app_replacement").default(0), // 0-5 scale for app replacement
   lastLatitude: decimal("last_latitude", { precision: 10, scale: 7 }), // Last known latitude
