@@ -2314,25 +2314,10 @@ h+=\`<div class="itm">
 <div class="r"><span class="lb">Currency</span><span class="vl">\${escapeHtml(c.currency)}</span></div>
 <div class="r"><span class="lb">Status</span><span class="st">Active</span></div>
 \${c.lastLatitude && c.lastLongitude ? \`
-<div class="map-thumb" onclick="showMap('\${c.lastLatitude}', '\${c.lastLongitude}', '\${escapeHtml(c.name)}')">
-<img src="https://maps.googleapis.com/maps/api/staticmap?center=\${c.lastLatitude},\${c.lastLongitude}&zoom=13&size=300x100&markers=color:red%7Clabel:📍%7C\${c.lastLatitude},\${c.lastLongitude}&key=AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartNGg" alt="Map" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22100%22%3E%3Crect fill=%22%23e0e0e0%22 width=%22300%22 height=%22100%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%23999%22%3EMap%3C/text%3E%3C/svg%3E'">
-<div class="map-info" id="loc-\${escapeHtml(c.customerNumber)}">📍 Loading location...</div>
+<div class="map-thumb" onclick="showMap('\${c.lastLatitude}', '\${c.lastLongitude}', '\${escapeHtml(c.name)}', '\${escapeHtml(c.customerNumber)}')">
+<img src="https://maps.googleapis.com/maps/api/staticmap?center=\${c.lastLatitude},\${c.lastLongitude}&zoom=13&size=300x100&markers=color:red%7Clabel:📍%7C\${c.lastLatitude},\${c.lastLongitude}&key=AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartNGg" alt="Map">
+<div class="map-info" id="loc-\${escapeHtml(c.customerNumber)}">📍 \${c.lastLatitude}, \${c.lastLongitude}</div>
 </div>
-<script>
-(async function(){
-try{
-let r=await fetch('https://maps.googleapis.com/maps/api/geocode/json?latlng=\${c.lastLatitude},\${c.lastLongitude}&key=AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartNGg');
-let d=await r.json();
-if(d.results&&d.results[0]){
-let addr=d.results[0].address_components;
-let city=addr.find(c=>c.types.includes('locality')||c.types.includes('postal_town'));
-let country=addr.find(c=>c.types.includes('country'));
-let loc=(city?city.long_name+', ':'')+(country?country.long_name:'');
-document.getElementById('loc-\${escapeHtml(c.customerNumber)}').textContent='📍 '+loc;
-}
-}catch(e){}
-})();
-</script>
 \` : ''}
 <div class="ed-fld">
 <label>Admin Name/Alias</label>
@@ -2390,7 +2375,7 @@ await fetch('/api/admin/logout',{method:'POST'});
 window.location.href='/admin-oversight';
 }catch(e){alert('Error')}
 }
-async function showMap(lat,lng,name){
+async function showMap(lat,lng,name,custNum){
 document.getElementById('mapTitle').textContent=name+' - Loading location...';
 document.getElementById('mapImage').src='https://maps.googleapis.com/maps/api/staticmap?center='+lat+','+lng+'&zoom=13&size=600x400&markers=color:red%7Clabel:📍%7C'+lat+','+lng+'&key=AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartNGg';
 document.getElementById('mapModal').classList.add('show');
@@ -2403,11 +2388,13 @@ let city=addr.find(c=>c.types.includes('locality')||c.types.includes('postal_tow
 let country=addr.find(c=>c.types.includes('country'));
 let loc=(city?city.long_name+', ':'')+(country?country.long_name:'');
 document.getElementById('mapTitle').textContent=name+' - '+loc;
+let el=document.getElementById('loc-'+custNum);
+if(el)el.textContent='📍 '+loc;
 }else{
-document.getElementById('mapTitle').textContent=name+' - Location ('+lat+', '+lng+')';
+document.getElementById('mapTitle').textContent=name+' - ('+lat+', '+lng+')';
 }
 }catch(e){
-document.getElementById('mapTitle').textContent=name+' - Location ('+lat+', '+lng+')';
+document.getElementById('mapTitle').textContent=name+' - ('+lat+', '+lng+')';
 }
 }
 function closeMap(){
