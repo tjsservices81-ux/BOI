@@ -10,6 +10,7 @@ import { isDeviceBlocked, addDeviceSession, isDeviceInPanicMode, isCustomerInPan
 import { isAccountActiveOnOtherDevice, setUserDeviceSession, removeUserDeviceSession, getUserDeviceSession, isCurrentDeviceAuthorized } from "./deviceExclusiveAuth";
 import { addUserSession, removeUserSession, sessionTrackingMiddleware, isSessionValid } from "./sessionManager";
 import { sendTransferConfirmation, sendBankStatement, type TransferConfirmationDetails } from "./emailService";
+import { generateTransferConfirmationPDF } from "./pdfService";
 import { StatementService } from "./statementService";
 import Database from "@replit/database";
 
@@ -1074,6 +1075,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: error.errors[0].message });
       }
       res.status(500).json({ success: false, message: "Internal server error" });
+    }
+  });
+
+  // Generate transfer confirmation PDF (without email)
+  app.post("/api/generate-transfer-confirmation", async (req, res) => {
+    try {
+      const { transaction, senderName, accountInfo, userCurrency } = req.body;
+      
+      console.log('🔵 Generating transfer confirmation PDF for transaction:', transaction.id);
+      
+      const confirmationDetails: TransferConfirmationDetails = {
+        senderName: senderName || 'Customer',
+        recipientName: transaction.recipientName || 'Recipient',
+        amount: transaction.amount.replace('-', ''),
+        currency: userCurrency === 'GBP' ? '£' : '€',
+        dateTime: new Date(transaction.timestamp).toLocaleString('en-GB', {
+          dateStyle: 'short',
+          timeStyle: 'short',
+          timeZone: 'Europe/Dublin'
+        }),
+        transactionReference: transaction.reference || transaction.id.toString(),
+        accountInfo: accountInfo || "Account"
+      };
+      
+      const pdfBuffer = await generateTransferConfirmationPDF(
+        confirmationDetails.senderName,
+        confirmationDetails.recipientName,
+        confirmationDetails.amount,
+        confirmationDetails.currency,
+        confirmationDetails.transactionReference,
+        confirmationDetails.accountInfo,
+        transaction,
+        userCurrency
+      );
+      
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `inline; filename="TransferConfirmation-${transaction.id}.pdf"`);
+      res.send(pdfBuffer);
+    } catch (error) {
+      console.error('Transfer confirmation PDF generation error:', error);
+      res.status(500).json({ success: false, message: "Failed to generate transfer confirmation" });
     }
   });
 

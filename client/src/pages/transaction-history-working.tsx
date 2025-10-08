@@ -178,23 +178,18 @@ export default function TransactionHistoryWorking() {
       console.log('Generating new PDF');
       const userProfile = UserDataManager.getUserProfile();
       const accounts = UserDataManager.getUserAccounts();
+      const accountInfo = accounts.find((acc: any) => acc.id === selectedTransaction.accountId);
       
-      const response = await fetch('/api/generate-statement', {
+      const response = await fetch('/api/generate-transfer-confirmation', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          accountId: selectedTransaction.accountId,
-          startDate: selectedTransaction.timestamp,
-          endDate: selectedTransaction.timestamp,
-          dateRange: new Date(selectedTransaction.timestamp).toLocaleDateString('en-IE'),
-          userTransactions: [selectedTransaction],
-          userAccounts: accounts,
-          userEmail: userProfile?.email,
-          customerName: userProfile?.name || 'Bank of Ireland Customer',
-          userAddress: userProfile?.address,
-          userCurrency: userProfile?.currency
+          transaction: selectedTransaction,
+          senderName: userProfile?.name || 'Customer',
+          accountInfo: accountInfo?.displayName || 'Account',
+          userCurrency: userProfile?.currency || 'EUR'
         }),
       });
 
@@ -233,7 +228,7 @@ export default function TransactionHistoryWorking() {
     if (!statementPdfBlob || !statementFileName) return;
     
     // Check if Web Share API is available (for mobile devices)
-    if (navigator.share && navigator.canShare) {
+    if (navigator.share && navigator.canShare && navigator.canShare()) {
       try {
         const file = new File([statementPdfBlob], statementFileName, { type: 'application/pdf' });
         await navigator.share({

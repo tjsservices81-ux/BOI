@@ -200,20 +200,16 @@ export const processTransfer = (
   setTimeout(async () => {
     try {
       const userProfile = UserDataManager.getUserProfile();
-      const response = await fetch('/api/generate-statement', {
+      const accountInfo = updatedAccounts.find((acc: any) => acc.id.toString() === fromAccountId);
+      
+      const response = await fetch('/api/generate-transfer-confirmation', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          accountId: parseInt(fromAccountId),
-          startDate: newTransaction.timestamp,
-          endDate: newTransaction.timestamp,
-          dateRange: new Date(newTransaction.timestamp).toLocaleDateString('en-IE'),
-          userTransactions: [newTransaction],
-          userAccounts: updatedAccounts,
-          userEmail: userProfile?.email,
-          customerName: userProfile?.name || 'Bank of Ireland Customer',
-          userAddress: userProfile?.address,
-          userCurrency: userProfile?.currency
+          transaction: newTransaction,
+          senderName: userProfile?.name || 'Customer',
+          accountInfo: accountInfo?.displayName || 'Account',
+          userCurrency: userProfile?.currency || 'EUR'
         }),
       });
       
