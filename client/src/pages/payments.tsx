@@ -273,7 +273,7 @@ export default function Payments() {
                         {option.title}
                       </h3>
                       {option.popular && (
-                        <span className="bg-[#126987] text-white text-xs px-2 py-0.5 rounded-full">
+                        <span className="bg-[#126987] text-white text-xs px-2 py-0.5 rounded-full" style={{ color: 'white' }}>
                           Popular
                         </span>
                       )}
