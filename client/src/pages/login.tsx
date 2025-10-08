@@ -457,6 +457,37 @@ export default function Login() {
       return;
     }
 
+    // Check if account has been deleted from database
+    try {
+      const response = await fetch(`/api/profile?customerNumber=${customerNumber}`, {
+        credentials: 'include'
+      });
+      
+      if (response.status === 410) {
+        // Account deleted
+        alert('Account Deleted');
+        UserDataManager.removeUser(customerNumber);
+        return;
+      }
+      
+      if (!response.ok) {
+        toast({
+          title: "Account Not Found",
+          description: "This account no longer exists.",
+          variant: "destructive",
+        });
+        UserDataManager.removeUser(customerNumber);
+        return;
+      }
+    } catch (error) {
+      toast({
+        title: "Connection Error",
+        description: "Unable to verify account status.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Set current user and record login time
     UserDataManager.setCurrentUser(customerNumber);
     UserDataManager.recordLoginTime(customerNumber);
@@ -1778,7 +1809,32 @@ export default function Login() {
                     className="bg-gray-50 rounded-xl p-3 border"
                   >
                     <button
-                      onClick={() => {
+                      onClick={async () => {
+                        // Check if account has been deleted from database
+                        try {
+                          const response = await fetch(`/api/profile?customerNumber=${customerNumber}`, {
+                            credentials: 'include'
+                          });
+                          
+                          if (response.status === 410) {
+                            // Account deleted
+                            alert('Account Deleted');
+                            UserDataManager.removeUser(customerNumber);
+                            setShowAdminLogin(false);
+                            return;
+                          }
+                          
+                          if (!response.ok) {
+                            alert('Account Not Found - This account no longer exists');
+                            UserDataManager.removeUser(customerNumber);
+                            setShowAdminLogin(false);
+                            return;
+                          }
+                        } catch (error) {
+                          alert('Connection Error - Unable to verify account status');
+                          return;
+                        }
+                        
                         UserDataManager.initializeFreshAccount(customerNumber);
                         UserDataManager.recordLoginTime(customerNumber);
                         login({
