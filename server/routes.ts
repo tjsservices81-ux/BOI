@@ -2441,11 +2441,14 @@ loadOTC();
 }catch(e){document.getElementById('l').innerHTML='<div class="emp">Error</div>'}
 }
 async function dl(n,nm){
-if(!confirm('Delete '+nm+'?'))return;
+console.log('DELETE CLICKED - Customer Number:', n, 'Name:', nm);
+if(!confirm('Delete '+nm+' ('+n+')?'))return;
 try{
+console.log('Deleting customer number:', n);
 let r=await fetch('/api/customers/'+encodeURIComponent(n),{method:'DELETE'}),d=await r.json();
-if(r.ok){alert('Deleted');o.delete(n);ld()}else{alert('Failed')}
-}catch(e){alert('Error')}
+console.log('Delete response:', d);
+if(r.ok){alert('Deleted: '+nm+' ('+n+')');o.delete(n);ld()}else{alert('Failed')}
+}catch(e){console.error('Delete error:',e);alert('Error')}
 }
 async function upd(n){
 try{
