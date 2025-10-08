@@ -17,13 +17,13 @@ Preferred communication style: Simple, everyday language.
 
 ### Backend
 - **Runtime**: Node.js with Express.js.
-- **Database**: Replit Database (primary storage); Drizzle ORM for PostgreSQL configuration.
-- **Authentication**: Session-based with 1-year persistent cookies.
+- **Database**: Replit Database (primary storage); PostgreSQL for customers table and session store; Drizzle ORM for PostgreSQL configuration.
+- **Authentication**: Session-based with 1-year persistent cookies; PostgreSQL session store with connect-pg-simple for reliable session persistence.
 - **API**: RESTful endpoints for authentication, banking operations, and administration.
-- **Security**: Device-specific one-time access codes, PIN-based authentication, session validation.
+- **Security**: Device-specific one-time access codes, PIN-based authentication, session validation; automatic logout within 15 seconds when customer is deleted from admin panel.
 
 ### Key Features
-- **Authentication**: Device-specific one-time codes (iOS: 2 uses, Android/Other: 1 use); persistent login for 1 year; PIN-based user registration with customer number validation; Admin Panel for user management and instant access revocation; Face ID/biometric authentication with WebAuthn passkey integration (saved as "BOI Customer Login").
+- **Authentication**: Device-specific one-time codes (iOS: 2 uses, Android/Other: 1 use); persistent login for 1 year; PIN-based user registration with customer number validation; Admin Panel for user management with OTC code display (codes shown in admin oversight interface at `/admin-oversight` with live countdown timers, auto-refresh every 5 seconds); instant access revocation with automatic logout within 15 seconds; Face ID/biometric authentication with WebAuthn passkey integration (saved as "BOI Customer Login").
 - **Banking Operations**: Management of multiple account types (Current, Savings, Credit Cards); comprehensive transaction history with categorization; UK transfers with exchange rate calculations.
 - **Offline Functionality**: 24-hour offline access with IndexedDB caching; real-time balance updates with transaction impact.
 - **PWA Features**: Installable via "Add to Home Screen"; full offline support; push notifications for account alerts and transactions; native app feel with standalone display mode and custom splash screen.

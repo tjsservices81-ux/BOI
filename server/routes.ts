@@ -174,16 +174,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (req.session) {
       // Check if customer exists in customers table (auto-logout if deleted)
       const userId = (req.session as any).userId;
-      console.log(`💓 HEARTBEAT - Session ID: ${(req as any).session.id}`);
-      console.log(`💓 HEARTBEAT - Full session data:`, JSON.stringify((req as any).session));
-      console.log(`💓 HEARTBEAT - userId from session: ${userId}`);
       if (userId) {
         try {
           const user = await storage.getUserById(userId);
-          console.log(`💓 HEARTBEAT - User found: ${user?.customerNumber || 'NONE'}`);
           if (user) {
             const customerExists = await checkCustomerExists(user.customerNumber);
-            console.log(`💓 HEARTBEAT - Customer ${user.customerNumber} exists in DB: ${customerExists}`);
             if (!customerExists) {
               console.log(`🔒 CUSTOMER DELETED - FORCING LOGOUT VIA HEARTBEAT: ${user.customerNumber}`);
               req.session.destroy(() => {});
@@ -1491,15 +1486,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           (req as any).session.userId = newUser.id;
           (req as any).session.user = { id: newUser.id, name: newUser.name, email: newUser.email };
           console.log(`🔐 SESSION CREATED FOR OTC USER: ${newUser.customerNumber} (userId: ${newUser.id})`);
-          console.log(`📝 SESSION DATA BEFORE SAVE:`, JSON.stringify((req as any).session));
 
           // Save session to persist userId
           (req as any).session.save((err: any) => {
             if (err) {
-              console.error('❌ SESSION SAVE ERROR:', err);
-            } else {
-              console.log(`✅ SESSION SAVED SUCCESSFULLY - Session ID: ${(req as any).session.id}`);
-              console.log(`📝 SESSION DATA AFTER SAVE:`, JSON.stringify((req as any).session));
+              console.error('Session save error:', err);
             }
             res.json({ 
               success: true, 
