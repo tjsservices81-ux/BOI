@@ -149,6 +149,23 @@ export default function TransactionHistoryWorking() {
     if (!selectedTransaction) return;
 
     try {
+      // Check if PDF is already saved with the transaction
+      if (selectedTransaction.confirmationPdfData) {
+        // Convert base64 back to blob and open
+        const byteCharacters = atob(selectedTransaction.confirmationPdfData.split(',')[1]);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(blob);
+        window.open(url, '_blank');
+        window.URL.revokeObjectURL(url);
+        return;
+      }
+
+      // If no saved PDF, generate it
       const userProfile = UserDataManager.getUserProfile();
       const accounts = UserDataManager.getUserAccounts();
       
