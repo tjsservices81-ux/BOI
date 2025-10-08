@@ -207,11 +207,12 @@
         "name": "John",
         "email": "john@gmail.com",
         "phone": "454664",
-        "address": null,
-        "dateOfBirth": null,
+        "address": "",
+        "dateOfBirth": "",
         "joinDate": "2025-10-08T01:58:37.569Z",
         "dateCreated": "2025-10-08T01:58:37.569Z",
-        "isDisabled": false
+        "isDisabled": false,
+        "currency": "GBP"
       }
     ]
   ],

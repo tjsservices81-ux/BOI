@@ -28,9 +28,18 @@ export default function CreditScore() {
   const [animatedScore, setAnimatedScore] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   
+  // Get user profile to calculate account dates based on join year
+  const userProfile = UserDataManager.getUserProfile();
+  const userJoinYear = userProfile?.joinDate ? new Date(userProfile.joinDate).getFullYear() : new Date().getFullYear();
+  const currentYear = new Date().getFullYear();
+  const yearsAsMember = currentYear - userJoinYear;
+  
   // Generate consistent credit score based on user (always middle to good: 600-850)
   const userName = UserDataManager.getCurrentUser() || "User";
   const creditScore = 600 + (userName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 251);
+  
+  // Bank name based on currency
+  const bankName = userCurrency === 'GBP' ? "Bank of Ireland UK" : "Bank of Ireland";
   
   useEffect(() => {
     // Simulate loading
@@ -80,6 +89,13 @@ export default function CreditScore() {
 
   const scoreRating = getScoreRating(creditScore);
   
+  // Calculate average account age based on years as member
+  const avgYears = Math.max(0, Math.floor(yearsAsMember * 0.8)); // Slightly less than full membership
+  const avgMonths = yearsAsMember > 0 ? Math.floor((yearsAsMember * 12 * 0.8) % 12) : 0;
+  const avgAgeDescription = yearsAsMember === 0 
+    ? "New accounts established" 
+    : `Average account age: ${avgYears} ${avgYears === 1 ? 'year' : 'years'}${avgMonths > 0 ? ` ${avgMonths} ${avgMonths === 1 ? 'month' : 'months'}` : ''}`;
+  
   const scoreFactors: ScoreFactor[] = [
     {
       name: "Payment History",
@@ -95,8 +111,8 @@ export default function CreditScore() {
     },
     {
       name: "Credit History Length",
-      impact: "positive",
-      description: "Average account age: 5 years 3 months",
+      impact: yearsAsMember >= 1 ? "positive" : "neutral",
+      description: avgAgeDescription,
       percentage: 15
     },
     {
@@ -113,22 +129,30 @@ export default function CreditScore() {
     }
   ];
 
+  // Calculate account opened dates based on user's join year
+  // First account: opened in join year
+  // Second account: opened 1 year after join (or join year if member less than 1 year)
+  // Third account: opened 2 years after join (or join year if member less than 2 years)
+  const account1Year = userJoinYear;
+  const account2Year = yearsAsMember >= 1 ? userJoinYear + 1 : userJoinYear;
+  const account3Year = yearsAsMember >= 2 ? userJoinYear + 2 : userJoinYear;
+  
   const creditAccounts: CreditAccount[] = [
     {
       type: "Credit Card",
-      provider: "Bank of Ireland Visa",
+      provider: `${bankName} Visa`,
       balance: 850,
       limit: 3000,
       status: "good",
-      openedDate: "Jan 2019"
+      openedDate: `Jan ${account1Year}`
     },
     {
       type: "Personal Loan",
-      provider: "Bank of Ireland",
+      provider: bankName,
       balance: 5200,
       limit: 10000,
       status: "good",
-      openedDate: "Mar 2020"
+      openedDate: `Mar ${account2Year}`
     },
     {
       type: "Credit Card",
@@ -136,7 +160,7 @@ export default function CreditScore() {
       balance: 420,
       limit: 2000,
       status: creditScore >= 650 ? "good" : "fair",
-      openedDate: "Aug 2021"
+      openedDate: `Aug ${account3Year}`
     }
   ];
 
@@ -403,7 +427,7 @@ export default function CreditScore() {
               <div className="flex items-start gap-2">
                 <AlertCircle className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
                 <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  This credit score is provided for informational purposes. It is calculated using the data available in your Bank of Ireland accounts. Your actual credit score from credit bureaus may vary. Check your full credit report from credit reference agencies for comprehensive details.
+                  This credit score is provided for informational purposes. It is calculated using the data available in your {bankName} accounts. Your actual credit score from credit bureaus may vary. Check your full credit report from credit reference agencies for comprehensive details.
                 </p>
               </div>
             </div>
