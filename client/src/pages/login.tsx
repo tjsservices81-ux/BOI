@@ -780,11 +780,13 @@ export default function Login() {
           currentProgress += progressStep;
           
           if (currentProgress >= 100) {
+            currentProgress = 100;
             setLoginProgress(100);
             clearInterval(smoothInterval);
             resolve();
           } else {
-            setLoginProgress(currentProgress);
+            // Ensure progress only goes up, never down
+            setLoginProgress((prev) => Math.max(prev, currentProgress));
             
             // Update stage based on progress
             if (currentProgress < 25) {
