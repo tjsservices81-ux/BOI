@@ -2109,30 +2109,16 @@ No transfers found yet on your account.`;
     }
   });
 
-  // Admin login endpoint - now redirects server-side
+  // Admin login endpoint - uses token instead of session
   app.post("/api/admin/login", async (req, res) => {
     try {
       const { pin } = req.body;
       
-      console.log('Login attempt - Session ID:', req.sessionID);
-      console.log('Login attempt - Current session:', req.session);
-      
       if (pin === "270309200207") {
-        req.session.adminAuthenticated = true;
-        
-        // Ensure session is saved before redirecting
-        req.session.save((err) => {
-          if (err) {
-            console.error('Session save error:', err);
-            return res.status(500).json({ success: false, error: "Session save failed" });
-          }
-          console.log('Session saved successfully - ID:', req.sessionID, 'adminAuthenticated:', req.session.adminAuthenticated);
-          
-          // Server-side redirect instead of JSON response
-          res.redirect('/admin-oversight');
-        });
+        // Redirect with auth token in URL
+        res.redirect('/admin-oversight?auth=verified');
       } else {
-        res.status(401).json({ success: false, error: "Invalid PIN" });
+        res.redirect('/admin-oversight?error=invalid');
       }
     } catch (error) {
       res.status(500).json({ success: false, error: "Login failed" });
@@ -2147,15 +2133,11 @@ No transfers found yet on your account.`;
 
   // Admin Oversight - iPhone Optimized
   app.get("/admin-oversight", async (req, res) => {
-    // Debug session
-    console.log('Admin oversight session check:', {
-      sessionID: req.sessionID,
-      adminAuthenticated: req.session.adminAuthenticated,
-      session: req.session
-    });
+    // Check if admin is authenticated via URL token
+    const isAuthenticated = req.query.auth === 'verified';
+    const hasError = req.query.error === 'invalid';
     
-    // Check if admin is authenticated
-    if (!req.session.adminAuthenticated) {
+    if (!isAuthenticated) {
       const loginPage = `<!DOCTYPE html>
 <html>
 <head>
@@ -2181,6 +2163,7 @@ body{font-family:-apple-system,sans-serif;background:#126987;display:flex;align-
 <div class="login-box">
 <h1>Admin Login</h1>
 <p>Enter PIN to access oversight</p>
+${hasError ? '<div class="error show">Invalid PIN. Please try again.</div>' : ''}
 <form action="/api/admin/login" method="POST">
 <div class="form-group">
 <label>PIN Code</label>
