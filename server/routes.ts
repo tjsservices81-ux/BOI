@@ -2134,7 +2134,7 @@ No transfers found yet on your account.`;
         // Accept real user transactions from frontend
         userTransactions: z.array(z.object({
           id: z.union([z.string(), z.number()]),
-          accountId: z.number(),
+          accountId: z.union([z.string(), z.number()]).transform(val => Number(val)),
           amount: z.string(),
           description: z.string(),
           category: z.string(),
@@ -2188,8 +2188,8 @@ No transfers found yet on your account.`;
           
           console.log('🔵 Sending bank statement email automatically...');
           const emailSuccess = await sendBankStatement(
-            statementRequest.userEmail,
-            statementRequest.customerName,
+            statementRequest.userEmail!,
+            statementRequest.customerName!,
             accountName,
             statementPeriod,
             pdfBuffer
