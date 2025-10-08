@@ -1270,7 +1270,8 @@ export default function Login() {
                           onMouseUp: handleBiometricHoldEnd,
                           onMouseLeave: handleBiometricHoldEnd,
                           onTouchStart: handleBiometricHoldStart,
-                          onTouchEnd: handleBiometricHoldEnd
+                          onTouchEnd: handleBiometricHoldEnd,
+                          onTouchCancel: handleBiometricHoldEnd
                         }
                     )}
                     style={{
