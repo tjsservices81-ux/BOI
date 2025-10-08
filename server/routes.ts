@@ -643,23 +643,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`✅ USER REGISTERED: ${newUser.name} (${newUser.customerNumber})`);
       
-      // Add user to customers table in database after successful registration
-      try {
-        await storage.createCustomer({
-          customerNumber: newUser.customerNumber,
-          name: newUser.name,
-          email: newUser.email,
-          phone: newUser.phone || '',
-          dateOfBirth: newUser.dateOfBirth || '',
-          joinDate: newUser.joinDate || 'Member since 2018',
-          currency: newUser.currency || 'EUR'
-        });
-        console.log(`📊 CUSTOMER ADDED TO DATABASE: ${newUser.name} (${newUser.customerNumber})`);
-      } catch (customerError) {
-        console.error('Failed to add customer to database:', customerError);
-        // Don't fail registration if customer table insertion fails
-      }
-      
       res.status(201).json({ 
         success: true, 
         customerNumber: newUser.customerNumber,
@@ -1579,23 +1562,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
 
           console.log('User and accounts created in database:', newUser);
-
-          // Add user to customers table in database
-          try {
-            await storage.createCustomer({
-              customerNumber: newUser.customerNumber,
-              name: newUser.name,
-              email: newUser.email,
-              phone: newUser.phone || '',
-              dateOfBirth: newUser.dateOfBirth || '',
-              joinDate: newUser.joinDate || 'Member since 2018',
-              currency: newUser.currency || 'EUR'
-            });
-            console.log(`📊 CUSTOMER ADDED TO DATABASE (Admin OTC): ${newUser.name} (${newUser.customerNumber})`);
-          } catch (customerError) {
-            console.error('Failed to add customer to database:', customerError);
-            // Don't fail the account creation if customer table insertion fails
-          }
 
           // Set up session for OTC login (critical for auto-logout to work)
           (req as any).session.userId = newUser.id;
