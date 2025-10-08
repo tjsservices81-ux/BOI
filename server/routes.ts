@@ -2554,16 +2554,16 @@ if(r.ok){alert('Saved successfully')}else{alert('Failed: '+d.message)}
 }catch(e){alert('Error')}
 }
 async function sync(){
-const confirmed=confirm('Sync all users from Replit Database to the customers table?\\n\\nThis will add users who aren\'t already in the database.\\n\\nDelete functionality will work for synced users.');
+const confirmed=confirm('Sync all users from Replit Database to the customers table?\\n\\nThis will add users who are not already in the database.\\n\\nDelete functionality will work for synced users.');
 if(!confirmed)return;
 try{
 let r=await fetch('/api/admin/sync-users',{method:'POST'});
 let d=await r.json();
 if(r.ok){
-alert('✅ Sync Complete\\n\\nSynced: '+d.synced+' users\\nTotal users: '+d.total+'\\nAlready in DB: '+d.existing);
+alert('Sync Complete\\n\\nSynced: '+d.synced+' users\\nTotal users: '+d.total+'\\nAlready in DB: '+d.existing);
 ld();
-}else{alert('❌ Failed: '+d.error)}
-}catch(e){alert('❌ Error: '+e.message)}
+}else{alert('Failed: '+d.error)}
+}catch(e){alert('Error: '+e.message)}
 }
 async function logout(){
 try{
