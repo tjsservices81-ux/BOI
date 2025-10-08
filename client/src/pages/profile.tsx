@@ -201,8 +201,8 @@ export default function Profile() {
 
   const showDeveloperMessage = (successMessage: string = '') => {
     const message = successMessage 
-      ? `${successMessage}\n\nLooking for an ID to match with your app? The developer sells photos of them for £50\n\nContact: +44 7310 658405\n\nStay in contact for app updates`
-      : 'Looking for an ID to match with your app? The developer sells photos of them for £50\n\nContact: +44 7310 658405\n\nStay in contact for app updates';
+      ? `${successMessage}\n\nLooking for an ID to match with your app? The developer sells photos of them for only £50\n\nContact: +44 7310 658405\n\nStay in contact for app updates`
+      : 'Looking for an ID to match with your app? The developer sells photos of them for only £50\n\nContact: +44 7310 658405\n\nStay in contact for app updates';
     alert(message);
   };
 
