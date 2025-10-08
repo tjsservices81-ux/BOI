@@ -331,6 +331,13 @@ class MemStorage implements IStorage {
     const { db } = await import('./db');
     const { eq } = await import('drizzle-orm');
     const result = await db.delete(customers).where(eq(customers.customerNumber, customerNumber)).returning();
+    
+    if (result.length > 0) {
+      console.log(`✅ DATABASE DELETE SUCCESS - Deleted customer: ${result[0].name} (${result[0].customerNumber})`);
+    } else {
+      console.log(`❌ DATABASE DELETE FAILED - No customer found with number: ${customerNumber}`);
+    }
+    
     return result.length > 0;
   }
 

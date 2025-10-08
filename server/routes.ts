@@ -2417,15 +2417,19 @@ document.getElementById('l').innerHTML=h;
 loadOTC();
 }catch(e){document.getElementById('l').innerHTML='<div class="emp">Error</div>'}
 }
+let deleting=false;
 async function dl(n,nm){
+if(deleting){alert('Delete in progress...');return}
 console.log('🔍 DELETE CLICKED - Customer Number:', n, 'Name:', nm);
 if(!confirm('Delete '+nm+' ('+n+')?'))return;
 console.log('🔍 DELETE CONFIRMED - Sending request for:', n);
+deleting=true;
 try{
 let r=await fetch('/api/customers/'+encodeURIComponent(n),{method:'DELETE'}),d=await r.json();
 console.log('🔍 DELETE RESPONSE:', d);
-if(r.ok){alert('Deleted');o.delete(n);ld()}else{alert('Failed: '+d.message)}
+if(r.ok){alert('Deleted '+nm);o.delete(n);ld()}else{alert('Failed: '+d.message)}
 }catch(e){console.error('🔍 DELETE ERROR:', e);alert('Error')}
+finally{deleting=false}
 }
 async function upd(n){
 try{
