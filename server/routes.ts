@@ -2109,8 +2109,93 @@ No transfers found yet on your account.`;
     }
   });
 
+  // Admin login endpoint
+  app.post("/api/admin/login", async (req, res) => {
+    try {
+      const { pin } = req.body;
+      
+      if (pin === "270309200207") {
+        req.session.adminAuthenticated = true;
+        res.json({ success: true });
+      } else {
+        res.status(401).json({ success: false, error: "Invalid PIN" });
+      }
+    } catch (error) {
+      res.status(500).json({ success: false, error: "Login failed" });
+    }
+  });
+
+  // Admin logout endpoint
+  app.post("/api/admin/logout", async (req, res) => {
+    req.session.adminAuthenticated = false;
+    res.json({ success: true });
+  });
+
   // Admin Oversight - iPhone Optimized
   app.get("/admin-oversight", async (req, res) => {
+    // Check if admin is authenticated
+    if (!req.session.adminAuthenticated) {
+      const loginPage = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0">
+<title>Admin Login</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,sans-serif;background:#126987;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.login-box{background:#fff;border-radius:12px;padding:30px;max-width:350px;width:100%;box-shadow:0 4px 6px rgba(0,0,0,0.1)}
+.login-box h1{color:#126987;font-size:24px;margin-bottom:8px}
+.login-box p{color:#666;font-size:14px;margin-bottom:24px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;color:#666;font-size:12px;font-weight:600;margin-bottom:6px}
+.form-group input{width:100%;padding:12px;border:1px solid #ddd;border-radius:6px;font-size:16px;font-family:monospace;letter-spacing:2px}
+.btn-login{width:100%;background:#126987;color:#fff;border:none;padding:14px;border-radius:6px;font-size:16px;font-weight:600;cursor:pointer}
+.btn-login:active{background:#0d4d66}
+.error{background:#f8d7da;color:#721c24;padding:10px;border-radius:6px;margin-bottom:16px;font-size:13px;display:none}
+.error.show{display:block}
+</style>
+</head>
+<body>
+<div class="login-box">
+<h1>Admin Login</h1>
+<p>Enter PIN to access oversight</p>
+<div class="error" id="err">Invalid PIN. Please try again.</div>
+<form id="loginForm" onsubmit="login(event)">
+<div class="form-group">
+<label>PIN Code</label>
+<input type="password" id="pin" inputmode="numeric" pattern="[0-9]*" autocomplete="off" required autofocus>
+</div>
+<button type="submit" class="btn-login">Login</button>
+</form>
+</div>
+<script>
+async function login(e){
+e.preventDefault();
+let pin=document.getElementById('pin').value;
+try{
+let r=await fetch('/api/admin/login',{
+method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({pin})
+});
+let d=await r.json();
+if(r.ok&&d.success){
+window.location.href='/admin-oversight';
+}else{
+document.getElementById('err').classList.add('show');
+document.getElementById('pin').value='';
+}
+}catch(e){
+document.getElementById('err').classList.add('show');
+}
+}
+</script>
+</body>
+</html>`;
+      return res.send(loginPage);
+    }
+
     const adminPage = `<!DOCTYPE html>
 <html>
 <head>
@@ -2163,7 +2248,10 @@ body{font-family:-apple-system,sans-serif;background:#f0f0f0;overflow-x:hidden;w
 <h1>Customer Management</h1>
 <div class="top">
 <span class="cnt" id="c">0</span>
+<div style="display:flex;gap:8px">
 <button class="btn" onclick="ld()">Refresh</button>
+<button class="btn" onclick="logout()">Logout</button>
+</div>
 </div>
 </div>
 <div class="otc-sec">
@@ -2270,6 +2358,12 @@ body:JSON.stringify({adminAlias:alias,appReplacement:rep})
 });
 let d=await r.json();
 if(r.ok){alert('Saved successfully')}else{alert('Failed: '+d.message)}
+}catch(e){alert('Error')}
+}
+async function logout(){
+try{
+await fetch('/api/admin/logout',{method:'POST'});
+window.location.href='/admin-oversight';
 }catch(e){alert('Error')}
 }
 ld();
