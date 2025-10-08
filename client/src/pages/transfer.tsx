@@ -83,6 +83,7 @@ export default function Transfer() {
       iban,
       amount,
       reference: reference || undefined,
+      recipientEmail: recipientEmail || undefined,
     });
   };
 

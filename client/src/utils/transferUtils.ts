@@ -120,9 +120,10 @@ export const processTransfer = (
   transferType: 'UK' | 'IBAN',
   reference: string,
   exchangeRate?: number,
-  recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string; bicCode?: string }
+  recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string; bicCode?: string },
+  recipientEmail?: string
 ): boolean => {
-  console.log('Processing transfer:', { fromAccountId, amount, recipientName, transferType, reference });
+  console.log('Processing transfer:', { fromAccountId, amount, recipientName, transferType, reference, recipientEmail });
   
   // Get stored accounts using UserDataManager
   const accounts = UserDataManager.getUserData('bankAccounts', []);
@@ -323,7 +324,8 @@ Thank you for using our service.`;
         accountInfo: `${selectedAccount.displayName} (${selectedAccount.accountNumber})`,
         transferData: newTransaction,
         userCurrency: userCurrency,
-        emailsEnabled: sendEmail
+        emailsEnabled: sendEmail,
+        recipientEmail: recipientEmail
       };
 
       // Send email confirmation after successful transfer (if enabled)
@@ -391,12 +393,13 @@ export const processConfirmedTransfer = async (
   transferType: 'UK' | 'IBAN',
   reference: string,
   exchangeRate?: number,
-  recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string; bicCode?: string }
+  recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string; bicCode?: string },
+  recipientEmail?: string
 ): Promise<boolean> => {
-  console.log('Processing confirmed transfer:', { transferId, fromAccountId, amount, recipientName, transferType, reference });
+  console.log('Processing confirmed transfer:', { transferId, fromAccountId, amount, recipientName, transferType, reference, recipientEmail });
   
   // Execute the transfer logic
-  const success = processTransfer(fromAccountId, amount, recipientName, transferType, reference, exchangeRate, recipientDetails);
+  const success = processTransfer(fromAccountId, amount, recipientName, transferType, reference, exchangeRate, recipientDetails, recipientEmail);
   
   if (success) {
     console.log(`Transfer ${transferId} completed successfully`);

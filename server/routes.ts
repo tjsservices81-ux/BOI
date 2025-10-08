@@ -1048,7 +1048,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         accountInfo: z.string().optional(),
         transferData: z.any().optional(),
         userCurrency: z.enum(['EUR', 'GBP']).optional(),
-        emailsEnabled: z.boolean().optional()
+        emailsEnabled: z.boolean().optional(),
+        recipientEmail: z.string().email().optional()
       });
       
       const emailData = emailSchema.parse(req.body);
@@ -1074,6 +1075,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         accountInfo: emailData.accountInfo || "Current Account"
       };
       
+      // Send to user
       const success = await sendTransferConfirmation(
         emailData.userEmail, 
         confirmationDetails, 
@@ -1082,7 +1084,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         true // Always true here since we checked above
       );
       
-      if (success) {
+      // Also send to recipient if email provided
+      let recipientSuccess = true;
+      if (emailData.recipientEmail) {
+        console.log('📧 Sending copy to recipient:', emailData.recipientEmail);
+        recipientSuccess = await sendTransferConfirmation(
+          emailData.recipientEmail, 
+          confirmationDetails, 
+          emailData.transferData, 
+          emailData.userCurrency,
+          true
+        );
+      }
+      
+      if (success && recipientSuccess) {
         res.json({ success: true, message: "Transfer confirmation email sent successfully" });
       } else {
         res.status(500).json({ success: false, message: "Failed to send transfer confirmation email" });

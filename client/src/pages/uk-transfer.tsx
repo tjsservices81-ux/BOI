@@ -398,7 +398,8 @@ export default function UkTransfer() {
                 {
                   accountNumber: formData.accountNumber,
                   sortCode: formData.sortCode
-                }
+                },
+                formData.recipientEmail
               );
               
               if (transferSuccess) {
