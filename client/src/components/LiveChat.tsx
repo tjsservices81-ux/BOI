@@ -1292,44 +1292,40 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 z-50 backdrop-animate-in">
+    <div className="fixed inset-0 bg-black bg-opacity-60 z-50 backdrop-animate-in flex items-end md:items-center justify-center">
       <div 
-        className={`bg-white w-full md:w-[90vw] md:h-[90vh] md:rounded-3xl md:max-w-4xl md:max-h-[800px] chat-container shadow-2xl absolute ${
+        className={`bg-white w-full md:w-[90vw] md:h-[90vh] md:rounded-3xl md:max-w-4xl md:max-h-[800px] shadow-2xl flex flex-col ${
           isAnimating ? 'chat-animate-out' : 'chat-animate-in'
         }`}
         style={{ 
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: '88px', // Leave space for bottom navigation
           height: 'calc(100vh - 88px)',
           maxHeight: 'calc(100vh - 88px)'
         }}
       >
         {/* Professional Header */}
         <div className="bg-white border-b border-gray-200 px-5 py-4 flex items-center justify-between flex-shrink-0">
-          <div className="flex items-center space-x-3">
-            <div className="w-11 h-11 bg-gradient-to-br from-[#126987] to-[#0d4e63] rounded-xl flex items-center justify-center shadow-sm">
+          <div className="flex items-center space-x-3 flex-1 min-w-0">
+            <div className="w-11 h-11 bg-gradient-to-br from-[#126987] to-[#0d4e63] rounded-xl flex items-center justify-center shadow-sm flex-shrink-0">
               <MessageCircle className="w-5 h-5 text-white" />
             </div>
-            <div>
+            <div className="flex-1 min-w-0">
               {chatState.queueStatus === 'waiting' ? (
                 <>
-                  <h3 className="text-gray-900 font-semibold text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  <h3 className="text-gray-900 font-semibold text-base truncate" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     Live Chat Support
                   </h3>
-                  <p className="text-gray-500 text-xs" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  <p className="text-gray-500 text-xs truncate" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     Connecting you to an agent...
                   </p>
                 </>
               ) : (
                 <>
-                  <h3 className="text-gray-900 font-semibold text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  <h3 className="text-gray-900 font-semibold text-base truncate" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     {chatState.agentName}
                   </h3>
                   <div className="flex items-center">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
-                    <p className="text-gray-500 text-xs" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse flex-shrink-0"></div>
+                    <p className="text-gray-500 text-xs truncate" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                       {isTyping ? 'Typing...' : 'Online'}
                     </p>
                   </div>
@@ -1337,17 +1333,29 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
               )}
             </div>
           </div>
-          <button
-            onClick={handleCloseChat}
-            className="w-9 h-9 bg-gray-100 hover:bg-gray-200 transition-colors rounded-full flex items-center justify-center text-gray-600"
-            title="Close chat"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center space-x-2 flex-shrink-0">
+            {chatState.queueStatus === 'connected' && (
+              <button
+                onClick={handleEndChat}
+                className="text-red-600 text-xs font-medium hover:text-red-700 transition-colors px-3 py-1.5 rounded-lg hover:bg-red-50"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+                data-testid="button-end-chat-header"
+              >
+                End Chat
+              </button>
+            )}
+            <button
+              onClick={handleCloseChat}
+              className="w-9 h-9 bg-gray-100 hover:bg-gray-200 transition-colors rounded-full flex items-center justify-center text-gray-600 flex-shrink-0"
+              title="Close chat"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
-        {/* Messages Container */}
-        <div className="chat-messages bg-gray-50">
+        {/* Messages Container - Scrollable */}
+        <div className="flex-1 overflow-y-auto bg-gray-50">
           <div className="p-6 space-y-6 pb-6">
           {/* Queue status message */}
           {chatState.queueStatus === 'waiting' && (
@@ -1448,13 +1456,8 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
           </div>
         </div>
 
-        {/* Professional Input Area - Moves up with keyboard */}
-        <div className="bg-white border-t border-gray-200 p-4 flex-shrink-0" style={{
-          position: 'sticky',
-          bottom: 0,
-          left: 0,
-          right: 0
-        }}>
+        {/* Input Area - Natural flow with keyboard */}
+        <div className="bg-white border-t border-gray-200 p-4 flex-shrink-0">
           {chatState.queueStatus === 'waiting' ? (
             <div className="text-center py-2">
               <p className="text-gray-500 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -1462,49 +1465,34 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
               </p>
             </div>
           ) : (
-            <>
-              <div className="flex items-end space-x-2">
-                <div className="flex-1 relative">
-                  <input
-                    type="text"
-                    value={inputText}
-                    onChange={(e) => setInputText(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    onFocus={scrollToBottom}
-                    placeholder="Type your message..."
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987] focus:border-[#126987] text-base bg-gray-50"
-                    style={{ 
-                      fontFamily: 'OpenSans, sans-serif',
-                      fontSize: '16px', // Prevents zoom on iOS
-                      WebkitAppearance: 'none'
-                    }}
-                    disabled={isTyping}
-                    autoComplete="off"
-                    data-testid="input-chat-message"
-                  />
-                </div>
-                <button
-                  onClick={handleSendMessage}
-                  disabled={!inputText.trim() || isTyping}
-                  className="w-12 h-12 bg-[#126987] rounded-xl flex items-center justify-center hover:bg-[#0d4e63] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 shadow-sm"
-                  data-testid="button-send-message"
-                >
-                  <Send className="w-5 h-5 text-white" />
-                </button>
+            <div className="flex items-end space-x-2">
+              <div className="flex-1">
+                <input
+                  type="text"
+                  value={inputText}
+                  onChange={(e) => setInputText(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  onFocus={scrollToBottom}
+                  placeholder="Type your message..."
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987] focus:border-[#126987] text-base bg-gray-50"
+                  style={{ 
+                    fontFamily: 'OpenSans, sans-serif',
+                    fontSize: '16px'
+                  }}
+                  disabled={isTyping}
+                  autoComplete="off"
+                  data-testid="input-chat-message"
+                />
               </div>
-              
-              {/* End Chat button */}
-              <div className="flex justify-center pt-3">
-                <button
-                  onClick={handleEndChat}
-                  className="text-red-600 text-sm font-medium hover:text-red-700 transition-colors px-4 py-1.5 rounded-lg hover:bg-red-50"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                  data-testid="button-end-chat"
-                >
-                  End Chat
-                </button>
-              </div>
-            </>
+              <button
+                onClick={handleSendMessage}
+                disabled={!inputText.trim() || isTyping}
+                className="w-12 h-12 bg-[#126987] rounded-xl flex items-center justify-center hover:bg-[#0d4e63] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 shadow-sm"
+                data-testid="button-send-message"
+              >
+                <Send className="w-5 h-5 text-white" />
+              </button>
+            </div>
           )}
         </div>
 
