@@ -771,21 +771,6 @@ input, select, textarea {
   }
 }
 
-@keyframes slideDownToPlace {
-  0% {
-    opacity: 0;
-    transform: translateY(-20%);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.content-slide-down {
-  animation: slideDownToPlace 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
 /* Additional slide transition classes for routing */
 .slide-in-left {
   animation: slideInFromLeft 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);

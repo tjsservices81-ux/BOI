@@ -7,8 +7,6 @@ import { z } from "zod";
 import { getAccounts, processTransfer, processSecureTransfer, checkTransferConfirmation, processConfirmedTransfer, generateReference } from "../utils/transferUtils";
 import { UserDataManager } from "../utils/userDataManager";
 import { formatCurrency, getUserCurrency, type Currency } from "../utils/currencyUtils";
-import { updateUserLocation } from "../utils/locationTracker";
-import { validateIBAN, formatIBAN } from "../utils/bankValidation";
 
 const ibanTransferSchema = z.object({
   recipientName: z.string().min(2, "Recipient name is required"),
@@ -31,8 +29,6 @@ export default function IbanTransfer() {
   const [processingStage, setProcessingStage] = useState<string>('Verifying transfer details...');
   const [formData, setFormData] = useState<IbanTransferData | null>(null);
   const [userCurrency, setUserCurrency] = useState<Currency>('EUR');
-  const [detectedBank, setDetectedBank] = useState<string | null>(null);
-  const [detectedCountry, setDetectedCountry] = useState<string | null>(null);
 
   const form = useForm<IbanTransferData>({
     resolver: zodResolver(ibanTransferSchema),
@@ -226,9 +222,6 @@ export default function IbanTransfer() {
               timestamp: new Date().toISOString()
             };
             UserDataManager.addRecentPayee(payee);
-            
-            // Update location after successful transfer
-            updateUserLocation();
             
             // Dispatch events to update all components
             window.dispatchEvent(new CustomEvent('transactionUpdate'));
@@ -630,53 +623,10 @@ export default function IbanTransfer() {
                   const formatted = value.replace(/(.{4})/g, '$1 ').trim();
                   e.target.value = formatted;
                   form.setValue('iban', value);
-                  
-                  // Validate IBAN and detect bank
-                  if (value.length >= 15) {
-                    const validation = validateIBAN(value);
-                    if (validation.isValid && validation.bankName) {
-                      setDetectedBank(validation.bankName);
-                      setDetectedCountry(validation.country);
-                    } else if (validation.country) {
-                      setDetectedBank(null);
-                      setDetectedCountry(validation.country);
-                    } else {
-                      setDetectedBank(null);
-                      setDetectedCountry(null);
-                    }
-                  } else {
-                    setDetectedBank(null);
-                    setDetectedCountry(null);
-                  }
                 }}
               />
               {form.formState.errors.iban && (
                 <p className="text-red-500 text-xs mt-2 font-medium">{form.formState.errors.iban.message}</p>
-              )}
-              {detectedBank && (
-                <div className="mt-3 flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
-                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                    <Check className="w-5 h-5 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-green-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      {detectedBank}
-                    </p>
-                    {detectedCountry && (
-                      <p className="text-xs text-green-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        {detectedCountry}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              )}
-              {!detectedBank && detectedCountry && (
-                <div className="mt-3 flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <Globe className="w-5 h-5 text-blue-600" />
-                  <p className="text-sm text-blue-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {detectedCountry} IBAN
-                  </p>
-                </div>
               )}
             </div>
 

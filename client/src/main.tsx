@@ -1,7 +1,6 @@
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
-import { detectAndHandleDeviceChange } from "./utils/deviceDetection";
 
 // Preload critical assets immediately
 const preloadCriticalAssets = () => {
@@ -28,19 +27,8 @@ const ensureFontsLoaded = () => {
   });
 };
 
-// Initialize app with device detection
-async function initializeApp() {
-  // CRITICAL: Check for device change FIRST before anything else
-  // If running on a new device (after iPhone restore/transfer), this clears all data
-  await detectAndHandleDeviceChange();
-  
-  // Then initialize normal optimizations
-  preloadCriticalAssets();
-  ensureFontsLoaded();
-  
-  // Finally render the app
-  createRoot(document.getElementById("root")!).render(<App />);
-}
+// Initialize optimizations
+preloadCriticalAssets();
+ensureFontsLoaded();
 
-// Start the app with device detection
-initializeApp();
+createRoot(document.getElementById("root")!).render(<App />);

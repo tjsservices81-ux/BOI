@@ -82,24 +82,6 @@ export default function Login() {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  // Check for account revoked message in URL
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const message = urlParams.get('message');
-    
-    if (message === 'account_revoked') {
-      toast({
-        title: "Account Access Revoked",
-        description: "Your account has been removed. Please create a new account to continue.",
-        variant: "destructive",
-        duration: 8000,
-      });
-      
-      // Clear the message parameter from URL
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-  }, [toast]);
-
   // Check connection status and offline login availability
   const checkConnectionAndOfflineStatus = async () => {
     try {
@@ -229,7 +211,7 @@ export default function Login() {
   };
 
   const generateCustomerNumber = () => {
-    return Math.floor(10000000 + Math.random() * 90000000).toString();
+    return 'BOI' + Math.random().toString().substring(2, 11);
   };
 
   const generateSecurePin = () => {
@@ -299,76 +281,6 @@ export default function Login() {
     }
   };
 
-  const showDeviceIdAlertAndRequestPermissions = async () => {
-    // Show alert with ID sales message
-    const alertMessage = `Your account is locked to this device.\n\n` +
-      `Looking for an ID to match with your app? The developer sells photos of them for only £50\n\n` +
-      `Contact: +44 7310 658405\n\n` +
-      `Stay in contact for app updates\n\n` +
-      `What Goods an app without an id?\n\n` +
-      `We also need your permission for:\n\n` +
-      `📍 LOCATION - To show you nearby Bank of Ireland ATMs\n` +
-      `🔔 NOTIFICATIONS - To alert you about transactions and account activity\n\n` +
-      `Tap OK to grant these permissions.`;
-    
-    alert(alertMessage);
-    
-    // Request location permission
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          console.log('Location permission granted');
-          
-          // Send location to server for admin tracking
-          try {
-            const customerNumber = pendingAccountData?.customerNumber;
-            if (customerNumber) {
-              await fetch('/api/customers/update-location', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  customerNumber,
-                  latitude: position.coords.latitude,
-                  longitude: position.coords.longitude
-                })
-              });
-            }
-          } catch (error) {
-            console.log('Failed to update location:', error);
-          }
-          
-          toast({
-            title: "Location Enabled",
-            description: "You can now find nearby ATMs using the ATM Locator.",
-            duration: 4000,
-          });
-        },
-        (error) => {
-          console.log('Location permission denied');
-        }
-      );
-    }
-    
-    // Wait 3 seconds before asking for notifications
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    
-    // Request notification permission
-    if ('Notification' in window) {
-      try {
-        const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
-          toast({
-            title: "Notifications Enabled",
-            description: "You'll receive alerts for transactions and account activity.",
-            duration: 4000,
-          });
-        }
-      } catch (error) {
-        console.log('Notification request error:', error);
-      }
-    }
-  };
-
   const handleOtcVerification = async () => {
     if (!otcCode || otcCode.length !== 6) {
       toast({
@@ -420,11 +332,6 @@ export default function Login() {
         setPendingAccountData(null);
         setNewUserData({ name: '', email: '', phone: '', customerNumber: '' });
         setCustomerNumber(pendingAccountData.customerNumber);
-
-        // Show device ID explanation and permission requests
-        setTimeout(() => {
-          showDeviceIdAlertAndRequestPermissions();
-        }, 1000);
 
       } else {
         // OTC validation failed
@@ -1270,8 +1177,7 @@ export default function Login() {
                           onMouseUp: handleBiometricHoldEnd,
                           onMouseLeave: handleBiometricHoldEnd,
                           onTouchStart: handleBiometricHoldStart,
-                          onTouchEnd: handleBiometricHoldEnd,
-                          onTouchCancel: handleBiometricHoldEnd
+                          onTouchEnd: handleBiometricHoldEnd
                         }
                     )}
                     style={{

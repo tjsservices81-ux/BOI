@@ -41,37 +41,7 @@ function startSessionHeartbeat() {
       },
       body: JSON.stringify({ accessCode })
     }).then(response => {
-      if (response.status === 401) {
-        // Customer was deleted from database
-        return response.json().then(data => {
-          if (data.logout || data.forceDisconnect) {
-            console.log('🔒 CUSTOMER DELETED - FORCING LOGOUT FROM HEARTBEAT');
-            
-            // Clear all session data
-            localStorage.clear();
-            sessionStorage.clear();
-            
-            // Clear all caches
-            if ('caches' in window) {
-              caches.keys().then(names => {
-                names.forEach(name => caches.delete(name));
-              });
-            }
-            
-            // Clear IndexedDB
-            if ('indexedDB' in window) {
-              indexedDB.databases().then(databases => {
-                databases.forEach(db => {
-                  if (db.name) indexedDB.deleteDatabase(db.name);
-                });
-              }).catch(() => {});
-            }
-            
-            // Redirect to login with message
-            window.location.href = '/login?message=Account%20Access%20Revoked';
-          }
-        });
-      } else if (response.status === 403) {
+      if (response.status === 403) {
         return response.json().then(data => {
           if (data.forceDisconnect || data.nukeCaches) {
             console.log('🔴 NUCLEAR ACCESS REVOCATION - Destroying PWA session completely');

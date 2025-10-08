@@ -13,6 +13,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { panicModeMiddleware } from "./panicMode";
+import adminRoutes from "./adminPanel";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 
@@ -38,11 +39,11 @@ app.use(session({
     errorLog: (...args: any[]) => console.error('Session store error:', ...args)
   }),
   resave: false,
-  saveUninitialized: true, // Changed to true to ensure cookie is set
+  saveUninitialized: false,
   cookie: {
     secure: false,
     httpOnly: true,
-    maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year - needed for cookie to persist
+    // No maxAge property - users stay logged in permanently
     sameSite: 'lax'
   },
   rolling: false // No rolling sessions to prevent timeout resets
@@ -120,6 +121,30 @@ app.use((req, res, next) => {
 (async () => {
   // Register API routes first
   const server = await registerRoutes(app);
+  
+  // Initialize admin sync manager with all existing users on startup
+  try {
+    const { storage } = await import('./storage');
+    const { addUserToAdminPanel } = await import('./adminSyncManager');
+    
+    const allUsers = await storage.getAllUsers();
+    console.log(`🔄 Syncing ${allUsers.length} existing users to admin panel on startup...`);
+    
+    for (const user of allUsers) {
+      try {
+        await addUserToAdminPanel(user, 'startup_sync');
+      } catch (e) {
+        // User might already exist, that's okay
+      }
+    }
+    
+    console.log('✅ Admin panel sync initialization complete');
+  } catch (e) {
+    console.log('Admin sync initialization skipped:', e.message);
+  }
+
+  // Add admin routes
+  app.use('/admin', adminRoutes);
 
   // Serve static assets last to avoid conflicts with API routes
   app.use(express.static('.'));

@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useRoute } from "wouter";
 import { ChevronLeft, ArrowUpRight, CreditCard, Building2, Zap, Check, Clock, MapPin, Globe, X, FileText } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import MiniSpendingChart from "../components/MiniSpendingChart";
 import { UserDataManager } from "../utils/userDataManager.ts";
 import { StateManager } from "../utils/stateManager";
@@ -145,73 +144,6 @@ export default function TransactionHistoryWorking() {
     window.open(url, '_blank');
   };
 
-  const handleOpenTransferConfirmation = async () => {
-    if (!selectedTransaction) {
-      console.log('No selected transaction');
-      return;
-    }
-
-    console.log('Opening transfer confirmation for:', selectedTransaction);
-
-    try {
-      // Check if PDF is already saved with the transaction
-      if (selectedTransaction.confirmationPdfData) {
-        console.log('Using saved PDF data');
-        // Convert base64 back to blob and open
-        const byteCharacters = atob(selectedTransaction.confirmationPdfData.split(',')[1]);
-        const byteNumbers = new Array(byteCharacters.length);
-        for (let i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-        const byteArray = new Uint8Array(byteNumbers);
-        const blob = new Blob([byteArray], { type: 'application/pdf' });
-        const url = window.URL.createObjectURL(blob);
-        const newWindow = window.open(url, '_blank');
-        if (!newWindow) {
-          alert('Please allow popups to view the transfer confirmation');
-        }
-        setTimeout(() => window.URL.revokeObjectURL(url), 100);
-        return;
-      }
-
-      // If no saved PDF, generate it
-      console.log('Generating new PDF');
-      const userProfile = UserDataManager.getUserProfile();
-      const accounts = UserDataManager.getUserAccounts();
-      const accountInfo = accounts.find((acc: any) => acc.id === selectedTransaction.accountId);
-      
-      const response = await fetch('/api/generate-transfer-confirmation', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          transaction: selectedTransaction,
-          senderName: userProfile?.name || 'Customer',
-          accountInfo: accountInfo?.displayName || 'Account',
-          userCurrency: userProfile?.currency || 'EUR'
-        }),
-      });
-
-      if (response.ok) {
-        console.log('PDF generated successfully');
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const newWindow = window.open(url, '_blank');
-        if (!newWindow) {
-          alert('Please allow popups to view the transfer confirmation');
-        }
-        setTimeout(() => window.URL.revokeObjectURL(url), 100);
-      } else {
-        console.error('Failed to generate PDF:', response.status);
-        alert('Failed to generate transfer confirmation');
-      }
-    } catch (error) {
-      console.error('Failed to open transfer confirmation:', error);
-      alert('Error opening transfer confirmation: ' + error);
-    }
-  };
-
   const handleSaveStatement = () => {
     if (!statementPdfBlob || !statementFileName) return;
     const url = window.URL.createObjectURL(statementPdfBlob);
@@ -228,7 +160,7 @@ export default function TransactionHistoryWorking() {
     if (!statementPdfBlob || !statementFileName) return;
     
     // Check if Web Share API is available (for mobile devices)
-    if (navigator.share && navigator.canShare && navigator.canShare()) {
+    if (navigator.share && navigator.canShare) {
       try {
         const file = new File([statementPdfBlob], statementFileName, { type: 'application/pdf' });
         await navigator.share({
@@ -592,23 +524,45 @@ export default function TransactionHistoryWorking() {
             );
           })}
         </div>
+
+        <div className="flex space-x-4 mt-8">
+          <button 
+            onClick={() => navigateWithAnimation('/uk-transfer', 'slide-right')}
+            className="flex-1 bg-[#126987] text-white py-3 rounded-lg font-semibold text-sm"
+            style={{ fontFamily: 'OpenSans, sans-serif' }}
+          >
+            Transfer
+          </button>
+          <button 
+            onClick={() => setShowPayBillsForm(true)}
+            className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-lg font-semibold text-sm"
+            style={{ fontFamily: 'OpenSans, sans-serif' }}
+          >
+            Pay Bills
+          </button>
+        </div>
       </div>
 
       {/* Transaction Detail Modal */}
-      <AnimatePresence>
-        {selectedTransaction && (
+      {selectedTransaction && (
+        <div 
+          onClick={() => setSelectedTransaction(null)}
+          style={{ 
+          position: 'fixed', 
+          top: 0, 
+          left: 0, 
+          right: 0, 
+          bottom: 0, 
+          background: 'rgba(0, 0, 0, 0.5)',
+          zIndex: 1000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '1rem'
+        }}>
           <div 
-            onClick={() => setSelectedTransaction(null)}
-            className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end"
-            style={{ zIndex: 1000 }}>
-            <motion.div 
-              onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-t-2xl w-full h-[75vh] flex flex-col pb-safe"
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "tween", duration: 0.3, ease: "easeOut" }}
-            >
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] shadow-xl flex flex-col">
             {/* Fixed header with close button */}
             <div className="flex items-center justify-between p-6 pb-4 border-b border-gray-200 flex-shrink-0">
               <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -812,23 +766,23 @@ export default function TransactionHistoryWorking() {
                         </p>
                       </div>
                     </div>
-                  </>
-                )}
 
-                {/* Timescale and warning for UK Transfers - Always show */}
-                {selectedTransaction.paymentMethod === 'UK Transfer' && (
-                  <div className="border-t border-gray-200 pt-4 mt-4">
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
                       <p className="text-sm text-blue-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                         {userCurrency === 'EUR' 
                           ? <><strong>International Transfer:</strong> UK transfers typically take 24 hours to reach the recipient.</>
                           : <>UK transfers typically take 24 hours to reach the recipient.</>}
                       </p>
                     </div>
+                  </>
+                )}
 
-                    <div className="bg-red-50 border border-red-300 rounded-lg p-3 mt-3">
-                      <p className="text-sm text-red-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        This payment cannot be cancelled
+                {/* Show message for UK transfers without exchange rate data */}
+                {selectedTransaction.paymentMethod === 'UK Transfer' && !selectedTransaction.exchangeRate && (
+                  <div className="border-t border-gray-200 pt-4 mt-4">
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                      <p className="text-sm text-yellow-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <strong>Note:</strong> Exchange rate information not available for this historical transfer. New UK transfers will include live conversion rates.
                       </p>
                     </div>
                   </div>
@@ -842,30 +796,6 @@ export default function TransactionHistoryWorking() {
                         <strong>SEPA Transfer:</strong> Transfers within the SEPA zone typically take 24 hours to complete.
                       </p>
                     </div>
-
-                    <div className="bg-red-50 border border-red-300 rounded-lg p-3 mt-3">
-                      <p className="text-sm text-red-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        This payment cannot be cancelled
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Open Transfer Confirmation Button - Only for transfers */}
-                {selectedTransaction.paymentMethod && (
-                  <div className="border-t border-gray-200 pt-6 mt-6">
-                    <button
-                      onClick={handleOpenTransferConfirmation}
-                      className="w-full px-4 py-3 bg-[#126987] text-white rounded-lg font-medium hover:bg-[#3a5963] transition-colors flex items-center justify-center space-x-2"
-                      style={{ fontFamily: 'OpenSans, sans-serif' }}
-                      data-testid="button-open-transfer-confirmation"
-                    >
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                      </svg>
-                      <span>Open Transfer Confirmation</span>
-                    </button>
                   </div>
                 )}
               </div>
@@ -874,10 +804,9 @@ export default function TransactionHistoryWorking() {
                 </div>
               </div>
             </div>
-            </motion.div>
           </div>
-        )}
-      </AnimatePresence>
+        </div>
+      )}
 
       {/* Pay Bills Modal */}
       {showPayBillsForm && (
@@ -971,19 +900,12 @@ export default function TransactionHistoryWorking() {
       )}
 
       {/* Generate Statement Modal */}
-      <AnimatePresence>
-        {showStatementModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end"
-               style={{ zIndex: 9999 }}>
-            <motion.div 
-              className="bg-white rounded-t-2xl w-full h-[75vh] flex flex-col pb-safe"
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "tween", duration: 0.3, ease: "easeOut" }}
-            >
+      {showStatementModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+             style={{ zIndex: 9999 }}>
+          <div className="bg-white rounded-lg w-full max-w-md">
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <h2 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                 Generate Statement
               </h2>
@@ -997,7 +919,7 @@ export default function TransactionHistoryWorking() {
             </div>
 
             {/* Modal Content */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+            <div className="p-6 space-y-4">
               {!statementSuccessState ? (
                 <>
                   {/* Account Info - Read Only */}
@@ -1119,15 +1041,46 @@ export default function TransactionHistoryWorking() {
                         </svg>
                         <span>Open</span>
                       </button>
+                      <button
+                        onClick={handleShareStatement}
+                        className="w-full px-4 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2"
+                        style={{ fontFamily: 'OpenSans, sans-serif' }}
+                        data-testid="button-share-statement"
+                      >
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                        </svg>
+                        <span>Share</span>
+                      </button>
+                      <button
+                        onClick={handleSaveStatement}
+                        className="w-full px-4 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center justify-center space-x-2"
+                        style={{ fontFamily: 'OpenSans, sans-serif' }}
+                        data-testid="button-save-statement"
+                      >
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        <span>Save</span>
+                      </button>
                     </div>
+
+                    {/* Close Button */}
+                    <button
+                      onClick={handleCloseStatementSuccess}
+                      className="w-full mt-4 px-4 py-2 text-gray-600 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+                      style={{ fontFamily: 'OpenSans, sans-serif' }}
+                      data-testid="button-close-success"
+                    >
+                      Close
+                    </button>
                   </div>
                 </>
               )}
             </div>
-            </motion.div>
           </div>
-        )}
-      </AnimatePresence>
+        </div>
+      )}
 
     </div>
   );

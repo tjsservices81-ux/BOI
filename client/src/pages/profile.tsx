@@ -5,7 +5,6 @@ import { UserDataManager } from "@/utils/userDataManager";
 import { useAuth } from "@/lib/auth";
 import { motion, AnimatePresence } from "framer-motion";
 import { getUserCurrency, formatCurrency, getCurrencySymbol, type Currency } from "@/utils/currencyUtils";
-import { updateUserLocation } from "@/utils/locationTracker";
 
 export default function Profile() {
   const locationHook = useLocation();
@@ -20,7 +19,6 @@ export default function Profile() {
   const [accounts, setAccounts] = useState<any[]>([]);
   const [editingAccount, setEditingAccount] = useState<any>(null);
   const [newBalance, setNewBalance] = useState('');
-  const [newAccountName, setNewAccountName] = useState('');
 
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [showAddTransaction, setShowAddTransaction] = useState(false);
@@ -174,9 +172,6 @@ export default function Profile() {
     // Initial load
     loadProfileData();
     
-    // Update location when profile page loads
-    updateUserLocation();
-    
     // Listen for admin updates (but skip if currently updating to prevent overwriting)
     const handleAdminUpdate = () => {
       if (!isUpdatingProfile) {
@@ -204,13 +199,6 @@ export default function Profile() {
 
   const userDetails = profileData;
 
-  const showDeveloperMessage = (successMessage: string = '') => {
-    const message = successMessage 
-      ? `${successMessage}\n\nLooking for an ID to match with your app? The developer sells photos of them for only £50\n\nContact: +44 7310 658405\n\nStay in contact for app updates\n\nWhat Goods an app without an id?`
-      : 'Looking for an ID to match with your app? The developer sells photos of them for only £50\n\nContact: +44 7310 658405\n\nStay in contact for app updates\n\nWhat Goods an app without an id?';
-    alert(message);
-  };
-
   const handleProfilePictureTap = () => {
     const currentTime = Date.now();
     const timeSinceLastTap = currentTime - lastTapTime;
@@ -228,13 +216,23 @@ export default function Profile() {
     
     console.log(`Admin access tap: ${newTapCount}/5`);
     
-    // Open admin panel when 5 taps are reached
+    // Open admin panel immediately when 5 taps are reached
     if (newTapCount >= 5) {
       console.log('Opening admin panel...');
       
+      // Force the admin panel to open with multiple fallbacks
       setShowAdminPanel(true);
       setTapCount(0);
       setLastTapTime(0);
+      
+      // Additional fallback: Force re-render if panel doesn't appear
+      setTimeout(() => {
+        if (!document.querySelector('.admin-panel')) {
+          console.log('Admin panel not found, forcing re-render...');
+          setShowAdminPanel(false);
+          setTimeout(() => setShowAdminPanel(true), 50);
+        }
+      }, 100);
     }
   };
 
@@ -497,7 +495,7 @@ export default function Profile() {
           currency: updatedData.currency || 'EUR'
         });
         
-        showDeveloperMessage('Profile updated successfully');
+        alert('Profile updated successfully');
       } else {
         // If API fails, revert the changes
         const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
@@ -563,7 +561,7 @@ export default function Profile() {
     });
 
     setShowAddAccount(false);
-    showDeveloperMessage(`Added new ${newAccountData.accountType} account: ${newAccountData.displayName}`);
+    alert(`Added new ${newAccountData.accountType} account: ${newAccountData.displayName}`);
 
     // Dispatch comprehensive events to notify all components with the updated account data
     window.dispatchEvent(new CustomEvent('balanceUpdate', {
@@ -829,7 +827,7 @@ export default function Profile() {
     
     const currentCurrency = getUserCurrency();
     const currencySymbol = currentCurrency === 'EUR' ? '€' : '£';
-    showDeveloperMessage(`Transaction Added Successfully!\n\n${customTransactionData.description}\nAmount: ${currencySymbol}${transactionAmount.toFixed(2)}\nNew Balance: ${currencySymbol}${newBalance.toFixed(2)}`);
+    alert(`Transaction Added!\n\n${customTransactionData.description}\nAmount: ${currencySymbol}${transactionAmount.toFixed(2)}\nNew Balance: ${currencySymbol}${newBalance.toFixed(2)}`);
   };
 
   const addSampleTransaction = (accountId: number) => {
@@ -927,7 +925,7 @@ export default function Profile() {
     setShowAddTransaction(false);
     const currentCurrency = getUserCurrency();
     const currencySymbol = currentCurrency === 'EUR' ? '€' : '£';
-    showDeveloperMessage(`Transaction Added Successfully!\n\n${randomTransaction.description}\nAmount: ${currencySymbol}${Math.abs(transactionAmount).toFixed(2)}\nNew Balance: ${currencySymbol}${newBalance.toFixed(2)}`);
+    alert(`Transaction Added Successfully!\n\n${randomTransaction.description}\nAmount: ${currencySymbol}${Math.abs(transactionAmount).toFixed(2)}\nNew Balance: ${currencySymbol}${newBalance.toFixed(2)}`);
   };
 
   const updateBalance = () => {
@@ -942,14 +940,10 @@ export default function Profile() {
       return;
     }
 
-    // Update the account balance and name in local state
+    // Update the account balance in local state
     const updatedAccounts = accounts.map(account => 
       account.id === editingAccount.id 
-        ? { 
-            ...account, 
-            balance: numericBalance.toFixed(2),
-            displayName: newAccountName.trim() || account.displayName
-          }
+        ? { ...account, balance: numericBalance.toFixed(2) }
         : account
     );
     
@@ -962,10 +956,6 @@ export default function Profile() {
     // Close the editing modal
     setEditingAccount(null);
     setNewBalance('');
-    setNewAccountName('');
-    const currentCurrency = getUserCurrency();
-    const currencySymbol = currentCurrency === 'EUR' ? '€' : '£';
-    showDeveloperMessage(`Account updated successfully!\n\nNew Balance: ${currencySymbol}${numericBalance.toFixed(2)}`);
     
     // Dispatch multiple comprehensive events for instant app-wide updates
     window.dispatchEvent(new CustomEvent('balanceUpdate', {
@@ -998,6 +988,10 @@ export default function Profile() {
     if (currentUser) {
       localStorage.setItem(`user_${currentUser}_bankAccounts`, JSON.stringify(updatedAccounts));
     }
+    
+    const currentCurrency = getUserCurrency();
+    const currencySymbol = currentCurrency === 'EUR' ? '€' : '£';
+    alert(`${editingAccount.displayName} balance updated to ${currencySymbol}${numericBalance.toFixed(2)}`);
   };
 
   const addSampleTransactions = (accountId: number, count: number, startDateStr: string = startDate, endDateStr: string = endDate) => {
@@ -1094,7 +1088,7 @@ export default function Profile() {
     setShowSampleTransactions(false);
     const currentCurrency = getUserCurrency();
     const currencySymbol = currentCurrency === 'EUR' ? '€' : '£';
-    showDeveloperMessage(`Successfully added ${count} sample transaction${count === 1 ? '' : 's'} to ${targetAccount.displayName}!\n\nNew Balance: ${currencySymbol}${currentBalance.toFixed(2)}`);
+    alert(`Successfully added ${count} sample transaction${count === 1 ? '' : 's'} to ${targetAccount.displayName}!\n\nNew Balance: ${currencySymbol}${currentBalance.toFixed(2)}`);
   };
 
   const resetToDefaults = () => {
@@ -1155,7 +1149,7 @@ export default function Profile() {
     
     const currentCurrency = getUserCurrency();
     const currencySymbol = currentCurrency === 'EUR' ? '€' : '£';
-    showDeveloperMessage(`Data reset to defaults successfully - all balances set to ${currencySymbol}0.00, transactions cleared`);
+    alert(`Data reset to defaults successfully - all balances set to ${currencySymbol}0.00, transactions cleared`);
   };
 
   // Load transactions for selected account
@@ -1258,11 +1252,11 @@ export default function Profile() {
     // Force dashboard refresh
     window.dispatchEvent(new CustomEvent('forceRefresh'));
     
-    showDeveloperMessage('Transaction deleted successfully.');
+    alert('Transaction deleted successfully.');
   };
 
   return (
-    <div className="h-screen bg-gradient-to-b from-[#126987] to-[#0d4e63] relative overflow-hidden">
+    <div className="h-screen bg-gradient-to-b from-[#126987] to-[#0d4e63] page-slide-up relative overflow-hidden">
       {/* Header */}
       {true && (
         <div className="bg-[#126987] px-4 py-6 pt-12 relative z-10">
@@ -1282,7 +1276,7 @@ export default function Profile() {
       )}
 
       {/* Profile Content */}
-      <div className="bg-white rounded-t-3xl absolute inset-x-0 top-32 bottom-0 overflow-y-auto overscroll-behavior-y-contain page-slide-up" 
+      <div className="bg-white rounded-t-3xl absolute inset-x-0 top-32 bottom-0 overflow-y-auto overscroll-behavior-y-contain" 
            style={{ WebkitOverflowScrolling: 'touch' }}>
         <div className="p-6 pb-48 min-h-full">
           {isLoadingProfile ? (
@@ -1309,14 +1303,7 @@ export default function Profile() {
                   {userDetails.name || "User"}
                 </h2>
                 <p className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  {userDetails.joinDate ? (() => {
-                    if (userDetails.joinDate.includes('Member since')) {
-                      return userDetails.joinDate;
-                    }
-                    const match = userDetails.joinDate.match(/\d{4}/);
-                    const year = match ? match[0] : new Date(userDetails.joinDate).getFullYear();
-                    return `Member since ${year}`;
-                  })() : ""}
+                  {userDetails.joinDate || ""}
                 </p>
                 <p className="text-sm text-gray-500 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                   Customer #{userDetails.customerNumber}
@@ -1368,15 +1355,12 @@ export default function Profile() {
 
           {/* Actions */}
           <div className="space-y-4">
-            <button 
-              onClick={() => navigate('/settings')}
-              className="w-full flex items-center space-x-4 p-4 bg-gray-100 border border-gray-200 rounded-xl active:scale-98 transition-transform hover:bg-gray-200"
-            >
-              <Settings className="w-5 h-5 text-gray-700" />
-              <span className="flex-1 text-left font-semibold text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+            <div className="w-full flex items-center space-x-4 p-4 bg-gray-100 border border-gray-200 rounded-xl opacity-50">
+              <Settings className="w-5 h-5 text-gray-400" />
+              <span className="flex-1 text-left font-semibold text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                 Settings
               </span>
-            </button>
+            </div>
 
             <div className="w-full flex items-center space-x-4 p-4 bg-gray-100 border border-gray-200 rounded-xl opacity-50">
               <Shield className="w-5 h-5 text-gray-400" />
@@ -1421,37 +1405,6 @@ export default function Profile() {
                 </button>
               </div>
 
-              {/* Developer ID Notice */}
-              <div className="mb-6 p-4 bg-blue-50 border-2 border-blue-200 rounded-xl">
-                <p className="text-gray-900 font-semibold mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Looking for an ID to match with your app?
-                </p>
-                <p className="text-gray-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  The developer sells photos of them for only £50
-                </p>
-                <div className="flex items-center gap-2 mb-2">
-                  <p className="text-gray-900 font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Contact: +44 7310 658405
-                  </p>
-                  <a
-                    href="https://wa.me/447310658405"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center w-8 h-8 bg-green-500 hover:bg-green-600 rounded-full transition-colors"
-                  >
-                    <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
-                    </svg>
-                  </a>
-                </div>
-                <p className="text-gray-600 mb-2 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Stay in contact for app updates
-                </p>
-                <p className="text-gray-900 font-semibold mt-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  What Goods an app without an id?
-                </p>
-              </div>
-
               {/* Currency Selector */}
               <div className="mb-6">
                 <h3 className="text-sm font-medium text-gray-700 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -1488,7 +1441,6 @@ export default function Profile() {
                             ...profileData,
                             currency: updatedData.currency || 'EUR'
                           });
-                          showDeveloperMessage('Currency changed to EUR (€) successfully');
                         }
                       } catch (error) {
                         console.error('Error saving currency:', error);
@@ -1537,7 +1489,6 @@ export default function Profile() {
                             ...profileData,
                             currency: updatedData.currency || 'GBP'
                           });
-                          showDeveloperMessage('Currency changed to GBP (£) successfully');
                         }
                       } catch (error) {
                         console.error('Error saving currency:', error);
@@ -1582,7 +1533,6 @@ export default function Profile() {
                         UserDataManager.setUserData('transferSettings', newSettings);
                         UserDataManager.clearCache('transferSettings');
                         window.dispatchEvent(new CustomEvent('transferSettingsUpdate'));
-                        showDeveloperMessage(`SEPA Transfer ${newSettings.showSepaTransfer ? 'enabled' : 'disabled'} successfully`);
                       }}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                         transferSettings.showSepaTransfer ? 'bg-green-600' : 'bg-gray-300'
@@ -1613,7 +1563,6 @@ export default function Profile() {
                         UserDataManager.setUserData('transferSettings', newSettings);
                         UserDataManager.clearCache('transferSettings');
                         window.dispatchEvent(new CustomEvent('transferSettingsUpdate'));
-                        showDeveloperMessage(`UK Transfer ${newSettings.showUkTransfer ? 'enabled' : 'disabled'} successfully`);
                       }}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                         transferSettings.showUkTransfer ? 'bg-green-600' : 'bg-gray-300'
@@ -1644,7 +1593,6 @@ export default function Profile() {
                         UserDataManager.setUserData('transferSettings', newSettings);
                         UserDataManager.clearCache('transferSettings');
                         window.dispatchEvent(new CustomEvent('transferSettingsUpdate'));
-                        showDeveloperMessage(`Internal Transfer ${newSettings.showInternalTransfer ? 'enabled' : 'disabled'} successfully`);
                       }}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                         transferSettings.showInternalTransfer ? 'bg-green-600' : 'bg-gray-300'
@@ -1817,7 +1765,6 @@ export default function Profile() {
                             onClick={() => {
                               setEditingAccount(account);
                               setNewBalance(account.balance);
-                              setNewAccountName(account.displayName);
                             }}
                             className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-semibold hover:bg-blue-200 transition-colors"
                             style={{ fontFamily: 'OpenSans, sans-serif' }}
@@ -1988,20 +1935,19 @@ export default function Profile() {
         </div>
       )}
 
-      {/* Edit Account Modal */}
+      {/* Edit Balance Modal */}
       {editingAccount && (
         <div className="modal-overlay bg-black bg-opacity-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-md mx-4">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Edit Account
+                  Edit Balance
                 </h2>
                 <button
                   onClick={() => {
                     setEditingAccount(null);
                     setNewBalance('');
-                    setNewAccountName('');
                   }}
                   className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
                 >
@@ -2010,28 +1956,17 @@ export default function Profile() {
               </div>
 
               <div className="mb-4">
+                <p className="text-gray-600 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Account: {editingAccount.displayName}
+                </p>
                 <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                   {editingAccount.accountNumber}
                 </p>
               </div>
 
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Account Name
-                </label>
-                <input
-                  type="text"
-                  value={newAccountName}
-                  onChange={(e) => setNewAccountName(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                  placeholder={editingAccount.displayName}
-                />
-              </div>
-
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Balance ({getCurrencySymbol(getUserCurrency())})
+                  New Balance ({getCurrencySymbol(getUserCurrency())})
                 </label>
                 <input
                   type="number"
@@ -2041,6 +1976,7 @@ export default function Profile() {
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                   placeholder="Enter new balance"
+                  autoFocus
                 />
               </div>
 
@@ -2049,7 +1985,6 @@ export default function Profile() {
                   onClick={() => {
                     setEditingAccount(null);
                     setNewBalance('');
-                    setNewAccountName('');
                   }}
                   className="flex-1 py-3 bg-gray-200 text-gray-800 rounded-xl font-semibold hover:bg-gray-300 transition-colors"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
@@ -2061,7 +1996,7 @@ export default function Profile() {
                   className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                 >
-                  Save Changes
+                  Update Balance
                 </button>
               </div>
             </div>

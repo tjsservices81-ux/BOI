@@ -2,25 +2,20 @@ import { pgTable, text, serial, integer, boolean, decimal, timestamp, varchar, j
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// User types (no PostgreSQL table - used only for in-memory storage)
-export type User = {
-  id: number;
-  customerNumber: string;
-  pin: string;
-  name: string;
-  email: string;
-  phone: string | null;
-  address: string | null;
-  dateOfBirth: string | null;
-  joinDate: string;
-  dateCreated: Date;
-  isDisabled: boolean;
-  currency?: string;
-};
-
-export type InsertUser = Omit<User, 'id' | 'dateCreated'> & {
-  dateCreated?: Date;
-};
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
+  customerNumber: text("customer_number").notNull().unique(),
+  pin: text("pin").notNull(),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone"),
+  address: text("address"),
+  dateOfBirth: text("date_of_birth"),
+  joinDate: text("join_date").notNull().default("Member since 2018"),
+  dateCreated: timestamp("date_created").notNull().defaultNow(),
+  isDisabled: boolean("is_disabled").notNull().default(false),
+  currency: text("currency").notNull().default("EUR"),
+});
 
 export const accounts = pgTable("accounts", {
   id: serial("id").primaryKey(),
@@ -91,24 +86,6 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
-// Customers table for verified users with admin code
-export const customers = pgTable("customers", {
-  id: serial("id").primaryKey(),
-  customerNumber: text("customer_number").notNull().unique(),
-  name: text("name").notNull(),
-  email: text("email").notNull(),
-  phone: text("phone"),
-  dateOfBirth: text("date_of_birth"),
-  joinDate: text("join_date").notNull(),
-  currency: text("currency").notNull().default("EUR"),
-  adminAlias: text("admin_alias"), // Admin-only name/note for this customer
-  appReplacement: integer("app_replacement").default(0), // 0-5 scale for app replacement
-  lastLatitude: decimal("last_latitude", { precision: 10, scale: 7 }), // Last known latitude
-  lastLongitude: decimal("last_longitude", { precision: 10, scale: 7 }), // Last known longitude
-  lastLocationUpdate: timestamp("last_location_update"), // When location was last updated
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
-
 // Chat messages table for persistent chat storage
 export const chatMessages = pgTable("chat_messages", {
   id: serial("id").primaryKey(),
@@ -142,6 +119,10 @@ export const chatSessions = pgTable("chat_sessions", {
   endedAt: timestamp("ended_at"),
 });
 
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+});
+
 export const insertAccountSchema = createInsertSchema(accounts).omit({
   id: true,
 });
@@ -166,11 +147,6 @@ export const insertChatSessionSchema = createInsertSchema(chatSessions).omit({
   id: true,
 });
 
-export const insertCustomerSchema = createInsertSchema(customers).omit({
-  id: true,
-  createdAt: true,
-});
-
 export const loginSchema = z.object({
   customerNumber: z.string().min(1, "Customer number is required"),
   pin: z.string().min(4, "PIN must be at least 4 digits"),
@@ -190,19 +166,19 @@ export const transferSchema = z.object({
   }).optional(),
 });
 
+export type User = typeof users.$inferSelect;
 export type Account = typeof accounts.$inferSelect;
 export type Transaction = typeof transactions.$inferSelect;
 export type Payee = typeof payees.$inferSelect;
 export type ScheduledPayment = typeof scheduledPayments.$inferSelect;
 export type Statement = typeof statements.$inferSelect;
-export type Customer = typeof customers.$inferSelect;
 export type ChatMessage = typeof chatMessages.$inferSelect;
 export type ChatResponse = typeof chatResponses.$inferSelect;
 export type ChatSession = typeof chatSessions.$inferSelect;
+export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertAccount = z.infer<typeof insertAccountSchema>;
 export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
 export type InsertPayee = z.infer<typeof insertPayeeSchema>;
-export type InsertCustomer = z.infer<typeof insertCustomerSchema>;
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type InsertChatResponse = z.infer<typeof insertChatResponseSchema>;
 export type InsertChatSession = z.infer<typeof insertChatSessionSchema>;
