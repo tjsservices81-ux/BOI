@@ -24,6 +24,7 @@ Preferred communication style: Simple, everyday language.
 
 ### Key Features
 - **Authentication**: Device-specific one-time codes (iOS: 2 uses, Android/Other: 1 use); persistent login for 1 year; PIN-based user registration with customer number validation; Admin Panel for user management with OTC code display (codes shown in admin oversight interface at `/admin-oversight` with live countdown timers, auto-refresh every 5 seconds); instant access revocation with automatic logout within 15 seconds; Face ID/biometric authentication with WebAuthn passkey integration (saved as "BOI Customer Login").
+- **Admin Oversight Features**: Admin-only name/alias field for internal customer notes (saved only to admin oversight); App replacement selector (0-5 scale) for tracking customer app replacement status; Both fields are database-persisted and editable directly in the admin interface.
 - **Banking Operations**: Management of multiple account types (Current, Savings, Credit Cards); comprehensive transaction history with categorization; UK transfers with exchange rate calculations.
 - **Offline Functionality**: 24-hour offline access with IndexedDB caching; real-time balance updates with transaction impact.
 - **PWA Features**: Installable via "Add to Home Screen"; full offline support; push notifications for account alerts and transactions; native app feel with standalone display mode and custom splash screen.

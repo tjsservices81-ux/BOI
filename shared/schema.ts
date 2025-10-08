@@ -101,6 +101,8 @@ export const customers = pgTable("customers", {
   dateOfBirth: text("date_of_birth"),
   joinDate: text("join_date").notNull(),
   currency: text("currency").notNull().default("EUR"),
+  adminAlias: text("admin_alias"), // Admin-only name/note for this customer
+  appReplacement: integer("app_replacement").default(0), // 0-5 scale for app replacement
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

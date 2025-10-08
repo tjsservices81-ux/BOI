@@ -2151,6 +2151,11 @@ body{font-family:-apple-system,sans-serif;background:#f0f0f0;overflow-x:hidden;w
 .st{background:#d4edda;color:#155724;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:600}
 .db{background:#dc3545;color:#fff;border:none;padding:8px;border-radius:6px;width:100%;margin-top:8px;font-size:12px;font-weight:600}
 .emp{background:#fff;border-radius:10px;padding:40px 20px;text-align:center;color:#999}
+.ed-fld{margin-top:8px;padding:8px;background:#fff;border:1px solid #ddd;border-radius:6px}
+.ed-fld label{display:block;font-size:11px;color:#666;margin-bottom:4px;font-weight:600}
+.ed-inp{width:100%;padding:6px;border:1px solid #ddd;border-radius:4px;font-size:12px}
+.ed-sel{width:100%;padding:6px;border:1px solid #ddd;border-radius:4px;font-size:12px;background:#fff}
+.sv-btn{background:#28a745;color:#fff;border:none;padding:6px 12px;border-radius:4px;font-size:11px;font-weight:600;margin-left:4px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -2217,6 +2222,27 @@ h+=\`<div class="itm">
 <div class="r"><span class="lb">Phone</span><span class="vl">\${escapeHtml(c.phone||'N/A')}</span></div>
 <div class="r"><span class="lb">Currency</span><span class="vl">\${escapeHtml(c.currency)}</span></div>
 <div class="r"><span class="lb">Status</span><span class="st">Active</span></div>
+<div class="ed-fld">
+<label>Admin Name/Alias</label>
+<div style="display:flex;align-items:center">
+<input type="text" class="ed-inp" id="alias-\${escapeHtml(c.customerNumber)}" value="\${escapeHtml(c.adminAlias||'')}" placeholder="Internal name or notes">
+<button class="sv-btn" onclick="upd('\${escapeHtml(c.customerNumber)}')">Save</button>
+</div>
+</div>
+<div class="ed-fld">
+<label>App Replacement (0-5)</label>
+<div style="display:flex;align-items:center">
+<select class="ed-sel" id="rep-\${escapeHtml(c.customerNumber)}">
+<option value="0" \${(c.appReplacement||0)===0?'selected':''}>0</option>
+<option value="1" \${c.appReplacement===1?'selected':''}>1</option>
+<option value="2" \${c.appReplacement===2?'selected':''}>2</option>
+<option value="3" \${c.appReplacement===3?'selected':''}>3</option>
+<option value="4" \${c.appReplacement===4?'selected':''}>4</option>
+<option value="5" \${c.appReplacement===5?'selected':''}>5</option>
+</select>
+<button class="sv-btn" onclick="upd('\${escapeHtml(c.customerNumber)}')">Save</button>
+</div>
+</div>
 <button class="db" data-customer="\${escapeHtml(c.customerNumber)}" data-name="\${escapeHtml(c.name)}" onclick="dl(this.dataset.customer,this.dataset.name)">Delete</button>
 </div>
 </div>
@@ -2231,6 +2257,19 @@ if(!confirm('Delete '+nm+'?'))return;
 try{
 let r=await fetch('/api/customers/'+encodeURIComponent(n),{method:'DELETE'}),d=await r.json();
 if(r.ok){alert('Deleted');o.delete(n);ld()}else{alert('Failed')}
+}catch(e){alert('Error')}
+}
+async function upd(n){
+try{
+let alias=document.getElementById('alias-'+n).value;
+let rep=parseInt(document.getElementById('rep-'+n).value);
+let r=await fetch('/api/customers/'+encodeURIComponent(n)+'/admin',{
+method:'PATCH',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({adminAlias:alias,appReplacement:rep})
+});
+let d=await r.json();
+if(r.ok){alert('Saved successfully')}else{alert('Failed: '+d.message)}
 }catch(e){alert('Error')}
 }
 ld();
@@ -2279,6 +2318,56 @@ setInterval(loadOTC,5000);
       res.status(500).json({ 
         success: false, 
         message: "Failed to delete customer" 
+      });
+    }
+  });
+
+  // Update admin-specific fields for a customer
+  app.patch("/api/customers/:customerNumber/admin", async (req, res) => {
+    try {
+      const { customerNumber } = req.params;
+      const { adminAlias, appReplacement } = req.body;
+      
+      const updates: any = {};
+      if (adminAlias !== undefined) updates.adminAlias = adminAlias;
+      if (appReplacement !== undefined) {
+        // Validate appReplacement is between 0-5
+        const val = parseInt(appReplacement);
+        if (val >= 0 && val <= 5) {
+          updates.appReplacement = val;
+        } else {
+          return res.status(400).json({ 
+            success: false, 
+            message: "App replacement must be between 0-5" 
+          });
+        }
+      }
+      
+      if (Object.keys(updates).length === 0) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "No valid updates provided" 
+        });
+      }
+      
+      const updated = await storage.updateCustomer(customerNumber, updates);
+      
+      if (updated) {
+        res.json({ 
+          success: true, 
+          customer: updated 
+        });
+      } else {
+        res.status(404).json({ 
+          success: false, 
+          message: "Customer not found" 
+        });
+      }
+    } catch (error) {
+      console.error('Error updating customer admin fields:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to update customer" 
       });
     }
   });
