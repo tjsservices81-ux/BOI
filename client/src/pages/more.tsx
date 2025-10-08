@@ -95,7 +95,7 @@ export default function More() {
                   View and edit your details
                 </p>
               </div>
-              <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />
+              <ChevronLeft className="w-5 h-5 text-[#126987] rotate-180" />
             </button>
 
             {/* Credit Score */}
@@ -105,7 +105,7 @@ export default function More() {
               disabled={isNavigating}
               data-testid="button-credit-score"
             >
-              <div className="w-11 h-11 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center">
+              <div className="w-11 h-11 bg-gradient-to-br from-[#126987] to-[#0d4e63] rounded-xl flex items-center justify-center">
                 <TrendingUp className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1 text-left">
@@ -116,7 +116,7 @@ export default function More() {
                   Check your credit rating
                 </p>
               </div>
-              <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />
+              <ChevronLeft className="w-5 h-5 text-[#126987] rotate-180" />
             </button>
 
             {/* Help & FAQ */}
@@ -126,7 +126,7 @@ export default function More() {
               disabled={isNavigating}
               data-testid="button-help"
             >
-              <div className="w-11 h-11 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
+              <div className="w-11 h-11 bg-gradient-to-br from-[#126987] to-[#0d4e63] rounded-xl flex items-center justify-center">
                 <HelpCircle className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1 text-left">
@@ -137,7 +137,7 @@ export default function More() {
                   Get help and find answers
                 </p>
               </div>
-              <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />
+              <ChevronLeft className="w-5 h-5 text-[#126987] rotate-180" />
             </button>
 
             {/* Live Chat */}
@@ -147,7 +147,7 @@ export default function More() {
               disabled={isNavigating || isLoadingChat}
               data-testid="button-live-chat"
             >
-              <div className="w-11 h-11 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
+              <div className="w-11 h-11 bg-gradient-to-br from-[#126987] to-[#0d4e63] rounded-xl flex items-center justify-center">
                 {isLoadingChat ? (
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 ) : (
@@ -162,7 +162,7 @@ export default function More() {
                   {isLoadingChat ? 'Setting up your chat session' : 'Chat with our support team'}
                 </p>
               </div>
-              {!isLoadingChat && <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />}
+              {!isLoadingChat && <ChevronLeft className="w-5 h-5 text-[#126987] rotate-180" />}
             </button>
 
             {/* Settings */}
@@ -172,7 +172,7 @@ export default function More() {
               disabled={isNavigating}
               data-testid="button-settings"
             >
-              <div className="w-11 h-11 bg-gradient-to-br from-gray-600 to-gray-700 rounded-xl flex items-center justify-center">
+              <div className="w-11 h-11 bg-gradient-to-br from-[#126987] to-[#0d4e63] rounded-xl flex items-center justify-center">
                 <Settings className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1 text-left">
@@ -183,7 +183,7 @@ export default function More() {
                   Notifications and preferences
                 </p>
               </div>
-              <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />
+              <ChevronLeft className="w-5 h-5 text-[#126987] rotate-180" />
             </button>
             
           </div>
