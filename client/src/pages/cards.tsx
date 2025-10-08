@@ -59,13 +59,21 @@ export default function Cards() {
       setIsCardBlocked(blocked);
     };
 
+    // Load card freeze status
+    const loadFreezeStatus = () => {
+      const frozen = UserDataManager.getUserData('cardFrozen', false);
+      setFreezeToggle(frozen);
+    };
+
     loadCardholderName();
     loadCardStatus();
+    loadFreezeStatus();
 
     // Listen for profile updates and card unblock events
     const handleStorageChange = () => {
       loadCardholderName();
       loadCardStatus();
+      loadFreezeStatus();
     };
 
     const handleCardUnblocked = () => {
@@ -291,7 +299,11 @@ export default function Cards() {
                   {freezeToggle ? 'On' : 'Off'}
                 </span>
                 <button 
-                  onClick={() => setFreezeToggle(!freezeToggle)}
+                  onClick={() => {
+                    const newFreezeState = !freezeToggle;
+                    setFreezeToggle(newFreezeState);
+                    UserDataManager.setUserData('cardFrozen', newFreezeState);
+                  }}
                   className={`w-12 h-6 rounded-full relative transition-colors duration-200 ${
                     freezeToggle ? 'bg-blue-600' : 'bg-gray-200'
                   }`}
