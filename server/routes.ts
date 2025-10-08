@@ -27,6 +27,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Check for existing users
   const existingUsers = await storage.getAllUsers();
   console.log(`Found ${existingUsers.length} existing users in database`);
+  
+  // Backfill all users into customers table for admin oversight
+  let backfilledCount = 0;
+  for (const user of existingUsers) {
+    try {
+      // Check if customer already exists in database
+      const existingCustomer = await storage.getCustomerByCustomerNumber(user.customerNumber);
+      if (!existingCustomer) {
+        await storage.createCustomer({
+          customerNumber: user.customerNumber,
+          name: user.name,
+          email: user.email,
+          phone: user.phone || '',
+          dateOfBirth: user.dateOfBirth || '',
+          joinDate: user.joinDate || 'Member since 2018',
+          currency: user.currency || 'EUR'
+        });
+        backfilledCount++;
+      }
+    } catch (error) {
+      console.error(`Failed to backfill customer ${user.customerNumber}:`, error);
+    }
+  }
+  if (backfilledCount > 0) {
+    console.log(`📊 Backfilled ${backfilledCount} users into customers database`);
+  }
 
   // Dynamic manifest.json endpoint that includes access code in start_url
   app.get("/manifest.json", (req, res) => {
