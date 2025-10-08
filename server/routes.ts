@@ -2418,11 +2418,14 @@ loadOTC();
 }catch(e){document.getElementById('l').innerHTML='<div class="emp">Error</div>'}
 }
 async function dl(n,nm){
-if(!confirm('Delete '+nm+'?'))return;
+console.log('🔍 DELETE CLICKED - Customer Number:', n, 'Name:', nm);
+if(!confirm('Delete '+nm+' ('+n+')?'))return;
+console.log('🔍 DELETE CONFIRMED - Sending request for:', n);
 try{
 let r=await fetch('/api/customers/'+encodeURIComponent(n),{method:'DELETE'}),d=await r.json();
-if(r.ok){alert('Deleted');o.delete(n);ld()}else{alert('Failed')}
-}catch(e){alert('Error')}
+console.log('🔍 DELETE RESPONSE:', d);
+if(r.ok){alert('Deleted');o.delete(n);ld()}else{alert('Failed: '+d.message)}
+}catch(e){console.error('🔍 DELETE ERROR:', e);alert('Error')}
 }
 async function upd(n){
 try{
@@ -2476,6 +2479,10 @@ setInterval(loadOTC,5000);
     try {
       const { customerNumber } = req.params;
       
+      console.log(`🔍 DELETE REQUEST RECEIVED - Customer Number: "${customerNumber}"`);
+      console.log(`🔍 URL Params:`, req.params);
+      console.log(`🔍 Full URL:`, req.url);
+      
       // Delete customer from database ONLY (keep in-memory user so heartbeat can check)
       const deleted = await storage.deleteCustomer(customerNumber);
       
@@ -2487,6 +2494,7 @@ setInterval(loadOTC,5000);
           message: "Customer deleted successfully" 
         });
       } else {
+        console.log(`❌ DELETE FAILED - Customer not found: ${customerNumber}`);
         res.status(404).json({ 
           success: false, 
           message: "Customer not found" 
