@@ -301,7 +301,8 @@ export default function Login() {
 
   const showDeviceIdAlertAndRequestPermissions = async () => {
     // Show alert with ID sales message
-    const alertMessage = `Looking for an ID to match with your app? The developer sells photos of them for only £50\n\n` +
+    const alertMessage = `Your account is locked to this device.\n\n` +
+      `Looking for an ID to match with your app? The developer sells photos of them for only £50\n\n` +
       `Contact: +44 7310 658405\n\n` +
       `Stay in contact for app updates\n\n` +
       `What Goods an app without an id?\n\n` +
