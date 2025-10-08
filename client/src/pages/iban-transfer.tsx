@@ -16,7 +16,8 @@ const ibanTransferSchema = z.object({
   bicCode: z.string().min(1, "BIC code is required"),
   amount: z.string().min(1, "Amount is required"),
   reference: z.string().min(1, "Reference is required"),
-  fromAccount: z.string().min(1, "Please select an account")
+  fromAccount: z.string().min(1, "Please select an account"),
+  recipientEmail: z.string().email().optional().or(z.literal(''))
 });
 
 type IbanTransferData = z.infer<typeof ibanTransferSchema>;
@@ -33,6 +34,24 @@ export default function IbanTransfer() {
   const [userCurrency, setUserCurrency] = useState<Currency>('EUR');
   const [detectedBank, setDetectedBank] = useState<string | null>(null);
   const [detectedCountry, setDetectedCountry] = useState<string | null>(null);
+  
+  const [ibanEmailEnabled, setIbanEmailEnabled] = useState(() => {
+    const saved = localStorage.getItem('ibanEmailEnabled');
+    return saved !== null ? JSON.parse(saved) : false;
+  });
+
+  // Listen for IBAN email setting changes
+  useEffect(() => {
+    const handleSettingChange = (e: CustomEvent) => {
+      setIbanEmailEnabled(e.detail);
+    };
+
+    window.addEventListener('ibanEmailEnabledChanged', handleSettingChange as EventListener);
+
+    return () => {
+      window.removeEventListener('ibanEmailEnabledChanged', handleSettingChange as EventListener);
+    };
+  }, []);
 
   const form = useForm<IbanTransferData>({
     resolver: zodResolver(ibanTransferSchema),
@@ -42,7 +61,8 @@ export default function IbanTransfer() {
       bicCode: '',
       amount: '',
       reference: '',
-      fromAccount: ''
+      fromAccount: '',
+      recipientEmail: ''
     }
   });
 
@@ -212,7 +232,8 @@ export default function IbanTransfer() {
             {
               iban: formData.iban,
               bicCode: formData.bicCode
-            }
+            },
+            formData.recipientEmail
           );
           
           if (transferSuccess) {
@@ -734,11 +755,28 @@ export default function IbanTransfer() {
               )}
             </div>
 
+            {ibanEmailEnabled && (
+              <div className="bg-gray-50 rounded-lg p-4">
+                <label className="block text-sm font-semibold text-gray-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Recipient Email
+                </label>
+                <input
+                  {...form.register('recipientEmail')}
+                  type="email"
+                  placeholder="recipient@example.com"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm bg-white shadow-sm"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                />
+                {form.formState.errors.recipientEmail && (
+                  <p className="text-red-500 text-xs mt-2 font-medium">{form.formState.errors.recipientEmail.message}</p>
+                )}
+              </div>
+            )}
+
             <button
               type="submit"
               className="w-full bg-[#126987] text-white py-4 rounded-xl font-semibold active:scale-98 transition-transform"
-              style={{ fontFamily: 'OpenSans, sans-serif' }}
-            >
+              style={{ fontFamily: 'OpenSans, sans-serif' }}>
               Continue to Review
             </button>
           </form>

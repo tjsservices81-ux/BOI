@@ -39,7 +39,6 @@ export default function Transfer() {
   // Listen for IBAN email setting changes
   useEffect(() => {
     const handleSettingChange = (e: CustomEvent) => {
-      console.log('🔔 IBAN email setting changed:', e.detail);
       setIbanEmailEnabled(e.detail);
     };
 
@@ -49,11 +48,6 @@ export default function Transfer() {
       window.removeEventListener('ibanEmailEnabledChanged', handleSettingChange as EventListener);
     };
   }, []);
-
-  // Debug log
-  useEffect(() => {
-    console.log('🔵 IBAN email enabled state:', ibanEmailEnabled);
-  }, [ibanEmailEnabled]);
 
   const { data: accounts = [] } = useQuery<Account[]>({
     queryKey: ["/api/accounts", user?.id],
