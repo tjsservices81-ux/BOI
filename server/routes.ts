@@ -2276,13 +2276,13 @@ ${hasError ? '<div class="error show">Invalid PIN. Please try again.</div>' : ''
 <title>Customers</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,sans-serif;background:#f0f0f0;overflow-x:hidden;width:100vw}
-.hdr{background:#126987;color:#fff;padding:15px;position:sticky;top:0;z-index:10}
+body{font-family:-apple-system,sans-serif;background:#f0f0f0;overflow:hidden;width:100vw;height:100vh;display:flex;flex-direction:column}
+.hdr{background:#126987;color:#fff;padding:15px;flex-shrink:0;z-index:10}
 .hdr h1{font-size:18px;margin-bottom:8px}
 .top{display:flex;justify-content:space-between;align-items:center}
 .cnt{font-size:13px;opacity:0.9}
 .btn{background:#fff;color:#126987;border:none;padding:6px 14px;border-radius:6px;font-size:13px;font-weight:600}
-.otc-sec{padding:10px;margin-bottom:10px}
+.otc-sec{padding:10px;margin-bottom:10px;flex-shrink:0}
 .otc-hdr{background:#fff;border-radius:10px;padding:12px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
 .otc-hdr h2{font-size:16px;color:#126987;margin-bottom:4px}
 .otc-hdr p{font-size:12px;color:#666}
@@ -2291,7 +2291,7 @@ body{font-family:-apple-system,sans-serif;background:#f0f0f0;overflow-x:hidden;w
 .otc-info{font-size:11px;color:#856404;margin-bottom:4px}
 .otc-timer{font-size:11px;color:#dc3545;font-weight:600}
 .otc-empty{background:#fff;border-radius:10px;padding:20px;text-align:center;color:#999;font-size:13px}
-.lst{padding:10px}
+.lst{padding:10px;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .itm{background:#fff;border-radius:10px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
 .itm-hdr{padding:12px;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
 .l{flex:1;min-width:0}
