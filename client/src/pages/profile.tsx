@@ -1145,7 +1145,7 @@ export default function Profile() {
     
     const currentCurrency = getUserCurrency();
     const currencySymbol = currentCurrency === 'EUR' ? '€' : '£';
-    alert(`Data reset to defaults successfully - all balances set to ${currencySymbol}0.00, transactions cleared`);
+    showDeveloperMessage(`Data reset to defaults successfully - all balances set to ${currencySymbol}0.00, transactions cleared`);
   };
 
   // Load transactions for selected account
@@ -1248,7 +1248,7 @@ export default function Profile() {
     // Force dashboard refresh
     window.dispatchEvent(new CustomEvent('forceRefresh'));
     
-    alert('Transaction deleted successfully.');
+    showDeveloperMessage('Transaction deleted successfully.');
   };
 
   return (
