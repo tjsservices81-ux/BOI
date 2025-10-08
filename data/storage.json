@@ -465,11 +465,12 @@
         "name": "Johnshahjs",
         "email": "ahhajaja@gmail.com",
         "phone": "455454",
-        "address": null,
-        "dateOfBirth": null,
+        "address": "",
+        "dateOfBirth": "",
         "joinDate": "2025-10-08T05:57:35.589Z",
         "dateCreated": "2025-10-08T05:57:35.589Z",
-        "isDisabled": false
+        "isDisabled": false,
+        "currency": "GBP"
       }
     ]
   ],

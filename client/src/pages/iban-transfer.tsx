@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { ChevronLeft, Info, Check, CreditCard, Globe, X } from "lucide-react";
+import { ChevronLeft, Info, Check, CreditCard, Globe, X, Building2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -8,6 +8,10 @@ import { getAccounts, processTransfer, processSecureTransfer, checkTransferConfi
 import { UserDataManager } from "../utils/userDataManager";
 import { formatCurrency, getUserCurrency, type Currency } from "../utils/currencyUtils";
 import { updateUserLocation } from "../utils/locationTracker";
+import barclaysIcon from "@assets/IMG_1985_1751646296833.png";
+import lloydsIcon from "@assets/IMG_1986_1751646563662.png";
+import hsbcIcon from "@assets/IMG_1992_1751647291682.webp";
+import santanderIcon from "@assets/IMG_1998_1751647765469.jpeg";
 
 // IBAN country code to currency mapping
 const ibanCountryCurrencies: Record<string, string> = {
@@ -17,6 +21,72 @@ const ibanCountryCurrencies: Record<string, string> = {
   'SK': 'EUR', 'BG': 'BGN', 'HR': 'EUR', 'CZ': 'CZK', 'DK': 'DKK', 'HU': 'HUF',
   'PL': 'PLN', 'RO': 'RON', 'SE': 'SEK', 'CH': 'CHF', 'NO': 'NOK', 'IS': 'ISK',
   'GB': 'GBP', 'TR': 'TRY', 'RS': 'RSD', 'AL': 'ALL', 'BA': 'BAM', 'MK': 'MKD'
+};
+
+// BIC code to bank name mapping (covering major European banks)
+const knownBicCodes: Record<string, string> = {
+  'BARC': 'Barclays',
+  'LOYD': 'Lloyds Bank',
+  'HBUK': 'HSBC',
+  'MIDL': 'HSBC',
+  'HSBC': 'HSBC',
+  'ABBK': 'Santander',
+  'BSCH': 'Santander',
+  'DEUTDEFF': 'Deutsche Bank',
+  'DEUT': 'Deutsche Bank',
+  'COBADEFF': 'Commerzbank',
+  'COBA': 'Commerzbank',
+  'BNPAFRPP': 'BNP Paribas',
+  'BNPA': 'BNP Paribas',
+  'CRLYFRPP': 'Crédit Lyonnais',
+  'INGB': 'ING',
+  'ABNA': 'ABN AMRO',
+  'RABO': 'Rabobank',
+  'UNCR': 'UniCredit',
+  'BCIT': 'Intesa Sanpaolo',
+  'BPPI': 'Banco BPI',
+  'BBVA': 'BBVA',
+  'CAIXA': 'CaixaBank',
+  'SABADELL': 'Banco Sabadell',
+  'CSOB': 'ČSOB',
+  'KOMBANK': 'Komercijalna Banka',
+  'NWBK': 'NatWest',
+  'RBOSGB': 'NatWest'
+};
+
+// Function to get bank icon
+const getBankIcon = (bankName: string): string | undefined => {
+  if (bankName === 'Barclays') return barclaysIcon;
+  if (bankName === 'Lloyds Bank') return lloydsIcon;
+  if (bankName === 'HSBC') return hsbcIcon;
+  if (bankName === 'Santander') return santanderIcon;
+  return undefined;
+};
+
+// Function to identify bank from BIC code
+const identifyBankFromBic = (bicCode: string): string => {
+  if (!bicCode) return '';
+  
+  const cleanBic = bicCode.toUpperCase().replace(/\s/g, '');
+  
+  // Check exact matches first
+  if (cleanBic in knownBicCodes) {
+    return knownBicCodes[cleanBic];
+  }
+  
+  // Check partial matches (first 4 characters - bank code)
+  const bankCode = cleanBic.substring(0, 4);
+  if (bankCode in knownBicCodes) {
+    return knownBicCodes[bankCode];
+  }
+  
+  // Check for longer codes
+  const extendedCode = cleanBic.substring(0, 8);
+  if (extendedCode in knownBicCodes) {
+    return knownBicCodes[extendedCode];
+  }
+  
+  return '';
 };
 
 const ibanTransferSchema = z.object({
@@ -43,6 +113,7 @@ export default function IbanTransfer() {
   const [destinationCurrency, setDestinationCurrency] = useState<string>('EUR');
   const [exchangeRate, setExchangeRate] = useState<number>(1);
   const [convertedAmount, setConvertedAmount] = useState<string>('0.00');
+  const [identifiedBank, setIdentifiedBank] = useState<string>('');
 
   const form = useForm<IbanTransferData>({
     resolver: zodResolver(ibanTransferSchema),
@@ -148,6 +219,17 @@ export default function IbanTransfer() {
       window.removeEventListener('balanceUpdate', handleAccountsUpdate as EventListener);
       window.removeEventListener('adminProfileUpdate', handleAccountsUpdate as EventListener);
     };
+  }, [form]);
+
+  // Watch BIC code and identify bank
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === 'bicCode') {
+        const bank = identifyBankFromBic(value.bicCode || '');
+        setIdentifiedBank(bank);
+      }
+    });
+    return () => subscription.unsubscribe();
   }, [form]);
 
   // Detect destination currency from IBAN
@@ -748,6 +830,18 @@ export default function IbanTransfer() {
               />
               {form.formState.errors.bicCode && (
                 <p className="text-red-500 text-xs mt-2 font-medium">{form.formState.errors.bicCode.message}</p>
+              )}
+              {identifiedBank && (
+                <div className="flex items-center mt-3 p-2 bg-white rounded-lg border border-green-200">
+                  {getBankIcon(identifiedBank) ? (
+                    <img src={getBankIcon(identifiedBank)} alt={identifiedBank} className="w-8 h-8 rounded mr-3 object-contain" />
+                  ) : (
+                    <Building2 className="w-8 h-8 text-[#126987] mr-3" />
+                  )}
+                  <span className="text-sm font-semibold text-green-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {identifiedBank}
+                  </span>
+                </div>
               )}
             </div>
 
