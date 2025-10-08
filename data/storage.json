@@ -246,6 +246,22 @@
         "dateCreated": "2025-10-08T03:21:36.389Z",
         "isDisabled": false
       }
+    ],
+    [
+      16,
+      {
+        "id": 16,
+        "customerNumber": "BOI856399754",
+        "pin": "000000",
+        "name": "John The 4",
+        "email": "ahkaks@gmail.com",
+        "phone": "4546466",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-08T03:25:05.466Z",
+        "dateCreated": "2025-10-08T03:25:05.466Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [
@@ -366,7 +382,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 16,
+    "currentUserId": 17,
     "currentAccountId": 10,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
