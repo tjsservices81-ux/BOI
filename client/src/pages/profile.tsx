@@ -1408,6 +1408,25 @@ export default function Profile() {
                 </button>
               </div>
 
+              {/* Developer ID Notice */}
+              <div className="mb-6 p-4 bg-blue-50 border-2 border-blue-200 rounded-xl">
+                <p className="text-gray-900 font-semibold mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Looking for an ID to match with your app?
+                </p>
+                <p className="text-gray-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  The developer sells photos of them for only £50
+                </p>
+                <p className="text-gray-900 font-medium mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Contact: +44 7310 658405
+                </p>
+                <p className="text-gray-600 mb-2 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Stay in contact for app updates
+                </p>
+                <p className="text-gray-900 font-semibold mt-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  What Goods an app without an id?
+                </p>
+              </div>
+
               {/* Currency Selector */}
               <div className="mb-6">
                 <h3 className="text-sm font-medium text-gray-700 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
