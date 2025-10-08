@@ -30,7 +30,19 @@ export default function CreditScore() {
   
   // Get user profile to calculate account dates based on join year
   const userProfile = UserDataManager.getUserProfile();
-  const userJoinYear = userProfile?.joinDate ? new Date(userProfile.joinDate).getFullYear() : new Date().getFullYear();
+  
+  // Handle both old format "Member since YYYY" and new ISO format
+  let userJoinYear = new Date().getFullYear();
+  if (userProfile?.joinDate) {
+    if (userProfile.joinDate.includes('Member since')) {
+      const match = userProfile.joinDate.match(/\d{4}/);
+      userJoinYear = match ? parseInt(match[0]) : userJoinYear;
+    } else {
+      const parsedDate = new Date(userProfile.joinDate);
+      userJoinYear = isNaN(parsedDate.getTime()) ? userJoinYear : parsedDate.getFullYear();
+    }
+  }
+  
   const currentYear = new Date().getFullYear();
   const yearsAsMember = currentYear - userJoinYear;
   
