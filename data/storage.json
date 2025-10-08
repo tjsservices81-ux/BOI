@@ -439,6 +439,22 @@
         "dateCreated": "2025-10-08T05:39:00.770Z",
         "isDisabled": false
       }
+    ],
+    [
+      35,
+      {
+        "id": 35,
+        "customerNumber": "19130245",
+        "pin": "000000",
+        "name": "Joghajja",
+        "email": "gahaj@gmail.com",
+        "phone": "454554",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-08T05:44:57.671Z",
+        "dateCreated": "2025-10-08T05:44:57.671Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [
@@ -775,7 +791,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 35,
+    "currentUserId": 36,
     "currentAccountId": 46,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
