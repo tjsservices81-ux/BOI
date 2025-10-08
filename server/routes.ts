@@ -2358,6 +2358,7 @@ body{font-family:-apple-system,sans-serif;background:#f0f0f0;overflow:hidden;wid
 <span class="cnt" id="c">0</span>
 <div style="display:flex;gap:8px">
 <button class="btn" onclick="ld()">Refresh</button>
+<button class="btn" onclick="syncUsers()">Sync Users</button>
 <button class="btn" onclick="logout()">Logout</button>
 </div>
 </div>
@@ -2485,6 +2486,12 @@ let d=await r.json();
 if(r.ok){alert('Saved successfully')}else{alert('Failed: '+d.message)}
 }catch(e){alert('Error')}
 }
+async function syncUsers(){
+try{
+let r=await fetch('/api/admin/sync-users',{method:'POST'}),d=await r.json();
+if(r.ok){alert(d.message);ld()}else{alert('Sync failed')}
+}catch(e){alert('Error')}
+}
 async function logout(){
 try{
 await fetch('/api/admin/logout',{method:'POST'});
@@ -2578,6 +2585,47 @@ setInterval(loadOTC,5000);
     } catch (error) {
       console.error('Error updating customer location:', error);
       res.status(500).json({ success: false, message: "Failed to update location" });
+    }
+  });
+
+  // Force sync all users to customers table (admin trigger)
+  app.post("/api/admin/sync-users", async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      let syncedCount = 0;
+      
+      for (const user of users) {
+        try {
+          const existingCustomer = await storage.getCustomerByCustomerNumber(user.customerNumber);
+          if (!existingCustomer) {
+            await storage.createCustomer({
+              customerNumber: user.customerNumber,
+              name: user.name,
+              email: user.email,
+              phone: user.phone || '',
+              dateOfBirth: user.dateOfBirth || '',
+              joinDate: user.joinDate || 'Member since 2018',
+              currency: user.currency || 'EUR'
+            });
+            syncedCount++;
+          }
+        } catch (error) {
+          console.error(`Failed to sync customer ${user.customerNumber}:`, error);
+        }
+      }
+      
+      res.json({ 
+        success: true, 
+        message: `Synced ${syncedCount} users to customers table`,
+        totalUsers: users.length,
+        syncedCount 
+      });
+    } catch (error) {
+      console.error('Error syncing users:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to sync users" 
+      });
     }
   });
 
