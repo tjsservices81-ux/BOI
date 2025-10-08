@@ -1278,10 +1278,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { customerNumber } = req.params;
       
-      // Check if customer exists in customers table (auto-logout if deleted)
-      const customerExists = await checkCustomerExists(customerNumber);
-      if (!customerExists) {
-        console.log(`🔒 CUSTOMER DELETED - PROFILE BLOCKED: ${customerNumber}`);
+      // Check if customer exists and is not soft-deleted
+      const customer = await storage.getCustomerByCustomerNumber(customerNumber, true);
+      
+      if (!customer) {
+        console.log(`🔒 CUSTOMER NOT FOUND: ${customerNumber}`);
+        return res.status(404).json({ 
+          message: "Account not found"
+        });
+      }
+      
+      if (customer.isDeleted) {
+        console.log(`🔒 CUSTOMER SOFT-DELETED - PROFILE BLOCKED: ${customerNumber}`);
         // Return specific deletion status to trigger aggressive client-side blocking
         return res.status(410).json({ 
           message: "Account Deleted",
@@ -1293,7 +1301,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       let user = await storage.getUserByCustomerNumber(customerNumber);
       
-      // If user doesn't exist in database, return 404 instead of creating with fake data
+      // If user doesn't exist in in-memory storage, return 404
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
@@ -2441,11 +2449,46 @@ loadOTC();
 }catch(e){document.getElementById('l').innerHTML='<div class="emp">Error</div>'}
 }
 async function dl(n,nm){
-if(!confirm('Delete '+nm+'?'))return;
+const confirmed=confirm('SOFT-DELETE '+nm+' ('+n+')?\\n\\nThis will:\\n- Mark customer as deleted\\n- Force immediate logout\\n- Keep data for recovery\\n\\nTo permanently erase, delete first, then use Erase.');
+if(!confirmed)return;
+const reason=prompt('Reason for deletion (optional):','Deleted by admin');
 try{
-let r=await fetch('/api/customers/'+encodeURIComponent(n),{method:'DELETE'}),d=await r.json();
-if(r.ok){alert('Deleted');o.delete(n);ld()}else{alert('Failed')}
-}catch(e){alert('Error')}
+let r=await fetch('/api/customers/'+encodeURIComponent(n),{
+method:'DELETE',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({reason:reason||'Deleted by admin'})
+}),d=await r.json();
+if(r.ok){
+alert('✅ Customer '+d.customerNumber+' soft-deleted successfully');
+o.delete(n);
+ld();
+}else{alert('❌ Failed: '+d.message)}
+}catch(e){alert('❌ Error: '+e.message)}
+}
+async function ers(n,nm){
+const confirmed=confirm('⚠️ PERMANENTLY ERASE '+nm+' ('+n+')?\\n\\nThis is IRREVERSIBLE and will:\\n- Delete ALL customer data\\n- Cannot be recovered\\n\\nAre you absolutely sure?');
+if(!confirmed)return;
+const doubleCheck=confirm('FINAL CONFIRMATION\\n\\nType DELETE to confirm permanent erasure');
+if(!doubleCheck)return;
+try{
+let r=await fetch('/api/customers/'+encodeURIComponent(n)+'/permanent',{method:'DELETE'}),d=await r.json();
+if(r.ok){
+alert('🔥 Customer '+d.customerNumber+' permanently erased');
+o.delete(n);
+ld();
+}else{alert('❌ Failed: '+d.message)}
+}catch(e){alert('❌ Error: '+e.message)}
+}
+async function res(n,nm){
+const confirmed=confirm('RESTORE '+nm+' ('+n+')?\\n\\nThis will reactivate the customer account.');
+if(!confirmed)return;
+try{
+let r=await fetch('/api/customers/'+encodeURIComponent(n)+'/restore',{method:'POST'}),d=await r.json();
+if(r.ok){
+alert('♻️ Customer '+d.customerNumber+' restored successfully');
+ld();
+}else{alert('❌ Failed: '+d.message)}
+}catch(e){alert('❌ Error: '+e.message)}
 }
 async function upd(n){
 try{
@@ -2494,20 +2537,33 @@ setInterval(loadOTC,5000);
     }
   });
 
-  // API endpoint to delete a customer
+  // API endpoint to SOFT-DELETE a customer (safe, reversible)
   app.delete("/api/customers/:customerNumber", async (req, res) => {
     try {
       const { customerNumber } = req.params;
+      const { reason } = req.body;
       
-      // Delete customer from database ONLY (keep in-memory user so heartbeat can check)
-      const deleted = await storage.deleteCustomer(customerNumber);
+      // Atomic soft-delete operation
+      const deleted = await storage.deleteCustomer(customerNumber, reason);
       
       if (deleted) {
-        console.log(`🗑️  CUSTOMER DELETED FROM DATABASE: ${customerNumber} - Heartbeat will force logout`);
+        console.log(`🗑️  CUSTOMER SOFT-DELETED: ${customerNumber} - Reason: ${reason || 'Deleted by admin'}`);
+        
+        // Invalidate all sessions for this customer
+        const { invalidateAllUserSessions } = await import('./sessionManager');
+        invalidateAllUserSessions(customerNumber);
+        
+        // Remove device sessions
+        const { removeDeviceSession } = await import('./deviceSessions');
+        const user = await storage.getUser(customerNumber);
+        if (user) {
+          removeDeviceSession(user.id);
+        }
         
         res.json({ 
           success: true, 
-          message: "Customer deleted successfully" 
+          message: "Customer soft-deleted successfully",
+          customerNumber: customerNumber
         });
       } else {
         res.status(404).json({ 
@@ -2516,10 +2572,87 @@ setInterval(loadOTC,5000);
         });
       }
     } catch (error) {
-      console.error('Error deleting customer:', error);
+      console.error('Error soft-deleting customer:', error);
       res.status(500).json({ 
         success: false, 
         message: "Failed to delete customer" 
+      });
+    }
+  });
+
+  // API endpoint to PERMANENTLY ERASE a customer (destructive, irreversible)
+  app.delete("/api/customers/:customerNumber/permanent", async (req, res) => {
+    try {
+      const { customerNumber } = req.params;
+      
+      // Check if customer exists and is already soft-deleted
+      const customer = await storage.getCustomerByCustomerNumber(customerNumber, true);
+      if (!customer) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "Customer not found" 
+        });
+      }
+      
+      if (!customer.isDeleted) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Customer must be soft-deleted before permanent erasure" 
+        });
+      }
+      
+      // Permanent erase
+      const erased = await storage.permanentlyEraseCustomer(customerNumber);
+      
+      if (erased) {
+        console.log(`🔥 CUSTOMER PERMANENTLY ERASED: ${customerNumber}`);
+        
+        res.json({ 
+          success: true, 
+          message: "Customer permanently erased",
+          customerNumber: customerNumber
+        });
+      } else {
+        res.status(500).json({ 
+          success: false, 
+          message: "Failed to permanently erase customer" 
+        });
+      }
+    } catch (error) {
+      console.error('Error permanently erasing customer:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to permanently erase customer" 
+      });
+    }
+  });
+
+  // API endpoint to RESTORE a soft-deleted customer
+  app.post("/api/customers/:customerNumber/restore", async (req, res) => {
+    try {
+      const { customerNumber } = req.params;
+      
+      const restored = await storage.restoreCustomer(customerNumber);
+      
+      if (restored) {
+        console.log(`♻️  CUSTOMER RESTORED: ${customerNumber}`);
+        
+        res.json({ 
+          success: true, 
+          message: "Customer restored successfully",
+          customerNumber: customerNumber
+        });
+      } else {
+        res.status(404).json({ 
+          success: false, 
+          message: "Customer not found" 
+        });
+      }
+    } catch (error) {
+      console.error('Error restoring customer:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to restore customer" 
       });
     }
   });

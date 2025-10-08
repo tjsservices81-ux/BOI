@@ -1,0 +1,71 @@
+PWA banking-style app with multi-tenant customers.
+	•	There is an admin-oversight panel that can delete a customer.
+	•	Current bug: when I delete Customer A, (1) A’s app crashes (expected lockout is okay, but crash is not), and (2) some unrelated Customer B’s app also crashes even though B was not deleted.
+	•	Meanwhile, the supposedly deleted customer still appears in both the customers table and in admin-oversight (stale data).
+	•	This points to: index-based list updates, non-atomic delete, missing tenant scoping on listeners/queries, stale caches, and null dereferences in the client after real-time updates.
+
+WHAT I WANT (REQUIREMENTS)
+	1.	Safe “Delete” = Soft-Delete by default
+	•	Replace hard delete with a softDelete flag (e.g., deleted_at, is_deleted=true, and an optional delete_reason).
+	•	All customer queries in admin and client must exclude soft-deleted users by default.
+	•	Provide an “Erase permanently” admin action that runs only after soft-delete is working reliably.
+	2.	Strict Tenant Scoping Everywhere
+	•	All real-time subscriptions, queries, caches, and UI lists must be keyed and filtered by customerId (not array index), with a hard where-clause customerId == currentUserId (or tenant_id).
+	•	Ensure list rendering uses stable unique keys (customerId) and never array indices.
+	•	Verify no component, hook, or store is sharing state across users (no global singleton leaking data to another session).
+	3.	Atomic Delete Workflow
+	•	Implement the delete as an atomic transaction (or single server action) that:
+	•	Sets softDelete fields on the customer record.
+	•	Revokes auth/session tokens for that user.
+	•	Marks or reassigns/cleans dependent rows (devices, sessions, messages, transfers, notifications, cache keys, push subscriptions) with proper ON DELETE action or manual cascade in the same operation.
+	•	If any step fails, rollback and show a clear admin error; do not leave partial state.
+	4.	Client Crash Prevention
+	•	Anywhere the client reads the current customer, handle null/soft-deleted state gracefully: show “Account removed/locked” screen and sign-out, instead of throwing due to missing fields.
+	•	Audit all selectors/components for null checks so a missing profile doesn’t crash.
+	•	Ensure background listeners (WebSocket/RT updates) are torn down when a user becomes soft-deleted.
+	5.	Real-time & Cache Consistency
+	•	Invalidate and refetch admin/customer lists after delete completes.
+	•	Ensure no optimistic UI is using index-based removal; it must remove by id only.
+	•	Verify pagination and virtual lists do not re-use indices that could “shift” rows and target the wrong user.
+	6.	Data Model & Constraints
+	•	Add/confirm unique constraints for customerId, externalId, deviceId, sessionId, etc., to prevent collisions.
+	•	Review foreign keys for correct ON DELETE SET NULL / CASCADE consistent with soft-delete (cascades should reference ‘active’ filter instead of hard delete).
+	•	Add a composite index on (is_deleted, created_at) (or equivalent) for fast filtered lists.
+	7.	Admin-Oversight UI Fixes
+	•	Lists must render by customerId keys and never by index.
+	•	After a delete, the admin list must immediately hide the soft-deleted customer without requiring a full page reload.
+	•	Show a confirm dialog describing soft-delete vs permanent erase.
+	•	Show the result (success/failure) with the affected customerId to avoid ambiguity.
+	8.	Logging & Telemetry
+	•	Add structured logs for delete actions including: acting admin, target customerId, affected rows, and timing.
+	•	Log any client crashes related to null access on customer data; surface them in the console/log stream so we can confirm the fix.
+	9.	Offline/PWA Considerations
+	•	Update the offline cache/query client so that when a user is soft-deleted, cached data is invalidated and the app navigates to the lockout screen instead of reading stale cached rows.
+	10.	Acceptance Tests (must pass)
+	•	Deleting Customer A:
+	•	A is immediately signed out / sees “Account removed” screen. No crash.
+	•	Customer B (and all others) continue working normally; no crashes and no forced reloads.
+	•	Admin list no longer shows A (due to is_deleted filter).
+	•	The customers table and admin list both reflect the updated state consistently (no stale A).
+	•	Permanent erase removes A’s rows safely without affecting B.
+	•	Reloading the admin panel or the client does not re-introduce A into any list.
+
+IMPLEMENTATION INSTRUCTIONS
+	•	Do not guess libraries; modify the existing code and config I have.
+	•	Do not write example code in the reply—make the actual changes directly in the project.
+	•	Search and fix all places that:
+	•	Use array indices as keys. Replace with stable customerId keys.
+	•	Subscribe to broad data without customerId filters.
+	•	Assume customer objects are always present (add guards).
+	•	Perform multi-step deletes without transactions/rollbacks.
+	•	Fail to invalidate caches or refetch after mutations.
+	•	Add a migration/script to backfill is_deleted=false for existing records and create needed indexes/constraints.
+	•	Provide a short changelog at the end with exactly what you changed (files/areas) and why.
+
+DO NOT CHANGE
+	•	Visual design or copy, except for the new lockout screen and admin confirmation dialog.
+	•	Any payment/transfer logic, except to ensure it handles is_deleted users by blocking gracefully.
+
+DELIVERABLES
+	•	A working implementation that meets all Acceptance Tests.
+	•	A concise changelog of modified files and the specific issues addressed.

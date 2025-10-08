@@ -107,7 +107,14 @@ export const customers = pgTable("customers", {
   lastLongitude: decimal("last_longitude", { precision: 10, scale: 7 }), // Last known longitude
   lastLocationUpdate: timestamp("last_location_update"), // When location was last updated
   createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+  // Soft-delete fields
+  isDeleted: boolean("is_deleted").notNull().default(false),
+  deletedAt: timestamp("deleted_at"),
+  deleteReason: text("delete_reason"),
+},
+(table) => [
+  index("idx_customers_not_deleted").on(table.isDeleted, table.createdAt),
+]);
 
 // Chat messages table for persistent chat storage
 export const chatMessages = pgTable("chat_messages", {

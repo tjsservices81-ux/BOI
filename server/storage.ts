@@ -288,16 +288,36 @@ class MemStorage implements IStorage {
     return customer;
   }
 
-  async getAllCustomers(): Promise<Customer[]> {
+  async getAllCustomers(includeDeleted: boolean = false): Promise<Customer[]> {
     const { db } = await import('./db');
-    const result = await db.select().from(customers);
+    const { eq } = await import('drizzle-orm');
+    
+    if (includeDeleted) {
+      const result = await db.select().from(customers);
+      return result;
+    }
+    
+    // By default, exclude soft-deleted customers
+    const result = await db.select().from(customers).where(eq(customers.isDeleted, false));
     return result;
   }
 
-  async getCustomerByCustomerNumber(customerNumber: string): Promise<Customer | undefined> {
+  async getCustomerByCustomerNumber(customerNumber: string, includeDeleted: boolean = false): Promise<Customer | undefined> {
     const { db } = await import('./db');
-    const { eq } = await import('drizzle-orm');
-    const result = await db.select().from(customers).where(eq(customers.customerNumber, customerNumber));
+    const { eq, and } = await import('drizzle-orm');
+    
+    if (includeDeleted) {
+      const result = await db.select().from(customers).where(eq(customers.customerNumber, customerNumber));
+      return result[0];
+    }
+    
+    // By default, exclude soft-deleted customers
+    const result = await db.select().from(customers).where(
+      and(
+        eq(customers.customerNumber, customerNumber),
+        eq(customers.isDeleted, false)
+      )
+    );
     return result[0];
   }
 
@@ -327,10 +347,48 @@ class MemStorage implements IStorage {
     return result[0];
   }
 
-  async deleteCustomer(customerNumber: string): Promise<boolean> {
+  // Soft-delete customer (safe, reversible)
+  async deleteCustomer(customerNumber: string, reason?: string): Promise<boolean> {
     const { db } = await import('./db');
     const { eq } = await import('drizzle-orm');
+    
+    const result = await db
+      .update(customers)
+      .set({
+        isDeleted: true,
+        deletedAt: new Date(),
+        deleteReason: reason || 'Deleted by admin'
+      })
+      .where(eq(customers.customerNumber, customerNumber))
+      .returning();
+    
+    return result.length > 0;
+  }
+
+  // Permanent erase customer (destructive, irreversible)
+  async permanentlyEraseCustomer(customerNumber: string): Promise<boolean> {
+    const { db } = await import('./db');
+    const { eq } = await import('drizzle-orm');
+    
     const result = await db.delete(customers).where(eq(customers.customerNumber, customerNumber)).returning();
+    return result.length > 0;
+  }
+
+  // Restore soft-deleted customer
+  async restoreCustomer(customerNumber: string): Promise<boolean> {
+    const { db } = await import('./db');
+    const { eq } = await import('drizzle-orm');
+    
+    const result = await db
+      .update(customers)
+      .set({
+        isDeleted: false,
+        deletedAt: null,
+        deleteReason: null
+      })
+      .where(eq(customers.customerNumber, customerNumber))
+      .returning();
+    
     return result.length > 0;
   }
 
