@@ -2052,320 +2052,309 @@ No transfers found yet on your account.`;
     }
   });
 
-  // Admin Oversight - Display all customers from database (Mobile-Optimized)
+  // Admin Oversight - Mobile-First Design
   app.get("/admin-oversight", async (req, res) => {
     const adminPage = `
       <!DOCTYPE html>
-      <html lang="en">
+      <html>
       <head>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
         <title>Admin Oversight</title>
         <style>
-          * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-          }
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          
           html, body {
             width: 100%;
-            max-width: 100vw;
             overflow-x: hidden;
-            position: relative;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
           }
+          
           body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #126987 0%, #0e5a75 100%);
+            background: #126987;
+            padding: 10px;
             min-height: 100vh;
-            padding: 12px;
           }
-          .container {
-            width: 100%;
-            max-width: 100%;
-            margin: 0 auto;
-          }
-          .header {
+          
+          .top-bar {
             background: white;
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 16px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 10px;
           }
+          
           h1 {
             color: #126987;
-            font-size: 24px;
-            margin-bottom: 8px;
+            font-size: 20px;
+            margin-bottom: 6px;
           }
-          .subtitle {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 16px;
-          }
-          .count {
-            display: inline-block;
-            background: #126987;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 600;
-          }
-          .refresh-btn {
-            background: #126987;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 15px;
-            width: 100%;
-            margin-top: 12px;
-            font-weight: 600;
-          }
-          .refresh-btn:active {
-            background: #0e5a75;
-          }
-          .customer-card {
-            background: white;
-            border-radius: 16px;
-            margin-bottom: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            overflow: hidden;
-            transition: all 0.3s ease;
-          }
-          .customer-header {
-            padding: 16px;
+          
+          .info {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
+            margin-top: 10px;
           }
-          .customer-info {
-            flex: 1;
-          }
-          .customer-name {
-            font-size: 16px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 4px;
-          }
-          .customer-number {
-            font-size: 13px;
-            color: #666;
-            font-family: 'Courier New', monospace;
-            word-break: break-all;
-          }
-          .expand-icon {
-            color: #126987;
-            font-size: 20px;
-            transition: transform 0.3s ease;
-          }
-          .expand-icon.expanded {
-            transform: rotate(180deg);
-          }
-          .customer-details {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-            background: #f8f9fa;
-            border-top: 1px solid #e9ecef;
-          }
-          .customer-details.expanded {
-            max-height: 500px;
-          }
-          .detail-content {
-            padding: 16px;
-          }
-          .detail-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid #e9ecef;
-          }
-          .detail-row:last-child {
-            border-bottom: none;
-          }
-          .detail-label {
-            color: #666;
-            font-size: 13px;
-            font-weight: 500;
-          }
-          .detail-value {
-            color: #333;
-            font-size: 14px;
-            font-weight: 600;
-            text-align: right;
-            max-width: 60%;
-            word-break: break-all;
-            overflow-wrap: anywhere;
-          }
-          .status-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 12px;
+          
+          .badge {
+            background: #126987;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 15px;
             font-size: 12px;
             font-weight: 600;
+          }
+          
+          .refresh {
+            background: #126987;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+          }
+          
+          .card {
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            overflow: hidden;
+          }
+          
+          .card-top {
+            padding: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+          }
+          
+          .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #126987, #0e5a75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+            flex-shrink: 0;
+          }
+          
+          .info-col {
+            flex: 1;
+            min-width: 0;
+          }
+          
+          .name {
+            font-weight: 600;
+            font-size: 15px;
+            color: #1a1a1a;
+            margin-bottom: 2px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+          
+          .num {
+            font-size: 11px;
+            color: #666;
+            font-family: monospace;
+          }
+          
+          .arrow {
+            color: #126987;
+            font-size: 18px;
+            transition: transform 0.2s;
+            flex-shrink: 0;
+          }
+          
+          .arrow.open { transform: rotate(180deg); }
+          
+          .details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s;
+            background: #f5f5f5;
+          }
+          
+          .details.open { max-height: 400px; }
+          
+          .detail-wrap {
+            padding: 12px 14px;
+          }
+          
+          .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 13px;
+          }
+          
+          .label {
+            color: #666;
+            font-weight: 500;
+          }
+          
+          .value {
+            color: #1a1a1a;
+            font-weight: 600;
+            max-width: 55%;
+            text-align: right;
+            word-break: break-all;
+          }
+          
+          .status {
             background: #d4edda;
             color: #155724;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
           }
-          .delete-btn {
+          
+          .del-btn {
             background: #dc3545;
             color: white;
             border: none;
-            padding: 12px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
+            padding: 10px;
+            border-radius: 8px;
             width: 100%;
-            margin-top: 12px;
+            margin-top: 8px;
+            font-size: 13px;
+            font-weight: 600;
           }
-          .delete-btn:active {
-            background: #c82333;
-          }
-          .empty-state {
+          
+          .empty {
             background: white;
-            border-radius: 16px;
-            padding: 60px 20px;
+            border-radius: 12px;
+            padding: 50px 20px;
             text-align: center;
             color: #999;
+            font-size: 14px;
           }
+          
           .loading {
             background: white;
-            border-radius: 16px;
-            padding: 40px;
+            border-radius: 12px;
+            padding: 30px;
             text-align: center;
             color: #666;
+            font-size: 14px;
           }
         </style>
       </head>
       <body>
-        <div class="container">
-          <div class="header">
-            <h1>Admin Oversight</h1>
-            <p class="subtitle">Customer Management</p>
-            <span class="count" id="customer-count">0 Customers</span>
-            <button class="refresh-btn" onclick="loadCustomers()">↻ Refresh</button>
+        <div class="top-bar">
+          <h1>Admin Oversight</h1>
+          <div class="info">
+            <span class="badge" id="count">0</span>
+            <button class="refresh" onclick="load()">↻ Refresh</button>
           </div>
-          
-          <div id="customers-container">
-            <div class="loading">Loading customers...</div>
-          </div>
+        </div>
+        
+        <div id="list">
+          <div class="loading">Loading...</div>
         </div>
 
         <script>
-          let expandedCards = new Set();
+          let open = new Set();
 
-          function toggleCard(customerNumber) {
-            const details = document.getElementById('details-' + customerNumber);
-            const icon = document.getElementById('icon-' + customerNumber);
+          function toggle(id) {
+            const det = document.getElementById('d' + id);
+            const arr = document.getElementById('a' + id);
             
-            if (expandedCards.has(customerNumber)) {
-              details.classList.remove('expanded');
-              icon.classList.remove('expanded');
-              expandedCards.delete(customerNumber);
+            if (open.has(id)) {
+              det.classList.remove('open');
+              arr.classList.remove('open');
+              open.delete(id);
             } else {
-              details.classList.add('expanded');
-              icon.classList.add('expanded');
-              expandedCards.add(customerNumber);
+              det.classList.add('open');
+              arr.classList.add('open');
+              open.add(id);
             }
           }
 
-          async function loadCustomers() {
+          async function load() {
             try {
-              const response = await fetch('/api/customers');
-              const customers = await response.json();
+              const res = await fetch('/api/customers');
+              const data = await res.json();
               
-              const container = document.getElementById('customers-container');
-              const countBadge = document.getElementById('customer-count');
+              document.getElementById('count').textContent = data.length + ' Customer' + (data.length !== 1 ? 's' : '');
               
-              countBadge.textContent = \`\${customers.length} Customer\${customers.length !== 1 ? 's' : ''}\`;
-              
-              if (customers.length === 0) {
-                container.innerHTML = '<div class="empty-state">No customers found in database</div>';
+              if (data.length === 0) {
+                document.getElementById('list').innerHTML = '<div class="empty">No customers</div>';
                 return;
               }
               
-              let cardsHTML = '';
-              
-              customers.forEach(customer => {
-                const isExpanded = expandedCards.has(customer.customerNumber);
-                cardsHTML += \`
-                  <div class="customer-card">
-                    <div class="customer-header" onclick="toggleCard('\${customer.customerNumber}')">
-                      <div class="customer-info">
-                        <div class="customer-name">\${customer.name}</div>
-                        <div class="customer-number">\${customer.customerNumber}</div>
+              let html = '';
+              data.forEach(c => {
+                const init = c.name.charAt(0).toUpperCase();
+                const isOpen = open.has(c.customerNumber);
+                html += \`
+                  <div class="card">
+                    <div class="card-top" onclick="toggle('\${c.customerNumber}')">
+                      <div class="avatar">\${init}</div>
+                      <div class="info-col">
+                        <div class="name">\${c.name}</div>
+                        <div class="num">\${c.customerNumber}</div>
                       </div>
-                      <div class="expand-icon \${isExpanded ? 'expanded' : ''}" id="icon-\${customer.customerNumber}">▼</div>
+                      <div class="arrow \${isOpen ? 'open' : ''}" id="a\${c.customerNumber}">▼</div>
                     </div>
-                    <div class="customer-details \${isExpanded ? 'expanded' : ''}" id="details-\${customer.customerNumber}">
-                      <div class="detail-content">
-                        <div class="detail-row">
-                          <span class="detail-label">Email</span>
-                          <span class="detail-value">\${customer.email}</span>
+                    <div class="details \${isOpen ? 'open' : ''}" id="d\${c.customerNumber}">
+                      <div class="detail-wrap">
+                        <div class="row">
+                          <span class="label">Email</span>
+                          <span class="value">\${c.email}</span>
                         </div>
-                        <div class="detail-row">
-                          <span class="detail-label">Phone</span>
-                          <span class="detail-value">\${customer.phone || 'N/A'}</span>
+                        <div class="row">
+                          <span class="label">Phone</span>
+                          <span class="value">\${c.phone || 'N/A'}</span>
                         </div>
-                        <div class="detail-row">
-                          <span class="detail-label">Currency</span>
-                          <span class="detail-value">\${customer.currency}</span>
+                        <div class="row">
+                          <span class="label">Currency</span>
+                          <span class="value">\${c.currency}</span>
                         </div>
-                        <div class="detail-row">
-                          <span class="detail-label">Join Date</span>
-                          <span class="detail-value">\${new Date(customer.joinDate).toLocaleDateString()}</span>
+                        <div class="row">
+                          <span class="label">Status</span>
+                          <span class="status">Active</span>
                         </div>
-                        <div class="detail-row">
-                          <span class="detail-label">Status</span>
-                          <span class="status-badge">Active</span>
-                        </div>
-                        <button class="delete-btn" onclick="deleteCustomer('\${customer.customerNumber}', '\${customer.name}')">
-                          🗑️ Delete Customer
-                        </button>
+                        <button class="del-btn" onclick="del('\${c.customerNumber}', '\${c.name}')">🗑️ Delete</button>
                       </div>
                     </div>
                   </div>
                 \`;
               });
               
-              container.innerHTML = cardsHTML;
-            } catch (error) {
-              console.error('Error loading customers:', error);
-              document.getElementById('customers-container').innerHTML = 
-                '<div class="empty-state">Error loading customers</div>';
+              document.getElementById('list').innerHTML = html;
+            } catch (e) {
+              document.getElementById('list').innerHTML = '<div class="empty">Error loading</div>';
             }
           }
           
-          async function deleteCustomer(customerNumber, customerName) {
-            if (!confirm(\`Delete customer \${customerName}?\\n\\nThis will:\\n• Remove from database\\n• Force logout\\n• Require new account\`)) {
-              return;
-            }
+          async function del(num, name) {
+            if (!confirm('Delete ' + name + '?')) return;
             
             try {
-              const response = await fetch(\`/api/customers/\${customerNumber}\`, {
-                method: 'DELETE'
-              });
+              const res = await fetch('/api/customers/' + num, { method: 'DELETE' });
+              const data = await res.json();
               
-              const result = await response.json();
-              
-              if (response.ok) {
-                alert(\`✓ Customer deleted\\n\${customerName} will be logged out immediately.\`);
-                expandedCards.delete(customerNumber);
-                loadCustomers();
+              if (res.ok) {
+                alert('✓ Deleted');
+                open.delete(num);
+                load();
               } else {
-                alert(\`✗ Failed: \${result.message}\`);
+                alert('✗ Failed');
               }
-            } catch (error) {
-              console.error('Error deleting customer:', error);
-              alert('✗ Failed to delete customer');
+            } catch (e) {
+              alert('✗ Error');
             }
           }
           
-          // Load customers on page load
-          loadCustomers();
+          load();
         </script>
       </body>
       </html>
