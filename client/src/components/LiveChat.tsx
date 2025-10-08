@@ -1306,40 +1306,43 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
           maxHeight: 'calc(100vh - 88px)'
         }}
       >
-        {/* Header */}
-        <div className="bg-[#126987] px-6 py-6 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-              <MessageCircle className="w-6 h-6 text-white" />
+        {/* Professional Header */}
+        <div className="bg-white border-b border-gray-200 px-5 py-4 flex items-center justify-between flex-shrink-0">
+          <div className="flex items-center space-x-3">
+            <div className="w-11 h-11 bg-gradient-to-br from-[#126987] to-[#0d4e63] rounded-xl flex items-center justify-center shadow-sm">
+              <MessageCircle className="w-5 h-5 text-white" />
             </div>
             <div>
               {chatState.queueStatus === 'waiting' ? (
                 <>
-                  <h3 className="text-white font-semibold text-lg" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  <h3 className="text-gray-900 font-semibold text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     Live Chat Support
                   </h3>
-                  <p className="text-white/80 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  <p className="text-gray-500 text-xs" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     Connecting you to an agent...
                   </p>
                 </>
               ) : (
                 <>
-                  <h3 className="text-white font-semibold text-lg" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {chatState.agentName} – Customer Support
+                  <h3 className="text-gray-900 font-semibold text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {chatState.agentName}
                   </h3>
-                  <p className="text-white/80 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {isTyping ? typingText : 'Online now'}
-                  </p>
+                  <div className="flex items-center">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                    <p className="text-gray-500 text-xs" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      {isTyping ? 'Typing...' : 'Online'}
+                    </p>
+                  </div>
                 </>
               )}
             </div>
           </div>
           <button
             onClick={handleCloseChat}
-            className="w-8 h-8 bg-white/20 hover:bg-white/30 transition-colors rounded-full flex items-center justify-center text-white"
-            title="Close chat (keeps session active)"
+            className="w-9 h-9 bg-gray-100 hover:bg-gray-200 transition-colors rounded-full flex items-center justify-center text-gray-600"
+            title="Close chat"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
@@ -1388,57 +1391,55 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
           {chatState.messages.map((message) => (
             <div
               key={message.id}
-              className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
+              className={`flex ${message.isUser ? 'justify-end' : 'justify-start'} items-end gap-2`}
             >
-              <div className={`max-w-[75%] ${message.isUser ? 'order-2' : 'order-1'}`}>
+              {!message.isUser && (
+                <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden bg-gray-200 border border-gray-300">
+                  {message.isAutomated ? (
+                    <img src={botIconPath} alt="Bot" className="w-full h-full object-cover" />
+                  ) : (
+                    <User className="w-4 h-4 text-gray-600" />
+                  )}
+                </div>
+              )}
+              <div className={`max-w-[75%]`}>
                 <div
-                  className={`px-5 py-4 rounded-2xl ${
+                  className={`px-4 py-3 ${
                     message.isUser
-                      ? 'bg-[#126987] text-white rounded-br-sm'
-                      : 'bg-white text-gray-900 rounded-bl-sm shadow-sm border border-gray-100'
+                      ? 'bg-[#126987] text-white rounded-2xl rounded-br-md'
+                      : 'bg-white text-gray-900 rounded-2xl rounded-bl-md shadow-sm border border-gray-200'
                   }`}
                 >
-                  <p className="text-base leading-relaxed" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  <p className="text-sm leading-relaxed" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     {message.text}
                   </p>
                 </div>
-                <p className={`text-sm text-gray-500 mt-2 ${message.isUser ? 'text-right' : 'text-left'}`}>
+                <p className={`text-xs text-gray-400 mt-1 ${message.isUser ? 'text-right' : 'text-left'} px-1`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
                   {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </p>
               </div>
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center ml-3 mr-3 flex-shrink-0 overflow-hidden ${
-                message.isUser ? 'order-1 bg-[#126987]' : 'order-2 bg-gray-200'
-              }`}>
-                {message.isUser ? (
-                  <User className="w-5 h-5 text-white" />
-                ) : message.isAutomated ? (
-                  <img src={botIconPath} alt="Bot" className="w-full h-full object-cover" />
-                ) : (
-                  <User className="w-5 h-5 text-gray-600" />
-                )}
-              </div>
+              {message.isUser && (
+                <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-[#126987]">
+                  <User className="w-4 h-4 text-white" />
+                </div>
+              )}
             </div>
           ))}
           
-          {/* Typing indicator */}
+          {/* Professional Typing indicator */}
           {isTyping && (
-            <div className="flex justify-start">
-              <div className="order-1 max-w-[80%]">
-                <div className="bg-gray-100 text-gray-900 rounded-2xl rounded-bl-sm px-4 py-3">
-                  <div className="flex items-center space-x-1">
-                    <span className="text-gray-600 text-sm mr-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      {chatState.agentName} is typing
-                    </span>
-                    <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0ms', animationDuration: '1.4s'}}></div>
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.2s', animationDuration: '1.4s'}}></div>
-                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.4s', animationDuration: '1.4s'}}></div>
-                    </div>
+            <div className="flex justify-start items-end gap-2">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-gray-200 border border-gray-300">
+                <User className="w-4 h-4 text-gray-600" />
+              </div>
+              <div className="bg-white text-gray-900 rounded-2xl rounded-bl-md px-4 py-3 shadow-sm border border-gray-200">
+                <div className="flex items-center space-x-2">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-[#126987] rounded-full animate-bounce" style={{animationDelay: '0ms', animationDuration: '1.4s'}}></div>
+                    <div className="w-2 h-2 bg-[#126987] rounded-full animate-bounce" style={{animationDelay: '0.2s', animationDuration: '1.4s'}}></div>
+                    <div className="w-2 h-2 bg-[#126987] rounded-full animate-bounce" style={{animationDelay: '0.4s', animationDuration: '1.4s'}}></div>
                   </div>
                 </div>
-              </div>
-              <div className="order-2 w-8 h-8 rounded-full flex items-center justify-center ml-2 flex-shrink-0 bg-gray-200">
-                <User className="w-4 h-4 text-gray-600" />
               </div>
             </div>
           )}
@@ -1447,8 +1448,13 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
           </div>
         </div>
 
-        {/* Input Area */}
-        <div className="chat-input-area p-4">
+        {/* Professional Input Area - Moves up with keyboard */}
+        <div className="bg-white border-t border-gray-200 p-4 flex-shrink-0" style={{
+          position: 'sticky',
+          bottom: 0,
+          left: 0,
+          right: 0
+        }}>
           {chatState.queueStatus === 'waiting' ? (
             <div className="text-center py-2">
               <p className="text-gray-500 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -1457,7 +1463,7 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
             </div>
           ) : (
             <>
-              <div className="flex items-center space-x-3 mb-3">
+              <div className="flex items-end space-x-2">
                 <div className="flex-1 relative">
                   <input
                     type="text"
@@ -1466,30 +1472,34 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
                     onKeyPress={handleKeyPress}
                     onFocus={scrollToBottom}
                     placeholder="Type your message..."
-                    className="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#126987] focus:border-transparent text-base"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987] focus:border-[#126987] text-base bg-gray-50"
                     style={{ 
                       fontFamily: 'OpenSans, sans-serif',
-                      fontSize: '16px' // Prevents zoom on iOS
+                      fontSize: '16px', // Prevents zoom on iOS
+                      WebkitAppearance: 'none'
                     }}
                     disabled={isTyping}
                     autoComplete="off"
+                    data-testid="input-chat-message"
                   />
                 </div>
                 <button
                   onClick={handleSendMessage}
                   disabled={!inputText.trim() || isTyping}
-                  className="w-11 h-11 bg-[#126987] rounded-full flex items-center justify-center hover:bg-[#0d4e63] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                  className="w-12 h-12 bg-[#126987] rounded-xl flex items-center justify-center hover:bg-[#0d4e63] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 shadow-sm"
+                  data-testid="button-send-message"
                 >
                   <Send className="w-5 h-5 text-white" />
                 </button>
               </div>
               
-              {/* End Chat button positioned properly */}
-              <div className="flex justify-center pt-2">
+              {/* End Chat button */}
+              <div className="flex justify-center pt-3">
                 <button
                   onClick={handleEndChat}
-                  className="text-red-600 text-sm font-medium hover:text-red-700 transition-colors px-4 py-2 rounded-lg hover:bg-red-50"
+                  className="text-red-600 text-sm font-medium hover:text-red-700 transition-colors px-4 py-1.5 rounded-lg hover:bg-red-50"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  data-testid="button-end-chat"
                 >
                   End Chat
                 </button>
