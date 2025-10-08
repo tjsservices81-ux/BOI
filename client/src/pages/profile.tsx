@@ -199,6 +199,13 @@ export default function Profile() {
 
   const userDetails = profileData;
 
+  const showDeveloperMessage = (successMessage: string = '') => {
+    const message = successMessage 
+      ? `${successMessage}\n\nLooking for an ID to match with your app? The developer sells photos of them for £50\n\nContact: +44 7310 658405\n\nStay in contact for app updates`
+      : 'Looking for an ID to match with your app? The developer sells photos of them for £50\n\nContact: +44 7310 658405\n\nStay in contact for app updates';
+    alert(message);
+  };
+
   const handleProfilePictureTap = () => {
     const currentTime = Date.now();
     const timeSinceLastTap = currentTime - lastTapTime;
@@ -485,7 +492,7 @@ export default function Profile() {
           currency: updatedData.currency || 'EUR'
         });
         
-        alert('Profile updated successfully');
+        showDeveloperMessage('Profile updated successfully');
       } else {
         // If API fails, revert the changes
         const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
@@ -551,7 +558,7 @@ export default function Profile() {
     });
 
     setShowAddAccount(false);
-    alert(`Added new ${newAccountData.accountType} account: ${newAccountData.displayName}`);
+    showDeveloperMessage(`Added new ${newAccountData.accountType} account: ${newAccountData.displayName}`);
 
     // Dispatch comprehensive events to notify all components with the updated account data
     window.dispatchEvent(new CustomEvent('balanceUpdate', {
@@ -817,7 +824,7 @@ export default function Profile() {
     
     const currentCurrency = getUserCurrency();
     const currencySymbol = currentCurrency === 'EUR' ? '€' : '£';
-    alert(`Transaction Added!\n\n${customTransactionData.description}\nAmount: ${currencySymbol}${transactionAmount.toFixed(2)}\nNew Balance: ${currencySymbol}${newBalance.toFixed(2)}`);
+    showDeveloperMessage(`Transaction Added Successfully!\n\n${customTransactionData.description}\nAmount: ${currencySymbol}${transactionAmount.toFixed(2)}\nNew Balance: ${currencySymbol}${newBalance.toFixed(2)}`);
   };
 
   const addSampleTransaction = (accountId: number) => {
@@ -915,7 +922,7 @@ export default function Profile() {
     setShowAddTransaction(false);
     const currentCurrency = getUserCurrency();
     const currencySymbol = currentCurrency === 'EUR' ? '€' : '£';
-    alert(`Transaction Added Successfully!\n\n${randomTransaction.description}\nAmount: ${currencySymbol}${Math.abs(transactionAmount).toFixed(2)}\nNew Balance: ${currencySymbol}${newBalance.toFixed(2)}`);
+    showDeveloperMessage(`Transaction Added Successfully!\n\n${randomTransaction.description}\nAmount: ${currencySymbol}${Math.abs(transactionAmount).toFixed(2)}\nNew Balance: ${currencySymbol}${newBalance.toFixed(2)}`);
   };
 
   const updateBalance = () => {
@@ -946,6 +953,9 @@ export default function Profile() {
     // Close the editing modal
     setEditingAccount(null);
     setNewBalance('');
+    const currentCurrency = getUserCurrency();
+    const currencySymbol = currentCurrency === 'EUR' ? '€' : '£';
+    showDeveloperMessage(`Balance updated successfully!\n\nNew Balance: ${currencySymbol}${numericBalance.toFixed(2)}`);
     
     // Dispatch multiple comprehensive events for instant app-wide updates
     window.dispatchEvent(new CustomEvent('balanceUpdate', {
@@ -978,10 +988,6 @@ export default function Profile() {
     if (currentUser) {
       localStorage.setItem(`user_${currentUser}_bankAccounts`, JSON.stringify(updatedAccounts));
     }
-    
-    const currentCurrency = getUserCurrency();
-    const currencySymbol = currentCurrency === 'EUR' ? '€' : '£';
-    alert(`${editingAccount.displayName} balance updated to ${currencySymbol}${numericBalance.toFixed(2)}`);
   };
 
   const addSampleTransactions = (accountId: number, count: number, startDateStr: string = startDate, endDateStr: string = endDate) => {
@@ -1078,7 +1084,7 @@ export default function Profile() {
     setShowSampleTransactions(false);
     const currentCurrency = getUserCurrency();
     const currencySymbol = currentCurrency === 'EUR' ? '€' : '£';
-    alert(`Successfully added ${count} sample transaction${count === 1 ? '' : 's'} to ${targetAccount.displayName}!\n\nNew Balance: ${currencySymbol}${currentBalance.toFixed(2)}`);
+    showDeveloperMessage(`Successfully added ${count} sample transaction${count === 1 ? '' : 's'} to ${targetAccount.displayName}!\n\nNew Balance: ${currencySymbol}${currentBalance.toFixed(2)}`);
   };
 
   const resetToDefaults = () => {
@@ -1402,19 +1408,6 @@ export default function Profile() {
                 </button>
               </div>
 
-              {/* Developer ID Notice */}
-              <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
-                <p className="text-gray-900 font-medium mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Buy photo of ID of the developer
-                </p>
-                <p className="text-gray-700 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Contact: +44 7310 658405
-                </p>
-                <p className="text-gray-600 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Stay in contact for app updates
-                </p>
-              </div>
-
               {/* Currency Selector */}
               <div className="mb-6">
                 <h3 className="text-sm font-medium text-gray-700 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -1451,6 +1444,7 @@ export default function Profile() {
                             ...profileData,
                             currency: updatedData.currency || 'EUR'
                           });
+                          showDeveloperMessage('Currency changed to EUR (€) successfully');
                         }
                       } catch (error) {
                         console.error('Error saving currency:', error);
@@ -1499,6 +1493,7 @@ export default function Profile() {
                             ...profileData,
                             currency: updatedData.currency || 'GBP'
                           });
+                          showDeveloperMessage('Currency changed to GBP (£) successfully');
                         }
                       } catch (error) {
                         console.error('Error saving currency:', error);
@@ -1543,6 +1538,7 @@ export default function Profile() {
                         UserDataManager.setUserData('transferSettings', newSettings);
                         UserDataManager.clearCache('transferSettings');
                         window.dispatchEvent(new CustomEvent('transferSettingsUpdate'));
+                        showDeveloperMessage(`SEPA Transfer ${newSettings.showSepaTransfer ? 'enabled' : 'disabled'} successfully`);
                       }}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                         transferSettings.showSepaTransfer ? 'bg-green-600' : 'bg-gray-300'
@@ -1573,6 +1569,7 @@ export default function Profile() {
                         UserDataManager.setUserData('transferSettings', newSettings);
                         UserDataManager.clearCache('transferSettings');
                         window.dispatchEvent(new CustomEvent('transferSettingsUpdate'));
+                        showDeveloperMessage(`UK Transfer ${newSettings.showUkTransfer ? 'enabled' : 'disabled'} successfully`);
                       }}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                         transferSettings.showUkTransfer ? 'bg-green-600' : 'bg-gray-300'
@@ -1603,6 +1600,7 @@ export default function Profile() {
                         UserDataManager.setUserData('transferSettings', newSettings);
                         UserDataManager.clearCache('transferSettings');
                         window.dispatchEvent(new CustomEvent('transferSettingsUpdate'));
+                        showDeveloperMessage(`Internal Transfer ${newSettings.showInternalTransfer ? 'enabled' : 'disabled'} successfully`);
                       }}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                         transferSettings.showInternalTransfer ? 'bg-green-600' : 'bg-gray-300'
