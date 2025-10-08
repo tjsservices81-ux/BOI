@@ -52,6 +52,24 @@ interface LiveChatProps {
   onClose: () => void;
 }
 
+interface TriageCategory {
+  id: string;
+  name: string;
+  icon: string;
+  questions: {
+    id: string;
+    question: string;
+    options?: string[];
+  }[];
+}
+
+interface TriageState {
+  stage: 'category' | 'questions' | 'chat';
+  selectedCategory?: TriageCategory;
+  answers: { questionId: string; answer: string }[];
+  currentQuestionIndex: number;
+}
+
 interface ChatState {
   messages: ChatMessage[];
   isActive: boolean;
@@ -66,6 +84,60 @@ interface ChatState {
   lastActivityTime?: Date;
   hasCheckedIn?: boolean;
 }
+
+// Triage categories with contextual questions
+const triageCategories: TriageCategory[] = [
+  {
+    id: 'accounts',
+    name: 'Accounts',
+    icon: '💼',
+    questions: [
+      { id: 'account_type', question: 'Which account are you asking about?', options: ['Current Account', 'Savings Account', 'Both'] },
+      { id: 'account_issue', question: 'What do you need help with?', options: ['Balance inquiry', 'Transaction query', 'Account settings', 'Other'] },
+      { id: 'account_urgency', question: 'How urgent is this?', options: ['Urgent - need help now', 'Not urgent - general question'] }
+    ]
+  },
+  {
+    id: 'cards',
+    name: 'Cards',
+    icon: '💳',
+    questions: [
+      { id: 'card_type', question: 'Which card do you need help with?', options: ['Debit Card', 'Credit Card'] },
+      { id: 'card_issue', question: 'What seems to be the problem?', options: ['Lost/Stolen card', 'Card declined', 'PIN issue', 'Other'] },
+      { id: 'card_action', question: 'What would you like to do?', options: ['Block card', 'Request replacement', 'Just asking a question'] }
+    ]
+  },
+  {
+    id: 'transfers',
+    name: 'Transfers',
+    icon: '💸',
+    questions: [
+      { id: 'transfer_type', question: 'What type of transfer?', options: ['UK Transfer', 'SEPA/IBAN Transfer', 'Internal Transfer'] },
+      { id: 'transfer_issue', question: 'What do you need help with?', options: ['Transfer failed', 'Transfer delayed', 'How to send money', 'Other'] },
+      { id: 'transfer_amount', question: 'Is this about a large amount?', options: ['Yes - over €1000', 'No - under €1000'] }
+    ]
+  },
+  {
+    id: 'security',
+    name: 'Security',
+    icon: '🔒',
+    questions: [
+      { id: 'security_concern', question: 'What security issue are you experiencing?', options: ['Suspicious activity', 'Login problems', 'Password/PIN reset', 'Other'] },
+      { id: 'security_device', question: 'Is this about your current device?', options: ['Yes - this device', 'No - different device'] },
+      { id: 'security_urgency', question: 'Do you need immediate assistance?', options: ['Yes - urgent security concern', 'No - general security question'] }
+    ]
+  },
+  {
+    id: 'other',
+    name: 'Other',
+    icon: '❓',
+    questions: [
+      { id: 'other_topic', question: 'What would you like help with?', options: ['App settings', 'Notifications', 'Statements', 'Something else'] },
+      { id: 'other_tried', question: 'Have you tried anything to solve this?', options: ['Yes', 'No'] },
+      { id: 'other_description', question: 'Can you briefly describe the issue?' }
+    ]
+  }
+];
 
 export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   const currentUser = UserDataManager.getCurrentUser();
@@ -139,6 +211,11 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   };
   
   const [chatState, setChatState] = useState<ChatState>(initializeFreshChat);
+  const [triageState, setTriageState] = useState<TriageState>({
+    stage: 'category',
+    answers: [],
+    currentQuestionIndex: 0
+  });
   
   // Initialize currency preference
   useEffect(() => {
@@ -1211,6 +1288,175 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
     }
   };
 
+  // Generate AI response based on triage context
+  const generateTriageResponse = (category: string, answers: { questionId: string; answer: string }[]): string => {
+    const responses: { [key: string]: { [key: string]: string[] } } = {
+      accounts: {
+        'Current Account': [
+          "I can help you with your Current Account. Let me check the details for you...",
+          "Looking at your Current Account now. What specific information do you need?",
+          "I see you're asking about your Current Account. I'm here to help!"
+        ],
+        'Savings Account': [
+          "Great, I'll help you with your Savings Account. What would you like to know?",
+          "Let me pull up your Savings Account information right away.",
+          "I can assist with your Savings Account. What's your question?"
+        ],
+        'Balance inquiry': [
+          "I can check your balance for you. Just a moment while I retrieve that information.",
+          "Let me get your current balance. This will only take a second.",
+          "I'll pull up your balance right now."
+        ],
+        'Urgent - need help now': [
+          "I understand this is urgent. I'm prioritizing your request and will help you immediately.",
+          "Thank you for letting me know this is urgent. I'll assist you right away.",
+          "I see this needs immediate attention. Let me help you straight away."
+        ]
+      },
+      cards: {
+        'Lost/Stolen card': [
+          "I'm sorry to hear your card is lost or stolen. I can help you block it immediately for security.",
+          "Let's get your card blocked right away to protect your account. I'm on it.",
+          "I'll help you secure your account by blocking the card now. This is a priority."
+        ],
+        'Card declined': [
+          "I can help you understand why your card was declined. Let me check the details.",
+          "Let me investigate why the transaction was declined. I'll get to the bottom of this.",
+          "I'll look into the declined transaction for you right away."
+        ],
+        'Debit Card': [
+          "I'll help you with your Debit Card. What seems to be the issue?",
+          "Let me assist you with your Debit Card query.",
+          "I can help with your Debit Card. Tell me more about what's happening."
+        ]
+      },
+      transfers: {
+        'Transfer failed': [
+          "I'm sorry your transfer didn't go through. Let me check what happened and help you resolve this.",
+          "Let me investigate why the transfer failed. I'll get this sorted for you.",
+          "I can see the transfer didn't complete. Let me find out why and fix it."
+        ],
+        'UK Transfer': [
+          "I can help you with UK transfers. What would you like to know?",
+          "Let me assist with your UK transfer query. What's the issue?",
+          "I'll help you with the UK transfer. Tell me more."
+        ],
+        'Yes - over €1000': [
+          "For large transfers over €1000, I'll make sure everything is processed securely. Let me assist you.",
+          "I understand this is a significant amount. I'll handle this carefully for you.",
+          "For transfers over €1000, I'll ensure everything goes smoothly and securely."
+        ]
+      },
+      security: {
+        'Suspicious activity': [
+          "I take security very seriously. Let me check for any suspicious activity on your account immediately.",
+          "Thank you for alerting us. I'll investigate any unusual activity right away.",
+          "I'll review your account security right now. Your safety is our priority."
+        ],
+        'Yes - urgent security concern': [
+          "This is a priority. I'm checking your account security immediately.",
+          "I understand the urgency. Let me secure your account right now.",
+          "I'm treating this as urgent and will help you immediately."
+        ],
+        'Login problems': [
+          "I can help you regain access to your account. Let's work through this together.",
+          "Let me assist with your login issue. I'll get you back in.",
+          "I'll help you resolve the login problem right away."
+        ]
+      },
+      other: {
+        'App settings': [
+          "I can help you with app settings. What would you like to change?",
+          "Let me guide you through the app settings. What do you need help with?",
+          "I'll assist you with configuring your app settings."
+        ],
+        'Notifications': [
+          "I can help you manage your notifications. What would you like to adjust?",
+          "Let me help you with notification settings. What's your preference?",
+          "I'll assist with your notification preferences."
+        ]
+      }
+    };
+
+    // Build contextual response
+    let response = '';
+    const categoryResponses = responses[category] || responses.other;
+    
+    for (const answer of answers) {
+      if (categoryResponses[answer.answer]) {
+        const options = categoryResponses[answer.answer];
+        response = options[Math.floor(Math.random() * options.length)];
+        break;
+      }
+    }
+    
+    if (!response) {
+      response = "Thank you for that information. I understand your concern and I'm here to help you.";
+    }
+    
+    return response;
+  };
+
+  // Handle category selection
+  const handleCategorySelect = (category: TriageCategory) => {
+    setTriageState({
+      stage: 'questions',
+      selectedCategory: category,
+      answers: [],
+      currentQuestionIndex: 0
+    });
+  };
+
+  // Handle question answer
+  const handleQuestionAnswer = (answer: string) => {
+    if (!triageState.selectedCategory) return;
+    
+    const currentQuestion = triageState.selectedCategory.questions[triageState.currentQuestionIndex];
+    const newAnswers = [...triageState.answers, { questionId: currentQuestion.id, answer }];
+    
+    if (triageState.currentQuestionIndex < triageState.selectedCategory.questions.length - 1) {
+      // Move to next question
+      setTriageState({
+        ...triageState,
+        answers: newAnswers,
+        currentQuestionIndex: triageState.currentQuestionIndex + 1
+      });
+    } else {
+      // All questions answered - generate AI response and start chat
+      const aiResponse = generateTriageResponse(triageState.selectedCategory.id, newAnswers);
+      
+      // Add AI welcome message with context
+      const welcomeMessage: ChatMessage = {
+        id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        text: aiResponse,
+        isUser: false,
+        timestamp: new Date(),
+        agentName: chatState.agentName,
+        isAutomated: false
+      };
+      
+      setChatState(prev => ({
+        ...prev,
+        messages: [welcomeMessage]
+      }));
+      
+      // Move to chat stage
+      setTriageState({
+        ...triageState,
+        stage: 'chat',
+        answers: newAnswers
+      });
+      
+      // Simulate typing and connection
+      setTimeout(() => {
+        setChatState(prev => ({
+          ...prev,
+          queueStatus: 'connected'
+        }));
+      }, 1500);
+    }
+  };
+
   const handleEndChatRequest = () => {
     setShowEndChatConfirm(true);
   };
@@ -1342,11 +1588,93 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
         </div>
       </div>
 
-      {/* Messages Container */}
-      <div className="flex-1 overflow-y-auto bg-gradient-to-b from-gray-50 to-white">
-        <div className="p-4 space-y-4 pb-4">
-          {/* Queue status message */}
-          {chatState.queueStatus === 'waiting' && (
+      {/* Main Content - Conditional based on triage stage */}
+      {triageState.stage === 'category' ? (
+        <div className="flex-1 overflow-y-auto bg-gradient-to-b from-gray-50 to-white p-6">
+          <div className="max-w-md mx-auto">
+            <h2 className="text-2xl font-bold text-gray-900 mb-3 text-center" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              How can we help you today?
+            </h2>
+            <p className="text-gray-600 mb-8 text-center text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              Select a category to get started
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              {triageCategories.map((category) => (
+                <button
+                  key={category.id}
+                  onClick={() => handleCategorySelect(category)}
+                  className="bg-white border-2 border-gray-200 hover:border-[#126987] hover:shadow-lg rounded-2xl p-6 transition-all duration-200 text-center group"
+                  data-testid={`button-category-${category.id}`}
+                >
+                  <div className="text-4xl mb-3">{category.icon}</div>
+                  <p className="text-gray-900 font-semibold group-hover:text-[#126987] transition-colors" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {category.name}
+                  </p>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : triageState.stage === 'questions' && triageState.selectedCategory ? (
+        <div className="flex-1 overflow-y-auto bg-gradient-to-b from-gray-50 to-white p-6">
+          <div className="max-w-md mx-auto">
+            <div className="mb-6 text-center">
+              <div className="text-5xl mb-3">{triageState.selectedCategory.icon}</div>
+              <h2 className="text-xl font-bold text-gray-900 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                {triageState.selectedCategory.name}
+              </h2>
+              <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Question {triageState.currentQuestionIndex + 1} of {triageState.selectedCategory.questions.length}
+              </p>
+            </div>
+            
+            {triageState.selectedCategory.questions[triageState.currentQuestionIndex] && (
+              <>
+                <p className="text-gray-900 font-semibold mb-5 text-center text-lg" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  {triageState.selectedCategory.questions[triageState.currentQuestionIndex].question}
+                </p>
+                
+                {triageState.selectedCategory.questions[triageState.currentQuestionIndex].options ? (
+                  <div className="space-y-3">
+                    {triageState.selectedCategory.questions[triageState.currentQuestionIndex].options!.map((option, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => handleQuestionAnswer(option)}
+                        className="w-full bg-white border-2 border-gray-200 hover:border-[#126987] hover:shadow-lg rounded-xl p-4 transition-all duration-200 text-left group"
+                        data-testid={`button-option-${idx}`}
+                      >
+                        <p className="text-gray-900 group-hover:text-[#126987] transition-colors" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          {option}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <input
+                      type="text"
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                          handleQuestionAnswer(e.currentTarget.value);
+                          e.currentTarget.value = '';
+                        }
+                      }}
+                      placeholder="Type your answer and press Enter..."
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#126987] transition-colors"
+                      style={{ fontFamily: 'OpenSans, sans-serif' }}
+                      data-testid="input-text-answer"
+                    />
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="flex-1 overflow-y-auto bg-gradient-to-b from-gray-50 to-white">
+          <div className="p-4 space-y-4 pb-4">
+            {/* Queue status message */}
+            {chatState.queueStatus === 'waiting' && (
             <div className="flex justify-center">
               <div className="bg-orange-50 text-orange-800 px-6 py-6 rounded-2xl text-base text-center max-w-[95%] border border-orange-200">
                 <div className="flex items-center justify-center mb-3">
@@ -1443,46 +1771,49 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
             <div ref={messagesEndRef} />
           </div>
         </div>
+      )}
 
-      {/* Input Area - Natural flow with keyboard */}
-      <div className="bg-white border-t border-gray-200 p-4 flex-shrink-0">
-        {chatState.queueStatus === 'waiting' ? (
-          <div className="text-center py-2">
-            <p className="text-gray-500 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Please wait to be connected before sending messages...
-            </p>
-          </div>
-        ) : (
-          <div className="flex items-end space-x-2">
-            <div className="flex-1">
-              <input
-                type="text"
-                value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
-                onKeyPress={handleKeyPress}
-                onFocus={scrollToBottom}
-                placeholder="Type your message..."
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987] focus:border-[#126987] text-base bg-gray-50"
-                style={{ 
-                  fontFamily: 'OpenSans, sans-serif',
-                  fontSize: '16px'
-                }}
-                disabled={isTyping}
-                autoComplete="off"
-                data-testid="input-chat-message"
-              />
+      {/* Input Area - Only show in chat stage */}
+      {triageState.stage === 'chat' && (
+        <div className="bg-white border-t border-gray-200 p-4 flex-shrink-0">
+          {chatState.queueStatus === 'waiting' ? (
+            <div className="text-center py-2">
+              <p className="text-gray-500 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Please wait to be connected before sending messages...
+              </p>
             </div>
-            <button
-              onClick={handleSendMessage}
-              disabled={!inputText.trim() || isTyping}
-              className="w-12 h-12 bg-[#126987] rounded-xl flex items-center justify-center hover:bg-[#0d4e63] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 shadow-sm"
-              data-testid="button-send-message"
-            >
-              <Send className="w-5 h-5 text-white" />
-            </button>
-          </div>
-        )}
-      </div>
+          ) : (
+            <div className="flex items-end space-x-2">
+              <div className="flex-1">
+                <input
+                  type="text"
+                  value={inputText}
+                  onChange={(e) => setInputText(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  onFocus={scrollToBottom}
+                  placeholder="Type your message..."
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987] focus:border-[#126987] text-base bg-gray-50"
+                  style={{ 
+                    fontFamily: 'OpenSans, sans-serif',
+                    fontSize: '16px'
+                  }}
+                  disabled={isTyping}
+                  autoComplete="off"
+                  data-testid="input-chat-message"
+                />
+              </div>
+              <button
+                onClick={handleSendMessage}
+                disabled={!inputText.trim() || isTyping}
+                className="w-12 h-12 bg-[#126987] rounded-xl flex items-center justify-center hover:bg-[#0d4e63] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 shadow-sm"
+                data-testid="button-send-message"
+              >
+                <Send className="w-5 h-5 text-white" />
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* End Chat Confirmation Dialog */}
       {showEndChatConfirm && (
