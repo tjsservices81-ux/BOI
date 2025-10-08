@@ -38,7 +38,7 @@ app.use(session({
     errorLog: (...args: any[]) => console.error('Session store error:', ...args)
   }),
   resave: false,
-  saveUninitialized: false,
+  saveUninitialized: true, // Changed to true to ensure cookie is set
   cookie: {
     secure: false,
     httpOnly: true,
