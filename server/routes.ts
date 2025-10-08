@@ -1936,6 +1936,261 @@ No transfers found yet on your account.`;
     }
   });
 
+  // Admin Oversight - Display all customers from database
+  app.get("/admin-oversight", async (req, res) => {
+    const adminPage = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Admin Oversight - Customer Management</title>
+        <style>
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #126987 0%, #0e5a75 100%);
+            min-height: 100vh;
+            padding: 20px;
+          }
+          .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+          }
+          h1 {
+            color: #126987;
+            margin-bottom: 10px;
+            font-size: 28px;
+          }
+          .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+          }
+          .refresh-btn {
+            background: #126987;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-bottom: 20px;
+          }
+          .refresh-btn:hover {
+            background: #0e5a75;
+          }
+          .customers-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+          }
+          .customers-table th {
+            background: #f5f5f5;
+            padding: 12px;
+            text-align: left;
+            border-bottom: 2px solid #ddd;
+            font-weight: 600;
+            color: #333;
+          }
+          .customers-table td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+          }
+          .customers-table tr:hover {
+            background: #f9f9f9;
+          }
+          .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+          }
+          .delete-btn:hover {
+            background: #c82333;
+          }
+          .status {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+          }
+          .status.active {
+            background: #d4edda;
+            color: #155724;
+          }
+          .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+          }
+          .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <h1>Admin Oversight</h1>
+          <p class="subtitle">Customer Management Dashboard</p>
+          
+          <button class="refresh-btn" onclick="loadCustomers()">Refresh</button>
+          
+          <div id="customers-container">
+            <div class="loading">Loading customers...</div>
+          </div>
+        </div>
+
+        <script>
+          async function loadCustomers() {
+            try {
+              const response = await fetch('/api/customers');
+              const customers = await response.json();
+              
+              const container = document.getElementById('customers-container');
+              
+              if (customers.length === 0) {
+                container.innerHTML = '<div class="empty-state">No customers found in database</div>';
+                return;
+              }
+              
+              let tableHTML = \`
+                <table class="customers-table">
+                  <thead>
+                    <tr>
+                      <th>Customer Number</th>
+                      <th>Name</th>
+                      <th>Email</th>
+                      <th>Phone</th>
+                      <th>Currency</th>
+                      <th>Join Date</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+              \`;
+              
+              customers.forEach(customer => {
+                tableHTML += \`
+                  <tr>
+                    <td>\${customer.customerNumber}</td>
+                    <td>\${customer.name}</td>
+                    <td>\${customer.email}</td>
+                    <td>\${customer.phone || 'N/A'}</td>
+                    <td>\${customer.currency}</td>
+                    <td>\${customer.joinDate}</td>
+                    <td><span class="status active">Active</span></td>
+                    <td>
+                      <button class="delete-btn" onclick="deleteCustomer('\${customer.customerNumber}', '\${customer.name}')">
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                \`;
+              });
+              
+              tableHTML += '</tbody></table>';
+              container.innerHTML = tableHTML;
+            } catch (error) {
+              console.error('Error loading customers:', error);
+              document.getElementById('customers-container').innerHTML = 
+                '<div class="empty-state">Error loading customers</div>';
+            }
+          }
+          
+          async function deleteCustomer(customerNumber, customerName) {
+            if (!confirm(\`Are you sure you want to delete customer \${customerName} (\${customerNumber})?\\n\\nThis will:\\n- Remove them from the database\\n- Log them out immediately\\n- Require them to create a new account\`)) {
+              return;
+            }
+            
+            try {
+              const response = await fetch(\`/api/customers/\${customerNumber}\`, {
+                method: 'DELETE'
+              });
+              
+              const result = await response.json();
+              
+              if (response.ok) {
+                alert(\`Customer \${customerName} has been deleted successfully.\\nThey will be logged out immediately.\`);
+                loadCustomers(); // Reload the list
+              } else {
+                alert(\`Failed to delete customer: \${result.message}\`);
+              }
+            } catch (error) {
+              console.error('Error deleting customer:', error);
+              alert('Failed to delete customer');
+            }
+          }
+          
+          // Load customers on page load
+          loadCustomers();
+        </script>
+      </body>
+      </html>
+    `;
+    
+    res.send(adminPage);
+  });
+
+  // API endpoint to get all customers
+  app.get("/api/customers", async (req, res) => {
+    try {
+      const customers = await storage.getAllCustomers();
+      res.json(customers);
+    } catch (error) {
+      console.error('Error fetching customers:', error);
+      res.status(500).json({ message: "Failed to fetch customers" });
+    }
+  });
+
+  // API endpoint to delete a customer
+  app.delete("/api/customers/:customerNumber", async (req, res) => {
+    try {
+      const { customerNumber } = req.params;
+      
+      // Delete customer from database
+      const deleted = await storage.deleteCustomer(customerNumber);
+      
+      if (deleted) {
+        console.log(`🗑️  CUSTOMER DELETED FROM DATABASE: ${customerNumber}`);
+        
+        // Also delete from users table (in-memory storage)
+        await storage.deleteUser(customerNumber);
+        console.log(`🗑️  USER DELETED FROM STORAGE: ${customerNumber}`);
+        
+        res.json({ 
+          success: true, 
+          message: "Customer deleted successfully" 
+        });
+      } else {
+        res.status(404).json({ 
+          success: false, 
+          message: "Customer not found" 
+        });
+      }
+    } catch (error) {
+      console.error('Error deleting customer:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to delete customer" 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
