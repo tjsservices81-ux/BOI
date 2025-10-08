@@ -1282,10 +1282,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const customerExists = await checkCustomerExists(customerNumber);
       if (!customerExists) {
         console.log(`🔒 CUSTOMER DELETED - PROFILE BLOCKED: ${customerNumber}`);
-        // Don't destroy session here - let heartbeat handle it
-        return res.status(401).json({ 
-          message: "Account access has been revoked",
-          logout: true 
+        // Return specific deletion status to trigger aggressive client-side blocking
+        return res.status(410).json({ 
+          message: "Account Deleted",
+          accountDeleted: true,
+          forceDisconnect: true,
+          blockAllFunctions: true
         });
       }
       
@@ -1312,10 +1314,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const customerExists = await checkCustomerExists(customerNumber);
       if (!customerExists) {
         console.log(`🔒 CUSTOMER DELETED - PROFILE BLOCKED: ${customerNumber}`);
-        // Don't destroy session here - let heartbeat handle it
-        return res.status(401).json({ 
-          message: "Account access has been revoked",
-          logout: true 
+        // Return specific deletion status to trigger aggressive client-side blocking
+        return res.status(410).json({ 
+          message: "Account Deleted",
+          accountDeleted: true,
+          forceDisconnect: true,
+          blockAllFunctions: true
         });
       }
       

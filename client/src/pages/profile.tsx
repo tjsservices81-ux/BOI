@@ -117,6 +117,9 @@ export default function Profile() {
     };
   });
 
+  // Account deletion state - blocks ALL functionality
+  const [accountDeleted, setAccountDeleted] = useState(false);
+
   // Load profile data from database with real-time updates
   useEffect(() => {
     const loadProfileData = async () => {
@@ -161,6 +164,14 @@ export default function Profile() {
               localStorage.setItem('bankUsers', JSON.stringify(allUsers));
             }
           }
+        } else if (response.status === 410 || response.status === 401) {
+          // Account deleted - activate aggressive blocking
+          const data = await response.json().catch(() => ({}));
+          if (data.accountDeleted || data.blockAllFunctions) {
+            console.error('🚨 ACCOUNT DELETED - BLOCKING ALL FUNCTIONS');
+            setAccountDeleted(true);
+            setProfileData(prev => ({ ...prev, name: 'User' })); // Change name to "User"
+          }
         } else {
           console.error('Failed to load profile data:', response.status);
         }
@@ -201,6 +212,21 @@ export default function Profile() {
       clearInterval(pollInterval);
     };
   }, [isUpdatingProfile]);
+
+  // Aggressive account deletion blocking - show alert every 5 seconds
+  useEffect(() => {
+    if (accountDeleted) {
+      // Show immediate alert
+      alert('Account Deleted');
+      
+      // Show recurring alert every 5 seconds
+      const deletionAlertInterval = setInterval(() => {
+        alert('Account Deleted');
+      }, 5000);
+      
+      return () => clearInterval(deletionAlertInterval);
+    }
+  }, [accountDeleted]);
 
   const userDetails = profileData;
 
@@ -431,6 +457,12 @@ export default function Profile() {
   };
 
   const updateProfile = async () => {
+    // Block if account deleted
+    if (accountDeleted) {
+      alert('Account Deleted');
+      return;
+    }
+    
     if (!editProfileData.name.trim() || !editProfileData.email.trim()) {
       alert('Name and email are required');
       return;
@@ -1460,6 +1492,12 @@ export default function Profile() {
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={async () => {
+                      // Block if account deleted
+                      if (accountDeleted) {
+                        alert('Account Deleted');
+                        return;
+                      }
+                      
                       const newCurrency = 'EUR';
                       setUserCurrency(newCurrency);
                       setProfileData({ ...profileData, currency: newCurrency });
@@ -1509,6 +1547,12 @@ export default function Profile() {
                   </button>
                   <button
                     onClick={async () => {
+                      // Block if account deleted
+                      if (accountDeleted) {
+                        alert('Account Deleted');
+                        return;
+                      }
+                      
                       const newCurrency = 'GBP';
                       setUserCurrency(newCurrency);
                       setProfileData({ ...profileData, currency: newCurrency });
