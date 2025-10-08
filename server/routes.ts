@@ -17,6 +17,9 @@ import Database from "@replit/database";
 // Initialize Replit Database for access codes
 const db = new Database();
 
+// Track explicitly deleted customer numbers (in-memory)
+const deletedCustomers = new Set<string>();
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Wait for storage to fully initialize from persistent data
   await storage.waitForInitialization();
@@ -24,6 +27,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Check for existing users
   const existingUsers = await storage.getAllUsers();
   console.log(`Found ${existingUsers.length} existing users in database`);
+  
+  // Backfill all users into customers table for admin oversight
+  let backfilledCount = 0;
+  for (const user of existingUsers) {
+    try {
+      // Check if customer already exists in database
+      const existingCustomer = await storage.getCustomerByCustomerNumber(user.customerNumber);
+      if (!existingCustomer) {
+        await storage.createCustomer({
+          customerNumber: user.customerNumber,
+          name: user.name,
+          email: user.email,
+          phone: user.phone || '',
+          dateOfBirth: user.dateOfBirth || '',
+          joinDate: user.joinDate || 'Member since 2018',
+          currency: user.currency || 'EUR'
+        });
+        backfilledCount++;
+      }
+    } catch (error) {
+      console.error(`Failed to backfill customer ${user.customerNumber}:`, error);
+    }
+  }
+  if (backfilledCount > 0) {
+    console.log(`📊 Backfilled ${backfilledCount} users into customers database`);
+  }
 
   // Dynamic manifest.json endpoint that includes access code in start_url
   app.get("/manifest.json", (req, res) => {
@@ -554,15 +583,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Add session tracking middleware
   app.use(sessionTrackingMiddleware);
 
-  // Helper function to check if customer exists in database
+  // Helper function to check if customer was explicitly deleted by admin
   const checkCustomerExists = async (customerNumber: string): Promise<boolean> => {
-    try {
-      const customer = await storage.getCustomerByCustomerNumber(customerNumber);
-      return !!customer;
-    } catch (error) {
-      console.error('Error checking customer existence:', error);
-      return false;
-    }
+    // Customer is considered deleted ONLY if they're in the explicit deletedCustomers set
+    // This prevents false positives for customers not in database table
+    return !deletedCustomers.has(customerNumber);
   };
 
   // Authentication middleware
@@ -2333,6 +2358,7 @@ body{font-family:-apple-system,sans-serif;background:#f0f0f0;overflow:hidden;wid
 <span class="cnt" id="c">0</span>
 <div style="display:flex;gap:8px">
 <button class="btn" onclick="ld()">Refresh</button>
+<button class="btn" onclick="syncUsers()">Sync Users</button>
 <button class="btn" onclick="logout()">Logout</button>
 </div>
 </div>
@@ -2384,7 +2410,7 @@ document.getElementById('otc-list').innerHTML=h;
 }
 async function ld(){
 try{
-let r=await fetch('/api/customers'),d=await r.json();
+let r=await fetch('/api/customers?t='+Date.now()),d=await r.json();
 document.getElementById('c').textContent=d.length+' Customer'+(d.length!=1?'s':'');
 if(!d.length){document.getElementById('l').innerHTML='<div class="emp">No customers</div>';return}
 let h='';
@@ -2441,11 +2467,11 @@ loadOTC();
 }catch(e){document.getElementById('l').innerHTML='<div class="emp">Error</div>'}
 }
 async function dl(n,nm){
-if(!confirm('Delete '+nm+'?'))return;
+if(!confirm('Delete '+nm+' ('+n+')?'))return;
 try{
 let r=await fetch('/api/customers/'+encodeURIComponent(n),{method:'DELETE'}),d=await r.json();
-if(r.ok){alert('Deleted');o.delete(n);ld()}else{alert('Failed')}
-}catch(e){alert('Error')}
+if(r.ok){alert('Deleted: '+nm+' ('+n+')');o.delete(n);ld()}else{alert('Failed')}
+}catch(e){console.error('Delete error:',e);alert('Error')}
 }
 async function upd(n){
 try{
@@ -2458,6 +2484,12 @@ body:JSON.stringify({adminAlias:alias,appReplacement:rep})
 });
 let d=await r.json();
 if(r.ok){alert('Saved successfully')}else{alert('Failed: '+d.message)}
+}catch(e){alert('Error')}
+}
+async function syncUsers(){
+try{
+let r=await fetch('/api/admin/sync-users',{method:'POST'}),d=await r.json();
+if(r.ok){alert(d.message);ld()}else{alert('Sync failed')}
 }catch(e){alert('Error')}
 }
 async function logout(){
@@ -2486,6 +2518,11 @@ setInterval(loadOTC,5000);
   // API endpoint to get all customers
   app.get("/api/customers", async (req, res) => {
     try {
+      // Prevent browser caching - always get fresh data
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+      
       const customers = await storage.getAllCustomers();
       res.json(customers);
     } catch (error) {
@@ -2503,6 +2540,8 @@ setInterval(loadOTC,5000);
       const deleted = await storage.deleteCustomer(customerNumber);
       
       if (deleted) {
+        // Track this customer number as explicitly deleted
+        deletedCustomers.add(customerNumber);
         console.log(`🗑️  CUSTOMER DELETED FROM DATABASE: ${customerNumber} - Heartbeat will force logout`);
         
         res.json({ 
@@ -2546,6 +2585,47 @@ setInterval(loadOTC,5000);
     } catch (error) {
       console.error('Error updating customer location:', error);
       res.status(500).json({ success: false, message: "Failed to update location" });
+    }
+  });
+
+  // Force sync all users to customers table (admin trigger)
+  app.post("/api/admin/sync-users", async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      let syncedCount = 0;
+      
+      for (const user of users) {
+        try {
+          const existingCustomer = await storage.getCustomerByCustomerNumber(user.customerNumber);
+          if (!existingCustomer) {
+            await storage.createCustomer({
+              customerNumber: user.customerNumber,
+              name: user.name,
+              email: user.email,
+              phone: user.phone || '',
+              dateOfBirth: user.dateOfBirth || '',
+              joinDate: user.joinDate || 'Member since 2018',
+              currency: user.currency || 'EUR'
+            });
+            syncedCount++;
+          }
+        } catch (error) {
+          console.error(`Failed to sync customer ${user.customerNumber}:`, error);
+        }
+      }
+      
+      res.json({ 
+        success: true, 
+        message: `Synced ${syncedCount} users to customers table`,
+        totalUsers: users.length,
+        syncedCount 
+      });
+    } catch (error) {
+      console.error('Error syncing users:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to sync users" 
+      });
     }
   });
 
