@@ -2384,7 +2384,7 @@ document.getElementById('otc-list').innerHTML=h;
 }
 async function ld(){
 try{
-let r=await fetch('/api/customers'),d=await r.json();
+let r=await fetch('/api/customers?t='+Date.now()),d=await r.json();
 document.getElementById('c').textContent=d.length+' Customer'+(d.length!=1?'s':'');
 if(!d.length){document.getElementById('l').innerHTML='<div class="emp">No customers</div>';return}
 let h='';
@@ -2489,6 +2489,11 @@ setInterval(loadOTC,5000);
   // API endpoint to get all customers
   app.get("/api/customers", async (req, res) => {
     try {
+      // Prevent browser caching - always get fresh data
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+      
       const customers = await storage.getAllCustomers();
       res.json(customers);
     } catch (error) {
