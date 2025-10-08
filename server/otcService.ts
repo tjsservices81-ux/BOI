@@ -281,7 +281,7 @@ class OTCService {
     const activeOTCs: Array<{ customerNumber: string; code: string; accountData: any; expiresAt: string; timeRemaining: string }> = [];
     
     // Clean up expired OTCs first
-    for (const [customerNumber, data] of this.otcStorage.entries()) {
+    this.otcStorage.forEach((data, customerNumber) => {
       if (now > data.expires) {
         this.otcStorage.delete(customerNumber);
       } else {
@@ -297,7 +297,7 @@ class OTCService {
           timeRemaining: `${minutes}m ${seconds}s`
         });
       }
-    }
+    });
     
     return activeOTCs;
   }
