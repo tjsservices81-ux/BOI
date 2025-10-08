@@ -20,6 +20,7 @@ export default function Profile() {
   const [accounts, setAccounts] = useState<any[]>([]);
   const [editingAccount, setEditingAccount] = useState<any>(null);
   const [newBalance, setNewBalance] = useState('');
+  const [newAccountName, setNewAccountName] = useState('');
 
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [showAddTransaction, setShowAddTransaction] = useState(false);
@@ -941,10 +942,14 @@ export default function Profile() {
       return;
     }
 
-    // Update the account balance in local state
+    // Update the account balance and name in local state
     const updatedAccounts = accounts.map(account => 
       account.id === editingAccount.id 
-        ? { ...account, balance: numericBalance.toFixed(2) }
+        ? { 
+            ...account, 
+            balance: numericBalance.toFixed(2),
+            displayName: newAccountName.trim() || account.displayName
+          }
         : account
     );
     
@@ -957,9 +962,10 @@ export default function Profile() {
     // Close the editing modal
     setEditingAccount(null);
     setNewBalance('');
+    setNewAccountName('');
     const currentCurrency = getUserCurrency();
     const currencySymbol = currentCurrency === 'EUR' ? '€' : '£';
-    showDeveloperMessage(`Balance updated successfully!\n\nNew Balance: ${currencySymbol}${numericBalance.toFixed(2)}`);
+    showDeveloperMessage(`Account updated successfully!\n\nNew Balance: ${currencySymbol}${numericBalance.toFixed(2)}`);
     
     // Dispatch multiple comprehensive events for instant app-wide updates
     window.dispatchEvent(new CustomEvent('balanceUpdate', {
@@ -1364,10 +1370,10 @@ export default function Profile() {
           <div className="space-y-4">
             <button 
               onClick={() => navigate('/settings')}
-              className="w-full flex items-center space-x-4 p-4 bg-[#126987] border border-[#126987] rounded-xl active:scale-98 transition-transform"
+              className="w-full flex items-center space-x-4 p-4 bg-gray-100 border border-gray-200 rounded-xl active:scale-98 transition-transform hover:bg-gray-200"
             >
-              <Settings className="w-5 h-5 text-white" />
-              <span className="flex-1 text-left font-semibold text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              <Settings className="w-5 h-5 text-gray-700" />
+              <span className="flex-1 text-left font-semibold text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                 Settings
               </span>
             </button>
@@ -1811,6 +1817,7 @@ export default function Profile() {
                             onClick={() => {
                               setEditingAccount(account);
                               setNewBalance(account.balance);
+                              setNewAccountName(account.displayName);
                             }}
                             className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-semibold hover:bg-blue-200 transition-colors"
                             style={{ fontFamily: 'OpenSans, sans-serif' }}
@@ -1981,19 +1988,20 @@ export default function Profile() {
         </div>
       )}
 
-      {/* Edit Balance Modal */}
+      {/* Edit Account Modal */}
       {editingAccount && (
         <div className="modal-overlay bg-black bg-opacity-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-md mx-4">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Edit Balance
+                  Edit Account
                 </h2>
                 <button
                   onClick={() => {
                     setEditingAccount(null);
                     setNewBalance('');
+                    setNewAccountName('');
                   }}
                   className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
                 >
@@ -2002,17 +2010,28 @@ export default function Profile() {
               </div>
 
               <div className="mb-4">
-                <p className="text-gray-600 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Account: {editingAccount.displayName}
-                </p>
                 <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                   {editingAccount.accountNumber}
                 </p>
               </div>
 
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Account Name
+                </label>
+                <input
+                  type="text"
+                  value={newAccountName}
+                  onChange={(e) => setNewAccountName(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  placeholder={editingAccount.displayName}
+                />
+              </div>
+
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  New Balance ({getCurrencySymbol(getUserCurrency())})
+                  Balance ({getCurrencySymbol(getUserCurrency())})
                 </label>
                 <input
                   type="number"
@@ -2022,7 +2041,6 @@ export default function Profile() {
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                   placeholder="Enter new balance"
-                  autoFocus
                 />
               </div>
 
@@ -2031,6 +2049,7 @@ export default function Profile() {
                   onClick={() => {
                     setEditingAccount(null);
                     setNewBalance('');
+                    setNewAccountName('');
                   }}
                   className="flex-1 py-3 bg-gray-200 text-gray-800 rounded-xl font-semibold hover:bg-gray-300 transition-colors"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
@@ -2042,7 +2061,7 @@ export default function Profile() {
                   className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                 >
-                  Update Balance
+                  Save Changes
                 </button>
               </div>
             </div>
