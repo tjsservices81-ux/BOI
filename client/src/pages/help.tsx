@@ -10,7 +10,14 @@ interface FAQItem {
   category: string;
 }
 
-const faqData: FAQItem[] = [
+export default function Help() {
+  const [, setLocation] = useLocation();
+  const [isNavigating, setIsNavigating] = useState(false);
+  const [userCurrency] = useState(() => getUserCurrency());
+  const [expandedItem, setExpandedItem] = useState<number | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>("All");
+
+  const faqData: FAQItem[] = [
   {
     category: "Account & Login",
     question: "How do I enable Face ID for login?",
@@ -29,7 +36,9 @@ const faqData: FAQItem[] = [
   {
     category: "Transfers & Payments",
     question: "How do I make a transfer?",
-    answer: "From your dashboard, tap 'Transfer' and choose between 'Irish Transfer' for domestic payments or 'UK Transfer' for international payments. Enter the recipient details, amount, and confirm to complete the transfer."
+    answer: userCurrency === 'GBP' 
+      ? "From your dashboard, tap 'Transfer' and choose between 'UK Transfer' for domestic payments or 'Irish Transfer' for international payments. Enter the recipient details, amount, and confirm to complete the transfer."
+      : "From your dashboard, tap 'Transfer' and choose between 'Irish Transfer' for domestic payments or 'UK Transfer' for international payments. Enter the recipient details, amount, and confirm to complete the transfer."
   },
   {
     category: "Transfers & Payments",
@@ -39,7 +48,9 @@ const faqData: FAQItem[] = [
   {
     category: "Transfers & Payments",
     question: "How long do transfers take?",
-    answer: "Irish transfers are typically instant or completed within hours. UK transfers may take 1-3 business days depending on the receiving bank. International transfers can take 3-5 business days."
+    answer: userCurrency === 'GBP'
+      ? "UK transfers are typically instant or completed within hours. Irish transfers may take 1-3 business days depending on the receiving bank. International transfers can take 3-5 business days."
+      : "Irish transfers are typically instant or completed within hours. UK transfers may take 1-3 business days depending on the receiving bank. International transfers can take 3-5 business days."
   },
   {
     category: "Transfers & Payments",
@@ -116,14 +127,7 @@ const faqData: FAQItem[] = [
     question: "How do I contact customer support?",
     answer: "Tap 'Live Chat' in the More menu to instantly connect with our support team. Our team is available 24/7 to assist you with any questions or concerns."
   }
-];
-
-export default function Help() {
-  const [, setLocation] = useLocation();
-  const [isNavigating, setIsNavigating] = useState(false);
-  const [userCurrency] = useState(() => getUserCurrency());
-  const [expandedItem, setExpandedItem] = useState<number | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  ];
 
   const handleNavigation = (path: string) => {
     setIsNavigating(true);
