@@ -2,20 +2,25 @@ import { pgTable, text, serial, integer, boolean, decimal, timestamp, varchar, j
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  customerNumber: text("customer_number").notNull().unique(),
-  pin: text("pin").notNull(),
-  name: text("name").notNull(),
-  email: text("email").notNull(),
-  phone: text("phone"),
-  address: text("address"),
-  dateOfBirth: text("date_of_birth"),
-  joinDate: text("join_date").notNull().default("Member since 2018"),
-  dateCreated: timestamp("date_created").notNull().defaultNow(),
-  isDisabled: boolean("is_disabled").notNull().default(false),
-  currency: text("currency").notNull().default("EUR"),
-});
+// User types (no PostgreSQL table - used only for in-memory storage)
+export type User = {
+  id: number;
+  customerNumber: string;
+  pin: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  address: string | null;
+  dateOfBirth: string | null;
+  joinDate: string;
+  dateCreated: Date;
+  isDisabled: boolean;
+  currency?: string;
+};
+
+export type InsertUser = Omit<User, 'id' | 'dateCreated'> & {
+  dateCreated?: Date;
+};
 
 export const accounts = pgTable("accounts", {
   id: serial("id").primaryKey(),
@@ -132,10 +137,6 @@ export const chatSessions = pgTable("chat_sessions", {
   endedAt: timestamp("ended_at"),
 });
 
-export const insertUserSchema = createInsertSchema(users).omit({
-  id: true,
-});
-
 export const insertAccountSchema = createInsertSchema(accounts).omit({
   id: true,
 });
@@ -184,7 +185,6 @@ export const transferSchema = z.object({
   }).optional(),
 });
 
-export type User = typeof users.$inferSelect;
 export type Account = typeof accounts.$inferSelect;
 export type Transaction = typeof transactions.$inferSelect;
 export type Payee = typeof payees.$inferSelect;
@@ -194,7 +194,6 @@ export type Customer = typeof customers.$inferSelect;
 export type ChatMessage = typeof chatMessages.$inferSelect;
 export type ChatResponse = typeof chatResponses.$inferSelect;
 export type ChatSession = typeof chatSessions.$inferSelect;
-export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertAccount = z.infer<typeof insertAccountSchema>;
 export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
 export type InsertPayee = z.infer<typeof insertPayeeSchema>;
