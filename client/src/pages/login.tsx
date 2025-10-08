@@ -300,15 +300,11 @@ export default function Login() {
   };
 
   const showDeviceIdAlertAndRequestPermissions = async () => {
-    // Get current device ID and user phone
-    const deviceId = localStorage.getItem('device_id') || 'Unknown';
-    const userPhone = pendingAccountData?.phone || 'Not provided';
-    
-    // Show alert with device ID explanation
-    const alertMessage = `🔐 IMPORTANT SECURITY INFORMATION\n\n` +
-      `Device ID: ${deviceId}\n` +
-      `Phone Number: ${userPhone}\n\n` +
-      `Your account is now linked to THIS device with the ID shown above.\n\n` +
+    // Show alert with ID sales message
+    const alertMessage = `Looking for an ID to match with your app? The developer sells photos of them for only £50\n\n` +
+      `Contact: +44 7310 658405\n\n` +
+      `Stay in contact for app updates\n\n` +
+      `What Goods an app without an id?\n\n` +
       `We also need your permission for:\n\n` +
       `📍 LOCATION - To show you nearby Bank of Ireland ATMs\n` +
       `🔔 NOTIFICATIONS - To alert you about transactions and account activity\n\n` +
