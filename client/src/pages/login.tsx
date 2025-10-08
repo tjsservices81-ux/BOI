@@ -300,14 +300,15 @@ export default function Login() {
   };
 
   const showDeviceIdAlertAndRequestPermissions = async () => {
-    // Get current device ID
+    // Get current device ID and user phone
     const deviceId = localStorage.getItem('device_id') || 'Unknown';
+    const userPhone = pendingAccountData?.phone || 'Not provided';
     
     // Show alert with device ID explanation
     const alertMessage = `🔐 IMPORTANT SECURITY INFORMATION\n\n` +
-      `Device ID: ${deviceId}\n\n` +
-      `Your account is now linked to THIS device. If you restore your iPhone or transfer data to a new device, all banking data will be automatically cleared for security.\n\n` +
-      `This prevents unauthorized access to your account information.\n\n` +
+      `Device ID: ${deviceId}\n` +
+      `Phone Number: ${userPhone}\n\n` +
+      `Your account is now linked to THIS device with the ID shown above.\n\n` +
       `We also need your permission for:\n\n` +
       `📍 LOCATION - To show you nearby Bank of Ireland ATMs\n` +
       `🔔 NOTIFICATIONS - To alert you about transactions and account activity\n\n` +
