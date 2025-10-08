@@ -3,8 +3,6 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { loginSchema, transferSchema } from "@shared/schema";
 import { z } from "zod";
-import session from "express-session";
-import connectPg from "connect-pg-simple";
 import { otcService } from "./otcService";
 import { transferSecurityService } from "./security/transferSecurity";
 import { generateChatResponse } from "./openai";
@@ -12,6 +10,7 @@ import { isDeviceBlocked, addDeviceSession, isDeviceInPanicMode, isCustomerInPan
 import { isAccountActiveOnOtherDevice, setUserDeviceSession, removeUserDeviceSession, getUserDeviceSession, isCurrentDeviceAuthorized } from "./deviceExclusiveAuth";
 import { addUserSession, removeUserSession, sessionTrackingMiddleware, isSessionValid } from "./sessionManager";
 import { sendTransferConfirmation, sendBankStatement, type TransferConfirmationDetails } from "./emailService";
+import { generateTransferConfirmationPDF } from "./pdfService";
 import { StatementService } from "./statementService";
 import Database from "@replit/database";
 
@@ -25,23 +24,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Check for existing users
   const existingUsers = await storage.getAllUsers();
   console.log(`Found ${existingUsers.length} existing users in database`);
-
-  // Configure session middleware with simple in-memory storage
-  const sessionStore = new session.MemoryStore();
-
-  app.use(session({
-    secret: process.env.SESSION_SECRET || 'banking-app-secret-key-for-dev',
-    store: sessionStore,
-    resave: true, // Always save session back to store
-    saveUninitialized: true, // Save uninitialized sessions
-    cookie: {
-      secure: false, // Set to true in production with HTTPS
-      httpOnly: false, // Allow JavaScript access for persistence
-      maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year expiry
-      sameSite: 'lax' // Allow cookies to be sent with same-site requests
-    },
-    rolling: true, // Refresh session on each request to reset expiry
-  }));
 
   // Dynamic manifest.json endpoint that includes access code in start_url
   app.get("/manifest.json", (req, res) => {
@@ -191,6 +173,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // This endpoint refreshes the session without requiring authentication
     // Sessions are maintained indefinitely until admin deletion
     if (req.session) {
+      // Check if customer exists in customers table (auto-logout if deleted)
+      const userId = (req.session as any).userId;
+      if (userId) {
+        try {
+          const user = await storage.getUserById(userId);
+          if (user) {
+            const customerExists = await checkCustomerExists(user.customerNumber);
+            if (!customerExists) {
+              console.log(`🔒 CUSTOMER DELETED - FORCING LOGOUT VIA HEARTBEAT: ${user.customerNumber}`);
+              req.session.destroy(() => {});
+              return res.status(401).json({ 
+                status: "customer_deleted",
+                message: "Account access has been revoked",
+                logout: true,
+                forceDisconnect: true
+              });
+            }
+          }
+        } catch (error) {
+          console.error('Customer existence check error:', error);
+        }
+      }
+      
       // Check for force revocation of current access code
       const accessCode = req.headers['x-access-code'] as string || 
                         req.query.access as string ||
@@ -532,6 +537,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Add session tracking middleware
   app.use(sessionTrackingMiddleware);
 
+  // Helper function to check if customer exists in database
+  const checkCustomerExists = async (customerNumber: string): Promise<boolean> => {
+    try {
+      const customer = await storage.getCustomerByCustomerNumber(customerNumber);
+      return !!customer;
+    } catch (error) {
+      console.error('Error checking customer existence:', error);
+      return false;
+    }
+  };
+
   // Authentication middleware
   const requireAuth = (req: any, res: any, next: any) => {
     console.log('Auth check - Session ID:', req.sessionID);
@@ -585,14 +601,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`✅ USER REGISTERED: ${newUser.name} (${newUser.customerNumber})`);
       
-      // INSTANT ADMIN PANEL SYNC - Add new user to admin tracking
+      // Add user to customers table in database after successful registration
       try {
-        const { addUserToAdminPanel } = await import('./adminSyncManager');
-        await addUserToAdminPanel(newUser, 'registration');
-        console.log(`📊 ADMIN PANEL SYNC: Added ${newUser.name} to admin panel`);
-      } catch (syncError) {
-        console.error('Admin panel sync error:', syncError);
-        // Don't fail registration if admin sync fails
+        await storage.createCustomer({
+          customerNumber: newUser.customerNumber,
+          name: newUser.name,
+          email: newUser.email,
+          phone: newUser.phone || '',
+          dateOfBirth: newUser.dateOfBirth || '',
+          joinDate: newUser.joinDate || 'Member since 2018',
+          currency: newUser.currency || 'EUR'
+        });
+        console.log(`📊 CUSTOMER ADDED TO DATABASE: ${newUser.name} (${newUser.customerNumber})`);
+      } catch (customerError) {
+        console.error('Failed to add customer to database:', customerError);
+        // Don't fail registration if customer table insertion fails
       }
       
       res.status(201).json({ 
@@ -740,23 +763,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`📱 NEW DEVICE SESSION: ${deviceModel} (${ipAddress}) - Session: ${deviceSessionId}`);
       console.log(`🔒 ACCOUNT LOCKED TO DEVICE: User ${user.id} locked to ${deviceModel}`);
 
-      // INSTANT ADMIN PANEL SYNC - Update user login status
-      try {
-        const { updateUserLoginStatus } = await import('./adminSyncManager');
-        await updateUserLoginStatus(user, {
-          deviceModel,
-          ipAddress,
-          userAgent,
-          loginTime: new Date().toISOString(),
-          sessionId: deviceSessionId
-        });
-        console.log(`📊 ADMIN PANEL SYNC: Updated login status for ${user.name}`);
-      } catch (syncError) {
-        console.error('Admin panel sync error:', syncError);
-        // Don't fail login if admin sync fails
-      }
-
-      res.json({ user: { id: user.id, name: user.name, email: user.email } });
+      // Save session to persist userId
+      (req as any).session.save((err: any) => {
+        if (err) {
+          console.error('Session save error:', err);
+        }
+        res.json({ user: { id: user.id, name: user.name, email: user.email } });
+      });
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: error.errors[0].message });
@@ -766,13 +779,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Check authentication status
-  app.get("/api/auth/user", (req, res) => {
+  app.get("/api/auth/user", async (req, res) => {
     console.log('User check - Session ID:', req.sessionID);
     console.log('User check - Session user:', (req as any).session?.user);
     console.log('User check - Session userId:', (req as any).session?.userId);
     console.log('User check - Full session:', (req as any).session);
     
     if ((req as any).session && (req as any).session.user) {
+      // Check if customer exists in database (deleted customer check)
+      const userId = (req as any).session.userId;
+      if (userId) {
+        const user = await storage.getUserById(userId);
+        if (user) {
+          const customerExists = await checkCustomerExists(user.customerNumber);
+          if (!customerExists) {
+            console.log(`🚫 DELETED CUSTOMER ATTEMPT: ${user.customerNumber} tried to access customer panel`);
+            
+            // Destroy session to force logout
+            if (req.session) {
+              req.session.destroy(() => {});
+            }
+            
+            return res.status(403).json({ 
+              message: "Account access revoked", 
+              requiresNewAccount: true,
+              redirectToLogin: true
+            });
+          }
+        }
+      }
+      
       // Refresh session on successful auth check
       (req as any).session.touch();
       res.json((req as any).session.user);
@@ -793,6 +829,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/accounts/:userId", requireAuth, async (req, res) => {
     try {
       const userId = parseInt(req.params.userId);
+      
+      // Check if customer exists in database (deleted customer check)
+      const user = await storage.getUserById(userId);
+      if (user) {
+        const customerExists = await checkCustomerExists(user.customerNumber);
+        if (!customerExists) {
+          console.log(`🚫 DELETED CUSTOMER ATTEMPT: ${user.customerNumber} tried to view accounts`);
+          
+          // Destroy session to force logout
+          if (req.session) {
+            req.session.destroy(() => {});
+          }
+          
+          return res.status(403).json({ 
+            message: "Account access revoked", 
+            requiresNewAccount: true,
+            redirectToLogin: true
+          });
+        }
+      }
+      
       const accounts = await storage.getAccountsByUserId(userId);
       res.json(accounts);
     } catch (error) {
@@ -805,6 +862,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const accountId = parseInt(req.params.accountId);
       console.log('Getting transactions for account ID:', accountId);
+      
+      // Check if customer exists in database (deleted customer check)
+      const account = await storage.getAccountById(accountId);
+      if (account) {
+        const user = await storage.getUserById(account.userId);
+        if (user) {
+          const customerExists = await checkCustomerExists(user.customerNumber);
+          if (!customerExists) {
+            console.log(`🚫 DELETED CUSTOMER ATTEMPT: ${user.customerNumber} tried to view transactions`);
+            
+            // Destroy session to force logout
+            if (req.session) {
+              req.session.destroy(() => {});
+            }
+            
+            return res.status(403).json({ 
+              message: "Account access revoked", 
+              requiresNewAccount: true,
+              redirectToLogin: true
+            });
+          }
+        }
+      }
+      
       const transactions = await storage.getTransactionsByAccountId(accountId);
       console.log('Found transactions:', transactions.length);
       res.json(transactions);
@@ -822,6 +903,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (!account) {
         return res.status(404).json({ message: "Account not found" });
+      }
+
+      // Check if customer exists in database (deleted customer check)
+      const accountUser = await storage.getUserById(account.userId);
+      if (accountUser) {
+        const customerExists = await checkCustomerExists(accountUser.customerNumber);
+        if (!customerExists) {
+          console.log(`🚫 DELETED CUSTOMER ATTEMPT: ${accountUser.customerNumber} tried to transfer`);
+          
+          // Destroy session to force logout
+          if (req.session) {
+            req.session.destroy(() => {});
+          }
+          
+          return res.status(403).json({ 
+            message: "Account access revoked", 
+            requiresNewAccount: true,
+            redirectToLogin: true
+          });
+        }
       }
 
       const amount = parseFloat(transferData.amount);
@@ -977,6 +1078,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Generate transfer confirmation PDF (without email)
+  app.post("/api/generate-transfer-confirmation", async (req, res) => {
+    try {
+      const { transaction, senderName, accountInfo, userCurrency } = req.body;
+      
+      console.log('🔵 Generating transfer confirmation PDF for transaction:', transaction.id);
+      
+      const confirmationDetails: TransferConfirmationDetails = {
+        senderName: senderName || 'Customer',
+        recipientName: transaction.recipientName || 'Recipient',
+        amount: transaction.amount.replace('-', ''),
+        currency: userCurrency === 'GBP' ? '£' : '€',
+        dateTime: new Date(transaction.timestamp).toLocaleString('en-GB', {
+          dateStyle: 'short',
+          timeStyle: 'short',
+          timeZone: 'Europe/Dublin'
+        }),
+        transactionReference: transaction.reference || transaction.id.toString(),
+        accountInfo: accountInfo || "Account"
+      };
+      
+      const pdfBuffer = await generateTransferConfirmationPDF(
+        confirmationDetails.senderName,
+        confirmationDetails.recipientName,
+        confirmationDetails.amount,
+        confirmationDetails.currency,
+        confirmationDetails.transactionReference,
+        confirmationDetails.accountInfo,
+        transaction,
+        userCurrency
+      );
+      
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `inline; filename="TransferConfirmation-${transaction.id}.pdf"`);
+      res.send(pdfBuffer);
+    } catch (error) {
+      console.error('Transfer confirmation PDF generation error:', error);
+      res.status(500).json({ success: false, message: "Failed to generate transfer confirmation" });
+    }
+  });
+
   // Test email endpoint
   app.post("/api/test-email", async (req, res) => {
     try {
@@ -1041,20 +1183,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       console.log(`✅ PIN VERIFICATION SUCCESSFUL: ${user.name} (${user.customerNumber})`);
-      
-      // INSTANT ADMIN PANEL SYNC - Update user verification status
-      try {
-        const { updateUserVerificationStatus } = await import('./adminSyncManager');
-        await updateUserVerificationStatus(user, {
-          verificationType: 'PIN',
-          verificationTime: new Date().toISOString(),
-          userAgent: req.headers['user-agent'] || 'Unknown'
-        });
-        console.log(`📊 ADMIN PANEL SYNC: Updated verification status for ${user.name}`);
-      } catch (syncError) {
-        console.error('Admin panel sync error:', syncError);
-        // Don't fail verification if admin sync fails
-      }
       
       res.json({ 
         success: true,
@@ -1131,6 +1259,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/profile/:customerNumber", async (req, res) => {
     try {
       const { customerNumber } = req.params;
+      
+      // Check if customer exists in customers table (auto-logout if deleted)
+      const customerExists = await checkCustomerExists(customerNumber);
+      if (!customerExists) {
+        console.log(`🔒 CUSTOMER DELETED - PROFILE BLOCKED: ${customerNumber}`);
+        // Don't destroy session here - let heartbeat handle it
+        return res.status(401).json({ 
+          message: "Account access has been revoked",
+          logout: true 
+        });
+      }
+      
       let user = await storage.getUserByCustomerNumber(customerNumber);
       
       // If user doesn't exist in database, return 404 instead of creating with fake data
@@ -1149,6 +1289,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/profile/:customerNumber", async (req, res) => {
     try {
       const { customerNumber } = req.params;
+      
+      // Check if customer exists in customers table (auto-logout if deleted)
+      const customerExists = await checkCustomerExists(customerNumber);
+      if (!customerExists) {
+        console.log(`🔒 CUSTOMER DELETED - PROFILE BLOCKED: ${customerNumber}`);
+        // Don't destroy session here - let heartbeat handle it
+        return res.status(401).json({ 
+          message: "Account access has been revoked",
+          logout: true 
+        });
+      }
+      
       const profileUpdateSchema = z.object({
         name: z.string().optional(),
         email: z.string().email().optional(),
@@ -1211,6 +1363,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update user location
+  app.post("/api/user/location", async (req, res) => {
+    try {
+      if (!req.session || !req.session.user) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const locationSchema = z.object({
+        latitude: z.number(),
+        longitude: z.number()
+      });
+
+      const { latitude, longitude } = locationSchema.parse(req.body);
+      const customerNumber = req.session.user.customerNumber;
+
+      // Update location in database
+      await storage.updateUserLocation(customerNumber, latitude, longitude);
+
+      console.log(`📍 Location updated for ${customerNumber}: ${latitude}, ${longitude}`);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Location update error:', error);
+      res.status(500).json({ message: "Failed to update location" });
+    }
+  });
+
   // Admin-only profile update endpoint with real-time propagation
   app.put("/api/admin/profile/:customerNumber", async (req, res) => {
     try {
@@ -1262,7 +1440,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const accountData = accountDataSchema.parse(req.body);
       
-      // Generate OTC and send notification
+      // Generate OTC (no email sent - displayed in admin panel)
       const otc = await otcService.processNewAccount(accountData);
       
       // Log for security audit
@@ -1270,8 +1448,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({ 
         success: true, 
-        message: "OTC generated and notification sent",
-        customerNumber: accountData.customerNumber
+        message: "OTC generated and displayed in admin panel",
+        customerNumber: accountData.customerNumber,
+        otc: otc
       });
     } catch (error) {
       console.error('OTC generation failed:', error);
@@ -1279,6 +1458,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid account data format" });
       }
       res.status(500).json({ message: "Failed to generate OTC" });
+    }
+  });
+
+  // Get all active OTC codes for admin panel display
+  app.get("/api/admin/active-otcs", async (req, res) => {
+    try {
+      const activeOTCs = otcService.getAllActiveOTCs();
+      res.json({ otcs: activeOTCs });
+    } catch (error) {
+      console.error('Failed to retrieve active OTCs:', error);
+      res.status(500).json({ message: "Failed to retrieve OTC codes" });
     }
   });
 
@@ -1343,11 +1533,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
           console.log('User and accounts created in database:', newUser);
 
-          res.json({ 
-            success: true, 
-            message: "OTC validated successfully and account created",
-            accountData: validation.accountData,
-            user: newUser
+          // Add user to customers table in database
+          try {
+            await storage.createCustomer({
+              customerNumber: newUser.customerNumber,
+              name: newUser.name,
+              email: newUser.email,
+              phone: newUser.phone || '',
+              dateOfBirth: newUser.dateOfBirth || '',
+              joinDate: newUser.joinDate || 'Member since 2018',
+              currency: newUser.currency || 'EUR'
+            });
+            console.log(`📊 CUSTOMER ADDED TO DATABASE (Admin OTC): ${newUser.name} (${newUser.customerNumber})`);
+          } catch (customerError) {
+            console.error('Failed to add customer to database:', customerError);
+            // Don't fail the account creation if customer table insertion fails
+          }
+
+          // Set up session for OTC login (critical for auto-logout to work)
+          (req as any).session.userId = newUser.id;
+          (req as any).session.user = { id: newUser.id, name: newUser.name, email: newUser.email };
+          console.log(`🔐 SESSION CREATED FOR OTC USER: ${newUser.customerNumber} (userId: ${newUser.id})`);
+
+          // Save session to persist userId
+          (req as any).session.save((err: any) => {
+            if (err) {
+              console.error('Session save error:', err);
+            }
+            res.json({ 
+              success: true, 
+              message: "OTC validated successfully and account created",
+              accountData: validation.accountData,
+              user: newUser
+            });
           });
         } catch (dbError) {
           console.error('Failed to create user in database:', dbError);
@@ -1956,6 +2174,405 @@ No transfers found yet on your account.`;
         return res.status(400).json({ message: "Invalid statement request data" });
       }
       res.status(500).json({ message: "Failed to generate statement" });
+    }
+  });
+
+  // Admin login endpoint - uses token instead of session
+  app.post("/api/admin/login", async (req, res) => {
+    try {
+      const { pin } = req.body;
+      
+      if (pin === "270309200207") {
+        // Redirect with auth token in URL
+        res.redirect('/admin-oversight?auth=verified');
+      } else {
+        res.redirect('/admin-oversight?error=invalid');
+      }
+    } catch (error) {
+      res.status(500).json({ success: false, error: "Login failed" });
+    }
+  });
+
+  // Admin logout endpoint
+  app.post("/api/admin/logout", async (req, res) => {
+    req.session.adminAuthenticated = false;
+    res.json({ success: true });
+  });
+
+  // Admin Oversight - iPhone Optimized
+  app.get("/admin-oversight", async (req, res) => {
+    // Check if admin is authenticated via URL token
+    const isAuthenticated = req.query.auth === 'verified';
+    const hasError = req.query.error === 'invalid';
+    
+    if (!isAuthenticated) {
+      const loginPage = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0">
+<title>Admin Login</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,sans-serif;background:#126987;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.login-box{background:#fff;border-radius:12px;padding:30px;max-width:350px;width:100%;box-shadow:0 4px 6px rgba(0,0,0,0.1)}
+.login-box h1{color:#126987;font-size:24px;margin-bottom:8px}
+.login-box p{color:#666;font-size:14px;margin-bottom:24px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;color:#666;font-size:12px;font-weight:600;margin-bottom:6px}
+.form-group input{width:100%;padding:12px;border:1px solid #ddd;border-radius:6px;font-size:16px;font-family:monospace;letter-spacing:2px}
+.btn-login{width:100%;background:#126987;color:#fff;border:none;padding:14px;border-radius:6px;font-size:16px;font-weight:600;cursor:pointer}
+.btn-login:active{background:#0d4d66}
+.error{background:#f8d7da;color:#721c24;padding:10px;border-radius:6px;margin-bottom:16px;font-size:13px;display:none}
+.error.show{display:block}
+</style>
+</head>
+<body>
+<div class="login-box">
+<h1>Admin Login</h1>
+<p>Enter PIN to access oversight</p>
+${hasError ? '<div class="error show">Invalid PIN. Please try again.</div>' : ''}
+<form action="/api/admin/login" method="POST">
+<div class="form-group">
+<label>PIN Code</label>
+<input type="text" name="pin" inputmode="numeric" pattern="[0-9]*" autocomplete="off" required autofocus>
+</div>
+<button type="submit" class="btn-login">Login</button>
+</form>
+</div>
+</body>
+</html>`;
+      return res.send(loginPage);
+    }
+
+    const adminPage = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0">
+<title>Customers</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,sans-serif;background:#f0f0f0;overflow-x:hidden;width:100vw}
+.hdr{background:#126987;color:#fff;padding:15px;position:sticky;top:0;z-index:10}
+.hdr h1{font-size:18px;margin-bottom:8px}
+.top{display:flex;justify-content:space-between;align-items:center}
+.cnt{font-size:13px;opacity:0.9}
+.btn{background:#fff;color:#126987;border:none;padding:6px 14px;border-radius:6px;font-size:13px;font-weight:600}
+.otc-sec{padding:10px;margin-bottom:10px}
+.otc-hdr{background:#fff;border-radius:10px;padding:12px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
+.otc-hdr h2{font-size:16px;color:#126987;margin-bottom:4px}
+.otc-hdr p{font-size:12px;color:#666}
+.otc-itm{background:#fff3cd;border-radius:10px;padding:12px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,0.1);border-left:4px solid #ffc107}
+.otc-code{font-size:24px;font-weight:700;color:#856404;font-family:monospace;letter-spacing:3px;margin:8px 0}
+.otc-info{font-size:11px;color:#856404;margin-bottom:4px}
+.otc-timer{font-size:11px;color:#dc3545;font-weight:600}
+.otc-empty{background:#fff;border-radius:10px;padding:20px;text-align:center;color:#999;font-size:13px}
+.lst{padding:10px}
+.itm{background:#fff;border-radius:10px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
+.itm-hdr{padding:12px;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
+.l{flex:1;min-width:0}
+.nm{font-weight:600;font-size:14px;color:#000;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.id{font-size:11px;color:#666;font-family:monospace}
+.arr{color:#126987;font-size:16px;transition:transform 0.2s}
+.arr.op{transform:rotate(180deg)}
+.det{max-height:0;overflow:hidden;transition:max-height 0.2s;background:#f9f9f9;overflow-y:auto}
+.det.op{max-height:500px}
+.dw{padding:12px}
+.r{display:flex;justify-content:space-between;padding:6px 0;font-size:12px}
+.lb{color:#666}
+.vl{color:#000;font-weight:600;text-align:right;max-width:60%;word-break:break-all}
+.st{background:#d4edda;color:#155724;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:600}
+.db{background:#dc3545;color:#fff;border:none;padding:8px;border-radius:6px;width:100%;margin-top:8px;font-size:12px;font-weight:600}
+.emp{background:#fff;border-radius:10px;padding:40px 20px;text-align:center;color:#999}
+.ed-fld{margin-top:8px;padding:8px;background:#fff;border:1px solid #ddd;border-radius:6px}
+.ed-fld label{display:block;font-size:11px;color:#666;margin-bottom:4px;font-weight:600}
+.ed-inp{width:100%;padding:6px;border:1px solid #ddd;border-radius:4px;font-size:12px}
+.ed-sel{width:100%;padding:6px;border:1px solid #ddd;border-radius:4px;font-size:12px;background:#fff}
+.sv-btn{background:#28a745;color:#fff;border:none;padding:6px 12px;border-radius:4px;font-size:11px;font-weight:600;margin-left:4px;cursor:pointer}
+.map-thumb{width:100%;height:100px;background:#e0e0e0;border-radius:6px;margin-top:8px;position:relative;overflow:hidden;cursor:pointer}
+.map-thumb img{width:100%;height:100%;object-fit:cover}
+.map-info{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.7);color:#fff;padding:4px 8px;font-size:10px}
+.map-modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);z-index:1000;align-items:center;justify-content:center}
+.map-modal.show{display:flex}
+.map-modal-content{width:90%;max-width:600px;background:#fff;border-radius:12px;overflow:hidden}
+.map-modal-header{background:#126987;color:#fff;padding:12px;display:flex;justify-content:space-between;align-items:center}
+.map-modal-header h3{font-size:16px}
+.map-close{background:none;border:none;color:#fff;font-size:24px;cursor:pointer}
+.map-modal-body{height:400px}
+.map-modal-body img{width:100%;height:100%;object-fit:cover}
+</style>
+</head>
+<body>
+<div class="hdr">
+<h1>Customer Management</h1>
+<div class="top">
+<span class="cnt" id="c">0</span>
+<div style="display:flex;gap:8px">
+<button class="btn" onclick="ld()">Refresh</button>
+<button class="btn" onclick="logout()">Logout</button>
+</div>
+</div>
+</div>
+<div class="otc-sec">
+<div class="otc-hdr">
+<h2>Active OTC Codes</h2>
+<p>One-time codes for new account verification</p>
+</div>
+<div id="otc-list"><div class="otc-empty">No active codes</div></div>
+</div>
+<div class="lst" id="l"><div class="emp">Loading...</div></div>
+<div class="map-modal" id="mapModal">
+<div class="map-modal-content">
+<div class="map-modal-header">
+<h3 id="mapTitle">Customer Location</h3>
+<button class="map-close" onclick="closeMap()">×</button>
+</div>
+<div class="map-modal-body">
+<img id="mapImage" src="" alt="Location Map">
+</div>
+</div>
+</div>
+<script>
+let o=new Set();
+function tg(i){
+let d=document.getElementById('d'+i),a=document.getElementById('a'+i);
+if(o.has(i)){d.classList.remove('op');a.classList.remove('op');o.delete(i)}
+else{d.classList.add('op');a.classList.add('op');o.add(i)}
+}
+function escapeHtml(text) {
+  const map = {'&': '&amp;','<': '&lt;','>': '&gt;','"': '&quot;',"'": '&#039;'};
+  return String(text).replace(/[&<>"']/g, m => map[m]);
+}
+async function loadOTC(){
+try{
+let r=await fetch('/api/admin/active-otcs'),d=await r.json();
+if(!d.otcs||!d.otcs.length){document.getElementById('otc-list').innerHTML='<div class="otc-empty">No active codes</div>';return}
+let h='';
+d.otcs.forEach(otc=>{
+h+=\`<div class="otc-itm">
+<div class="otc-info">\${escapeHtml(otc.accountData.name)} - \${escapeHtml(otc.customerNumber)}</div>
+<div class="otc-code">\${escapeHtml(otc.code)}</div>
+<div class="otc-timer">Expires in: \${escapeHtml(otc.timeRemaining)}</div>
+</div>\`;
+});
+document.getElementById('otc-list').innerHTML=h;
+}catch(e){document.getElementById('otc-list').innerHTML='<div class="otc-empty">Error loading codes</div>'}
+}
+async function ld(){
+try{
+let r=await fetch('/api/customers'),d=await r.json();
+document.getElementById('c').textContent=d.length+' Customer'+(d.length!=1?'s':'');
+if(!d.length){document.getElementById('l').innerHTML='<div class="emp">No customers</div>';return}
+let h='';
+d.forEach(c=>{
+let op=o.has(c.customerNumber);
+h+=\`<div class="itm">
+<div class="itm-hdr" onclick="tg('\${escapeHtml(c.customerNumber)}')">
+<div class="l">
+<div class="nm">\${escapeHtml(c.name)}</div>
+<div class="id">\${escapeHtml(c.customerNumber)}</div>
+</div>
+<div class="arr \${op?'op':''}" id="a\${escapeHtml(c.customerNumber)}">▼</div>
+</div>
+<div class="det \${op?'op':''}" id="d\${escapeHtml(c.customerNumber)}">
+<div class="dw">
+<div class="r"><span class="lb">Email</span><span class="vl">\${escapeHtml(c.email)}</span></div>
+<div class="r"><span class="lb">Phone</span><span class="vl">\${escapeHtml(c.phone||'N/A')}</span></div>
+<div class="r"><span class="lb">Currency</span><span class="vl">\${escapeHtml(c.currency)}</span></div>
+<div class="r"><span class="lb">Status</span><span class="st">Active</span></div>
+\${c.lastLatitude && c.lastLongitude ? \`
+<div class="map-thumb" onclick="showMap('\${c.lastLatitude}', '\${c.lastLongitude}', '\${escapeHtml(c.name)}')">
+<img src="https://static-maps.yandex.ru/1.x/?ll=\${c.lastLongitude},\${c.lastLatitude}&size=300,100&z=14&l=map&pt=\${c.lastLongitude},\${c.lastLatitude},pm2rdm" alt="Map">
+<div class="map-info">📍 Last location: \${c.lastLatitude}, \${c.lastLongitude}</div>
+</div>
+\` : ''}
+<div class="ed-fld">
+<label>Admin Name/Alias</label>
+<div style="display:flex;align-items:center">
+<input type="text" class="ed-inp" id="alias-\${escapeHtml(c.customerNumber)}" value="\${escapeHtml(c.adminAlias||'')}" placeholder="Internal name or notes">
+<button class="sv-btn" onclick="upd('\${escapeHtml(c.customerNumber)}')">Save</button>
+</div>
+</div>
+<div class="ed-fld">
+<label>App Replacement (0-5)</label>
+<div style="display:flex;align-items:center">
+<select class="ed-sel" id="rep-\${escapeHtml(c.customerNumber)}">
+<option value="0" \${(c.appReplacement||0)===0?'selected':''}>0</option>
+<option value="1" \${c.appReplacement===1?'selected':''}>1</option>
+<option value="2" \${c.appReplacement===2?'selected':''}>2</option>
+<option value="3" \${c.appReplacement===3?'selected':''}>3</option>
+<option value="4" \${c.appReplacement===4?'selected':''}>4</option>
+<option value="5" \${c.appReplacement===5?'selected':''}>5</option>
+</select>
+<button class="sv-btn" onclick="upd('\${escapeHtml(c.customerNumber)}')">Save</button>
+</div>
+</div>
+<button class="db" data-customer="\${escapeHtml(c.customerNumber)}" data-name="\${escapeHtml(c.name)}" onclick="dl(this.dataset.customer,this.dataset.name)">Delete</button>
+</div>
+</div>
+</div>\`;
+});
+document.getElementById('l').innerHTML=h;
+loadOTC();
+}catch(e){document.getElementById('l').innerHTML='<div class="emp">Error</div>'}
+}
+async function dl(n,nm){
+if(!confirm('Delete '+nm+'?'))return;
+try{
+let r=await fetch('/api/customers/'+encodeURIComponent(n),{method:'DELETE'}),d=await r.json();
+if(r.ok){alert('Deleted');o.delete(n);ld()}else{alert('Failed')}
+}catch(e){alert('Error')}
+}
+async function upd(n){
+try{
+let alias=document.getElementById('alias-'+n).value;
+let rep=parseInt(document.getElementById('rep-'+n).value);
+let r=await fetch('/api/customers/'+encodeURIComponent(n)+'/admin',{
+method:'PATCH',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({adminAlias:alias,appReplacement:rep})
+});
+let d=await r.json();
+if(r.ok){alert('Saved successfully')}else{alert('Failed: '+d.message)}
+}catch(e){alert('Error')}
+}
+async function logout(){
+try{
+await fetch('/api/admin/logout',{method:'POST'});
+window.location.href='/admin-oversight';
+}catch(e){alert('Error')}
+}
+function showMap(lat,lng,name){
+document.getElementById('mapTitle').textContent=name+' - Last Location ('+lat+', '+lng+')';
+document.getElementById('mapImage').src='https://static-maps.yandex.ru/1.x/?ll='+lng+','+lat+'&size=600,400&z=15&l=map&pt='+lng+','+lat+',pm2rdm';
+document.getElementById('mapModal').classList.add('show');
+}
+function closeMap(){
+document.getElementById('mapModal').classList.remove('show');
+}
+ld();
+setInterval(loadOTC,5000);
+</script>
+</body>
+</html>`;
+    
+    res.send(adminPage);
+  });
+
+  // API endpoint to get all customers
+  app.get("/api/customers", async (req, res) => {
+    try {
+      const customers = await storage.getAllCustomers();
+      res.json(customers);
+    } catch (error) {
+      console.error('Error fetching customers:', error);
+      res.status(500).json({ message: "Failed to fetch customers" });
+    }
+  });
+
+  // API endpoint to delete a customer
+  app.delete("/api/customers/:customerNumber", async (req, res) => {
+    try {
+      const { customerNumber } = req.params;
+      
+      // Delete customer from database ONLY (keep in-memory user so heartbeat can check)
+      const deleted = await storage.deleteCustomer(customerNumber);
+      
+      if (deleted) {
+        console.log(`🗑️  CUSTOMER DELETED FROM DATABASE: ${customerNumber} - Heartbeat will force logout`);
+        
+        res.json({ 
+          success: true, 
+          message: "Customer deleted successfully" 
+        });
+      } else {
+        res.status(404).json({ 
+          success: false, 
+          message: "Customer not found" 
+        });
+      }
+    } catch (error) {
+      console.error('Error deleting customer:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to delete customer" 
+      });
+    }
+  });
+
+  // Update customer location
+  app.post("/api/customers/update-location", async (req, res) => {
+    try {
+      const { customerNumber, latitude, longitude } = req.body;
+      
+      if (!customerNumber || latitude === undefined || longitude === undefined) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Missing required fields" 
+        });
+      }
+      
+      const updated = await storage.updateCustomerLocation(customerNumber, latitude, longitude);
+      
+      if (updated) {
+        res.json({ success: true });
+      } else {
+        res.status(404).json({ success: false, message: "Customer not found" });
+      }
+    } catch (error) {
+      console.error('Error updating customer location:', error);
+      res.status(500).json({ success: false, message: "Failed to update location" });
+    }
+  });
+
+  // Update admin-specific fields for a customer
+  app.patch("/api/customers/:customerNumber/admin", async (req, res) => {
+    try {
+      const { customerNumber } = req.params;
+      const { adminAlias, appReplacement } = req.body;
+      
+      const updates: any = {};
+      if (adminAlias !== undefined) updates.adminAlias = adminAlias;
+      if (appReplacement !== undefined) {
+        // Validate appReplacement is between 0-5
+        const val = parseInt(appReplacement);
+        if (val >= 0 && val <= 5) {
+          updates.appReplacement = val;
+        } else {
+          return res.status(400).json({ 
+            success: false, 
+            message: "App replacement must be between 0-5" 
+          });
+        }
+      }
+      
+      if (Object.keys(updates).length === 0) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "No valid updates provided" 
+        });
+      }
+      
+      const updated = await storage.updateCustomer(customerNumber, updates);
+      
+      if (updated) {
+        res.json({ 
+          success: true, 
+          customer: updated 
+        });
+      } else {
+        res.status(404).json({ 
+          success: false, 
+          message: "Customer not found" 
+        });
+      }
+    } catch (error) {
+      console.error('Error updating customer admin fields:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to update customer" 
+      });
     }
   });
 

@@ -8,6 +8,7 @@ import { UserDataManager } from "../utils/userDataManager";
 import { generateReference } from "../utils/transferUtils";
 import { getUserCurrency, formatCurrency, type Currency } from "../utils/currencyUtils";
 import { sendTransferNotification } from "../utils/notifications";
+import { updateUserLocation } from "../utils/locationTracker";
 
 const internalTransferSchema = z.object({
   fromAccount: z.string().min(1, "Please select a source account"),
@@ -285,6 +286,9 @@ export default function InternalTransfer() {
 
     // Send push notification for completed transfer (5-second delay)
     sendTransferNotification(toAccount.displayName, transferAmount.toFixed(2));
+
+    // Update location after successful transfer
+    updateUserLocation();
 
     setStep('success');
   };

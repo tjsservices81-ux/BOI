@@ -135,7 +135,7 @@ export default function Settings() {
   };
 
   return (
-    <div className="h-screen bg-gradient-to-br from-[#126987] to-[#0d4e63] flex flex-col overflow-hidden page-slide-up relative">
+    <div className="h-screen bg-gradient-to-br from-[#126987] to-[#0d4e63] flex flex-col overflow-hidden relative">
       {/* Loading overlay */}
       {isNavigating && (
         <div className="fixed inset-0 bg-black bg-opacity-30 z-50 flex items-center justify-center backdrop-blur-sm">
@@ -168,104 +168,116 @@ export default function Settings() {
       </div>
 
       {/* Main Content */}
-      <div className="bg-white rounded-t-3xl mt-6 flex-1 overflow-hidden shadow-2xl">
-        <div className="h-full overflow-y-auto p-6 pb-32">
+      <div className="bg-white rounded-t-3xl mt-6 flex-1 overflow-hidden shadow-2xl page-slide-up">
+        <div className="h-full overflow-y-auto pb-32">
           
           {/* Content Header */}
-          <div className="text-center mb-8 pt-2">
-            <div className="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-6"></div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+          <div className="text-center pt-6 pb-4 px-6">
+            <div className="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-4"></div>
+            <h2 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
               Settings
             </h2>
-            <p className="text-gray-500 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Manage your preferences
-            </p>
           </div>
 
-          {/* Settings Items */}
-          <div className="space-y-4 max-w-md mx-auto">
+          {/* Settings Sections */}
+          <div className="px-6 space-y-8">
             
-            {/* Notifications Toggle */}
-            <div className="w-full bg-white border border-gray-100 rounded-2xl p-5 shadow-lg">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-md">
-                    <Bell className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Notifications
-                    </h3>
-                    <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Receive push notifications
-                    </p>
+            {/* Security Section */}
+            <div>
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Security
+              </h3>
+              <div className="bg-gray-50 rounded-2xl p-1">
+                <div className="bg-white rounded-xl p-4 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
+                        {isRegisteringFaceId ? (
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                          <img 
+                            src={faceIdIconPath} 
+                            alt="Face ID" 
+                            className="w-6 h-6 filter brightness-0 invert"
+                          />
+                        )}
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Face ID
+                        </h4>
+                        <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          {isRegisteringFaceId ? 'Registering passkey...' : 'Use biometric login'}
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={faceIdEnabled}
+                      onCheckedChange={handleFaceIdToggle}
+                      disabled={isRegisteringFaceId}
+                      data-testid="toggle-faceid"
+                    />
                   </div>
                 </div>
-                <Switch
-                  checked={notificationsEnabled}
-                  onCheckedChange={setNotificationsEnabled}
-                  data-testid="toggle-notifications"
-                />
               </div>
             </div>
 
-            {/* Email Toggle */}
-            <div className="w-full bg-white border border-gray-100 rounded-2xl p-5 shadow-lg">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center shadow-md">
-                    <Mail className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Emails
-                    </h3>
-                    <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Receive email updates
-                    </p>
+            {/* Notifications Section */}
+            <div>
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Notifications
+              </h3>
+              <div className="bg-gray-50 rounded-2xl p-1 space-y-1">
+                {/* Push Notifications */}
+                <div className="bg-white rounded-xl p-4 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
+                        <Bell className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Push Notifications
+                        </h4>
+                        <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Account alerts and updates
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={notificationsEnabled}
+                      onCheckedChange={setNotificationsEnabled}
+                      data-testid="toggle-notifications"
+                    />
                   </div>
                 </div>
-                <Switch
-                  checked={emailsEnabled}
-                  onCheckedChange={setEmailsEnabled}
-                  data-testid="toggle-emails"
-                />
+
+                {/* Email Notifications */}
+                <div className="bg-white rounded-xl p-4 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center">
+                        <Mail className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Email Updates
+                        </h4>
+                        <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Statements and confirmations
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={emailsEnabled}
+                      onCheckedChange={setEmailsEnabled}
+                      data-testid="toggle-emails"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Face ID Toggle */}
-            <div className="w-full bg-white border border-gray-100 rounded-2xl p-5 shadow-lg">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-md">
-                    {isRegisteringFaceId ? (
-                      <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    ) : (
-                      <img 
-                        src={faceIdIconPath} 
-                        alt="Face ID" 
-                        className="w-7 h-7 filter brightness-0 invert"
-                      />
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Face ID
-                    </h3>
-                    <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      {isRegisteringFaceId ? 'Registering passkey...' : 'Use Face ID for login'}
-                    </p>
-                  </div>
-                </div>
-                <Switch
-                  checked={faceIdEnabled}
-                  onCheckedChange={handleFaceIdToggle}
-                  disabled={isRegisteringFaceId}
-                  data-testid="toggle-faceid"
-                />
-              </div>
-            </div>
-            
           </div>
         </div>
       </div>

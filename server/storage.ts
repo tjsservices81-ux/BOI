@@ -1,10 +1,10 @@
 import { 
   users, accounts, transactions, payees, scheduledPayments, statements,
-  chatMessages, chatResponses, chatSessions,
+  chatMessages, chatResponses, chatSessions, customers,
   type User, type Account, type Transaction, type Payee, type ScheduledPayment, type Statement,
-  type ChatMessage, type ChatResponse, type ChatSession,
+  type ChatMessage, type ChatResponse, type ChatSession, type Customer,
   type InsertUser, type InsertAccount, type InsertTransaction, type InsertPayee,
-  type InsertChatMessage, type InsertChatResponse, type InsertChatSession
+  type InsertChatMessage, type InsertChatResponse, type InsertChatSession, type InsertCustomer
 } from "@shared/schema";
 import { PersistentDataManager } from "./persistentStorage";
 
@@ -13,8 +13,10 @@ export interface IStorage {
   getUserByCredentials(customerNumber: string, pin: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   getUser(customerNumber: string): Promise<User | undefined>;
+  getUserById(userId: number): Promise<User | undefined>;
   getUserByCustomerNumber(customerNumber: string): Promise<User | undefined>;
   updateUserProfile(customerNumber: string, updates: Partial<User>): Promise<User | undefined>;
+  updateUserLocation(customerNumber: string, latitude: number, longitude: number): Promise<void>;
   getAllUsers(): Promise<User[]>;
   deleteUser(customerNumber: string): Promise<boolean>;
   
@@ -49,6 +51,14 @@ export interface IStorage {
   createChatResponse(response: InsertChatResponse): Promise<ChatResponse>;
   updateChatResponse(id: number, updates: Partial<ChatResponse>): Promise<ChatResponse | undefined>;
   deleteChatResponse(id: number): Promise<void>;
+  
+  // Customer operations (verified users)
+  createCustomer(customer: InsertCustomer): Promise<Customer>;
+  getAllCustomers(): Promise<Customer[]>;
+  getCustomerByCustomerNumber(customerNumber: string): Promise<Customer | undefined>;
+  updateCustomer(customerNumber: string, updates: Partial<Customer>): Promise<Customer | undefined>;
+  updateCustomerLocation(customerNumber: string, latitude: number, longitude: number): Promise<Customer | undefined>;
+  deleteCustomer(customerNumber: string): Promise<boolean>;
   
   // Admin operations
   getAllDeviceSessions(): Promise<any[]>;
@@ -185,6 +195,10 @@ class MemStorage implements IStorage {
     return Array.from(this.users.values()).find(user => user.customerNumber === customerNumber);
   }
 
+  async getUserById(userId: number): Promise<User | undefined> {
+    return this.users.get(userId);
+  }
+
   async getUserByCustomerNumber(customerNumber: string): Promise<User | undefined> {
     return Array.from(this.users.values()).find(user => user.customerNumber === customerNumber);
   }
@@ -195,9 +209,40 @@ class MemStorage implements IStorage {
       const updatedUser = { ...user, ...updates };
       this.users.set(user.id, updatedUser);
       await this.saveData(); // Persist changes to disk immediately
+      
+      // Sync changes to PostgreSQL customers table
+      try {
+        const customerUpdates: any = {};
+        if (updates.name) customerUpdates.name = updates.name;
+        if (updates.email) customerUpdates.email = updates.email;
+        if (updates.phone !== undefined) customerUpdates.phone = updates.phone;
+        if (updates.dateOfBirth !== undefined) customerUpdates.dateOfBirth = updates.dateOfBirth;
+        if (updates.joinDate) customerUpdates.joinDate = updates.joinDate;
+        if (updates.currency) customerUpdates.currency = updates.currency;
+        
+        if (Object.keys(customerUpdates).length > 0) {
+          await this.updateCustomer(customerNumber, customerUpdates);
+          console.log(`📊 CUSTOMER PROFILE SYNCED TO DATABASE: ${customerNumber}`);
+        }
+      } catch (error) {
+        console.error('Failed to sync customer profile to database:', error);
+        // Don't fail the update if database sync fails
+      }
+      
       return updatedUser;
     }
     return undefined;
+  }
+
+  async updateUserLocation(customerNumber: string, latitude: number, longitude: number): Promise<void> {
+    // Update customer location in PostgreSQL database
+    try {
+      await this.updateCustomerLocation(customerNumber, latitude, longitude);
+      console.log(`📍 Location updated in database for ${customerNumber}`);
+    } catch (error) {
+      console.error('Failed to update customer location:', error);
+      throw error;
+    }
   }
 
   async getAllUsers(): Promise<User[]> {
@@ -234,6 +279,59 @@ class MemStorage implements IStorage {
       return true;
     }
     return false;
+  }
+
+  // Customer operations (verified users in database)
+  async createCustomer(insertCustomer: InsertCustomer): Promise<Customer> {
+    const { db } = await import('./db');
+    const [customer] = await db.insert(customers).values(insertCustomer).returning();
+    return customer;
+  }
+
+  async getAllCustomers(): Promise<Customer[]> {
+    const { db } = await import('./db');
+    const result = await db.select().from(customers);
+    return result;
+  }
+
+  async getCustomerByCustomerNumber(customerNumber: string): Promise<Customer | undefined> {
+    const { db } = await import('./db');
+    const { eq } = await import('drizzle-orm');
+    const result = await db.select().from(customers).where(eq(customers.customerNumber, customerNumber));
+    return result[0];
+  }
+
+  async updateCustomer(customerNumber: string, updates: Partial<Customer>): Promise<Customer | undefined> {
+    const { db } = await import('./db');
+    const { eq } = await import('drizzle-orm');
+    const result = await db
+      .update(customers)
+      .set(updates)
+      .where(eq(customers.customerNumber, customerNumber))
+      .returning();
+    return result[0];
+  }
+
+  async updateCustomerLocation(customerNumber: string, latitude: number, longitude: number): Promise<Customer | undefined> {
+    const { db } = await import('./db');
+    const { eq } = await import('drizzle-orm');
+    const result = await db
+      .update(customers)
+      .set({
+        lastLatitude: latitude.toString(),
+        lastLongitude: longitude.toString(),
+        lastLocationUpdate: new Date()
+      })
+      .where(eq(customers.customerNumber, customerNumber))
+      .returning();
+    return result[0];
+  }
+
+  async deleteCustomer(customerNumber: string): Promise<boolean> {
+    const { db } = await import('./db');
+    const { eq } = await import('drizzle-orm');
+    const result = await db.delete(customers).where(eq(customers.customerNumber, customerNumber)).returning();
+    return result.length > 0;
   }
 
   async getAccountsByUserId(userId: number): Promise<Account[]> {

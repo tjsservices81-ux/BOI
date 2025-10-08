@@ -28,6 +28,7 @@ export interface Transaction {
   convertedAmount?: string;
   convertedCurrency?: string;
   timestamp: string;
+  confirmationPdfData?: string;
 }
 
 export const getAccounts = (): Account[] => {
@@ -194,6 +195,44 @@ export const processTransfer = (
   
   transactions.push(newTransaction);
   UserDataManager.setUserData('bankTransactions', transactions);
+  
+  // Generate and store PDF confirmation immediately after transfer
+  setTimeout(async () => {
+    try {
+      const userProfile = UserDataManager.getUserProfile();
+      const accountInfo = updatedAccounts.find((acc: any) => acc.id.toString() === fromAccountId);
+      
+      const response = await fetch('/api/generate-transfer-confirmation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          transaction: newTransaction,
+          senderName: userProfile?.name || 'Customer',
+          accountInfo: accountInfo?.displayName || 'Account',
+          userCurrency: userProfile?.currency || 'EUR'
+        }),
+      });
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          // Store PDF as base64 with the transaction
+          const base64data = reader.result as string;
+          newTransaction.confirmationPdfData = base64data;
+          const allTransactions = UserDataManager.getUserData('bankTransactions', []);
+          const updatedTransactions = allTransactions.map((t: Transaction) => 
+            t.id === newTransaction.id ? { ...t, confirmationPdfData: base64data } : t
+          );
+          UserDataManager.setUserData('bankTransactions', updatedTransactions);
+          console.log('PDF confirmation saved with transaction');
+        };
+        reader.readAsDataURL(blob);
+      }
+    } catch (error) {
+      console.error('Failed to generate PDF confirmation:', error);
+    }
+  }, 100);
   console.log('Transaction stored:', newTransaction);
   
   // Dispatch balance update event

@@ -2,7 +2,30 @@ import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
-    const text = (await res.text()) || res.statusText;
+    // Clone response before consuming body to avoid "body used already" errors
+    const clonedRes = res.clone();
+    const text = (await clonedRes.text()) || res.statusText;
+    
+    // Check if response indicates deleted customer (account access revoked)
+    try {
+      const errorData = JSON.parse(text);
+      if (errorData.redirectToLogin && errorData.requiresNewAccount) {
+        // Customer was deleted - clear local storage and redirect to login
+        console.log('🚫 Account access revoked - redirecting to login');
+        localStorage.clear();
+        window.location.href = '/?message=account_revoked';
+        
+        // Throw error to prevent further processing
+        throw new Error('Account access revoked - redirecting to login');
+      }
+    } catch (e) {
+      // If it's the error we just threw, re-throw it
+      if (e instanceof Error && e.message === 'Account access revoked - redirecting to login') {
+        throw e;
+      }
+      // Not JSON, continue with normal error handling
+    }
+    
     throw new Error(`${res.status}: ${text}`);
   }
 }

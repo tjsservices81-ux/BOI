@@ -21,6 +21,7 @@ import { validateUKSortCode, formatSortCode, validateUKAccountNumber } from "../
 import { getAccounts, processTransfer, processSecureTransfer, checkTransferConfirmation, processConfirmedTransfer, generateReference } from "../utils/transferUtils";
 import { UserDataManager } from "../utils/userDataManager";
 import { formatCurrency, getUserCurrency, getCurrencySymbol, type Currency } from "../utils/currencyUtils";
+import { updateUserLocation } from "../utils/locationTracker";
 
 // Known sort codes for bank identification
 const knownSortCodes: Record<string, string> = {
@@ -404,6 +405,9 @@ export default function UkTransfer() {
                   timestamp: new Date().toISOString()
                 };
                 UserDataManager.addRecentPayee(payee);
+                
+                // Update location after successful transfer
+                updateUserLocation();
                 
                 // Dispatch events to update all components
                 window.dispatchEvent(new CustomEvent('transactionUpdate'));

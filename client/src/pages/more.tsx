@@ -1,5 +1,5 @@
 import { useLocation } from "wouter";
-import { ChevronLeft, User, HelpCircle, FileText, Settings, Shield, Building2, MessageCircle } from "lucide-react";
+import { ChevronLeft, User, Settings, MessageCircle, HelpCircle, TrendingUp } from "lucide-react";
 import { useState } from "react";
 import { getUserCurrency } from "../utils/currencyUtils";
 import ukLogoPath from "@assets/IMG_1505_1759859367310.png";
@@ -28,7 +28,7 @@ export default function More() {
   };
 
   return (
-    <div className="h-screen bg-gradient-to-br from-[#126987] to-[#0d4e63] flex flex-col overflow-hidden page-slide-up relative">
+    <div className="h-screen bg-gradient-to-br from-[#126987] to-[#0d4e63] flex flex-col overflow-hidden relative">
       {/* Loading overlay for smooth transitions */}
       {isNavigating && (
         <div className="fixed inset-0 bg-black bg-opacity-30 z-50 flex items-center justify-center backdrop-blur-sm">
@@ -60,7 +60,7 @@ export default function More() {
       </div>
 
       {/* Main Content */}
-      <div className="bg-white rounded-t-3xl mt-6 flex-1 overflow-hidden shadow-2xl">
+      <div className="bg-white rounded-t-3xl mt-6 flex-1 overflow-hidden shadow-2xl page-slide-up">
         <div className="h-full overflow-y-auto p-6 pb-32">
           
           {/* Content Header */}
@@ -75,51 +75,91 @@ export default function More() {
           </div>
 
           {/* Menu Items */}
-          <div className="space-y-4 max-w-md mx-auto">
+          <div className="space-y-3 max-w-md mx-auto">
             
             {/* Profile */}
             <button 
-              className="w-full bg-white border border-gray-100 rounded-2xl p-5 flex items-center space-x-4 hover:bg-gray-50 shadow-lg transition-all duration-200 active:scale-98 stagger-item" 
-              style={{ animationDelay: '0.1s' }}
+              className="w-full bg-white border border-gray-100 rounded-2xl p-4 flex items-center space-x-4 hover:bg-gray-50 shadow-sm transition-all duration-200 active:scale-98" 
               onClick={() => handleNavigation('/profile')}
               disabled={isNavigating}
+              data-testid="button-profile"
             >
-              <div className="w-12 h-12 bg-gradient-to-br from-[#126987] to-[#0d4e63] rounded-2xl flex items-center justify-center shadow-md">
-                <User className="w-6 h-6 text-white" />
+              <div className="w-11 h-11 bg-gradient-to-br from-[#126987] to-[#0d4e63] rounded-xl flex items-center justify-center">
+                <User className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1 text-left">
-                <h3 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                <h3 className="text-base font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                   Profile
                 </h3>
-                <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  View and edit your profile details
+                <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  View and edit your details
                 </p>
               </div>
               <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />
             </button>
 
+            {/* Credit Score */}
+            <button 
+              className="w-full bg-white border border-gray-100 rounded-2xl p-4 flex items-center space-x-4 hover:bg-gray-50 shadow-sm transition-all duration-200 active:scale-98" 
+              onClick={() => handleNavigation('/credit-score')}
+              disabled={isNavigating}
+              data-testid="button-credit-score"
+            >
+              <div className="w-11 h-11 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex-1 text-left">
+                <h3 className="text-base font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Credit Score
+                </h3>
+                <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Check your credit rating
+                </p>
+              </div>
+              <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />
+            </button>
 
+            {/* Help & FAQ */}
+            <button 
+              className="w-full bg-white border border-gray-100 rounded-2xl p-4 flex items-center space-x-4 hover:bg-gray-50 shadow-sm transition-all duration-200 active:scale-98" 
+              onClick={() => handleNavigation('/help')}
+              disabled={isNavigating}
+              data-testid="button-help"
+            >
+              <div className="w-11 h-11 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
+                <HelpCircle className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex-1 text-left">
+                <h3 className="text-base font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Help & FAQ
+                </h3>
+                <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Get help and find answers
+                </p>
+              </div>
+              <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />
+            </button>
 
             {/* Live Chat */}
             <button 
               onClick={handleLiveChatClick}
-              className="w-full bg-white border border-gray-100 rounded-2xl p-5 flex items-center space-x-4 hover:bg-gray-50 shadow-lg transition-all duration-200 active:scale-98 stagger-item" 
-              style={{ animationDelay: '0.2s' }}
+              className="w-full bg-white border border-gray-100 rounded-2xl p-4 flex items-center space-x-4 hover:bg-gray-50 shadow-sm transition-all duration-200 active:scale-98" 
               disabled={isNavigating || isLoadingChat}
+              data-testid="button-live-chat"
             >
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-md">
+              <div className="w-11 h-11 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
                 {isLoadingChat ? (
-                  <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 ) : (
-                  <MessageCircle className="w-6 h-6 text-white" />
+                  <MessageCircle className="w-5 h-5 text-white" />
                 )}
               </div>
               <div className="flex-1 text-left">
-                <h3 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                <h3 className="text-base font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                   {isLoadingChat ? 'Connecting...' : 'Live Chat'}
                 </h3>
-                <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  {isLoadingChat ? 'Please wait while we set up your chat session' : 'Chat with our support team'}
+                <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  {isLoadingChat ? 'Setting up your chat session' : 'Chat with our support team'}
                 </p>
               </div>
               {!isLoadingChat && <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />}
@@ -127,20 +167,19 @@ export default function More() {
 
             {/* Settings */}
             <button 
-              className="w-full bg-white border border-gray-100 rounded-2xl p-5 flex items-center space-x-4 hover:bg-gray-50 shadow-lg transition-all duration-200 active:scale-98 stagger-item" 
-              style={{ animationDelay: '0.3s' }}
+              className="w-full bg-white border border-gray-100 rounded-2xl p-4 flex items-center space-x-4 hover:bg-gray-50 shadow-sm transition-all duration-200 active:scale-98" 
               onClick={() => handleNavigation('/settings')}
               disabled={isNavigating}
               data-testid="button-settings"
             >
-              <div className="w-12 h-12 bg-gradient-to-br from-gray-600 to-gray-700 rounded-2xl flex items-center justify-center shadow-md">
-                <Settings className="w-6 h-6 text-white" />
+              <div className="w-11 h-11 bg-gradient-to-br from-gray-600 to-gray-700 rounded-xl flex items-center justify-center">
+                <Settings className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1 text-left">
-                <h3 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                <h3 className="text-base font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                   Settings
                 </h3>
-                <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                   Notifications and preferences
                 </p>
               </div>
