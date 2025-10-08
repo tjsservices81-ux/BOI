@@ -2052,15 +2052,15 @@ No transfers found yet on your account.`;
     }
   });
 
-  // Admin Oversight - Display all customers from database
+  // Admin Oversight - Display all customers from database (Mobile-Optimized)
   app.get("/admin-oversight", async (req, res) => {
     const adminPage = `
       <!DOCTYPE html>
       <html lang="en">
       <head>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Admin Oversight - Customer Management</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <title>Admin Oversight</title>
         <style>
           * {
             margin: 0;
@@ -2071,99 +2071,174 @@ No transfers found yet on your account.`;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: linear-gradient(135deg, #126987 0%, #0e5a75 100%);
             min-height: 100vh;
-            padding: 20px;
+            padding: 16px;
           }
           .container {
-            max-width: 1200px;
+            max-width: 600px;
             margin: 0 auto;
+          }
+          .header {
             background: white;
             border-radius: 16px;
-            padding: 30px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
           }
           h1 {
             color: #126987;
-            margin-bottom: 10px;
-            font-size: 28px;
+            font-size: 24px;
+            margin-bottom: 8px;
           }
           .subtitle {
             color: #666;
-            margin-bottom: 30px;
             font-size: 14px;
+            margin-bottom: 16px;
+          }
+          .count {
+            display: inline-block;
+            background: #126987;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
           }
           .refresh-btn {
             background: #126987;
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
+            padding: 12px 24px;
+            border-radius: 12px;
             cursor: pointer;
-            font-size: 14px;
-            margin-bottom: 20px;
+            font-size: 15px;
+            width: 100%;
+            margin-top: 12px;
+            font-weight: 600;
           }
-          .refresh-btn:hover {
+          .refresh-btn:active {
             background: #0e5a75;
           }
-          .customers-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
+          .customer-card {
+            background: white;
+            border-radius: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
           }
-          .customers-table th {
-            background: #f5f5f5;
-            padding: 12px;
-            text-align: left;
-            border-bottom: 2px solid #ddd;
+          .customer-header {
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+          }
+          .customer-info {
+            flex: 1;
+          }
+          .customer-name {
+            font-size: 16px;
             font-weight: 600;
             color: #333;
+            margin-bottom: 4px;
           }
-          .customers-table td {
-            padding: 12px;
-            border-bottom: 1px solid #eee;
+          .customer-number {
+            font-size: 13px;
+            color: #666;
+            font-family: 'Courier New', monospace;
           }
-          .customers-table tr:hover {
-            background: #f9f9f9;
+          .expand-icon {
+            color: #126987;
+            font-size: 20px;
+            transition: transform 0.3s ease;
+          }
+          .expand-icon.expanded {
+            transform: rotate(180deg);
+          }
+          .customer-details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+          }
+          .customer-details.expanded {
+            max-height: 500px;
+          }
+          .detail-content {
+            padding: 16px;
+          }
+          .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e9ecef;
+          }
+          .detail-row:last-child {
+            border-bottom: none;
+          }
+          .detail-label {
+            color: #666;
+            font-size: 13px;
+            font-weight: 500;
+          }
+          .detail-value {
+            color: #333;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: right;
+            max-width: 60%;
+            word-break: break-word;
+          }
+          .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            background: #d4edda;
+            color: #155724;
           }
           .delete-btn {
             background: #dc3545;
             color: white;
             border: none;
-            padding: 6px 16px;
-            border-radius: 6px;
+            padding: 12px;
+            border-radius: 10px;
             cursor: pointer;
-            font-size: 13px;
+            font-size: 14px;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 12px;
           }
-          .delete-btn:hover {
+          .delete-btn:active {
             background: #c82333;
           }
-          .status {
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-          }
-          .status.active {
-            background: #d4edda;
-            color: #155724;
-          }
           .empty-state {
-            text-align: center;
+            background: white;
+            border-radius: 16px;
             padding: 60px 20px;
+            text-align: center;
             color: #999;
           }
           .loading {
-            text-align: center;
+            background: white;
+            border-radius: 16px;
             padding: 40px;
+            text-align: center;
             color: #666;
           }
         </style>
       </head>
       <body>
         <div class="container">
-          <h1>Admin Oversight</h1>
-          <p class="subtitle">Customer Management Dashboard</p>
-          
-          <button class="refresh-btn" onclick="loadCustomers()">Refresh</button>
+          <div class="header">
+            <h1>Admin Oversight</h1>
+            <p class="subtitle">Customer Management</p>
+            <span class="count" id="customer-count">0 Customers</span>
+            <button class="refresh-btn" onclick="loadCustomers()">↻ Refresh</button>
+          </div>
           
           <div id="customers-container">
             <div class="loading">Loading customers...</div>
@@ -2171,56 +2246,83 @@ No transfers found yet on your account.`;
         </div>
 
         <script>
+          let expandedCards = new Set();
+
+          function toggleCard(customerNumber) {
+            const details = document.getElementById('details-' + customerNumber);
+            const icon = document.getElementById('icon-' + customerNumber);
+            
+            if (expandedCards.has(customerNumber)) {
+              details.classList.remove('expanded');
+              icon.classList.remove('expanded');
+              expandedCards.delete(customerNumber);
+            } else {
+              details.classList.add('expanded');
+              icon.classList.add('expanded');
+              expandedCards.add(customerNumber);
+            }
+          }
+
           async function loadCustomers() {
             try {
               const response = await fetch('/api/customers');
               const customers = await response.json();
               
               const container = document.getElementById('customers-container');
+              const countBadge = document.getElementById('customer-count');
+              
+              countBadge.textContent = \`\${customers.length} Customer\${customers.length !== 1 ? 's' : ''}\`;
               
               if (customers.length === 0) {
                 container.innerHTML = '<div class="empty-state">No customers found in database</div>';
                 return;
               }
               
-              let tableHTML = \`
-                <table class="customers-table">
-                  <thead>
-                    <tr>
-                      <th>Customer Number</th>
-                      <th>Name</th>
-                      <th>Email</th>
-                      <th>Phone</th>
-                      <th>Currency</th>
-                      <th>Join Date</th>
-                      <th>Status</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-              \`;
+              let cardsHTML = '';
               
               customers.forEach(customer => {
-                tableHTML += \`
-                  <tr>
-                    <td>\${customer.customerNumber}</td>
-                    <td>\${customer.name}</td>
-                    <td>\${customer.email}</td>
-                    <td>\${customer.phone || 'N/A'}</td>
-                    <td>\${customer.currency}</td>
-                    <td>\${customer.joinDate}</td>
-                    <td><span class="status active">Active</span></td>
-                    <td>
-                      <button class="delete-btn" onclick="deleteCustomer('\${customer.customerNumber}', '\${customer.name}')">
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
+                const isExpanded = expandedCards.has(customer.customerNumber);
+                cardsHTML += \`
+                  <div class="customer-card">
+                    <div class="customer-header" onclick="toggleCard('\${customer.customerNumber}')">
+                      <div class="customer-info">
+                        <div class="customer-name">\${customer.name}</div>
+                        <div class="customer-number">\${customer.customerNumber}</div>
+                      </div>
+                      <div class="expand-icon \${isExpanded ? 'expanded' : ''}" id="icon-\${customer.customerNumber}">▼</div>
+                    </div>
+                    <div class="customer-details \${isExpanded ? 'expanded' : ''}" id="details-\${customer.customerNumber}">
+                      <div class="detail-content">
+                        <div class="detail-row">
+                          <span class="detail-label">Email</span>
+                          <span class="detail-value">\${customer.email}</span>
+                        </div>
+                        <div class="detail-row">
+                          <span class="detail-label">Phone</span>
+                          <span class="detail-value">\${customer.phone || 'N/A'}</span>
+                        </div>
+                        <div class="detail-row">
+                          <span class="detail-label">Currency</span>
+                          <span class="detail-value">\${customer.currency}</span>
+                        </div>
+                        <div class="detail-row">
+                          <span class="detail-label">Join Date</span>
+                          <span class="detail-value">\${new Date(customer.joinDate).toLocaleDateString()}</span>
+                        </div>
+                        <div class="detail-row">
+                          <span class="detail-label">Status</span>
+                          <span class="status-badge">Active</span>
+                        </div>
+                        <button class="delete-btn" onclick="deleteCustomer('\${customer.customerNumber}', '\${customer.name}')">
+                          🗑️ Delete Customer
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 \`;
               });
               
-              tableHTML += '</tbody></table>';
-              container.innerHTML = tableHTML;
+              container.innerHTML = cardsHTML;
             } catch (error) {
               console.error('Error loading customers:', error);
               document.getElementById('customers-container').innerHTML = 
@@ -2229,7 +2331,7 @@ No transfers found yet on your account.`;
           }
           
           async function deleteCustomer(customerNumber, customerName) {
-            if (!confirm(\`Are you sure you want to delete customer \${customerName} (\${customerNumber})?\\n\\nThis will:\\n- Remove them from the database\\n- Log them out immediately\\n- Require them to create a new account\`)) {
+            if (!confirm(\`Delete customer \${customerName}?\\n\\nThis will:\\n• Remove from database\\n• Force logout\\n• Require new account\`)) {
               return;
             }
             
@@ -2241,14 +2343,15 @@ No transfers found yet on your account.`;
               const result = await response.json();
               
               if (response.ok) {
-                alert(\`Customer \${customerName} has been deleted successfully.\\nThey will be logged out immediately.\`);
-                loadCustomers(); // Reload the list
+                alert(\`✓ Customer deleted\\n\${customerName} will be logged out immediately.\`);
+                expandedCards.delete(customerNumber);
+                loadCustomers();
               } else {
-                alert(\`Failed to delete customer: \${result.message}\`);
+                alert(\`✗ Failed: \${result.message}\`);
               }
             } catch (error) {
               console.error('Error deleting customer:', error);
-              alert('Failed to delete customer');
+              alert('✗ Failed to delete customer');
             }
           }
           
