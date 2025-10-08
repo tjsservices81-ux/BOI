@@ -276,13 +276,39 @@ class OTCService {
     return { isValid: true, accountData: stored.accountData };
   }
 
+  getAllActiveOTCs(): Array<{ customerNumber: string; code: string; accountData: any; expiresAt: string; timeRemaining: string }> {
+    const now = Date.now();
+    const activeOTCs: Array<{ customerNumber: string; code: string; accountData: any; expiresAt: string; timeRemaining: string }> = [];
+    
+    // Clean up expired OTCs first
+    for (const [customerNumber, data] of this.otcStorage.entries()) {
+      if (now > data.expires) {
+        this.otcStorage.delete(customerNumber);
+      } else {
+        const timeRemainingMs = data.expires - now;
+        const minutes = Math.floor(timeRemainingMs / 60000);
+        const seconds = Math.floor((timeRemainingMs % 60000) / 1000);
+        
+        activeOTCs.push({
+          customerNumber,
+          code: data.code,
+          accountData: data.accountData,
+          expiresAt: new Date(data.expires).toISOString(),
+          timeRemaining: `${minutes}m ${seconds}s`
+        });
+      }
+    }
+    
+    return activeOTCs;
+  }
+
   async processNewAccount(accountData: OTCRequest['accountData']): Promise<string> {
     const otc = this.generateOTC();
     
     // Store OTC for validation
     this.storeOTC(accountData.customerNumber, otc, accountData);
     
-    // Always log the OTC prominently for admin access
+    // Log the OTC for admin access (displayed in admin panel)
     console.log(`\n====== ADMIN OTC NOTIFICATION ======`);
     console.log(`NEW ACCOUNT CREATED`);
     console.log(`Customer: ${accountData.name}`);
@@ -291,16 +317,11 @@ class OTCService {
     console.log(`Phone: ${accountData.phone}`);
     console.log(`OTC CODE: ${otc}`);
     console.log(`Time: ${new Date().toISOString()}`);
+    console.log(`OTC will be displayed in admin oversight panel`);
     console.log(`====================================\n`);
     
-    // Send OTC to admin email only
-    const adminEmailSent = await this.sendOTCToAdmin(accountData, otc);
-    
-    if (adminEmailSent) {
-      console.log(`OTC email sent successfully to admin with verification code`);
-    } else {
-      console.log(`OTC email to admin failed - code is logged above for access`);
-    }
+    // Email sending disabled - OTC codes now displayed in admin panel
+    // This prevents email delivery issues and provides instant access to codes
     
     return otc;
   }

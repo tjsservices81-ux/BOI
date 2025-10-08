@@ -1385,7 +1385,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const accountData = accountDataSchema.parse(req.body);
       
-      // Generate OTC and send notification
+      // Generate OTC (no email sent - displayed in admin panel)
       const otc = await otcService.processNewAccount(accountData);
       
       // Log for security audit
@@ -1393,8 +1393,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({ 
         success: true, 
-        message: "OTC generated and notification sent",
-        customerNumber: accountData.customerNumber
+        message: "OTC generated and displayed in admin panel",
+        customerNumber: accountData.customerNumber,
+        otc: otc
       });
     } catch (error) {
       console.error('OTC generation failed:', error);
@@ -1402,6 +1403,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid account data format" });
       }
       res.status(500).json({ message: "Failed to generate OTC" });
+    }
+  });
+
+  // Get all active OTC codes for admin panel display
+  app.get("/api/admin/active-otcs", async (req, res) => {
+    try {
+      const activeOTCs = otcService.getAllActiveOTCs();
+      res.json({ otcs: activeOTCs });
+    } catch (error) {
+      console.error('Failed to retrieve active OTCs:', error);
+      res.status(500).json({ message: "Failed to retrieve OTC codes" });
     }
   });
 
