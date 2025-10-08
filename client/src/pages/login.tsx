@@ -459,7 +459,7 @@ export default function Login() {
 
     // Check if account has been deleted from database
     try {
-      const response = await fetch(`/api/profile?customerNumber=${customerNumber}`, {
+      const response = await fetch(`/api/profile/${customerNumber}`, {
         credentials: 'include'
       });
       
@@ -552,7 +552,7 @@ export default function Login() {
 
     // Check if account has been deleted from database
     try {
-      const response = await fetch(`/api/profile?customerNumber=${targetUser}`, {
+      const response = await fetch(`/api/profile/${targetUser}`, {
         credentials: 'include'
       });
       
@@ -739,7 +739,7 @@ export default function Login() {
 
     // Check if account has been deleted from database
     try {
-      const response = await fetch(`/api/profile?customerNumber=${currentUser}`, {
+      const response = await fetch(`/api/profile/${currentUser}`, {
         credentials: 'include'
       });
       
@@ -1847,7 +1847,7 @@ export default function Login() {
                       onClick={async () => {
                         // Check if account has been deleted from database
                         try {
-                          const response = await fetch(`/api/profile?customerNumber=${customerNumber}`, {
+                          const response = await fetch(`/api/profile/${customerNumber}`, {
                             credentials: 'include'
                           });
                           
