@@ -2052,313 +2052,98 @@ No transfers found yet on your account.`;
     }
   });
 
-  // Admin Oversight - Mobile-First Design
+  // Admin Oversight - iPhone Optimized
   app.get("/admin-oversight", async (req, res) => {
-    const adminPage = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-        <title>Admin Oversight</title>
-        <style>
-          * { margin: 0; padding: 0; box-sizing: border-box; }
-          
-          html, body {
-            width: 100%;
-            overflow-x: hidden;
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-          }
-          
-          body {
-            background: #126987;
-            padding: 10px;
-            min-height: 100vh;
-          }
-          
-          .top-bar {
-            background: white;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 10px;
-          }
-          
-          h1 {
-            color: #126987;
-            font-size: 20px;
-            margin-bottom: 6px;
-          }
-          
-          .info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 10px;
-          }
-          
-          .badge {
-            background: #126987;
-            color: white;
-            padding: 4px 10px;
-            border-radius: 15px;
-            font-size: 12px;
-            font-weight: 600;
-          }
-          
-          .refresh {
-            background: #126987;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-          }
-          
-          .card {
-            background: white;
-            border-radius: 12px;
-            margin-bottom: 8px;
-            overflow: hidden;
-          }
-          
-          .card-top {
-            padding: 14px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-          }
-          
-          .avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #126987, #0e5a75);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 700;
-            font-size: 16px;
-            flex-shrink: 0;
-          }
-          
-          .info-col {
-            flex: 1;
-            min-width: 0;
-          }
-          
-          .name {
-            font-weight: 600;
-            font-size: 15px;
-            color: #1a1a1a;
-            margin-bottom: 2px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-          }
-          
-          .num {
-            font-size: 11px;
-            color: #666;
-            font-family: monospace;
-          }
-          
-          .arrow {
-            color: #126987;
-            font-size: 18px;
-            transition: transform 0.2s;
-            flex-shrink: 0;
-          }
-          
-          .arrow.open { transform: rotate(180deg); }
-          
-          .details {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s;
-            background: #f5f5f5;
-          }
-          
-          .details.open { max-height: 400px; }
-          
-          .detail-wrap {
-            padding: 12px 14px;
-          }
-          
-          .row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            font-size: 13px;
-          }
-          
-          .label {
-            color: #666;
-            font-weight: 500;
-          }
-          
-          .value {
-            color: #1a1a1a;
-            font-weight: 600;
-            max-width: 55%;
-            text-align: right;
-            word-break: break-all;
-          }
-          
-          .status {
-            background: #d4edda;
-            color: #155724;
-            padding: 3px 10px;
-            border-radius: 10px;
-            font-size: 11px;
-            font-weight: 600;
-          }
-          
-          .del-btn {
-            background: #dc3545;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 8px;
-            width: 100%;
-            margin-top: 8px;
-            font-size: 13px;
-            font-weight: 600;
-          }
-          
-          .empty {
-            background: white;
-            border-radius: 12px;
-            padding: 50px 20px;
-            text-align: center;
-            color: #999;
-            font-size: 14px;
-          }
-          
-          .loading {
-            background: white;
-            border-radius: 12px;
-            padding: 30px;
-            text-align: center;
-            color: #666;
-            font-size: 14px;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="top-bar">
-          <h1>Admin Oversight</h1>
-          <div class="info">
-            <span class="badge" id="count">0</span>
-            <button class="refresh" onclick="load()">↻ Refresh</button>
-          </div>
-        </div>
-        
-        <div id="list">
-          <div class="loading">Loading...</div>
-        </div>
-
-        <script>
-          let open = new Set();
-
-          function toggle(id) {
-            const det = document.getElementById('d' + id);
-            const arr = document.getElementById('a' + id);
-            
-            if (open.has(id)) {
-              det.classList.remove('open');
-              arr.classList.remove('open');
-              open.delete(id);
-            } else {
-              det.classList.add('open');
-              arr.classList.add('open');
-              open.add(id);
-            }
-          }
-
-          async function load() {
-            try {
-              const res = await fetch('/api/customers');
-              const data = await res.json();
-              
-              document.getElementById('count').textContent = data.length + ' Customer' + (data.length !== 1 ? 's' : '');
-              
-              if (data.length === 0) {
-                document.getElementById('list').innerHTML = '<div class="empty">No customers</div>';
-                return;
-              }
-              
-              let html = '';
-              data.forEach(c => {
-                const init = c.name.charAt(0).toUpperCase();
-                const isOpen = open.has(c.customerNumber);
-                html += \`
-                  <div class="card">
-                    <div class="card-top" onclick="toggle('\${c.customerNumber}')">
-                      <div class="avatar">\${init}</div>
-                      <div class="info-col">
-                        <div class="name">\${c.name}</div>
-                        <div class="num">\${c.customerNumber}</div>
-                      </div>
-                      <div class="arrow \${isOpen ? 'open' : ''}" id="a\${c.customerNumber}">▼</div>
-                    </div>
-                    <div class="details \${isOpen ? 'open' : ''}" id="d\${c.customerNumber}">
-                      <div class="detail-wrap">
-                        <div class="row">
-                          <span class="label">Email</span>
-                          <span class="value">\${c.email}</span>
-                        </div>
-                        <div class="row">
-                          <span class="label">Phone</span>
-                          <span class="value">\${c.phone || 'N/A'}</span>
-                        </div>
-                        <div class="row">
-                          <span class="label">Currency</span>
-                          <span class="value">\${c.currency}</span>
-                        </div>
-                        <div class="row">
-                          <span class="label">Status</span>
-                          <span class="status">Active</span>
-                        </div>
-                        <button class="del-btn" onclick="del('\${c.customerNumber}', '\${c.name}')">🗑️ Delete</button>
-                      </div>
-                    </div>
-                  </div>
-                \`;
-              });
-              
-              document.getElementById('list').innerHTML = html;
-            } catch (e) {
-              document.getElementById('list').innerHTML = '<div class="empty">Error loading</div>';
-            }
-          }
-          
-          async function del(num, name) {
-            if (!confirm('Delete ' + name + '?')) return;
-            
-            try {
-              const res = await fetch('/api/customers/' + num, { method: 'DELETE' });
-              const data = await res.json();
-              
-              if (res.ok) {
-                alert('✓ Deleted');
-                open.delete(num);
-                load();
-              } else {
-                alert('✗ Failed');
-              }
-            } catch (e) {
-              alert('✗ Error');
-            }
-          }
-          
-          load();
-        </script>
-      </body>
-      </html>
-    `;
+    const adminPage = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0">
+<title>Customers</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,sans-serif;background:#f0f0f0;overflow-x:hidden;width:100vw}
+.hdr{background:#126987;color:#fff;padding:15px;position:sticky;top:0;z-index:10}
+.hdr h1{font-size:18px;margin-bottom:8px}
+.top{display:flex;justify-content:space-between;align-items:center}
+.cnt{font-size:13px;opacity:0.9}
+.btn{background:#fff;color:#126987;border:none;padding:6px 14px;border-radius:6px;font-size:13px;font-weight:600}
+.lst{padding:10px}
+.itm{background:#fff;border-radius:10px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
+.itm-hdr{padding:12px;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
+.l{flex:1;min-width:0}
+.nm{font-weight:600;font-size:14px;color:#000;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.id{font-size:11px;color:#666;font-family:monospace}
+.arr{color:#126987;font-size:16px;transition:transform 0.2s}
+.arr.op{transform:rotate(180deg)}
+.det{max-height:0;overflow:hidden;transition:max-height 0.2s;background:#f9f9f9}
+.det.op{max-height:300px}
+.dw{padding:12px}
+.r{display:flex;justify-content:space-between;padding:6px 0;font-size:12px}
+.lb{color:#666}
+.vl{color:#000;font-weight:600;text-align:right;max-width:60%;word-break:break-all}
+.st{background:#d4edda;color:#155724;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:600}
+.db{background:#dc3545;color:#fff;border:none;padding:8px;border-radius:6px;width:100%;margin-top:8px;font-size:12px;font-weight:600}
+.emp{background:#fff;border-radius:10px;padding:40px 20px;text-align:center;color:#999}
+</style>
+</head>
+<body>
+<div class="hdr">
+<h1>Customer Management</h1>
+<div class="top">
+<span class="cnt" id="c">0</span>
+<button class="btn" onclick="ld()">Refresh</button>
+</div>
+</div>
+<div class="lst" id="l"><div class="emp">Loading...</div></div>
+<script>
+let o=new Set();
+function tg(i){
+let d=document.getElementById('d'+i),a=document.getElementById('a'+i);
+if(o.has(i)){d.classList.remove('op');a.classList.remove('op');o.delete(i)}
+else{d.classList.add('op');a.classList.add('op');o.add(i)}
+}
+async function ld(){
+try{
+let r=await fetch('/api/customers'),d=await r.json();
+document.getElementById('c').textContent=d.length+' Customer'+(d.length!=1?'s':'');
+if(!d.length){document.getElementById('l').innerHTML='<div class="emp">No customers</div>';return}
+let h='';
+d.forEach(c=>{
+let op=o.has(c.customerNumber);
+h+=\`<div class="itm">
+<div class="itm-hdr" onclick="tg('\${c.customerNumber}')">
+<div class="l">
+<div class="nm">\${c.name}</div>
+<div class="id">\${c.customerNumber}</div>
+</div>
+<div class="arr \${op?'op':''}" id="a\${c.customerNumber}">▼</div>
+</div>
+<div class="det \${op?'op':''}" id="d\${c.customerNumber}">
+<div class="dw">
+<div class="r"><span class="lb">Email</span><span class="vl">\${c.email}</span></div>
+<div class="r"><span class="lb">Phone</span><span class="vl">\${c.phone||'N/A'}</span></div>
+<div class="r"><span class="lb">Currency</span><span class="vl">\${c.currency}</span></div>
+<div class="r"><span class="lb">Status</span><span class="st">Active</span></div>
+<button class="db" onclick="dl('\${c.customerNumber}','\${c.name}')">Delete</button>
+</div>
+</div>
+</div>\`;
+});
+document.getElementById('l').innerHTML=h;
+}catch(e){document.getElementById('l').innerHTML='<div class="emp">Error</div>'}
+}
+async function dl(n,nm){
+if(!confirm('Delete '+nm+'?'))return;
+try{
+let r=await fetch('/api/customers/'+n,{method:'DELETE'}),d=await r.json();
+if(r.ok){alert('Deleted');o.delete(n);ld()}else{alert('Failed')}
+}catch(e){alert('Error')}
+}
+ld();
+</script>
+</body>
+</html>`;
     
     res.send(adminPage);
   });
