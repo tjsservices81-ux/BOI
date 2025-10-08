@@ -327,6 +327,22 @@
         "isDisabled": false,
         "currency": "GBP"
       }
+    ],
+    [
+      28,
+      {
+        "id": 28,
+        "customerNumber": "93319912",
+        "pin": "000000",
+        "name": "Hshshsi",
+        "email": "ahahaj@gmail.com",
+        "phone": "154554",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-08T05:20:52.852Z",
+        "dateCreated": "2025-10-08T05:20:52.852Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [
@@ -483,7 +499,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 28,
+    "currentUserId": 29,
     "currentAccountId": 31,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
