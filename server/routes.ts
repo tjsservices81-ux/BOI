@@ -2132,6 +2132,15 @@ body{font-family:-apple-system,sans-serif;background:#f0f0f0;overflow-x:hidden;w
 .top{display:flex;justify-content:space-between;align-items:center}
 .cnt{font-size:13px;opacity:0.9}
 .btn{background:#fff;color:#126987;border:none;padding:6px 14px;border-radius:6px;font-size:13px;font-weight:600}
+.otc-sec{padding:10px;margin-bottom:10px}
+.otc-hdr{background:#fff;border-radius:10px;padding:12px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
+.otc-hdr h2{font-size:16px;color:#126987;margin-bottom:4px}
+.otc-hdr p{font-size:12px;color:#666}
+.otc-itm{background:#fff3cd;border-radius:10px;padding:12px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,0.1);border-left:4px solid #ffc107}
+.otc-code{font-size:24px;font-weight:700;color:#856404;font-family:monospace;letter-spacing:3px;margin:8px 0}
+.otc-info{font-size:11px;color:#856404;margin-bottom:4px}
+.otc-timer{font-size:11px;color:#dc3545;font-weight:600}
+.otc-empty{background:#fff;border-radius:10px;padding:20px;text-align:center;color:#999;font-size:13px}
 .lst{padding:10px}
 .itm{background:#fff;border-radius:10px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
 .itm-hdr{padding:12px;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
@@ -2159,6 +2168,13 @@ body{font-family:-apple-system,sans-serif;background:#f0f0f0;overflow-x:hidden;w
 <button class="btn" onclick="ld()">Refresh</button>
 </div>
 </div>
+<div class="otc-sec">
+<div class="otc-hdr">
+<h2>Active OTC Codes</h2>
+<p>One-time codes for new account verification</p>
+</div>
+<div id="otc-list"><div class="otc-empty">No active codes</div></div>
+</div>
 <div class="lst" id="l"><div class="emp">Loading...</div></div>
 <script>
 let o=new Set();
@@ -2166,6 +2182,25 @@ function tg(i){
 let d=document.getElementById('d'+i),a=document.getElementById('a'+i);
 if(o.has(i)){d.classList.remove('op');a.classList.remove('op');o.delete(i)}
 else{d.classList.add('op');a.classList.add('op');o.add(i)}
+}
+function escapeHtml(text) {
+  const map = {'&': '&amp;','<': '&lt;','>': '&gt;','"': '&quot;',"'": '&#039;'};
+  return String(text).replace(/[&<>"']/g, m => map[m]);
+}
+async function loadOTC(){
+try{
+let r=await fetch('/api/admin/active-otcs'),d=await r.json();
+if(!d.otcs||!d.otcs.length){document.getElementById('otc-list').innerHTML='<div class="otc-empty">No active codes</div>';return}
+let h='';
+d.otcs.forEach(otc=>{
+h+=\`<div class="otc-itm">
+<div class="otc-info">\${escapeHtml(otc.accountData.name)} - \${escapeHtml(otc.customerNumber)}</div>
+<div class="otc-code">\${escapeHtml(otc.code)}</div>
+<div class="otc-timer">Expires in: \${escapeHtml(otc.timeRemaining)}</div>
+</div>\`;
+});
+document.getElementById('otc-list').innerHTML=h;
+}catch(e){document.getElementById('otc-list').innerHTML='<div class="otc-empty">Error loading codes</div>'}
 }
 async function ld(){
 try{
@@ -2176,35 +2211,37 @@ let h='';
 d.forEach(c=>{
 let op=o.has(c.customerNumber);
 h+=\`<div class="itm">
-<div class="itm-hdr" onclick="tg('\${c.customerNumber}')">
+<div class="itm-hdr" onclick="tg('\${escapeHtml(c.customerNumber)}')">
 <div class="l">
-<div class="nm">\${c.name}</div>
-<div class="id">\${c.customerNumber}</div>
+<div class="nm">\${escapeHtml(c.name)}</div>
+<div class="id">\${escapeHtml(c.customerNumber)}</div>
 </div>
-<div class="arr \${op?'op':''}" id="a\${c.customerNumber}">▼</div>
+<div class="arr \${op?'op':''}" id="a\${escapeHtml(c.customerNumber)}">▼</div>
 </div>
-<div class="det \${op?'op':''}" id="d\${c.customerNumber}">
+<div class="det \${op?'op':''}" id="d\${escapeHtml(c.customerNumber)}">
 <div class="dw">
-<div class="r"><span class="lb">Email</span><span class="vl">\${c.email}</span></div>
-<div class="r"><span class="lb">Phone</span><span class="vl">\${c.phone||'N/A'}</span></div>
-<div class="r"><span class="lb">Currency</span><span class="vl">\${c.currency}</span></div>
+<div class="r"><span class="lb">Email</span><span class="vl">\${escapeHtml(c.email)}</span></div>
+<div class="r"><span class="lb">Phone</span><span class="vl">\${escapeHtml(c.phone||'N/A')}</span></div>
+<div class="r"><span class="lb">Currency</span><span class="vl">\${escapeHtml(c.currency)}</span></div>
 <div class="r"><span class="lb">Status</span><span class="st">Active</span></div>
-<button class="db" onclick="dl('\${c.customerNumber}','\${c.name}')">Delete</button>
+<button class="db" data-customer="\${escapeHtml(c.customerNumber)}" data-name="\${escapeHtml(c.name)}" onclick="dl(this.dataset.customer,this.dataset.name)">Delete</button>
 </div>
 </div>
 </div>\`;
 });
 document.getElementById('l').innerHTML=h;
+loadOTC();
 }catch(e){document.getElementById('l').innerHTML='<div class="emp">Error</div>'}
 }
 async function dl(n,nm){
 if(!confirm('Delete '+nm+'?'))return;
 try{
-let r=await fetch('/api/customers/'+n,{method:'DELETE'}),d=await r.json();
+let r=await fetch('/api/customers/'+encodeURIComponent(n),{method:'DELETE'}),d=await r.json();
 if(r.ok){alert('Deleted');o.delete(n);ld()}else{alert('Failed')}
 }catch(e){alert('Error')}
 }
 ld();
+setInterval(loadOTC,5000);
 </script>
 </body>
 </html>`;
