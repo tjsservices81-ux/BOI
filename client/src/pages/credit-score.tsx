@@ -28,9 +28,9 @@ export default function CreditScore() {
   const [animatedScore, setAnimatedScore] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   
-  // Generate consistent credit score based on user
+  // Generate consistent credit score based on user (always middle to good: 600-850)
   const userName = UserDataManager.getCurrentUser() || "User";
-  const creditScore = 300 + (userName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 551);
+  const creditScore = 600 + (userName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % 251);
   
   useEffect(() => {
     // Simulate loading
@@ -150,11 +150,11 @@ export default function CreditScore() {
 
   if (isLoading) {
     return (
-      <div className="h-screen bg-gradient-to-br from-[#126987] to-[#0d4e63] flex flex-col overflow-hidden page-slide-up">
+      <div className="h-screen bg-white flex flex-col overflow-hidden page-slide-up">
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-white text-lg font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+            <div className="w-16 h-16 border-4 border-[#126987] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-[#126987] text-lg font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
               Analyzing Credit Report...
             </p>
           </div>
