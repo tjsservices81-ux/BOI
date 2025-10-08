@@ -568,6 +568,38 @@
         "dateCreated": "2025-10-08T09:53:01.610Z",
         "isDisabled": false
       }
+    ],
+    [
+      43,
+      {
+        "id": 43,
+        "customerNumber": "62316362",
+        "pin": "000000",
+        "name": "Harry",
+        "email": "john@gmail.com",
+        "phone": "555",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-08T12:21:10.151Z",
+        "dateCreated": "2025-10-08T12:21:10.151Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      44,
+      {
+        "id": 44,
+        "customerNumber": "75259369",
+        "pin": "000000",
+        "name": "Patrick",
+        "email": "ahajjs@gmail.com",
+        "phone": "255",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-08T12:24:33.935Z",
+        "dateCreated": "2025-10-08T12:24:33.936Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [
@@ -976,7 +1008,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 43,
+    "currentUserId": 45,
     "currentAccountId": 52,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
