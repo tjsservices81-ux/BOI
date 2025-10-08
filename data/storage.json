@@ -359,6 +359,22 @@
         "dateCreated": "2025-10-08T05:23:54.841Z",
         "isDisabled": false
       }
+    ],
+    [
+      30,
+      {
+        "id": 30,
+        "customerNumber": "72475669",
+        "pin": "000000",
+        "name": "Aaiisja",
+        "email": "ahajajia@gmail.com",
+        "phone": "45464",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-08T05:26:27.575Z",
+        "dateCreated": "2025-10-08T05:26:27.575Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [
@@ -541,6 +557,42 @@
         "displayName": "Savings Account",
         "sortCode": "90-78-68"
       }
+    ],
+    [
+      34,
+      {
+        "id": 34,
+        "userId": 29,
+        "accountType": "current",
+        "accountNumber": "****2091",
+        "balance": "0.00",
+        "displayName": "Current Account",
+        "sortCode": "90-78-68"
+      }
+    ],
+    [
+      35,
+      {
+        "id": 35,
+        "userId": 29,
+        "accountType": "credit",
+        "accountNumber": "****1820",
+        "balance": "0.00",
+        "displayName": "Credit Card",
+        "sortCode": "90-78-68"
+      }
+    ],
+    [
+      36,
+      {
+        "id": 36,
+        "userId": 29,
+        "accountType": "savings",
+        "accountNumber": "****0978",
+        "balance": "0.00",
+        "displayName": "Savings Account",
+        "sortCode": "90-78-68"
+      }
     ]
   ],
   "transactions": [],
@@ -551,8 +603,8 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 30,
-    "currentAccountId": 34,
+    "currentUserId": 31,
+    "currentAccountId": 37,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
     "currentScheduledPaymentId": 1,
