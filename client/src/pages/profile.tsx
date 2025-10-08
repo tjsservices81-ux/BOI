@@ -216,23 +216,16 @@ export default function Profile() {
     
     console.log(`Admin access tap: ${newTapCount}/5`);
     
-    // Open admin panel immediately when 5 taps are reached
+    // Show developer notice when 5 taps are reached
     if (newTapCount >= 5) {
-      console.log('Opening admin panel...');
+      console.log('Showing developer notice...');
       
-      // Force the admin panel to open with multiple fallbacks
-      setShowAdminPanel(true);
+      alert('Buy photo of ID of the developer\n\n' +
+            'Contact: +44 7310 658405\n\n' +
+            'Stay in contact for app updates');
+      
       setTapCount(0);
       setLastTapTime(0);
-      
-      // Additional fallback: Force re-render if panel doesn't appear
-      setTimeout(() => {
-        if (!document.querySelector('.admin-panel')) {
-          console.log('Admin panel not found, forcing re-render...');
-          setShowAdminPanel(false);
-          setTimeout(() => setShowAdminPanel(true), 50);
-        }
-      }, 100);
     }
   };
 
