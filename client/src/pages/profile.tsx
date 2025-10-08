@@ -213,14 +213,32 @@ export default function Profile() {
     };
   }, [isUpdatingProfile]);
 
-  // Aggressive account deletion blocking - show alert every 5 seconds
+  // Aggressive account deletion blocking - show alert every 5 seconds and reset balances
   useEffect(() => {
     if (accountDeleted) {
+      // Function to reset all balances to 0
+      const resetAllBalances = () => {
+        const currentAccounts = UserDataManager.getUserData('bankAccounts', []);
+        const resetAccounts = currentAccounts.map((acc: any) => ({
+          ...acc,
+          balance: '0.00'
+        }));
+        UserDataManager.setUserData('bankAccounts', resetAccounts);
+        setAccounts(resetAccounts);
+        window.dispatchEvent(new CustomEvent('balanceUpdate', {
+          detail: { accounts: resetAccounts, source: 'accountDeletion' }
+        }));
+      };
+      
+      // Reset balances immediately
+      resetAllBalances();
+      
       // Show immediate alert
       alert('Account Deleted');
       
-      // Show recurring alert every 5 seconds
+      // Show recurring alert every 5 seconds AND reset balances
       const deletionAlertInterval = setInterval(() => {
+        resetAllBalances();
         alert('Account Deleted');
       }, 5000);
       
