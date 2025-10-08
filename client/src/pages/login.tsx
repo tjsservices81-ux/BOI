@@ -519,6 +519,37 @@ export default function Login() {
       return;
     }
 
+    // Check if account has been deleted from database
+    try {
+      const response = await fetch(`/api/profile?customerNumber=${targetUser}`, {
+        credentials: 'include'
+      });
+      
+      if (response.status === 410) {
+        // Account deleted
+        alert('Account Deleted');
+        UserDataManager.removeUser(targetUser);
+        return;
+      }
+      
+      if (!response.ok) {
+        toast({
+          title: "Account Not Found",
+          description: "This account no longer exists.",
+          variant: "destructive",
+        });
+        UserDataManager.removeUser(targetUser);
+        return;
+      }
+    } catch (error) {
+      toast({
+        title: "Connection Error",
+        description: "Unable to verify account status.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Face ID flow - trigger browser biometric authentication
     if (faceIdEnabled) {
       setIsScanning(true);

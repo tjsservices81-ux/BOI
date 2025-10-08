@@ -504,6 +504,22 @@
         "dateCreated": "2025-10-08T09:10:41.253Z",
         "isDisabled": false
       }
+    ],
+    [
+      39,
+      {
+        "id": 39,
+        "customerNumber": "89706933",
+        "pin": "000000",
+        "name": "Heryryr",
+        "email": "ddhdhhd@gmail.com",
+        "phone": "55555",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-08T09:22:52.040Z",
+        "dateCreated": "2025-10-08T09:22:52.040Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [
@@ -840,7 +856,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 39,
+    "currentUserId": 40,
     "currentAccountId": 46,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
