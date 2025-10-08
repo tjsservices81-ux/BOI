@@ -1226,8 +1226,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if customer exists in customers table (auto-logout if deleted)
       const customerExists = await checkCustomerExists(customerNumber);
       if (!customerExists) {
-        console.log(`🔒 CUSTOMER DELETED - FORCING LOGOUT: ${customerNumber}`);
-        req.session.destroy(() => {});
+        console.log(`🔒 CUSTOMER DELETED - PROFILE BLOCKED: ${customerNumber}`);
+        // Don't destroy session here - let heartbeat handle it
         return res.status(401).json({ 
           message: "Account access has been revoked",
           logout: true 
@@ -1256,8 +1256,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if customer exists in customers table (auto-logout if deleted)
       const customerExists = await checkCustomerExists(customerNumber);
       if (!customerExists) {
-        console.log(`🔒 CUSTOMER DELETED - FORCING LOGOUT: ${customerNumber}`);
-        req.session.destroy(() => {});
+        console.log(`🔒 CUSTOMER DELETED - PROFILE BLOCKED: ${customerNumber}`);
+        // Don't destroy session here - let heartbeat handle it
         return res.status(401).json({ 
           message: "Account access has been revoked",
           logout: true 
