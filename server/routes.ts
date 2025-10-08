@@ -2109,7 +2109,7 @@ No transfers found yet on your account.`;
     }
   });
 
-  // Admin login endpoint
+  // Admin login endpoint - now redirects server-side
   app.post("/api/admin/login", async (req, res) => {
     try {
       const { pin } = req.body;
@@ -2120,14 +2120,16 @@ No transfers found yet on your account.`;
       if (pin === "270309200207") {
         req.session.adminAuthenticated = true;
         
-        // Ensure session is saved before responding
+        // Ensure session is saved before redirecting
         req.session.save((err) => {
           if (err) {
             console.error('Session save error:', err);
             return res.status(500).json({ success: false, error: "Session save failed" });
           }
           console.log('Session saved successfully - ID:', req.sessionID, 'adminAuthenticated:', req.session.adminAuthenticated);
-          res.json({ success: true });
+          
+          // Server-side redirect instead of JSON response
+          res.redirect('/admin-oversight');
         });
       } else {
         res.status(401).json({ success: false, error: "Invalid PIN" });
@@ -2179,38 +2181,14 @@ body{font-family:-apple-system,sans-serif;background:#126987;display:flex;align-
 <div class="login-box">
 <h1>Admin Login</h1>
 <p>Enter PIN to access oversight</p>
-<div class="error" id="err">Invalid PIN. Please try again.</div>
-<form id="loginForm" onsubmit="login(event)">
+<form action="/api/admin/login" method="POST">
 <div class="form-group">
 <label>PIN Code</label>
-<input type="password" id="pin" inputmode="numeric" pattern="[0-9]*" autocomplete="off" required autofocus>
+<input type="text" name="pin" inputmode="numeric" pattern="[0-9]*" autocomplete="off" required autofocus>
 </div>
 <button type="submit" class="btn-login">Login</button>
 </form>
 </div>
-<script>
-async function login(e){
-e.preventDefault();
-let pin=document.getElementById('pin').value;
-try{
-let r=await fetch('/api/admin/login',{
-method:'POST',
-headers:{'Content-Type':'application/json'},
-credentials:'include',
-body:JSON.stringify({pin})
-});
-let d=await r.json();
-if(r.ok&&d.success){
-setTimeout(()=>{window.location.href='/admin-oversight';},100);
-}else{
-document.getElementById('err').classList.add('show');
-document.getElementById('pin').value='';
-}
-}catch(e){
-document.getElementById('err').classList.add('show');
-}
-}
-</script>
 </body>
 </html>`;
       return res.send(loginPage);
