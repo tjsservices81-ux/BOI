@@ -9,6 +9,16 @@ import { UserDataManager } from "../utils/userDataManager";
 import { formatCurrency, getUserCurrency, type Currency } from "../utils/currencyUtils";
 import { updateUserLocation } from "../utils/locationTracker";
 
+// IBAN country code to currency mapping
+const ibanCountryCurrencies: Record<string, string> = {
+  'AT': 'EUR', 'BE': 'EUR', 'CY': 'EUR', 'DE': 'EUR', 'EE': 'EUR', 'ES': 'EUR',
+  'FI': 'EUR', 'FR': 'EUR', 'GR': 'EUR', 'IE': 'EUR', 'IT': 'EUR', 'LT': 'EUR',
+  'LU': 'EUR', 'LV': 'EUR', 'MT': 'EUR', 'NL': 'EUR', 'PT': 'EUR', 'SI': 'EUR',
+  'SK': 'EUR', 'BG': 'BGN', 'HR': 'EUR', 'CZ': 'CZK', 'DK': 'DKK', 'HU': 'HUF',
+  'PL': 'PLN', 'RO': 'RON', 'SE': 'SEK', 'CH': 'CHF', 'NO': 'NOK', 'IS': 'ISK',
+  'GB': 'GBP', 'TR': 'TRY', 'RS': 'RSD', 'AL': 'ALL', 'BA': 'BAM', 'MK': 'MKD'
+};
+
 const ibanTransferSchema = z.object({
   recipientName: z.string().min(2, "Recipient name is required"),
   iban: z.string().min(1, "IBAN is required"),
@@ -30,6 +40,9 @@ export default function IbanTransfer() {
   const [processingStage, setProcessingStage] = useState<string>('Verifying transfer details...');
   const [formData, setFormData] = useState<IbanTransferData | null>(null);
   const [userCurrency, setUserCurrency] = useState<Currency>('EUR');
+  const [destinationCurrency, setDestinationCurrency] = useState<string>('EUR');
+  const [exchangeRate, setExchangeRate] = useState<number>(1);
+  const [convertedAmount, setConvertedAmount] = useState<string>('0.00');
 
   const form = useForm<IbanTransferData>({
     resolver: zodResolver(ibanTransferSchema),
@@ -137,8 +150,67 @@ export default function IbanTransfer() {
     };
   }, [form]);
 
-  const onSubmit = (data: IbanTransferData) => {
+  // Detect destination currency from IBAN
+  const detectCurrencyFromIban = (iban: string): string => {
+    const countryCode = iban.replace(/\s/g, '').substring(0, 2).toUpperCase();
+    return ibanCountryCurrencies[countryCode] || 'EUR';
+  };
+
+  // Fetch exchange rate from GBP to destination currency
+  const fetchExchangeRate = async (toCurrency: string) => {
+    if (userCurrency !== 'GBP' || toCurrency === 'GBP') {
+      setExchangeRate(1);
+      return;
+    }
+
+    try {
+      const apiKey = import.meta.env.VITE_EXCHANGERATE_API_KEY;
+      if (!apiKey) {
+        console.log('No API key provided, using default rate');
+        setExchangeRate(1);
+        return;
+      }
+      
+      const response = await fetch(`https://v6.exchangerate-api.com/v6/${apiKey}/latest/GBP`);
+      const data = await response.json();
+      
+      if (data.result === 'success' && data.conversion_rates[toCurrency]) {
+        const rate = data.conversion_rates[toCurrency];
+        setExchangeRate(rate);
+        
+        // Update converted amount
+        const currentAmount = formData?.amount || form.getValues('amount');
+        if (currentAmount) {
+          const converted = (parseFloat(currentAmount) * rate).toFixed(2);
+          setConvertedAmount(converted);
+        }
+      } else {
+        setExchangeRate(1);
+      }
+    } catch (error) {
+      console.log('Exchange rate fetch failed, using default rate');
+      setExchangeRate(1);
+    }
+  };
+
+  const onSubmit = async (data: IbanTransferData) => {
     setFormData(data);
+    
+    // Detect destination currency and fetch exchange rate if needed
+    const destCurrency = detectCurrencyFromIban(data.iban);
+    setDestinationCurrency(destCurrency);
+    
+    if (userCurrency === 'GBP') {
+      await fetchExchangeRate(destCurrency);
+      
+      // Calculate converted amount
+      if (data.amount) {
+        const rate = exchangeRate || 1;
+        const converted = (parseFloat(data.amount) * rate).toFixed(2);
+        setConvertedAmount(converted);
+      }
+    }
+    
     setStep('confirm');
   };
 
@@ -205,7 +277,7 @@ export default function IbanTransfer() {
             formData.recipientName,
             'IBAN',
             formData.reference, // Use the user's input reference
-            undefined, // No exchange rate for IBAN transfers
+            userCurrency === 'GBP' && destinationCurrency !== 'GBP' ? exchangeRate : undefined, // Pass exchange rate for GBP conversions
             {
               iban: formData.iban,
               bicCode: formData.bicCode
@@ -510,7 +582,14 @@ export default function IbanTransfer() {
               
               <div className="flex justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Amount:</span>
-                <span className="font-semibold text-[#126987] text-xl" style={{ fontFamily: 'OpenSans, sans-serif' }}>{formatCurrency(formData?.amount || '0', userCurrency)}</span>
+                <div className="text-right">
+                  <span className="font-semibold text-[#126987] text-xl" style={{ fontFamily: 'OpenSans, sans-serif' }}>{formatCurrency(formData?.amount || '0', userCurrency)}</span>
+                  {userCurrency === 'GBP' && destinationCurrency !== 'GBP' && (
+                    <p className="text-sm text-green-700 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      ≈ {(parseFloat(formData?.amount || '0') * exchangeRate).toFixed(2)} {destinationCurrency}
+                    </p>
+                  )}
+                </div>
               </div>
               
               <div className="flex justify-between py-2">
@@ -519,6 +598,22 @@ export default function IbanTransfer() {
               </div>
             </div>
           </div>
+
+          {userCurrency === 'GBP' && destinationCurrency !== 'GBP' && (
+            <div className="bg-green-50 rounded-xl p-4 mb-6 border border-green-200">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-700 font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Currency Conversion</span>
+                <div className="text-right">
+                  <span className="font-semibold text-green-700 text-lg" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {(parseFloat(formData?.amount || '0') * exchangeRate).toFixed(2)} {destinationCurrency}
+                  </span>
+                  <p className="text-xs text-gray-600 mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Rate: £1 = {exchangeRate.toFixed(4)} {destinationCurrency} • Live rate
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="bg-blue-50 rounded-xl p-4 mb-6 flex items-start space-x-3">
             <Info className="w-5 h-5 text-blue-600 mt-0.5" />
