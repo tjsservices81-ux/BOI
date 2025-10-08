@@ -344,7 +344,7 @@ export default function Settings() {
                   </div>
                 </div>
 
-                {/* IBAN Email */}
+                {/* SEPA Email */}
                 <div className="bg-white rounded-xl p-4 shadow-sm">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
@@ -353,10 +353,10 @@ export default function Settings() {
                       </div>
                       <div>
                         <h4 className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          IBAN Recipient Email
+                          Recipient Email (SEPA)
                         </h4>
                         <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          Send copy to IBAN recipient
+                          Send copy to recipient
                         </p>
                       </div>
                     </div>
