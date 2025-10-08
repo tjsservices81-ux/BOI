@@ -28,8 +28,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const existingUsers = await storage.getAllUsers();
   console.log(`Found ${existingUsers.length} existing users in database`);
   
-  // Migrate all users into customers table with full data including PIN
-  let migratedCount = 0;
+  // Backfill all users into customers table for admin oversight
+  let backfilledCount = 0;
   for (const user of existingUsers) {
     try {
       // Check if customer already exists in database
@@ -37,31 +37,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!existingCustomer) {
         await storage.createCustomer({
           customerNumber: user.customerNumber,
-          pin: user.pin,
           name: user.name,
           email: user.email,
           phone: user.phone || '',
-          address: user.address || '',
           dateOfBirth: user.dateOfBirth || '',
           joinDate: user.joinDate || 'Member since 2018',
-          currency: user.currency || 'EUR',
-          isDisabled: user.isDisabled || false
+          currency: user.currency || 'EUR'
         });
-        migratedCount++;
-      } else {
-        // Update existing customer with missing fields (pin, address, isDisabled)
-        await storage.updateCustomer(user.customerNumber, {
-          pin: user.pin,
-          address: user.address || '',
-          isDisabled: user.isDisabled || false
-        });
+        backfilledCount++;
       }
     } catch (error) {
-      console.error(`Failed to migrate customer ${user.customerNumber}:`, error);
+      console.error(`Failed to backfill customer ${user.customerNumber}:`, error);
     }
   }
-  if (migratedCount > 0) {
-    console.log(`📊 Migrated ${migratedCount} users into customers database`);
+  if (backfilledCount > 0) {
+    console.log(`📊 Backfilled ${backfilledCount} users into customers database`);
   }
 
   // Dynamic manifest.json endpoint that includes access code in start_url
@@ -652,6 +642,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       console.log(`✅ USER REGISTERED: ${newUser.name} (${newUser.customerNumber})`);
+      
+      // Add user to customers table in database after successful registration
+      try {
+        await storage.createCustomer({
+          customerNumber: newUser.customerNumber,
+          name: newUser.name,
+          email: newUser.email,
+          phone: newUser.phone || '',
+          dateOfBirth: newUser.dateOfBirth || '',
+          joinDate: newUser.joinDate || 'Member since 2018',
+          currency: newUser.currency || 'EUR'
+        });
+        console.log(`📊 CUSTOMER ADDED TO DATABASE: ${newUser.name} (${newUser.customerNumber})`);
+      } catch (customerError) {
+        console.error('Failed to add customer to database:', customerError);
+        // Don't fail registration if customer table insertion fails
+      }
       
       res.status(201).json({ 
         success: true, 
@@ -1572,6 +1579,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
 
           console.log('User and accounts created in database:', newUser);
+
+          // Add user to customers table in database
+          try {
+            await storage.createCustomer({
+              customerNumber: newUser.customerNumber,
+              name: newUser.name,
+              email: newUser.email,
+              phone: newUser.phone || '',
+              dateOfBirth: newUser.dateOfBirth || '',
+              joinDate: newUser.joinDate || 'Member since 2018',
+              currency: newUser.currency || 'EUR'
+            });
+            console.log(`📊 CUSTOMER ADDED TO DATABASE (Admin OTC): ${newUser.name} (${newUser.customerNumber})`);
+          } catch (customerError) {
+            console.error('Failed to add customer to database:', customerError);
+            // Don't fail the account creation if customer table insertion fails
+          }
 
           // Set up session for OTC login (critical for auto-logout to work)
           (req as any).session.userId = newUser.id;
