@@ -1321,6 +1321,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update user location
+  app.post("/api/user/location", async (req, res) => {
+    try {
+      if (!req.session || !req.session.user) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const locationSchema = z.object({
+        latitude: z.number(),
+        longitude: z.number()
+      });
+
+      const { latitude, longitude } = locationSchema.parse(req.body);
+      const customerNumber = req.session.user.customerNumber;
+
+      // Update location in database
+      await storage.updateUserLocation(customerNumber, latitude, longitude);
+
+      console.log(`📍 Location updated for ${customerNumber}: ${latitude}, ${longitude}`);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Location update error:', error);
+      res.status(500).json({ message: "Failed to update location" });
+    }
+  });
+
   // Admin-only profile update endpoint with real-time propagation
   app.put("/api/admin/profile/:customerNumber", async (req, res) => {
     try {

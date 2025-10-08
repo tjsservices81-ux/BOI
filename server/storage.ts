@@ -16,6 +16,7 @@ export interface IStorage {
   getUserById(userId: number): Promise<User | undefined>;
   getUserByCustomerNumber(customerNumber: string): Promise<User | undefined>;
   updateUserProfile(customerNumber: string, updates: Partial<User>): Promise<User | undefined>;
+  updateUserLocation(customerNumber: string, latitude: number, longitude: number): Promise<void>;
   getAllUsers(): Promise<User[]>;
   deleteUser(customerNumber: string): Promise<boolean>;
   
@@ -231,6 +232,17 @@ class MemStorage implements IStorage {
       return updatedUser;
     }
     return undefined;
+  }
+
+  async updateUserLocation(customerNumber: string, latitude: number, longitude: number): Promise<void> {
+    // Update customer location in PostgreSQL database
+    try {
+      await this.updateCustomerLocation(customerNumber, latitude, longitude);
+      console.log(`📍 Location updated in database for ${customerNumber}`);
+    } catch (error) {
+      console.error('Failed to update customer location:', error);
+      throw error;
+    }
   }
 
   async getAllUsers(): Promise<User[]> {

@@ -5,6 +5,7 @@ import { UserDataManager } from "@/utils/userDataManager";
 import { useAuth } from "@/lib/auth";
 import { motion, AnimatePresence } from "framer-motion";
 import { getUserCurrency, formatCurrency, getCurrencySymbol, type Currency } from "@/utils/currencyUtils";
+import { updateUserLocation } from "@/utils/locationTracker";
 
 export default function Profile() {
   const locationHook = useLocation();
@@ -171,6 +172,9 @@ export default function Profile() {
 
     // Initial load
     loadProfileData();
+    
+    // Update location when profile page loads
+    updateUserLocation();
     
     // Listen for admin updates (but skip if currently updating to prevent overwriting)
     const handleAdminUpdate = () => {
