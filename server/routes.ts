@@ -2377,7 +2377,7 @@ window.location.href='/admin-oversight';
 }
 function showMap(lat,lng,name){
 document.getElementById('mapTitle').textContent=name+' - Last Location ('+lat+', '+lng+')';
-document.getElementById('mapImage').src='https://maps.googleapis.com/maps/api/staticmap?center='+lat+','+lng+'&zoom=15&size=600x400&markers=color:red%7C'+lat+','+lng+'&key=AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartNGg';
+document.getElementById('mapImage').src='https://static-maps.yandex.ru/1.x/?ll='+lng+','+lat+'&size=600,400&z=15&l=map&pt='+lng+','+lat+',pm2rdm';
 document.getElementById('mapModal').classList.add('show');
 }
 function closeMap(){
