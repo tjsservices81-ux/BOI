@@ -42,7 +42,7 @@ app.use(session({
   cookie: {
     secure: false,
     httpOnly: true,
-    // No maxAge property - users stay logged in permanently
+    maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year - needed for cookie to persist
     sameSite: 'lax'
   },
   rolling: false // No rolling sessions to prevent timeout resets

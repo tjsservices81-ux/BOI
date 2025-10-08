@@ -2141,6 +2141,13 @@ No transfers found yet on your account.`;
 
   // Admin Oversight - iPhone Optimized
   app.get("/admin-oversight", async (req, res) => {
+    // Debug session
+    console.log('Admin oversight session check:', {
+      sessionID: req.sessionID,
+      adminAuthenticated: req.session.adminAuthenticated,
+      session: req.session
+    });
+    
     // Check if admin is authenticated
     if (!req.session.adminAuthenticated) {
       const loginPage = `<!DOCTYPE html>
