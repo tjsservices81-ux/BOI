@@ -1011,8 +1011,24 @@ export default function UkTransfer() {
                 onChange={(e) => {
                   const value = e.target.value;
                   form.setValue('amount', value);
+                  
+                  // Update GBP conversion preview for EUR users
+                  if (userCurrency === 'EUR' && value) {
+                    const numValue = parseFloat(value);
+                    if (!isNaN(numValue)) {
+                      const converted = (numValue * exchangeRate).toFixed(2);
+                      setGbpAmount(converted);
+                    } else {
+                      setGbpAmount('0.00');
+                    }
+                  }
                 }}
               />
+              {userCurrency === 'EUR' && form.watch('amount') && parseFloat(form.watch('amount')) > 0 && (
+                <p className="text-sm text-gray-600 mt-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  ≈ £{gbpAmount} GBP
+                </p>
+              )}
               {form.formState.errors.amount && (
                 <p className="text-red-500 text-xs mt-2 font-medium">{form.formState.errors.amount.message}</p>
               )}
