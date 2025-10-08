@@ -462,7 +462,7 @@
         "id": 36,
         "customerNumber": "19665839",
         "pin": "000000",
-        "name": "Johnshahjs",
+        "name": "Test 1",
         "email": "ahhajaja@gmail.com",
         "phone": "455454",
         "address": "",
@@ -471,6 +471,22 @@
         "dateCreated": "2025-10-08T05:57:35.589Z",
         "isDisabled": false,
         "currency": "GBP"
+      }
+    ],
+    [
+      37,
+      {
+        "id": 37,
+        "customerNumber": "60396232",
+        "pin": "000000",
+        "name": "John",
+        "email": "john@gmail.com",
+        "phone": "5546434",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-08T07:23:45.884Z",
+        "dateCreated": "2025-10-08T07:23:45.884Z",
+        "isDisabled": false
       }
     ]
   ],
@@ -808,7 +824,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 37,
+    "currentUserId": 38,
     "currentAccountId": 46,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
