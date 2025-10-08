@@ -51,6 +51,64 @@ export default function Settings() {
     }, 150);
   };
 
+  const handleNotificationToggle = async (enabled: boolean) => {
+    if (!enabled) {
+      // Turning notifications off
+      setNotificationsEnabled(false);
+      return;
+    }
+
+    // Turning notifications on - check permission first
+    if ('Notification' in window) {
+      const currentPermission = Notification.permission;
+      
+      if (currentPermission === 'granted') {
+        // Already granted, just enable
+        setNotificationsEnabled(true);
+      } else if (currentPermission === 'default') {
+        // Never asked before, request permission
+        try {
+          const permission = await Notification.requestPermission();
+          if (permission === 'granted') {
+            setNotificationsEnabled(true);
+            toast({
+              title: "Notifications Enabled",
+              description: "You'll now receive account alerts and updates",
+            });
+          } else {
+            // User denied permission
+            toast({
+              title: "Permission Denied",
+              description: "Please allow notifications in your browser settings to enable this feature",
+              variant: "destructive",
+            });
+          }
+        } catch (error) {
+          console.error('Notification permission error:', error);
+          toast({
+            title: "Error",
+            description: "Could not request notification permission",
+            variant: "destructive",
+          });
+        }
+      } else if (currentPermission === 'denied') {
+        // Previously denied
+        toast({
+          title: "Permission Blocked",
+          description: "Notifications are blocked. Please enable them in your browser settings",
+          variant: "destructive",
+        });
+      }
+    } else {
+      // Notifications not supported
+      toast({
+        title: "Not Supported",
+        description: "Notifications are not supported in this browser",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleFaceIdToggle = async (enabled: boolean) => {
     if (!enabled) {
       // Disabling Face ID - just clear the stored credential
@@ -246,7 +304,7 @@ export default function Settings() {
                     </div>
                     <Switch
                       checked={notificationsEnabled}
-                      onCheckedChange={setNotificationsEnabled}
+                      onCheckedChange={handleNotificationToggle}
                       data-testid="toggle-notifications"
                     />
                   </div>
