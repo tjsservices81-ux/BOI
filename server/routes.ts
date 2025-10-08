@@ -2277,15 +2277,11 @@ setInterval(loadOTC,5000);
     try {
       const { customerNumber } = req.params;
       
-      // Delete customer from database
+      // Delete customer from database ONLY (keep in-memory user so heartbeat can check)
       const deleted = await storage.deleteCustomer(customerNumber);
       
       if (deleted) {
-        console.log(`🗑️  CUSTOMER DELETED FROM DATABASE: ${customerNumber}`);
-        
-        // Also delete from users table (in-memory storage)
-        await storage.deleteUser(customerNumber);
-        console.log(`🗑️  USER DELETED FROM STORAGE: ${customerNumber}`);
+        console.log(`🗑️  CUSTOMER DELETED FROM DATABASE: ${customerNumber} - Heartbeat will force logout`);
         
         res.json({ 
           success: true, 
