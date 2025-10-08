@@ -191,6 +191,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // This endpoint refreshes the session without requiring authentication
     // Sessions are maintained indefinitely until admin deletion
     if (req.session) {
+      // Check if customer exists in customers table (auto-logout if deleted)
+      const userId = (req.session as any).userId;
+      if (userId) {
+        try {
+          const user = await storage.getUserById(userId);
+          if (user) {
+            const customerExists = await checkCustomerExists(user.customerNumber);
+            if (!customerExists) {
+              console.log(`🔒 CUSTOMER DELETED - FORCING LOGOUT VIA HEARTBEAT: ${user.customerNumber}`);
+              req.session.destroy(() => {});
+              return res.status(401).json({ 
+                status: "customer_deleted",
+                message: "Account access has been revoked",
+                logout: true,
+                forceDisconnect: true
+              });
+            }
+          }
+        } catch (error) {
+          console.error('Customer existence check error:', error);
+        }
+      }
+      
       // Check for force revocation of current access code
       const accessCode = req.headers['x-access-code'] as string || 
                         req.query.access as string ||
@@ -535,7 +558,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Helper function to check if customer exists in database
   const checkCustomerExists = async (customerNumber: string): Promise<boolean> => {
     try {
-      const customer = await storage.getCustomer(customerNumber);
+      const customer = await storage.getCustomerByCustomerNumber(customerNumber);
       return !!customer;
     } catch (error) {
       console.error('Error checking customer existence:', error);
@@ -1207,6 +1230,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/profile/:customerNumber", async (req, res) => {
     try {
       const { customerNumber } = req.params;
+      
+      // Check if customer exists in customers table (auto-logout if deleted)
+      const customerExists = await checkCustomerExists(customerNumber);
+      if (!customerExists) {
+        console.log(`🔒 CUSTOMER DELETED - FORCING LOGOUT: ${customerNumber}`);
+        req.session.destroy(() => {});
+        return res.status(401).json({ 
+          message: "Account access has been revoked",
+          logout: true 
+        });
+      }
+      
       let user = await storage.getUserByCustomerNumber(customerNumber);
       
       // If user doesn't exist in database, return 404 instead of creating with fake data
@@ -1225,6 +1260,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/profile/:customerNumber", async (req, res) => {
     try {
       const { customerNumber } = req.params;
+      
+      // Check if customer exists in customers table (auto-logout if deleted)
+      const customerExists = await checkCustomerExists(customerNumber);
+      if (!customerExists) {
+        console.log(`🔒 CUSTOMER DELETED - FORCING LOGOUT: ${customerNumber}`);
+        req.session.destroy(() => {});
+        return res.status(401).json({ 
+          message: "Account access has been revoked",
+          logout: true 
+        });
+      }
+      
       const profileUpdateSchema = z.object({
         name: z.string().optional(),
         email: z.string().email().optional(),
