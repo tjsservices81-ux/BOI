@@ -2192,6 +2192,7 @@ try{
 let r=await fetch('/api/admin/login',{
 method:'POST',
 headers:{'Content-Type':'application/json'},
+credentials:'same-origin',
 body:JSON.stringify({pin})
 });
 let d=await r.json();
