@@ -293,7 +293,8 @@ export async function sendTransferConfirmation(
   details: TransferConfirmationDetails,
   transferData?: any,
   userCurrency?: 'EUR' | 'GBP',
-  emailsEnabled: boolean = true
+  emailsEnabled: boolean = true,
+  isRecipient: boolean = false
 ): Promise<boolean> {
   console.log('🔵 TRANSFER CONFIRMATION EMAIL TRIGGERED - sendTransferConfirmation()');
   console.log('Sending to:', userEmail);
@@ -301,6 +302,7 @@ export async function sendTransferConfirmation(
   console.log('Transfer data:', transferData);
   console.log('User currency:', userCurrency);
   console.log('Emails enabled:', emailsEnabled);
+  console.log('Is recipient email:', isRecipient);
   
   // Check if emails are disabled
   if (!emailsEnabled) {
@@ -309,8 +311,27 @@ export async function sendTransferConfirmation(
   }
   
   try {
-    // Generate email content (simple HTML without logo)
-    const { subject, body } = generateTransferConfirmationEmail(details);
+    let subject: string;
+    let body: string;
+
+    if (isRecipient) {
+      // Simple message for recipients - just the PDF
+      subject = "Payment Received - Bank of Ireland";
+      body = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #126987;">Payment Received</h2>
+          <p>Please find attached your payment confirmation.</p>
+          <p style="color: #666; font-size: 12px; margin-top: 30px;">
+            This is an automated message from Bank of Ireland.
+          </p>
+        </div>
+      `;
+    } else {
+      // Full email content for the sender
+      const emailContent = generateTransferConfirmationEmail(details);
+      subject = emailContent.subject;
+      body = emailContent.body;
+    }
     
     // Generate PDF with BOI logo and transfer details using new template-based system
     const pdfBuffer = await generateTransferConfirmationPDF(

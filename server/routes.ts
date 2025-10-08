@@ -1093,7 +1093,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           confirmationDetails, 
           emailData.transferData, 
           emailData.userCurrency,
-          true
+          true,
+          true // isRecipient flag - sends minimal email with just PDF
         );
       }
       
