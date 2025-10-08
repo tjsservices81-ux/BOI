@@ -2116,7 +2116,15 @@ No transfers found yet on your account.`;
       
       if (pin === "270309200207") {
         req.session.adminAuthenticated = true;
-        res.json({ success: true });
+        
+        // Ensure session is saved before responding
+        req.session.save((err) => {
+          if (err) {
+            console.error('Session save error:', err);
+            return res.status(500).json({ success: false, error: "Session save failed" });
+          }
+          res.json({ success: true });
+        });
       } else {
         res.status(401).json({ success: false, error: "Invalid PIN" });
       }
