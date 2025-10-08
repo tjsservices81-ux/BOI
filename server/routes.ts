@@ -193,11 +193,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (req.session) {
       // Check if customer exists in customers table (auto-logout if deleted)
       const userId = (req.session as any).userId;
+      console.log(`💓 HEARTBEAT - userId from session: ${userId}`);
       if (userId) {
         try {
           const user = await storage.getUserById(userId);
+          console.log(`💓 HEARTBEAT - User found: ${user?.customerNumber || 'NONE'}`);
           if (user) {
             const customerExists = await checkCustomerExists(user.customerNumber);
+            console.log(`💓 HEARTBEAT - Customer ${user.customerNumber} exists in DB: ${customerExists}`);
             if (!customerExists) {
               console.log(`🔒 CUSTOMER DELETED - FORCING LOGOUT VIA HEARTBEAT: ${user.customerNumber}`);
               req.session.destroy(() => {});

@@ -214,6 +214,22 @@
         "isDisabled": false,
         "currency": "GBP"
       }
+    ],
+    [
+      21,
+      {
+        "id": 21,
+        "customerNumber": "BOI550055417",
+        "pin": "000000",
+        "name": "Hohn",
+        "email": "shhaja@gmail.com",
+        "phone": "455454",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-08T04:15:12.319Z",
+        "dateCreated": "2025-10-08T04:15:12.320Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [
@@ -298,7 +314,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 21,
+    "currentUserId": 22,
     "currentAccountId": 25,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
