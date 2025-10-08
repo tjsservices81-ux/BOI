@@ -1049,7 +1049,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         transferData: z.any().optional(),
         userCurrency: z.enum(['EUR', 'GBP']).optional(),
         emailsEnabled: z.boolean().optional(),
-        recipientEmail: z.string().email().optional()
+        recipientEmail: z.union([z.string().email(), z.literal(''), z.undefined()]).optional()
       });
       
       const emailData = emailSchema.parse(req.body);

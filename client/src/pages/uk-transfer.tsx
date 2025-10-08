@@ -172,10 +172,23 @@ export default function UkTransfer() {
   const [userCurrency, setUserCurrency] = useState<Currency>('EUR');
   const [displaySortCode, setDisplaySortCode] = useState<string>('');
   
-  const [recipientEmailEnabled] = useState(() => {
+  const [recipientEmailEnabled, setRecipientEmailEnabled] = useState(() => {
     const saved = localStorage.getItem('recipientEmailEnabled');
     return saved !== null ? JSON.parse(saved) : false;
   });
+
+  // Listen for recipient email setting changes
+  useEffect(() => {
+    const handleSettingChange = (e: CustomEvent) => {
+      setRecipientEmailEnabled(e.detail);
+    };
+
+    window.addEventListener('recipientEmailEnabledChanged', handleSettingChange as EventListener);
+
+    return () => {
+      window.removeEventListener('recipientEmailEnabledChanged', handleSettingChange as EventListener);
+    };
+  }, []);
 
   const form = useForm<UkTransferData>({
     resolver: zodResolver(ukTransferSchema),

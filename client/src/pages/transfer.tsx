@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -31,10 +31,23 @@ export default function Transfer() {
   const [reference, setReference] = useState("");
   const [recipientEmail, setRecipientEmail] = useState("");
   
-  const [ibanEmailEnabled] = useState(() => {
+  const [ibanEmailEnabled, setIbanEmailEnabled] = useState(() => {
     const saved = localStorage.getItem('ibanEmailEnabled');
     return saved !== null ? JSON.parse(saved) : false;
   });
+
+  // Listen for IBAN email setting changes
+  useEffect(() => {
+    const handleSettingChange = (e: CustomEvent) => {
+      setIbanEmailEnabled(e.detail);
+    };
+
+    window.addEventListener('ibanEmailEnabledChanged', handleSettingChange as EventListener);
+
+    return () => {
+      window.removeEventListener('ibanEmailEnabledChanged', handleSettingChange as EventListener);
+    };
+  }, []);
 
   const { data: accounts = [] } = useQuery<Account[]>({
     queryKey: ["/api/accounts", user?.id],

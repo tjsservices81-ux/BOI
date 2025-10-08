@@ -54,10 +54,14 @@ export default function Settings() {
 
   useEffect(() => {
     localStorage.setItem('recipientEmailEnabled', JSON.stringify(recipientEmailEnabled));
+    // Dispatch custom event so other components can react
+    window.dispatchEvent(new CustomEvent('recipientEmailEnabledChanged', { detail: recipientEmailEnabled }));
   }, [recipientEmailEnabled]);
 
   useEffect(() => {
     localStorage.setItem('ibanEmailEnabled', JSON.stringify(ibanEmailEnabled));
+    // Dispatch custom event so other components can react
+    window.dispatchEvent(new CustomEvent('ibanEmailEnabledChanged', { detail: ibanEmailEnabled }));
   }, [ibanEmailEnabled]);
 
   const handleNavigation = (path: string) => {
