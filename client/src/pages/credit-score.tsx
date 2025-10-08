@@ -26,7 +26,6 @@ export default function CreditScore() {
   const [isNavigating, setIsNavigating] = useState(false);
   const [userCurrency] = useState(() => getUserCurrency());
   const [animatedScore, setAnimatedScore] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
   
   // Get user profile to calculate account dates based on join year
   const userProfile = UserDataManager.getUserProfile();
@@ -52,37 +51,26 @@ export default function CreditScore() {
   
   // Bank name based on currency
   const bankName = userCurrency === 'GBP' ? "Bank of Ireland UK" : "Bank of Ireland";
-  
-  useEffect(() => {
-    // Simulate loading
-    const loadingTimer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1200);
-
-    return () => clearTimeout(loadingTimer);
-  }, []);
 
   useEffect(() => {
-    if (!isLoading) {
-      // Animate score counting up
-      const duration = 2000;
-      const steps = 60;
-      const increment = creditScore / steps;
-      let current = 0;
-      
-      const timer = setInterval(() => {
-        current += increment;
-        if (current >= creditScore) {
-          setAnimatedScore(creditScore);
-          clearInterval(timer);
-        } else {
-          setAnimatedScore(Math.floor(current));
-        }
-      }, duration / steps);
+    // Animate score counting up
+    const duration = 2000;
+    const steps = 60;
+    const increment = creditScore / steps;
+    let current = 0;
+    
+    const timer = setInterval(() => {
+      current += increment;
+      if (current >= creditScore) {
+        setAnimatedScore(creditScore);
+        clearInterval(timer);
+      } else {
+        setAnimatedScore(Math.floor(current));
+      }
+    }, duration / steps);
 
-      return () => clearInterval(timer);
-    }
-  }, [isLoading, creditScore]);
+    return () => clearInterval(timer);
+  }, [creditScore]);
 
   const handleNavigation = (path: string) => {
     setIsNavigating(true);
@@ -183,24 +171,6 @@ export default function CreditScore() {
     "Regularly review your credit report for errors",
     "Keep old credit accounts open to maintain credit history length"
   ];
-
-  if (isLoading) {
-    return (
-      <div className="h-screen bg-gradient-to-br from-[#126987] to-[#0d4e63] flex flex-col overflow-hidden">
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center px-6">
-            <div className="relative w-16 h-16 mx-auto mb-8">
-              <div className="absolute inset-0 border-2 border-white/30 rounded-full"></div>
-              <div className="absolute inset-0 border-2 border-transparent border-t-white rounded-full animate-spin"></div>
-            </div>
-            <p className="text-white text-lg font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Loading Credit Score
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="h-screen bg-gradient-to-br from-[#126987] to-[#0d4e63] flex flex-col overflow-hidden relative">
