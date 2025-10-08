@@ -819,6 +819,9 @@ export default function TransactionHistoryWorking() {
                           ? <><strong>International Transfer:</strong> UK transfers typically take 24 hours to reach the recipient.</>
                           : <>UK transfers typically take 24 hours to reach the recipient.</>}
                       </p>
+                      <p className="text-sm text-red-600 mt-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <strong>⚠️ This payment cannot be cancelled once sent</strong>
+                      </p>
                     </div>
                   </>
                 )}
@@ -840,6 +843,9 @@ export default function TransactionHistoryWorking() {
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                       <p className="text-sm text-blue-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                         <strong>SEPA Transfer:</strong> Transfers within the SEPA zone typically take 24 hours to complete.
+                      </p>
+                      <p className="text-sm text-red-600 mt-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <strong>⚠️ This payment cannot be cancelled once sent</strong>
                       </p>
                     </div>
                   </div>
