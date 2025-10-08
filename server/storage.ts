@@ -13,6 +13,7 @@ export interface IStorage {
   getUserByCredentials(customerNumber: string, pin: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   getUser(customerNumber: string): Promise<User | undefined>;
+  getUserById(userId: number): Promise<User | undefined>;
   getUserByCustomerNumber(customerNumber: string): Promise<User | undefined>;
   updateUserProfile(customerNumber: string, updates: Partial<User>): Promise<User | undefined>;
   getAllUsers(): Promise<User[]>;
@@ -189,6 +190,10 @@ class MemStorage implements IStorage {
 
   async getUser(customerNumber: string): Promise<User | undefined> {
     return Array.from(this.users.values()).find(user => user.customerNumber === customerNumber);
+  }
+
+  async getUserById(userId: number): Promise<User | undefined> {
+    return this.users.get(userId);
   }
 
   async getUserByCustomerNumber(customerNumber: string): Promise<User | undefined> {
