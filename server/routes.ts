@@ -2067,14 +2067,21 @@ No transfers found yet on your account.`;
             padding: 0;
             box-sizing: border-box;
           }
+          html, body {
+            width: 100%;
+            max-width: 100vw;
+            overflow-x: hidden;
+            position: relative;
+          }
           body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: linear-gradient(135deg, #126987 0%, #0e5a75 100%);
             min-height: 100vh;
-            padding: 16px;
+            padding: 12px;
           }
           .container {
-            max-width: 600px;
+            width: 100%;
+            max-width: 100%;
             margin: 0 auto;
           }
           .header {
@@ -2147,6 +2154,7 @@ No transfers found yet on your account.`;
             font-size: 13px;
             color: #666;
             font-family: 'Courier New', monospace;
+            word-break: break-all;
           }
           .expand-icon {
             color: #126987;
@@ -2189,7 +2197,8 @@ No transfers found yet on your account.`;
             font-weight: 600;
             text-align: right;
             max-width: 60%;
-            word-break: break-word;
+            word-break: break-all;
+            overflow-wrap: anywhere;
           }
           .status-badge {
             display: inline-block;
