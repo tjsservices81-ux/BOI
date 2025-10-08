@@ -375,6 +375,22 @@
         "dateCreated": "2025-10-08T05:26:27.575Z",
         "isDisabled": false
       }
+    ],
+    [
+      31,
+      {
+        "id": 31,
+        "customerNumber": "64848335",
+        "pin": "000000",
+        "name": "Hhshjaja",
+        "email": "ahahahha@gmail.com",
+        "phone": "454545",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-08T05:30:50.870Z",
+        "dateCreated": "2025-10-08T05:30:50.870Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [
@@ -603,7 +619,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 31,
+    "currentUserId": 32,
     "currentAccountId": 37,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
