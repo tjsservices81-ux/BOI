@@ -528,25 +528,20 @@ export default function TransactionHistoryWorking() {
       </div>
 
       {/* Transaction Detail Modal */}
-      {selectedTransaction && (
-        <div 
-          onClick={() => setSelectedTransaction(null)}
-          style={{ 
-          position: 'fixed', 
-          top: 0, 
-          left: 0, 
-          right: 0, 
-          bottom: 0, 
-          background: 'rgba(0, 0, 0, 0.5)',
-          zIndex: 1000,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '1rem'
-        }}>
+      <AnimatePresence>
+        {selectedTransaction && (
           <div 
-            onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] shadow-xl flex flex-col">
+            onClick={() => setSelectedTransaction(null)}
+            className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end"
+            style={{ zIndex: 1000 }}>
+            <motion.div 
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-t-2xl w-full h-[75vh] flex flex-col pb-safe"
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "tween", duration: 0.3, ease: "easeOut" }}
+            >
             {/* Fixed header with close button */}
             <div className="flex items-center justify-between p-6 pb-4 border-b border-gray-200 flex-shrink-0">
               <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -788,9 +783,10 @@ export default function TransactionHistoryWorking() {
                 </div>
               </div>
             </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
 
       {/* Pay Bills Modal */}
       {showPayBillsForm && (
