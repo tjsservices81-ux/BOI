@@ -9,11 +9,12 @@
         "name": "Michael Murphy",
         "email": "michaelmurphy18@icloud.com",
         "phone": "7310658405",
-        "address": null,
-        "dateOfBirth": null,
+        "address": "",
+        "dateOfBirth": "",
         "joinDate": "2025-10-08T15:41:28.655Z",
         "dateCreated": "2025-10-08T15:41:28.655Z",
-        "isDisabled": false
+        "isDisabled": false,
+        "currency": "EUR"
       }
     ]
   ],

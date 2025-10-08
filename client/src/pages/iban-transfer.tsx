@@ -773,13 +773,22 @@ export default function IbanTransfer() {
               </div>
             )}
 
-            <button
-              type="submit"
-              className="w-full bg-[#126987] text-white py-4 rounded-xl font-semibold active:scale-98 transition-transform"
-              style={{ fontFamily: 'OpenSans, sans-serif' }}
-            >
-              Continue to Review
-            </button>
+            <div className="android-button-container">
+              <button
+                type="submit"
+                className="continue-button w-full bg-gradient-to-r from-[#126987] to-[#5a7b85] text-white py-4 px-6 rounded-lg font-bold transition-all duration-150 ease-out active:scale-98 text-sm shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#126987] focus:ring-offset-2"
+                style={{ 
+                  fontFamily: 'OpenSans, sans-serif',
+                  minHeight: '48px',
+                  WebkitAppearance: 'none',
+                  appearance: 'none',
+                  border: '2px solid transparent',
+                  backgroundClip: 'padding-box'
+                }}
+              >
+                Continue to Review
+              </button>
+            </div>
           </form>
         </div>
       </div>
