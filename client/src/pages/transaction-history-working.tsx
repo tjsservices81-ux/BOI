@@ -889,7 +889,7 @@ export default function TransactionHistoryWorking() {
           <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end"
                style={{ zIndex: 9999 }}>
             <motion.div 
-              className="bg-white rounded-t-2xl w-full max-h-[80vh] flex flex-col pb-safe"
+              className="bg-white rounded-t-2xl w-full max-h-[90vh] flex flex-col pb-safe"
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
