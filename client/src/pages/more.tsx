@@ -28,7 +28,7 @@ export default function More() {
   };
 
   return (
-    <div className="h-screen bg-gradient-to-br from-[#126987] to-[#0d4e63] flex flex-col overflow-hidden page-slide-up relative">
+    <div className="h-screen bg-gradient-to-br from-[#126987] to-[#0d4e63] flex flex-col overflow-hidden relative">
       {/* Loading overlay for smooth transitions */}
       {isNavigating && (
         <div className="fixed inset-0 bg-black bg-opacity-30 z-50 flex items-center justify-center backdrop-blur-sm">
@@ -60,7 +60,7 @@ export default function More() {
       </div>
 
       {/* Main Content */}
-      <div className="bg-white rounded-t-3xl mt-6 flex-1 overflow-hidden shadow-2xl">
+      <div className="bg-white rounded-t-3xl mt-6 flex-1 overflow-hidden shadow-2xl content-slide-down">
         <div className="h-full overflow-y-auto p-6 pb-32">
           
           {/* Content Header */}
