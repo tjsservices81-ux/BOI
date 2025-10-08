@@ -1292,14 +1292,13 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 z-50 backdrop-animate-in flex items-end md:items-center justify-center">
+    <div className="fixed inset-0 z-50 bg-gray-900">
       <div 
-        className={`bg-white w-full md:w-[90vw] md:h-[90vh] md:rounded-3xl md:max-w-4xl md:max-h-[800px] shadow-2xl flex flex-col ${
+        className={`bg-white w-full h-full flex flex-col shadow-2xl ${
           isAnimating ? 'chat-animate-out' : 'chat-animate-in'
         }`}
         style={{ 
-          height: 'calc(100vh - 88px)',
-          maxHeight: 'calc(100vh - 88px)'
+          paddingBottom: '88px'
         }}
       >
         {/* Professional Header */}
