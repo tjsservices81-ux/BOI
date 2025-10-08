@@ -86,6 +86,19 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
+// Customers table for verified users with admin code
+export const customers = pgTable("customers", {
+  id: serial("id").primaryKey(),
+  customerNumber: text("customer_number").notNull().unique(),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone"),
+  dateOfBirth: text("date_of_birth"),
+  joinDate: text("join_date").notNull(),
+  currency: text("currency").notNull().default("EUR"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 // Chat messages table for persistent chat storage
 export const chatMessages = pgTable("chat_messages", {
   id: serial("id").primaryKey(),
@@ -147,6 +160,11 @@ export const insertChatSessionSchema = createInsertSchema(chatSessions).omit({
   id: true,
 });
 
+export const insertCustomerSchema = createInsertSchema(customers).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const loginSchema = z.object({
   customerNumber: z.string().min(1, "Customer number is required"),
   pin: z.string().min(4, "PIN must be at least 4 digits"),
@@ -172,6 +190,7 @@ export type Transaction = typeof transactions.$inferSelect;
 export type Payee = typeof payees.$inferSelect;
 export type ScheduledPayment = typeof scheduledPayments.$inferSelect;
 export type Statement = typeof statements.$inferSelect;
+export type Customer = typeof customers.$inferSelect;
 export type ChatMessage = typeof chatMessages.$inferSelect;
 export type ChatResponse = typeof chatResponses.$inferSelect;
 export type ChatSession = typeof chatSessions.$inferSelect;
@@ -179,6 +198,7 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertAccount = z.infer<typeof insertAccountSchema>;
 export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
 export type InsertPayee = z.infer<typeof insertPayeeSchema>;
+export type InsertCustomer = z.infer<typeof insertCustomerSchema>;
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type InsertChatResponse = z.infer<typeof insertChatResponseSchema>;
 export type InsertChatSession = z.infer<typeof insertChatSessionSchema>;

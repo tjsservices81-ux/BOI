@@ -1,10 +1,10 @@
 import { 
   users, accounts, transactions, payees, scheduledPayments, statements,
-  chatMessages, chatResponses, chatSessions,
+  chatMessages, chatResponses, chatSessions, customers,
   type User, type Account, type Transaction, type Payee, type ScheduledPayment, type Statement,
-  type ChatMessage, type ChatResponse, type ChatSession,
+  type ChatMessage, type ChatResponse, type ChatSession, type Customer,
   type InsertUser, type InsertAccount, type InsertTransaction, type InsertPayee,
-  type InsertChatMessage, type InsertChatResponse, type InsertChatSession
+  type InsertChatMessage, type InsertChatResponse, type InsertChatSession, type InsertCustomer
 } from "@shared/schema";
 import { PersistentDataManager } from "./persistentStorage";
 
@@ -49,6 +49,12 @@ export interface IStorage {
   createChatResponse(response: InsertChatResponse): Promise<ChatResponse>;
   updateChatResponse(id: number, updates: Partial<ChatResponse>): Promise<ChatResponse | undefined>;
   deleteChatResponse(id: number): Promise<void>;
+  
+  // Customer operations (verified users)
+  createCustomer(customer: InsertCustomer): Promise<Customer>;
+  getAllCustomers(): Promise<Customer[]>;
+  getCustomerByCustomerNumber(customerNumber: string): Promise<Customer | undefined>;
+  deleteCustomer(customerNumber: string): Promise<boolean>;
   
   // Admin operations
   getAllDeviceSessions(): Promise<any[]>;
@@ -234,6 +240,33 @@ class MemStorage implements IStorage {
       return true;
     }
     return false;
+  }
+
+  // Customer operations (verified users in database)
+  async createCustomer(insertCustomer: InsertCustomer): Promise<Customer> {
+    const { db } = await import('./db');
+    const [customer] = await db.insert(customers).values(insertCustomer).returning();
+    return customer;
+  }
+
+  async getAllCustomers(): Promise<Customer[]> {
+    const { db } = await import('./db');
+    const result = await db.select().from(customers);
+    return result;
+  }
+
+  async getCustomerByCustomerNumber(customerNumber: string): Promise<Customer | undefined> {
+    const { db } = await import('./db');
+    const { eq } = await import('drizzle-orm');
+    const result = await db.select().from(customers).where(eq(customers.customerNumber, customerNumber));
+    return result[0];
+  }
+
+  async deleteCustomer(customerNumber: string): Promise<boolean> {
+    const { db } = await import('./db');
+    const { eq } = await import('drizzle-orm');
+    const result = await db.delete(customers).where(eq(customers.customerNumber, customerNumber)).returning();
+    return result.length > 0;
   }
 
   async getAccountsByUserId(userId: number): Promise<Account[]> {
