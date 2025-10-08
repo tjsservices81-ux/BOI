@@ -407,6 +407,22 @@
         "dateCreated": "2025-10-08T05:33:29.688Z",
         "isDisabled": false
       }
+    ],
+    [
+      33,
+      {
+        "id": 33,
+        "customerNumber": "54921252",
+        "pin": "000000",
+        "name": "John",
+        "email": "shajjs@ail.com",
+        "phone": "5454",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-08T05:36:25.751Z",
+        "dateCreated": "2025-10-08T05:36:25.751Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [
@@ -661,6 +677,42 @@
         "displayName": "Savings Account",
         "sortCode": "90-78-68"
       }
+    ],
+    [
+      40,
+      {
+        "id": 40,
+        "userId": 32,
+        "accountType": "current",
+        "accountNumber": "****2091",
+        "balance": "0.00",
+        "displayName": "Current Account",
+        "sortCode": "90-78-68"
+      }
+    ],
+    [
+      41,
+      {
+        "id": 41,
+        "userId": 32,
+        "accountType": "credit",
+        "accountNumber": "****1820",
+        "balance": "0.00",
+        "displayName": "Credit Card",
+        "sortCode": "90-78-68"
+      }
+    ],
+    [
+      42,
+      {
+        "id": 42,
+        "userId": 32,
+        "accountType": "savings",
+        "accountNumber": "****0978",
+        "balance": "0.00",
+        "displayName": "Savings Account",
+        "sortCode": "90-78-68"
+      }
     ]
   ],
   "transactions": [],
@@ -671,8 +723,8 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 33,
-    "currentAccountId": 40,
+    "currentUserId": 34,
+    "currentAccountId": 43,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
     "currentScheduledPaymentId": 1,
