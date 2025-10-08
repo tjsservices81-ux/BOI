@@ -1227,10 +1227,10 @@ export default function Login() {
                 </div>
                 <div className="w-full bg-white bg-opacity-20 rounded-full h-1">
                   <div 
-                    className="bg-white h-1 rounded-full transition-all ease-linear"
+                    className="bg-white h-1 rounded-full"
                     style={{ 
                       width: `${loginProgress}%`,
-                      transitionDuration: '100ms'
+                      transition: 'none'
                     }}
                   ></div>
                 </div>
