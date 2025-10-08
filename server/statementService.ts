@@ -517,11 +517,12 @@ export class StatementService {
   private async getTransactions(request: StatementRequest): Promise<StatementTransaction[]> {
     // Use real transaction data from frontend if provided, otherwise use mock data
     try {
-      // Use actual dates from request with validation - use UK timezone (BST/GMT)
-      // UK is currently BST (UTC+1), so we need to adjust for that
-      const startDate = new Date(request.startDate + 'T00:00:00+01:00'); // Start of day in UK time
+      // Parse dates and add one day to end date to include all of that day
+      const startDate = new Date(request.startDate);
+      const endDate = new Date(request.endDate);
       
-      const endDate = new Date(request.endDate + 'T23:59:59.999+01:00'); // End of day in UK time - include all transactions on this date
+      // Add one day to end date to include all transactions on the end date
+      endDate.setDate(endDate.getDate() + 1);
       
       // Validate dates
       if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
@@ -552,7 +553,8 @@ export class StatementService {
             if (isNaN(transactionDate.getTime())) return false;
             
             const matchesAccount = String(tx.accountId) === String(request.accountId);
-            const inDateRange = transactionDate >= startDate && transactionDate <= endDate;
+            // Use < instead of <= since we added a day to endDate
+            const inDateRange = transactionDate >= startDate && transactionDate < endDate;
             return matchesAccount && inDateRange;
           } catch (err) {
             console.error('Error filtering transaction:', err);
