@@ -437,6 +437,12 @@ export default function Profile() {
   };
 
   const resetChatResponses = () => {
+    // Block if account deleted
+    if (accountDeleted) {
+      alert('Account Deleted');
+      return;
+    }
+    
     if (confirm('Reset all chat responses to defaults? This will remove any custom responses you\'ve added.')) {
       const defaultResponses = getDefaultChatResponses();
       saveChatResponses(defaultResponses);
@@ -444,6 +450,12 @@ export default function Profile() {
   };
 
   const startEditingProfile = () => {
+    // Block if account deleted
+    if (accountDeleted) {
+      alert('Account Deleted');
+      return;
+    }
+    
     setEditProfileData({
       name: profileData.name,
       email: profileData.email,
@@ -560,6 +572,12 @@ export default function Profile() {
   };
 
   const addNewAccount = () => {
+    // Block if account deleted
+    if (accountDeleted) {
+      alert('Account Deleted');
+      return;
+    }
+    
     if (!newAccountData.displayName.trim()) {
       alert('Please enter an account name');
       return;
@@ -774,6 +792,12 @@ export default function Profile() {
   ];
 
   const addCustomTransaction = () => {
+    // Block if account deleted
+    if (accountDeleted) {
+      alert('Account Deleted');
+      return;
+    }
+    
     if (!customTransactionData.accountId) {
       alert('Please select an account');
       return;
@@ -963,6 +987,12 @@ export default function Profile() {
   };
 
   const updateBalance = () => {
+    // Block if account deleted
+    if (accountDeleted) {
+      alert('Account Deleted');
+      return;
+    }
+    
     if (!editingAccount || !newBalance.trim()) {
       alert('Please enter a valid balance');
       return;
@@ -1033,6 +1063,12 @@ export default function Profile() {
   };
 
   const addSampleTransactions = (accountId: number, count: number, startDateStr: string = startDate, endDateStr: string = endDate) => {
+    // Block if account deleted
+    if (accountDeleted) {
+      alert('Account Deleted');
+      return;
+    }
+    
     // Clear all caches first to ensure we get the most current data
     UserDataManager.clearCache();
 
@@ -1130,6 +1166,12 @@ export default function Profile() {
   };
 
   const resetToDefaults = () => {
+    // Block if account deleted
+    if (accountDeleted) {
+      alert('Account Deleted');
+      return;
+    }
+    
     // Reset accounts to zero balances for current user
     const defaultAccounts = [
       { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "0.00", accountType: "current" },
@@ -1199,6 +1241,12 @@ export default function Profile() {
 
   // Handle transaction deletion - Single action with instant updates
   const handleDeleteTransaction = () => {
+    // Block if account deleted
+    if (accountDeleted) {
+      alert('Account Deleted');
+      return;
+    }
+    
     if (!selectedTransaction || !selectedAccountId) return;
 
     // Get all transactions for current user
@@ -1739,7 +1787,13 @@ export default function Profile() {
                   <div className="space-y-3">
                     {/* Add Account */}
                     <button 
-                      onClick={() => setShowAddAccount(true)}
+                      onClick={() => {
+                        if (accountDeleted) {
+                          alert('Account Deleted');
+                          return;
+                        }
+                        setShowAddAccount(true);
+                      }}
                       className="w-full flex items-center space-x-3 p-4 bg-green-50 border border-green-200 rounded-xl active:scale-98 transition-transform"
                     >
                       <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
@@ -1757,7 +1811,13 @@ export default function Profile() {
 
                     {/* Add Custom Transaction */}
                     <button 
-                      onClick={() => setShowAddTransaction(true)}
+                      onClick={() => {
+                        if (accountDeleted) {
+                          alert('Account Deleted');
+                          return;
+                        }
+                        setShowAddTransaction(true);
+                      }}
                       className="w-full flex items-center space-x-3 p-4 bg-blue-50 border border-blue-200 rounded-xl active:scale-98 transition-transform"
                     >
                       <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
@@ -1775,7 +1835,13 @@ export default function Profile() {
 
                     {/* Add Sample Transactions */}
                     <button 
-                      onClick={() => setShowSampleTransactions(true)}
+                      onClick={() => {
+                        if (accountDeleted) {
+                          alert('Account Deleted');
+                          return;
+                        }
+                        setShowSampleTransactions(true);
+                      }}
                       className="w-full flex items-center space-x-3 p-4 bg-blue-50 border border-blue-200 rounded-xl active:scale-98 transition-transform"
                     >
                       <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
@@ -1794,6 +1860,10 @@ export default function Profile() {
                     {/* Delete Transaction */}
                     <button 
                       onClick={() => {
+                        if (accountDeleted) {
+                          alert('Account Deleted');
+                          return;
+                        }
                         setShowDeleteTransaction(true);
                       }}
                       className="w-full flex items-center space-x-3 p-4 bg-red-50 border border-red-200 rounded-xl active:scale-98 transition-transform"
@@ -1815,6 +1885,10 @@ export default function Profile() {
                     {UserDataManager.getUserData('cardBlocked') && (
                       <button 
                         onClick={() => {
+                          if (accountDeleted) {
+                            alert('Account Deleted');
+                            return;
+                          }
                           UserDataManager.setUserData('cardBlocked', false);
                           // Clear cache to ensure fresh data is loaded when navigating back
                           UserDataManager.clearCache('cardBlocked');
@@ -1859,6 +1933,10 @@ export default function Profile() {
                           </div>
                           <button
                             onClick={() => {
+                              if (accountDeleted) {
+                                alert('Account Deleted');
+                                return;
+                              }
                               setEditingAccount(account);
                               setNewBalance(account.balance);
                               setNewAccountName(account.displayName);
