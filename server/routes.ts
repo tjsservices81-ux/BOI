@@ -1419,6 +1419,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
           console.log('User and accounts created in database:', newUser);
 
+          // Add user to customers table in database
+          try {
+            await storage.createCustomer({
+              customerNumber: newUser.customerNumber,
+              name: newUser.name,
+              email: newUser.email,
+              phone: newUser.phone || '',
+              dateOfBirth: newUser.dateOfBirth || '',
+              joinDate: newUser.joinDate || 'Member since 2018',
+              currency: newUser.currency || 'EUR'
+            });
+            console.log(`📊 CUSTOMER ADDED TO DATABASE (Admin OTC): ${newUser.name} (${newUser.customerNumber})`);
+          } catch (customerError) {
+            console.error('Failed to add customer to database:', customerError);
+            // Don't fail the account creation if customer table insertion fails
+          }
+
           res.json({ 
             success: true, 
             message: "OTC validated successfully and account created",
