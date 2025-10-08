@@ -769,12 +769,12 @@ export default function Login() {
         if (currentProgress <= 100) {
           setLoginProgress(currentProgress);
           
-          // Update stage based on progress
-          if (currentProgress < 20) {
+          // Update stage based on progress - Less frequent changes for smoother experience
+          if (currentProgress < 25) {
             setLoginStage('Checking connection...');
-          } else if (currentProgress < 70) {
+          } else if (currentProgress < 75) {
             setLoginStage('Authenticating...');
-          } else if (currentProgress < 90) {
+          } else if (currentProgress < 95) {
             setLoginStage('Loading account data...');
           } else {
             setLoginStage('Welcome to Bank of Ireland');
@@ -1209,7 +1209,11 @@ export default function Login() {
               {/* Progress Bar */}
               <div className="w-64 mx-auto">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-white text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  <span 
+                    className="text-white text-sm font-medium transition-opacity duration-300" 
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                    key={loginStage}
+                  >
                     {loginStage}
                   </span>
                   <span className="text-white text-sm opacity-75" style={{ fontFamily: 'OpenSans, sans-serif' }}>
