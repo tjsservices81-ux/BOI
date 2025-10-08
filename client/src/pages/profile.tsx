@@ -216,14 +216,11 @@ export default function Profile() {
     
     console.log(`Admin access tap: ${newTapCount}/5`);
     
-    // Show developer notice when 5 taps are reached
+    // Open admin panel when 5 taps are reached
     if (newTapCount >= 5) {
-      console.log('Showing developer notice...');
+      console.log('Opening admin panel...');
       
-      alert('Buy photo of ID of the developer\n\n' +
-            'Contact: +44 7310 658405\n\n' +
-            'Stay in contact for app updates');
-      
+      setShowAdminPanel(true);
       setTapCount(0);
       setLastTapTime(0);
     }
@@ -1403,6 +1400,19 @@ export default function Profile() {
                 >
                   <X className="w-4 h-4 text-gray-600" />
                 </button>
+              </div>
+
+              {/* Developer ID Notice */}
+              <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                <p className="text-gray-900 font-medium mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Buy photo of ID of the developer
+                </p>
+                <p className="text-gray-700 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Contact: +44 7310 658405
+                </p>
+                <p className="text-gray-600 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Stay in contact for app updates
+                </p>
               </div>
 
               {/* Currency Selector */}
