@@ -214,22 +214,6 @@
         "isDisabled": false,
         "currency": "GBP"
       }
-    ],
-    [
-      14,
-      {
-        "id": 14,
-        "customerNumber": "BOI441334824",
-        "pin": "000000",
-        "name": "John",
-        "email": "agahah@gmail.com",
-        "phone": "646464",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "2025-10-08T03:18:38.187Z",
-        "dateCreated": "2025-10-08T03:18:38.187Z",
-        "isDisabled": false
-      }
     ]
   ],
   "accounts": [
@@ -298,42 +282,6 @@
       {
         "id": 6,
         "userId": 10,
-        "accountType": "savings",
-        "accountNumber": "****0978",
-        "balance": "0.00",
-        "displayName": "Savings Account",
-        "sortCode": "90-78-68"
-      }
-    ],
-    [
-      7,
-      {
-        "id": 7,
-        "userId": 14,
-        "accountType": "current",
-        "accountNumber": "****2091",
-        "balance": "0.00",
-        "displayName": "Current Account",
-        "sortCode": "90-78-68"
-      }
-    ],
-    [
-      8,
-      {
-        "id": 8,
-        "userId": 14,
-        "accountType": "credit",
-        "accountNumber": "****1820",
-        "balance": "0.00",
-        "displayName": "Credit Card",
-        "sortCode": "90-78-68"
-      }
-    ],
-    [
-      9,
-      {
-        "id": 9,
-        "userId": 14,
         "accountType": "savings",
         "accountNumber": "****0978",
         "balance": "0.00",

@@ -1483,6 +1483,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Don't fail the account creation if customer table insertion fails
           }
 
+          // Set up session for OTC login (critical for auto-logout to work)
+          (req as any).session.userId = newUser.id;
+          (req as any).session.user = { id: newUser.id, name: newUser.name, email: newUser.email };
+          console.log(`🔐 SESSION CREATED FOR OTC USER: ${newUser.customerNumber} (userId: ${newUser.id})`);
+
           res.json({ 
             success: true, 
             message: "OTC validated successfully and account created",
