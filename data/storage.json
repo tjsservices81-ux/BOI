@@ -488,6 +488,22 @@
         "dateCreated": "2025-10-08T07:23:45.884Z",
         "isDisabled": false
       }
+    ],
+    [
+      38,
+      {
+        "id": 38,
+        "customerNumber": "51761050",
+        "pin": "000000",
+        "name": "john",
+        "email": "hshsh@gmail.com",
+        "phone": "3333",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-08T09:10:41.253Z",
+        "dateCreated": "2025-10-08T09:10:41.253Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [
@@ -824,7 +840,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 38,
+    "currentUserId": 39,
     "currentAccountId": 46,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
