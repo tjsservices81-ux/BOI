@@ -289,6 +289,11 @@ html, body {
   overflow: hidden;
   -webkit-overflow-scrolling: touch;
   touch-action: manipulation;
+  /* iPhone 15 Pro Max exact dimensions */
+  width: 100%;
+  max-width: 430px;
+  position: relative;
+  background: white;
 }
 
 /* Prevent double-tap zoom on interactive elements only */
@@ -352,11 +357,24 @@ button img, a img, [role="button"] img {
 @media (display-mode: standalone) {
   :root {
     --safe-area-inset-top: env(safe-area-inset-top);
+    --safe-area-inset-bottom: env(safe-area-inset-bottom);
   }
   
   body {
     /* Remove padding-top for splash screen - handled by splash-specific rules */
   }
+  
+  #root {
+    /* iPhone 15 Pro Max safe areas */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Ensure safe area insets on all platforms */
+#root {
+  padding-top: max(env(safe-area-inset-top), 0px);
+  padding-bottom: max(env(safe-area-inset-bottom), 0px);
 }
 
 input, textarea {
@@ -641,6 +659,10 @@ body {
   margin: 0;
   padding: 0;
   touch-action: none !important;
+  /* iPhone 15 Pro Max layout */
+  display: flex;
+  justify-content: center;
+  background: #000;
 }
 
 /* Prevent layout shifts during interactions */
