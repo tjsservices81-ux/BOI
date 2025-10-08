@@ -186,7 +186,7 @@ export default function CreditScore() {
 
   if (isLoading) {
     return (
-      <div className="h-screen bg-gradient-to-br from-[#126987] to-[#0d4e63] flex flex-col overflow-hidden page-slide-up">
+      <div className="h-screen bg-gradient-to-br from-[#126987] to-[#0d4e63] flex flex-col overflow-hidden">
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center px-6">
             <div className="relative w-16 h-16 mx-auto mb-8">
@@ -203,7 +203,7 @@ export default function CreditScore() {
   }
 
   return (
-    <div className="h-screen bg-gradient-to-br from-[#126987] to-[#0d4e63] flex flex-col overflow-hidden page-slide-up relative">
+    <div className="h-screen bg-gradient-to-br from-[#126987] to-[#0d4e63] flex flex-col overflow-hidden relative">
       {/* Loading overlay */}
       {isNavigating && (
         <div className="fixed inset-0 bg-black bg-opacity-30 z-50 flex items-center justify-center backdrop-blur-sm">
@@ -236,7 +236,7 @@ export default function CreditScore() {
       </div>
 
       {/* Main Content */}
-      <div className="bg-white rounded-t-3xl mt-6 flex-1 overflow-hidden shadow-2xl">
+      <div className="bg-white rounded-t-3xl mt-6 flex-1 overflow-hidden shadow-2xl page-slide-up">
         <div className="h-full overflow-y-auto pb-32">
           
           {/* Content Header */}
