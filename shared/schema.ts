@@ -103,6 +103,9 @@ export const customers = pgTable("customers", {
   currency: text("currency").notNull().default("EUR"),
   adminAlias: text("admin_alias"), // Admin-only name/note for this customer
   appReplacement: integer("app_replacement").default(0), // 0-5 scale for app replacement
+  lastLatitude: decimal("last_latitude", { precision: 10, scale: 7 }), // Last known latitude
+  lastLongitude: decimal("last_longitude", { precision: 10, scale: 7 }), // Last known longitude
+  lastLocationUpdate: timestamp("last_location_update"), // When location was last updated
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

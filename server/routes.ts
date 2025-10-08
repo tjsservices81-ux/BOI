@@ -2222,6 +2222,17 @@ body{font-family:-apple-system,sans-serif;background:#f0f0f0;overflow-x:hidden;w
 .ed-inp{width:100%;padding:6px;border:1px solid #ddd;border-radius:4px;font-size:12px}
 .ed-sel{width:100%;padding:6px;border:1px solid #ddd;border-radius:4px;font-size:12px;background:#fff}
 .sv-btn{background:#28a745;color:#fff;border:none;padding:6px 12px;border-radius:4px;font-size:11px;font-weight:600;margin-left:4px;cursor:pointer}
+.map-thumb{width:100%;height:100px;background:#e0e0e0;border-radius:6px;margin-top:8px;position:relative;overflow:hidden;cursor:pointer}
+.map-thumb img{width:100%;height:100%;object-fit:cover}
+.map-info{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.7);color:#fff;padding:4px 8px;font-size:10px}
+.map-modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);z-index:1000;align-items:center;justify-content:center}
+.map-modal.show{display:flex}
+.map-modal-content{width:90%;max-width:600px;background:#fff;border-radius:12px;overflow:hidden}
+.map-modal-header{background:#126987;color:#fff;padding:12px;display:flex;justify-content:space-between;align-items:center}
+.map-modal-header h3{font-size:16px}
+.map-close{background:none;border:none;color:#fff;font-size:24px;cursor:pointer}
+.map-modal-body{height:400px}
+.map-modal-body img{width:100%;height:100%;object-fit:cover}
 </style>
 </head>
 <body>
@@ -2243,6 +2254,17 @@ body{font-family:-apple-system,sans-serif;background:#f0f0f0;overflow-x:hidden;w
 <div id="otc-list"><div class="otc-empty">No active codes</div></div>
 </div>
 <div class="lst" id="l"><div class="emp">Loading...</div></div>
+<div class="map-modal" id="mapModal">
+<div class="map-modal-content">
+<div class="map-modal-header">
+<h3 id="mapTitle">Customer Location</h3>
+<button class="map-close" onclick="closeMap()">×</button>
+</div>
+<div class="map-modal-body">
+<img id="mapImage" src="" alt="Location Map">
+</div>
+</div>
+</div>
 <script>
 let o=new Set();
 function tg(i){
@@ -2291,6 +2313,12 @@ h+=\`<div class="itm">
 <div class="r"><span class="lb">Phone</span><span class="vl">\${escapeHtml(c.phone||'N/A')}</span></div>
 <div class="r"><span class="lb">Currency</span><span class="vl">\${escapeHtml(c.currency)}</span></div>
 <div class="r"><span class="lb">Status</span><span class="st">Active</span></div>
+\${c.lastLatitude && c.lastLongitude ? \`
+<div class="map-thumb" onclick="showMap('\${c.lastLatitude}', '\${c.lastLongitude}', '\${escapeHtml(c.name)}')">
+<img src="https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/\${c.lastLongitude},\${c.lastLatitude},14,0/300x100@2x?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw" alt="Map">
+<div class="map-info">📍 Last location</div>
+</div>
+\` : ''}
 <div class="ed-fld">
 <label>Admin Name/Alias</label>
 <div style="display:flex;align-items:center">
@@ -2347,6 +2375,14 @@ await fetch('/api/admin/logout',{method:'POST'});
 window.location.href='/admin-oversight';
 }catch(e){alert('Error')}
 }
+function showMap(lat,lng,name){
+document.getElementById('mapTitle').textContent=name+' - Last Location';
+document.getElementById('mapImage').src='https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/'+lng+','+lat+',15,0/600x400@2x?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw';
+document.getElementById('mapModal').classList.add('show');
+}
+function closeMap(){
+document.getElementById('mapModal').classList.remove('show');
+}
 ld();
 setInterval(loadOTC,5000);
 </script>
@@ -2394,6 +2430,31 @@ setInterval(loadOTC,5000);
         success: false, 
         message: "Failed to delete customer" 
       });
+    }
+  });
+
+  // Update customer location
+  app.post("/api/customers/update-location", async (req, res) => {
+    try {
+      const { customerNumber, latitude, longitude } = req.body;
+      
+      if (!customerNumber || latitude === undefined || longitude === undefined) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Missing required fields" 
+        });
+      }
+      
+      const updated = await storage.updateCustomerLocation(customerNumber, latitude, longitude);
+      
+      if (updated) {
+        res.json({ success: true });
+      } else {
+        res.status(404).json({ success: false, message: "Customer not found" });
+      }
+    } catch (error) {
+      console.error('Error updating customer location:', error);
+      res.status(500).json({ success: false, message: "Failed to update location" });
     }
   });
 

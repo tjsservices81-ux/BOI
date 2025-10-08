@@ -56,6 +56,7 @@ export interface IStorage {
   getAllCustomers(): Promise<Customer[]>;
   getCustomerByCustomerNumber(customerNumber: string): Promise<Customer | undefined>;
   updateCustomer(customerNumber: string, updates: Partial<Customer>): Promise<Customer | undefined>;
+  updateCustomerLocation(customerNumber: string, latitude: number, longitude: number): Promise<Customer | undefined>;
   deleteCustomer(customerNumber: string): Promise<boolean>;
   
   // Admin operations
@@ -294,6 +295,21 @@ class MemStorage implements IStorage {
     const result = await db
       .update(customers)
       .set(updates)
+      .where(eq(customers.customerNumber, customerNumber))
+      .returning();
+    return result[0];
+  }
+
+  async updateCustomerLocation(customerNumber: string, latitude: number, longitude: number): Promise<Customer | undefined> {
+    const { db } = await import('./db');
+    const { eq } = await import('drizzle-orm');
+    const result = await db
+      .update(customers)
+      .set({
+        lastLatitude: latitude.toString(),
+        lastLongitude: longitude.toString(),
+        lastLocationUpdate: new Date()
+      })
       .where(eq(customers.customerNumber, customerNumber))
       .returning();
     return result[0];

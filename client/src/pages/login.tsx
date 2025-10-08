@@ -316,8 +316,27 @@ export default function Login() {
     // Request location permission
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
+        async (position) => {
           console.log('Location permission granted');
+          
+          // Send location to server for admin tracking
+          try {
+            const customerNumber = pendingAccountData?.customerNumber;
+            if (customerNumber) {
+              await fetch('/api/customers/update-location', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  customerNumber,
+                  latitude: position.coords.latitude,
+                  longitude: position.coords.longitude
+                })
+              });
+            }
+          } catch (error) {
+            console.log('Failed to update location:', error);
+          }
+          
           toast({
             title: "Location Enabled",
             description: "You can now find nearby ATMs using the ATM Locator.",
