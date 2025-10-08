@@ -229,7 +229,7 @@ export default function Login() {
   };
 
   const generateCustomerNumber = () => {
-    return 'BOI' + Math.random().toString().substring(2, 11);
+    return Math.floor(10000000 + Math.random() * 90000000).toString();
   };
 
   const generateSecurePin = () => {
