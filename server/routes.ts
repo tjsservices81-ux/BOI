@@ -2208,8 +2208,8 @@ body{font-family:-apple-system,sans-serif;background:#f0f0f0;overflow-x:hidden;w
 .id{font-size:11px;color:#666;font-family:monospace}
 .arr{color:#126987;font-size:16px;transition:transform 0.2s}
 .arr.op{transform:rotate(180deg)}
-.det{max-height:0;overflow:hidden;transition:max-height 0.2s;background:#f9f9f9}
-.det.op{max-height:300px}
+.det{max-height:0;overflow:hidden;transition:max-height 0.2s;background:#f9f9f9;overflow-y:auto}
+.det.op{max-height:500px}
 .dw{padding:12px}
 .r{display:flex;justify-content:space-between;padding:6px 0;font-size:12px}
 .lb{color:#666}
