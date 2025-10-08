@@ -2196,12 +2196,12 @@ try{
 let r=await fetch('/api/admin/login',{
 method:'POST',
 headers:{'Content-Type':'application/json'},
-credentials:'same-origin',
+credentials:'include',
 body:JSON.stringify({pin})
 });
 let d=await r.json();
 if(r.ok&&d.success){
-window.location.href='/admin-oversight';
+setTimeout(()=>{window.location.href='/admin-oversight';},100);
 }else{
 document.getElementById('err').classList.add('show');
 document.getElementById('pin').value='';
