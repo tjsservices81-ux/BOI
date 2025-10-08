@@ -1362,12 +1362,15 @@ export default function Profile() {
 
           {/* Actions */}
           <div className="space-y-4">
-            <div className="w-full flex items-center space-x-4 p-4 bg-gray-100 border border-gray-200 rounded-xl opacity-50">
-              <Settings className="w-5 h-5 text-gray-400" />
-              <span className="flex-1 text-left font-semibold text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+            <button 
+              onClick={() => navigate('/settings')}
+              className="w-full flex items-center space-x-4 p-4 bg-[#126987] border border-[#126987] rounded-xl active:scale-98 transition-transform"
+            >
+              <Settings className="w-5 h-5 text-white" />
+              <span className="flex-1 text-left font-semibold text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                 Settings
               </span>
-            </div>
+            </button>
 
             <div className="w-full flex items-center space-x-4 p-4 bg-gray-100 border border-gray-200 rounded-xl opacity-50">
               <Shield className="w-5 h-5 text-gray-400" />
