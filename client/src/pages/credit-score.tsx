@@ -54,10 +54,11 @@ export default function CreditScore() {
   const bankName = userCurrency === 'GBP' ? "Bank of Ireland UK" : "Bank of Ireland";
 
   useEffect(() => {
-    // Simulate loading
+    // Simulate loading with random duration between 2-5 seconds
+    const randomDuration = Math.floor(Math.random() * 3000) + 2000; // 2000-5000ms
     const loadingTimer = setTimeout(() => {
       setIsLoading(false);
-    }, 1200);
+    }, randomDuration);
 
     return () => clearTimeout(loadingTimer);
   }, []);
