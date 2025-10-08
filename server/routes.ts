@@ -17,6 +17,9 @@ import Database from "@replit/database";
 // Initialize Replit Database for access codes
 const db = new Database();
 
+// Track explicitly deleted customer numbers (in-memory)
+const deletedCustomers = new Set<string>();
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Wait for storage to fully initialize from persistent data
   await storage.waitForInitialization();
@@ -554,15 +557,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Add session tracking middleware
   app.use(sessionTrackingMiddleware);
 
-  // Helper function to check if customer exists in database
+  // Helper function to check if customer was explicitly deleted by admin
   const checkCustomerExists = async (customerNumber: string): Promise<boolean> => {
-    try {
-      const customer = await storage.getCustomerByCustomerNumber(customerNumber);
-      return !!customer;
-    } catch (error) {
-      console.error('Error checking customer existence:', error);
-      return false;
-    }
+    // Customer is considered deleted ONLY if they're in the explicit deletedCustomers set
+    // This prevents false positives for customers not in database table
+    return !deletedCustomers.has(customerNumber);
   };
 
   // Authentication middleware
@@ -2441,12 +2440,9 @@ loadOTC();
 }catch(e){document.getElementById('l').innerHTML='<div class="emp">Error</div>'}
 }
 async function dl(n,nm){
-console.log('DELETE CLICKED - Customer Number:', n, 'Name:', nm);
 if(!confirm('Delete '+nm+' ('+n+')?'))return;
 try{
-console.log('Deleting customer number:', n);
 let r=await fetch('/api/customers/'+encodeURIComponent(n),{method:'DELETE'}),d=await r.json();
-console.log('Delete response:', d);
 if(r.ok){alert('Deleted: '+nm+' ('+n+')');o.delete(n);ld()}else{alert('Failed')}
 }catch(e){console.error('Delete error:',e);alert('Error')}
 }
@@ -2511,6 +2507,8 @@ setInterval(loadOTC,5000);
       const deleted = await storage.deleteCustomer(customerNumber);
       
       if (deleted) {
+        // Track this customer number as explicitly deleted
+        deletedCustomers.add(customerNumber);
         console.log(`🗑️  CUSTOMER DELETED FROM DATABASE: ${customerNumber} - Heartbeat will force logout`);
         
         res.json({ 
