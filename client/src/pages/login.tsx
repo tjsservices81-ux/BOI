@@ -757,37 +757,7 @@ export default function Login() {
         throw new Error('Unable to load user profile');
       }
 
-      // Smooth single-pass animation: 0% -> 100% over 3 seconds
-      const totalDuration = 3000; // 3 seconds total (faster)
-      const updateInterval = 20; // Update every 20ms for visible number changes
-      const totalSteps = totalDuration / updateInterval;
-      const progressStep = 100 / totalSteps;
-      
-      let currentProgress = 0;
-      
-      const smoothInterval = setInterval(() => {
-        currentProgress += progressStep;
-        
-        if (currentProgress <= 100) {
-          setLoginProgress(currentProgress);
-          
-          // Update stage based on progress - Less frequent changes for smoother experience
-          if (currentProgress < 25) {
-            setLoginStage('Checking connection...');
-          } else if (currentProgress < 75) {
-            setLoginStage('Authenticating...');
-          } else if (currentProgress < 95) {
-            setLoginStage('Loading account data...');
-          } else {
-            setLoginStage('Welcome to Bank of Ireland');
-          }
-        } else {
-          clearInterval(smoothInterval);
-          setLoginProgress(100);
-        }
-      }, updateInterval);
-
-      // Record login time and authenticate through auth context
+      // Record login time and authenticate through auth context first
       UserDataManager.recordLoginTime(currentUser);
 
       login({
@@ -795,10 +765,43 @@ export default function Login() {
         name: userProfile.name,
         email: userProfile.email
       });
+
+      // Smooth single-pass animation: 0% -> 100% over 4 seconds
+      const totalDuration = 4000; // 4 seconds total
+      const updateInterval = 25; // Update every 25ms for smooth visible changes
+      const totalSteps = totalDuration / updateInterval;
+      const progressStep = 100 / totalSteps;
       
-      // Wait for animation to complete
-      await new Promise(resolve => setTimeout(resolve, 3300));
-      clearInterval(smoothInterval);
+      let currentProgress = 0;
+      
+      // Use Promise to ensure animation completes
+      await new Promise<void>((resolve) => {
+        const smoothInterval = setInterval(() => {
+          currentProgress += progressStep;
+          
+          if (currentProgress >= 100) {
+            setLoginProgress(100);
+            clearInterval(smoothInterval);
+            resolve();
+          } else {
+            setLoginProgress(currentProgress);
+            
+            // Update stage based on progress
+            if (currentProgress < 25) {
+              setLoginStage('Checking connection...');
+            } else if (currentProgress < 75) {
+              setLoginStage('Authenticating...');
+            } else if (currentProgress < 95) {
+              setLoginStage('Loading account data...');
+            } else {
+              setLoginStage('Welcome to Bank of Ireland');
+            }
+          }
+        }, updateInterval);
+      });
+
+      // Wait a moment at 100% before navigating
+      await new Promise(resolve => setTimeout(resolve, 300));
 
       // Authentication successful
       navigate("/dashboard");
