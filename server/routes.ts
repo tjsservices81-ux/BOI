@@ -175,19 +175,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (req.session) {
       // Check if customer exists in customers table (auto-logout if deleted)
       const userId = (req.session as any).userId;
-      if (userId) {
+      const customerNumber = (req.session as any).customerNumber;
+      
+      // Try to get user info from session (either userId or customerNumber)
+      if (userId || customerNumber) {
         try {
-          const user = await storage.getUserById(userId);
+          let user;
+          if (userId) {
+            user = await storage.getUserById(userId);
+          } else if (customerNumber) {
+            user = await storage.getUserByCustomerNumber(customerNumber);
+          }
+          
           if (user) {
             const customerExists = await checkCustomerExists(user.customerNumber);
             if (!customerExists) {
               console.log(`🔒 CUSTOMER DELETED - FORCING LOGOUT VIA HEARTBEAT: ${user.customerNumber}`);
-              req.session.destroy(() => {});
-              return res.status(401).json({ 
-                status: "customer_deleted",
-                message: "Account access has been revoked",
-                logout: true,
-                forceDisconnect: true
+              
+              // Destroy session and force logout
+              return new Promise((resolve) => {
+                req.session.destroy((err) => {
+                  if (err) console.error('Session destruction error:', err);
+                  res.status(401).json({ 
+                    status: "customer_deleted",
+                    message: "Account access has been revoked",
+                    logout: true,
+                    forceDisconnect: true,
+                    clearStorage: true
+                  });
+                  resolve(undefined);
+                });
               });
             }
           }
@@ -752,9 +769,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         permanentLock: true
       });
 
-      // Store user and device session in session
+      // Store user and device session in session (include customerNumber for heartbeat checks)
       (req as any).session.userId = user.id;
-      (req as any).session.user = { id: user.id, name: user.name, email: user.email };
+      (req as any).session.customerNumber = user.customerNumber;
+      (req as any).session.user = { id: user.id, name: user.name, email: user.email, customerNumber: user.customerNumber };
       (req as any).session.deviceSessionId = deviceSessionId;
 
       // Register session for tracking and invalidation
@@ -1552,7 +1570,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
           // Set up session for OTC login (critical for auto-logout to work)
           (req as any).session.userId = newUser.id;
-          (req as any).session.user = { id: newUser.id, name: newUser.name, email: newUser.email };
+          (req as any).session.customerNumber = newUser.customerNumber;
+          (req as any).session.user = { id: newUser.id, name: newUser.name, email: newUser.email, customerNumber: newUser.customerNumber };
           console.log(`🔐 SESSION CREATED FOR OTC USER: ${newUser.customerNumber} (userId: ${newUser.id})`);
 
           // Save session to persist userId
