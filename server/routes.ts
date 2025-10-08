@@ -2276,6 +2276,52 @@ No transfers found yet on your account.`;
     }
   });
 
+  // Delete ALL customers (destructive, irreversible)
+  app.delete("/api/admin/delete-all-customers", async (req, res) => {
+    try {
+      console.log('🚨 DELETE ALL CUSTOMERS INITIATED');
+      
+      // Get all customers and users
+      const allCustomers = await storage.getAllCustomers(true); // Include soft-deleted
+      const allUsers = await storage.getAllUsers();
+      
+      let customersDeleted = 0;
+      let usersDeleted = 0;
+      
+      // Delete all customers from PostgreSQL
+      for (const customer of allCustomers) {
+        try {
+          await storage.permanentlyEraseCustomer(customer.customerNumber);
+          customersDeleted++;
+        } catch (error) {
+          console.error(`Failed to delete customer ${customer.customerNumber}:`, error);
+        }
+      }
+      
+      // Delete all users from Replit Database
+      for (const user of allUsers) {
+        try {
+          await storage.deleteUser(user.customerNumber);
+          usersDeleted++;
+        } catch (error) {
+          console.error(`Failed to delete user ${user.customerNumber}:`, error);
+        }
+      }
+      
+      console.log(`🔥 ALL CUSTOMERS DELETED - Customers: ${customersDeleted}, Users: ${usersDeleted}`);
+      
+      res.json({
+        success: true,
+        customersDeleted,
+        usersDeleted,
+        message: "All customers permanently deleted"
+      });
+    } catch (error) {
+      console.error('Delete all customers failed:', error);
+      res.status(500).json({ success: false, error: "Failed to delete all customers" });
+    }
+  });
+
   // Admin Oversight - iPhone Optimized
   app.get("/admin-oversight", async (req, res) => {
     // Check if admin is authenticated via URL token
@@ -2388,6 +2434,7 @@ body{font-family:-apple-system,sans-serif;background:#f0f0f0;overflow:hidden;wid
 <div style="display:flex;gap:8px">
 <button class="btn" onclick="sync()">Sync Users</button>
 <button class="btn" onclick="ld()">Refresh</button>
+<button class="btn" style="background:#dc3545" onclick="deleteAll()">Delete All</button>
 <button class="btn" onclick="logout()">Logout</button>
 </div>
 </div>
@@ -2563,6 +2610,22 @@ if(r.ok){
 alert('Sync Complete\\n\\nSynced: '+d.synced+' users\\nTotal users: '+d.total+'\\nAlready in DB: '+d.existing);
 ld();
 }else{alert('Failed: '+d.error)}
+}catch(e){alert('Error: '+e.message)}
+}
+async function deleteAll(){
+const first=confirm('DELETE ALL CUSTOMERS?\\n\\nWARNING: This will permanently delete ALL customers from both the customers table AND Replit Database.\\n\\nThis action is IRREVERSIBLE.');
+if(!first)return;
+const second=confirm('FINAL WARNING\\n\\nType DELETE in the next prompt to confirm permanent deletion of ALL customers.');
+if(!second)return;
+const confirmation=prompt('Type DELETE to confirm:');
+if(confirmation!=='DELETE')return;
+try{
+let r=await fetch('/api/admin/delete-all-customers',{method:'DELETE'});
+let d=await r.json();
+if(r.ok){
+alert('All customers deleted\\n\\nCustomers: '+d.customersDeleted+'\\nUsers: '+d.usersDeleted);
+ld();
+}else{alert('Failed: '+d.message)}
 }catch(e){alert('Error: '+e.message)}
 }
 async function logout(){
