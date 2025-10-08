@@ -299,6 +299,60 @@ export default function Login() {
     }
   };
 
+  const showDeviceIdAlertAndRequestPermissions = async () => {
+    // Get current device ID
+    const deviceId = localStorage.getItem('device_id') || 'Unknown';
+    
+    // Show alert with device ID explanation
+    const alertMessage = `🔐 IMPORTANT SECURITY INFORMATION\n\n` +
+      `Device ID: ${deviceId}\n\n` +
+      `Your account is now linked to THIS device. If you restore your iPhone or transfer data to a new device, all banking data will be automatically cleared for security.\n\n` +
+      `This prevents unauthorized access to your account information.\n\n` +
+      `We also need your permission for:\n\n` +
+      `📍 LOCATION - To show you nearby Bank of Ireland ATMs\n` +
+      `🔔 NOTIFICATIONS - To alert you about transactions and account activity\n\n` +
+      `Tap OK to grant these permissions.`;
+    
+    alert(alertMessage);
+    
+    // Request location permission
+    try {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            console.log('Location permission granted');
+            toast({
+              title: "Location Enabled",
+              description: "You can now find nearby ATMs using the ATM Locator.",
+              duration: 4000,
+            });
+          },
+          (error) => {
+            console.log('Location permission denied or error:', error);
+          }
+        );
+      }
+    } catch (error) {
+      console.log('Location request error:', error);
+    }
+    
+    // Request notification permission
+    try {
+      if ('Notification' in window && Notification.permission === 'default') {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+          toast({
+            title: "Notifications Enabled",
+            description: "You'll receive alerts for transactions and account activity.",
+            duration: 4000,
+          });
+        }
+      }
+    } catch (error) {
+      console.log('Notification request error:', error);
+    }
+  };
+
   const handleOtcVerification = async () => {
     if (!otcCode || otcCode.length !== 6) {
       toast({
@@ -350,6 +404,11 @@ export default function Login() {
         setPendingAccountData(null);
         setNewUserData({ name: '', email: '', phone: '', customerNumber: '' });
         setCustomerNumber(pendingAccountData.customerNumber);
+
+        // Show device ID explanation and permission requests
+        setTimeout(() => {
+          showDeviceIdAlertAndRequestPermissions();
+        }, 1000);
 
       } else {
         // OTC validation failed
