@@ -812,8 +812,13 @@ export default function TransactionHistoryWorking() {
                         </p>
                       </div>
                     </div>
+                  </>
+                )}
 
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
+                {/* Timescale and warning for UK Transfers - Always show */}
+                {selectedTransaction.paymentMethod === 'UK Transfer' && (
+                  <div className="border-t border-gray-200 pt-4 mt-4">
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                       <p className="text-sm text-blue-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                         {userCurrency === 'EUR' 
                           ? <><strong>International Transfer:</strong> UK transfers typically take 24 hours to reach the recipient.</>
@@ -824,17 +829,6 @@ export default function TransactionHistoryWorking() {
                     <div className="bg-red-50 border border-red-300 rounded-lg p-3 mt-3">
                       <p className="text-sm text-red-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                         This payment cannot be cancelled
-                      </p>
-                    </div>
-                  </>
-                )}
-
-                {/* Show message for UK transfers without exchange rate data */}
-                {selectedTransaction.paymentMethod === 'UK Transfer' && !selectedTransaction.exchangeRate && (
-                  <div className="border-t border-gray-200 pt-4 mt-4">
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                      <p className="text-sm text-yellow-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        <strong>Note:</strong> Exchange rate information not available for this historical transfer. New UK transfers will include live conversion rates.
                       </p>
                     </div>
                   </div>
