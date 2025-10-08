@@ -193,14 +193,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (req.session) {
       // Check if customer exists in customers table (auto-logout if deleted)
       const userId = (req.session as any).userId;
-      console.log(`💓 HEARTBEAT CHECK - userId: ${userId}`);
       if (userId) {
         try {
           const user = await storage.getUserById(userId);
-          console.log(`💓 HEARTBEAT - Found user: ${user?.customerNumber || 'NOT FOUND'}`);
           if (user) {
             const customerExists = await checkCustomerExists(user.customerNumber);
-            console.log(`💓 HEARTBEAT - Customer ${user.customerNumber} exists: ${customerExists}`);
             if (!customerExists) {
               console.log(`🔒 CUSTOMER DELETED - FORCING LOGOUT VIA HEARTBEAT: ${user.customerNumber}`);
               req.session.destroy(() => {});
@@ -784,7 +781,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`📱 NEW DEVICE SESSION: ${deviceModel} (${ipAddress}) - Session: ${deviceSessionId}`);
       console.log(`🔒 ACCOUNT LOCKED TO DEVICE: User ${user.id} locked to ${deviceModel}`);
 
-      res.json({ user: { id: user.id, name: user.name, email: user.email } });
+      // Save session to persist userId
+      (req as any).session.save((err: any) => {
+        if (err) {
+          console.error('Session save error:', err);
+        }
+        res.json({ user: { id: user.id, name: user.name, email: user.email } });
+      });
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: error.errors[0].message });
@@ -1503,11 +1506,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           (req as any).session.user = { id: newUser.id, name: newUser.name, email: newUser.email };
           console.log(`🔐 SESSION CREATED FOR OTC USER: ${newUser.customerNumber} (userId: ${newUser.id})`);
 
-          res.json({ 
-            success: true, 
-            message: "OTC validated successfully and account created",
-            accountData: validation.accountData,
-            user: newUser
+          // Save session to persist userId
+          (req as any).session.save((err: any) => {
+            if (err) {
+              console.error('Session save error:', err);
+            }
+            res.json({ 
+              success: true, 
+              message: "OTC validated successfully and account created",
+              accountData: validation.accountData,
+              user: newUser
+            });
           });
         } catch (dbError) {
           console.error('Failed to create user in database:', dbError);
