@@ -760,8 +760,8 @@ export default function Login() {
       // Smooth single-pass animation: 0% -> 100% over 5 seconds
       let currentProgress = 0;
       const totalDuration = 5000; // 5 seconds total
-      const updateInterval = 50; // Update every 50ms
-      const progressStep = 100 / (totalDuration / updateInterval); // ~1% per update
+      const updateInterval = 30; // Update every 30ms for smoother animation
+      const progressStep = 100 / (totalDuration / updateInterval); // Smaller steps, more frequent
       
       const smoothInterval = setInterval(() => {
         currentProgress += progressStep;
@@ -1218,8 +1218,11 @@ export default function Login() {
                 </div>
                 <div className="w-full bg-white bg-opacity-20 rounded-full h-1">
                   <div 
-                    className="bg-white h-1 rounded-full transition-all duration-200 ease-out"
-                    style={{ width: `${loginProgress}%` }}
+                    className="bg-white h-1 rounded-full transition-all ease-linear"
+                    style={{ 
+                      width: `${loginProgress}%`,
+                      transitionDuration: '100ms'
+                    }}
                   ></div>
                 </div>
               </div>
