@@ -517,12 +517,11 @@ export class StatementService {
   private async getTransactions(request: StatementRequest): Promise<StatementTransaction[]> {
     // Use real transaction data from frontend if provided, otherwise use mock data
     try {
-      // Use actual dates from request with validation
-      const startDate = new Date(request.startDate);
-      startDate.setHours(0, 0, 0, 0); // Start of day
+      // Use actual dates from request with validation - use UK timezone (BST/GMT)
+      // UK is currently BST (UTC+1), so we need to adjust for that
+      const startDate = new Date(request.startDate + 'T00:00:00+01:00'); // Start of day in UK time
       
-      const endDate = new Date(request.endDate);
-      endDate.setHours(23, 59, 59, 999); // End of day - include all transactions on this date
+      const endDate = new Date(request.endDate + 'T23:59:59.999+01:00'); // End of day in UK time - include all transactions on this date
       
       // Validate dates
       if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
