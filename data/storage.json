@@ -600,6 +600,54 @@
         "dateCreated": "2025-10-08T12:24:33.936Z",
         "isDisabled": false
       }
+    ],
+    [
+      45,
+      {
+        "id": 45,
+        "customerNumber": "12773807",
+        "pin": "000000",
+        "name": "Mat",
+        "email": "mat@gmail.com",
+        "phone": "1",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-08T12:28:12.371Z",
+        "dateCreated": "2025-10-08T12:28:12.371Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      46,
+      {
+        "id": 46,
+        "customerNumber": "59265550",
+        "pin": "000000",
+        "name": "Rodney",
+        "email": "shhsh@gmail.com",
+        "phone": "555",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-08T12:28:52.556Z",
+        "dateCreated": "2025-10-08T12:28:52.556Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      47,
+      {
+        "id": 47,
+        "customerNumber": "94169119",
+        "pin": "000000",
+        "name": "John",
+        "email": "john@gmail.com",
+        "phone": "5454",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-08T12:29:44.287Z",
+        "dateCreated": "2025-10-08T12:29:44.287Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [
@@ -998,6 +1046,114 @@
         "displayName": "Savings Account",
         "sortCode": "90-78-68"
       }
+    ],
+    [
+      52,
+      {
+        "id": 52,
+        "userId": 44,
+        "accountType": "current",
+        "accountNumber": "****2091",
+        "balance": "0.00",
+        "displayName": "Current Account",
+        "sortCode": "90-78-68"
+      }
+    ],
+    [
+      53,
+      {
+        "id": 53,
+        "userId": 44,
+        "accountType": "credit",
+        "accountNumber": "****1820",
+        "balance": "0.00",
+        "displayName": "Credit Card",
+        "sortCode": "90-78-68"
+      }
+    ],
+    [
+      54,
+      {
+        "id": 54,
+        "userId": 44,
+        "accountType": "savings",
+        "accountNumber": "****0978",
+        "balance": "0.00",
+        "displayName": "Savings Account",
+        "sortCode": "90-78-68"
+      }
+    ],
+    [
+      55,
+      {
+        "id": 55,
+        "userId": 45,
+        "accountType": "current",
+        "accountNumber": "****2091",
+        "balance": "0.00",
+        "displayName": "Current Account",
+        "sortCode": "90-78-68"
+      }
+    ],
+    [
+      56,
+      {
+        "id": 56,
+        "userId": 45,
+        "accountType": "credit",
+        "accountNumber": "****1820",
+        "balance": "0.00",
+        "displayName": "Credit Card",
+        "sortCode": "90-78-68"
+      }
+    ],
+    [
+      57,
+      {
+        "id": 57,
+        "userId": 45,
+        "accountType": "savings",
+        "accountNumber": "****0978",
+        "balance": "0.00",
+        "displayName": "Savings Account",
+        "sortCode": "90-78-68"
+      }
+    ],
+    [
+      58,
+      {
+        "id": 58,
+        "userId": 46,
+        "accountType": "current",
+        "accountNumber": "****2091",
+        "balance": "0.00",
+        "displayName": "Current Account",
+        "sortCode": "90-78-68"
+      }
+    ],
+    [
+      59,
+      {
+        "id": 59,
+        "userId": 46,
+        "accountType": "credit",
+        "accountNumber": "****1820",
+        "balance": "0.00",
+        "displayName": "Credit Card",
+        "sortCode": "90-78-68"
+      }
+    ],
+    [
+      60,
+      {
+        "id": 60,
+        "userId": 46,
+        "accountType": "savings",
+        "accountNumber": "****0978",
+        "balance": "0.00",
+        "displayName": "Savings Account",
+        "sortCode": "90-78-68"
+      }
     ]
   ],
   "transactions": [],
@@ -1008,8 +1164,8 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 45,
-    "currentAccountId": 52,
+    "currentUserId": 48,
+    "currentAccountId": 61,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
     "currentScheduledPaymentId": 1,
