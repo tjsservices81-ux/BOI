@@ -519,7 +519,10 @@ export class StatementService {
     try {
       // Use actual dates from request with validation
       const startDate = new Date(request.startDate);
+      startDate.setHours(0, 0, 0, 0); // Start of day
+      
       const endDate = new Date(request.endDate);
+      endDate.setHours(23, 59, 59, 999); // End of day - include all transactions on this date
       
       // Validate dates
       if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
