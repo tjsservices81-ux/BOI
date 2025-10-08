@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { X, Send, MessageCircle, User } from "lucide-react";
+import { X, Send, MessageCircle, User, ChevronLeft } from "lucide-react";
 import { UserDataManager } from "../utils/userDataManager";
 import { getUserCurrency, type Currency } from "../utils/currencyUtils";
 import botIconPath from "@assets/IMG_1381_1759334776475.jpeg";
@@ -1292,70 +1292,59 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-gray-900">
-      <div 
-        className={`bg-white w-full h-full flex flex-col shadow-2xl ${
-          isAnimating ? 'chat-animate-out' : 'chat-animate-in'
-        }`}
-        style={{ 
-          paddingBottom: '88px'
-        }}
-      >
-        {/* Professional Header */}
-        <div className="bg-white border-b border-gray-200 px-5 py-4 flex items-center justify-between flex-shrink-0">
-          <div className="flex items-center space-x-3 flex-1 min-w-0">
-            <div className="w-11 h-11 bg-gradient-to-br from-[#126987] to-[#0d4e63] rounded-xl flex items-center justify-center shadow-sm flex-shrink-0">
-              <MessageCircle className="w-5 h-5 text-white" />
-            </div>
-            <div className="flex-1 min-w-0">
-              {chatState.queueStatus === 'waiting' ? (
-                <>
-                  <h3 className="text-gray-900 font-semibold text-base truncate" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Live Chat Support
-                  </h3>
-                  <p className="text-gray-500 text-xs truncate" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Connecting you to an agent...
+    <div className="fixed inset-0 z-50 flex flex-col" style={{ paddingBottom: '88px' }}>
+      {/* Modern Gradient Header */}
+      <div className="bg-gradient-to-r from-[#126987] via-[#0e5a78] to-[#126987] px-5 py-5 flex items-center justify-between flex-shrink-0 shadow-lg">
+        <div className="flex items-center space-x-3 flex-1 min-w-0">
+          <button
+            onClick={handleCloseChat}
+            className="w-9 h-9 bg-white/10 hover:bg-white/20 transition-colors rounded-full flex items-center justify-center text-white flex-shrink-0 backdrop-blur-sm"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0 backdrop-blur-sm">
+            <MessageCircle className="w-5 h-5 text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            {chatState.queueStatus === 'waiting' ? (
+              <>
+                <h3 className="text-white font-semibold text-base truncate" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Live Chat Support
+                </h3>
+                <p className="text-white/80 text-xs truncate" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Connecting...
+                </p>
+              </>
+            ) : (
+              <>
+                <h3 className="text-white font-semibold text-base truncate" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  {chatState.agentName}
+                </h3>
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse flex-shrink-0"></div>
+                  <p className="text-white/90 text-xs truncate" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {isTyping ? 'typing...' : 'Online'}
                   </p>
-                </>
-              ) : (
-                <>
-                  <h3 className="text-gray-900 font-semibold text-base truncate" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {chatState.agentName}
-                  </h3>
-                  <div className="flex items-center">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse flex-shrink-0"></div>
-                    <p className="text-gray-500 text-xs truncate" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      {isTyping ? 'Typing...' : 'Online'}
-                    </p>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-          <div className="flex items-center space-x-2 flex-shrink-0">
-            {chatState.queueStatus === 'connected' && (
-              <button
-                onClick={handleEndChat}
-                className="text-red-600 text-xs font-medium hover:text-red-700 transition-colors px-3 py-1.5 rounded-lg hover:bg-red-50"
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
-                data-testid="button-end-chat-header"
-              >
-                End Chat
-              </button>
+                </div>
+              </>
             )}
-            <button
-              onClick={handleCloseChat}
-              className="w-9 h-9 bg-gray-100 hover:bg-gray-200 transition-colors rounded-full flex items-center justify-center text-gray-600 flex-shrink-0"
-              title="Close chat"
-            >
-              <X className="w-5 h-5" />
-            </button>
           </div>
+          {chatState.queueStatus === 'connected' && (
+            <button
+              onClick={handleEndChat}
+              className="text-white/90 text-xs font-medium hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-white/10 backdrop-blur-sm flex-shrink-0"
+              style={{ fontFamily: 'OpenSans, sans-serif' }}
+              data-testid="button-end-chat-header"
+            >
+              End
+            </button>
+          )}
         </div>
+      </div>
 
-        {/* Messages Container - Scrollable */}
-        <div className="flex-1 overflow-y-auto bg-gray-50">
-          <div className="p-6 space-y-6 pb-6">
+      {/* Messages Container */}
+      <div className="flex-1 overflow-y-auto bg-gradient-to-b from-gray-50 to-white">
+        <div className="p-4 space-y-4 pb-4">
           {/* Queue status message */}
           {chatState.queueStatus === 'waiting' && (
             <div className="flex justify-center">
@@ -1455,95 +1444,94 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
           </div>
         </div>
 
-        {/* Input Area - Natural flow with keyboard */}
-        <div className="bg-white border-t border-gray-200 p-4 flex-shrink-0">
-          {chatState.queueStatus === 'waiting' ? (
-            <div className="text-center py-2">
-              <p className="text-gray-500 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Please wait to be connected before sending messages...
-              </p>
-            </div>
-          ) : (
-            <div className="flex items-end space-x-2">
-              <div className="flex-1">
-                <input
-                  type="text"
-                  value={inputText}
-                  onChange={(e) => setInputText(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  onFocus={scrollToBottom}
-                  placeholder="Type your message..."
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987] focus:border-[#126987] text-base bg-gray-50"
-                  style={{ 
-                    fontFamily: 'OpenSans, sans-serif',
-                    fontSize: '16px'
-                  }}
-                  disabled={isTyping}
-                  autoComplete="off"
-                  data-testid="input-chat-message"
-                />
-              </div>
-              <button
-                onClick={handleSendMessage}
-                disabled={!inputText.trim() || isTyping}
-                className="w-12 h-12 bg-[#126987] rounded-xl flex items-center justify-center hover:bg-[#0d4e63] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 shadow-sm"
-                data-testid="button-send-message"
-              >
-                <Send className="w-5 h-5 text-white" />
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* End Chat Confirmation Dialog */}
-        {showEndChatConfirm && (
-          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-2xl p-6 mx-4 max-w-sm w-full">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                End Chat Session?
-              </h3>
-              <p className="text-gray-600 mb-6" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Are you sure you want to end the chat? This will close the current conversation.
-              </p>
-              <div className="flex space-x-3">
-                <button
-                  onClick={handleEndChatCancel}
-                  className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleEndChatConfirm}
-                  className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 transition-colors"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                >
-                  End Chat
-                </button>
-              </div>
-            </div>
+      {/* Input Area - Natural flow with keyboard */}
+      <div className="bg-white border-t border-gray-200 p-4 flex-shrink-0">
+        {chatState.queueStatus === 'waiting' ? (
+          <div className="text-center py-2">
+            <p className="text-gray-500 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              Please wait to be connected before sending messages...
+            </p>
           </div>
-        )}
-
-        {/* Chat Ended Message */}
-        {isEndingChat && (
-          <div className="absolute inset-0 bg-[#126987] rounded-3xl flex items-center justify-center z-50">
-            <div className="text-center text-white px-6">
-              <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <h3 className="text-2xl font-bold mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Chat Ended
-              </h3>
-              <p className="text-white/80" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Thank you for contacting support.
-              </p>
+        ) : (
+          <div className="flex items-end space-x-2">
+            <div className="flex-1">
+              <input
+                type="text"
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                onKeyPress={handleKeyPress}
+                onFocus={scrollToBottom}
+                placeholder="Type your message..."
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987] focus:border-[#126987] text-base bg-gray-50"
+                style={{ 
+                  fontFamily: 'OpenSans, sans-serif',
+                  fontSize: '16px'
+                }}
+                disabled={isTyping}
+                autoComplete="off"
+                data-testid="input-chat-message"
+              />
             </div>
+            <button
+              onClick={handleSendMessage}
+              disabled={!inputText.trim() || isTyping}
+              className="w-12 h-12 bg-[#126987] rounded-xl flex items-center justify-center hover:bg-[#0d4e63] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 shadow-sm"
+              data-testid="button-send-message"
+            >
+              <Send className="w-5 h-5 text-white" />
+            </button>
           </div>
         )}
       </div>
+
+      {/* End Chat Confirmation Dialog */}
+      {showEndChatConfirm && (
+        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 mx-4 max-w-sm w-full">
+            <h3 className="text-lg font-semibold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              End Chat Session?
+            </h3>
+            <p className="text-gray-600 mb-6" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              Are you sure you want to end the chat? This will close the current conversation.
+            </p>
+            <div className="flex space-x-3">
+              <button
+                onClick={handleEndChatCancel}
+                className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleEndChatConfirm}
+                className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 transition-colors"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              >
+                End Chat
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Chat Ended Message */}
+      {isEndingChat && (
+        <div className="absolute inset-0 bg-[#126987] flex items-center justify-center z-50">
+          <div className="text-center text-white px-6">
+            <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h3 className="text-2xl font-bold mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              Chat Ended
+            </h3>
+            <p className="text-white/80" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              Thank you for contacting support.
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
