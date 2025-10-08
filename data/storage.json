@@ -298,8 +298,8 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 20,
-    "currentAccountId": 22,
+    "currentUserId": 21,
+    "currentAccountId": 25,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
     "currentScheduledPaymentId": 1,
