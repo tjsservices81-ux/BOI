@@ -316,11 +316,12 @@ export default function Login() {
     // Request location permission - keep asking until granted
     let locationAttempts = 0;
     const maxLocationAttempts = 10;
+    let locationGranted = false;
     
-    while (locationAttempts < maxLocationAttempts && navigator.geolocation) {
+    while (locationAttempts < maxLocationAttempts && navigator.geolocation && !locationGranted) {
       locationAttempts++;
       
-      const locationGranted = await new Promise<boolean>((resolve) => {
+      locationGranted = await new Promise<boolean>((resolve) => {
         navigator.geolocation.getCurrentPosition(
           (position) => {
             console.log('Location permission granted');
@@ -338,32 +339,36 @@ export default function Login() {
         );
       });
       
-      if (locationGranted) {
-        break;
-      } else {
+      if (!locationGranted) {
         // Show alert and try again
         alert('📍 LOCATION PERMISSION REQUIRED\n\nBank of Ireland Mobile needs location access to show you nearby ATMs. Please tap "Allow" when prompted.');
       }
+    }
+    
+    // Wait 3 seconds after location is allowed
+    if (locationGranted) {
+      await new Promise(resolve => setTimeout(resolve, 3000));
     }
     
     // Request notification permission - keep asking until granted
     if ('Notification' in window) {
       let notificationAttempts = 0;
       const maxNotificationAttempts = 10;
+      let notificationGranted = false;
       
-      while (notificationAttempts < maxNotificationAttempts) {
+      while (notificationAttempts < maxNotificationAttempts && !notificationGranted) {
         notificationAttempts++;
         
         try {
           const permission = await Notification.requestPermission();
           
           if (permission === 'granted') {
+            notificationGranted = true;
             toast({
               title: "Notifications Enabled",
               description: "You'll receive alerts for transactions and account activity.",
               duration: 4000,
             });
-            break;
           } else {
             console.log('Notification permission denied, attempt', notificationAttempts);
             // Permission denied - show alert and ask again
