@@ -178,9 +178,10 @@ export const processTransfer = (
     reference,
     recipientName,
     timestamp: new Date().toISOString(),
-    ...(exchangeRate && {
+    ...(transferType === 'UK' && exchangeRate && {
       exchangeRate,
-      convertedAmount: (amount * exchangeRate).toFixed(2)
+      convertedAmount: (amount * exchangeRate).toFixed(2),
+      convertedCurrency: 'GBP'
     }),
     ...(recipientDetails && {
       recipientAccountNumber: recipientDetails.accountNumber,

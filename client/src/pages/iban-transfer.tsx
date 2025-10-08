@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { ChevronLeft, Info, Check, CreditCard, Globe, X, Building2 } from "lucide-react";
+import { ChevronLeft, Info, Check, CreditCard, Globe, X } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -8,86 +8,6 @@ import { getAccounts, processTransfer, processSecureTransfer, checkTransferConfi
 import { UserDataManager } from "../utils/userDataManager";
 import { formatCurrency, getUserCurrency, type Currency } from "../utils/currencyUtils";
 import { updateUserLocation } from "../utils/locationTracker";
-import barclaysIcon from "@assets/IMG_1985_1751646296833.png";
-import lloydsIcon from "@assets/IMG_1986_1751646563662.png";
-import hsbcIcon from "@assets/IMG_1992_1751647291682.webp";
-import santanderIcon from "@assets/IMG_1998_1751647765469.jpeg";
-
-// IBAN country code to currency mapping
-const ibanCountryCurrencies: Record<string, string> = {
-  'AT': 'EUR', 'BE': 'EUR', 'CY': 'EUR', 'DE': 'EUR', 'EE': 'EUR', 'ES': 'EUR',
-  'FI': 'EUR', 'FR': 'EUR', 'GR': 'EUR', 'IE': 'EUR', 'IT': 'EUR', 'LT': 'EUR',
-  'LU': 'EUR', 'LV': 'EUR', 'MT': 'EUR', 'NL': 'EUR', 'PT': 'EUR', 'SI': 'EUR',
-  'SK': 'EUR', 'BG': 'BGN', 'HR': 'EUR', 'CZ': 'CZK', 'DK': 'DKK', 'HU': 'HUF',
-  'PL': 'PLN', 'RO': 'RON', 'SE': 'SEK', 'CH': 'CHF', 'NO': 'NOK', 'IS': 'ISK',
-  'GB': 'GBP', 'TR': 'TRY', 'RS': 'RSD', 'AL': 'ALL', 'BA': 'BAM', 'MK': 'MKD'
-};
-
-// BIC code to bank name mapping (covering major European banks)
-const knownBicCodes: Record<string, string> = {
-  'BARC': 'Barclays',
-  'LOYD': 'Lloyds Bank',
-  'HBUK': 'HSBC',
-  'MIDL': 'HSBC',
-  'HSBC': 'HSBC',
-  'ABBK': 'Santander',
-  'BSCH': 'Santander',
-  'DEUTDEFF': 'Deutsche Bank',
-  'DEUT': 'Deutsche Bank',
-  'COBADEFF': 'Commerzbank',
-  'COBA': 'Commerzbank',
-  'BNPAFRPP': 'BNP Paribas',
-  'BNPA': 'BNP Paribas',
-  'CRLYFRPP': 'Crédit Lyonnais',
-  'INGB': 'ING',
-  'ABNA': 'ABN AMRO',
-  'RABO': 'Rabobank',
-  'UNCR': 'UniCredit',
-  'BCIT': 'Intesa Sanpaolo',
-  'BPPI': 'Banco BPI',
-  'BBVA': 'BBVA',
-  'CAIXA': 'CaixaBank',
-  'SABADELL': 'Banco Sabadell',
-  'CSOB': 'ČSOB',
-  'KOMBANK': 'Komercijalna Banka',
-  'NWBK': 'NatWest',
-  'RBOSGB': 'NatWest'
-};
-
-// Function to get bank icon
-const getBankIcon = (bankName: string): string | undefined => {
-  if (bankName === 'Barclays') return barclaysIcon;
-  if (bankName === 'Lloyds Bank') return lloydsIcon;
-  if (bankName === 'HSBC') return hsbcIcon;
-  if (bankName === 'Santander') return santanderIcon;
-  return undefined;
-};
-
-// Function to identify bank from BIC code
-const identifyBankFromBic = (bicCode: string): string => {
-  if (!bicCode) return '';
-  
-  const cleanBic = bicCode.toUpperCase().replace(/\s/g, '');
-  
-  // Check exact matches first
-  if (cleanBic in knownBicCodes) {
-    return knownBicCodes[cleanBic];
-  }
-  
-  // Check partial matches (first 4 characters - bank code)
-  const bankCode = cleanBic.substring(0, 4);
-  if (bankCode in knownBicCodes) {
-    return knownBicCodes[bankCode];
-  }
-  
-  // Check for longer codes
-  const extendedCode = cleanBic.substring(0, 8);
-  if (extendedCode in knownBicCodes) {
-    return knownBicCodes[extendedCode];
-  }
-  
-  return '';
-};
 
 const ibanTransferSchema = z.object({
   recipientName: z.string().min(2, "Recipient name is required"),
@@ -110,10 +30,6 @@ export default function IbanTransfer() {
   const [processingStage, setProcessingStage] = useState<string>('Verifying transfer details...');
   const [formData, setFormData] = useState<IbanTransferData | null>(null);
   const [userCurrency, setUserCurrency] = useState<Currency>('EUR');
-  const [destinationCurrency, setDestinationCurrency] = useState<string>('EUR');
-  const [exchangeRate, setExchangeRate] = useState<number>(1);
-  const [convertedAmount, setConvertedAmount] = useState<string>('0.00');
-  const [identifiedBank, setIdentifiedBank] = useState<string>('');
 
   const form = useForm<IbanTransferData>({
     resolver: zodResolver(ibanTransferSchema),
@@ -221,64 +137,8 @@ export default function IbanTransfer() {
     };
   }, [form]);
 
-  // Watch BIC code and identify bank
-  useEffect(() => {
-    const subscription = form.watch((value, { name }) => {
-      if (name === 'bicCode') {
-        const bank = identifyBankFromBic(value.bicCode || '');
-        setIdentifiedBank(bank);
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, [form]);
-
-  // Detect destination currency from IBAN
-  const detectCurrencyFromIban = (iban: string): string => {
-    const countryCode = iban.replace(/\s/g, '').substring(0, 2).toUpperCase();
-    return ibanCountryCurrencies[countryCode] || 'EUR';
-  };
-
-  // Fetch exchange rate from GBP to destination currency
-  const fetchExchangeRate = async (toCurrency: string, amount: string): Promise<number> => {
-    if (userCurrency !== 'GBP' || toCurrency === 'GBP') {
-      return 1;
-    }
-
-    try {
-      const apiKey = import.meta.env.VITE_EXCHANGERATE_API_KEY;
-      if (!apiKey) {
-        console.log('No API key provided, using default rate');
-        return 1;
-      }
-      
-      const response = await fetch(`https://v6.exchangerate-api.com/v6/${apiKey}/latest/GBP`);
-      const data = await response.json();
-      
-      if (data.result === 'success' && data.conversion_rates[toCurrency]) {
-        return data.conversion_rates[toCurrency];
-      }
-      return 1;
-    } catch (error) {
-      console.log('Exchange rate fetch failed, using default rate');
-      return 1;
-    }
-  };
-
-  const onSubmit = async (data: IbanTransferData) => {
+  const onSubmit = (data: IbanTransferData) => {
     setFormData(data);
-    
-    // Detect destination currency and fetch exchange rate if needed
-    const destCurrency = detectCurrencyFromIban(data.iban);
-    setDestinationCurrency(destCurrency);
-    
-    if (userCurrency === 'GBP' && destCurrency !== 'GBP') {
-      const rate = await fetchExchangeRate(destCurrency, data.amount);
-      setExchangeRate(rate);
-      setConvertedAmount((parseFloat(data.amount) * rate).toFixed(2));
-    } else {
-      setExchangeRate(1);
-    }
-    
     setStep('confirm');
   };
 
@@ -345,7 +205,7 @@ export default function IbanTransfer() {
             formData.recipientName,
             'IBAN',
             formData.reference, // Use the user's input reference
-            userCurrency === 'GBP' && destinationCurrency !== 'GBP' ? exchangeRate : undefined, // Pass exchange rate for GBP conversions
+            undefined, // No exchange rate for IBAN transfers
             {
               iban: formData.iban,
               bicCode: formData.bicCode
@@ -486,14 +346,7 @@ export default function IbanTransfer() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Amount:</span>
-                      <div className="text-right">
-                        <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{formatCurrency(formData?.amount || '0', userCurrency)}</span>
-                        {userCurrency === 'GBP' && destinationCurrency !== 'GBP' && (
-                          <p className="text-sm text-green-700 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                            ≈ {(parseFloat(formData?.amount || '0') * exchangeRate).toFixed(2)} {destinationCurrency}
-                          </p>
-                        )}
-                      </div>
+                      <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>{formatCurrency(formData?.amount || '0', userCurrency)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>To:</span>
@@ -657,14 +510,7 @@ export default function IbanTransfer() {
               
               <div className="flex justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Amount:</span>
-                <div className="text-right">
-                  <span className="font-semibold text-[#126987] text-xl" style={{ fontFamily: 'OpenSans, sans-serif' }}>{formatCurrency(formData?.amount || '0', userCurrency)}</span>
-                  {userCurrency === 'GBP' && destinationCurrency !== 'GBP' && (
-                    <p className="text-sm text-green-700 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      ≈ {(parseFloat(formData?.amount || '0') * exchangeRate).toFixed(2)} {destinationCurrency}
-                    </p>
-                  )}
-                </div>
+                <span className="font-semibold text-[#126987] text-xl" style={{ fontFamily: 'OpenSans, sans-serif' }}>{formatCurrency(formData?.amount || '0', userCurrency)}</span>
               </div>
               
               <div className="flex justify-between py-2">
@@ -807,18 +653,6 @@ export default function IbanTransfer() {
               />
               {form.formState.errors.bicCode && (
                 <p className="text-red-500 text-xs mt-2 font-medium">{form.formState.errors.bicCode.message}</p>
-              )}
-              {identifiedBank && (
-                <div className="flex items-center mt-3 p-2 bg-white rounded-lg border border-green-200">
-                  {getBankIcon(identifiedBank) ? (
-                    <img src={getBankIcon(identifiedBank)} alt={identifiedBank} className="w-8 h-8 rounded mr-3 object-contain" />
-                  ) : (
-                    <Building2 className="w-8 h-8 text-[#126987] mr-3" />
-                  )}
-                  <span className="text-sm font-semibold text-green-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {identifiedBank}
-                  </span>
-                </div>
               )}
             </div>
 

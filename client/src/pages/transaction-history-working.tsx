@@ -28,21 +28,6 @@ export default function TransactionHistoryWorking() {
   const [userCurrency, setUserCurrency] = useState<Currency>('EUR');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   
-  // Helper function to detect currency from IBAN country code
-  const detectCurrencyFromIban = (iban: string): string => {
-    const ibanCountryCurrencies: { [key: string]: string } = {
-      'AT': 'EUR', 'BE': 'EUR', 'CY': 'EUR', 'DE': 'EUR', 'EE': 'EUR', 
-      'ES': 'EUR', 'FI': 'EUR', 'FR': 'EUR', 'GR': 'EUR', 'IE': 'EUR',
-      'IT': 'EUR', 'LT': 'EUR', 'LU': 'EUR', 'LV': 'EUR', 'MT': 'EUR',
-      'NL': 'EUR', 'PT': 'EUR', 'SI': 'EUR', 'SK': 'EUR',
-      'BG': 'BGN', 'HR': 'HRK', 'CZ': 'CZK', 'DK': 'DKK', 'HU': 'HUF',
-      'PL': 'PLN', 'RO': 'RON', 'SE': 'SEK', 'GB': 'GBP', 'CH': 'CHF',
-      'NO': 'NOK', 'IS': 'ISK'
-    };
-    const countryCode = iban.replace(/\s/g, '').substring(0, 2).toUpperCase();
-    return ibanCountryCurrencies[countryCode] || 'EUR';
-  };
-  
   // Pay Bills state
   const [showPayBillsForm, setShowPayBillsForm] = useState(false);
   const [payBillsForm, setPayBillsForm] = useState({
@@ -617,17 +602,6 @@ export default function TransactionHistoryWorking() {
                 <p className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                   {formatCurrency(selectedTransaction.amount.replace('-', ''), userCurrency)}
                 </p>
-                {userCurrency === 'GBP' && selectedTransaction.iban && (() => {
-                  const destCurrency = detectCurrencyFromIban(selectedTransaction.iban);
-                  if (destCurrency !== 'GBP' && selectedTransaction.convertedAmount) {
-                    return (
-                      <p className="text-sm text-green-700 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        ≈ {selectedTransaction.convertedAmount} {destCurrency}
-                      </p>
-                    );
-                  }
-                  return null;
-                })()}
                 <p className="text-sm text-gray-500 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                   {selectedTransaction.type === 'debit' ? 'Sent' : 'Received'}
                 </p>
