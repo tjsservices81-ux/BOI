@@ -757,11 +757,13 @@ export default function Login() {
         throw new Error('Unable to load user profile');
       }
 
-      // Smooth single-pass animation: 0% -> 100% over 5 seconds
+      // Smooth single-pass animation: 0% -> 100% over 3 seconds
+      const totalDuration = 3000; // 3 seconds total (faster)
+      const updateInterval = 20; // Update every 20ms for visible number changes
+      const totalSteps = totalDuration / updateInterval;
+      const progressStep = 100 / totalSteps;
+      
       let currentProgress = 0;
-      const totalDuration = 5000; // 5 seconds total
-      const updateInterval = 30; // Update every 30ms for smoother animation
-      const progressStep = 100 / (totalDuration / updateInterval); // Smaller steps, more frequent
       
       const smoothInterval = setInterval(() => {
         currentProgress += progressStep;
@@ -795,7 +797,7 @@ export default function Login() {
       });
       
       // Wait for animation to complete
-      await new Promise(resolve => setTimeout(resolve, totalDuration + 300));
+      await new Promise(resolve => setTimeout(resolve, 3300));
       clearInterval(smoothInterval);
 
       // Authentication successful
