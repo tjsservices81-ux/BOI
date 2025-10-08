@@ -262,6 +262,22 @@
         "dateCreated": "2025-10-08T04:25:54.288Z",
         "isDisabled": false
       }
+    ],
+    [
+      24,
+      {
+        "id": 24,
+        "customerNumber": "BOI189385579",
+        "pin": "000000",
+        "name": "Ajajjaua",
+        "email": "aahan@gmail.com",
+        "phone": "4242",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-08T04:31:24.449Z",
+        "dateCreated": "2025-10-08T04:31:24.449Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [
@@ -346,7 +362,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 24,
+    "currentUserId": 25,
     "currentAccountId": 25,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
