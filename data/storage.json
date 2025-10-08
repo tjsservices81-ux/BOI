@@ -1,76 +1,23 @@
 {
   "users": [
     [
-      50,
+      52,
       {
-        "id": 50,
-        "customerNumber": "34545857",
+        "id": 52,
+        "customerNumber": "72228387",
         "pin": "000000",
         "name": "Michael Murphy",
         "email": "michaelmurphy18@icloud.com",
         "phone": "7310658405",
         "address": null,
         "dateOfBirth": null,
-        "joinDate": "2025-10-08T15:29:55.326Z",
-        "dateCreated": "2025-10-08T15:29:55.326Z",
-        "isDisabled": false
-      }
-    ],
-    [
-      51,
-      {
-        "id": 51,
-        "customerNumber": "99884122",
-        "pin": "000000",
-        "name": "Me",
-        "email": "agha@gmail.com",
-        "phone": "545454",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "2025-10-08T15:31:39.897Z",
-        "dateCreated": "2025-10-08T15:31:39.897Z",
+        "joinDate": "2025-10-08T15:41:28.655Z",
+        "dateCreated": "2025-10-08T15:41:28.655Z",
         "isDisabled": false
       }
     ]
   ],
-  "accounts": [
-    [
-      67,
-      {
-        "id": 67,
-        "userId": 50,
-        "accountType": "current",
-        "accountNumber": "****2091",
-        "balance": "0.00",
-        "displayName": "Current Account",
-        "sortCode": "90-78-68"
-      }
-    ],
-    [
-      68,
-      {
-        "id": 68,
-        "userId": 50,
-        "accountType": "credit",
-        "accountNumber": "****1820",
-        "balance": "0.00",
-        "displayName": "Credit Card",
-        "sortCode": "90-78-68"
-      }
-    ],
-    [
-      69,
-      {
-        "id": 69,
-        "userId": 50,
-        "accountType": "savings",
-        "accountNumber": "****0978",
-        "balance": "0.00",
-        "displayName": "Savings Account",
-        "sortCode": "90-78-68"
-      }
-    ]
-  ],
+  "accounts": [],
   "transactions": [],
   "payees": [],
   "scheduledPayments": [],
@@ -79,7 +26,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 52,
+    "currentUserId": 53,
     "currentAccountId": 70,
     "currentTransactionId": 1,
     "currentPayeeId": 1,

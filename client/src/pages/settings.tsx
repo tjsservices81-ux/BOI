@@ -29,6 +29,16 @@ export default function Settings() {
     return saved !== null ? JSON.parse(saved) : false;
   });
 
+  const [recipientEmailEnabled, setRecipientEmailEnabled] = useState(() => {
+    const saved = localStorage.getItem('recipientEmailEnabled');
+    return saved !== null ? JSON.parse(saved) : false;
+  });
+
+  const [ibanEmailEnabled, setIbanEmailEnabled] = useState(() => {
+    const saved = localStorage.getItem('ibanEmailEnabled');
+    return saved !== null ? JSON.parse(saved) : false;
+  });
+
   // Save settings to localStorage when they change
   useEffect(() => {
     localStorage.setItem('notificationsEnabled', JSON.stringify(notificationsEnabled));
@@ -41,6 +51,14 @@ export default function Settings() {
   useEffect(() => {
     localStorage.setItem('faceIdEnabled', JSON.stringify(faceIdEnabled));
   }, [faceIdEnabled]);
+
+  useEffect(() => {
+    localStorage.setItem('recipientEmailEnabled', JSON.stringify(recipientEmailEnabled));
+  }, [recipientEmailEnabled]);
+
+  useEffect(() => {
+    localStorage.setItem('ibanEmailEnabled', JSON.stringify(ibanEmailEnabled));
+  }, [ibanEmailEnabled]);
 
   const handleNavigation = (path: string) => {
     setIsNavigating(true);
@@ -298,6 +316,54 @@ export default function Settings() {
                       checked={emailsEnabled}
                       onCheckedChange={setEmailsEnabled}
                       data-testid="toggle-emails"
+                    />
+                  </div>
+                </div>
+
+                {/* Recipient Email on UK Transfer */}
+                <div className="bg-white rounded-xl p-4 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center">
+                        <Mail className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Recipient Email (UK)
+                        </h4>
+                        <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Send copy to recipient
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={recipientEmailEnabled}
+                      onCheckedChange={setRecipientEmailEnabled}
+                      data-testid="toggle-recipient-email"
+                    />
+                  </div>
+                </div>
+
+                {/* IBAN Email */}
+                <div className="bg-white rounded-xl p-4 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl flex items-center justify-center">
+                        <Mail className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          IBAN Recipient Email
+                        </h4>
+                        <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Send copy to IBAN recipient
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={ibanEmailEnabled}
+                      onCheckedChange={setIbanEmailEnabled}
+                      data-testid="toggle-iban-email"
                     />
                   </div>
                 </div>

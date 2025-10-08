@@ -29,6 +29,12 @@ export default function Transfer() {
   const [iban, setIban] = useState("");
   const [amount, setAmount] = useState("");
   const [reference, setReference] = useState("");
+  const [recipientEmail, setRecipientEmail] = useState("");
+  
+  const [ibanEmailEnabled] = useState(() => {
+    const saved = localStorage.getItem('ibanEmailEnabled');
+    return saved !== null ? JSON.parse(saved) : false;
+  });
 
   const { data: accounts = [] } = useQuery<Account[]>({
     queryKey: ["/api/accounts", user?.id],
@@ -193,6 +199,19 @@ export default function Transfer() {
                 className="focus:ring-2 focus:ring-[var(--boi-green)] focus:border-transparent"
               />
             </div>
+            {ibanEmailEnabled && (
+              <div>
+                <Label htmlFor="recipientEmail">Recipient Email</Label>
+                <Input
+                  id="recipientEmail"
+                  type="email"
+                  placeholder="recipient@example.com"
+                  value={recipientEmail}
+                  onChange={(e) => setRecipientEmail(e.target.value)}
+                  className="focus:ring-2 focus:ring-[var(--boi-green)] focus:border-transparent"
+                />
+              </div>
+            )}
           </CardContent>
         </Card>
 
