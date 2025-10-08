@@ -186,12 +186,15 @@ export default function CreditScore() {
 
   if (isLoading) {
     return (
-      <div className="h-screen bg-white flex flex-col overflow-hidden page-slide-up">
+      <div className="h-screen bg-gradient-to-br from-[#126987] to-[#0d4e63] flex flex-col overflow-hidden page-slide-up">
         <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <div className="w-16 h-16 border-4 border-[#126987] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-[#126987] text-lg font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Analyzing Credit Report...
+          <div className="text-center px-6">
+            <div className="relative w-16 h-16 mx-auto mb-8">
+              <div className="absolute inset-0 border-2 border-white/30 rounded-full"></div>
+              <div className="absolute inset-0 border-2 border-transparent border-t-white rounded-full animate-spin"></div>
+            </div>
+            <p className="text-white text-lg font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              Loading Credit Score
             </p>
           </div>
         </div>
