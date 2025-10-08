@@ -2439,7 +2439,10 @@ h+=\`<div class="itm">
 <button class="sv-btn" onclick="upd('\${escapeHtml(c.customerNumber)}')">Save</button>
 </div>
 </div>
-<button class="db" data-customer="\${escapeHtml(c.customerNumber)}" data-name="\${escapeHtml(c.name)}" onclick="dl(this.dataset.customer,this.dataset.name)">Delete</button>
+\${c.isDeleted?
+\`<button class="sv-btn" onclick="res('\${escapeHtml(c.customerNumber)}','\${escapeHtml(c.name)}')">♻️ Restore</button>
+<button class="db" onclick="ers('\${escapeHtml(c.customerNumber)}','\${escapeHtml(c.name)}')">🔥 Erase Forever</button>\`:
+\`<button class="db" data-customer="\${escapeHtml(c.customerNumber)}" data-name="\${escapeHtml(c.name)}" onclick="dl(this.dataset.customer,this.dataset.name)">🗑️ Delete</button>\`}
 </div>
 </div>
 </div>\`;
@@ -2526,10 +2529,10 @@ setInterval(loadOTC,5000);
     res.send(adminPage);
   });
 
-  // API endpoint to get all customers
+  // API endpoint to get all customers (including soft-deleted for admin UI)
   app.get("/api/customers", async (req, res) => {
     try {
-      const customers = await storage.getAllCustomers();
+      const customers = await storage.getAllCustomers(true); // Include soft-deleted
       res.json(customers);
     } catch (error) {
       console.error('Error fetching customers:', error);
