@@ -146,11 +146,17 @@ export default function TransactionHistoryWorking() {
   };
 
   const handleOpenTransferConfirmation = async () => {
-    if (!selectedTransaction) return;
+    if (!selectedTransaction) {
+      console.log('No selected transaction');
+      return;
+    }
+
+    console.log('Opening transfer confirmation for:', selectedTransaction);
 
     try {
       // Check if PDF is already saved with the transaction
       if (selectedTransaction.confirmationPdfData) {
+        console.log('Using saved PDF data');
         // Convert base64 back to blob and open
         const byteCharacters = atob(selectedTransaction.confirmationPdfData.split(',')[1]);
         const byteNumbers = new Array(byteCharacters.length);
@@ -160,12 +166,16 @@ export default function TransactionHistoryWorking() {
         const byteArray = new Uint8Array(byteNumbers);
         const blob = new Blob([byteArray], { type: 'application/pdf' });
         const url = window.URL.createObjectURL(blob);
-        window.open(url, '_blank');
-        window.URL.revokeObjectURL(url);
+        const newWindow = window.open(url, '_blank');
+        if (!newWindow) {
+          alert('Please allow popups to view the transfer confirmation');
+        }
+        setTimeout(() => window.URL.revokeObjectURL(url), 100);
         return;
       }
 
       // If no saved PDF, generate it
+      console.log('Generating new PDF');
       const userProfile = UserDataManager.getUserProfile();
       const accounts = UserDataManager.getUserAccounts();
       
@@ -189,13 +199,21 @@ export default function TransactionHistoryWorking() {
       });
 
       if (response.ok) {
+        console.log('PDF generated successfully');
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
-        window.open(url, '_blank');
-        window.URL.revokeObjectURL(url);
+        const newWindow = window.open(url, '_blank');
+        if (!newWindow) {
+          alert('Please allow popups to view the transfer confirmation');
+        }
+        setTimeout(() => window.URL.revokeObjectURL(url), 100);
+      } else {
+        console.error('Failed to generate PDF:', response.status);
+        alert('Failed to generate transfer confirmation');
       }
     } catch (error) {
       console.error('Failed to open transfer confirmation:', error);
+      alert('Error opening transfer confirmation: ' + error);
     }
   };
 
