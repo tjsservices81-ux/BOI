@@ -26,6 +26,7 @@ export default function CreditScore() {
   const [isNavigating, setIsNavigating] = useState(false);
   const [userCurrency] = useState(() => getUserCurrency());
   const [animatedScore, setAnimatedScore] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
   
   // Get user profile to calculate account dates based on join year
   const userProfile = UserDataManager.getUserProfile();
@@ -53,24 +54,35 @@ export default function CreditScore() {
   const bankName = userCurrency === 'GBP' ? "Bank of Ireland UK" : "Bank of Ireland";
 
   useEffect(() => {
-    // Animate score counting up
-    const duration = 2000;
-    const steps = 60;
-    const increment = creditScore / steps;
-    let current = 0;
-    
-    const timer = setInterval(() => {
-      current += increment;
-      if (current >= creditScore) {
-        setAnimatedScore(creditScore);
-        clearInterval(timer);
-      } else {
-        setAnimatedScore(Math.floor(current));
-      }
-    }, duration / steps);
+    // Simulate loading
+    const loadingTimer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1200);
 
-    return () => clearInterval(timer);
-  }, [creditScore]);
+    return () => clearTimeout(loadingTimer);
+  }, []);
+
+  useEffect(() => {
+    if (!isLoading) {
+      // Animate score counting up
+      const duration = 2000;
+      const steps = 60;
+      const increment = creditScore / steps;
+      let current = 0;
+      
+      const timer = setInterval(() => {
+        current += increment;
+        if (current >= creditScore) {
+          setAnimatedScore(creditScore);
+          clearInterval(timer);
+        } else {
+          setAnimatedScore(Math.floor(current));
+        }
+      }, duration / steps);
+
+      return () => clearInterval(timer);
+    }
+  }, [isLoading, creditScore]);
 
   const handleNavigation = (path: string) => {
     setIsNavigating(true);
@@ -222,39 +234,53 @@ export default function CreditScore() {
 
           {/* Credit Score Circle */}
           <div className="px-6 mb-8">
-            <div className={`relative mx-auto w-56 h-56 ${scoreRating.bgColor} rounded-full flex items-center justify-center ring-8 ${scoreRating.ringColor} ring-opacity-20`}>
-              <div className="text-center">
-                <div className={`text-6xl font-bold ${scoreRating.color} mb-2 tabular-nums`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  {animatedScore}
-                </div>
-                <div className={`text-sm font-semibold ${scoreRating.color} uppercase tracking-wide`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  {scoreRating.label}
-                </div>
-                <div className="text-xs text-gray-500 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  300 - 850 Range
+            {isLoading ? (
+              <div className="relative mx-auto w-56 h-56 bg-gray-50 rounded-full flex items-center justify-center">
+                <div className="text-center">
+                  <div className="w-16 h-16 border-4 border-[#126987] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                  <p className="text-gray-600 text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Analyzing Credit Report
+                  </p>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className={`relative mx-auto w-56 h-56 ${scoreRating.bgColor} rounded-full flex items-center justify-center ring-8 ${scoreRating.ringColor} ring-opacity-20`}>
+                <div className="text-center">
+                  <div className={`text-6xl font-bold ${scoreRating.color} mb-2 tabular-nums`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {animatedScore}
+                  </div>
+                  <div className={`text-sm font-semibold ${scoreRating.color} uppercase tracking-wide`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {scoreRating.label}
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    300 - 850 Range
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Score Progress Bar */}
-          <div className="px-6 mb-8">
-            <div className="relative h-3 bg-gray-200 rounded-full overflow-hidden">
-              <div 
-                className="absolute left-0 top-0 h-full bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 to-emerald-500"
-                style={{ 
-                  width: `${((animatedScore - 300) / 550) * 100}%`,
-                  transition: 'width 0.03s linear'
-                }}
-              />
+          {!isLoading && (
+            <div className="px-6 mb-8">
+              <div className="relative h-3 bg-gray-200 rounded-full overflow-hidden">
+                <div 
+                  className="absolute left-0 top-0 h-full bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 to-emerald-500"
+                  style={{ 
+                    width: `${((animatedScore - 300) / 550) * 100}%`,
+                    transition: 'width 0.03s linear'
+                  }}
+                />
+              </div>
+              <div className="flex justify-between mt-2 text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                <span>300</span>
+                <span>850</span>
+              </div>
             </div>
-            <div className="flex justify-between mt-2 text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              <span>300</span>
-              <span>850</span>
-            </div>
-          </div>
+          )}
 
           {/* Score Breakdown */}
+          {!isLoading && (<>
           <div className="px-6 mb-6">
             <h3 className="text-lg font-bold text-gray-900 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
               Score Factors
@@ -420,6 +446,7 @@ export default function CreditScore() {
               </div>
             </div>
           </div>
+          </>)}
 
         </div>
       </div>
