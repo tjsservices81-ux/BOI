@@ -282,15 +282,8 @@ export default function IbanTransfer() {
     const destCurrency = detectCurrencyFromIban(data.iban);
     setDestinationCurrency(destCurrency);
     
-    if (userCurrency === 'GBP') {
+    if (userCurrency === 'GBP' && destCurrency !== 'GBP') {
       await fetchExchangeRate(destCurrency);
-      
-      // Calculate converted amount
-      if (data.amount) {
-        const rate = exchangeRate || 1;
-        const converted = (parseFloat(data.amount) * rate).toFixed(2);
-        setConvertedAmount(converted);
-      }
     }
     
     setStep('confirm');
@@ -680,22 +673,6 @@ export default function IbanTransfer() {
               </div>
             </div>
           </div>
-
-          {userCurrency === 'GBP' && destinationCurrency !== 'GBP' && (
-            <div className="bg-green-50 rounded-xl p-4 mb-6 border border-green-200">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-700 font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Currency Conversion</span>
-                <div className="text-right">
-                  <span className="font-semibold text-green-700 text-lg" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {(parseFloat(formData?.amount || '0') * exchangeRate).toFixed(2)} {destinationCurrency}
-                  </span>
-                  <p className="text-xs text-gray-600 mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Rate: £1 = {exchangeRate.toFixed(4)} {destinationCurrency} • Live rate
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
 
           <div className="bg-blue-50 rounded-xl p-4 mb-6 flex items-start space-x-3">
             <Info className="w-5 h-5 text-blue-600 mt-0.5" />
