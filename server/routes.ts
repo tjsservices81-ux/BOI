@@ -2663,11 +2663,17 @@ setInterval(loadOTC,5000);
         });
       }
       
-      // Permanent erase
+      // Permanent erase from customers table
       const erased = await storage.permanentlyEraseCustomer(customerNumber);
       
       if (erased) {
+        // Also delete user from Replit Database so they don't sync back
+        const userDeleted = await storage.deleteUser(customerNumber);
+        
         console.log(`🔥 CUSTOMER PERMANENTLY ERASED: ${customerNumber}`);
+        if (userDeleted) {
+          console.log(`🔥 USER ALSO DELETED FROM REPLIT DATABASE: ${customerNumber}`);
+        }
         
         res.json({ 
           success: true, 
