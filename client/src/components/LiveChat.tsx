@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { X, Send, MessageCircle, User, ChevronLeft } from "lucide-react";
+import { X, Send, MessageCircle, User } from "lucide-react";
 import { UserDataManager } from "../utils/userDataManager";
 import { getUserCurrency, type Currency } from "../utils/currencyUtils";
 import botIconPath from "@assets/IMG_1381_1759334776475.jpeg";
@@ -52,24 +52,6 @@ interface LiveChatProps {
   onClose: () => void;
 }
 
-interface TriageCategory {
-  id: string;
-  name: string;
-  icon: string;
-  questions: {
-    id: string;
-    question: string;
-    options?: string[];
-  }[];
-}
-
-interface TriageState {
-  stage: 'category' | 'questions' | 'chat';
-  selectedCategory?: TriageCategory;
-  answers: { questionId: string; answer: string }[];
-  currentQuestionIndex: number;
-}
-
 interface ChatState {
   messages: ChatMessage[];
   isActive: boolean;
@@ -84,60 +66,6 @@ interface ChatState {
   lastActivityTime?: Date;
   hasCheckedIn?: boolean;
 }
-
-// Triage categories with contextual questions
-const triageCategories: TriageCategory[] = [
-  {
-    id: 'accounts',
-    name: 'Accounts',
-    icon: '💼',
-    questions: [
-      { id: 'account_type', question: 'Which account are you asking about?', options: ['Current Account', 'Savings Account', 'Both'] },
-      { id: 'account_issue', question: 'What do you need help with?', options: ['Balance inquiry', 'Transaction query', 'Account settings', 'Other'] },
-      { id: 'account_urgency', question: 'How urgent is this?', options: ['Urgent - need help now', 'Not urgent - general question'] }
-    ]
-  },
-  {
-    id: 'cards',
-    name: 'Cards',
-    icon: '💳',
-    questions: [
-      { id: 'card_type', question: 'Which card do you need help with?', options: ['Debit Card', 'Credit Card'] },
-      { id: 'card_issue', question: 'What seems to be the problem?', options: ['Lost/Stolen card', 'Card declined', 'PIN issue', 'Other'] },
-      { id: 'card_action', question: 'What would you like to do?', options: ['Block card', 'Request replacement', 'Just asking a question'] }
-    ]
-  },
-  {
-    id: 'transfers',
-    name: 'Transfers',
-    icon: '💸',
-    questions: [
-      { id: 'transfer_type', question: 'What type of transfer?', options: ['UK Transfer', 'SEPA/IBAN Transfer', 'Internal Transfer'] },
-      { id: 'transfer_issue', question: 'What do you need help with?', options: ['Transfer failed', 'Transfer delayed', 'How to send money', 'Other'] },
-      { id: 'transfer_amount', question: 'Is this about a large amount?', options: ['Yes - over €1000', 'No - under €1000'] }
-    ]
-  },
-  {
-    id: 'security',
-    name: 'Security',
-    icon: '🔒',
-    questions: [
-      { id: 'security_concern', question: 'What security issue are you experiencing?', options: ['Suspicious activity', 'Login problems', 'Password/PIN reset', 'Other'] },
-      { id: 'security_device', question: 'Is this about your current device?', options: ['Yes - this device', 'No - different device'] },
-      { id: 'security_urgency', question: 'Do you need immediate assistance?', options: ['Yes - urgent security concern', 'No - general security question'] }
-    ]
-  },
-  {
-    id: 'other',
-    name: 'Other',
-    icon: '❓',
-    questions: [
-      { id: 'other_topic', question: 'What would you like help with?', options: ['App settings', 'Notifications', 'Statements', 'Something else'] },
-      { id: 'other_tried', question: 'Have you tried anything to solve this?', options: ['Yes', 'No'] },
-      { id: 'other_description', question: 'Can you briefly describe the issue?' }
-    ]
-  }
-];
 
 export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   const currentUser = UserDataManager.getCurrentUser();
@@ -211,11 +139,6 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
   };
   
   const [chatState, setChatState] = useState<ChatState>(initializeFreshChat);
-  const [triageState, setTriageState] = useState<TriageState>({
-    stage: 'category',
-    answers: [],
-    currentQuestionIndex: 0
-  });
   
   // Initialize currency preference
   useEffect(() => {
@@ -1288,175 +1211,6 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
     }
   };
 
-  // Generate AI response based on triage context
-  const generateTriageResponse = (category: string, answers: { questionId: string; answer: string }[]): string => {
-    const responses: { [key: string]: { [key: string]: string[] } } = {
-      accounts: {
-        'Current Account': [
-          "I can help you with your Current Account. Let me check the details for you...",
-          "Looking at your Current Account now. What specific information do you need?",
-          "I see you're asking about your Current Account. I'm here to help!"
-        ],
-        'Savings Account': [
-          "Great, I'll help you with your Savings Account. What would you like to know?",
-          "Let me pull up your Savings Account information right away.",
-          "I can assist with your Savings Account. What's your question?"
-        ],
-        'Balance inquiry': [
-          "I can check your balance for you. Just a moment while I retrieve that information.",
-          "Let me get your current balance. This will only take a second.",
-          "I'll pull up your balance right now."
-        ],
-        'Urgent - need help now': [
-          "I understand this is urgent. I'm prioritizing your request and will help you immediately.",
-          "Thank you for letting me know this is urgent. I'll assist you right away.",
-          "I see this needs immediate attention. Let me help you straight away."
-        ]
-      },
-      cards: {
-        'Lost/Stolen card': [
-          "I'm sorry to hear your card is lost or stolen. I can help you block it immediately for security.",
-          "Let's get your card blocked right away to protect your account. I'm on it.",
-          "I'll help you secure your account by blocking the card now. This is a priority."
-        ],
-        'Card declined': [
-          "I can help you understand why your card was declined. Let me check the details.",
-          "Let me investigate why the transaction was declined. I'll get to the bottom of this.",
-          "I'll look into the declined transaction for you right away."
-        ],
-        'Debit Card': [
-          "I'll help you with your Debit Card. What seems to be the issue?",
-          "Let me assist you with your Debit Card query.",
-          "I can help with your Debit Card. Tell me more about what's happening."
-        ]
-      },
-      transfers: {
-        'Transfer failed': [
-          "I'm sorry your transfer didn't go through. Let me check what happened and help you resolve this.",
-          "Let me investigate why the transfer failed. I'll get this sorted for you.",
-          "I can see the transfer didn't complete. Let me find out why and fix it."
-        ],
-        'UK Transfer': [
-          "I can help you with UK transfers. What would you like to know?",
-          "Let me assist with your UK transfer query. What's the issue?",
-          "I'll help you with the UK transfer. Tell me more."
-        ],
-        'Yes - over €1000': [
-          "For large transfers over €1000, I'll make sure everything is processed securely. Let me assist you.",
-          "I understand this is a significant amount. I'll handle this carefully for you.",
-          "For transfers over €1000, I'll ensure everything goes smoothly and securely."
-        ]
-      },
-      security: {
-        'Suspicious activity': [
-          "I take security very seriously. Let me check for any suspicious activity on your account immediately.",
-          "Thank you for alerting us. I'll investigate any unusual activity right away.",
-          "I'll review your account security right now. Your safety is our priority."
-        ],
-        'Yes - urgent security concern': [
-          "This is a priority. I'm checking your account security immediately.",
-          "I understand the urgency. Let me secure your account right now.",
-          "I'm treating this as urgent and will help you immediately."
-        ],
-        'Login problems': [
-          "I can help you regain access to your account. Let's work through this together.",
-          "Let me assist with your login issue. I'll get you back in.",
-          "I'll help you resolve the login problem right away."
-        ]
-      },
-      other: {
-        'App settings': [
-          "I can help you with app settings. What would you like to change?",
-          "Let me guide you through the app settings. What do you need help with?",
-          "I'll assist you with configuring your app settings."
-        ],
-        'Notifications': [
-          "I can help you manage your notifications. What would you like to adjust?",
-          "Let me help you with notification settings. What's your preference?",
-          "I'll assist with your notification preferences."
-        ]
-      }
-    };
-
-    // Build contextual response
-    let response = '';
-    const categoryResponses = responses[category] || responses.other;
-    
-    for (const answer of answers) {
-      if (categoryResponses[answer.answer]) {
-        const options = categoryResponses[answer.answer];
-        response = options[Math.floor(Math.random() * options.length)];
-        break;
-      }
-    }
-    
-    if (!response) {
-      response = "Thank you for that information. I understand your concern and I'm here to help you.";
-    }
-    
-    return response;
-  };
-
-  // Handle category selection
-  const handleCategorySelect = (category: TriageCategory) => {
-    setTriageState({
-      stage: 'questions',
-      selectedCategory: category,
-      answers: [],
-      currentQuestionIndex: 0
-    });
-  };
-
-  // Handle question answer
-  const handleQuestionAnswer = (answer: string) => {
-    if (!triageState.selectedCategory) return;
-    
-    const currentQuestion = triageState.selectedCategory.questions[triageState.currentQuestionIndex];
-    const newAnswers = [...triageState.answers, { questionId: currentQuestion.id, answer }];
-    
-    if (triageState.currentQuestionIndex < triageState.selectedCategory.questions.length - 1) {
-      // Move to next question
-      setTriageState({
-        ...triageState,
-        answers: newAnswers,
-        currentQuestionIndex: triageState.currentQuestionIndex + 1
-      });
-    } else {
-      // All questions answered - generate AI response and start chat
-      const aiResponse = generateTriageResponse(triageState.selectedCategory.id, newAnswers);
-      
-      // Add AI welcome message with context
-      const welcomeMessage: ChatMessage = {
-        id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        text: aiResponse,
-        isUser: false,
-        timestamp: new Date(),
-        agentName: chatState.agentName,
-        isAutomated: false
-      };
-      
-      setChatState(prev => ({
-        ...prev,
-        messages: [welcomeMessage]
-      }));
-      
-      // Move to chat stage
-      setTriageState({
-        ...triageState,
-        stage: 'chat',
-        answers: newAnswers
-      });
-      
-      // Simulate typing and connection
-      setTimeout(() => {
-        setChatState(prev => ({
-          ...prev,
-          queueStatus: 'connected'
-        }));
-      }, 1500);
-    }
-  };
-
   const handleEndChatRequest = () => {
     setShowEndChatConfirm(true);
   };
@@ -1538,143 +1292,62 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col" style={{ paddingBottom: '88px' }}>
-      {/* Modern Gradient Header */}
-      <div className="bg-gradient-to-r from-[#126987] via-[#0e5a78] to-[#126987] px-5 py-5 flex items-center justify-between flex-shrink-0 shadow-lg">
-        <div className="flex items-center space-x-3 flex-1 min-w-0">
+    <div className="fixed inset-0 bg-black bg-opacity-60 z-50 backdrop-animate-in">
+      <div 
+        className={`bg-white w-full md:w-[90vw] md:h-[90vh] md:rounded-3xl md:max-w-4xl md:max-h-[800px] chat-container shadow-2xl absolute ${
+          isAnimating ? 'chat-animate-out' : 'chat-animate-in'
+        }`}
+        style={{ 
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: '88px', // Leave space for bottom navigation
+          height: 'calc(100vh - 88px)',
+          maxHeight: 'calc(100vh - 88px)'
+        }}
+      >
+        {/* Header */}
+        <div className="bg-[#126987] px-6 py-6 flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+              <MessageCircle className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              {chatState.queueStatus === 'waiting' ? (
+                <>
+                  <h3 className="text-white font-semibold text-lg" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Live Chat Support
+                  </h3>
+                  <p className="text-white/80 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Connecting you to an agent...
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h3 className="text-white font-semibold text-lg" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {chatState.agentName} – Customer Support
+                  </h3>
+                  <p className="text-white/80 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {isTyping ? typingText : 'Online now'}
+                  </p>
+                </>
+              )}
+            </div>
+          </div>
           <button
             onClick={handleCloseChat}
-            className="w-9 h-9 bg-white/10 hover:bg-white/20 transition-colors rounded-full flex items-center justify-center text-white flex-shrink-0 backdrop-blur-sm"
+            className="w-8 h-8 bg-white/20 hover:bg-white/30 transition-colors rounded-full flex items-center justify-center text-white"
+            title="Close chat (keeps session active)"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
-          <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0 backdrop-blur-sm">
-            <MessageCircle className="w-5 h-5 text-white" />
-          </div>
-          <div className="flex-1 min-w-0">
-            {chatState.queueStatus === 'waiting' ? (
-              <>
-                <h3 className="text-white font-semibold text-base truncate" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Live Chat Support
-                </h3>
-                <p className="text-white/80 text-xs truncate" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Connecting...
-                </p>
-              </>
-            ) : (
-              <>
-                <h3 className="text-white font-semibold text-base truncate" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  {chatState.agentName}
-                </h3>
-                <div className="flex items-center">
-                  <div className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse flex-shrink-0"></div>
-                  <p className="text-white/90 text-xs truncate" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {isTyping ? 'typing...' : 'Online'}
-                  </p>
-                </div>
-              </>
-            )}
-          </div>
-          {chatState.queueStatus === 'connected' && (
-            <button
-              onClick={handleEndChat}
-              className="text-white/90 text-xs font-medium hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-white/10 backdrop-blur-sm flex-shrink-0"
-              style={{ fontFamily: 'OpenSans, sans-serif' }}
-              data-testid="button-end-chat-header"
-            >
-              End
-            </button>
-          )}
         </div>
-      </div>
 
-      {/* Main Content - Conditional based on triage stage */}
-      {triageState.stage === 'category' ? (
-        <div className="flex-1 overflow-y-auto bg-gradient-to-b from-gray-50 to-white p-6">
-          <div className="max-w-md mx-auto">
-            <h2 className="text-2xl font-bold text-gray-900 mb-3 text-center" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              How can we help you today?
-            </h2>
-            <p className="text-gray-600 mb-8 text-center text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Select a category to get started
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              {triageCategories.map((category) => (
-                <button
-                  key={category.id}
-                  onClick={() => handleCategorySelect(category)}
-                  className="bg-white border-2 border-gray-200 hover:border-[#126987] hover:shadow-lg rounded-2xl p-6 transition-all duration-200 text-center group"
-                  data-testid={`button-category-${category.id}`}
-                >
-                  <div className="text-4xl mb-3">{category.icon}</div>
-                  <p className="text-gray-900 font-semibold group-hover:text-[#126987] transition-colors" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {category.name}
-                  </p>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      ) : triageState.stage === 'questions' && triageState.selectedCategory ? (
-        <div className="flex-1 overflow-y-auto bg-gradient-to-b from-gray-50 to-white p-6">
-          <div className="max-w-md mx-auto">
-            <div className="mb-6 text-center">
-              <div className="text-5xl mb-3">{triageState.selectedCategory.icon}</div>
-              <h2 className="text-xl font-bold text-gray-900 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                {triageState.selectedCategory.name}
-              </h2>
-              <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Question {triageState.currentQuestionIndex + 1} of {triageState.selectedCategory.questions.length}
-              </p>
-            </div>
-            
-            {triageState.selectedCategory.questions[triageState.currentQuestionIndex] && (
-              <>
-                <p className="text-gray-900 font-semibold mb-5 text-center text-lg" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  {triageState.selectedCategory.questions[triageState.currentQuestionIndex].question}
-                </p>
-                
-                {triageState.selectedCategory.questions[triageState.currentQuestionIndex].options ? (
-                  <div className="space-y-3">
-                    {triageState.selectedCategory.questions[triageState.currentQuestionIndex].options!.map((option, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => handleQuestionAnswer(option)}
-                        className="w-full bg-white border-2 border-gray-200 hover:border-[#126987] hover:shadow-lg rounded-xl p-4 transition-all duration-200 text-left group"
-                        data-testid={`button-option-${idx}`}
-                      >
-                        <p className="text-gray-900 group-hover:text-[#126987] transition-colors" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          {option}
-                        </p>
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    <input
-                      type="text"
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter' && e.currentTarget.value.trim()) {
-                          handleQuestionAnswer(e.currentTarget.value);
-                          e.currentTarget.value = '';
-                        }
-                      }}
-                      placeholder="Type your answer and press Enter..."
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#126987] transition-colors"
-                      style={{ fontFamily: 'OpenSans, sans-serif' }}
-                      data-testid="input-text-answer"
-                    />
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-      ) : (
-        <div className="flex-1 overflow-y-auto bg-gradient-to-b from-gray-50 to-white">
-          <div className="p-4 space-y-4 pb-4">
-            {/* Queue status message */}
-            {chatState.queueStatus === 'waiting' && (
+        {/* Messages Container */}
+        <div className="chat-messages bg-gray-50">
+          <div className="p-6 space-y-6 pb-6">
+          {/* Queue status message */}
+          {chatState.queueStatus === 'waiting' && (
             <div className="flex justify-center">
               <div className="bg-orange-50 text-orange-800 px-6 py-6 rounded-2xl text-base text-center max-w-[95%] border border-orange-200">
                 <div className="flex items-center justify-center mb-3">
@@ -1715,55 +1388,57 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
           {chatState.messages.map((message) => (
             <div
               key={message.id}
-              className={`flex ${message.isUser ? 'justify-end' : 'justify-start'} items-end gap-2`}
+              className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
             >
-              {!message.isUser && (
-                <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden bg-gray-200 border border-gray-300">
-                  {message.isAutomated ? (
-                    <img src={botIconPath} alt="Bot" className="w-full h-full object-cover" />
-                  ) : (
-                    <User className="w-4 h-4 text-gray-600" />
-                  )}
-                </div>
-              )}
-              <div className={`max-w-[75%]`}>
+              <div className={`max-w-[75%] ${message.isUser ? 'order-2' : 'order-1'}`}>
                 <div
-                  className={`px-4 py-3 ${
+                  className={`px-5 py-4 rounded-2xl ${
                     message.isUser
-                      ? 'bg-[#126987] text-white rounded-2xl rounded-br-md'
-                      : 'bg-white text-gray-900 rounded-2xl rounded-bl-md shadow-sm border border-gray-200'
+                      ? 'bg-[#126987] text-white rounded-br-sm'
+                      : 'bg-white text-gray-900 rounded-bl-sm shadow-sm border border-gray-100'
                   }`}
                 >
-                  <p className="text-sm leading-relaxed" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  <p className="text-base leading-relaxed" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     {message.text}
                   </p>
                 </div>
-                <p className={`text-xs text-gray-400 mt-1 ${message.isUser ? 'text-right' : 'text-left'} px-1`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                <p className={`text-sm text-gray-500 mt-2 ${message.isUser ? 'text-right' : 'text-left'}`}>
                   {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </p>
               </div>
-              {message.isUser && (
-                <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-[#126987]">
-                  <User className="w-4 h-4 text-white" />
-                </div>
-              )}
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center ml-3 mr-3 flex-shrink-0 overflow-hidden ${
+                message.isUser ? 'order-1 bg-[#126987]' : 'order-2 bg-gray-200'
+              }`}>
+                {message.isUser ? (
+                  <User className="w-5 h-5 text-white" />
+                ) : message.isAutomated ? (
+                  <img src={botIconPath} alt="Bot" className="w-full h-full object-cover" />
+                ) : (
+                  <User className="w-5 h-5 text-gray-600" />
+                )}
+              </div>
             </div>
           ))}
           
-          {/* Professional Typing indicator */}
+          {/* Typing indicator */}
           {isTyping && (
-            <div className="flex justify-start items-end gap-2">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-gray-200 border border-gray-300">
-                <User className="w-4 h-4 text-gray-600" />
-              </div>
-              <div className="bg-white text-gray-900 rounded-2xl rounded-bl-md px-4 py-3 shadow-sm border border-gray-200">
-                <div className="flex items-center space-x-2">
-                  <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-[#126987] rounded-full animate-bounce" style={{animationDelay: '0ms', animationDuration: '1.4s'}}></div>
-                    <div className="w-2 h-2 bg-[#126987] rounded-full animate-bounce" style={{animationDelay: '0.2s', animationDuration: '1.4s'}}></div>
-                    <div className="w-2 h-2 bg-[#126987] rounded-full animate-bounce" style={{animationDelay: '0.4s', animationDuration: '1.4s'}}></div>
+            <div className="flex justify-start">
+              <div className="order-1 max-w-[80%]">
+                <div className="bg-gray-100 text-gray-900 rounded-2xl rounded-bl-sm px-4 py-3">
+                  <div className="flex items-center space-x-1">
+                    <span className="text-gray-600 text-sm mr-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      {chatState.agentName} is typing
+                    </span>
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0ms', animationDuration: '1.4s'}}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.2s', animationDuration: '1.4s'}}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.4s', animationDuration: '1.4s'}}></div>
+                    </div>
                   </div>
                 </div>
+              </div>
+              <div className="order-2 w-8 h-8 rounded-full flex items-center justify-center ml-2 flex-shrink-0 bg-gray-200">
+                <User className="w-4 h-4 text-gray-600" />
               </div>
             </div>
           )}
@@ -1771,11 +1446,9 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
             <div ref={messagesEndRef} />
           </div>
         </div>
-      )}
 
-      {/* Input Area - Only show in chat stage */}
-      {triageState.stage === 'chat' && (
-        <div className="bg-white border-t border-gray-200 p-4 flex-shrink-0">
+        {/* Input Area */}
+        <div className="chat-input-area p-4">
           {chatState.queueStatus === 'waiting' ? (
             <div className="text-center py-2">
               <p className="text-gray-500 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -1783,86 +1456,97 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
               </p>
             </div>
           ) : (
-            <div className="flex items-end space-x-2">
-              <div className="flex-1">
-                <input
-                  type="text"
-                  value={inputText}
-                  onChange={(e) => setInputText(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  onFocus={scrollToBottom}
-                  placeholder="Type your message..."
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#126987] focus:border-[#126987] text-base bg-gray-50"
-                  style={{ 
-                    fontFamily: 'OpenSans, sans-serif',
-                    fontSize: '16px'
-                  }}
-                  disabled={isTyping}
-                  autoComplete="off"
-                  data-testid="input-chat-message"
-                />
+            <>
+              <div className="flex items-center space-x-3 mb-3">
+                <div className="flex-1 relative">
+                  <input
+                    type="text"
+                    value={inputText}
+                    onChange={(e) => setInputText(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    onFocus={scrollToBottom}
+                    placeholder="Type your message..."
+                    className="w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#126987] focus:border-transparent text-base"
+                    style={{ 
+                      fontFamily: 'OpenSans, sans-serif',
+                      fontSize: '16px' // Prevents zoom on iOS
+                    }}
+                    disabled={isTyping}
+                    autoComplete="off"
+                  />
+                </div>
+                <button
+                  onClick={handleSendMessage}
+                  disabled={!inputText.trim() || isTyping}
+                  className="w-11 h-11 bg-[#126987] rounded-full flex items-center justify-center hover:bg-[#0d4e63] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                >
+                  <Send className="w-5 h-5 text-white" />
+                </button>
               </div>
-              <button
-                onClick={handleSendMessage}
-                disabled={!inputText.trim() || isTyping}
-                className="w-12 h-12 bg-[#126987] rounded-xl flex items-center justify-center hover:bg-[#0d4e63] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 shadow-sm"
-                data-testid="button-send-message"
-              >
-                <Send className="w-5 h-5 text-white" />
-              </button>
-            </div>
+              
+              {/* End Chat button positioned properly */}
+              <div className="flex justify-center pt-2">
+                <button
+                  onClick={handleEndChat}
+                  className="text-red-600 text-sm font-medium hover:text-red-700 transition-colors px-4 py-2 rounded-lg hover:bg-red-50"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  End Chat
+                </button>
+              </div>
+            </>
           )}
         </div>
-      )}
 
-      {/* End Chat Confirmation Dialog */}
-      {showEndChatConfirm && (
-        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 mx-4 max-w-sm w-full">
-            <h3 className="text-lg font-semibold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              End Chat Session?
-            </h3>
-            <p className="text-gray-600 mb-6" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Are you sure you want to end the chat? This will close the current conversation.
-            </p>
-            <div className="flex space-x-3">
-              <button
-                onClick={handleEndChatCancel}
-                className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors"
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleEndChatConfirm}
-                className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 transition-colors"
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
-              >
-                End Chat
-              </button>
+        {/* End Chat Confirmation Dialog */}
+        {showEndChatConfirm && (
+          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-2xl p-6 mx-4 max-w-sm w-full">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                End Chat Session?
+              </h3>
+              <p className="text-gray-600 mb-6" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Are you sure you want to end the chat? This will close the current conversation.
+              </p>
+              <div className="flex space-x-3">
+                <button
+                  onClick={handleEndChatCancel}
+                  className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleEndChatConfirm}
+                  className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 transition-colors"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  End Chat
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Chat Ended Message */}
-      {isEndingChat && (
-        <div className="absolute inset-0 bg-[#126987] flex items-center justify-center z-50">
-          <div className="text-center text-white px-6">
-            <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
+        {/* Chat Ended Message */}
+        {isEndingChat && (
+          <div className="absolute inset-0 bg-[#126987] rounded-3xl flex items-center justify-center z-50">
+            <div className="text-center text-white px-6">
+              <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Chat Ended
+              </h3>
+              <p className="text-white/80" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Thank you for contacting support.
+              </p>
             </div>
-            <h3 className="text-2xl font-bold mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Chat Ended
-            </h3>
-            <p className="text-white/80" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Thank you for contacting support.
-            </p>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
