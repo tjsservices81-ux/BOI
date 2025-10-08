@@ -776,7 +776,8 @@ export default function IbanTransfer() {
             <button
               type="submit"
               className="w-full bg-[#126987] text-white py-4 rounded-xl font-semibold active:scale-98 transition-transform"
-              style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              style={{ fontFamily: 'OpenSans, sans-serif' }}
+            >
               Continue to Review
             </button>
           </form>

@@ -825,7 +825,7 @@ export default function UkTransfer() {
             </div>
             <div>
               <h2 className="font-bold text-gray-900 text-lg" style={{ fontFamily: 'OpenSans, sans-serif' }}>UK Bank Transfer</h2>
-              <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Instant transfer via Faster Payments</p>
+              <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Transfer via Faster Payments</p>
             </div>
           </div>
 
