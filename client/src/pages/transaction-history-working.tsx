@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useRoute } from "wouter";
 import { ChevronLeft, ArrowUpRight, CreditCard, Building2, Zap, Check, Clock, MapPin, Globe, X, FileText } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import MiniSpendingChart from "../components/MiniSpendingChart";
 import { UserDataManager } from "../utils/userDataManager.ts";
 import { StateManager } from "../utils/stateManager";
@@ -883,12 +884,19 @@ export default function TransactionHistoryWorking() {
       )}
 
       {/* Generate Statement Modal */}
-      {showStatementModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-             style={{ zIndex: 9999 }}>
-          <div className="bg-white rounded-lg w-full max-w-md">
+      <AnimatePresence>
+        {showStatementModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end"
+               style={{ zIndex: 9999 }}>
+            <motion.div 
+              className="bg-white rounded-t-2xl w-full max-h-[80vh] flex flex-col pb-safe"
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "tween", duration: 0.3, ease: "easeOut" }}
+            >
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
               <h2 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                 Generate Statement
               </h2>
@@ -902,7 +910,7 @@ export default function TransactionHistoryWorking() {
             </div>
 
             {/* Modal Content */}
-            <div className="p-6 space-y-4">
+            <div className="flex-1 overflow-y-auto p-6 space-y-4">
               {!statementSuccessState ? (
                 <>
                   {/* Account Info - Read Only */}
@@ -1029,9 +1037,10 @@ export default function TransactionHistoryWorking() {
                 </>
               )}
             </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
 
     </div>
   );
