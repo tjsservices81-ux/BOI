@@ -2114,6 +2114,9 @@ No transfers found yet on your account.`;
     try {
       const { pin } = req.body;
       
+      console.log('Login attempt - Session ID:', req.sessionID);
+      console.log('Login attempt - Current session:', req.session);
+      
       if (pin === "270309200207") {
         req.session.adminAuthenticated = true;
         
@@ -2123,6 +2126,7 @@ No transfers found yet on your account.`;
             console.error('Session save error:', err);
             return res.status(500).json({ success: false, error: "Session save failed" });
           }
+          console.log('Session saved successfully - ID:', req.sessionID, 'adminAuthenticated:', req.session.adminAuthenticated);
           res.json({ success: true });
         });
       } else {
