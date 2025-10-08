@@ -585,16 +585,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`✅ USER REGISTERED: ${newUser.name} (${newUser.customerNumber})`);
       
-      // INSTANT ADMIN PANEL SYNC - Add new user to admin tracking
-      try {
-        const { addUserToAdminPanel } = await import('./adminSyncManager');
-        await addUserToAdminPanel(newUser, 'registration');
-        console.log(`📊 ADMIN PANEL SYNC: Added ${newUser.name} to admin panel`);
-      } catch (syncError) {
-        console.error('Admin panel sync error:', syncError);
-        // Don't fail registration if admin sync fails
-      }
-      
       res.status(201).json({ 
         success: true, 
         customerNumber: newUser.customerNumber,
@@ -739,22 +729,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`📱 NEW DEVICE SESSION: ${deviceModel} (${ipAddress}) - Session: ${deviceSessionId}`);
       console.log(`🔒 ACCOUNT LOCKED TO DEVICE: User ${user.id} locked to ${deviceModel}`);
-
-      // INSTANT ADMIN PANEL SYNC - Update user login status
-      try {
-        const { updateUserLoginStatus } = await import('./adminSyncManager');
-        await updateUserLoginStatus(user, {
-          deviceModel,
-          ipAddress,
-          userAgent,
-          loginTime: new Date().toISOString(),
-          sessionId: deviceSessionId
-        });
-        console.log(`📊 ADMIN PANEL SYNC: Updated login status for ${user.name}`);
-      } catch (syncError) {
-        console.error('Admin panel sync error:', syncError);
-        // Don't fail login if admin sync fails
-      }
 
       res.json({ user: { id: user.id, name: user.name, email: user.email } });
     } catch (error) {
@@ -1041,20 +1015,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       console.log(`✅ PIN VERIFICATION SUCCESSFUL: ${user.name} (${user.customerNumber})`);
-      
-      // INSTANT ADMIN PANEL SYNC - Update user verification status
-      try {
-        const { updateUserVerificationStatus } = await import('./adminSyncManager');
-        await updateUserVerificationStatus(user, {
-          verificationType: 'PIN',
-          verificationTime: new Date().toISOString(),
-          userAgent: req.headers['user-agent'] || 'Unknown'
-        });
-        console.log(`📊 ADMIN PANEL SYNC: Updated verification status for ${user.name}`);
-      } catch (syncError) {
-        console.error('Admin panel sync error:', syncError);
-        // Don't fail verification if admin sync fails
-      }
       
       res.json({ 
         success: true,
