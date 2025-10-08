@@ -895,11 +895,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Check if customer exists in database (deleted customer check)
-      const user = await storage.getUserById(account.userId);
-      if (user) {
-        const customerExists = await checkCustomerExists(user.customerNumber);
+      const accountUser = await storage.getUserById(account.userId);
+      if (accountUser) {
+        const customerExists = await checkCustomerExists(accountUser.customerNumber);
         if (!customerExists) {
-          console.log(`🚫 DELETED CUSTOMER ATTEMPT: ${user.customerNumber} tried to transfer`);
+          console.log(`🚫 DELETED CUSTOMER ATTEMPT: ${accountUser.customerNumber} tried to transfer`);
           
           // Destroy session to force logout
           if (req.session) {

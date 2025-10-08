@@ -82,6 +82,24 @@ export default function Login() {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
+  // Check for account revoked message in URL
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const message = urlParams.get('message');
+    
+    if (message === 'account_revoked') {
+      toast({
+        title: "Account Access Revoked",
+        description: "Your account has been removed. Please create a new account to continue.",
+        variant: "destructive",
+        duration: 8000,
+      });
+      
+      // Clear the message parameter from URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [toast]);
+
   // Check connection status and offline login availability
   const checkConnectionAndOfflineStatus = async () => {
     try {
