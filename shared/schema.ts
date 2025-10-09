@@ -111,8 +111,6 @@ export const customers = pgTable("customers", {
   isDeleted: boolean("is_deleted").notNull().default(false),
   deletedAt: timestamp("deleted_at"),
   deleteReason: text("delete_reason"),
-  // Developer/Test account flag
-  isDeveloper: boolean("is_developer").notNull().default(false),
 },
 (table) => [
   index("idx_customers_not_deleted").on(table.isDeleted, table.createdAt),
