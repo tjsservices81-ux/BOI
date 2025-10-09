@@ -879,6 +879,22 @@
         "dateCreated": "2025-10-09T18:11:26.937Z",
         "isDisabled": false
       }
+    ],
+    [
+      108,
+      {
+        "id": 108,
+        "customerNumber": "75562231",
+        "pin": "000000",
+        "name": "Test 1",
+        "email": "johnajaj@gmail.com",
+        "phone": "464646",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-09T20:37:25.501Z",
+        "dateCreated": "2025-10-09T20:37:25.501Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [],
@@ -890,7 +906,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 108,
+    "currentUserId": 109,
     "currentAccountId": 70,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
