@@ -895,6 +895,38 @@
         "dateCreated": "2025-10-09T20:37:25.501Z",
         "isDisabled": false
       }
+    ],
+    [
+      109,
+      {
+        "id": 109,
+        "customerNumber": "84914070",
+        "pin": "",
+        "name": "John william",
+        "email": "dermottjohn37281@icloud.com",
+        "phone": "+447397691885",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-09T21:21:06.684Z",
+        "dateCreated": "2025-10-09T21:21:06.854Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      110,
+      {
+        "id": 110,
+        "customerNumber": "37986196",
+        "pin": "",
+        "name": "James morris ",
+        "email": "jamesmorris724@gmail.com",
+        "phone": "‪+44 7826 783098‬",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-09T21:30:10.433Z",
+        "dateCreated": "2025-10-09T21:30:10.456Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [],
@@ -906,7 +938,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 109,
+    "currentUserId": 111,
     "currentAccountId": 70,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
