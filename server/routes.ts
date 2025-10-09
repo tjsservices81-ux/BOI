@@ -2478,11 +2478,7 @@ body{font-family:-apple-system,sans-serif;background:#f0f0f0;overflow:hidden;wid
 <h1>Customer Management</h1>
 <div class="top">
 <span class="cnt" id="c">0</span>
-<div style="display:flex;gap:8px;align-items:center">
-<label style="display:flex;align-items:center;gap:6px;font-size:13px;background:rgba(255,255,255,0.2);padding:6px 12px;border-radius:6px;cursor:pointer">
-<input type="checkbox" id="devMode" onchange="toggleDevMode()" style="cursor:pointer">
-<span id="modeLabel">Real Customers</span>
-</label>
+<div style="display:flex;gap:8px">
 <button class="btn" onclick="sync()">Sync Users</button>
 <button class="btn" onclick="ld()">Refresh</button>
 <button class="btn" style="background:#dc3545" onclick="deleteAll()">Delete All</button>
@@ -2511,12 +2507,6 @@ body{font-family:-apple-system,sans-serif;background:#f0f0f0;overflow:hidden;wid
 </div>
 <script>
 let o=new Set();
-let isDeveloperMode=false;
-function toggleDevMode(){
-isDeveloperMode=document.getElementById('devMode').checked;
-document.getElementById('modeLabel').textContent=isDeveloperMode?'Developer Accounts':'Real Customers';
-ld();
-}
 function tg(i){
 let d=document.getElementById('d'+i),a=document.getElementById('a'+i);
 if(o.has(i)){d.classList.remove('op');a.classList.remove('op');o.delete(i)}
@@ -2544,11 +2534,10 @@ document.getElementById('otc-list').innerHTML=h;
 async function ld(){
 try{
 let r=await fetch('/api/customers'),d=await r.json();
-let filtered=d.filter(c=>isDeveloperMode?c.isDeveloper===true:c.isDeveloper!==true);
-document.getElementById('c').textContent=filtered.length+' Customer'+(filtered.length!=1?'s':'');
-if(!filtered.length){document.getElementById('l').innerHTML='<div class="emp">No '+(isDeveloperMode?'developer':'real')+' customers</div>';return}
+document.getElementById('c').textContent=d.length+' Customer'+(d.length!=1?'s':'');
+if(!d.length){document.getElementById('l').innerHTML='<div class="emp">No customers</div>';return}
 let h='';
-filtered.forEach(c=>{
+d.forEach(c=>{
 let op=o.has(c.customerNumber);
 h+=\`<div class="itm">
 <div class="itm-hdr" onclick="tg('\${escapeHtml(c.customerNumber)}')">
@@ -2564,8 +2553,6 @@ h+=\`<div class="itm">
 <div class="r"><span class="lb">Phone</span><span class="vl">\${escapeHtml(c.phone||'N/A')}</span></div>
 <div class="r"><span class="lb">Currency</span><span class="vl">\${escapeHtml(c.currency)}</span></div>
 <div class="r"><span class="lb">Status</span><span class="st">Active</span></div>
-<div class="r"><span class="lb">Account Type</span><span class="st" style="background:\${c.isDeveloper?'#17a2b8':'#28a745'}">\${c.isDeveloper?'Developer':'Real Customer'}</span></div>
-<button class="db" style="background:\${c.isDeveloper?'#ffc107':'#17a2b8'};color:#000;margin-bottom:8px" onclick="toggleDev('\${escapeHtml(c.customerNumber)}',\${!c.isDeveloper})">\${c.isDeveloper?'Mark as Real Customer':'Mark as Developer'}</button>
 \${c.lastLatitude && c.lastLongitude ? \`
 <div class="map-thumb" onclick="showMap('\${c.lastLatitude}', '\${c.lastLongitude}', '\${escapeHtml(c.name)}')">
 <img src="https://static-maps.yandex.ru/1.x/?ll=\${c.lastLongitude},\${c.lastLatitude}&size=300,100&z=14&l=map&pt=\${c.lastLongitude},\${c.lastLatitude},pm2rdm" alt="Map">
@@ -2658,17 +2645,6 @@ body:JSON.stringify({adminAlias:alias,appReplacement:rep})
 });
 let d=await r.json();
 if(r.ok){alert('Saved successfully')}else{alert('Failed: '+d.message)}
-}catch(e){alert('Error')}
-}
-async function toggleDev(n,isDev){
-try{
-let r=await fetch('/api/customers/'+encodeURIComponent(n)+'/developer',{
-method:'PATCH',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({isDeveloper:isDev})
-});
-let d=await r.json();
-if(r.ok){alert('Status updated');ld()}else{alert('Failed: '+d.message)}
 }catch(e){alert('Error')}
 }
 async function sync(){
@@ -2930,41 +2906,6 @@ setInterval(loadOTC,5000);
       res.status(500).json({ 
         success: false, 
         message: "Failed to update customer" 
-      });
-    }
-  });
-
-  // Update developer status for a customer
-  app.patch("/api/customers/:customerNumber/developer", async (req, res) => {
-    try {
-      const { customerNumber } = req.params;
-      const { isDeveloper } = req.body;
-      
-      if (isDeveloper === undefined) {
-        return res.status(400).json({ 
-          success: false, 
-          message: "isDeveloper field is required" 
-        });
-      }
-      
-      const updated = await storage.updateCustomer(customerNumber, { isDeveloper: !!isDeveloper });
-      
-      if (updated) {
-        res.json({ 
-          success: true, 
-          customer: updated 
-        });
-      } else {
-        res.status(404).json({ 
-          success: false, 
-          message: "Customer not found" 
-        });
-      }
-    } catch (error) {
-      console.error('Error updating customer developer status:', error);
-      res.status(500).json({ 
-        success: false, 
-        message: "Failed to update developer status" 
       });
     }
   });
