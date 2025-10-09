@@ -861,6 +861,9 @@ export default function Profile() {
     const currentTransactions = UserDataManager.getUserData('bankTransactions', []);
     const newTransactionId = Math.max(...currentTransactions.map((t: any) => t.id), 0) + 1;
     
+    // Generate 10-digit transaction reference
+    const transactionReference = Math.floor(1000000000 + Math.random() * 9000000000).toString();
+    
     const newTransaction = {
       id: newTransactionId,
       accountId: accountId,
@@ -869,7 +872,7 @@ export default function Profile() {
       category: isDebit ? 'expense' : 'income',
       type: customTransactionData.type,
       paymentMethod: 'Manual Entry',
-      reference: `CUSTOM${newTransactionId}`,
+      reference: transactionReference,
       timestamp: transactionDate.toISOString()
     };
     
