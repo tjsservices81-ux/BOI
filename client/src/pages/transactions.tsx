@@ -66,7 +66,7 @@ export default function Transactions() {
       return;
     }
 
-    // Create new transaction
+    // Create new transaction for local display
     const newBalance = currentBalance - amount;
     const transactionDate = new Date(payBillsForm.datetime);
     const formattedDate = `${transactionDate.getDate().toString().padStart(2, '0')}/${(transactionDate.getMonth() + 1).toString().padStart(2, '0')}/${transactionDate.getFullYear()} ${transactionDate.getHours().toString().padStart(2, '0')}:${transactionDate.getMinutes().toString().padStart(2, '0')}`;
@@ -80,9 +80,43 @@ export default function Transactions() {
       type: 'debit'
     };
 
-    // Update state
+    // Update local state
     setDynamicTransactions(prev => [newTransaction, ...prev]);
     setCurrentBalance(newBalance);
+    
+    // Also save to global bankTransactions for statement generation
+    const userAccounts = UserDataManager.getUserAccounts();
+    const currentAccount = userAccounts.find((acc: any) => 
+      acc.accountNumber.includes(accountNumber) && acc.accountType === accountType
+    );
+    
+    if (currentAccount) {
+      // Create transaction in format expected by statement service
+      const globalTransaction = {
+        id: Date.now(),
+        accountId: currentAccount.id,
+        amount: amount.toString(),
+        description: `BILL PAYMENT ${payBillsForm.payee}`,
+        category: 'bill_payment',
+        type: 'debit',
+        paymentMethod: 'Online Banking',
+        reference: `BP${Date.now()}`,
+        timestamp: transactionDate.toISOString(),
+      };
+      
+      // Add to global transactions array
+      const allTransactions = UserDataManager.getUserTransactions();
+      allTransactions.unshift(globalTransaction);
+      UserDataManager.setUserTransactions(allTransactions);
+      
+      // Update account balance in global accounts array
+      const updatedAccounts = userAccounts.map((acc: any) => 
+        acc.id === currentAccount.id 
+          ? { ...acc, balance: newBalance.toFixed(2) }
+          : acc
+      );
+      UserDataManager.setUserAccounts(updatedAccounts);
+    }
     
     // Reset form and close modal
     setPayBillsForm({ payee: '', amount: '', datetime: '' });
