@@ -1,5 +1,342 @@
 {
-  "users": [],
+  "users": [
+    [
+      53,
+      {
+        "id": 53,
+        "customerNumber": "41873977",
+        "pin": "",
+        "name": "James ",
+        "email": "bigballds978@gmail.com",
+        "phone": "07747401698",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-08T18:09:52.372Z",
+        "dateCreated": "2025-10-08T18:09:52.543Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      54,
+      {
+        "id": 54,
+        "customerNumber": "41484017",
+        "pin": "",
+        "name": "Patrick ",
+        "email": "patricksmith633@gmail.com",
+        "phone": "+447907563289",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-08T19:43:47.681Z",
+        "dateCreated": "2025-10-08T19:43:47.703Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      55,
+      {
+        "id": 55,
+        "customerNumber": "98372974",
+        "pin": "",
+        "name": "James morris ",
+        "email": "jamesmorris724@gmail.com",
+        "phone": "‪+44 7826 783098‬",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-08T18:19:18.477Z",
+        "dateCreated": "2025-10-08T18:19:18.498Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      56,
+      {
+        "id": 56,
+        "customerNumber": "74779161",
+        "pin": "",
+        "name": "Mark donmow",
+        "email": "mark.donmow@gmail.com",
+        "phone": null,
+        "address": null,
+        "dateOfBirth": "1991-03-19",
+        "joinDate": "2025-10-08T20:48:06.942Z",
+        "dateCreated": "2025-10-08T20:48:06.963Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      57,
+      {
+        "id": 57,
+        "customerNumber": "16505092",
+        "pin": "",
+        "name": "Jason Andrew Mccarthy",
+        "email": "martincl1993@outlook.com",
+        "phone": "+353851323788",
+        "address": null,
+        "dateOfBirth": "1992-06-18",
+        "joinDate": "2018-05-08T18:22:30.956Z",
+        "dateCreated": "2025-10-08T18:22:31.120Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      58,
+      {
+        "id": 58,
+        "customerNumber": "17631561",
+        "pin": "",
+        "name": "Harry styles",
+        "email": "harrystyles2020@gmail.com",
+        "phone": "07842484344",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-08T19:25:06.377Z",
+        "dateCreated": "2025-10-08T19:25:06.400Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      59,
+      {
+        "id": 59,
+        "customerNumber": "95389311",
+        "pin": "",
+        "name": "John lee",
+        "email": "mongantosales@mail.com",
+        "phone": "07904775557",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-09T08:34:07.280Z",
+        "dateCreated": "2025-10-09T08:34:07.449Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      60,
+      {
+        "id": 60,
+        "customerNumber": "23718748",
+        "pin": "",
+        "name": "Briain cave",
+        "email": "cavebriain350@gmail.com",
+        "phone": "07434661891",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-08T19:40:03.756Z",
+        "dateCreated": "2025-10-08T19:40:03.930Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      61,
+      {
+        "id": 61,
+        "customerNumber": "84025123",
+        "pin": "",
+        "name": "Ryan stevens",
+        "email": "ryan5345@gmail.com",
+        "phone": "3532098755",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2019-10-08T19:59:53.163Z",
+        "dateCreated": "2025-10-08T19:59:53.185Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      62,
+      {
+        "id": 62,
+        "customerNumber": "15909702",
+        "pin": "",
+        "name": "John lee",
+        "email": "john.lqnnneb282@gmail.com",
+        "phone": "07564313583",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-08T20:58:41.528Z",
+        "dateCreated": "2025-10-08T20:58:41.550Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      63,
+      {
+        "id": 63,
+        "customerNumber": "43115983",
+        "pin": "",
+        "name": "James Jackon",
+        "email": "ahajsj@gmail.con",
+        "phone": "6464",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-08T20:05:04.614Z",
+        "dateCreated": "2025-10-08T20:05:04.634Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      64,
+      {
+        "id": 64,
+        "customerNumber": "47893556",
+        "pin": "",
+        "name": "C B",
+        "email": "chben200@mail.com",
+        "phone": "07845564618",
+        "address": null,
+        "dateOfBirth": "2000-02-08",
+        "joinDate": "Member Since 19-03-2018",
+        "dateCreated": "2025-10-08T18:28:03.705Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      65,
+      {
+        "id": 65,
+        "customerNumber": "16483262",
+        "pin": "",
+        "name": "C B",
+        "email": "chben200@mail.com",
+        "phone": "078465849586",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-09T08:40:48.301Z",
+        "dateCreated": "2025-10-09T08:40:48.323Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      66,
+      {
+        "id": 66,
+        "customerNumber": "51848228",
+        "pin": "",
+        "name": "Edward Dawson",
+        "email": "EdwardDawson777@gmail.com",
+        "phone": "07868801042",
+        "address": null,
+        "dateOfBirth": "1998-04-05",
+        "joinDate": "28/07/2017",
+        "dateCreated": "2025-10-08T19:46:31.343Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      67,
+      {
+        "id": 67,
+        "customerNumber": "36530558",
+        "pin": "",
+        "name": "Lee rogers",
+        "email": "leerogers2700@gmail.com",
+        "phone": "+447456487546",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-08T19:17:26.603Z",
+        "dateCreated": "2025-10-08T19:17:26.873Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      68,
+      {
+        "id": 68,
+        "customerNumber": "27305433",
+        "pin": "",
+        "name": "Craig mcnab",
+        "email": "wallmark569@gmail.com",
+        "phone": "07309297466",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-08T19:20:08.839Z",
+        "dateCreated": "2025-10-08T19:20:08.861Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      69,
+      {
+        "id": 69,
+        "customerNumber": "46952418",
+        "pin": "",
+        "name": "Sam Jones ",
+        "email": "samjones@outlook.com",
+        "phone": "+44 7397 930568",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-08T18:30:38.571Z",
+        "dateCreated": "2025-10-08T18:30:38.601Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      70,
+      {
+        "id": 70,
+        "customerNumber": "63878887",
+        "pin": "",
+        "name": "Jason m",
+        "email": "jasonm@hotmail.com",
+        "phone": "0852411929",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-08T19:53:58.246Z",
+        "dateCreated": "2025-10-08T19:53:58.267Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      71,
+      {
+        "id": 71,
+        "customerNumber": "77212908",
+        "pin": "",
+        "name": "Jimmywalker",
+        "email": "jimmywalker2000@icloud.com",
+        "phone": "7350616020",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-08T20:47:43.661Z",
+        "dateCreated": "2025-10-08T20:47:43.832Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      72,
+      {
+        "id": 72,
+        "customerNumber": "26810106",
+        "pin": "",
+        "name": "John Ward",
+        "email": "johnward826@icloud.com",
+        "phone": "+44 7362 025212",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-08T21:16:36.742Z",
+        "dateCreated": "2025-10-08T21:16:36.764Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      73,
+      {
+        "id": 73,
+        "customerNumber": "35559857",
+        "pin": "",
+        "name": "The Admin Himself",
+        "email": "theadminhimself@gmail.com",
+        "phone": "1111",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-08T18:42:50.931Z",
+        "dateCreated": "2025-10-08T18:42:50.953Z",
+        "isDisabled": false
+      }
+    ]
+  ],
   "accounts": [],
   "transactions": [],
   "payees": [],
@@ -9,7 +346,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 53,
+    "currentUserId": 74,
     "currentAccountId": 70,
     "currentTransactionId": 1,
     "currentPayeeId": 1,

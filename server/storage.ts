@@ -133,8 +133,53 @@ class MemStorage implements IStorage {
       } else {
         console.log("No persisted data found, starting with empty state");
       }
+      
+      // CRITICAL FIX: Sync PostgreSQL customers to local users storage
+      await this.syncCustomersToUsers();
     } catch (error) {
       console.error('Error loading persisted data:', error);
+    }
+  }
+
+  // Sync PostgreSQL customers table to local users Map (for Face ID and login)
+  private async syncCustomersToUsers(): Promise<void> {
+    try {
+      const { db } = await import('./db');
+      const { eq } = await import('drizzle-orm');
+      
+      // Get all non-deleted customers from PostgreSQL
+      const allCustomers = await db.select().from(customers).where(eq(customers.isDeleted, false));
+      
+      console.log(`🔄 Syncing ${allCustomers.length} customers from PostgreSQL to local storage...`);
+      
+      for (const customer of allCustomers) {
+        // Check if user already exists in local storage
+        const existingUser = Array.from(this.users.values()).find(u => u.customerNumber === customer.customerNumber);
+        
+        if (!existingUser) {
+          // Create user in local storage from customer data
+          const user: User = {
+            id: this.currentUserId++,
+            customerNumber: customer.customerNumber,
+            pin: '', // PIN not stored in PostgreSQL for security
+            name: customer.name || '',
+            email: customer.email || '',
+            phone: customer.phone || null,
+            address: null,
+            dateOfBirth: customer.dateOfBirth || null,
+            joinDate: customer.joinDate || 'Member since 2018',
+            dateCreated: customer.createdAt || new Date(),
+            isDisabled: false
+          };
+          this.users.set(user.id, user);
+        }
+      }
+      
+      // Save updated users to storage.json
+      await this.saveData();
+      console.log(`✅ Synced ${allCustomers.length} customers to local storage - Face ID now available`);
+    } catch (error) {
+      console.error('Error syncing customers to users:', error);
     }
   }
 
