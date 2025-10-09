@@ -511,6 +511,230 @@
         "dateCreated": "2025-10-09T10:57:33.324Z",
         "isDisabled": false
       }
+    ],
+    [
+      85,
+      {
+        "id": 85,
+        "customerNumber": "47724729",
+        "pin": "",
+        "name": "Owen Kennedy",
+        "email": "owenkennedy1005@gmail.com",
+        "phone": "+353857881697",
+        "address": null,
+        "dateOfBirth": "2000-09-06",
+        "joinDate": "2025-10-09T11:47:02.917Z",
+        "dateCreated": "2025-10-09T11:47:02.938Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      86,
+      {
+        "id": 86,
+        "customerNumber": "19736840",
+        "pin": "",
+        "name": "John Ma",
+        "email": "maughantj81@gmail.com",
+        "phone": "111",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-09T12:34:48.062Z",
+        "dateCreated": "2025-10-09T12:34:48.085Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      87,
+      {
+        "id": 87,
+        "customerNumber": "14791554",
+        "pin": "",
+        "name": "Sean Flanagan",
+        "email": "flanagansean911@gmail.com",
+        "phone": "+447862186459",
+        "address": null,
+        "dateOfBirth": "2000-02-19",
+        "joinDate": "2025-10-09T11:38:24.085Z",
+        "dateCreated": "2025-10-09T11:38:24.106Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      88,
+      {
+        "id": 88,
+        "customerNumber": "52624282",
+        "pin": "",
+        "name": "Richard Henderson",
+        "email": "richardhenderson426@gmail.com",
+        "phone": "+353857428985",
+        "address": null,
+        "dateOfBirth": "1995-08-05",
+        "joinDate": "15/10/2016",
+        "dateCreated": "2025-10-09T12:20:51.443Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      89,
+      {
+        "id": 89,
+        "customerNumber": "19499204",
+        "pin": "",
+        "name": "James O’Leary",
+        "email": "pwall8560@gmail.com",
+        "phone": "+44 7454 145715",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-09T11:47:47.610Z",
+        "dateCreated": "2025-10-09T11:47:47.631Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      90,
+      {
+        "id": 90,
+        "customerNumber": "49354149",
+        "pin": "",
+        "name": "Patrick",
+        "email": "patrick759@icloud.com",
+        "phone": "07543952982",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-09T12:46:22.457Z",
+        "dateCreated": "2025-10-09T12:46:22.533Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      91,
+      {
+        "id": 91,
+        "customerNumber": "38664642",
+        "pin": "",
+        "name": "John Mcdonnell",
+        "email": "johnmcdonnell1423@gmai.com",
+        "phone": "+353851500467",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2018-20-02T13:03:52.343Z",
+        "dateCreated": "2025-10-09T13:03:52.364Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      92,
+      {
+        "id": 92,
+        "customerNumber": "75352286",
+        "pin": "",
+        "name": "Stephen Walsh",
+        "email": "stephenwalsh052@gmail.com",
+        "phone": "0857418539",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2022-07-09T13:01:52.037Z",
+        "dateCreated": "2025-10-09T13:01:52.060Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      93,
+      {
+        "id": 93,
+        "customerNumber": "53711759",
+        "pin": "",
+        "name": "Mark Lee",
+        "email": "marklee777121@icloud.com",
+        "phone": "07346575602",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-09T13:35:48.346Z",
+        "dateCreated": "2025-10-09T13:35:48.370Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      94,
+      {
+        "id": 94,
+        "customerNumber": "67770768",
+        "pin": "",
+        "name": "Jason Harrison",
+        "email": "charlietindall100@gmail.com",
+        "phone": "51545454545454",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-09T15:07:55.064Z",
+        "dateCreated": "2025-10-09T15:07:55.235Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      95,
+      {
+        "id": 95,
+        "customerNumber": "85451560",
+        "pin": "",
+        "name": "Adam",
+        "email": "adammurray1345@gmail.com",
+        "phone": "0857412587",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-09T15:18:50.524Z",
+        "dateCreated": "2025-10-09T15:18:50.546Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      96,
+      {
+        "id": 96,
+        "customerNumber": "76903171",
+        "pin": "",
+        "name": "Tony white",
+        "email": "tony01@hmail.com",
+        "phone": "07958412345",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-09T15:25:47.513Z",
+        "dateCreated": "2025-10-09T15:25:47.538Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      97,
+      {
+        "id": 97,
+        "customerNumber": "45802377",
+        "pin": "",
+        "name": "Liam Kavanagh",
+        "email": "Liamk7272@gmail.com",
+        "phone": "0877636804",
+        "address": null,
+        "dateOfBirth": "2005-12-02",
+        "joinDate": "2023-06-09T13:09:17.437Z",
+        "dateCreated": "2025-10-09T13:09:17.459Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      98,
+      {
+        "id": 98,
+        "customerNumber": "17043414",
+        "pin": "",
+        "name": "Paul ",
+        "email": "paulh@gmail.com",
+        "phone": "0851643149",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-09T16:45:04.507Z",
+        "dateCreated": "2025-10-09T16:45:04.529Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [],
@@ -522,7 +746,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 85,
+    "currentUserId": 99,
     "currentAccountId": 70,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
