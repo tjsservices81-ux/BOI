@@ -244,14 +244,6 @@ export async function generateTransferConfirmationPDF(
       
       yPos += 50;
 
-      // Security warning (red text)
-      doc.font('Helvetica-Bold')
-         .fontSize(11)
-         .fillColor('#cc0000')
-         .text('If you did not authorise this payment, contact 1800 123 456 immediately.', 50, yPos);
-
-      yPos += 30;
-
       // Automated message
       doc.font('Helvetica')
          .fontSize(10)

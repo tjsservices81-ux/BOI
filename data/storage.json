@@ -751,6 +751,134 @@
         "dateCreated": "2025-10-09T17:13:01.223Z",
         "isDisabled": false
       }
+    ],
+    [
+      100,
+      {
+        "id": 100,
+        "customerNumber": "44959773",
+        "pin": "",
+        "name": "Peter Jones",
+        "email": "peterjones3288@gmail.com",
+        "phone": "003538640828",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-09T20:05:57.660Z",
+        "dateCreated": "2025-10-09T20:05:57.686Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      101,
+      {
+        "id": 101,
+        "customerNumber": "96368185",
+        "pin": "",
+        "name": "John ward",
+        "email": "landscape2237@gmail.com",
+        "phone": "07900889427",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-09T20:01:04.137Z",
+        "dateCreated": "2025-10-09T20:01:04.158Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      102,
+      {
+        "id": 102,
+        "customerNumber": "80485752",
+        "pin": "",
+        "name": "John Kelly",
+        "email": "johnkelly@yahoo.com",
+        "phone": "00353857502514",
+        "address": null,
+        "dateOfBirth": "1985-02-02",
+        "joinDate": "2025-10-09T19:13:34.592Z",
+        "dateCreated": "2025-10-09T19:13:34.758Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      103,
+      {
+        "id": 103,
+        "customerNumber": "39600839",
+        "pin": "",
+        "name": "Seamus Harty",
+        "email": "seamusharty2277@gmail.com",
+        "phone": "+447404933706",
+        "address": null,
+        "dateOfBirth": "1994-03-09",
+        "joinDate": "Member since 2018",
+        "dateCreated": "2025-10-09T19:21:32.057Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      104,
+      {
+        "id": 104,
+        "customerNumber": "70792305",
+        "pin": "",
+        "name": "martin Mccarthy ",
+        "email": "Mccarthy123@gmail.com",
+        "phone": "07512665258",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-09T17:53:03.559Z",
+        "dateCreated": "2025-10-09T17:53:03.731Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      105,
+      {
+        "id": 105,
+        "customerNumber": "79806525",
+        "pin": "",
+        "name": "Tom",
+        "email": "tomwoods800@icloud.com",
+        "phone": "+447868604103",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-09T18:19:23.525Z",
+        "dateCreated": "2025-10-09T18:19:23.548Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      106,
+      {
+        "id": 106,
+        "customerNumber": "48252615",
+        "pin": "",
+        "name": "John smith",
+        "email": "jreilly1312@gmail.com",
+        "phone": "353156985741",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-09T18:30:43.860Z",
+        "dateCreated": "2025-10-09T18:30:44.036Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      107,
+      {
+        "id": 107,
+        "customerNumber": "15376858",
+        "pin": "",
+        "name": "Thomas Riley",
+        "email": "ThomasRiley7213@gamil.com",
+        "phone": "07460759839",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-09T18:11:26.914Z",
+        "dateCreated": "2025-10-09T18:11:26.937Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [],
@@ -762,7 +890,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 100,
+    "currentUserId": 108,
     "currentAccountId": 70,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
