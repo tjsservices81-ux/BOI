@@ -119,6 +119,23 @@ export default function Login() {
     }
   };
 
+  // Sync users from server to localStorage for Face ID
+  const syncUsersFromServer = async () => {
+    try {
+      const response = await fetch('/api/users/all');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.users) {
+          // Save synced users to localStorage for Face ID
+          localStorage.setItem('bankUsers', JSON.stringify(data.users));
+          console.log(`✅ Synced ${Object.keys(data.users).length} users from server to localStorage for Face ID`);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to sync users from server:', error);
+    }
+  };
+
   // Validate users against server and clean up deleted ones
   const validateAndCleanUsers = async () => {
     const cachedUsers = UserDataManager.getAllUsers();
@@ -168,6 +185,9 @@ export default function Login() {
   // Assets are always loaded - no delays
   useEffect(() => {
     setAssetsLoaded(true);
+    
+    // CRITICAL: Sync users from server to localStorage on page load for Face ID
+    syncUsersFromServer();
     
     // Check if this is a fresh app installation (no permanent login state)
     const hasPermanentLogin = localStorage.getItem('bankingUser') || localStorage.getItem('lastActiveUser');

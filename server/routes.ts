@@ -1980,6 +1980,35 @@ No transfers found yet on your account.`;
     }
   });
 
+  // PUBLIC endpoint for Face ID - get all registered users for localStorage
+  app.get("/api/users/all", async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      
+      // Convert users array to object keyed by customer number for localStorage compatibility
+      const usersObject: { [customerNumber: string]: any } = {};
+      
+      users.forEach(user => {
+        if (user.customerNumber) {
+          usersObject[user.customerNumber] = {
+            customerNumber: user.customerNumber,
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+            currency: 'EUR', // Default currency
+            dateOfBirth: user.dateOfBirth,
+            joinDate: user.joinDate
+          };
+        }
+      });
+      
+      res.json({ success: true, users: usersObject });
+    } catch (error) {
+      console.error('Failed to get users for Face ID:', error);
+      res.status(500).json({ success: false, message: "Failed to load users" });
+    }
+  });
+
   // Admin API endpoints
   app.get("/api/admin/users", async (req, res) => {
     try {
