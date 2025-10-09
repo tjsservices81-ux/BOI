@@ -351,6 +351,166 @@
         "dateCreated": "2025-10-09T08:50:04.696Z",
         "isDisabled": false
       }
+    ],
+    [
+      75,
+      {
+        "id": 75,
+        "customerNumber": "58662130",
+        "pin": "",
+        "name": "Me Big T",
+        "email": "agahja@gmail.com",
+        "phone": "455454",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-09T09:52:39.965Z",
+        "dateCreated": "2025-10-09T09:52:39.989Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      76,
+      {
+        "id": 76,
+        "customerNumber": "17873316",
+        "pin": "",
+        "name": "James Parker",
+        "email": "jamesparker101@icloud.com",
+        "phone": "+35345781678",
+        "address": null,
+        "dateOfBirth": "2000-09-10",
+        "joinDate": "2025-10-09T09:48:22.187Z",
+        "dateCreated": "2025-10-09T09:48:22.207Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      77,
+      {
+        "id": 77,
+        "customerNumber": "66202505",
+        "pin": "",
+        "name": "Liam flanagan",
+        "email": "Liamflanagan51@gmail.com",
+        "phone": "08568569456",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-09T09:48:13.428Z",
+        "dateCreated": "2025-10-09T09:48:13.450Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      78,
+      {
+        "id": 78,
+        "customerNumber": "22868763",
+        "pin": "",
+        "name": "Kevin Doyle ",
+        "email": "kevindoyle@gmail.com",
+        "phone": "08524221345",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-09T11:17:24.076Z",
+        "dateCreated": "2025-10-09T11:17:24.098Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      79,
+      {
+        "id": 79,
+        "customerNumber": "82629251",
+        "pin": "",
+        "name": "John chris",
+        "email": "johnchris32123@icloud.com",
+        "phone": "+447542412158",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-09T09:32:30.774Z",
+        "dateCreated": "2025-10-09T09:32:30.935Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      80,
+      {
+        "id": 80,
+        "customerNumber": "36345821",
+        "pin": "",
+        "name": "Joseph molley",
+        "email": "josephmolley121@icloud.com",
+        "phone": "3538571699",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-09T10:42:19.911Z",
+        "dateCreated": "2025-10-09T10:42:19.934Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      81,
+      {
+        "id": 81,
+        "customerNumber": "20982711",
+        "pin": "",
+        "name": "Owen",
+        "email": "owenlarkin688@icloud.com",
+        "phone": "07874623172",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-09T10:55:49.469Z",
+        "dateCreated": "2025-10-09T10:55:49.496Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      82,
+      {
+        "id": 82,
+        "customerNumber": "44759580",
+        "pin": "",
+        "name": "Peter dwyer",
+        "email": "peterdw32123@icloud.com",
+        "phone": "+447871775774",
+        "address": null,
+        "dateOfBirth": "1997-03-15",
+        "joinDate": "2023-10-09",
+        "dateCreated": "2025-10-09T09:36:55.581Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      83,
+      {
+        "id": 83,
+        "customerNumber": "80721376",
+        "pin": "",
+        "name": "Josh cooper",
+        "email": "joshcooper21@gmail.com",
+        "phone": "0857528954",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-09T10:59:57.111Z",
+        "dateCreated": "2025-10-09T10:59:57.139Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      84,
+      {
+        "id": 84,
+        "customerNumber": "83400633",
+        "pin": "",
+        "name": "Zack Moore ",
+        "email": "keiranjoyce9@icloud.com",
+        "phone": "7400520645",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-09T10:57:33.300Z",
+        "dateCreated": "2025-10-09T10:57:33.324Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [],
@@ -362,7 +522,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 75,
+    "currentUserId": 85,
     "currentAccountId": 70,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
