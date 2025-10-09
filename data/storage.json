@@ -335,6 +335,22 @@
         "dateCreated": "2025-10-08T18:42:50.953Z",
         "isDisabled": false
       }
+    ],
+    [
+      74,
+      {
+        "id": 74,
+        "customerNumber": "63856606",
+        "pin": "",
+        "name": "Patrick Macer ",
+        "email": "Patrickmacer999@hotmail.com",
+        "phone": "07403848176",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-09T08:50:04.535Z",
+        "dateCreated": "2025-10-09T08:50:04.696Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [],
@@ -346,7 +362,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 74,
+    "currentUserId": 75,
     "currentAccountId": 70,
     "currentTransactionId": 1,
     "currentPayeeId": 1,

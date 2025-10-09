@@ -119,20 +119,22 @@ export default function Login() {
     }
   };
 
-  // Sync users from server to localStorage for Face ID
-  const syncUsersFromServer = async () => {
+  // Secure: Save only authenticated user's data to localStorage after login
+  const saveAuthenticatedUserData = async () => {
     try {
-      const response = await fetch('/api/users/all');
+      const response = await fetch('/api/users/me');
       if (response.ok) {
         const data = await response.json();
-        if (data.success && data.users) {
-          // Save synced users to localStorage for Face ID
-          localStorage.setItem('bankUsers', JSON.stringify(data.users));
-          console.log(`✅ Synced ${Object.keys(data.users).length} users from server to localStorage for Face ID`);
+        if (data.success && data.user) {
+          // Save only the logged-in user's data to localStorage
+          const existingUsers = JSON.parse(localStorage.getItem('bankUsers') || '{}');
+          existingUsers[data.user.customerNumber] = data.user;
+          localStorage.setItem('bankUsers', JSON.stringify(existingUsers));
+          console.log(`✅ Saved authenticated user data to localStorage`);
         }
       }
     } catch (error) {
-      console.error('Failed to sync users from server:', error);
+      console.error('Failed to save user data:', error);
     }
   };
 
@@ -186,8 +188,7 @@ export default function Login() {
   useEffect(() => {
     setAssetsLoaded(true);
     
-    // CRITICAL: Sync users from server to localStorage on page load for Face ID
-    syncUsersFromServer();
+    // Security: Do NOT sync all users on page load - only save data after authentication
     
     // Check if this is a fresh app installation (no permanent login state)
     const hasPermanentLogin = localStorage.getItem('bankingUser') || localStorage.getItem('lastActiveUser');
@@ -784,6 +785,9 @@ export default function Login() {
         email: userProfile.email
       });
 
+      // Save authenticated user's data to localStorage (secure - only this user)
+      await saveAuthenticatedUserData();
+
       // Smooth single-pass animation: 0% -> 100% over 4 seconds
       const totalDuration = 4000; // 4 seconds total
       const updateInterval = 25; // Update every 25ms for smooth visible changes
@@ -884,6 +888,9 @@ export default function Login() {
             name: userProfile.name,
             email: userProfile.email
           });
+          
+          // Save authenticated user's data to localStorage (secure - only this user)
+          await saveAuthenticatedUserData();
         }
         
         setPinVerified(true);

@@ -1980,32 +1980,34 @@ No transfers found yet on your account.`;
     }
   });
 
-  // PUBLIC endpoint for Face ID - get all registered users for localStorage
-  app.get("/api/users/all", async (req, res) => {
+  // SECURE endpoint - get only the authenticated user's data
+  app.get("/api/users/me", async (req, res) => {
     try {
-      const users = await storage.getAllUsers();
+      if (!req.session.userId) {
+        return res.status(401).json({ success: false, message: "Not authenticated" });
+      }
+
+      const user = await storage.getUserById(req.session.userId);
       
-      // Convert users array to object keyed by customer number for localStorage compatibility
-      const usersObject: { [customerNumber: string]: any } = {};
+      if (!user) {
+        return res.status(404).json({ success: false, message: "User not found" });
+      }
+
+      // Return only the authenticated user's data
+      const userData = {
+        customerNumber: user.customerNumber,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        currency: 'EUR',
+        dateOfBirth: user.dateOfBirth,
+        joinDate: user.joinDate
+      };
       
-      users.forEach(user => {
-        if (user.customerNumber) {
-          usersObject[user.customerNumber] = {
-            customerNumber: user.customerNumber,
-            name: user.name,
-            email: user.email,
-            phone: user.phone,
-            currency: 'EUR', // Default currency
-            dateOfBirth: user.dateOfBirth,
-            joinDate: user.joinDate
-          };
-        }
-      });
-      
-      res.json({ success: true, users: usersObject });
+      res.json({ success: true, user: userData });
     } catch (error) {
-      console.error('Failed to get users for Face ID:', error);
-      res.status(500).json({ success: false, message: "Failed to load users" });
+      console.error('Failed to get user data:', error);
+      res.status(500).json({ success: false, message: "Failed to load user data" });
     }
   });
 
