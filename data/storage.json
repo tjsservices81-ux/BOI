@@ -735,6 +735,22 @@
         "dateCreated": "2025-10-09T16:45:04.529Z",
         "isDisabled": false
       }
+    ],
+    [
+      99,
+      {
+        "id": 99,
+        "customerNumber": "66807363",
+        "pin": "",
+        "name": "11121",
+        "email": "jhon@email.com",
+        "phone": "07354008447",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-09T17:13:01.052Z",
+        "dateCreated": "2025-10-09T17:13:01.223Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [],
@@ -746,7 +762,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 99,
+    "currentUserId": 100,
     "currentAccountId": 70,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
