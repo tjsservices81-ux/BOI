@@ -35,7 +35,7 @@ export default function Profile() {
     description: '',
     amount: '',
     type: 'debit' as 'debit' | 'credit',
-    date: new Date().toISOString().split('T')[0]
+    date: new Date().toISOString().slice(0, 16) // Include time in format YYYY-MM-DDTHH:MM
   });
   const [transferSettings, setTransferSettings] = useState(() => {
     const saved = UserDataManager.getUserData('transferSettings', null);
@@ -865,8 +865,11 @@ export default function Profile() {
       id: newTransactionId,
       accountId: accountId,
       description: customTransactionData.description.trim(),
-      amount: isDebit ? `-${transactionAmount.toFixed(2)}` : transactionAmount.toFixed(2),
-      balance: newBalance.toFixed(2),
+      amount: transactionAmount.toFixed(2),
+      category: isDebit ? 'expense' : 'income',
+      type: customTransactionData.type,
+      paymentMethod: 'Manual Entry',
+      reference: `CUSTOM${newTransactionId}`,
       timestamp: transactionDate.toISOString()
     };
     
@@ -897,7 +900,7 @@ export default function Profile() {
       description: '',
       amount: '',
       type: 'debit',
-      date: new Date().toISOString().split('T')[0]
+      date: new Date().toISOString().slice(0, 16)
     });
     setShowAddTransaction(false);
     
@@ -2313,7 +2316,7 @@ export default function Profile() {
                       description: '',
                       amount: '',
                       type: 'debit',
-                      date: new Date().toISOString().split('T')[0]
+                      date: new Date().toISOString().slice(0, 16)
                     });
                   }}
                   className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
@@ -2414,13 +2417,13 @@ export default function Profile() {
                   />
                 </div>
 
-                {/* Date */}
+                {/* Date & Time */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Transaction Date
+                    Transaction Date & Time
                   </label>
                   <input
-                    type="date"
+                    type="datetime-local"
                     value={customTransactionData.date}
                     onChange={(e) => setCustomTransactionData({ ...customTransactionData, date: e.target.value })}
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -2438,7 +2441,7 @@ export default function Profile() {
                       description: '',
                       amount: '',
                       type: 'debit',
-                      date: new Date().toISOString().split('T')[0]
+                      date: new Date().toISOString().slice(0, 16)
                     });
                   }}
                   className="flex-1 py-3 bg-gray-200 text-gray-800 rounded-xl font-semibold hover:bg-gray-300 transition-colors"
