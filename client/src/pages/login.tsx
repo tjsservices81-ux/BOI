@@ -119,22 +119,24 @@ export default function Login() {
     }
   };
 
-  // Secure: Save only authenticated user's data to localStorage after login
-  const saveAuthenticatedUserData = async () => {
+  // Secure: Save only the logged-in user's data to localStorage (for Face ID)
+  const saveAuthenticatedUserData = (customerNumber: string, userProfile: any) => {
     try {
-      const response = await fetch('/api/users/me');
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success && data.user) {
-          // Save only the logged-in user's data to localStorage
-          const existingUsers = JSON.parse(localStorage.getItem('bankUsers') || '{}');
-          existingUsers[data.user.customerNumber] = data.user;
-          localStorage.setItem('bankUsers', JSON.stringify(existingUsers));
-          console.log(`✅ Saved authenticated user data to localStorage`);
-        }
-      }
+      // Save only this user's data to localStorage for Face ID
+      const existingUsers = JSON.parse(localStorage.getItem('bankUsers') || '{}');
+      existingUsers[customerNumber] = {
+        customerNumber: customerNumber,
+        name: userProfile.name,
+        email: userProfile.email,
+        phone: userProfile.phone || null,
+        currency: userProfile.currency || 'EUR',
+        dateOfBirth: userProfile.dateOfBirth || null,
+        joinDate: userProfile.joinDate || 'Member since 2018'
+      };
+      localStorage.setItem('bankUsers', JSON.stringify(existingUsers));
+      console.log(`✅ Saved user ${customerNumber} to localStorage for Face ID`);
     } catch (error) {
-      console.error('Failed to save user data:', error);
+      console.error('Failed to save user data to localStorage:', error);
     }
   };
 
@@ -426,6 +428,12 @@ export default function Login() {
         // OTC is valid, create the account
         await UserDataManager.registerUser(pendingAccountData);
         UserDataManager.initializeFreshAccount(pendingAccountData.customerNumber);
+
+        // Save new user's data to localStorage for Face ID
+        const userProfile = UserDataManager.getUserProfile();
+        if (userProfile) {
+          saveAuthenticatedUserData(pendingAccountData.customerNumber, userProfile);
+        }
 
         toast({
           title: "Account Created Successfully",
@@ -786,7 +794,7 @@ export default function Login() {
       });
 
       // Save authenticated user's data to localStorage (secure - only this user)
-      await saveAuthenticatedUserData();
+      saveAuthenticatedUserData(currentUser, userProfile);
 
       // Smooth single-pass animation: 0% -> 100% over 4 seconds
       const totalDuration = 4000; // 4 seconds total
@@ -890,7 +898,7 @@ export default function Login() {
           });
           
           // Save authenticated user's data to localStorage (secure - only this user)
-          await saveAuthenticatedUserData();
+          saveAuthenticatedUserData(customerNumber, userProfile);
         }
         
         setPinVerified(true);
