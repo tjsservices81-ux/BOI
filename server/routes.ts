@@ -2660,6 +2660,17 @@ let d=await r.json();
 if(r.ok){alert('Saved successfully')}else{alert('Failed: '+d.message)}
 }catch(e){alert('Error')}
 }
+async function toggleDev(n,isDev){
+try{
+let r=await fetch('/api/customers/'+encodeURIComponent(n)+'/developer',{
+method:'PATCH',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({isDeveloper:isDev})
+});
+let d=await r.json();
+if(r.ok){alert('Status updated');ld()}else{alert('Failed: '+d.message)}
+}catch(e){alert('Error')}
+}
 async function sync(){
 const confirmed=confirm('Sync all users from Replit Database to the customers table?\\n\\nThis will add users who are not already in the database.\\n\\nDelete functionality will work for synced users.');
 if(!confirmed)return;
@@ -2919,6 +2930,41 @@ setInterval(loadOTC,5000);
       res.status(500).json({ 
         success: false, 
         message: "Failed to update customer" 
+      });
+    }
+  });
+
+  // Update developer status for a customer
+  app.patch("/api/customers/:customerNumber/developer", async (req, res) => {
+    try {
+      const { customerNumber } = req.params;
+      const { isDeveloper } = req.body;
+      
+      if (isDeveloper === undefined) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "isDeveloper field is required" 
+        });
+      }
+      
+      const updated = await storage.updateCustomer(customerNumber, { isDeveloper: !!isDeveloper });
+      
+      if (updated) {
+        res.json({ 
+          success: true, 
+          customer: updated 
+        });
+      } else {
+        res.status(404).json({ 
+          success: false, 
+          message: "Customer not found" 
+        });
+      }
+    } catch (error) {
+      console.error('Error updating customer developer status:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to update developer status" 
       });
     }
   });
