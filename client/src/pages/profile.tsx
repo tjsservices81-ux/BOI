@@ -867,7 +867,7 @@ export default function Profile() {
       description: customTransactionData.description.trim(),
       amount: isDebit ? `-${transactionAmount.toFixed(2)}` : transactionAmount.toFixed(2),
       balance: newBalance.toFixed(2),
-      date: transactionDate.toISOString()
+      timestamp: transactionDate.toISOString()
     };
     
     const updatedTransactions = [...currentTransactions, newTransaction];
