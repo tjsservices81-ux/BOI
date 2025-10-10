@@ -1071,6 +1071,22 @@
         "dateCreated": "2025-10-10T16:51:17.901Z",
         "isDisabled": false
       }
+    ],
+    [
+      120,
+      {
+        "id": 120,
+        "customerNumber": "96932208",
+        "pin": "",
+        "name": "Edward Dawson ",
+        "email": "EdwardDawson177@gmail.com",
+        "phone": "07856677741",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-10T19:34:07.541Z",
+        "dateCreated": "2025-10-10T19:34:07.709Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [],
@@ -1082,7 +1098,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 120,
+    "currentUserId": 121,
     "currentAccountId": 70,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
