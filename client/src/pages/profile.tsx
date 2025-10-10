@@ -1049,7 +1049,9 @@ export default function Profile() {
     UserDataManager.setUserData('bankAccounts', updatedAccounts);
     UserDataManager.clearCache('bankAccounts');
     UserDataManager.clearCache(); // Clear all caches
-    setAccounts(updatedAccounts);
+    
+    // Force state update by creating new array reference
+    setAccounts([...updatedAccounts]);
     
     // Close the editing modal
     setEditingAccount(null);

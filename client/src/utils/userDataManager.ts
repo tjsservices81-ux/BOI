@@ -319,6 +319,14 @@ export class UserDataManager {
     
     const displayFormat = account.displayFormat || 'account';
     
+    console.log('formatAccountNumber:', { 
+      accountId: account.id,
+      displayFormat,
+      iban: account.iban,
+      accountNumber: account.accountNumber,
+      willShow: displayFormat === 'iban' && account.iban ? account.iban : account.accountNumber
+    });
+    
     if (displayFormat === 'iban' && account.iban) {
       // Display IBAN format
       return account.iban;
