@@ -2476,6 +2476,8 @@ body{font-family:-apple-system,sans-serif;background:#f0f0f0;overflow:hidden;wid
 .map-modal-body img{width:100%;height:100%;object-fit:cover}
 .srch{padding:10px;background:#fff;margin:10px;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
 .srch input{width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;font-size:14px}
+.srch-indicator{display:none;background:#e7f3ff;color:#126987;padding:8px 12px;margin:0 10px 10px 10px;border-radius:8px;font-size:13px;font-weight:600;border:1px solid #b3d9ff}
+.srch-indicator.show{display:block}
 </style>
 </head>
 <body>
@@ -2493,6 +2495,9 @@ body{font-family:-apple-system,sans-serif;background:#f0f0f0;overflow:hidden;wid
 </div>
 <div class="srch">
 <input type="text" id="srch" placeholder="🔍 Search by alias name..." oninput="flt()">
+</div>
+<div class="srch-indicator" id="srchInd">
+🔍 Showing results for: <span id="srchTxt"></span>
 </div>
 <div class="otc-sec">
 <div class="otc-hdr">
@@ -2542,7 +2547,15 @@ document.getElementById('otc-list').innerHTML=h;
 }
 function flt(){
 let q=document.getElementById('srch').value.toLowerCase();
+let qRaw=document.getElementById('srch').value;
 let fltd=allCust.filter(c=>(c.adminAlias||'').toLowerCase().includes(q));
+// Show search indicator if there's a search query
+if(qRaw.trim()){
+document.getElementById('srchInd').classList.add('show');
+document.getElementById('srchTxt').textContent='"'+qRaw+'"';
+}else{
+document.getElementById('srchInd').classList.remove('show');
+}
 rnd(fltd);
 }
 function rnd(data){
