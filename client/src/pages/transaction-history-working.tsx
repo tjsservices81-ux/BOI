@@ -718,7 +718,9 @@ export default function TransactionHistoryWorking() {
                 <div className="flex justify-between">
                   <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Transaction ID:</span>
                   <span className="font-mono text-sm text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {selectedTransaction.reference || `TXN${selectedTransaction.id || ''}`}
+                    {selectedTransaction.paymentMethod === 'Manual Entry' 
+                      ? `TXN${selectedTransaction.id || ''}` 
+                      : (selectedTransaction.reference || `TXN${selectedTransaction.id || ''}`)}
                   </span>
                 </div>
 
