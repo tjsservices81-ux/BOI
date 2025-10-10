@@ -7,7 +7,6 @@ import { z } from "zod";
 import { getAccounts, processTransfer, processSecureTransfer, checkTransferConfirmation, processConfirmedTransfer, generateReference } from "../utils/transferUtils";
 import { UserDataManager } from "../utils/userDataManager";
 import { formatCurrency, getUserCurrency, type Currency } from "../utils/currencyUtils";
-import { updateUserLocation } from "../utils/locationTracker";
 import { validateIBAN, formatIBAN } from "../utils/bankValidation";
 
 const ibanTransferSchema = z.object({
@@ -247,9 +246,6 @@ export default function IbanTransfer() {
               timestamp: new Date().toISOString()
             };
             UserDataManager.addRecentPayee(payee);
-            
-            // Update location after successful transfer
-            updateUserLocation();
             
             // Dispatch events to update all components
             window.dispatchEvent(new CustomEvent('transactionUpdate'));

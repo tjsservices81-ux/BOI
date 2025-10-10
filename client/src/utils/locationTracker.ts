@@ -1,44 +1,15 @@
-const LOCATION_PERMISSION_KEY = 'location_permission_status';
-
-export async function updateUserLocation() {
+// Request location permission and update location if granted
+export async function requestLocationPermission(): Promise<boolean> {
   if (!navigator.geolocation) {
     console.log('Geolocation not supported');
-    return;
-  }
-
-  // Check if we've already asked for location permission
-  const permissionStatus = localStorage.getItem(LOCATION_PERMISSION_KEY);
-  
-  // If user previously denied, don't ask again
-  if (permissionStatus === 'denied') {
-    console.log('Location permission previously denied - skipping update');
-    return;
+    return false;
   }
 
   try {
     const position = await new Promise<GeolocationPosition>((resolve, reject) => {
       navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          // Permission granted - save this so we don't prompt again
-          if (permissionStatus !== 'granted') {
-            localStorage.setItem(LOCATION_PERMISSION_KEY, 'granted');
-            console.log('Location permission granted and saved');
-          }
-          resolve(pos);
-        },
-        (err) => {
-          // Only save 'denied' status if user explicitly denied permission
-          // Error codes: 1=PERMISSION_DENIED, 2=POSITION_UNAVAILABLE, 3=TIMEOUT
-          if (err.code === 1 && permissionStatus !== 'denied') {
-            localStorage.setItem(LOCATION_PERMISSION_KEY, 'denied');
-            console.log('Location permission denied by user and saved');
-          } else if (err.code === 2) {
-            console.log('Location position unavailable - will retry next time');
-          } else if (err.code === 3) {
-            console.log('Location request timeout - will retry next time');
-          }
-          reject(err);
-        },
+        resolve,
+        reject,
         {
           enableHighAccuracy: true,
           timeout: 5000,
@@ -62,19 +33,44 @@ export async function updateUserLocation() {
     });
 
     console.log('Location updated:', latitude, longitude);
+    return true;
   } catch (error) {
-    console.log('Location update failed:', error);
+    console.log('Location permission denied or failed:', error);
+    return false;
   }
 }
 
-// Helper function to reset location permission (for settings/testing)
-export function resetLocationPermission() {
-  localStorage.removeItem(LOCATION_PERMISSION_KEY);
-  console.log('Location permission reset - will prompt again on next request');
-}
+// Silently update location if permission already granted (no prompt)
+export async function updateUserLocation() {
+  if (!navigator.geolocation) {
+    return;
+  }
 
-// Helper function to check current permission status
-export function getLocationPermissionStatus(): 'granted' | 'denied' | 'prompt' {
-  const status = localStorage.getItem(LOCATION_PERMISSION_KEY);
-  return (status as 'granted' | 'denied') || 'prompt';
+  try {
+    const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject, {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 300000 // Use cached location up to 5 minutes old
+      });
+    });
+
+    const { latitude, longitude } = position.coords;
+
+    await fetch('/api/user/location', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        latitude,
+        longitude
+      })
+    });
+
+    console.log('Location updated silently:', latitude, longitude);
+  } catch (error) {
+    // Silently fail - don't prompt user
+    console.log('Silent location update failed:', error);
+  }
 }

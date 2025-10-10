@@ -11,6 +11,46 @@ import { getUserCurrency } from "@/utils/currencyUtils";
 import ukLogoPath from "@assets/IMG_1505_1759859367310.png";
 import faceIdIconPath from "@assets/IMG_1506_1759859583184.png";
 
+// Request location and notification permissions on login
+async function requestPermissionsOnLogin() {
+  // Request location permission
+  if (navigator.geolocation) {
+    try {
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 5000,
+          maximumAge: 0
+        });
+      });
+
+      // Send location to server (uses the same endpoint as locationTracker)
+      await fetch('/api/user/location', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude
+        })
+      });
+
+      console.log('Location permission granted on login');
+    } catch (error) {
+      console.log('Location permission denied on login');
+    }
+  }
+
+  // Request notification permission
+  if ('Notification' in window && Notification.permission !== 'granted') {
+    try {
+      await Notification.requestPermission();
+      console.log('Notification permission requested on login');
+    } catch (error) {
+      console.log('Notification permission request failed');
+    }
+  }
+}
+
 export default function Login() {
   const [customerNumber, setCustomerNumber] = useState("");
   const [pin, setPin] = useState("");
@@ -528,6 +568,10 @@ export default function Login() {
           email: userProfile.email
         });
       }
+      
+      // Request permissions on login
+      await requestPermissionsOnLogin();
+      
       navigate("/dashboard");
     } catch (error) {
       toast({
@@ -834,6 +878,9 @@ export default function Login() {
 
       // Wait a moment at 100% before navigating
       await new Promise(resolve => setTimeout(resolve, 300));
+
+      // Request permissions on login
+      await requestPermissionsOnLogin();
 
       // Authentication successful
       navigate("/dashboard");
