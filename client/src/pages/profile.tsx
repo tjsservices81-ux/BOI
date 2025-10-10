@@ -23,6 +23,7 @@ export default function Profile() {
   const [newAccountName, setNewAccountName] = useState('');
   const [newIban, setNewIban] = useState('');
   const [newBic, setNewBic] = useState('');
+  const [newDisplayFormat, setNewDisplayFormat] = useState<'account' | 'iban'>('account');
 
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [showAddTransaction, setShowAddTransaction] = useState(false);
@@ -1038,7 +1039,8 @@ export default function Profile() {
             balance: numericBalance.toFixed(2),
             displayName: newAccountName.trim() || account.displayName,
             iban: newIban.trim(),
-            bicCode: newBic.trim()
+            bicCode: newBic.trim(),
+            displayFormat: newDisplayFormat
           }
         : account
     );
@@ -1055,6 +1057,7 @@ export default function Profile() {
     setNewAccountName('');
     setNewIban('');
     setNewBic('');
+    setNewDisplayFormat('account');
     const currentCurrency = getUserCurrency();
     const currencySymbol = currentCurrency === 'EUR' ? '€' : '£';
     showDeveloperMessage(`Account updated successfully!\n\nNew Balance: ${currencySymbol}${numericBalance.toFixed(2)}`);
@@ -1975,6 +1978,7 @@ export default function Profile() {
                               setNewAccountName(account.displayName);
                               setNewIban(account.iban || '');
                               setNewBic(account.bicCode || '');
+                              setNewDisplayFormat(account.displayFormat || 'account');
                             }}
                             className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-semibold hover:bg-blue-200 transition-colors"
                             style={{ fontFamily: 'OpenSans, sans-serif' }}
@@ -2161,6 +2165,7 @@ export default function Profile() {
                     setNewAccountName('');
                     setNewIban('');
                     setNewBic('');
+                    setNewDisplayFormat('account');
                   }}
                   className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
                 >
@@ -2220,7 +2225,7 @@ export default function Profile() {
                 />
               </div>
 
-              <div className="mb-6">
+              <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                   BIC Code
                 </label>
@@ -2232,9 +2237,21 @@ export default function Profile() {
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                   placeholder="AIBKIE2D"
                 />
-                <p className="text-xs text-gray-500 mt-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Display format automatically switches to IBAN/BIC when these fields are filled
-                </p>
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Display Format
+                </label>
+                <select
+                  value={newDisplayFormat}
+                  onChange={(e) => setNewDisplayFormat(e.target.value as 'account' | 'iban')}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  <option value="account">Account Number & Sort Code</option>
+                  <option value="iban">IBAN & BIC</option>
+                </select>
               </div>
 
               <div className="flex space-x-3">
@@ -2245,6 +2262,7 @@ export default function Profile() {
                     setNewAccountName('');
                     setNewIban('');
                     setNewBic('');
+                    setNewDisplayFormat('account');
                   }}
                   className="flex-1 py-3 bg-gray-200 text-gray-800 rounded-xl font-semibold hover:bg-gray-300 transition-colors"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}

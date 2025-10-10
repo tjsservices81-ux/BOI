@@ -296,30 +296,32 @@ export class UserDataManager {
     this.setUserData('bankAccounts', accounts);
   }
 
-  // Format account number - automatically detects format based on available data
+  // Format account number based on selected display format
   static formatAccountNumber(account: any): string {
     if (!account) return '';
     
-    // If IBAN is available, use IBAN format
-    if (account.iban && account.iban.trim()) {
-      return account.iban;
-    }
+    const displayFormat = account.displayFormat || 'account';
     
-    // Otherwise use account number (default)
-    return account.accountNumber || '';
+    if (displayFormat === 'iban' && account.iban) {
+      // Display IBAN format
+      return account.iban;
+    } else {
+      // Display account number & sort code format (default)
+      return account.accountNumber || '';
+    }
   }
 
-  // Get account secondary info - automatically detects based on available data
+  // Get account secondary info (sort code or BIC) based on display format  
   static formatAccountSecondary(account: any): string {
     if (!account) return '';
     
-    // If BIC is available, use BIC (goes with IBAN)
-    if (account.bicCode && account.bicCode.trim()) {
-      return account.bicCode;
-    }
+    const displayFormat = account.displayFormat || 'account';
     
-    // Otherwise use sort code (goes with account number)
-    return account.sortCode || '';
+    if (displayFormat === 'iban' && account.bicCode) {
+      return account.bicCode;
+    } else {
+      return account.sortCode || '';
+    }
   }
 
   // User-specific transaction operations
