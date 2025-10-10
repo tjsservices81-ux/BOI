@@ -2640,7 +2640,13 @@ async function ld(){
 try{
 let r=await fetch('/api/customers'),d=await r.json();
 allCust=d.sort((a,b)=>parseInt(a.customerNumber)-parseInt(b.customerNumber));
+// Preserve search filter if active by reapplying flt()
+let q=document.getElementById('srch').value.trim();
+if(q){
+flt(); // Reapply current search filter
+}else{
 rnd(allCust);
+}
 loadOTC();
 }catch(e){document.getElementById('l').innerHTML='<div class="emp">Error</div>'}
 }
