@@ -285,11 +285,28 @@ export class UserDataManager {
 
   // User-specific account operations
   static getUserAccounts() {
-    return this.getUserData('bankAccounts', [
+    const accounts = this.getUserData('bankAccounts', [
       { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "0.00", accountType: "current", sortCode: "90-78-68", iban: "", bicCode: "", displayFormat: "account" },
       { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "0.00", accountType: "credit", sortCode: "90-78-68", iban: "", bicCode: "", displayFormat: "account" },
       { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "0.00", accountType: "savings", sortCode: "90-78-68", iban: "", bicCode: "", displayFormat: "account" },
     ]);
+    
+    // Ensure all accounts have required fields (migration for existing accounts)
+    const updatedAccounts = accounts.map(account => ({
+      ...account,
+      sortCode: account.sortCode || '90-78-68',
+      iban: account.iban || '',
+      bicCode: account.bicCode || '',
+      displayFormat: account.displayFormat || 'account'
+    }));
+    
+    // Save updated accounts if any fields were added
+    if (JSON.stringify(accounts) !== JSON.stringify(updatedAccounts)) {
+      this.setUserData('bankAccounts', updatedAccounts);
+      this.clearCache('bankAccounts'); // Clear cache to prevent stale data
+    }
+    
+    return updatedAccounts;
   }
 
   static setUserAccounts(accounts: any[]) {
@@ -405,9 +422,9 @@ export class UserDataManager {
     if (existingAccounts === null) {
       // Initialize with fresh account data (zero balances)
       const freshAccounts = [
-        { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "0.00", accountType: "current" },
-        { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "0.00", accountType: "credit" },
-        { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "0.00", accountType: "savings" },
+        { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "0.00", accountType: "current", sortCode: "90-78-68", iban: "", bicCode: "", displayFormat: "account" },
+        { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "0.00", accountType: "credit", sortCode: "90-78-68", iban: "", bicCode: "", displayFormat: "account" },
+        { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "0.00", accountType: "savings", sortCode: "90-78-68", iban: "", bicCode: "", displayFormat: "account" },
       ];
       
       // Set fresh data only for new accounts
