@@ -974,7 +974,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     return responses[Math.floor(Math.random() * responses.length)];
   };
 
-  const generateAIResponse = async (userMessage: string): Promise<{ text: string; category: string }> => {
+  const generateAIResponse = async (userMessage: string, messages: ChatMessage[]): Promise<{ text: string; category: string }> => {
     try {
       // Check if user is asking about transactions/transfers/payments
       const transferKeywords = [
@@ -1068,8 +1068,8 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
         };
       }
 
-      // Prepare conversation history for AI context
-      const conversationHistory = chatState.messages.map(msg => ({
+      // Prepare conversation history for AI context using passed messages array
+      const conversationHistory = messages.map(msg => ({
         role: msg.isUser ? 'user' as const : 'assistant' as const,
         content: msg.text
       }));
@@ -1118,6 +1118,9 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
       timestamp: new Date()
     };
 
+    // Capture current messages for AI context
+    const currentMessages = [...chatState.messages, userMessage];
+    
     setChatState(prev => ({
       ...prev,
       messages: [...prev.messages, userMessage],
@@ -1143,8 +1146,8 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
     // Start processing after reading delay
     setTimeout(async () => {
       try {
-        // Generate response while agent is "reading"
-        const responseData = await generateAIResponse(userMessage.text);
+        // Generate response while agent is "reading" - use captured messages for context
+        const responseData = await generateAIResponse(userMessage.text, currentMessages);
         
         // Calculate realistic typing time based on agent personality
         const responseWords = responseData.text.split(' ').length;
