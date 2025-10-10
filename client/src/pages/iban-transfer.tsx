@@ -220,7 +220,7 @@ export default function IbanTransfer() {
           clearInterval(interval);
           
           // Process the transfer using the user's payment reference
-          const transferSuccess = processConfirmedTransfer(
+          processConfirmedTransfer(
             `IBAN_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             formData.fromAccount,
             parseFloat(formData.amount),
@@ -233,26 +233,26 @@ export default function IbanTransfer() {
               bicCode: formData.bicCode
             },
             formData.recipientEmail
-          );
-          
-          if (transferSuccess) {
-            // Add successful payee to recent payees
-            const payee = {
-              name: formData.recipientName,
-              accountInfo: formData.iban,
-              bicCode: formData.bicCode,
-              transferType: 'SEPA Transfer',
-              reference: formData.reference || '',
-              timestamp: new Date().toISOString()
-            };
-            UserDataManager.addRecentPayee(payee);
-            
-            // Dispatch events to update all components
-            window.dispatchEvent(new CustomEvent('transactionUpdate'));
-            window.dispatchEvent(new CustomEvent('balanceUpdate'));
-            
-            setShowReference(true);
-          }
+          ).then((transferSuccess) => {
+            if (transferSuccess) {
+              // Add successful payee to recent payees
+              const payee = {
+                name: formData.recipientName,
+                accountInfo: formData.iban,
+                bicCode: formData.bicCode,
+                transferType: 'SEPA Transfer',
+                reference: formData.reference || '',
+                timestamp: new Date().toISOString()
+              };
+              UserDataManager.addRecentPayee(payee);
+              
+              // Dispatch events to update all components
+              window.dispatchEvent(new CustomEvent('transactionUpdate'));
+              window.dispatchEvent(new CustomEvent('balanceUpdate'));
+              
+              setShowReference(true);
+            }
+          });
           
           return 100;
         }

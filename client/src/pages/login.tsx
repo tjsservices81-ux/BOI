@@ -151,7 +151,7 @@ export default function Login() {
   const [, navigate] = locationHook || [null, () => {}];
   const [validatedUsers, setValidatedUsers] = useState<any>({});
   
-  const toast = () => {}; // No-op function to replace all toast notifications
+  const toast = (_options?: any) => {}; // No-op function to replace all toast notifications
 
   // Listen for Face ID setting changes
   useEffect(() => {
