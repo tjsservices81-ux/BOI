@@ -28,6 +28,9 @@ export const accounts = pgTable("accounts", {
   accountType: text("account_type").notNull(), // 'current', 'savings'
   accountNumber: text("account_number").notNull(),
   sortCode: text("sort_code").notNull().default("90-78-68"),
+  iban: text("iban"),
+  bicCode: text("bic_code"),
+  displayFormat: text("display_format").default("account"), // 'account' or 'iban'
   balance: decimal("balance", { precision: 10, scale: 2 }).notNull(),
   displayName: text("display_name").notNull(),
 });

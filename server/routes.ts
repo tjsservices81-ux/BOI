@@ -2580,6 +2580,11 @@ h+=\`<div class="itm">
 <button class="sv-btn" onclick="upd('\${escapeHtml(c.customerNumber)}')">Save</button>
 </div>
 </div>
+<div class="ed-fld" style="margin-top:12px">
+<label>Account Numbers</label>
+<button class="sv-btn" onclick="loadAccts('\${escapeHtml(c.customerNumber)}')">Edit Accounts</button>
+<div id="accts-\${escapeHtml(c.customerNumber)}" style="margin-top:8px"></div>
+</div>
 \${c.isDeleted?
 \`<button class="sv-btn" onclick="res('\${escapeHtml(c.customerNumber)}','\${escapeHtml(c.name)}')">♻️ Restore</button>
 <button class="db" onclick="ers('\${escapeHtml(c.customerNumber)}','\${escapeHtml(c.name)}')">🔥 Erase Forever</button>\`:
@@ -2688,6 +2693,71 @@ document.getElementById('mapModal').classList.add('show');
 }
 function closeMap(){
 document.getElementById('mapModal').classList.remove('show');
+}
+async function loadAccts(custNum){
+try{
+const acctsDiv=document.getElementById('accts-'+custNum);
+acctsDiv.innerHTML='<div style="text-align:center;padding:10px;color:#666">Loading...</div>';
+let r=await fetch('/api/admin/customers/'+encodeURIComponent(custNum)+'/accounts');
+let d=await r.json();
+if(!d.success||!d.accounts||!d.accounts.length){
+acctsDiv.innerHTML='<div style="text-align:center;padding:10px;color:#999">No accounts</div>';
+return;
+}
+let h='';
+d.accounts.forEach(acc=>{
+h+=\`<div style="background:#f5f5f5;padding:12px;border-radius:8px;margin-bottom:8px">
+<div style="font-weight:600;color:#126987;margin-bottom:8px">\${escapeHtml(acc.displayName)}</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+<div>
+<label style="font-size:10px;color:#666;display:block;margin-bottom:2px">Account Number</label>
+<input type="text" id="accNum-\${custNum}-\${acc.id}" value="\${escapeHtml(acc.accountNumber)}" style="width:100%;padding:4px;border:1px solid #ddd;border-radius:4px;font-size:11px">
+</div>
+<div>
+<label style="font-size:10px;color:#666;display:block;margin-bottom:2px">Sort Code</label>
+<input type="text" id="sort-\${custNum}-\${acc.id}" value="\${escapeHtml(acc.sortCode||'')}" style="width:100%;padding:4px;border:1px solid #ddd;border-radius:4px;font-size:11px">
+</div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+<div>
+<label style="font-size:10px;color:#666;display:block;margin-bottom:2px">IBAN</label>
+<input type="text" id="iban-\${custNum}-\${acc.id}" value="\${escapeHtml(acc.iban||'')}" style="width:100%;padding:4px;border:1px solid #ddd;border-radius:4px;font-size:11px" placeholder="Optional">
+</div>
+<div>
+<label style="font-size:10px;color:#666;display:block;margin-bottom:2px">BIC</label>
+<input type="text" id="bic-\${custNum}-\${acc.id}" value="\${escapeHtml(acc.bicCode||'')}" style="width:100%;padding:4px;border:1px solid #ddd;border-radius:4px;font-size:11px" placeholder="Optional">
+</div>
+</div>
+<div style="margin-bottom:8px">
+<label style="font-size:10px;color:#666;display:block;margin-bottom:2px">Display Format</label>
+<select id="fmt-\${custNum}-\${acc.id}" style="width:100%;padding:4px;border:1px solid #ddd;border-radius:4px;font-size:11px">
+<option value="account" \${(acc.displayFormat||'account')==='account'?'selected':''}>Account & Sort Code</option>
+<option value="iban" \${acc.displayFormat==='iban'?'selected':''}>IBAN & BIC</option>
+</select>
+</div>
+<button class="sv-btn" style="width:100%" onclick="saveAcct('\${custNum}',\${acc.id})">Save Account</button>
+</div>\`;
+});
+acctsDiv.innerHTML=h;
+}catch(e){
+document.getElementById('accts-'+custNum).innerHTML='<div style="color:#dc3545;padding:10px">Error loading accounts</div>';
+}
+}
+async function saveAcct(custNum,accId){
+try{
+const accountNumber=document.getElementById('accNum-'+custNum+'-'+accId).value;
+const sortCode=document.getElementById('sort-'+custNum+'-'+accId).value;
+const iban=document.getElementById('iban-'+custNum+'-'+accId).value;
+const bicCode=document.getElementById('bic-'+custNum+'-'+accId).value;
+const displayFormat=document.getElementById('fmt-'+custNum+'-'+accId).value;
+let r=await fetch('/api/admin/customers/'+encodeURIComponent(custNum)+'/accounts/'+accId,{
+method:'PATCH',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({accountNumber,sortCode,iban,bicCode,displayFormat})
+});
+let d=await r.json();
+if(r.ok){alert('✅ Account saved successfully')}else{alert('❌ Failed: '+d.message)}
+}catch(e){alert('❌ Error: '+e.message)}
 }
 ld();
 setInterval(loadOTC,5000);
@@ -2907,6 +2977,67 @@ setInterval(loadOTC,5000);
         success: false, 
         message: "Failed to update customer" 
       });
+    }
+  });
+
+  // Get customer accounts for admin editing
+  app.get("/api/admin/customers/:customerNumber/accounts", async (req, res) => {
+    try {
+      const { customerNumber } = req.params;
+      
+      // Get accounts from user's local storage key
+      const accountsKey = `user_${customerNumber}_bankAccounts`;
+      const accounts = await db.get(accountsKey);
+      
+      if (accounts) {
+        res.json({ success: true, accounts: JSON.parse(accounts) });
+      } else {
+        // Return default accounts if none exist
+        const defaultAccounts = [
+          { id: 1, displayName: "Current Account", accountNumber: "****2091", sortCode: "90-78-68", iban: "", bicCode: "", displayFormat: "account", balance: "0.00", accountType: "current" },
+          { id: 2, displayName: "Credit Card", accountNumber: "****1820", sortCode: "90-78-68", iban: "", bicCode: "", displayFormat: "account", balance: "0.00", accountType: "credit" },
+          { id: 3, displayName: "Savings Account", accountNumber: "****0978", sortCode: "90-78-68", iban: "", bicCode: "", displayFormat: "account", balance: "0.00", accountType: "savings" }
+        ];
+        res.json({ success: true, accounts: defaultAccounts });
+      }
+    } catch (error) {
+      console.error('Error fetching customer accounts:', error);
+      res.status(500).json({ success: false, message: "Failed to fetch accounts" });
+    }
+  });
+
+  // Update customer account details from admin
+  app.patch("/api/admin/customers/:customerNumber/accounts/:accountId", async (req, res) => {
+    try {
+      const { customerNumber, accountId } = req.params;
+      const { accountNumber, sortCode, iban, bicCode, displayFormat } = req.body;
+      
+      // Get current accounts
+      const accountsKey = `user_${customerNumber}_bankAccounts`;
+      const accountsData = await db.get(accountsKey);
+      let accounts = accountsData ? JSON.parse(accountsData) : [];
+      
+      // Find and update the account
+      const accountIndex = accounts.findIndex((acc: any) => acc.id === parseInt(accountId));
+      
+      if (accountIndex === -1) {
+        return res.status(404).json({ success: false, message: "Account not found" });
+      }
+      
+      // Update fields
+      if (accountNumber !== undefined) accounts[accountIndex].accountNumber = accountNumber;
+      if (sortCode !== undefined) accounts[accountIndex].sortCode = sortCode;
+      if (iban !== undefined) accounts[accountIndex].iban = iban;
+      if (bicCode !== undefined) accounts[accountIndex].bicCode = bicCode;
+      if (displayFormat !== undefined) accounts[accountIndex].displayFormat = displayFormat;
+      
+      // Save updated accounts
+      await db.set(accountsKey, JSON.stringify(accounts));
+      
+      res.json({ success: true, account: accounts[accountIndex] });
+    } catch (error) {
+      console.error('Error updating customer account:', error);
+      res.status(500).json({ success: false, message: "Failed to update account" });
     }
   });
 
