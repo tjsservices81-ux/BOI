@@ -296,6 +296,34 @@ export class UserDataManager {
     this.setUserData('bankAccounts', accounts);
   }
 
+  // Format account number based on display format
+  static formatAccountNumber(account: any): string {
+    if (!account) return '';
+    
+    const displayFormat = account.displayFormat || 'account';
+    
+    if (displayFormat === 'iban' && account.iban) {
+      // Display IBAN format
+      return account.iban;
+    } else {
+      // Display account number & sort code format (default)
+      return account.accountNumber || '';
+    }
+  }
+
+  // Get account secondary info (sort code or BIC) based on display format  
+  static formatAccountSecondary(account: any): string {
+    if (!account) return '';
+    
+    const displayFormat = account.displayFormat || 'account';
+    
+    if (displayFormat === 'iban' && account.bicCode) {
+      return account.bicCode;
+    } else {
+      return account.sortCode || '';
+    }
+  }
+
   // User-specific transaction operations
   static getUserTransactions() {
     return this.getUserData('bankTransactions', []);
