@@ -2727,6 +2727,7 @@ document.getElementById('mapModal').classList.remove('show');
 }
 ld();
 setInterval(loadOTC,5000);
+setInterval(ld,5000);
 </script>
 </body>
 </html>`;
