@@ -1087,6 +1087,22 @@
         "dateCreated": "2025-10-10T19:34:07.709Z",
         "isDisabled": false
       }
+    ],
+    [
+      121,
+      {
+        "id": 121,
+        "customerNumber": "23817961",
+        "pin": "",
+        "name": "James Jackonson",
+        "email": "jamesjackon1829@gmail.clm",
+        "phone": "07834653498",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-10T22:34:45.780Z",
+        "dateCreated": "2025-10-10T22:34:45.802Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [],
@@ -1098,7 +1114,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 121,
+    "currentUserId": 122,
     "currentAccountId": 70,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
