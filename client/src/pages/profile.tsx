@@ -1050,8 +1050,9 @@ export default function Profile() {
     UserDataManager.clearCache('bankAccounts');
     UserDataManager.clearCache(); // Clear all caches
     
-    // Force state update by creating new array reference
-    setAccounts([...updatedAccounts]);
+    // Reload from storage to ensure fresh data with all transformations applied
+    const freshAccounts = UserDataManager.getUserAccounts();
+    setAccounts(freshAccounts);
     
     // Close the editing modal
     setEditingAccount(null);
