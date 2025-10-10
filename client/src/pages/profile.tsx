@@ -45,6 +45,10 @@ export default function Profile() {
       showInternalTransfer: true
     };
   });
+  const [showTransferConfirmation, setShowTransferConfirmation] = useState(() => {
+    const saved = localStorage.getItem('showTransferConfirmation');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [editProfileData, setEditProfileData] = useState({
     name: '',
@@ -1769,6 +1773,43 @@ export default function Profile() {
                       <span
                         className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
                           transferSettings.showInternalTransfer ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Transfer Confirmation Visibility */}
+              <div className="mb-6">
+                <h3 className="text-sm font-medium text-gray-700 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Transfer Confirmation
+                </h3>
+                <div className="space-y-3 bg-gray-50 p-4 rounded-xl">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Show Confirmation Button
+                      </p>
+                      <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Display confirmation on transaction details
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        const newValue = !showTransferConfirmation;
+                        setShowTransferConfirmation(newValue);
+                        localStorage.setItem('showTransferConfirmation', JSON.stringify(newValue));
+                        window.dispatchEvent(new Event('storage'));
+                        showDeveloperMessage(`Transfer Confirmation ${newValue ? 'enabled' : 'disabled'} successfully`);
+                      }}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        showTransferConfirmation ? 'bg-green-600' : 'bg-gray-300'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          showTransferConfirmation ? 'translate-x-6' : 'translate-x-1'
                         }`}
                       />
                     </button>
