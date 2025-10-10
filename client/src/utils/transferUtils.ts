@@ -38,9 +38,9 @@ export const getAccounts = (): Account[] => {
   // Get current balances using UserDataManager
   const storedAccounts = UserDataManager.getUserData('bankAccounts', []);
   const defaultAccounts = [
-    { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "0.00", accountType: "current", sortCode: "90-78-68" },
-    { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "0.00", accountType: "credit", sortCode: "90-78-68" },
-    { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "0.00", accountType: "savings", sortCode: "90-78-68" }
+    { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "0.00", accountType: "current", sortCode: "90-78-68", iban: "", bicCode: "", displayFormat: "account" },
+    { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "0.00", accountType: "credit", sortCode: "90-78-68", iban: "", bicCode: "", displayFormat: "account" },
+    { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "0.00", accountType: "savings", sortCode: "90-78-68", iban: "", bicCode: "", displayFormat: "account" }
   ];
   
   // Ensure we have valid account data
