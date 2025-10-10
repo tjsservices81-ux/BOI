@@ -1039,6 +1039,22 @@
         "dateCreated": "2025-10-10T10:16:47.567Z",
         "isDisabled": false
       }
+    ],
+    [
+      118,
+      {
+        "id": 118,
+        "customerNumber": "89205437",
+        "pin": "",
+        "name": "Jonathan Conway ",
+        "email": "Jonathancon321@gmail.com",
+        "phone": "+447768420785",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-10T15:51:33.032Z",
+        "dateCreated": "2025-10-10T15:51:33.051Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [],
@@ -1050,7 +1066,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 118,
+    "currentUserId": 119,
     "currentAccountId": 70,
     "currentTransactionId": 1,
     "currentPayeeId": 1,

@@ -100,6 +100,88 @@ const sortCodePrefixes: { prefix: string; bank: string }[] = [
   
   // Yorkshire Bank - 05-xx-xx range
   { prefix: "05", bank: "Yorkshire Bank" },
+  
+  // Chase UK - Specific codes
+  { prefix: "609926", bank: "Chase UK" },
+  { prefix: "609927", bank: "Chase UK" },
+  { prefix: "609928", bank: "Chase UK" },
+  
+  // Barclaycard (part of Barclays but separate)
+  { prefix: "204967", bank: "Barclaycard" },
+  
+  // American Express Banking - UK
+  { prefix: "232857", bank: "American Express" },
+  
+  // M&S Bank - 30-91-xx range
+  { prefix: "3091", bank: "M&S Bank" },
+  
+  // Tesco Bank - 30-96-xx range
+  { prefix: "3096", bank: "Tesco Bank" },
+  
+  // The Co-operative Bank - Additional ranges
+  { prefix: "089", bank: "Co-operative Bank" },
+  
+  // Yorkshire Building Society - 60-99-xx range (except Chase specific)
+  { prefix: "6099", bank: "Yorkshire Building Society" },
+  
+  // Coventry Building Society - 40-30-xx range
+  { prefix: "4030", bank: "Coventry Building Society" },
+  
+  // Leeds Building Society - 08-90-xx range
+  { prefix: "0890", bank: "Leeds Building Society" },
+  
+  // Principality Building Society - 20-31-xx range
+  { prefix: "2031", bank: "Principality Building Society" },
+  
+  // Newcastle Building Society - 55-61-xx range
+  { prefix: "5561", bank: "Newcastle Building Society" },
+  
+  // Nottingham Building Society - 60-70-xx range
+  { prefix: "6070", bank: "Nottingham Building Society" },
+  
+  // Skipton Building Society - 30-97-xx range
+  { prefix: "3097", bank: "Skipton Building Society" },
+  
+  // Apple Bank / Goldman Sachs - 23-69-xx range
+  { prefix: "236926", bank: "Apple Bank (Goldman Sachs)" },
+  
+  // Curve - 23-14-xx range
+  { prefix: "231454", bank: "Curve" },
+  
+  // Chip Savings - 23-26-xx range
+  { prefix: "232653", bank: "Chip" },
+  
+  // Tandem Bank - 23-14-xx range
+  { prefix: "231428", bank: "Tandem Bank" },
+  
+  // Modulr - 23-14-xx range
+  { prefix: "231403", bank: "Modulr" },
+  
+  // ClearBank (used by many fintechs) - 23-14-xx range
+  { prefix: "2314", bank: "ClearBank" },
+  
+  // Lloyds Business Banking - 30-xx-xx range (subset)
+  { prefix: "309274", bank: "Lloyds Business" },
+  
+  // Ulster Bank - 98-xx-xx range
+  { prefix: "98", bank: "Ulster Bank" },
+  
+  // Danske Bank - 95-xx-xx range
+  { prefix: "95", bank: "Danske Bank" },
+  
+  // AIB (GB) - 23-69-xx range
+  { prefix: "236940", bank: "AIB (GB)" },
+  
+  // Starling Bank (additional codes)
+  { prefix: "608372", bank: "Starling Bank" },
+  { prefix: "608373", bank: "Starling Bank" },
+  
+  // Monzo (additional codes)
+  { prefix: "040039", bank: "Monzo" },
+  { prefix: "040040", bank: "Monzo" },
+  
+  // N26 - 23-14-xx range
+  { prefix: "231448", bank: "N26" },
 ];
 
 export function validateUKSortCode(sortCode: string): string | null {
