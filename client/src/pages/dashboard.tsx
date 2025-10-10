@@ -12,6 +12,7 @@ interface Account {
   id: number;
   displayName: string;
   accountNumber: string;
+  sortCode: string;
   balance: string;
   accountType: string;
 }
@@ -81,21 +82,8 @@ export default function Dashboard() {
       }
     }
     
-    // Load or initialize accounts with clean default data
-    let storedAccounts = UserDataManager.getUserData('bankAccounts', null);
-    if (!storedAccounts || storedAccounts.length === 0) {
-      // Initialize default accounts with zero balances
-      const defaultAccounts = [
-        { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "0.00", accountType: "current" },
-        { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "0.00", accountType: "credit" },
-        { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "0.00", accountType: "savings" },
-      ];
-      UserDataManager.setUserData('bankAccounts', defaultAccounts);
-      storedAccounts = defaultAccounts;
-      
-      // Initialize empty transactions array
-      UserDataManager.setUserData('bankTransactions', []);
-    }
+    // Load accounts with migration (getUserAccounts automatically migrates legacy accounts)
+    const storedAccounts = UserDataManager.getUserAccounts();
     
     setAccounts(storedAccounts);
     
@@ -421,7 +409,7 @@ export default function Dashboard() {
                   <div className="flex items-center justify-between w-full px-6 py-4">
                     <div className="text-left">
                       <p className="font-medium text-sm text-gray-800 boi-regular-font">{account.displayName.toUpperCase()}</p>
-                      <p className="text-xs text-gray-500 mt-0.5 boi-regular-font">{account.accountNumber}</p>
+                      <p className="text-xs text-gray-500 mt-0.5 boi-regular-font">{account.sortCode} {account.accountNumber}</p>
                     </div>
                     <div className="flex items-center">
                       {isLoading ? (

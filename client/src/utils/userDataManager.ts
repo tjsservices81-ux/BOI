@@ -285,11 +285,26 @@ export class UserDataManager {
 
   // User-specific account operations
   static getUserAccounts() {
-    return this.getUserData('bankAccounts', [
+    const accounts = this.getUserData('bankAccounts', [
       { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "0.00", accountType: "current", sortCode: "90-78-68" },
       { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "0.00", accountType: "credit", sortCode: "90-78-68" },
       { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "0.00", accountType: "savings", sortCode: "90-78-68" },
     ]);
+    
+    // Migration: Add default sortCode to existing accounts that don't have one
+    const migratedAccounts = accounts.map((account: any) => ({
+      ...account,
+      sortCode: account.sortCode || "90-78-68"
+    }));
+    
+    // Save migrated accounts if any were missing sortCode
+    if (migratedAccounts.some((acc: any, i: number) => acc.sortCode !== accounts[i]?.sortCode)) {
+      this.setUserData('bankAccounts', migratedAccounts);
+      // Clear cache to ensure migrated data is used in subsequent reads
+      this.clearCache('bankAccounts');
+    }
+    
+    return migratedAccounts;
   }
 
   static setUserAccounts(accounts: any[]) {
@@ -377,9 +392,9 @@ export class UserDataManager {
     if (existingAccounts === null) {
       // Initialize with fresh account data (zero balances)
       const freshAccounts = [
-        { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "0.00", accountType: "current" },
-        { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "0.00", accountType: "credit" },
-        { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "0.00", accountType: "savings" },
+        { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "0.00", accountType: "current", sortCode: "90-78-68" },
+        { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "0.00", accountType: "credit", sortCode: "90-78-68" },
+        { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "0.00", accountType: "savings", sortCode: "90-78-68" },
       ];
       
       // Set fresh data only for new accounts

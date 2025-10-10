@@ -139,13 +139,18 @@ export default function Transactions() {
   };
 
   const getAccountSubtitle = () => {
+    const accountData = UserDataManager.getUserAccounts().find((acc: any) => 
+      acc.accountNumber.includes(accountNumber) && acc.accountType === accountType
+    );
+    const sortCode = accountData?.sortCode || '90-78-68';
+    
     switch (accountType) {
-      case 'current': return `Account ending -${accountNumber}`;
-      case 'credit': return `Card ending -${accountNumber}`;
-      case 'savings': return `Account ending -${accountNumber}`;
-      case 'loan': return `Loan account -${accountNumber}`;
-      case 'deposit': return `Deposit account -${accountNumber}`;
-      default: return `Account ending -${accountNumber}`;
+      case 'current': return `${sortCode} Account ending -${accountNumber}`;
+      case 'credit': return `${sortCode} Card ending -${accountNumber}`;
+      case 'savings': return `${sortCode} Account ending -${accountNumber}`;
+      case 'loan': return `${sortCode} Loan account -${accountNumber}`;
+      case 'deposit': return `${sortCode} Deposit account -${accountNumber}`;
+      default: return `${sortCode} Account ending -${accountNumber}`;
     }
   };
 
