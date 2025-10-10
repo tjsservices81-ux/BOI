@@ -93,7 +93,8 @@ export default function BankStatements() {
         a.href = url;
         
         const selectedAccountData = accounts.find(acc => String(acc.id) === selectedAccount);
-        const fileName = `BOI_Statement_${selectedAccountData?.accountNumber}_${format(startDate, 'ddMMyyyy')}-${format(endDate, 'ddMMyyyy')}.pdf`;
+        const accountIdentifier = selectedAccountData ? UserDataManager.formatAccountNumber(selectedAccountData).replace(/\s+/g, '_') : 'Account';
+        const fileName = `BOI_Statement_${accountIdentifier}_${format(startDate, 'ddMMyyyy')}-${format(endDate, 'ddMMyyyy')}.pdf`;
         a.download = fileName;
         
         document.body.appendChild(a);
@@ -186,7 +187,10 @@ export default function BankStatements() {
                     <div className="flex flex-col">
                       <span className="font-medium">{account.displayName}</span>
                       <span className="text-sm text-gray-500">
-                        {account.accountNumber}
+                        {UserDataManager.formatAccountNumber(account)}
+                        {UserDataManager.formatAccountSecondary(account) && (
+                          <span className="ml-1">• {UserDataManager.formatAccountSecondary(account)}</span>
+                        )}
                       </span>
                     </div>
                   </SelectItem>

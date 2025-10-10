@@ -495,7 +495,7 @@ export default function UkTransfer() {
                     {selectedAccount?.displayName || 'Current Account'}
                   </p>
                   <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {selectedAccount?.accountNumber || 'Account ending in ****'}
+                    {selectedAccount ? UserDataManager.formatAccountNumber(selectedAccount) : 'No account selected'}
                   </p>
                 </div>
               </div>
@@ -843,7 +843,7 @@ export default function UkTransfer() {
                 <option value="">Select account</option>
                 {accounts.map(account => (
                   <option key={account.id} value={account.id}>
-                    {account.displayName} {account.accountNumber} - {formatCurrency(account.balance, userCurrency)}
+                    {account.displayName} {UserDataManager.formatAccountNumber(account)} - {formatCurrency(account.balance, userCurrency)}
                   </option>
                 ))}
               </select>

@@ -149,7 +149,7 @@ export default function InternalTransfer() {
       paymentMethod: 'Internal Transfer',
       reference,
       recipientName: toAccount.displayName,
-      recipientAccount: toAccount.accountNumber,
+      recipientAccount: UserDataManager.formatAccountNumber(toAccount),
       fromAccountId: fromAccount.id,
       toAccountId: toAccount.id
     };
@@ -166,7 +166,7 @@ export default function InternalTransfer() {
       paymentMethod: 'Internal Transfer',
       reference,
       recipientName: fromAccount.displayName,
-      recipientAccount: fromAccount.accountNumber,
+      recipientAccount: UserDataManager.formatAccountNumber(fromAccount),
       fromAccountId: fromAccount.id,
       toAccountId: toAccount.id
     };
@@ -243,7 +243,7 @@ export default function InternalTransfer() {
           amount: transferAmount.toFixed(2),
           currency: currency,
           transactionReference: reference,
-          accountInfo: `${fromAccount.displayName} (${fromAccount.accountNumber})`,
+          accountInfo: `${fromAccount.displayName} (${UserDataManager.formatAccountNumber(fromAccount)})`,
           transferData: {
             ...debitTransaction,
             paymentMethod: 'Internal Transfer',
@@ -384,7 +384,7 @@ export default function InternalTransfer() {
                     {confirmFromAccount?.displayName || 'Unknown Account'}
                   </p>
                   <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {confirmFromAccount?.accountNumber}
+                    {confirmFromAccount ? UserDataManager.formatAccountNumber(confirmFromAccount) : ''}
                   </p>
                   <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     Balance: {(() => {
@@ -403,7 +403,7 @@ export default function InternalTransfer() {
                     {confirmToAccount?.displayName || 'Unknown Account'}
                   </p>
                   <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {confirmToAccount?.accountNumber}
+                    {confirmToAccount ? UserDataManager.formatAccountNumber(confirmToAccount) : ''}
                   </p>
                 </div>
               </div>
@@ -566,7 +566,7 @@ export default function InternalTransfer() {
                 <option value="">Select destination account</option>
                 {accounts.filter(acc => acc.id !== form.watch('fromAccount')).map((account) => (
                   <option key={account.id} value={account.id}>
-                    {account.displayName} - {account.accountNumber}
+                    {account.displayName} - {UserDataManager.formatAccountNumber(account)}
                   </option>
                 ))}
               </select>

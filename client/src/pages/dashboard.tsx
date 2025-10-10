@@ -421,7 +421,12 @@ export default function Dashboard() {
                   <div className="flex items-center justify-between w-full px-6 py-4">
                     <div className="text-left">
                       <p className="font-medium text-sm text-gray-800 boi-regular-font">{account.displayName.toUpperCase()}</p>
-                      <p className="text-xs text-gray-500 mt-0.5 boi-regular-font">{account.accountNumber}</p>
+                      <p className="text-xs text-gray-500 mt-0.5 boi-regular-font">
+                        {UserDataManager.formatAccountNumber(account)}
+                        {UserDataManager.formatAccountSecondary(account) && (
+                          <span className="ml-1">• {UserDataManager.formatAccountSecondary(account)}</span>
+                        )}
+                      </p>
                     </div>
                     <div className="flex items-center">
                       {isLoading ? (

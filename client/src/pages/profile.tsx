@@ -1952,7 +1952,10 @@ export default function Profile() {
                               {account.displayName}
                             </p>
                             <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                              {account.accountNumber}
+                              {UserDataManager.formatAccountNumber(account)}
+                              {UserDataManager.formatAccountSecondary(account) && (
+                                <span className="ml-1">• {UserDataManager.formatAccountSecondary(account)}</span>
+                              )}
                             </p>
                           </div>
                           <button
@@ -2157,7 +2160,10 @@ export default function Profile() {
 
               <div className="mb-4">
                 <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  {editingAccount.accountNumber}
+                  {UserDataManager.formatAccountNumber(editingAccount)}
+                  {UserDataManager.formatAccountSecondary(editingAccount) && (
+                    <span className="ml-1">• {UserDataManager.formatAccountSecondary(editingAccount)}</span>
+                  )}
                 </p>
               </div>
 
@@ -2535,7 +2541,10 @@ export default function Profile() {
                                   {account.displayName}
                                 </p>
                                 <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                                  {account.accountNumber}
+                                  {UserDataManager.formatAccountNumber(account)}
+                                  {UserDataManager.formatAccountSecondary(account) && (
+                                    <span className="ml-1">• {UserDataManager.formatAccountSecondary(account)}</span>
+                                  )}
                                 </p>
                                 <p className="text-sm font-medium text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                                   Current: {formatCurrency(account.balance, userCurrency)}
