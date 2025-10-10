@@ -1,57 +1,106 @@
-// UK Bank Sort Code Database - Exact mapping
-const sortCodeMap = {
-  // High Street Banks
-  "110062": "Halifax",
-  "309783": "Lloyds Bank",
-  "390000": "Lloyds Bank", 
-  "770000": "Lloyds Bank",
-  "200003": "Barclays",
-  "200000": "Barclays",
-  "400515": "HSBC UK",
-  "400000": "HSBC UK",
-  "600001": "NatWest",
-  "072500": "Nationwide Building Society",
-  "089299": "Co-operative Bank",
-  "300083": "TSB Bank",
-  "301342": "TSB Bank",
-  "301350": "TSB Bank",
-  "301352": "TSB Bank",
-  "301353": "TSB Bank",
-  "776836": "TSB Bank",
-  "870000": "TSB Bank",
-  "090128": "Santander",
-  "090000": "Santander",
+// UK Bank Sort Code Prefix Ranges - Comprehensive mapping
+const sortCodePrefixes: { prefix: string; bank: string }[] = [
+  // Barclays - 20-xx-xx range
+  { prefix: "20", bank: "Barclays" },
   
-  // NatWest
-  "011001": "NatWest",
-  "500000": "NatWest",
-  "536107": "NatWest",
-  "557013": "NatWest",
-  "606004": "NatWest",
-  "600846": "NatWest",
-  "603030": "NatWest",
+  // HSBC UK - 40-xx-xx range
+  { prefix: "40", bank: "HSBC UK" },
   
-  // Bank of Scotland
-  "802000": "Bank of Scotland",
-  "802260": "Bank of Scotland",
-  "802045": "Bank of Scotland",
-  "804635": "Bank of Scotland",
+  // NatWest - Multiple ranges
+  { prefix: "01", bank: "NatWest" },
+  { prefix: "50", bank: "NatWest" },
+  { prefix: "51", bank: "NatWest" },
+  { prefix: "52", bank: "NatWest" },
+  { prefix: "53", bank: "NatWest" },
+  { prefix: "54", bank: "NatWest" },
+  { prefix: "55", bank: "NatWest" },
+  { prefix: "56", bank: "NatWest" },
+  { prefix: "57", bank: "NatWest" },
+  { prefix: "58", bank: "NatWest" },
+  { prefix: "59", bank: "NatWest" },
+  { prefix: "60", bank: "NatWest" },
+  { prefix: "61", bank: "NatWest" },
   
-  // Online / Challenger Banks
-  "040004": "Monzo",
-  "608371": "Starling Bank",
-  "230801": "Wise (Wise Payments Ltd)",
-  "231470": "Wise (via ClearBank)",
-  "232144": "Wise (ClearBank)",
-  "230553": "Cashplus Bank",
-  "239202": "Revolut",
-  "232715": "Monese",
-  "233114": "Tide (via ClearBank)",
-  "234105": "Atom Bank",
-  "234342": "Allica Bank",
-  "232328": "Kroo Bank",
-  "232422": "Zopa Bank"
-};
+  // Lloyds Bank - Multiple ranges
+  { prefix: "30", bank: "Lloyds Bank" },
+  { prefix: "77", bank: "Lloyds Bank" },
+  
+  // Halifax - 11-xx-xx range
+  { prefix: "11", bank: "Halifax" },
+  
+  // Bank of Scotland - 80-xx-xx, 81-xx-xx ranges
+  { prefix: "80", bank: "Bank of Scotland" },
+  { prefix: "81", bank: "Bank of Scotland" },
+  
+  // Royal Bank of Scotland - 83-xx-xx range
+  { prefix: "83", bank: "Royal Bank of Scotland" },
+  
+  // Santander - 09-xx-xx range
+  { prefix: "09", bank: "Santander" },
+  
+  // Nationwide Building Society - 07-xx-xx range
+  { prefix: "07", bank: "Nationwide Building Society" },
+  
+  // TSB Bank - Multiple ranges
+  { prefix: "30", bank: "TSB Bank" },
+  { prefix: "87", bank: "TSB Bank" },
+  
+  // Co-operative Bank - 08-xx-xx range
+  { prefix: "08", bank: "Co-operative Bank" },
+  
+  // Metro Bank - 23-xx-xx range
+  { prefix: "23", bank: "Metro Bank" },
+  
+  // Virgin Money - 82-xx-xx range
+  { prefix: "82", bank: "Virgin Money" },
+  
+  // First Direct - 40-xx-xx range (HSBC)
+  { prefix: "40", bank: "First Direct" },
+  
+  // Monzo - 04-00-04
+  { prefix: "040004", bank: "Monzo" },
+  
+  // Starling Bank - 60-83-71
+  { prefix: "608371", bank: "Starling Bank" },
+  
+  // Revolut - 23-92-02
+  { prefix: "239202", bank: "Revolut" },
+  
+  // Wise - Multiple ranges
+  { prefix: "231470", bank: "Wise" },
+  { prefix: "232144", bank: "Wise" },
+  { prefix: "230801", bank: "Wise" },
+  
+  // Monese - 23-27-15
+  { prefix: "232715", bank: "Monese" },
+  
+  // Tide - 23-31-14
+  { prefix: "233114", bank: "Tide" },
+  
+  // Atom Bank - 23-41-05
+  { prefix: "234105", bank: "Atom Bank" },
+  
+  // Cashplus Bank - 23-05-53
+  { prefix: "230553", bank: "Cashplus Bank" },
+  
+  // Allica Bank - 23-43-42
+  { prefix: "234342", bank: "Allica Bank" },
+  
+  // Kroo Bank - 23-23-28
+  { prefix: "232328", bank: "Kroo Bank" },
+  
+  // Zopa Bank - 23-24-22
+  { prefix: "232422", bank: "Zopa Bank" },
+  
+  // Triodos Bank - 16-58-xx range
+  { prefix: "1658", bank: "Triodos Bank" },
+  
+  // Clydesdale Bank - 82-xx-xx range
+  { prefix: "82", bank: "Clydesdale Bank" },
+  
+  // Yorkshire Bank - 05-xx-xx range
+  { prefix: "05", bank: "Yorkshire Bank" },
+];
 
 export function validateUKSortCode(sortCode: string): string | null {
   if (!sortCode || sortCode.length < 6) {
@@ -66,10 +115,17 @@ export function validateUKSortCode(sortCode: string): string | null {
     return null;
   }
 
-  // Look up the bank name using exact match
-  const bankName = sortCodeMap[cleanCode as keyof typeof sortCodeMap];
+  // Match by prefix (longest match first for specificity)
+  // Sort by prefix length descending to match specific codes before general prefixes
+  const sortedPrefixes = [...sortCodePrefixes].sort((a, b) => b.prefix.length - a.prefix.length);
   
-  return bankName || null;
+  for (const { prefix, bank } of sortedPrefixes) {
+    if (cleanCode.startsWith(prefix)) {
+      return bank;
+    }
+  }
+  
+  return null;
 }
 
 export function validateUKAccountNumber(accountNumber: string): boolean {
