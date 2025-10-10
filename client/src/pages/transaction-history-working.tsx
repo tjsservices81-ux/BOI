@@ -462,16 +462,30 @@ export default function TransactionHistoryWorking() {
       loadData();
     };
 
+    // Handle accounts update from admin panel
+    const handleAccountsUpdate = (event: any) => {
+      const { accounts: updatedAccounts } = event.detail || {};
+      if (updatedAccounts) {
+        const currentAccount = updatedAccounts.find((acc: any) => acc.id === accountId);
+        if (currentAccount) {
+          setBalance(currentAccount.balance);
+          setAccountInfo(currentAccount);
+        }
+      }
+    };
+
     window.addEventListener('transactionUpdate', handleTransactionUpdate);
     window.addEventListener('transactionDeleted', handleTransactionUpdate);
     window.addEventListener('transactionAdded', handleTransactionUpdate);
     window.addEventListener('balanceUpdate', handleTransactionUpdate);
+    window.addEventListener('accountsUpdate', handleAccountsUpdate);
     
     return () => {
       window.removeEventListener('transactionUpdate', handleTransactionUpdate);
       window.removeEventListener('transactionDeleted', handleTransactionUpdate);
       window.removeEventListener('transactionAdded', handleTransactionUpdate);
       window.removeEventListener('balanceUpdate', handleTransactionUpdate);
+      window.removeEventListener('accountsUpdate', handleAccountsUpdate);
     };
   }, []);
 
