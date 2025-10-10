@@ -499,10 +499,16 @@ export default function TransactionHistoryWorking() {
   // Refresh account info when statement modal opens
   useEffect(() => {
     if (showStatementModal) {
+      // Clear cache first to ensure fresh data
       UserDataManager.clearCache('bankAccounts');
-      const storedAccounts = UserDataManager.getUserAccounts();
+      UserDataManager.clearCache();
+      
+      // Get fresh account data using the same method as loadData
+      const storedAccounts = UserDataManager.getUserData('bankAccounts', []);
       const currentAccount = storedAccounts.find((acc: any) => acc.id === accountId);
+      
       if (currentAccount) {
+        console.log('Updating accountInfo with fresh data:', currentAccount);
         setAccountInfo(currentAccount);
       }
     }
