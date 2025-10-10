@@ -496,6 +496,18 @@ export default function TransactionHistoryWorking() {
     }
   }, [accountId]);
 
+  // Refresh account info when statement modal opens
+  useEffect(() => {
+    if (showStatementModal) {
+      UserDataManager.clearCache('bankAccounts');
+      const storedAccounts = UserDataManager.getUserAccounts();
+      const currentAccount = storedAccounts.find((acc: any) => acc.id === accountId);
+      if (currentAccount) {
+        setAccountInfo(currentAccount);
+      }
+    }
+  }, [showStatementModal, accountId]);
+
   const getIcon = (description: string) => {
     if (description.includes('Transfer')) return ArrowUpRight;
     if (description.includes('ATM')) return CreditCard;
