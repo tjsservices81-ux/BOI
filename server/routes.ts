@@ -875,6 +875,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update account display settings (customer-facing)
+  app.put("/api/accounts/:accountId", requireAuth, async (req, res) => {
+    try {
+      const accountId = parseInt(req.params.accountId);
+      const { iban, bicCode, displayFormat } = req.body;
+      
+      // Verify account belongs to authenticated user
+      const account = await storage.getAccountById(accountId);
+      if (!account) {
+        return res.status(404).json({ message: "Account not found" });
+      }
+      
+      const sessionUser = (req as any).session?.user;
+      if (!sessionUser || account.userId !== sessionUser.id) {
+        return res.status(403).json({ message: "Not authorized to update this account" });
+      }
+      
+      // Update account
+      const updatedAccount = await storage.updateAccount(accountId, {
+        iban: iban || account.iban,
+        bicCode: bicCode || account.bicCode,
+        displayFormat: displayFormat || account.displayFormat
+      });
+      
+      res.json(updatedAccount);
+    } catch (error) {
+      console.error('Account update error:', error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Get account transactions
   app.get("/api/transactions/:accountId", requireAuth, async (req, res) => {
     try {
