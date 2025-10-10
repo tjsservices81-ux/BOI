@@ -1927,6 +1927,9 @@ No transfers found yet on your account.`;
         { role: 'user' as const, content: message }
       ];
 
+      console.log(`💬 Sending to AI: ${messages.length} messages in history`);
+      console.log(`   Latest message: "${message.substring(0, 50)}${message.length > 50 ? '...' : ''}"`);
+
       const aiResponse = await generateChatResponse(messages, agentName, transferContext, userCurrency);
       
       res.json({ 

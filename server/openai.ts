@@ -158,9 +158,17 @@ Always sound like an incredibly intelligent, real human agent with exceptional r
       presence_penalty: 0.4,
     });
 
-    return response.choices[0].message.content || "Sorry, I wasn't able to process that just now. Could you try again or let me know how else I can help?";
-  } catch (error) {
-    console.error('OpenAI API error:', error);
+    const aiResponse = response.choices[0].message.content || "Sorry, I wasn't able to process that just now. Could you try again or let me know how else I can help?";
+    console.log(`✅ AI Response generated successfully (${aiResponse.length} chars)`);
+    return aiResponse;
+  } catch (error: any) {
+    console.error('❌ OpenAI API error:', {
+      message: error?.message,
+      type: error?.type,
+      code: error?.code,
+      status: error?.status
+    });
+    console.error('Full error:', error);
     return "Sorry, I wasn't able to bring that up just now. Would you like me to try again or connect you with another agent?";
   }
 }
