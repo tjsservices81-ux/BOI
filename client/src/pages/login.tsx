@@ -13,34 +13,80 @@ import faceIdIconPath from "@assets/IMG_1506_1759859583184.png";
 
 // Request location and notification permissions on login
 async function requestPermissionsOnLogin() {
-  // Request location permission
+  // Check and request location permission only if not already granted
   if (navigator.geolocation) {
     try {
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true,
-          timeout: 5000,
-          maximumAge: 0
+      // Check if Permissions API is available
+      if ('permissions' in navigator) {
+        const permissionStatus = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
+        
+        if (permissionStatus.state === 'granted') {
+          // Permission already granted - silently update location
+          const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+              enableHighAccuracy: true,
+              timeout: 5000,
+              maximumAge: 0
+            });
+          });
+
+          await fetch('/api/user/location', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude
+            })
+          });
+
+          console.log('Location updated silently (permission already granted)');
+        } else if (permissionStatus.state === 'prompt') {
+          // Permission not decided yet - request it
+          const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+              enableHighAccuracy: true,
+              timeout: 5000,
+              maximumAge: 0
+            });
+          });
+
+          await fetch('/api/user/location', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude
+            })
+          });
+
+          console.log('Location permission granted on login');
+        }
+        // If state is 'denied', don't request (user has explicitly denied)
+      } else {
+        // Fallback for browsers without Permissions API
+        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            timeout: 5000,
+            maximumAge: 0
+          });
         });
-      });
 
-      // Send location to server (uses the same endpoint as locationTracker)
-      await fetch('/api/user/location', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude
-        })
-      });
-
-      console.log('Location permission granted on login');
+        await fetch('/api/user/location', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+          })
+        });
+      }
     } catch (error) {
-      console.log('Location permission denied on login');
+      console.log('Location permission denied or failed');
     }
   }
 
-  // Request notification permission
+  // Request notification permission only if not already granted
   if ('Notification' in window && Notification.permission !== 'granted') {
     try {
       await Notification.requestPermission();
