@@ -2550,6 +2550,9 @@ document.getElementById('c').textContent=data.length+' Customer'+(data.length!=1
 if(!data.length){document.getElementById('l').innerHTML='<div class="emp">No customers</div>';return}
 let h='';
 data.forEach((c,idx)=>{
+// SAFETY: safeId (c0, c1, etc.) is ONLY for HTML element IDs to avoid special characters
+// Customer operations (delete/restore/erase) use c.customerNumber directly from database
+// This ensures the correct customer is always modified, not based on array position
 let safeId='c'+idx;
 let op=o.has(safeId);
 h+=\`<div class="itm">
@@ -2629,46 +2632,53 @@ loadOTC();
 }catch(e){document.getElementById('l').innerHTML='<div class="emp">Error</div>'}
 }
 async function dl(n,nm){
-const confirmed=confirm('SOFT-DELETE '+nm+' ('+n+')?\\n\\nThis will:\\n- Mark customer as deleted\\n- Force immediate logout\\n- Keep data for recovery\\n\\nTo permanently erase, delete first, then use Erase.');
-if(!confirmed)return;
+console.log('🗑️ DELETE REQUEST - Customer Number:',n,'Name:',nm);
+const confirmed=confirm('⚠️ CONFIRM SOFT-DELETE\\n\\nCustomer: '+nm+'\\nCustomer Number: '+n+'\\n\\nThis will:\\n- Mark customer as deleted\\n- Force immediate logout\\n- Keep data for recovery\\n\\nVerify the customer number above is correct before proceeding.');
+if(!confirmed){console.log('❌ Delete cancelled by user');return;}
 const reason=prompt('Reason for deletion (optional):','Deleted by admin');
 try{
+console.log('📡 Sending DELETE request for customer:',n);
 let r=await fetch('/api/customers/'+encodeURIComponent(n),{
 method:'DELETE',
 headers:{'Content-Type':'application/json'},
 body:JSON.stringify({reason:reason||'Deleted by admin'})
 }),d=await r.json();
 if(r.ok){
-alert('✅ Customer '+d.customerNumber+' soft-deleted successfully');
-o.delete(n);
+console.log('✅ DELETE SUCCESS - Customer:',d.name,'Number:',d.customerNumber);
+alert('✅ DELETED: '+d.name+' ('+d.customerNumber+')\\n\\nVerify this is the correct customer.');
 ld();
-}else{alert('❌ Failed: '+d.message)}
-}catch(e){alert('❌ Error: '+e.message)}
+}else{console.error('❌ Delete failed:',d.message);alert('❌ Failed: '+d.message)}
+}catch(e){console.error('❌ Delete error:',e);alert('❌ Error: '+e.message)}
 }
 async function ers(n,nm){
-const confirmed=confirm('⚠️ PERMANENTLY ERASE '+nm+' ('+n+')?\\n\\nThis is IRREVERSIBLE and will:\\n- Delete ALL customer data\\n- Cannot be recovered\\n\\nAre you absolutely sure?');
-if(!confirmed)return;
-const doubleCheck=confirm('FINAL CONFIRMATION\\n\\nType DELETE to confirm permanent erasure');
-if(!doubleCheck)return;
+console.log('🔥 ERASE REQUEST - Customer Number:',n,'Name:',nm);
+const confirmed=confirm('🔥 CONFIRM PERMANENT ERASE\\n\\nCustomer: '+nm+'\\nCustomer Number: '+n+'\\n\\nThis is IRREVERSIBLE and will:\\n- Delete ALL customer data permanently\\n- Cannot be recovered\\n\\nVerify the customer number above is correct before proceeding.');
+if(!confirmed){console.log('❌ Erase cancelled by user');return;}
+const doubleCheck=confirm('⚠️ FINAL CONFIRMATION\\n\\nYou are about to PERMANENTLY ERASE:\\n'+nm+' ('+n+')\\n\\nThis cannot be undone. Proceed?');
+if(!doubleCheck){console.log('❌ Erase cancelled at final confirmation');return;}
 try{
+console.log('📡 Sending PERMANENT DELETE request for customer:',n);
 let r=await fetch('/api/customers/'+encodeURIComponent(n)+'/permanent',{method:'DELETE'}),d=await r.json();
 if(r.ok){
-alert('🔥 Customer '+d.customerNumber+' permanently erased');
-o.delete(n);
+console.log('🔥 ERASE SUCCESS - Customer:',d.name,'Number:',d.customerNumber);
+alert('🔥 PERMANENTLY ERASED: '+d.name+' ('+d.customerNumber+')\\n\\nVerify this is the correct customer.');
 ld();
-}else{alert('❌ Failed: '+d.message)}
-}catch(e){alert('❌ Error: '+e.message)}
+}else{console.error('❌ Erase failed:',d.message);alert('❌ Failed: '+d.message)}
+}catch(e){console.error('❌ Erase error:',e);alert('❌ Error: '+e.message)}
 }
 async function res(n,nm){
-const confirmed=confirm('RESTORE '+nm+' ('+n+')?\\n\\nThis will reactivate the customer account.');
-if(!confirmed)return;
+console.log('♻️ RESTORE REQUEST - Customer Number:',n,'Name:',nm);
+const confirmed=confirm('♻️ CONFIRM RESTORE\\n\\nCustomer: '+nm+'\\nCustomer Number: '+n+'\\n\\nThis will reactivate the customer account.\\n\\nVerify the customer number above is correct before proceeding.');
+if(!confirmed){console.log('❌ Restore cancelled by user');return;}
 try{
+console.log('📡 Sending RESTORE request for customer:',n);
 let r=await fetch('/api/customers/'+encodeURIComponent(n)+'/restore',{method:'POST'}),d=await r.json();
 if(r.ok){
-alert('♻️ Customer '+d.customerNumber+' restored successfully');
+console.log('♻️ RESTORE SUCCESS - Customer:',d.name,'Number:',d.customerNumber);
+alert('♻️ RESTORED: '+d.name+' ('+d.customerNumber+')\\n\\nVerify this is the correct customer.');
 ld();
-}else{alert('❌ Failed: '+d.message)}
-}catch(e){alert('❌ Error: '+e.message)}
+}else{console.error('❌ Restore failed:',d.message);alert('❌ Failed: '+d.message)}
+}catch(e){console.error('❌ Restore error:',e);alert('❌ Error: '+e.message)}
 }
 async function upd(n,id){
 try{
