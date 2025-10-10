@@ -2777,23 +2777,22 @@ setInterval(ld,5000);
       if (deleted) {
         console.log(`🗑️  CUSTOMER SOFT-DELETED IN POSTGRESQL: ${customerNumber} - Reason: ${reason || 'Deleted by admin'}`);
         
-        // CRITICAL: Also delete user from in-memory storage (Replit Database)
-        // This prevents the customer from being accessible until restore
-        const userDeleted = await storage.deleteUser(customerNumber);
-        if (userDeleted) {
-          console.log(`🗑️  USER DELETED FROM MEMORY: ${customerNumber}`);
+        // CRITICAL: Disable user in memory to prevent access, but preserve all data (accounts, transactions)
+        // We don't actually delete the user because that would destroy all their banking data
+        // Instead, we mark them as disabled which blocks login and access
+        const user = await storage.getUser(customerNumber);
+        if (user) {
+          await storage.disableUser(user.id);
+          console.log(`🗑️  USER DISABLED IN MEMORY: ${customerNumber}`);
+          
+          // Remove device sessions
+          const { removeDeviceSession } = await import('./deviceSessions');
+          removeDeviceSession(user.id);
         }
         
         // Invalidate all sessions for this customer
         const { invalidateAllUserSessions } = await import('./sessionManager');
         invalidateAllUserSessions(customerNumber);
-        
-        // Remove device sessions
-        const user = await storage.getUser(customerNumber);
-        if (user) {
-          const { removeDeviceSession } = await import('./deviceSessions');
-          removeDeviceSession(user.id);
-        }
         
         res.json({ 
           success: true, 
@@ -2841,12 +2840,12 @@ setInterval(ld,5000);
       const erased = await storage.permanentlyEraseCustomer(customerNumber);
       
       if (erased) {
-        // Also delete user from Replit Database so they don't sync back
+        // Safety: Delete user from memory if still present (should already be deleted during soft-delete)
         const userDeleted = await storage.deleteUser(customerNumber);
         
-        console.log(`🔥 CUSTOMER PERMANENTLY ERASED: ${customerNumber}`);
+        console.log(`🔥 CUSTOMER PERMANENTLY ERASED FROM POSTGRESQL: ${customerNumber}`);
         if (userDeleted) {
-          console.log(`🔥 USER ALSO DELETED FROM REPLIT DATABASE: ${customerNumber}`);
+          console.log(`🔥 USER ALSO DELETED FROM MEMORY (was still present): ${customerNumber}`);
         }
         
         res.json({ 
@@ -2880,26 +2879,31 @@ setInterval(ld,5000);
       if (restored) {
         console.log(`♻️  CUSTOMER RESTORED IN POSTGRESQL: ${customerNumber}`);
         
-        // CRITICAL: Recreate user in memory (Replit Database)
-        // Get the restored customer data
+        // CRITICAL: Re-enable user in memory to restore access with all their data preserved
         const customer = await storage.getCustomerByCustomerNumber(customerNumber);
         if (customer) {
-          // Create user from customer data (similar to sync process)
-          const newUser: InsertUser = {
-            customerNumber: customer.customerNumber,
-            pin: '', // PIN not stored in PostgreSQL
-            name: customer.name,
-            email: customer.email,
-            phone: customer.phone || '',
-            dateOfBirth: customer.dateOfBirth || '',
-            address: '',
-            joinDate: customer.joinDate,
-            isDisabled: false
-          };
-          
-          const createdUser = await storage.createUser(newUser);
-          if (createdUser) {
-            console.log(`♻️  USER RECREATED IN MEMORY: ${customerNumber}`);
+          const user = await storage.getUser(customerNumber);
+          if (user) {
+            await storage.enableUser(user.id);
+            console.log(`♻️  USER RE-ENABLED IN MEMORY: ${customerNumber}`);
+          } else {
+            // User doesn't exist in memory - create new one (edge case, shouldn't normally happen)
+            const newUser: InsertUser = {
+              customerNumber: customer.customerNumber,
+              pin: '', // PIN not stored in PostgreSQL
+              name: customer.name,
+              email: customer.email,
+              phone: customer.phone || '',
+              dateOfBirth: customer.dateOfBirth || '',
+              address: '',
+              joinDate: customer.joinDate,
+              isDisabled: false
+            };
+            
+            const createdUser = await storage.createUser(newUser);
+            if (createdUser) {
+              console.log(`♻️  USER RECREATED IN MEMORY (edge case): ${customerNumber}`);
+            }
           }
         }
         
