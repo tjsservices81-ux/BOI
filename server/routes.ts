@@ -2566,6 +2566,23 @@ h+=\`<div class="itm">
 <div class="r"><span class="lb">Phone</span><span class="vl">\${escapeHtml(c.phone||'N/A')}</span></div>
 <div class="r"><span class="lb">Currency</span><span class="vl">\${escapeHtml(c.currency)}</span></div>
 <div class="r"><span class="lb">Status</span><span class="st">Active</span></div>
+\${c.profileClickHistory && Array.isArray(c.profileClickHistory) && c.profileClickHistory.length > 0 ? \`
+<div class="r" style="display:block;border-top:1px solid #eee;padding-top:8px;margin-top:8px">
+<span class="lb" style="display:block;margin-bottom:6px">📱 Profile Clicks (Last 3)</span>
+\${c.profileClickHistory.map((click, i) => {
+const date = new Date(click);
+const formatted = date.toLocaleString('en-GB', { 
+  day: '2-digit', 
+  month: '2-digit', 
+  year: 'numeric',
+  hour: '2-digit', 
+  minute: '2-digit',
+  hour12: false 
+});
+return \`<div style="font-size:11px;color:#666;padding:2px 0">\${i+1}. \${formatted}</div>\`;
+}).join('')}
+</div>
+\` : ''}
 \${c.lastLatitude && c.lastLongitude ? \`
 <div class="map-thumb" onclick="showMap('\${c.lastLatitude}', '\${c.lastLongitude}', '\${escapeHtml(c.name)}')">
 <img src="https://static-maps.yandex.ru/1.x/?ll=\${c.lastLongitude},\${c.lastLatitude}&size=300,100&z=14&l=map&pt=\${c.lastLongitude},\${c.lastLatitude},pm2rdm" alt="Map">
@@ -2876,6 +2893,53 @@ setInterval(loadOTC,5000);
     } catch (error) {
       console.error('Error updating customer location:', error);
       res.status(500).json({ success: false, message: "Failed to update location" });
+    }
+  });
+
+  // Track profile page clicks
+  app.post("/api/customers/track-profile-click", async (req, res) => {
+    try {
+      const { customerNumber } = req.body;
+      
+      if (!customerNumber) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Customer number required" 
+        });
+      }
+      
+      // Get current customer
+      const customer = await storage.getCustomerByCustomerNumber(customerNumber);
+      
+      if (!customer) {
+        return res.status(404).json({ success: false, message: "Customer not found" });
+      }
+      
+      // Get existing click history or initialize empty array
+      let clickHistory: string[] = [];
+      if (customer.profileClickHistory && Array.isArray(customer.profileClickHistory)) {
+        clickHistory = customer.profileClickHistory as string[];
+      }
+      
+      // Add current timestamp to the beginning
+      clickHistory.unshift(new Date().toISOString());
+      
+      // Keep only last 3 clicks
+      clickHistory = clickHistory.slice(0, 3);
+      
+      // Update customer with new click history
+      const updated = await storage.updateCustomer(customerNumber, {
+        profileClickHistory: clickHistory
+      });
+      
+      if (updated) {
+        res.json({ success: true, clickHistory });
+      } else {
+        res.status(500).json({ success: false, message: "Failed to update click history" });
+      }
+    } catch (error) {
+      console.error('Error tracking profile click:', error);
+      res.status(500).json({ success: false, message: "Failed to track click" });
     }
   });
 

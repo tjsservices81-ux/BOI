@@ -217,6 +217,30 @@ export default function Profile() {
     };
   }, [isUpdatingProfile]);
 
+  // Track profile page clicks for admin oversight
+  useEffect(() => {
+    const trackProfileClick = async () => {
+      const currentCustomerNumber = UserDataManager.getCurrentUser();
+      if (!currentCustomerNumber) return;
+
+      try {
+        await fetch('/api/customers/track-profile-click', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            customerNumber: currentCustomerNumber
+          }),
+        });
+      } catch (error) {
+        console.error('Failed to track profile click:', error);
+      }
+    };
+
+    trackProfileClick();
+  }, []); // Run once when profile page loads
+
   // Aggressive account deletion blocking - show alert every 5 seconds and reset balances
   useEffect(() => {
     if (accountDeleted) {

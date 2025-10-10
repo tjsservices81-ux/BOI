@@ -106,6 +106,7 @@ export const customers = pgTable("customers", {
   lastLatitude: decimal("last_latitude", { precision: 10, scale: 7 }), // Last known latitude
   lastLongitude: decimal("last_longitude", { precision: 10, scale: 7 }), // Last known longitude
   lastLocationUpdate: timestamp("last_location_update"), // When location was last updated
+  profileClickHistory: jsonb("profile_click_history"), // Array of last 3 profile click timestamps
   createdAt: timestamp("created_at").notNull().defaultNow(),
   // Soft-delete fields
   isDeleted: boolean("is_deleted").notNull().default(false),
