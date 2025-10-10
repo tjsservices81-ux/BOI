@@ -851,8 +851,8 @@ export default function TransactionHistoryWorking() {
                   </div>
                 )}
 
-                {/* Open Transfer Confirmation Button - Only for transfers */}
-                {selectedTransaction.paymentMethod && (
+                {/* Open Transfer Confirmation Button - Only for transfers (exclude custom transactions) */}
+                {selectedTransaction.paymentMethod && selectedTransaction.paymentMethod !== 'Manual Entry' && (
                   <div className="border-t border-gray-200 pt-6 mt-6">
                     <button
                       onClick={handleOpenTransferConfirmation}
