@@ -927,6 +927,70 @@
         "dateCreated": "2025-10-09T21:30:10.456Z",
         "isDisabled": false
       }
+    ],
+    [
+      111,
+      {
+        "id": 111,
+        "customerNumber": "25210680",
+        "pin": "",
+        "name": "Jason lee",
+        "email": "Jasonlee918@icloud.com",
+        "phone": "07845147863",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-09T22:07:31.371Z",
+        "dateCreated": "2025-10-09T22:07:31.540Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      112,
+      {
+        "id": 112,
+        "customerNumber": "34044569",
+        "pin": "",
+        "name": "C Williamson",
+        "email": "cityroofingbackup@gmail.com",
+        "phone": "+3538952436052",
+        "address": null,
+        "dateOfBirth": "2000-12-09",
+        "joinDate": "2021-04-09T22:33:42.189Z",
+        "dateCreated": "2025-10-09T22:33:42.356Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      113,
+      {
+        "id": 113,
+        "customerNumber": "25839894",
+        "pin": "",
+        "name": "James dean beck",
+        "email": "jamesbeck212@gmail.com",
+        "phone": "0857221411",
+        "address": null,
+        "dateOfBirth": "2002-11-22",
+        "joinDate": "2025-10-09T22:16:47.241Z",
+        "dateCreated": "2025-10-09T22:16:47.407Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      114,
+      {
+        "id": 114,
+        "customerNumber": "33017229",
+        "pin": "",
+        "name": "John walsh",
+        "email": "joycetom808@gmail.com",
+        "phone": "0864002772",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-09T22:25:00.411Z",
+        "dateCreated": "2025-10-09T22:25:00.582Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [],
@@ -938,7 +1002,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 111,
+    "currentUserId": 115,
     "currentAccountId": 70,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
