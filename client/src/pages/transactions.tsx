@@ -139,13 +139,14 @@ export default function Transactions() {
   };
 
   const getAccountSubtitle = () => {
-    const accountData = UserDataManager.getUserAccounts().find((acc: any) => 
-      acc.accountNumber.includes(accountNumber) && acc.accountType === accountType
-    );
-    const sortCode = accountData?.sortCode || '90-78-68';
-    const fullAccountNumber = accountData?.accountNumber || `****${accountNumber}`;
-    
-    return `${sortCode} ${fullAccountNumber}`;
+    switch (accountType) {
+      case 'current': return `Account ending -${accountNumber}`;
+      case 'credit': return `Card ending -${accountNumber}`;
+      case 'savings': return `Account ending -${accountNumber}`;
+      case 'loan': return `Loan account -${accountNumber}`;
+      case 'deposit': return `Deposit account -${accountNumber}`;
+      default: return `Account ending -${accountNumber}`;
+    }
   };
 
   const getBalanceLabel = () => {

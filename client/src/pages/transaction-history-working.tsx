@@ -462,30 +462,16 @@ export default function TransactionHistoryWorking() {
       loadData();
     };
 
-    // Handle accounts update from admin panel
-    const handleAccountsUpdate = (event: any) => {
-      const { accounts: updatedAccounts } = event.detail || {};
-      if (updatedAccounts) {
-        const currentAccount = updatedAccounts.find((acc: any) => acc.id === accountId);
-        if (currentAccount) {
-          setBalance(currentAccount.balance);
-          setAccountInfo(currentAccount);
-        }
-      }
-    };
-
     window.addEventListener('transactionUpdate', handleTransactionUpdate);
     window.addEventListener('transactionDeleted', handleTransactionUpdate);
     window.addEventListener('transactionAdded', handleTransactionUpdate);
     window.addEventListener('balanceUpdate', handleTransactionUpdate);
-    window.addEventListener('accountsUpdate', handleAccountsUpdate);
     
     return () => {
       window.removeEventListener('transactionUpdate', handleTransactionUpdate);
       window.removeEventListener('transactionDeleted', handleTransactionUpdate);
       window.removeEventListener('transactionAdded', handleTransactionUpdate);
       window.removeEventListener('balanceUpdate', handleTransactionUpdate);
-      window.removeEventListener('accountsUpdate', handleAccountsUpdate);
     };
   }, []);
 
@@ -509,24 +495,6 @@ export default function TransactionHistoryWorking() {
       return () => scrollContainer.removeEventListener('scroll', handleScroll);
     }
   }, [accountId]);
-
-  // Refresh account info when statement modal opens
-  useEffect(() => {
-    if (showStatementModal) {
-      // Clear cache first to ensure fresh data
-      UserDataManager.clearCache('bankAccounts');
-      UserDataManager.clearCache();
-      
-      // Get fresh account data using the same method as loadData
-      const storedAccounts = UserDataManager.getUserData('bankAccounts', []);
-      const currentAccount = storedAccounts.find((acc: any) => acc.id === accountId);
-      
-      if (currentAccount) {
-        console.log('Updating accountInfo with fresh data:', currentAccount);
-        setAccountInfo(currentAccount);
-      }
-    }
-  }, [showStatementModal, accountId]);
 
   const getIcon = (description: string) => {
     if (description.includes('Transfer')) return ArrowUpRight;
@@ -1039,7 +1007,7 @@ export default function TransactionHistoryWorking() {
                       {accountInfo?.displayName || 'Current Account'}
                     </p>
                     <p className="text-sm text-gray-600 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      {accountInfo?.accountNumber || '****0000'} • Sort Code: {accountInfo?.sortCode || '90-78-68'}
+                      {accountInfo?.accountNumber || '****0000'} • Sort Code: 90-78-68
                     </p>
                   </div>
 
