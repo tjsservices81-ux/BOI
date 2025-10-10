@@ -1055,6 +1055,22 @@
         "dateCreated": "2025-10-10T15:51:33.051Z",
         "isDisabled": false
       }
+    ],
+    [
+      119,
+      {
+        "id": 119,
+        "customerNumber": "84591937",
+        "pin": "",
+        "name": "James morris ",
+        "email": "jamesmorris724@gmail.com",
+        "phone": "+44 7460 740468",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-10T16:51:17.713Z",
+        "dateCreated": "2025-10-10T16:51:17.901Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [],
@@ -1066,7 +1082,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 119,
+    "currentUserId": 120,
     "currentAccountId": 70,
     "currentTransactionId": 1,
     "currentPayeeId": 1,

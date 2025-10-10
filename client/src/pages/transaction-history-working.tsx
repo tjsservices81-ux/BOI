@@ -621,7 +621,7 @@ export default function TransactionHistoryWorking() {
             style={{ zIndex: 1000 }}>
             <motion.div 
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-t-2xl w-full h-[75vh] flex flex-col pb-safe"
+              className="bg-white rounded-t-2xl w-full h-[90vh] flex flex-col pb-safe"
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
