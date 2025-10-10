@@ -2507,10 +2507,10 @@ body{font-family:-apple-system,sans-serif;background:#f0f0f0;overflow:hidden;wid
 </div>
 <script>
 let o=new Set();
-function tg(i){
-let d=document.getElementById('d'+i),a=document.getElementById('a'+i);
-if(o.has(i)){d.classList.remove('op');a.classList.remove('op');o.delete(i)}
-else{d.classList.add('op');a.classList.add('op');o.add(i)}
+function tg(id){
+let d=document.getElementById('d'+id),a=document.getElementById('a'+id);
+if(o.has(id)){d.classList.remove('op');a.classList.remove('op');o.delete(id)}
+else{d.classList.add('op');a.classList.add('op');o.add(id)}
 }
 function escapeHtml(text) {
   const map = {'&': '&amp;','<': '&lt;','>': '&gt;','"': '&quot;',"'": '&#039;'};
@@ -2537,17 +2537,18 @@ let r=await fetch('/api/customers'),d=await r.json();
 document.getElementById('c').textContent=d.length+' Customer'+(d.length!=1?'s':'');
 if(!d.length){document.getElementById('l').innerHTML='<div class="emp">No customers</div>';return}
 let h='';
-d.forEach(c=>{
-let op=o.has(c.customerNumber);
+d.forEach((c,idx)=>{
+let safeId='c'+idx;
+let op=o.has(safeId);
 h+=\`<div class="itm">
-<div class="itm-hdr" onclick="tg('\${escapeHtml(c.customerNumber)}')">
+<div class="itm-hdr" onclick="tg('\${safeId}')">
 <div class="l">
 <div class="nm">\${escapeHtml(c.name)}</div>
 <div class="id">\${escapeHtml(c.customerNumber)}</div>
 </div>
-<div class="arr \${op?'op':''}" id="a\${escapeHtml(c.customerNumber)}">▼</div>
+<div class="arr \${op?'op':''}" id="a\${safeId}">▼</div>
 </div>
-<div class="det \${op?'op':''}" id="d\${escapeHtml(c.customerNumber)}">
+<div class="det \${op?'op':''}" id="d\${safeId}">
 <div class="dw">
 <div class="r"><span class="lb">Email</span><span class="vl">\${escapeHtml(c.email)}</span></div>
 <div class="r"><span class="lb">Phone</span><span class="vl">\${escapeHtml(c.phone||'N/A')}</span></div>
@@ -2562,14 +2563,14 @@ h+=\`<div class="itm">
 <div class="ed-fld">
 <label>Admin Name/Alias</label>
 <div style="display:flex;align-items:center">
-<input type="text" class="ed-inp" id="alias-\${escapeHtml(c.customerNumber)}" value="\${escapeHtml(c.adminAlias||'')}" placeholder="Internal name or notes">
-<button class="sv-btn" onclick="upd('\${escapeHtml(c.customerNumber)}')">Save</button>
+<input type="text" class="ed-inp" id="alias-\${safeId}" value="\${escapeHtml(c.adminAlias||'')}" placeholder="Internal name or notes" data-customer="\${escapeHtml(c.customerNumber)}">
+<button class="sv-btn" onclick="upd('\${escapeHtml(c.customerNumber)}','\${safeId}')">Save</button>
 </div>
 </div>
 <div class="ed-fld">
 <label>App Replacement (0-5)</label>
 <div style="display:flex;align-items:center">
-<select class="ed-sel" id="rep-\${escapeHtml(c.customerNumber)}">
+<select class="ed-sel" id="rep-\${safeId}" data-customer="\${escapeHtml(c.customerNumber)}">
 <option value="0" \${(c.appReplacement||0)===0?'selected':''}>0</option>
 <option value="1" \${c.appReplacement===1?'selected':''}>1</option>
 <option value="2" \${c.appReplacement===2?'selected':''}>2</option>
@@ -2577,13 +2578,13 @@ h+=\`<div class="itm">
 <option value="4" \${c.appReplacement===4?'selected':''}>4</option>
 <option value="5" \${c.appReplacement===5?'selected':''}>5</option>
 </select>
-<button class="sv-btn" onclick="upd('\${escapeHtml(c.customerNumber)}')">Save</button>
+<button class="sv-btn" onclick="upd('\${escapeHtml(c.customerNumber)}','\${safeId}')">Save</button>
 </div>
 </div>
 \${c.isDeleted?
 \`<button class="sv-btn" onclick="res('\${escapeHtml(c.customerNumber)}','\${escapeHtml(c.name)}')">♻️ Restore</button>
 <button class="db" onclick="ers('\${escapeHtml(c.customerNumber)}','\${escapeHtml(c.name)}')">🔥 Erase Forever</button>\`:
-\`<button class="db" data-customer="\${escapeHtml(c.customerNumber)}" data-name="\${escapeHtml(c.name)}" onclick="dl(this.dataset.customer,this.dataset.name)">🗑️ Delete</button>\`}
+\`<button class="db" onclick="dl('\${escapeHtml(c.customerNumber)}','\${escapeHtml(c.name)}')">🗑️ Delete</button>\`}
 </div>
 </div>
 </div>\`;
@@ -2634,10 +2635,10 @@ ld();
 }else{alert('❌ Failed: '+d.message)}
 }catch(e){alert('❌ Error: '+e.message)}
 }
-async function upd(n){
+async function upd(n,id){
 try{
-let alias=document.getElementById('alias-'+n).value;
-let rep=parseInt(document.getElementById('rep-'+n).value);
+let alias=document.getElementById('alias-'+id).value;
+let rep=parseInt(document.getElementById('rep-'+id).value);
 let r=await fetch('/api/customers/'+encodeURIComponent(n)+'/admin',{
 method:'PATCH',
 headers:{'Content-Type':'application/json'},

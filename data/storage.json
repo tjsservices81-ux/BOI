@@ -991,6 +991,38 @@
         "dateCreated": "2025-10-09T22:25:00.582Z",
         "isDisabled": false
       }
+    ],
+    [
+      115,
+      {
+        "id": 115,
+        "customerNumber": "35946816",
+        "pin": "",
+        "name": "Patrick Macer ",
+        "email": "Patrickmacer999@hotmail.com",
+        "phone": "07460189880",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-10T09:10:49.120Z",
+        "dateCreated": "2025-10-10T09:10:49.280Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      116,
+      {
+        "id": 116,
+        "customerNumber": "16486569",
+        "pin": "",
+        "name": "John lee",
+        "email": "mongantosales@mail.com",
+        "phone": "079045875455",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-10T09:42:12.423Z",
+        "dateCreated": "2025-10-10T09:42:12.444Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [],
@@ -1002,7 +1034,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 115,
+    "currentUserId": 117,
     "currentAccountId": 70,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
