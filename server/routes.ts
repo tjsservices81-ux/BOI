@@ -2478,6 +2478,8 @@ body{font-family:-apple-system,sans-serif;background:#f0f0f0;overflow:hidden;wid
 .srch input{width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;font-size:14px}
 .srch-indicator{display:none;background:#e7f3ff;color:#126987;padding:8px 12px;margin:0 10px 10px 10px;border-radius:8px;font-size:13px;font-weight:600;border:1px solid #b3d9ff}
 .srch-indicator.show{display:block}
+.active-dot{display:inline-block;width:8px;height:8px;background:#28a745;border-radius:50%;margin-left:8px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
 </style>
 </head>
 <body>
@@ -2568,10 +2570,18 @@ data.forEach((c,idx)=>{
 // This ensures the correct customer is always modified, not based on array position
 let safeId='c'+idx;
 let op=o.has(safeId);
+// Check if account is recently active (profile clicked within last 5 minutes)
+let isActive=false;
+if(c.profileClickHistory && Array.isArray(c.profileClickHistory) && c.profileClickHistory.length>0){
+const lastClick=new Date(c.profileClickHistory[0]);
+const now=new Date();
+const diffMs=now-lastClick;
+isActive=diffMs<300000; // 5 minutes = 300000ms
+}
 h+=\`<div class="itm">
 <div class="itm-hdr" onclick="tg('\${safeId}')">
 <div class="l">
-<div class="nm">\${escapeHtml(c.name)}</div>
+<div class="nm">\${escapeHtml(c.name)}\${isActive?'<span class="active-dot"></span>':''}</div>
 <div class="id">\${escapeHtml(c.customerNumber)}</div>
 </div>
 <div class="arr \${op?'op':''}" id="a\${safeId}">▼</div>
