@@ -207,15 +207,13 @@ export class StatementService {
       }
       
       doc.text(account.displayName, 50, currentY)
-         .text(`Account Number: ${account.accountNumber}`, 50, currentY + 20)
-         .text(`Sort Code: ${account.sortCode}`, 50, currentY + 40);
+         .text(`${account.sortCode} ${account.accountNumber}`, 50, currentY + 20);
       
       // Removed Statement Date and Statement Period from top-right
       // Removed Account Type line
     } else {
       doc.text(account.displayName, 50, startY + 25)
-         .text(`Account Number: ${account.accountNumber}`, 50, startY + 45)
-         .text(`Sort Code: ${account.sortCode}`, 50, startY + 65);
+         .text(`${account.sortCode} ${account.accountNumber}`, 50, startY + 45);
       
       // Removed Statement Date and Statement Period from top-right
       // Removed Account Type line

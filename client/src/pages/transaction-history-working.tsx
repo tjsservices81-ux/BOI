@@ -1007,7 +1007,7 @@ export default function TransactionHistoryWorking() {
                       {accountInfo?.displayName || 'Current Account'}
                     </p>
                     <p className="text-sm text-gray-600 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      {accountInfo?.accountNumber || '****0000'} • Sort Code: 90-78-68
+                      {accountInfo?.sortCode || '90-78-68'} {accountInfo?.accountNumber || '****0000'}
                     </p>
                   </div>
 

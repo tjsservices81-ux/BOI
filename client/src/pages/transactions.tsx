@@ -143,15 +143,9 @@ export default function Transactions() {
       acc.accountNumber.includes(accountNumber) && acc.accountType === accountType
     );
     const sortCode = accountData?.sortCode || '90-78-68';
+    const fullAccountNumber = accountData?.accountNumber || `****${accountNumber}`;
     
-    switch (accountType) {
-      case 'current': return `${sortCode} Account ending -${accountNumber}`;
-      case 'credit': return `${sortCode} Card ending -${accountNumber}`;
-      case 'savings': return `${sortCode} Account ending -${accountNumber}`;
-      case 'loan': return `${sortCode} Loan account -${accountNumber}`;
-      case 'deposit': return `${sortCode} Deposit account -${accountNumber}`;
-      default: return `${sortCode} Account ending -${accountNumber}`;
-    }
+    return `${sortCode} ${fullAccountNumber}`;
   };
 
   const getBalanceLabel = () => {
