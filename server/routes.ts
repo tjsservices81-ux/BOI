@@ -2762,27 +2762,44 @@ setInterval(ld,5000);
       const { customerNumber } = req.params;
       const { reason } = req.body;
       
-      // Atomic soft-delete operation
+      // Get customer data before deletion for response
+      const customer = await storage.getCustomerByCustomerNumber(customerNumber);
+      if (!customer) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "Customer not found" 
+        });
+      }
+      
+      // Atomic soft-delete operation in PostgreSQL
       const deleted = await storage.deleteCustomer(customerNumber, reason);
       
       if (deleted) {
-        console.log(`🗑️  CUSTOMER SOFT-DELETED: ${customerNumber} - Reason: ${reason || 'Deleted by admin'}`);
+        console.log(`🗑️  CUSTOMER SOFT-DELETED IN POSTGRESQL: ${customerNumber} - Reason: ${reason || 'Deleted by admin'}`);
+        
+        // CRITICAL: Also delete user from in-memory storage (Replit Database)
+        // This prevents the customer from being accessible until restore
+        const userDeleted = await storage.deleteUser(customerNumber);
+        if (userDeleted) {
+          console.log(`🗑️  USER DELETED FROM MEMORY: ${customerNumber}`);
+        }
         
         // Invalidate all sessions for this customer
         const { invalidateAllUserSessions } = await import('./sessionManager');
         invalidateAllUserSessions(customerNumber);
         
         // Remove device sessions
-        const { removeDeviceSession } = await import('./deviceSessions');
         const user = await storage.getUser(customerNumber);
         if (user) {
+          const { removeDeviceSession } = await import('./deviceSessions');
           removeDeviceSession(user.id);
         }
         
         res.json({ 
           success: true, 
           message: "Customer soft-deleted successfully",
-          customerNumber: customerNumber
+          customerNumber: customer.customerNumber,
+          name: customer.name
         });
       } else {
         res.status(404).json({ 
@@ -2857,15 +2874,40 @@ setInterval(ld,5000);
     try {
       const { customerNumber } = req.params;
       
+      // Restore customer in PostgreSQL (sets isDeleted = false)
       const restored = await storage.restoreCustomer(customerNumber);
       
       if (restored) {
-        console.log(`♻️  CUSTOMER RESTORED: ${customerNumber}`);
+        console.log(`♻️  CUSTOMER RESTORED IN POSTGRESQL: ${customerNumber}`);
+        
+        // CRITICAL: Recreate user in memory (Replit Database)
+        // Get the restored customer data
+        const customer = await storage.getCustomerByCustomerNumber(customerNumber);
+        if (customer) {
+          // Create user from customer data (similar to sync process)
+          const newUser: InsertUser = {
+            customerNumber: customer.customerNumber,
+            pin: '', // PIN not stored in PostgreSQL
+            name: customer.name,
+            email: customer.email,
+            phone: customer.phone || '',
+            dateOfBirth: customer.dateOfBirth || '',
+            address: '',
+            joinDate: customer.joinDate,
+            isDisabled: false
+          };
+          
+          const createdUser = await storage.createUser(newUser);
+          if (createdUser) {
+            console.log(`♻️  USER RECREATED IN MEMORY: ${customerNumber}`);
+          }
+        }
         
         res.json({ 
           success: true, 
           message: "Customer restored successfully",
-          customerNumber: customerNumber
+          customerNumber: customer?.customerNumber,
+          name: customer?.name
         });
       } else {
         res.status(404).json({ 
