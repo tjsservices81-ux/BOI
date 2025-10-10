@@ -86,7 +86,7 @@ export default function Dashboard() {
     if (!storedAccounts || storedAccounts.length === 0) {
       // Initialize default accounts with zero balances
       const defaultAccounts = [
-        { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "0.00", accountType: "current", sortCode: "90-78-68", iban: "", bicCode: "", displayFormat: "account" },
+        { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "0.00", accountType: "current" },
         { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "0.00", accountType: "credit" },
         { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "0.00", accountType: "savings" },
       ];
@@ -421,12 +421,7 @@ export default function Dashboard() {
                   <div className="flex items-center justify-between w-full px-6 py-4">
                     <div className="text-left">
                       <p className="font-medium text-sm text-gray-800 boi-regular-font">{account.displayName.toUpperCase()}</p>
-                      <p className="text-xs text-gray-500 mt-0.5 boi-regular-font">
-                        {UserDataManager.formatAccountNumber(account)}
-                        {UserDataManager.formatAccountSecondary(account) && (
-                          <span className="ml-1">• {UserDataManager.formatAccountSecondary(account)}</span>
-                        )}
-                      </p>
+                      <p className="text-xs text-gray-500 mt-0.5 boi-regular-font">{account.accountNumber}</p>
                     </div>
                     <div className="flex items-center">
                       {isLoading ? (

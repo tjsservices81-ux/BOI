@@ -285,60 +285,15 @@ export class UserDataManager {
 
   // User-specific account operations
   static getUserAccounts() {
-    const accounts = this.getUserData('bankAccounts', [
-      { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "0.00", accountType: "current", sortCode: "90-78-68", iban: "", bicCode: "", displayFormat: "account" },
-      { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "0.00", accountType: "credit", sortCode: "90-78-68", iban: "", bicCode: "", displayFormat: "account" },
-      { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "0.00", accountType: "savings", sortCode: "90-78-68", iban: "", bicCode: "", displayFormat: "account" },
+    return this.getUserData('bankAccounts', [
+      { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "0.00", accountType: "current", sortCode: "90-78-68" },
+      { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "0.00", accountType: "credit", sortCode: "90-78-68" },
+      { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "0.00", accountType: "savings", sortCode: "90-78-68" },
     ]);
-    
-    // Ensure all accounts have required fields (migration for existing accounts)
-    const updatedAccounts = accounts.map(account => ({
-      ...account,
-      sortCode: account.sortCode || '90-78-68',
-      iban: account.iban || '',
-      bicCode: account.bicCode || '',
-      displayFormat: account.displayFormat || 'account'
-    }));
-    
-    // Save updated accounts if any fields were added
-    if (JSON.stringify(accounts) !== JSON.stringify(updatedAccounts)) {
-      this.setUserData('bankAccounts', updatedAccounts);
-      this.clearCache('bankAccounts'); // Clear cache to prevent stale data
-    }
-    
-    return updatedAccounts;
   }
 
   static setUserAccounts(accounts: any[]) {
     this.setUserData('bankAccounts', accounts);
-  }
-
-  // Format account number based on selected display format
-  static formatAccountNumber(account: any): string {
-    if (!account) return '';
-    
-    const displayFormat = account.displayFormat || 'account';
-    
-    if (displayFormat === 'iban' && account.iban) {
-      // Display IBAN format
-      return account.iban;
-    } else {
-      // Display account number & sort code format (default)
-      return account.accountNumber || '';
-    }
-  }
-
-  // Get account secondary info (sort code or BIC) based on display format  
-  static formatAccountSecondary(account: any): string {
-    if (!account) return '';
-    
-    const displayFormat = account.displayFormat || 'account';
-    
-    if (displayFormat === 'iban' && account.bicCode) {
-      return account.bicCode;
-    } else {
-      return account.sortCode || '';
-    }
   }
 
   // User-specific transaction operations
@@ -422,9 +377,9 @@ export class UserDataManager {
     if (existingAccounts === null) {
       // Initialize with fresh account data (zero balances)
       const freshAccounts = [
-        { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "0.00", accountType: "current", sortCode: "90-78-68", iban: "", bicCode: "", displayFormat: "account" },
-        { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "0.00", accountType: "credit", sortCode: "90-78-68", iban: "", bicCode: "", displayFormat: "account" },
-        { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "0.00", accountType: "savings", sortCode: "90-78-68", iban: "", bicCode: "", displayFormat: "account" },
+        { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "0.00", accountType: "current" },
+        { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "0.00", accountType: "credit" },
+        { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "0.00", accountType: "savings" },
       ];
       
       // Set fresh data only for new accounts

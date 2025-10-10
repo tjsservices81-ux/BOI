@@ -534,7 +534,7 @@ export default function TransactionHistoryWorking() {
         <div className="flex justify-between items-center">
           <div>
             <p className="text-sm opacity-90" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              {accountInfo ? UserDataManager.formatAccountNumber(accountInfo) : 'Account'} {accountInfo && UserDataManager.formatAccountSecondary(accountInfo) ? `• ${UserDataManager.formatAccountSecondary(accountInfo)}` : ''}
+              Account ending {accountInfo?.accountNumber?.replace('****', '-') || '-0000'}
             </p>
             <p className="text-xs opacity-75" style={{ fontFamily: 'OpenSans, sans-serif' }}>Available Balance</p>
           </div>
@@ -1007,10 +1007,7 @@ export default function TransactionHistoryWorking() {
                       {accountInfo?.displayName || 'Current Account'}
                     </p>
                     <p className="text-sm text-gray-600 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      {accountInfo ? UserDataManager.formatAccountNumber(accountInfo) : '****0000'}
-                      {accountInfo && UserDataManager.formatAccountSecondary(accountInfo) && (
-                        <span> • {UserDataManager.formatAccountSecondary(accountInfo)}</span>
-                      )}
+                      {accountInfo?.accountNumber || '****0000'} • Sort Code: 90-78-68
                     </p>
                   </div>
 
