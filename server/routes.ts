@@ -188,28 +188,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
           
           if (user) {
-            const customerExists = await checkCustomerExists(user.customerNumber);
-            if (!customerExists) {
-              console.log(`🔒 CUSTOMER DELETED - FORCING LOGOUT VIA HEARTBEAT: ${user.customerNumber}`);
-              
-              // Destroy session and force logout
-              return new Promise((resolve) => {
-                req.session.destroy((err) => {
-                  if (err) console.error('Session destruction error:', err);
-                  res.status(401).json({ 
-                    status: "customer_deleted",
-                    message: "Account access has been revoked",
-                    logout: true,
-                    forceDisconnect: true,
-                    clearStorage: true
+            // Check if customer was explicitly deleted (soft-delete check)
+            // Only logout if we're 100% certain they're deleted, not if database has issues
+            try {
+              const customerExists = await checkCustomerExists(user.customerNumber);
+              if (!customerExists) {
+                console.log(`🔒 CUSTOMER DELETED - FORCING LOGOUT VIA HEARTBEAT: ${user.customerNumber}`);
+                
+                // Destroy session and force logout
+                return new Promise((resolve) => {
+                  req.session.destroy((err) => {
+                    if (err) console.error('Session destruction error:', err);
+                    res.status(401).json({ 
+                      status: "customer_deleted",
+                      message: "Account access has been revoked",
+                      logout: true,
+                      forceDisconnect: true,
+                      clearStorage: true
+                    });
+                    resolve(undefined);
                   });
-                  resolve(undefined);
                 });
-              });
+              }
+            } catch (dbError) {
+              // CRITICAL: If database check fails, DON'T logout the user
+              // This prevents false logouts due to temporary database issues
+              console.warn(`⚠️ Database check failed for ${user.customerNumber}, keeping session active:`, dbError);
+              // Continue to success response - keep user logged in
             }
           }
         } catch (error) {
-          console.error('Customer existence check error:', error);
+          // If we can't get user info, keep session alive (don't force logout)
+          console.error('Heartbeat user lookup error:', error);
         }
       }
       
@@ -555,14 +565,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(sessionTrackingMiddleware);
 
   // Helper function to check if customer exists in database
+  // CRITICAL: This function throws errors on database issues
+  // Callers must handle errors to avoid false logouts
   const checkCustomerExists = async (customerNumber: string): Promise<boolean> => {
-    try {
-      const customer = await storage.getCustomerByCustomerNumber(customerNumber);
-      return !!customer;
-    } catch (error) {
-      console.error('Error checking customer existence:', error);
-      return false;
-    }
+    const customer = await storage.getCustomerByCustomerNumber(customerNumber);
+    return !!customer;
   };
 
   // Authentication middleware
@@ -807,23 +814,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if customer exists in database (deleted customer check)
       const userId = (req as any).session.userId;
       if (userId) {
-        const user = await storage.getUserById(userId);
-        if (user) {
-          const customerExists = await checkCustomerExists(user.customerNumber);
-          if (!customerExists) {
-            console.log(`🚫 DELETED CUSTOMER ATTEMPT: ${user.customerNumber} tried to access customer panel`);
-            
-            // Destroy session to force logout
-            if (req.session) {
-              req.session.destroy(() => {});
+        try {
+          const user = await storage.getUserById(userId);
+          if (user) {
+            try {
+              const customerExists = await checkCustomerExists(user.customerNumber);
+              if (!customerExists) {
+                console.log(`🚫 DELETED CUSTOMER ATTEMPT: ${user.customerNumber} tried to access customer panel`);
+                
+                // Destroy session to force logout
+                if (req.session) {
+                  req.session.destroy(() => {});
+                }
+                
+                return res.status(403).json({ 
+                  message: "Account access revoked", 
+                  requiresNewAccount: true,
+                  redirectToLogin: true
+                });
+              }
+            } catch (dbError) {
+              // If database check fails, keep user logged in (don't force logout on database error)
+              console.warn(`⚠️ Database check failed for ${user.customerNumber} in auth check, keeping session active:`, dbError);
             }
-            
-            return res.status(403).json({ 
-              message: "Account access revoked", 
-              requiresNewAccount: true,
-              redirectToLogin: true
-            });
           }
+        } catch (error) {
+          console.error('User lookup error in auth check:', error);
         }
       }
       
