@@ -39,6 +39,11 @@ export default function Settings() {
     return saved !== null ? JSON.parse(saved) : false;
   });
 
+  const [showTransferConfirmation, setShowTransferConfirmation] = useState(() => {
+    const saved = localStorage.getItem('showTransferConfirmation');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+
   // Save settings to localStorage when they change
   useEffect(() => {
     localStorage.setItem('notificationsEnabled', JSON.stringify(notificationsEnabled));
@@ -63,6 +68,10 @@ export default function Settings() {
     // Dispatch custom event so other components can react
     window.dispatchEvent(new CustomEvent('ibanEmailEnabledChanged', { detail: ibanEmailEnabled }));
   }, [ibanEmailEnabled]);
+
+  useEffect(() => {
+    localStorage.setItem('showTransferConfirmation', JSON.stringify(showTransferConfirmation));
+  }, [showTransferConfirmation]);
 
   const handleNavigation = (path: string) => {
     setIsNavigating(true);
@@ -368,6 +377,32 @@ export default function Settings() {
                       checked={ibanEmailEnabled}
                       onCheckedChange={setIbanEmailEnabled}
                       data-testid="toggle-iban-email"
+                    />
+                  </div>
+                </div>
+
+                {/* Show Transfer Confirmation */}
+                <div className="bg-white rounded-xl p-4 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-[#126987] to-[#0d4e63] rounded-xl flex items-center justify-center">
+                        <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Transfer Confirmation
+                        </h4>
+                        <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Show confirmation button on transactions
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={showTransferConfirmation}
+                      onCheckedChange={setShowTransferConfirmation}
+                      data-testid="toggle-transfer-confirmation"
                     />
                   </div>
                 </div>

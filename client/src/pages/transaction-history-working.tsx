@@ -27,6 +27,10 @@ export default function TransactionHistoryWorking() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
   const [userCurrency, setUserCurrency] = useState<Currency>('EUR');
+  const [showTransferConfirmation, setShowTransferConfirmation] = useState(() => {
+    const saved = localStorage.getItem('showTransferConfirmation');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   // Pay Bills state
@@ -50,6 +54,20 @@ export default function TransactionHistoryWorking() {
   const [statementFileName, setStatementFileName] = useState<string>('');
   
   const accountId = params?.accountId ? parseInt(params.accountId) : 1;
+
+  // Listen for setting changes
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const saved = localStorage.getItem('showTransferConfirmation');
+      setShowTransferConfirmation(saved !== null ? JSON.parse(saved) : true);
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   // Enhanced navigation with smooth animations
   const navigateWithAnimation = (path: string, animationType: 'slide-right' | 'slide-left' | 'slide-up' = 'slide-right') => {
@@ -851,8 +869,8 @@ export default function TransactionHistoryWorking() {
                   </div>
                 )}
 
-                {/* Open Transfer Confirmation Button - Only for transfers (exclude custom transactions) */}
-                {selectedTransaction.paymentMethod && selectedTransaction.paymentMethod !== 'Manual Entry' && (
+                {/* Open Transfer Confirmation Button - Only for transfers (exclude custom transactions) and if enabled in settings */}
+                {selectedTransaction.paymentMethod && selectedTransaction.paymentMethod !== 'Manual Entry' && showTransferConfirmation && (
                   <div className="border-t border-gray-200 pt-6 mt-6">
                     <button
                       onClick={handleOpenTransferConfirmation}
