@@ -256,52 +256,140 @@ const ibanBankCodeMap: Record<string, string> = {
   "REVO": "Revolut",
   "MONZ": "Monzo",
   "SRLG": "Starling Bank",
+  "CHAS": "Chase UK",
+  "CPBK": "Co-operative Bank",
   
   // German Banks (DE)
   "DEUT": "Deutsche Bank",
+  "DEUTDE": "Deutsche Bank",
+  "DEUTDEFF": "Deutsche Bank",
+  "COBADEFF": "Commerzbank",
   "COBA": "Commerzbank",
   "DRSD": "Commerzbank (Dresdner Bank)",
+  "DRESDEFF": "Commerzbank (Dresdner Bank)",
+  "HYVEDEMM": "HypoVereinsbank (UniCredit)",
   "HYVE": "HypoVereinsbank",
-  "BYLADEM1": "Bayern LB",
+  "BYLADEM1": "Bayerische Landesbank",
+  "MARKDEF1": "Bundesbank",
+  "SOLADEST": "Landesbank Baden-Württemberg",
+  "WELADED1": "Landesbank Hessen-Thüringen",
+  "NOLADE21": "Nord/LB Norddeutsche Landesbank",
+  "WELADE3L": "Helaba Landesbank Hessen-Thüringen",
+  "PBNKDEFF": "Postbank (Deutsche Bank)",
+  "ESSEDE5F": "Santander Consumer Bank",
+  "GENODE51": "DZ Bank",
+  "GENODEFF": "DZ Bank",
+  "GENODEF1": "Volksbanken Raiffeisenbanken",
+  "VBRSDE33": "Volksbank",
+  "DGPBDEFF": "DG HYP (Deutsche Genossenschafts-Hypothekenbank)",
+  "N26DEFF": "N26 Bank",
   
   // French Banks (FR)
   "BNPA": "BNP Paribas",
+  "BNPAFRPP": "BNP Paribas",
   "SOGEFRPP": "Société Générale",
-  "CRLYFRPP": "Crédit Lyonnais",
+  "CRLYFRPP": "Crédit Lyonnais (LCL)",
   "AGRIFRPP": "Crédit Agricole",
+  "CEPAFRPP": "Banque Populaire",
+  "CMCIFRPP": "Crédit Mutuel",
+  "CCFRFRPP": "HSBC France",
+  "PSSTFRPP": "La Banque Postale",
+  "BDFEFRPP": "Banque de France",
+  "CAIXFRPP": "CaixaBank France",
+  "NATXFRPP": "Natixis",
+  "BFCMFRPP": "Banque Fédérative du Crédit Mutuel",
+  "CCHQFRPP": "Crédit Coopératif",
+  "CMCIFR2A": "CIC (Crédit Industriel et Commercial)",
+  "ILADFRPP": "Caisse d'Épargne",
+  "TRIOFRPP": "Triodos Bank France",
+  "REVOLT21": "Revolut France",
   
   // Spanish Banks (ES)
   "BBVA": "BBVA",
+  "BBVAESMM": "BBVA",
   "BSCH": "Santander",
+  "BSCHESMM": "Santander Spain",
   "SABH": "Banco Sabadell",
+  "SABADELL": "Banco Sabadell",
   "CAIXESBB": "CaixaBank",
+  "CAIXESBBXXX": "CaixaBank",
+  "POPUESMM": "Banco Popular",
+  "INGDESMM": "ING Spain",
+  "OPENESMM": "Openbank (Santander)",
   
   // Dutch Banks (NL)
   "ABNA": "ABN AMRO",
+  "ABNANL2A": "ABN AMRO",
   "INGB": "ING Bank",
+  "INGBNL2A": "ING Netherlands",
   "RABO": "Rabobank",
+  "RABONL2U": "Rabobank",
   "TRIO": "Triodos Bank",
+  "TRIONL2U": "Triodos Bank Netherlands",
+  "SNSBNL2A": "SNS Bank (de Volksbank)",
+  "ASNBNL21": "ASN Bank",
+  "RBRBNL21": "RegioBank",
+  "BUNQNL2A": "bunq",
+  "KNABNL2H": "Knab",
+  "MOYONL21": "Moneyou (ABN AMRO)",
+  
+  // Swiss Banks (CH)
+  "UBSW": "UBS",
+  "UBSWCHZH": "UBS Switzerland",
+  "CRESCHZZ": "Credit Suisse",
+  "CRESCHZ8": "Credit Suisse",
+  "RAIF": "Raiffeisen Switzerland",
+  "RAIFCH22": "Raiffeisen Schweiz",
+  "ZKBKCHZZ": "Zürcher Kantonalbank",
+  "POFICHBE": "PostFinance",
+  "BCVLCH2L": "Banque Cantonale Vaudoise",
+  "BPCVCH21": "Banque Cantonale de Genève",
+  "LUKBCH2L": "Luzerner Kantonalbank",
+  "MIGRCHZZ": "Migros Bank",
+  "HYPLCH22": "Hypothekarbank Lenzburg",
+  "RBABCH22": "Basler Kantonalbank",
   
   // Belgian Banks (BE)
   "GEBA": "BNP Paribas Fortis",
+  "GEBABEBB": "BNP Paribas Fortis",
   "KRBE": "KBC Bank",
+  "KREDBEBB": "KBC Bank Belgium",
   "CEBA": "Belfius",
+  "GKCCBEBB": "Belfius Bank",
   "INGA": "ING Belgium",
+  "BBRUBEBB": "ING Belgium",
+  "AXABBE22": "AXA Bank Belgium",
+  "ARSPBE22": "Argenta",
+  "VDSPBE91": "Vdk Bank",
   
   // Italian Banks (IT)
   "UNCRITMM": "UniCredit",
   "BCITITMM": "Intesa Sanpaolo",
   "BNLIITRR": "BNL (BNP Paribas)",
+  "BLOPIT22": "Banca Popolare di Milano",
+  "BPPIITRRXXX": "Banca Popolare",
   
   // Austrian Banks (AT)
   "BKAU": "Bank Austria (UniCredit)",
+  "BKAUATWW": "Bank Austria",
   "RLNW": "Raiffeisen",
+  "RLNWATWW": "Raiffeisen Landesbank",
   "BAWAATWW": "BAWAG",
+  "OPSKATWW": "Erste Bank",
+  "GIBAATWW": "Erste Group Bank",
   
-  // Swiss Banks (CH)
-  "UBSW": "UBS",
-  "CRESCHZZ": "Credit Suisse",
-  "RAIF": "Raiffeisen Switzerland"
+  // Portuguese Banks (PT)
+  "CGDIPTPL": "Caixa Geral de Depósitos",
+  "BCOMPTPL": "Millennium BCP",
+  "BNIFPTPL": "BNI Europa",
+  "BBPIPTPL": "Banco BPI",
+  
+  // Polish Banks (PL)
+  "PKOPPLPW": "PKO Bank Polski",
+  "WBKPPLPP": "Santander Bank Polska",
+  "BPKOPLPW": "Bank Pekao",
+  "INGBPLPW": "ING Bank Śląski",
+  "ALBPPLPW": "Alior Bank"
 };
 
 export function validateIBAN(iban: string): { isValid: boolean; bankName: string | null; country: string | null } {
@@ -356,13 +444,22 @@ export function validateIBAN(iban: string): { isValid: boolean; bankName: string
       bankCode = cleanIban.substring(4, 8);
   }
   
-  // Look up bank name
-  bankName = ibanBankCodeMap[bankCode] || null;
+  // Look up bank name - try multiple code lengths for better matching
+  // Try 8 characters first (full BIC codes like DEUTDEFF)
+  if (cleanIban.length >= 12) {
+    const code8 = cleanIban.substring(4, 12);
+    bankName = ibanBankCodeMap[code8] || null;
+  }
   
-  // Also try longer codes for some banks
-  if (!bankName && cleanIban.length >= 12) {
-    const longerCode = cleanIban.substring(4, 12);
-    bankName = ibanBankCodeMap[longerCode] || null;
+  // Try 6 characters (like DEUTDE)
+  if (!bankName && cleanIban.length >= 10) {
+    const code6 = cleanIban.substring(4, 10);
+    bankName = ibanBankCodeMap[code6] || null;
+  }
+  
+  // Try 4 characters (standard BIC like DEUT, BNPA)
+  if (!bankName) {
+    bankName = ibanBankCodeMap[bankCode] || null;
   }
   
   const countryNames: Record<string, string> = {
