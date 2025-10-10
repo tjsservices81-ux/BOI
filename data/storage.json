@@ -889,11 +889,12 @@
         "name": "Test 1",
         "email": "johnajaj@gmail.com",
         "phone": "464646",
-        "address": null,
-        "dateOfBirth": null,
+        "address": "",
+        "dateOfBirth": "",
         "joinDate": "2025-10-09T20:37:25.501Z",
         "dateCreated": "2025-10-09T20:37:25.501Z",
-        "isDisabled": false
+        "isDisabled": false,
+        "currency": "EUR"
       }
     ],
     [
