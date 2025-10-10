@@ -2471,6 +2471,8 @@ body{font-family:-apple-system,sans-serif;background:#f0f0f0;overflow:hidden;wid
 .map-close{background:none;border:none;color:#fff;font-size:24px;cursor:pointer}
 .map-modal-body{height:400px}
 .map-modal-body img{width:100%;height:100%;object-fit:cover}
+.srch{padding:10px;background:#fff;margin:10px;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
+.srch input{width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;font-size:14px}
 </style>
 </head>
 <body>
@@ -2485,6 +2487,9 @@ body{font-family:-apple-system,sans-serif;background:#f0f0f0;overflow:hidden;wid
 <button class="btn" onclick="logout()">Logout</button>
 </div>
 </div>
+</div>
+<div class="srch">
+<input type="text" id="srch" placeholder="🔍 Search by alias name..." oninput="flt()">
 </div>
 <div class="otc-sec">
 <div class="otc-hdr">
@@ -2507,6 +2512,7 @@ body{font-family:-apple-system,sans-serif;background:#f0f0f0;overflow:hidden;wid
 </div>
 <script>
 let o=new Set();
+let allCust=[];
 function tg(id){
 let d=document.getElementById('d'+id),a=document.getElementById('a'+id);
 if(o.has(id)){d.classList.remove('op');a.classList.remove('op');o.delete(id)}
@@ -2531,13 +2537,16 @@ h+=\`<div class="otc-itm">
 document.getElementById('otc-list').innerHTML=h;
 }catch(e){document.getElementById('otc-list').innerHTML='<div class="otc-empty">Error loading codes</div>'}
 }
-async function ld(){
-try{
-let r=await fetch('/api/customers'),d=await r.json();
-document.getElementById('c').textContent=d.length+' Customer'+(d.length!=1?'s':'');
-if(!d.length){document.getElementById('l').innerHTML='<div class="emp">No customers</div>';return}
+function flt(){
+let q=document.getElementById('srch').value.toLowerCase();
+let fltd=allCust.filter(c=>(c.adminAlias||'').toLowerCase().includes(q));
+rnd(fltd);
+}
+function rnd(data){
+document.getElementById('c').textContent=data.length+' Customer'+(data.length!=1?'s':'');
+if(!data.length){document.getElementById('l').innerHTML='<div class="emp">No customers</div>';return}
 let h='';
-d.forEach((c,idx)=>{
+data.forEach((c,idx)=>{
 let safeId='c'+idx;
 let op=o.has(safeId);
 h+=\`<div class="itm">
@@ -2590,6 +2599,12 @@ h+=\`<div class="itm">
 </div>\`;
 });
 document.getElementById('l').innerHTML=h;
+}
+async function ld(){
+try{
+let r=await fetch('/api/customers'),d=await r.json();
+allCust=d.sort((a,b)=>parseInt(a.customerNumber)-parseInt(b.customerNumber));
+rnd(allCust);
 loadOTC();
 }catch(e){document.getElementById('l').innerHTML='<div class="emp">Error</div>'}
 }

@@ -1023,6 +1023,22 @@
         "dateCreated": "2025-10-10T09:42:12.444Z",
         "isDisabled": false
       }
+    ],
+    [
+      117,
+      {
+        "id": 117,
+        "customerNumber": "84894454",
+        "pin": "",
+        "name": "John O’Connor",
+        "email": "johnoconnor199530@icloud.com",
+        "phone": "+447307620234",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-10T10:16:47.546Z",
+        "dateCreated": "2025-10-10T10:16:47.567Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [],
@@ -1034,7 +1050,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 117,
+    "currentUserId": 118,
     "currentAccountId": 70,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
