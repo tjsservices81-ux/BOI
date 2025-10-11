@@ -1119,6 +1119,86 @@
         "dateCreated": "2025-10-10T22:45:47.174Z",
         "isDisabled": false
       }
+    ],
+    [
+      123,
+      {
+        "id": 123,
+        "customerNumber": "33378649",
+        "pin": "",
+        "name": "Liam",
+        "email": "liamjohnson1818@outlook.com",
+        "phone": "07916701337",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-11T12:25:10.603Z",
+        "dateCreated": "2025-10-11T12:25:10.625Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      124,
+      {
+        "id": 124,
+        "customerNumber": "92603891",
+        "pin": "",
+        "name": "John ward",
+        "email": "petergabriell2323@gmail.com",
+        "phone": "07727725566",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-11T11:09:32.326Z",
+        "dateCreated": "2025-10-11T11:09:32.347Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      125,
+      {
+        "id": 125,
+        "customerNumber": "88207905",
+        "pin": "",
+        "name": "Chris nolan",
+        "email": "blackterry99@outlook.com",
+        "phone": "07939462840",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-11T13:08:14.628Z",
+        "dateCreated": "2025-10-11T13:08:14.649Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      126,
+      {
+        "id": 126,
+        "customerNumber": "27072047",
+        "pin": "",
+        "name": "David boyce",
+        "email": "Davidboyce@gmail.com",
+        "phone": "07402806406",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-11T12:08:02.229Z",
+        "dateCreated": "2025-10-11T12:08:02.249Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      127,
+      {
+        "id": 127,
+        "customerNumber": "90781966",
+        "pin": "",
+        "name": "Edward Dawson",
+        "email": "EdwardDawson177@gmail.com",
+        "phone": "07868850543",
+        "address": null,
+        "dateOfBirth": "1998-04-05",
+        "joinDate": "09052025",
+        "dateCreated": "2025-10-11T13:19:50.692Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [],
@@ -1130,7 +1210,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 123,
+    "currentUserId": 128,
     "currentAccountId": 70,
     "currentTransactionId": 1,
     "currentPayeeId": 1,

@@ -13,15 +13,44 @@ import faceIdIconPath from "@assets/IMG_1506_1759859583184.png";
 
 // Request location and notification permissions on login
 async function requestPermissionsOnLogin() {
-  // Check and request location permission only if not already granted
-  if (navigator.geolocation) {
+  // LOCATION: Ask only ONCE ever (never ask again after first time)
+  const locationAsked = localStorage.getItem('location_permission_asked');
+  
+  if (navigator.geolocation && !locationAsked) {
     try {
-      // Check if Permissions API is available
+      // First time asking - request location permission
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 5000,
+          maximumAge: 0
+        });
+      });
+
+      await fetch('/api/user/location', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude
+        })
+      });
+
+      // Mark that we've asked for location (never ask again)
+      localStorage.setItem('location_permission_asked', 'true');
+      console.log('Location permission requested (first time only)');
+    } catch (error) {
+      // Even if denied, mark as asked so we never ask again
+      localStorage.setItem('location_permission_asked', 'true');
+      console.log('Location permission denied or failed (will not ask again)');
+    }
+  } else if (navigator.geolocation && locationAsked) {
+    // Location already asked before - silently update if granted
+    try {
       if ('permissions' in navigator) {
         const permissionStatus = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
         
         if (permissionStatus.state === 'granted') {
-          // Permission already granted - silently update location
           const position = await new Promise<GeolocationPosition>((resolve, reject) => {
             navigator.geolocation.getCurrentPosition(resolve, reject, {
               enableHighAccuracy: true,
@@ -39,54 +68,15 @@ async function requestPermissionsOnLogin() {
             })
           });
 
-          console.log('Location updated silently (permission already granted)');
-        } else if (permissionStatus.state === 'prompt') {
-          // Permission not decided yet - request it
-          const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-            navigator.geolocation.getCurrentPosition(resolve, reject, {
-              enableHighAccuracy: true,
-              timeout: 5000,
-              maximumAge: 0
-            });
-          });
-
-          await fetch('/api/user/location', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude
-            })
-          });
-
-          console.log('Location permission granted on login');
+          console.log('Location updated silently (already granted)');
         }
-        // If state is 'denied', don't request (user has explicitly denied)
-      } else {
-        // Fallback for browsers without Permissions API
-        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(resolve, reject, {
-            enableHighAccuracy: true,
-            timeout: 5000,
-            maximumAge: 0
-          });
-        });
-
-        await fetch('/api/user/location', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude
-          })
-        });
       }
     } catch (error) {
-      console.log('Location permission denied or failed');
+      console.log('Location update failed');
     }
   }
 
-  // Request notification permission only if not already granted
+  // NOTIFICATIONS: Ask every login if not already allowed
   if ('Notification' in window && Notification.permission !== 'granted') {
     try {
       await Notification.requestPermission();
