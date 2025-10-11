@@ -1103,6 +1103,22 @@
         "dateCreated": "2025-10-10T22:34:45.802Z",
         "isDisabled": false
       }
+    ],
+    [
+      122,
+      {
+        "id": 122,
+        "customerNumber": "80911816",
+        "pin": "",
+        "name": "Michael Ward",
+        "email": "u6michael@gmail.com",
+        "phone": "+353851586372",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-10T22:45:47.154Z",
+        "dateCreated": "2025-10-10T22:45:47.174Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [],
@@ -1114,7 +1130,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 122,
+    "currentUserId": 123,
     "currentAccountId": 70,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
