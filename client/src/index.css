@@ -296,12 +296,6 @@ html, body {
   background: white;
 }
 
-/* Desktop/tablet: constrain to phone width */
-@media (min-width: 431px) {
-  #root {
-    max-width: 430px;
-  }
-}
 
 /* Prevent double-tap zoom on interactive elements only */
 button, a, [role="button"] {
