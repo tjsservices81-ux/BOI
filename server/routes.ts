@@ -2337,9 +2337,9 @@ No transfers found yet on your account.`;
     }
   });
 
-  // Admin Panel V2 - Brand new route to bypass browser cache
-  app.get("/admin-panel-v2", async (req, res) => {
-    console.log('🔵 ADMIN ROUTE HIT - /admin-panel-v2', req.query);
+  // Admin Panel V3 - Using API route to bypass Vite completely
+  app.get("/api/admin-panel", async (req, res) => {
+    console.log('🔵 ADMIN API ROUTE HIT - /api/admin-panel', req.query);
     
     // CRITICAL: Set headers to prevent Vite/React from interfering
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
@@ -2941,7 +2941,7 @@ async function deleteAll(){
 async function logout(){
   try{
     await fetch('/api/admin/logout',{method:'POST'});
-    window.location.href='/admin-panel-v2';
+    window.location.href='/api/admin-panel';
   }catch(e){
     alert('Error logging out');
   }
@@ -2977,9 +2977,9 @@ setInterval(ld,5000);
       const { pin } = req.body;
       
       if (pin === "270309200207") {
-        res.redirect('/admin-panel-v2?auth=verified');
+        res.redirect('/api/admin-panel?auth=verified');
       } else {
-        res.redirect('/admin-panel-v2?error=invalid');
+        res.redirect('/api/admin-panel?error=invalid');
       }
     } catch (error) {
       res.status(500).json({ success: false, error: "Login failed" });
@@ -3021,7 +3021,7 @@ body{font-family:monospace;padding:20px;background:#000;color:#0f0}
       });
       
       html += `<hr><p>Showing first 10 of ${customers.length} customers</p>
-<button onclick="location.href='/admin-panel-v2'">Go to Admin Panel</button>
+<button onclick="location.href='/api/admin-panel'">Go to Admin Panel</button>
 </body></html>`;
       
       return res.send(html);
