@@ -180,21 +180,9 @@ class MemStorage implements IStorage {
           if (customer.id >= this.currentUserId) {
             this.currentUserId = customer.id + 1;
           }
-        } else if (existingUser.id !== customer.id) {
-          // User exists but ID doesn't match - update to PostgreSQL ID
-          console.log(`🔄 Syncing user ID: ${existingUser.id} → ${customer.id} for customer ${customer.customerNumber}`);
-          
-          // Remove old entry
-          this.users.delete(existingUser.id);
-          
-          // Create new entry with PostgreSQL ID
-          const updatedUser: User = {
-            ...existingUser,
-            id: customer.id // Update to match PostgreSQL ID
-          };
-          this.users.set(customer.id, updatedUser);
-          
-          // Update currentUserId counter if needed
+        } else {
+          // User already exists - DON'T change their ID to avoid breaking active sessions
+          // Just update currentUserId counter if PostgreSQL ID is higher
           if (customer.id >= this.currentUserId) {
             this.currentUserId = customer.id + 1;
           }
