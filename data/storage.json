@@ -1311,22 +1311,6 @@
         "dateCreated": "2025-10-13T14:48:44.148Z",
         "isDisabled": false
       }
-    ],
-    [
-      199,
-      {
-        "id": 199,
-        "customerNumber": "37789031",
-        "pin": "",
-        "name": "Test6",
-        "email": "test6g@gmail.com",
-        "phone": "55",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "Member since 2018",
-        "dateCreated": "2025-10-13T17:20:33.796Z",
-        "isDisabled": false
-      }
     ]
   ],
   "accounts": [],
