@@ -601,7 +601,8 @@ export default function Login() {
         login({
           id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
           name: userProfile.name,
-          email: userProfile.email
+          email: userProfile.email,
+          customerNumber: customerNumber
         });
       }
       
@@ -870,7 +871,8 @@ export default function Login() {
       login({
         id: parseInt(currentUser.replace(/\D/g, '')) || 1,
         name: userProfile.name,
-        email: userProfile.email
+        email: userProfile.email,
+        customerNumber: currentUser
       });
 
       // Save authenticated user's data to localStorage (secure - only this user)
@@ -977,7 +979,8 @@ export default function Login() {
           login({
             id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
             name: userProfile.name,
-            email: userProfile.email
+            email: userProfile.email,
+            customerNumber: customerNumber
           });
           
           // Save authenticated user's data to localStorage (secure - only this user)
@@ -1945,7 +1948,8 @@ export default function Login() {
                         login({
                           id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
                           name: userData.name,
-                          email: userData.email
+                          email: userData.email,
+                          customerNumber: customerNumber
                         });
                         setShowAdminLogin(false);
                         setCustomerNumber(customerNumber);

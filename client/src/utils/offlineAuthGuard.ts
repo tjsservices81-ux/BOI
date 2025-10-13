@@ -4,6 +4,16 @@
  * Handles: No WiFi, network failures, server crashes, browser restarts
  */
 
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  customerNumber: string;
+  loginTime?: number;
+  lastActivity?: number;
+  persistentSession?: boolean;
+}
+
 export class OfflineAuthGuard {
   private static STORAGE_KEYS = {
     USER: 'bankingUser',
@@ -70,7 +80,7 @@ export class OfflineAuthGuard {
   /**
    * Restore user data from backups
    */
-  static restoreUserData(): any | null {
+  static restoreUserData(): User | null {
     // Try all possible storage locations
     const locations = [
       () => localStorage.getItem(this.STORAGE_KEYS.USER),
@@ -100,7 +110,7 @@ export class OfflineAuthGuard {
   /**
    * Save user data to all storage locations
    */
-  static saveUserData(user: any) {
+  static saveUserData(user: User) {
     const userData = JSON.stringify(user);
     
     try {

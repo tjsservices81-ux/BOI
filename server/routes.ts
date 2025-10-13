@@ -793,7 +793,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (err) {
           console.error('Session save error:', err);
         }
-        res.json({ user: { id: user.id, name: user.name, email: user.email } });
+        res.json({ user: { id: user.id, name: user.name, email: user.email, customerNumber: user.customerNumber } });
       });
     } catch (error) {
       if (error instanceof z.ZodError) {

@@ -6,6 +6,7 @@ interface User {
   id: number;
   name: string;
   email: string;
+  customerNumber: string;
 }
 
 interface AuthContextType {
@@ -160,8 +161,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const cachedUser = localStorage.getItem('bankingUser');
             if (cachedUser) {
               foundUser = JSON.parse(cachedUser);
-              // Save to new system
-              OfflineAuthGuard.saveUserData(foundUser);
+              // Save to new system if valid user data
+              if (foundUser && foundUser.id && foundUser.customerNumber) {
+                OfflineAuthGuard.saveUserData(foundUser);
+              }
             }
           } catch (error) {
             console.warn('Legacy storage check failed:', error);
@@ -221,7 +224,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const updatedUser = {
           id: user.id,
           name: customEvent.detail.name || user.name,
-          email: customEvent.detail.email || user.email
+          email: customEvent.detail.email || user.email,
+          customerNumber: user.customerNumber
         };
         
         // Update user state immediately without flickering
