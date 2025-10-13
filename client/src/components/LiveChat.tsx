@@ -322,7 +322,6 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       const startTime = chatState.queueStartTime.getTime();
       const waitTime = chatState.estimatedWaitTime;
       const queuePosition = chatState.queuePosition || 0;
-      let welcomeSent = false; // Prevent duplicate welcome messages
       
       // Show initial queue message
       if (chatState.messages.length === 0) {
@@ -388,9 +387,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
         
         setQueueTimeRemaining(remaining);
         
-        if (remaining <= 0 && !welcomeSent) {
-          welcomeSent = true; // Mark as sent to prevent duplicates
-          
+        if (remaining <= 0) {
           // Show typing indicator before agent connects
           setIsTyping(true);
           setTypingText(`${chatState.agentName} is typing...`);
@@ -404,13 +401,13 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
               isInQueue: false
             }));
             
-            // Add welcome message from agent with faster delay
+            // Add welcome message from agent with natural delay
             setTimeout(() => {
               const welcomeText = getPersonalityResponse(chatState.agentName, 'welcome');
               const words = welcomeText.split(' ').length;
-              const wordsPerSecond = Math.random() * 3 + 6; // 6-9 words per second (faster!)
-              const realisticDelay = Math.max(600, (words / wordsPerSecond) * 1000);
-              const variation = (Math.random() - 0.5) * 0.3;
+              const wordsPerSecond = Math.random() * 2 + 3; // 3-5 words per second
+              const realisticDelay = Math.max(1000, (words / wordsPerSecond) * 1000);
+              const variation = (Math.random() - 0.5) * 0.4;
               const finalDelay = realisticDelay * (1 + variation);
               
               setIsTyping(true);
@@ -849,42 +846,42 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     return responses[Math.floor(Math.random() * responses.length)];
   };
 
-  // Get typing speed based on agent personality (ALL FASTER - max 30-40 second responses)
+  // Get typing speed based on agent personality
   const getAgentTypingSpeed = (agentName: string): number => {
     const typingSpeeds: { [key: string]: number } = {
-      'Emma': 120,       // Friendly - fast speed
-      'James': 130,      // Formal - fast measured speed
-      'Sarah': 100,      // Overly helpful - faster, thoughtful
-      'Zoe': 150,        // Sarcastic - very quick responses
-      'Aoife': 110,      // Relaxed - faster laid back speed
-      'Liam': 180,       // Quick texter - extremely fast
-      'Rachel': 80,      // Slow typer - now faster
-      'Connor': 140,     // Emoji lover - fast
-      'Sophie': 160,     // Bubbly - excited, very fast typing
-      'David': 120,      // Professional - fast consistent speed
-      'Claire': 90,      // Patient - faster careful
-      'Ryan': 150,       // Direct - very fast, no nonsense
-      'Rebecca': 170,    // Tech savvy - extremely fast typing
-      'Sean': 100,       // Chatty - faster long messages
-      'Katie': 110,      // Cautious - faster careful typing
-      'Adam': 130,       // Laid back - faster average speed
-      'Niamh': 190,      // Enthusiastic - super fast
-      'Daniel': 140,     // Punctual - fast precise speed
-      'Amy': 100,        // Empathetic - faster thoughtful
-      'Jack': 150,       // Trendy - very fast modern typing
-      'Laura': 120,      // Methodical - fast consistent average
-      'Thomas': 110,     // Worldly - faster thoughtful responses
-      'Hannah': 180,     // Millennial - extremely fast mobile typing
-      'Mark': 160,       // No nonsense - very quick and direct
-      'Grace': 85,       // Reassuring - faster caring responses
-      'Oliver': 130,     // Witty - fast with pauses for humor
-      'Ella': 120,       // Thorough - faster but efficient
-      'Luke': 200,       // Geeky - super fast technical typing
-      'Chloe': 140,      // Warm - fast enthusiastic but caring
-      'Ben': 120         // Curious - fast speed with thoughtful pauses
+      'Emma': 45,        // Friendly - average speed
+      'James': 50,       // Formal - measured speed
+      'Sarah': 35,       // Overly helpful - slower, thoughtful
+      'Zoe': 60,         // Sarcastic - quick responses
+      'Aoife': 40,       // Relaxed - laid back speed
+      'Liam': 80,        // Quick texter - very fast
+      'Rachel': 15,      // Slow typer - very slow
+      'Connor': 55,      // Emoji lover - fast but pauses for emojis
+      'Sophie': 70,      // Bubbly - excited, fast typing
+      'David': 45,       // Professional - consistent speed
+      'Claire': 30,      // Patient - slow and careful
+      'Ryan': 65,        // Direct - fast, no nonsense
+      'Rebecca': 75,     // Tech savvy - very fast typing
+      'Sean': 35,        // Chatty - slower due to long messages
+      'Katie': 40,       // Cautious - careful typing
+      'Adam': 50,        // Laid back - average speed
+      'Niamh': 85,       // Enthusiastic - extremely fast
+      'Daniel': 55,      // Punctual - precise speed
+      'Amy': 35,         // Empathetic - thoughtful, slower
+      'Jack': 65,        // Trendy - fast modern typing
+      'Laura': 45,       // Methodical - consistent average
+      'Thomas': 40,      // Worldly - thoughtful responses
+      'Hannah': 80,      // Millennial - very fast mobile typing
+      'Mark': 70,        // No nonsense - quick and direct
+      'Grace': 25,       // Reassuring - slow, caring responses
+      'Oliver': 50,      // Witty - average with pauses for humor
+      'Ella': 45,        // Thorough - careful but efficient
+      'Luke': 90,        // Geeky - extremely fast technical typing
+      'Chloe': 55,       // Warm - enthusiastic but caring
+      'Ben': 45          // Curious - average speed with thoughtful pauses
     };
 
-    return typingSpeeds[agentName] || 120; // Default to fast speed
+    return typingSpeeds[agentName] || 45; // Default to average speed
   };
 
   // Get personality-based banking responses
@@ -1139,123 +1136,28 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
     }
     startInactivityTimer();
     
-    // Check if this is a transfer confirmation query
-    const transferConfirmKeywords = [
-      'confirm', 'check', 'verify', 'last transfer', 'recent transfer', 
-      'last payment', 'recent payment', 'my transfer', 'my payment',
-      'did my transfer', 'has my transfer', 'transfer go through'
-    ];
-    const isTransferConfirmQuery = transferConfirmKeywords.some(keyword => 
-      userMessage.text.toLowerCase().includes(keyword)
-    );
-    
-    // Calculate realistic reading time for user's message (faster!)
-    // Average reading speed: 200-300 words per minute
+    // Calculate realistic reading time for user's message
+    // Average reading speed: 150-200 words per minute
     const userWords = userMessage.text.split(' ').length;
-    const readingWPM = Math.random() * 100 + 200; // 200-300 WPM (faster reading)
+    const readingWPM = Math.random() * 50 + 150; // 150-200 WPM
     const readingTimeMs = (userWords / readingWPM) * 60 * 1000;
-    const readingDelay = Math.max(500, readingTimeMs); // Minimum 0.5 seconds (faster!)
+    const readingDelay = Math.max(1000, readingTimeMs); // Minimum 1 second
     
-    // Calculate wait time once for coordination between checking message and AI response
-    const transferWaitTime = Math.random() * 10000 + 20000; // 20-30 seconds
-    
-    // If transfer confirmation query, type out a checking message first
-    if (isTransferConfirmQuery) {
-      // Show typing indicator after reading
-      setTimeout(() => {
-        setIsTyping(true);
-        setTypingText(`${chatState.agentName} is typing...`);
-        
-        // Different checking message variations (loads of options!)
-        const checkingVariations = [
-          "Let me check that for you.",
-          "One moment, let me pull that up.",
-          "Give me a second to check that.",
-          "Let me look that up for you.",
-          "Just a moment, checking that now.",
-          "Hold on, let me find that.",
-          "Let me grab those details for you.",
-          "One sec, pulling that up now.",
-          "Give me a minute while I look into your account.",
-          "Let me have a look at your account for that.",
-          "Just checking your account now.",
-          "Let me pull up your account details.",
-          "One moment while I check your account.",
-          "Give me a second to look through your account.",
-          "Let me access your account and check that.",
-          "Hold on, looking into your account now.",
-          "Just a moment, I'm checking your recent activity.",
-          "Let me review your account for that information.",
-          "Give me a moment to check your transaction history.",
-          "One sec, I'm looking at your account now.",
-          "Let me bring up your account details.",
-          "Just pulling up your account information.",
-          "One moment, accessing your account.",
-          "Let me check your recent transactions.",
-          "Give me a second, I'm reviewing your account.",
-          "Hold on, let me look at your payment history.",
-          "Just checking your transaction records now.",
-          "Let me see what's in your account.",
-          "One moment while I look through your records.",
-          "Give me a sec to check your account activity.",
-          "Let me pull your transaction details.",
-          "Just a moment, reviewing your account now.",
-          "Hold on, I'm checking your recent payments.",
-          "Let me have a quick look at your account.",
-          "One sec, accessing your transaction history.",
-          "Give me a moment to review your records.",
-          "Let me check what's showing on your account.",
-          "Just looking into your account details now.",
-          "One moment, I'm pulling up your information.",
-          "Let me see what I can find in your account."
-        ];
-        const checkingMessage = checkingVariations[Math.floor(Math.random() * checkingVariations.length)];
-        
-        // Calculate typing time for checking message
-        const checkingWords = checkingMessage.split(' ').length;
-        const typingWPM = getAgentTypingSpeed(chatState.agentName);
-        const checkingTypingTime = Math.max(800, (checkingWords / typingWPM) * 60 * 1000);
-        
-        // Display checking message after typing
-        setTimeout(() => {
-          setChatState(prev => ({
-            ...prev,
-            messages: [...prev.messages, {
-              id: (Date.now() + 0.5).toString(),
-              text: checkingMessage,
-              isUser: false,
-              timestamp: new Date(),
-              agentName: chatState.agentName,
-              isAutomated: false
-            }]
-          }));
-          
-          setIsTyping(false);
-          setTypingText("");
-          
-          // Wait (using the coordinated wait time) before showing typing indicator again
-          setTimeout(() => {
-            setIsTyping(true);
-            setTypingText(`${chatState.agentName} is typing...`);
-            
-            // NOW start AI response generation for transfer queries (after checking message sent + wait)
-            generateAndDisplayResponse();
-          }, transferWaitTime);
-        }, checkingTypingTime);
-      }, readingDelay);
-    }
-    
-    // Function to generate and display AI response
-    const generateAndDisplayResponse = async () => {
+    // Start processing after reading delay
+    setTimeout(async () => {
       try {
-        // Generate response - use captured messages for context
+        // Generate response while agent is "reading" - use captured messages for context
         const responseData = await generateAIResponse(userMessage.text, currentMessages);
         
-        // Calculate typing delay
+        // Calculate realistic typing time based on agent personality
         const responseWords = responseData.text.split(' ').length;
         const typingWPM = getAgentTypingSpeed(chatState.agentName);
         const typingTimeMs = (responseWords / typingWPM) * 60 * 1000;
-        const typingDelay = Math.max(800, typingTimeMs); // Minimum 0.8 seconds (faster!)
+        const typingDelay = Math.max(1500, typingTimeMs); // Minimum 1.5 seconds
+        
+        // Show typing indicator
+        setIsTyping(true);
+        setTypingText(`${chatState.agentName} is typing...`);
         
         // Display response after typing delay
         setTimeout(() => {
@@ -1300,18 +1202,9 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
           
           setIsTyping(false);
           setTypingText("");
-        }, 1000); // 1 second typing delay for error message (faster!)
+        }, 3000); // 3 second typing delay for error message
       }
-    };
-    
-    // For non-transfer queries, start AI response after reading delay
-    if (!isTransferConfirmQuery) {
-      setTimeout(() => {
-        setIsTyping(true);
-        setTypingText(`${chatState.agentName} is typing...`);
-        generateAndDisplayResponse();
-      }, readingDelay);
-    }
+    }, readingDelay);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
