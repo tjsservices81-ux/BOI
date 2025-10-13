@@ -220,9 +220,17 @@ class MemStorage implements IStorage {
     );
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
+  async createUser(insertUser: InsertUser, customId?: number): Promise<User> {
+    // Use custom ID if provided (for PostgreSQL sync), otherwise auto-increment
+    const userId = customId !== undefined ? customId : this.currentUserId++;
+    
+    // Update currentUserId if custom ID is higher (keeps counter in sync)
+    if (customId !== undefined && customId >= this.currentUserId) {
+      this.currentUserId = customId + 1;
+    }
+    
     const user: User = {
-      id: this.currentUserId++,
+      id: userId,
       customerNumber: insertUser.customerNumber,
       pin: insertUser.pin,
       name: insertUser.name || "",
