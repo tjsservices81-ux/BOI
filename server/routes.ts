@@ -528,18 +528,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Only returns false if customer is CONFIRMED deleted or data is mismatched
   const checkCustomerExists = async (customerNumber: string): Promise<boolean> => {
     try {
-      // Validate customer number format (8 digits OR old BOI format for backwards compatibility)
-      if (!customerNumber) {
-        console.error(`⚠️ INVALID CUSTOMER NUMBER: Empty customer number`);
-        return false;
-      }
-      
-      // Accept both formats:
-      // - New: 8 digits (e.g., "21234567")
-      // - Old: BOI prefix (e.g., "BOI050171232") - for backwards compatibility
-      const isValidFormat = /^\d{8}$/.test(customerNumber) || /^BOI\d+$/.test(customerNumber);
-      if (!isValidFormat) {
-        console.error(`⚠️ INVALID CUSTOMER NUMBER FORMAT: ${customerNumber} (must be 8 digits or BOI prefix)`);
+      // Validate customer number format (8 digits)
+      if (!customerNumber || !/^\d{8}$/.test(customerNumber)) {
+        console.error(`⚠️ INVALID CUSTOMER NUMBER FORMAT: ${customerNumber} (must be 8 digits)`);
         return false;
       }
 
