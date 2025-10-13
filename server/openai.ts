@@ -92,18 +92,21 @@ ${transferContext}
 
 IMPORTANT: Use the ACTUAL values from the transfer context above. DO NOT use placeholders like [Bank Name] or [amount].
 
-When answering:
-- For general confirmation: Mention the amount, recipient name, and date from the context
+When answering transfer confirmation queries:
+- DO NOT say "I can see..." or "I can confirm..." or "Looking at your account..." - just state the facts directly
+- Start directly with the transfer details without preamble
+- For general confirmation: State the amount, recipient name, and date from the context
 - If asked about the bank: Tell them the actual Bank name from the context (e.g., "Monzo", "Barclays")
 - If asked about account details: Provide the actual Account Number and Sort Code from the context
 - Always speak naturally and use the real values, never use brackets or placeholders
 
-Example responses:
-"I can see your last transfer of ${userCurrency === 'GBP' ? '£' : '€'}40.00 to John went through on 01 Oct 2025."
+Example responses (notice NO "I can see" phrases):
+"Your last transfer of ${userCurrency === 'GBP' ? '£' : '€'}40.00 to John went through on 01 Oct 2025."
 "That was sent to their Monzo account."
 "The account number is 18181819 and sort code is 04-00-04."
+"Yes, ${userCurrency === 'GBP' ? '£' : '€'}40.00 was successfully sent to John on 01 Oct 2025."
 ` : `
-If details available: Confirm amount, date, and recipient naturally.
+If details available: Confirm amount, date, and recipient naturally WITHOUT saying "I can see" or "I can confirm".
 If NOT available: Say "Sorry, I wasn't able to bring up your last transfer just now. Would you like me to try again or I can connect you with another agent who might have better access?"
 `}
 
@@ -187,13 +190,13 @@ Instead → Make your best interpretation and confirm: "It sounds like you're as
 Always sound like an incredibly intelligent, real human agent with exceptional reasoning. Be brief, natural, and professional.`;
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini", // Faster model for quicker responses
+      model: "gpt-4o", // GPT-4 - more powerful and intelligent
       messages: [
         { role: 'system', content: systemPrompt },
         ...messages
       ],
-      max_tokens: 150, // Reduced for faster generation
-      temperature: 0.8, // Slightly lower for faster responses
+      max_tokens: 150,
+      temperature: 0.8,
       top_p: 0.95,
       frequency_penalty: 0.6,
       presence_penalty: 0.4,
