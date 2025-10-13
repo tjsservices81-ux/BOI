@@ -1153,28 +1153,55 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
     const readingTimeMs = (userWords / readingWPM) * 60 * 1000;
     const readingDelay = Math.max(500, readingTimeMs); // Minimum 0.5 seconds (faster!)
     
-    // If transfer confirmation query, show "Let me check that" first
+    // If transfer confirmation query, type out a checking message first
     if (isTransferConfirmQuery) {
+      // Show typing indicator after reading
       setTimeout(() => {
-        const checkingMessage: ChatMessage = {
-          id: (Date.now() + 0.5).toString(),
-          text: "Let me check that for you.",
-          isUser: false,
-          timestamp: new Date(),
-          agentName: chatState.agentName,
-          isAutomated: false
-        };
-
-        setChatState(prev => ({
-          ...prev,
-          messages: [...prev.messages, checkingMessage]
-        }));
+        setIsTyping(true);
+        setTypingText(`${chatState.agentName} is typing...`);
         
-        // Show typing indicator after "Let me check that"
+        // Different checking message variations
+        const checkingVariations = [
+          "Let me check that for you.",
+          "One moment, let me pull that up.",
+          "Give me a second to check that.",
+          "Let me look that up for you.",
+          "Just a moment, checking that now.",
+          "Hold on, let me find that.",
+          "Let me grab those details for you.",
+          "One sec, pulling that up now."
+        ];
+        const checkingMessage = checkingVariations[Math.floor(Math.random() * checkingVariations.length)];
+        
+        // Calculate typing time for checking message
+        const checkingWords = checkingMessage.split(' ').length;
+        const typingWPM = getAgentTypingSpeed(chatState.agentName);
+        const checkingTypingTime = Math.max(800, (checkingWords / typingWPM) * 60 * 1000);
+        
+        // Display checking message after typing
         setTimeout(() => {
-          setIsTyping(true);
-          setTypingText(`${chatState.agentName} is typing...`);
-        }, 1000);
+          setChatState(prev => ({
+            ...prev,
+            messages: [...prev.messages, {
+              id: (Date.now() + 0.5).toString(),
+              text: checkingMessage,
+              isUser: false,
+              timestamp: new Date(),
+              agentName: chatState.agentName,
+              isAutomated: false
+            }]
+          }));
+          
+          setIsTyping(false);
+          setTypingText("");
+          
+          // Wait 20-30 seconds before showing typing indicator again
+          const waitTime = Math.random() * 10000 + 20000; // 20-30 seconds
+          setTimeout(() => {
+            setIsTyping(true);
+            setTypingText(`${chatState.agentName} is typing...`);
+          }, waitTime);
+        }, checkingTypingTime);
       }, readingDelay);
     }
     
@@ -1184,10 +1211,30 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
         // Generate response while agent is "reading" - use captured messages for context
         const responseData = await generateAIResponse(userMessage.text, currentMessages);
         
-        // Calculate typing delay - 20 seconds for transfer confirmations, normal for others
+        // Calculate typing delay
         let typingDelay: number;
         if (isTransferConfirmQuery) {
-          typingDelay = 20000; // Fixed 20 seconds for transfer confirmations
+          // For transfer confirmations: wait for checking message + wait time + final typing
+          const checkingVariations = [
+            "Let me check that for you.",
+            "One moment, let me pull that up.",
+            "Give me a second to check that.",
+            "Let me look that up for you.",
+            "Just a moment, checking that now.",
+            "Hold on, let me find that.",
+            "Let me grab those details for you.",
+            "One sec, pulling that up now."
+          ];
+          const avgCheckingWords = 6; // Average words in checking messages
+          const typingWPM = getAgentTypingSpeed(chatState.agentName);
+          const checkingTypingTime = Math.max(800, (avgCheckingWords / typingWPM) * 60 * 1000);
+          const waitTime = Math.random() * 10000 + 20000; // 20-30 seconds
+          
+          // Calculate final response typing time
+          const responseWords = responseData.text.split(' ').length;
+          const responseTypingTime = Math.max(800, (responseWords / typingWPM) * 60 * 1000);
+          
+          typingDelay = checkingTypingTime + waitTime + responseTypingTime;
         } else {
           // Calculate realistic typing time based on agent personality
           const responseWords = responseData.text.split(' ').length;
