@@ -145,16 +145,33 @@ class MemStorage implements IStorage {
   }
 
   // Sync PostgreSQL customers table to local users Map (for Face ID and login)
+  // IMPORTANT: Only syncs ACTIVE customers - soft-deleted customers are intentionally excluded
+  // Soft-deleted users remain out of memory until explicitly restored via restore endpoint
   private async syncCustomersToUsers(): Promise<void> {
     try {
       const { db } = await import('./db');
       const { eq } = await import('drizzle-orm');
       
-      // Get all non-deleted customers from PostgreSQL
+      // Get all ACTIVE (non-deleted) customers from PostgreSQL
+      // Soft-deleted customers (isDeleted: true) are intentionally excluded
       const allCustomers = await db.select().from(customers).where(eq(customers.isDeleted, false));
       
-      console.log(`🔄 Syncing ${allCustomers.length} customers from PostgreSQL to local storage...`);
+      // Also get soft-deleted customers to clean them from memory if present
+      const deletedCustomers = await db.select().from(customers).where(eq(customers.isDeleted, true));
       
+      console.log(`🔄 Syncing ${allCustomers.length} ACTIVE customers from PostgreSQL to local storage...`);
+      console.log(`🗑️  Excluding ${deletedCustomers.length} soft-deleted customers from memory`);
+      
+      // CLEANUP: Remove soft-deleted users from memory if they somehow exist
+      for (const deletedCustomer of deletedCustomers) {
+        const existingUser = Array.from(this.users.values()).find(u => u.customerNumber === deletedCustomer.customerNumber);
+        if (existingUser) {
+          this.users.delete(existingUser.id);
+          console.log(`🧹 Removed soft-deleted user from memory: ${deletedCustomer.customerNumber}`);
+        }
+      }
+      
+      // RESTORE: Add active customers to memory
       for (const customer of allCustomers) {
         // Check if user already exists in local storage
         const existingUser = Array.from(this.users.values()).find(u => u.customerNumber === customer.customerNumber);
@@ -191,7 +208,8 @@ class MemStorage implements IStorage {
       
       // Save updated users to storage.json
       await this.saveData();
-      console.log(`✅ Synced ${allCustomers.length} customers to local storage - Face ID now available`);
+      console.log(`✅ Synced ${allCustomers.length} ACTIVE customers to local storage - Face ID now available`);
+      console.log(`✅ Soft-deleted customers remain out of memory until explicitly restored`);
     } catch (error) {
       console.error('Error syncing customers to users:', error);
     }
