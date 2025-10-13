@@ -322,6 +322,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
       const startTime = chatState.queueStartTime.getTime();
       const waitTime = chatState.estimatedWaitTime;
       const queuePosition = chatState.queuePosition || 0;
+      let welcomeSent = false; // Prevent duplicate welcome messages
       
       // Show initial queue message
       if (chatState.messages.length === 0) {
@@ -387,7 +388,9 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
         
         setQueueTimeRemaining(remaining);
         
-        if (remaining <= 0) {
+        if (remaining <= 0 && !welcomeSent) {
+          welcomeSent = true; // Mark as sent to prevent duplicates
+          
           // Show typing indicator before agent connects
           setIsTyping(true);
           setTypingText(`${chatState.agentName} is typing...`);
@@ -1153,6 +1156,9 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
     const readingTimeMs = (userWords / readingWPM) * 60 * 1000;
     const readingDelay = Math.max(500, readingTimeMs); // Minimum 0.5 seconds (faster!)
     
+    // Calculate wait time once for coordination between checking message and AI response
+    const transferWaitTime = Math.random() * 10000 + 20000; // 20-30 seconds
+    
     // If transfer confirmation query, type out a checking message first
     if (isTransferConfirmQuery) {
       // Show typing indicator after reading
@@ -1227,12 +1233,11 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
           setIsTyping(false);
           setTypingText("");
           
-          // Wait 20-30 seconds before showing typing indicator again
-          const waitTime = Math.random() * 10000 + 20000; // 20-30 seconds
+          // Wait (using the coordinated wait time) before showing typing indicator again
           setTimeout(() => {
             setIsTyping(true);
             setTypingText(`${chatState.agentName} is typing...`);
-          }, waitTime);
+          }, transferWaitTime);
         }, checkingTypingTime);
       }, readingDelay);
     }
@@ -1246,17 +1251,17 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
         // Calculate typing delay
         let typingDelay: number;
         if (isTransferConfirmQuery) {
-          // For transfer confirmations: wait for checking message + wait time + final typing
+          // For transfer confirmations: wait for checking message + coordinated wait time + final typing
           const avgCheckingWords = 8; // Average words in checking messages (now with more variations)
           const typingWPM = getAgentTypingSpeed(chatState.agentName);
           const checkingTypingTime = Math.max(800, (avgCheckingWords / typingWPM) * 60 * 1000);
-          const waitTime = Math.random() * 10000 + 20000; // 20-30 seconds
           
           // Calculate final response typing time
           const responseWords = responseData.text.split(' ').length;
           const responseTypingTime = Math.max(800, (responseWords / typingWPM) * 60 * 1000);
           
-          typingDelay = checkingTypingTime + waitTime + responseTypingTime;
+          // Use the same transferWaitTime that was calculated earlier for coordination
+          typingDelay = checkingTypingTime + transferWaitTime + responseTypingTime;
         } else {
           // Calculate realistic typing time based on agent personality
           const responseWords = responseData.text.split(' ').length;
