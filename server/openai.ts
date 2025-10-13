@@ -187,13 +187,13 @@ Instead → Make your best interpretation and confirm: "It sounds like you're as
 Always sound like an incredibly intelligent, real human agent with exceptional reasoning. Be brief, natural, and professional.`;
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-4o-mini", // Faster model for quicker responses
       messages: [
         { role: 'system', content: systemPrompt },
         ...messages
       ],
-      max_tokens: 200,
-      temperature: 0.9,
+      max_tokens: 150, // Reduced for faster generation
+      temperature: 0.8, // Slightly lower for faster responses
       top_p: 0.95,
       frequency_penalty: 0.6,
       presence_penalty: 0.4,
