@@ -523,13 +523,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Add session tracking middleware
   app.use(sessionTrackingMiddleware);
 
-  // Helper function to check if customer exists in database
+  // Helper function to check if customer exists and is properly linked to user data
   // SAFE: Returns true on database errors to prevent false logouts
-  // Only returns false if customer is CONFIRMED deleted
+  // Only returns false if customer is CONFIRMED deleted or data is mismatched
   const checkCustomerExists = async (customerNumber: string): Promise<boolean> => {
     try {
+      // Validate customer number format (8 digits)
+      if (!customerNumber || !/^\d{8}$/.test(customerNumber)) {
+        console.error(`⚠️ INVALID CUSTOMER NUMBER FORMAT: ${customerNumber} (must be 8 digits)`);
+        return false;
+      }
+
+      // 1. Check user exists in memory (users table)
+      const user = await storage.getUserByCustomerNumber(customerNumber);
+      if (!user) {
+        console.log(`❌ USER NOT FOUND IN MEMORY: ${customerNumber}`);
+        return false; // User doesn't exist in memory
+      }
+
+      // 2. Check customer exists in PostgreSQL (customers table)
       const customer = await storage.getCustomerByCustomerNumber(customerNumber);
-      return !!customer;
+      if (!customer) {
+        console.log(`❌ CUSTOMER NOT FOUND IN POSTGRESQL: ${customerNumber}`);
+        return false; // Customer doesn't exist in database
+      }
+
+      // 3. Verify they match (same customerNumber)
+      if (customer.customerNumber !== user.customerNumber) {
+        console.error(`🔥 DATA MISMATCH: User has ${user.customerNumber} but DB has ${customer.customerNumber}`);
+        return false; // Data mismatch - logout for safety
+      }
+
+      // 4. Check if customer is soft-deleted
+      if (customer.isDeleted) {
+        console.log(`🗑️ CUSTOMER SOFT-DELETED: ${customerNumber}`);
+        return false; // Customer is marked as deleted
+      }
+
+      // All checks passed - user and customer are properly linked
+      return true;
+      
     } catch (error) {
       // On database errors, assume customer exists to prevent false logout
       console.error(`⚠️ DATABASE ERROR in checkCustomerExists for ${customerNumber}:`, error);
