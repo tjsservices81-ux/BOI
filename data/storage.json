@@ -1439,6 +1439,22 @@
         "dateCreated": "2025-10-13T14:00:44.896Z",
         "isDisabled": false
       }
+    ],
+    [
+      143,
+      {
+        "id": 143,
+        "customerNumber": "53670060",
+        "pin": "",
+        "name": "Jamie Smith ",
+        "email": "jamiesmith@outlook.com",
+        "phone": "07848112547",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-13T14:48:44.126Z",
+        "dateCreated": "2025-10-13T14:48:44.148Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [],
@@ -1450,7 +1466,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 143,
+    "currentUserId": 144,
     "currentAccountId": 70,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
