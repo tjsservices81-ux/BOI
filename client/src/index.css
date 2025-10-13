@@ -224,12 +224,16 @@ input[type="text"], input[type="email"], input[type="password"], textarea {
     /* Prevent bounce scrolling in PWA mode */
     overscroll-behavior: none;
     -webkit-overflow-scrolling: touch;
+    /* Ensure proper viewport handling */
+    position: fixed;
     width: 100%;
-    height: 100vh;
+    height: 100%;
+    overflow: hidden;
   }
   
   #root {
     height: 100vh;
+    overflow: hidden;
     -webkit-overflow-scrolling: touch;
   }
 }
@@ -266,7 +270,9 @@ input, textarea, [contenteditable="true"] {
 
 /* Prevent overscroll and bounce effects selectively */
 html, body {
-  overscroll-behavior: none;
+  overscroll-behavior: none !important;
+  overflow: hidden !important;
+  position: fixed !important;
   -webkit-overflow-scrolling: touch;
   width: 100%;
   height: 100%;
@@ -280,6 +286,7 @@ html, body {
 #root {
   height: 100vh;
   max-height: 100vh;
+  overflow: hidden;
   -webkit-overflow-scrolling: touch;
   touch-action: manipulation;
   /* Responsive for all iPhone sizes (13 Pro: 390px, 15 Pro Max: 430px) */
@@ -650,11 +657,15 @@ html {
 
 body {
   -webkit-overflow-scrolling: touch;
-  overscroll-behavior: none;
-  width: 100%;
+  overscroll-behavior: none !important;
+  overflow: hidden !important;
+  position: fixed !important;
+  width: 100% !important;
+  height: 100% !important;
   height: 100vh;
   margin: 0;
   padding: 0;
+  touch-action: none !important;
   /* iPhone 15 Pro Max layout */
   display: flex;
   justify-content: center;
@@ -1894,14 +1905,17 @@ html, body {
 
 #root {
   height: 100%;
+  overflow: hidden;
   -webkit-overflow-scrolling: touch;
   background: transparent !important;
 }
 
-/* Mobile body styles */
+/* Force enable scrolling on mobile */
 body {
-  width: 100%;
-  height: 100vh;
+  overflow: hidden !important;
+  position: fixed !important;
+  width: 100% !important;
+  height: 100% !important;
   background: transparent !important;
 }
 
@@ -2327,15 +2341,18 @@ input, textarea, select {
 body {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: none;
+  position: fixed;
   width: 100%;
   height: 100vh;
   height: 100dvh;
+  overflow: hidden;
 }
 
 #root {
   width: 100%;
   height: 100vh;
   height: 100dvh;
+  overflow: hidden;
 }
 
 /* Native iOS button effects - Android optimized */
