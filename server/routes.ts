@@ -613,10 +613,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate customer number (8 digits starting with 2)
       const customerNumber = '2' + Math.floor(Math.random() * 10000000).toString().padStart(7, '0');
       
-      // Create user with proper data structure
+      // STEP 1: Create customer in PostgreSQL FIRST to get the ID
+      let postgresCustomerId: number;
+      const fullName = `${userData.firstName} ${userData.lastName}`;
+      try {
+        const newCustomer = await storage.createCustomer({
+          customerNumber,
+          name: fullName,
+          email: userData.email,
+          phone: '',
+          dateOfBirth: userData.dateOfBirth || '',
+          joinDate: new Date().toISOString(),
+          currency: 'EUR'
+        });
+        postgresCustomerId = newCustomer.id;
+        console.log(`📊 CUSTOMER ADDED TO DATABASE: ${newCustomer.name} (${newCustomer.customerNumber}) with ID: ${postgresCustomerId}`);
+      } catch (customerError) {
+        console.error('Failed to add customer to database:', customerError);
+        return res.status(500).json({ message: "Registration failed - database error" });
+      }
+      
+      // STEP 2: Create user in memory using PostgreSQL ID
       const newUser = await storage.createUser({
         customerNumber,
-        name: `${userData.firstName} ${userData.lastName}`,
+        name: fullName,
         email: userData.email,
         pin: userData.pin,
         phone: '',
@@ -624,26 +644,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         dateOfBirth: userData.dateOfBirth,
         joinDate: new Date().toISOString(),
         isDisabled: false
-      });
+      }, postgresCustomerId); // Use PostgreSQL ID for in-memory user
 
-      console.log(`✅ USER REGISTERED: ${newUser.name} (${newUser.customerNumber})`);
-      
-      // Add user to customers table in database after successful registration
-      try {
-        await storage.createCustomer({
-          customerNumber: newUser.customerNumber,
-          name: newUser.name,
-          email: newUser.email,
-          phone: newUser.phone || '',
-          dateOfBirth: newUser.dateOfBirth || '',
-          joinDate: newUser.joinDate || 'Member since 2018',
-          currency: newUser.currency || 'EUR'
-        });
-        console.log(`📊 CUSTOMER ADDED TO DATABASE: ${newUser.name} (${newUser.customerNumber})`);
-      } catch (customerError) {
-        console.error('Failed to add customer to database:', customerError);
-        // Don't fail registration if customer table insertion fails
-      }
+      console.log(`✅ USER REGISTERED with matching ID: ${newUser.id} (${newUser.customerNumber})`);
       
       res.status(201).json({ 
         success: true, 
@@ -1535,6 +1538,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Create the user in the database with their actual data
         const userData = validation.accountData;
         try {
+          // STEP 1: Create customer in PostgreSQL FIRST to get the ID
+          let postgresCustomerId: number;
+          try {
+            const newCustomer = await storage.createCustomer({
+              customerNumber: userData.customerNumber,
+              name: userData.name,
+              email: userData.email,
+              phone: userData.phone || '',
+              dateOfBirth: userData.dateOfBirth || '',
+              joinDate: userData.joinDate || 'Member since 2018',
+              currency: userData.currency || 'EUR'
+            });
+            postgresCustomerId = newCustomer.id;
+            console.log(`📊 CUSTOMER ADDED TO DATABASE (Admin OTC): ${newCustomer.name} (${newCustomer.customerNumber}) with ID: ${postgresCustomerId}`);
+          } catch (customerError) {
+            console.error('Failed to add customer to database:', customerError);
+            throw new Error('Failed to create customer in database');
+          }
+
+          // STEP 2: Create user in memory using PostgreSQL ID
           const newUser = await storage.createUser({
             customerNumber: userData.customerNumber,
             name: userData.name,
@@ -1545,7 +1568,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             pin: "000000", // Default PIN
             joinDate: userData.joinDate || new Date().toISOString(),
             isDisabled: false
-          });
+          }, postgresCustomerId); // Use PostgreSQL ID for in-memory user
+
+          console.log(`✅ USER CREATED IN MEMORY with matching ID: ${newUser.id} (customerNumber: ${newUser.customerNumber})`);
 
           // Create default accounts for the new user
           const defaultAccounts = [
@@ -1581,23 +1606,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
 
           console.log('User and accounts created in database:', newUser);
-
-          // Add user to customers table in database
-          try {
-            await storage.createCustomer({
-              customerNumber: newUser.customerNumber,
-              name: newUser.name,
-              email: newUser.email,
-              phone: newUser.phone || '',
-              dateOfBirth: newUser.dateOfBirth || '',
-              joinDate: newUser.joinDate || 'Member since 2018',
-              currency: newUser.currency || 'EUR'
-            });
-            console.log(`📊 CUSTOMER ADDED TO DATABASE (Admin OTC): ${newUser.name} (${newUser.customerNumber})`);
-          } catch (customerError) {
-            console.error('Failed to add customer to database:', customerError);
-            // Don't fail the account creation if customer table insertion fails
-          }
 
           // Set up session for OTC login (critical for auto-logout to work)
           (req as any).session.userId = newUser.id;
@@ -2933,9 +2941,9 @@ setInterval(ld,5000);
               isDisabled: false
             };
             
-            const createdUser = await storage.createUser(newUser);
+            const createdUser = await storage.createUser(newUser, customer.id); // Use PostgreSQL ID to keep IDs in sync
             if (createdUser) {
-              console.log(`♻️  USER RECREATED IN MEMORY: ${customerNumber}`);
+              console.log(`♻️  USER RECREATED IN MEMORY with matching ID ${createdUser.id}: ${customerNumber}`);
             }
           } else {
             // User somehow still exists - just re-enable them
