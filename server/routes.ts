@@ -2809,15 +2809,11 @@ setInterval(ld,5000);
       if (deleted) {
         console.log(`🗑️  CUSTOMER SOFT-DELETED IN POSTGRESQL: ${customerNumber} - Reason: ${reason || 'Deleted by admin'}`);
         
-        // CRITICAL: Disable user in memory to prevent access, but preserve all data (accounts, transactions)
-        // We don't actually delete the user because that would destroy all their banking data
-        // Instead, we mark them as disabled which blocks login and access
+        // Get user info BEFORE deletion for cleanup
         const user = await storage.getUser(customerNumber);
+        
+        // Remove device sessions
         if (user) {
-          await storage.disableUser(user.id);
-          console.log(`🗑️  USER DISABLED IN MEMORY: ${customerNumber}`);
-          
-          // Remove device sessions
           const { removeDeviceSession } = await import('./deviceSessions');
           removeDeviceSession(user.id.toString());
         }
@@ -2825,6 +2821,13 @@ setInterval(ld,5000);
         // Invalidate all sessions for this customer
         const { invalidateAllUserSessions } = await import('./sessionManager');
         invalidateAllUserSessions(customerNumber);
+        
+        // CRITICAL: Delete user from BOTH tables to keep them in sync
+        // This prevents mismatches between users table (memory) and customers table (PostgreSQL)
+        const userDeleted = await storage.deleteUser(customerNumber);
+        if (userDeleted) {
+          console.log(`🗑️  USER DELETED FROM MEMORY: ${customerNumber}`);
+        }
         
         res.json({ 
           success: true, 
@@ -2911,18 +2914,16 @@ setInterval(ld,5000);
       if (restored) {
         console.log(`♻️  CUSTOMER RESTORED IN POSTGRESQL: ${customerNumber}`);
         
-        // CRITICAL: Re-enable user in memory to restore access with all their data preserved
+        // CRITICAL: Recreate user in BOTH tables to keep them in sync
+        // User was deleted from memory during soft-delete, so we must recreate it
         const customer = await storage.getCustomerByCustomerNumber(customerNumber);
         if (customer) {
           const user = await storage.getUser(customerNumber);
-          if (user) {
-            await storage.enableUser(user.id);
-            console.log(`♻️  USER RE-ENABLED IN MEMORY: ${customerNumber}`);
-          } else {
-            // User doesn't exist in memory - create new one (edge case, shouldn't normally happen)
+          if (!user) {
+            // User doesn't exist in memory - recreate it (this is expected after soft-delete)
             const newUser: InsertUser = {
               customerNumber: customer.customerNumber,
-              pin: '', // PIN not stored in PostgreSQL
+              pin: '', // PIN not stored in PostgreSQL - user will need to reset on next login
               name: customer.name,
               email: customer.email,
               phone: customer.phone || '',
@@ -2934,8 +2935,12 @@ setInterval(ld,5000);
             
             const createdUser = await storage.createUser(newUser);
             if (createdUser) {
-              console.log(`♻️  USER RECREATED IN MEMORY (edge case): ${customerNumber}`);
+              console.log(`♻️  USER RECREATED IN MEMORY: ${customerNumber}`);
             }
+          } else {
+            // User somehow still exists - just re-enable them
+            await storage.enableUser(user.id);
+            console.log(`♻️  USER RE-ENABLED IN MEMORY: ${customerNumber}`);
           }
         }
         
