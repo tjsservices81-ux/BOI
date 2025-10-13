@@ -565,11 +565,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(sessionTrackingMiddleware);
 
   // Helper function to check if customer exists in database
-  // CRITICAL: This function throws errors on database issues
-  // Callers must handle errors to avoid false logouts
+  // SAFE: Returns true on database errors to prevent false logouts
+  // Only returns false if customer is CONFIRMED deleted
   const checkCustomerExists = async (customerNumber: string): Promise<boolean> => {
-    const customer = await storage.getCustomerByCustomerNumber(customerNumber);
-    return !!customer;
+    try {
+      const customer = await storage.getCustomerByCustomerNumber(customerNumber);
+      return !!customer;
+    } catch (error) {
+      // On database errors, assume customer exists to prevent false logout
+      console.error(`⚠️ DATABASE ERROR in checkCustomerExists for ${customerNumber}:`, error);
+      console.log(`✅ FAIL-SAFE: Assuming customer ${customerNumber} exists due to DB error`);
+      return true; // SAFE: Don't logout on DB errors
+    }
   };
 
   // Authentication middleware
@@ -666,13 +673,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
-      // Check if this customer has any devices in panic mode
-      if (isCustomerInPanicMode(user.customerNumber)) {
-        console.log(`🚨 PANIC MODE LOGIN BLOCKED: Customer ${user.customerNumber} attempted login but their device is in panic mode`);
-        return res.status(503).json({ 
-          message: "System temporarily unavailable. Please try again later." 
-        });
-      }
+      // DISABLED: Panic mode should not prevent initial login
+      // Users can only be blocked AFTER they're logged in via heartbeat/session check
+      // if (isCustomerInPanicMode(user.customerNumber)) {
+      //   console.log(`🚨 PANIC MODE LOGIN BLOCKED: Customer ${user.customerNumber} attempted login but their device is in panic mode`);
+      //   return res.status(503).json({ 
+      //     message: "System temporarily unavailable. Please try again later." 
+      //   });
+      // }
 
       // Get device information from request headers
       const userAgent = req.headers['user-agent'] || 'Unknown Device';
@@ -748,14 +756,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Check if the authorized device is in panic mode
-      const existingSession = getUserDeviceSession(user.id);
-      if (existingSession && existingSession.deviceSessionId && isDeviceInPanicMode(existingSession.deviceSessionId)) {
-        console.log(`🚨 PANIC MODE LOGIN BLOCKED: User ${user.id} attempted login, but device ${existingSession.deviceModel} is in panic mode`);
-        return res.status(503).json({ 
-          message: "System temporarily unavailable. Please try again later." 
-        });
-      }
+      // DISABLED: Panic mode should not prevent initial login
+      // Panic mode is enforced via heartbeat, not at login
+      // const existingSession = getUserDeviceSession(user.id);
+      // if (existingSession && existingSession.deviceSessionId && isDeviceInPanicMode(existingSession.deviceSessionId)) {
+      //   console.log(`🚨 PANIC MODE LOGIN BLOCKED: User ${user.id} attempted login, but device ${existingSession.deviceModel} is in panic mode`);
+      //   return res.status(503).json({ 
+      //     message: "System temporarily unavailable. Please try again later." 
+      //   });
+      // }
 
       // Create device session only after confirming no existing session
       const deviceSessionId = addDeviceSession({

@@ -32,8 +32,43 @@ export function isCurrentDeviceAuthorized(userId: number, currentUserAgent: stri
     return true; // First time login - allow and lock to this device
   }
   
-  // Check if this is the same device by comparing user agent
-  return existingSession.userAgent === currentUserAgent;
+  // FIXED: More lenient device matching to prevent lockouts
+  // Allow login if:
+  // 1. Exact user agent match (same browser)
+  // 2. Same device type (iPhone to iPhone, Android to Android)
+  // 3. Always allow if existing session is very old (>7 days - device reset)
+  
+  const exactMatch = existingSession.userAgent === currentUserAgent;
+  if (exactMatch) return true;
+  
+  // Check if login is very old (>7 days) - allow re-authentication
+  const loginAge = Date.now() - new Date(existingSession.loginTime).getTime();
+  const sevenDays = 7 * 24 * 60 * 60 * 1000;
+  if (loginAge > sevenDays) {
+    console.log(`🔓 OLD SESSION: Allowing re-auth for user ${userId} (session ${Math.floor(loginAge / (24*60*60*1000))} days old)`);
+    return true;
+  }
+  
+  // Check device type compatibility (iOS to iOS, Android to Android, etc.)
+  const getDeviceType = (ua: string) => {
+    if (/iPhone|iPad|iPod/i.test(ua)) return 'iOS';
+    if (/Android/i.test(ua)) return 'Android';
+    if (/Windows/i.test(ua)) return 'Windows';
+    if (/Mac/i.test(ua)) return 'Mac';
+    return 'Other';
+  };
+  
+  const currentDeviceType = getDeviceType(currentUserAgent);
+  const existingDeviceType = getDeviceType(existingSession.userAgent);
+  
+  if (currentDeviceType === existingDeviceType) {
+    console.log(`✅ SAME DEVICE TYPE: Allowing ${currentDeviceType} login for user ${userId}`);
+    return true;
+  }
+  
+  // Different device type - block
+  console.log(`🚫 DIFFERENT DEVICE: User ${userId} trying ${currentDeviceType} but locked to ${existingDeviceType}`);
+  return false;
 }
 
 export function setUserDeviceSession(userSession: UserDeviceSession): void {
