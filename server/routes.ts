@@ -2339,6 +2339,12 @@ No transfers found yet on your account.`;
 
   // Admin Oversight - iPhone Optimized
   app.get("/admin-oversight", async (req, res) => {
+    // CRITICAL: Set headers to prevent Vite/React from interfering
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    
     // Check if admin is authenticated via URL token
     const isAuthenticated = req.query.auth === 'verified';
     const hasError = req.query.error === 'invalid';
