@@ -2337,707 +2337,8 @@ No transfers found yet on your account.`;
     }
   });
 
-  // Admin Panel V3 - Using API route to bypass Vite completely
-  app.get("/api/admin-panel", async (req, res) => {
-    console.log('🔵 ADMIN API ROUTE HIT - /api/admin-panel', req.query);
-    
-    // CRITICAL: Set headers to prevent Vite/React from interfering
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
-    
-    // Check if admin is authenticated via URL token
-    const isAuthenticated = req.query.auth === 'verified';
-    const hasError = req.query.error === 'invalid';
-    
-    console.log('🔵 Auth status:', isAuthenticated, 'Error:', hasError);
-    
-    if (!isAuthenticated) {
-      const loginPage = `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0">
-<title>Admin Login</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,sans-serif;background:#126987;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
-.login-box{background:#fff;border-radius:12px;padding:30px;max-width:350px;width:100%;box-shadow:0 4px 6px rgba(0,0,0,0.1)}
-.login-box h1{color:#126987;font-size:24px;margin-bottom:8px}
-.login-box p{color:#666;font-size:14px;margin-bottom:24px}
-.form-group{margin-bottom:16px}
-.form-group label{display:block;color:#666;font-size:12px;font-weight:600;margin-bottom:6px}
-.form-group input{width:100%;padding:12px;border:1px solid #ddd;border-radius:6px;font-size:16px;font-family:monospace;letter-spacing:2px}
-.btn-login{width:100%;background:#126987;color:#fff;border:none;padding:14px;border-radius:6px;font-size:16px;font-weight:600;cursor:pointer}
-.btn-login:active{background:#0d4d66}
-.error{background:#f8d7da;color:#721c24;padding:10px;border-radius:6px;margin-bottom:16px;font-size:13px;display:none}
-.error.show{display:block}
-</style>
-</head>
-<body>
-<div class="login-box">
-<h1>Admin Login</h1>
-<p>Enter PIN to access oversight</p>
-${hasError ? '<div class="error show">Invalid PIN. Please try again.</div>' : ''}
-<form action="/api/admin/login-v2" method="POST">
-<div class="form-group">
-<label>PIN Code</label>
-<input type="text" name="pin" inputmode="numeric" pattern="[0-9]*" autocomplete="off" required autofocus>
-</div>
-<button type="submit" class="btn-login">Login</button>
-</form>
-</div>
-</body>
-</html>`;
-      return res.send(loginPage);
-    }
-
-    const adminPage = `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0">
-<title>Bank of Ireland - Admin Panel</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:#f5f7fa;overflow:hidden;width:100vw;height:100vh;display:flex;flex-direction:column}
-
-/* Header */
-.hdr{background:linear-gradient(135deg,#126987 0%,#0d4d66 100%);color:#fff;padding:16px 20px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
-.hdr h1{font-size:20px;font-weight:700;margin-bottom:6px;letter-spacing:-0.5px}
-.hdr-top{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
-.hdr-stats{display:flex;gap:12px;flex-wrap:wrap}
-.stat-chip{background:rgba(255,255,255,0.15);padding:4px 10px;border-radius:12px;font-size:11px;font-weight:600;backdrop-filter:blur(10px)}
-.hdr-actions{display:flex;gap:8px}
-.btn{background:#fff;color:#126987;border:none;padding:7px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;box-shadow:0 2px 4px rgba(0,0,0,0.1)}
-.btn:hover{transform:translateY(-1px);box-shadow:0 4px 8px rgba(0,0,0,0.15)}
-.btn-danger{background:#dc3545;color:#fff}
-.btn-danger:hover{background:#c82333}
-
-/* Stats Dashboard */
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;padding:16px;background:#fff;margin:12px;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,0.08)}
-.stat-card{background:linear-gradient(135deg,#f8f9fa 0%,#e9ecef 100%);padding:14px;border-radius:10px;border-left:4px solid #126987}
-.stat-card.active{border-left-color:#28a745;background:linear-gradient(135deg,#d4edda 0%,#c3e6cb 100%)}
-.stat-card.deleted{border-left-color:#dc3545;background:linear-gradient(135deg,#f8d7da 0%,#f5c6cb 100%)}
-.stat-card.dev{border-left-color:#ffc107;background:linear-gradient(135deg,#fff3cd 0%,#ffeaa7 100%)}
-.stat-label{font-size:11px;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:0.5px}
-.stat-value{font-size:26px;font-weight:700;color:#000;margin-top:4px}
-
-/* Search & Filters */
-.filter-section{padding:0 16px;margin-bottom:12px}
-.search-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
-.search-box{position:relative}
-.search-box input{width:100%;padding:10px 12px 10px 36px;border:2px solid #e0e0e0;border-radius:10px;font-size:14px;transition:all 0.2s;background:#fff}
-.search-box input:focus{outline:none;border-color:#126987;box-shadow:0 0 0 3px rgba(18,105,135,0.1)}
-.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#999;font-size:16px}
-.filter-tabs{display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
-.filter-tab{background:#fff;border:2px solid #e0e0e0;color:#666;padding:8px 16px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all 0.2s}
-.filter-tab.active{background:#126987;border-color:#126987;color:#fff}
-.filter-tab:hover:not(.active){border-color:#126987;color:#126987}
-
-/* OTC Section */
-.otc-section{padding:0 16px;margin-bottom:12px}
-.otc-container{background:#fff;border-radius:12px;padding:16px;box-shadow:0 2px 6px rgba(0,0,0,0.08)}
-.otc-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-.otc-header h2{font-size:16px;color:#126987;font-weight:700}
-.otc-badge{background:#ffc107;color:#000;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700}
-.otc-grid{display:grid;gap:10px}
-.otc-card{background:linear-gradient(135deg,#fff3cd 0%,#ffeaa7 100%);border-radius:10px;padding:14px;border-left:4px solid #ffc107;box-shadow:0 2px 4px rgba(0,0,0,0.06)}
-.otc-customer{font-size:12px;color:#856404;font-weight:600;margin-bottom:6px}
-.otc-code{font-size:26px;font-weight:700;color:#000;font-family:'SF Mono',Monaco,monospace;letter-spacing:4px;margin:6px 0}
-.otc-timer{font-size:11px;color:#dc3545;font-weight:600}
-.otc-empty{text-align:center;color:#999;font-size:13px;padding:20px}
-
-/* Customer List */
-.customer-list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 16px 16px 16px}
-.customer-card{background:#fff;border-radius:12px;margin-bottom:12px;box-shadow:0 2px 6px rgba(0,0,0,0.08);overflow:hidden;transition:all 0.2s}
-.customer-card:hover{box-shadow:0 4px 12px rgba(0,0,0,0.12)}
-.customer-header{padding:14px 16px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;background:#fff}
-.customer-info{flex:1;min-width:0}
-.customer-name{font-weight:700;font-size:15px;color:#000;margin-bottom:4px;display:flex;align-items:center;gap:8px}
-.customer-number{font-size:12px;color:#666;font-family:'SF Mono',Monaco,monospace;margin-bottom:2px}
-.customer-alias{font-size:11px;color:#126987;font-weight:600}
-.customer-badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
-.badge{padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;text-transform:uppercase}
-.badge-active{background:#d4edda;color:#155724}
-.badge-deleted{background:#f8d7da;color:#721c24}
-.badge-dev{background:#fff3cd;color:#856404}
-.active-pulse{display:inline-block;width:8px;height:8px;background:#28a745;border-radius:50%;margin-left:6px;animation:pulse 2s infinite}
-.expand-icon{color:#126987;font-size:18px;transition:transform 0.3s;font-weight:700}
-.expand-icon.expanded{transform:rotate(180deg)}
-.customer-details{max-height:0;overflow:hidden;transition:all 0.3s;background:#f9fafb}
-.customer-details.expanded{max-height:600px;overflow-y:auto}
-.details-content{padding:16px}
-.detail-row{display:flex;justify-content:space-between;padding:8px 0;font-size:13px;border-bottom:1px solid #e0e0e0}
-.detail-row:last-child{border-bottom:none}
-.detail-label{color:#666;font-weight:600}
-.detail-value{color:#000;font-weight:600;text-align:right;max-width:60%;word-break:break-all}
-.detail-section{margin-top:16px;padding-top:16px;border-top:2px solid #e0e0e0}
-.section-title{font-size:12px;color:#666;font-weight:700;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px}
-.input-group{margin-bottom:12px}
-.input-group label{display:block;font-size:11px;color:#666;margin-bottom:6px;font-weight:600}
-.input-group input,.input-group select{width:100%;padding:8px 12px;border:2px solid #e0e0e0;border-radius:8px;font-size:13px;transition:border-color 0.2s}
-.input-group input:focus,.input-group select:focus{outline:none;border-color:#126987}
-.input-row{display:flex;gap:8px;align-items:flex-end}
-.input-row input,.input-row select{flex:1}
-.btn-save{background:#28a745;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s}
-.btn-save:hover{background:#218838}
-.btn-delete{background:#dc3545;color:#fff;border:none;padding:10px;border-radius:8px;width:100%;margin-top:12px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s}
-.btn-delete:hover{background:#c82333}
-.btn-restore{background:#17a2b8;color:#fff;border:none;padding:10px;border-radius:8px;width:100%;margin-bottom:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s}
-.btn-restore:hover{background:#138496}
-.map-thumb{width:100%;height:120px;background:#e9ecef;border-radius:10px;margin-top:10px;position:relative;overflow:hidden;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,0.1)}
-.map-thumb img{width:100%;height:100%;object-fit:cover}
-.map-info{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(0,0,0,0.8),transparent);color:#fff;padding:8px 12px;font-size:11px;font-weight:600}
-.map-modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);z-index:1000;align-items:center;justify-content:center}
-.map-modal.show{display:flex}
-.map-modal-content{width:90%;max-width:700px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,0.3)}
-.map-modal-header{background:linear-gradient(135deg,#126987 0%,#0d4d66 100%);color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center}
-.map-modal-header h3{font-size:17px;font-weight:700}
-.map-close{background:rgba(255,255,255,0.2);border:none;color:#fff;font-size:28px;cursor:pointer;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all 0.2s}
-.map-close:hover{background:rgba(255,255,255,0.3)}
-.map-modal-body{height:450px}
-.map-modal-body img{width:100%;height:100%;object-fit:cover}
-.empty-state{background:#fff;border-radius:12px;padding:60px 20px;text-align:center;color:#999;box-shadow:0 2px 6px rgba(0,0,0,0.08)}
-.empty-state-icon{font-size:48px;margin-bottom:16px;opacity:0.5}
-.empty-state-text{font-size:15px;font-weight:600}
-.profile-clicks{margin-top:12px}
-.click-item{font-size:11px;color:#666;padding:4px 0;border-bottom:1px solid #f0f0f0}
-.click-item:last-child{border-bottom:none}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
-</style>
-</head>
-<body>
-<div class="hdr">
-<h1>🏦 Bank of Ireland - Admin Panel</h1>
-<div class="hdr-top">
-<div class="hdr-stats">
-<div class="stat-chip" id="totalStat">Total: 0</div>
-<div class="stat-chip" id="activeStat">Active: 0</div>
-<div class="stat-chip" id="deletedStat">Deleted: 0</div>
-</div>
-<div class="hdr-actions">
-<button class="btn" onclick="ld()">↻ Refresh</button>
-<button class="btn btn-danger" onclick="deleteAll()">Delete All</button>
-<button class="btn" onclick="logout()">Logout</button>
-</div>
-</div>
-</div>
-
-<!-- Stats Dashboard -->
-<div class="stats-grid">
-<div class="stat-card">
-<div class="stat-label">Total Customers</div>
-<div class="stat-value" id="statTotal">0</div>
-</div>
-<div class="stat-card active">
-<div class="stat-label">Active</div>
-<div class="stat-value" id="statActive">0</div>
-</div>
-<div class="stat-card deleted">
-<div class="stat-label">Deleted</div>
-<div class="stat-value" id="statDeleted">0</div>
-</div>
-<div class="stat-card dev">
-<div class="stat-label">Developer</div>
-<div class="stat-value" id="statDev">0</div>
-</div>
-</div>
-
-<!-- Search & Filters -->
-<div class="filter-section">
-<div class="search-grid">
-<div class="search-box">
-<span class="search-icon">🔍</span>
-<input type="text" id="searchAlias" placeholder="Search by alias..." oninput="applyFilters()">
-</div>
-<div class="search-box">
-<span class="search-icon">👤</span>
-<input type="text" id="searchName" placeholder="Search by customer name..." oninput="applyFilters()">
-</div>
-</div>
-<div class="filter-tabs">
-<div class="filter-tab active" onclick="setFilter('all')">All Customers</div>
-<div class="filter-tab" onclick="setFilter('active')">Active Only</div>
-<div class="filter-tab" onclick="setFilter('deleted')">Deleted Only</div>
-<div class="filter-tab" onclick="setFilter('developer')">Developer Accounts</div>
-<div class="filter-tab" onclick="setFilter('real')">Real Customers</div>
-</div>
-</div>
-
-<!-- OTC Section -->
-<div class="otc-section">
-<div class="otc-container">
-<div class="otc-header">
-<h2>🔑 Active Access Codes</h2>
-<div class="otc-badge" id="otcCount">0</div>
-</div>
-<div class="otc-grid" id="otcList">
-<div class="otc-empty">No active access codes</div>
-</div>
-</div>
-</div>
-
-<!-- Customer List -->
-<div class="customer-list" id="customerList">
-<div class="empty-state">
-<div class="empty-state-icon">👥</div>
-<div class="empty-state-text">Loading customers...</div>
-</div>
-</div>
-<div class="map-modal" id="mapModal">
-<div class="map-modal-content">
-<div class="map-modal-header">
-<h3 id="mapTitle">Customer Location</h3>
-<button class="map-close" onclick="closeMap()">×</button>
-</div>
-<div class="map-modal-body">
-<img id="mapImage" src="" alt="Location Map">
-</div>
-</div>
-</div>
-<script>
-let expandedCards=new Set();
-let allCustomers=[];
-let currentFilter='all';
-
-function escapeHtml(text){
-  const map={'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'};
-  return String(text).replace(/[&<>"']/g,m=>map[m]);
-}
-
-// Toggle customer card expansion
-function toggleCard(id){
-  const details=document.getElementById('details'+id);
-  const icon=document.getElementById('icon'+id);
-  if(expandedCards.has(id)){
-    details.classList.remove('expanded');
-    icon.classList.remove('expanded');
-    expandedCards.delete(id);
-  }else{
-    details.classList.add('expanded');
-    icon.classList.add('expanded');
-    expandedCards.add(id);
-  }
-}
-
-// Set category filter
-function setFilter(filter){
-  currentFilter=filter;
-  document.querySelectorAll('.filter-tab').forEach(tab=>{
-    tab.classList.remove('active');
-  });
-  event.target.classList.add('active');
-  applyFilters();
-}
-
-// Apply all filters (search + category)
-function applyFilters(){
-  const aliasSearch=document.getElementById('searchAlias').value.toLowerCase();
-  const nameSearch=document.getElementById('searchName').value.toLowerCase();
-  
-  let filtered=allCustomers.filter(c=>{
-    // Search filters
-    const matchesAlias=!aliasSearch||(c.adminAlias||'').toLowerCase().includes(aliasSearch);
-    const matchesName=!nameSearch||c.name.toLowerCase().includes(nameSearch);
-    if(!matchesAlias||!matchesName)return false;
-    
-    // Category filters
-    if(currentFilter==='active')return!c.isDeleted;
-    if(currentFilter==='deleted')return c.isDeleted;
-    if(currentFilter==='developer')return c.isDeveloper;
-    if(currentFilter==='real')return!c.isDeveloper;
-    return true; // 'all'
-  });
-  
-  renderCustomers(filtered);
-  updateStats();
-}
-
-// Update statistics dashboard
-function updateStats(){
-  const total=allCustomers.length;
-  const active=allCustomers.filter(c=>!c.isDeleted).length;
-  const deleted=allCustomers.filter(c=>c.isDeleted).length;
-  const dev=allCustomers.filter(c=>c.isDeveloper).length;
-  
-  document.getElementById('statTotal').textContent=total;
-  document.getElementById('statActive').textContent=active;
-  document.getElementById('statDeleted').textContent=deleted;
-  document.getElementById('statDev').textContent=dev;
-  
-  document.getElementById('totalStat').textContent='Total: '+total;
-  document.getElementById('activeStat').textContent='Active: '+active;
-  document.getElementById('deletedStat').textContent='Deleted: '+deleted;
-}
-
-// Render customer list
-function renderCustomers(customers){
-  const container=document.getElementById('customerList');
-  if(!customers.length){
-    container.innerHTML='<div class="empty-state"><div class="empty-state-icon">🔍</div><div class="empty-state-text">No customers found</div></div>';
-    return;
-  }
-  
-  let html='';
-  customers.forEach((c,idx)=>{
-    const safeId='c'+idx;
-    const isExpanded=expandedCards.has(safeId);
-    
-    // Check if recently active (profile clicked in last 5 min)
-    let isActive=false;
-    if(c.profileClickHistory&&Array.isArray(c.profileClickHistory)&&c.profileClickHistory.length>0){
-      const lastClick=new Date(c.profileClickHistory[0]);
-      const now=new Date();
-      isActive=(now-lastClick)<300000;
-    }
-    
-    html+=\`<div class="customer-card">
-      <div class="customer-header" onclick="toggleCard('\${safeId}')">
-        <div class="customer-info">
-          <div class="customer-name">
-            \${escapeHtml(c.name)}
-            \${isActive?'<span class="active-pulse"></span>':''}
-          </div>
-          <div class="customer-number">\${escapeHtml(c.customerNumber)}</div>
-          \${c.adminAlias?\`<div class="customer-alias">📝 \${escapeHtml(c.adminAlias)}</div>\`:''}
-          <div class="customer-badges">
-            \${!c.isDeleted?\`<span class="badge badge-active">Active</span>\`:\`<span class="badge badge-deleted">Deleted</span>\`}
-            \${c.isDeveloper?\`<span class="badge badge-dev">Developer</span>\`:''}
-          </div>
-        </div>
-        <div class="expand-icon \${isExpanded?'expanded':''}" id="icon\${safeId}">▼</div>
-      </div>
-      <div class="customer-details \${isExpanded?'expanded':''}" id="details\${safeId}">
-        <div class="details-content">
-          <div class="detail-row">
-            <span class="detail-label">Email</span>
-            <span class="detail-value">\${escapeHtml(c.email)}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Phone</span>
-            <span class="detail-value">\${escapeHtml(c.phone||'N/A')}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Currency</span>
-            <span class="detail-value">\${escapeHtml(c.currency)}</span>
-          </div>
-          \${c.profileClickHistory&&Array.isArray(c.profileClickHistory)&&c.profileClickHistory.length>0?\`
-          <div class="detail-section">
-            <div class="section-title">📱 Recent Activity</div>
-            <div class="profile-clicks">
-              \${c.profileClickHistory.map((click,i)=>{
-                const date=new Date(click);
-                const formatted=date.toLocaleString('en-GB',{
-                  day:'2-digit',month:'2-digit',year:'numeric',
-                  hour:'2-digit',minute:'2-digit',hour12:false
-                });
-                return \`<div class="click-item">\${i+1}. \${formatted}</div>\`;
-              }).join('')}
-            </div>
-          </div>
-          \`:''}
-          \${c.lastLatitude&&c.lastLongitude?\`
-          <div class="detail-section">
-            <div class="section-title">📍 Last Known Location</div>
-            <div class="map-thumb" onclick="showMap('\${c.lastLatitude}','\${c.lastLongitude}','\${escapeHtml(c.name)}')">
-              <img src="https://static-maps.yandex.ru/1.x/?ll=\${c.lastLongitude},\${c.lastLatitude}&size=400,120&z=14&l=map&pt=\${c.lastLongitude},\${c.lastLatitude},pm2rdm" alt="Map">
-              <div class="map-info">📍 \${c.lastLatitude}, \${c.lastLongitude}</div>
-            </div>
-          </div>
-          \`:''}
-          <div class="detail-section">
-            <div class="section-title">⚙️ Admin Settings</div>
-            <div class="input-group">
-              <label>Admin Name/Alias</label>
-              <div class="input-row">
-                <input type="text" id="alias-\${safeId}" value="\${escapeHtml(c.adminAlias||'')}" placeholder="Internal notes...">
-                <button class="btn-save" onclick="saveAdmin('\${escapeHtml(c.customerNumber)}','\${safeId}')">Save</button>
-              </div>
-            </div>
-            <div class="input-group">
-              <label>App Replacement (0-5)</label>
-              <div class="input-row">
-                <select id="rep-\${safeId}">
-                  <option value="0" \${(c.appReplacement||0)===0?'selected':''}>0</option>
-                  <option value="1" \${c.appReplacement===1?'selected':''}>1</option>
-                  <option value="2" \${c.appReplacement===2?'selected':''}>2</option>
-                  <option value="3" \${c.appReplacement===3?'selected':''}>3</option>
-                  <option value="4" \${c.appReplacement===4?'selected':''}>4</option>
-                  <option value="5" \${c.appReplacement===5?'selected':''}>5</option>
-                </select>
-                <button class="btn-save" onclick="saveAdmin('\${escapeHtml(c.customerNumber)}','\${safeId}')">Save</button>
-              </div>
-            </div>
-          </div>
-          <div class="detail-section">
-            <div class="section-title">🗑️ Account Actions</div>
-            \${c.isDeleted?\`
-              <button class="btn-restore" onclick="restoreCustomer('\${escapeHtml(c.customerNumber)}','\${escapeHtml(c.name)}')">♻️ Restore Account</button>
-              <button class="btn-delete" onclick="eraseCustomer('\${escapeHtml(c.customerNumber)}','\${escapeHtml(c.name)}')">🔥 Erase Forever</button>
-            \`:\`
-              <button class="btn-delete" onclick="deleteCustomer('\${escapeHtml(c.customerNumber)}','\${escapeHtml(c.name)}')">🗑️ Delete Account</button>
-            \`}
-          </div>
-        </div>
-      </div>
-    </div>\`;
-  });
-  container.innerHTML=html;
-}
-
-// Load OTC codes
-async function loadOTC(){
-  try{
-    const res=await fetch('/api/admin/active-otcs');
-    const data=await res.json();
-    const otcList=document.getElementById('otcList');
-    const otcCount=document.getElementById('otcCount');
-    
-    if(!data.otcs||!data.otcs.length){
-      otcList.innerHTML='<div class="otc-empty">No active access codes</div>';
-      otcCount.textContent='0';
-      return;
-    }
-    
-    otcCount.textContent=data.otcs.length;
-    let html='';
-    data.otcs.forEach(otc=>{
-      html+=\`<div class="otc-card">
-        <div class="otc-customer">\${escapeHtml(otc.accountData.name)} - \${escapeHtml(otc.customerNumber)}</div>
-        <div class="otc-code">\${escapeHtml(otc.code)}</div>
-        <div class="otc-timer">⏱️ Expires in: \${escapeHtml(otc.timeRemaining)}</div>
-      </div>\`;
-    });
-    otcList.innerHTML=html;
-  }catch(e){
-    document.getElementById('otcList').innerHTML='<div class="otc-empty">Error loading codes</div>';
-  }
-}
-
-// Load all customers
-async function ld(){
-  try{
-    const res=await fetch('/api/customers');
-    const data=await res.json();
-    allCustomers=data.sort((a,b)=>parseInt(a.customerNumber)-parseInt(b.customerNumber));
-    applyFilters();
-    loadOTC();
-  }catch(e){
-    document.getElementById('customerList').innerHTML='<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-text">Error loading customers</div></div>';
-  }
-}
-
-// Save admin settings
-async function saveAdmin(customerNumber,safeId){
-  try{
-    const alias=document.getElementById('alias-'+safeId).value;
-    const rep=parseInt(document.getElementById('rep-'+safeId).value);
-    const res=await fetch('/api/customers/'+encodeURIComponent(customerNumber)+'/admin',{
-      method:'PATCH',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({adminAlias:alias,appReplacement:rep})
-    });
-    const data=await res.json();
-    if(res.ok){
-      alert('✅ Settings saved successfully');
-      ld();
-    }else{
-      alert('❌ Failed: '+data.message);
-    }
-  }catch(e){
-    alert('❌ Error saving settings');
-  }
-}
-
-// Delete customer
-async function deleteCustomer(customerNumber,name){
-  console.log('🗑️ DELETE REQUEST -',customerNumber,name);
-  const confirmed=confirm(\`⚠️ CONFIRM SOFT-DELETE\n\nCustomer: \${name}\nCustomer Number: \${customerNumber}\n\nThis will:\n- Mark customer as deleted\n- Force immediate logout\n- Keep data for recovery\n\nVerify the customer number above is correct.\`);
-  if(!confirmed)return;
-  const reason=prompt('Reason for deletion (optional):','Deleted by admin');
-  try{
-    const res=await fetch('/api/customers/'+encodeURIComponent(customerNumber),{
-      method:'DELETE',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({reason:reason||'Deleted by admin'})
-    });
-    const data=await res.json();
-    if(res.ok){
-      alert(\`✅ DELETED: \${data.name} (\${data.customerNumber})\`);
-      ld();
-    }else{
-      alert('❌ Failed: '+data.message);
-    }
-  }catch(e){
-    alert('❌ Error: '+e.message);
-  }
-}
-
-// Restore customer
-async function restoreCustomer(customerNumber,name){
-  console.log('♻️ RESTORE REQUEST -',customerNumber,name);
-  const confirmed=confirm(\`♻️ CONFIRM RESTORE\n\nCustomer: \${name}\nCustomer Number: \${customerNumber}\n\nThis will reactivate the customer account.\`);
-  if(!confirmed)return;
-  try{
-    const res=await fetch('/api/customers/'+encodeURIComponent(customerNumber)+'/restore',{method:'POST'});
-    const data=await res.json();
-    if(res.ok){
-      alert(\`♻️ RESTORED: \${data.name} (\${data.customerNumber})\`);
-      ld();
-    }else{
-      alert('❌ Failed: '+data.message);
-    }
-  }catch(e){
-    alert('❌ Error: '+e.message);
-  }
-}
-
-// Permanently erase customer
-async function eraseCustomer(customerNumber,name){
-  console.log('🔥 ERASE REQUEST -',customerNumber,name);
-  const confirmed=confirm(\`🔥 CONFIRM PERMANENT ERASE\n\nCustomer: \${name}\nCustomer Number: \${customerNumber}\n\nThis is IRREVERSIBLE and will:\n- Delete ALL customer data permanently\n- Cannot be recovered\n\nVerify the customer number above is correct.\`);
-  if(!confirmed)return;
-  const doubleCheck=confirm(\`⚠️ FINAL CONFIRMATION\n\nYou are about to PERMANENTLY ERASE:\n\${name} (\${customerNumber})\n\nThis cannot be undone. Proceed?\`);
-  if(!doubleCheck)return;
-  try{
-    const res=await fetch('/api/customers/'+encodeURIComponent(customerNumber)+'/permanent',{method:'DELETE'});
-    const data=await res.json();
-    if(res.ok){
-      alert(\`🔥 PERMANENTLY ERASED: \${data.name} (\${data.customerNumber})\`);
-      ld();
-    }else{
-      alert('❌ Failed: '+data.message);
-    }
-  }catch(e){
-    alert('❌ Error: '+e.message);
-  }
-}
-
-// Delete all customers
-async function deleteAll(){
-  const first=confirm(\`DELETE ALL CUSTOMERS?\n\nWARNING: This will permanently delete ALL customers from both tables.\n\nThis action is IRREVERSIBLE.\`);
-  if(!first)return;
-  const second=confirm('FINAL WARNING\n\nType DELETE in the next prompt to confirm.');
-  if(!second)return;
-  const confirmation=prompt('Type DELETE to confirm:');
-  if(confirmation!=='DELETE')return;
-  try{
-    const res=await fetch('/api/admin/delete-all-customers',{method:'DELETE'});
-    const data=await res.json();
-    if(res.ok){
-      alert(\`All customers deleted\n\nCustomers: \${data.customersDeleted}\nUsers: \${data.usersDeleted}\`);
-      ld();
-    }else{
-      alert('Failed: '+data.message);
-    }
-  }catch(e){
-    alert('Error: '+e.message);
-  }
-}
-
-// Logout
-async function logout(){
-  try{
-    await fetch('/api/admin/logout',{method:'POST'});
-    window.location.href='/api/admin-panel';
-  }catch(e){
-    alert('Error logging out');
-  }
-}
-
-// Show map modal
-function showMap(lat,lng,name){
-  document.getElementById('mapTitle').textContent=name+' - Location ('+lat+', '+lng+')';
-  document.getElementById('mapImage').src='https://static-maps.yandex.ru/1.x/?ll='+lng+','+lat+'&size=700,450&z=15&l=map&pt='+lng+','+lat+',pm2rdm';
-  document.getElementById('mapModal').classList.add('show');
-}
-
-// Close map modal
-function closeMap(){
-  document.getElementById('mapModal').classList.remove('show');
-}
-
-// Initialize
-ld();
-setInterval(loadOTC,5000);
-setInterval(ld,5000);
-</script>
-</body>
-</html>`;
-    
-    // CRITICAL: Return to stop middleware chain and prevent Vite interference
-    return res.status(200).type('html').send(adminPage);
-  });
-
-  // Admin login for new panel
-  app.post("/api/admin/login-v2", async (req, res) => {
-    try {
-      const { pin } = req.body;
-      
-      if (pin === "270309200207") {
-        res.redirect('/api/admin-panel?auth=verified');
-      } else {
-        res.redirect('/api/admin-panel?error=invalid');
-      }
-    } catch (error) {
-      res.status(500).json({ success: false, error: "Login failed" });
-    }
-  });
-
-  // DEBUG: Simple test page to show customers work
-  app.get("/test-customers", async (req, res) => {
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.setHeader('Cache-Control', 'no-store');
-    
-    try {
-      const customers = await storage.getAllCustomers();
-      
-      let html = `<!DOCTYPE html>
-<html>
-<head>
-<title>Customer Test</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<style>
-body{font-family:monospace;padding:20px;background:#000;color:#0f0}
-.customer{border:1px solid #0f0;margin:10px 0;padding:10px}
-.name{font-size:18px;font-weight:bold}
-.number{color:#ff0}
-</style>
-</head>
-<body>
-<h1>🔍 CUSTOMER DATA TEST</h1>
-<p>Total Customers Found: <strong>${customers.length}</strong></p>
-<hr>`;
-      
-      customers.slice(0, 10).forEach(c => {
-        html += `<div class="customer">
-<div class="name">${c.name}</div>
-<div class="number">Customer #: ${c.customerNumber}</div>
-<div>Email: ${c.email}</div>
-<div>Deleted: ${c.isDeleted ? 'YES' : 'NO'}</div>
-</div>`;
-      });
-      
-      html += `<hr><p>Showing first 10 of ${customers.length} customers</p>
-<button onclick="location.href='/api/admin-panel'">Go to Admin Panel</button>
-</body></html>`;
-      
-      return res.send(html);
-    } catch (error) {
-      return res.send(`<h1>ERROR</h1><pre>${error}</pre>`);
-    }
-  });
-
-  // OLD Admin Oversight - iPhone Optimized (KEEP THIS FOR OLD ROUTE)
+  // Admin Oversight - iPhone Optimized
   app.get("/admin-oversight", async (req, res) => {
-    // CRITICAL: Set headers to prevent Vite/React from interfering
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
-    
     // Check if admin is authenticated via URL token
     const isAuthenticated = req.query.auth === 'verified';
     const hasError = req.query.error === 'invalid';
@@ -3087,194 +2388,91 @@ ${hasError ? '<div class="error show">Invalid PIN. Please try again.</div>' : ''
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0">
-<title>Bank of Ireland - Admin Panel</title>
+<title>Customers</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:#f5f7fa;overflow:hidden;width:100vw;height:100vh;display:flex;flex-direction:column}
-
-/* Header */
-.hdr{background:linear-gradient(135deg,#126987 0%,#0d4d66 100%);color:#fff;padding:16px 20px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
-.hdr h1{font-size:20px;font-weight:700;margin-bottom:6px;letter-spacing:-0.5px}
-.hdr-top{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
-.hdr-stats{display:flex;gap:12px;flex-wrap:wrap}
-.stat-chip{background:rgba(255,255,255,0.15);padding:4px 10px;border-radius:12px;font-size:11px;font-weight:600;backdrop-filter:blur(10px)}
-.hdr-actions{display:flex;gap:8px}
-.btn{background:#fff;color:#126987;border:none;padding:7px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;box-shadow:0 2px 4px rgba(0,0,0,0.1)}
-.btn:hover{transform:translateY(-1px);box-shadow:0 4px 8px rgba(0,0,0,0.15)}
-.btn-danger{background:#dc3545;color:#fff}
-.btn-danger:hover{background:#c82333}
-
-/* Stats Dashboard */
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;padding:16px;background:#fff;margin:12px;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,0.08)}
-.stat-card{background:linear-gradient(135deg,#f8f9fa 0%,#e9ecef 100%);padding:14px;border-radius:10px;border-left:4px solid #126987}
-.stat-card.active{border-left-color:#28a745;background:linear-gradient(135deg,#d4edda 0%,#c3e6cb 100%)}
-.stat-card.deleted{border-left-color:#dc3545;background:linear-gradient(135deg,#f8d7da 0%,#f5c6cb 100%)}
-.stat-card.dev{border-left-color:#ffc107;background:linear-gradient(135deg,#fff3cd 0%,#ffeaa7 100%)}
-.stat-label{font-size:11px;color:#666;font-weight:600;text-transform:uppercase;letter-spacing:0.5px}
-.stat-value{font-size:26px;font-weight:700;color:#000;margin-top:4px}
-
-/* Search & Filters */
-.filter-section{padding:0 16px;margin-bottom:12px}
-.search-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
-.search-box{position:relative}
-.search-box input{width:100%;padding:10px 12px 10px 36px;border:2px solid #e0e0e0;border-radius:10px;font-size:14px;transition:all 0.2s;background:#fff}
-.search-box input:focus{outline:none;border-color:#126987;box-shadow:0 0 0 3px rgba(18,105,135,0.1)}
-.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#999;font-size:16px}
-.filter-tabs{display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
-.filter-tab{background:#fff;border:2px solid #e0e0e0;color:#666;padding:8px 16px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all 0.2s}
-.filter-tab.active{background:#126987;border-color:#126987;color:#fff}
-.filter-tab:hover:not(.active){border-color:#126987;color:#126987}
-
-/* OTC Section */
-.otc-section{padding:0 16px;margin-bottom:12px}
-.otc-container{background:#fff;border-radius:12px;padding:16px;box-shadow:0 2px 6px rgba(0,0,0,0.08)}
-.otc-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-.otc-header h2{font-size:16px;color:#126987;font-weight:700}
-.otc-badge{background:#ffc107;color:#000;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700}
-.otc-grid{display:grid;gap:10px}
-.otc-card{background:linear-gradient(135deg,#fff3cd 0%,#ffeaa7 100%);border-radius:10px;padding:14px;border-left:4px solid #ffc107;box-shadow:0 2px 4px rgba(0,0,0,0.06)}
-.otc-customer{font-size:12px;color:#856404;font-weight:600;margin-bottom:6px}
-.otc-code{font-size:26px;font-weight:700;color:#000;font-family:'SF Mono',Monaco,monospace;letter-spacing:4px;margin:6px 0}
+body{font-family:-apple-system,sans-serif;background:#f0f0f0;overflow:hidden;width:100vw;height:100vh;display:flex;flex-direction:column}
+.hdr{background:#126987;color:#fff;padding:15px;flex-shrink:0;z-index:10}
+.hdr h1{font-size:18px;margin-bottom:8px}
+.top{display:flex;justify-content:space-between;align-items:center}
+.cnt{font-size:13px;opacity:0.9}
+.btn{background:#fff;color:#126987;border:none;padding:6px 14px;border-radius:6px;font-size:13px;font-weight:600}
+.otc-sec{padding:10px;margin-bottom:10px;flex-shrink:0}
+.otc-hdr{background:#fff;border-radius:10px;padding:12px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
+.otc-hdr h2{font-size:16px;color:#126987;margin-bottom:4px}
+.otc-hdr p{font-size:12px;color:#666}
+.otc-itm{background:#fff3cd;border-radius:10px;padding:12px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,0.1);border-left:4px solid #ffc107}
+.otc-code{font-size:24px;font-weight:700;color:#856404;font-family:monospace;letter-spacing:3px;margin:8px 0}
+.otc-info{font-size:11px;color:#856404;margin-bottom:4px}
 .otc-timer{font-size:11px;color:#dc3545;font-weight:600}
-.otc-empty{text-align:center;color:#999;font-size:13px;padding:20px}
-
-/* Customer List */
-.customer-list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 16px 16px 16px}
-.customer-card{background:#fff;border-radius:12px;margin-bottom:12px;box-shadow:0 2px 6px rgba(0,0,0,0.08);overflow:hidden;transition:all 0.2s}
-.customer-card:hover{box-shadow:0 4px 12px rgba(0,0,0,0.12)}
-.customer-header{padding:14px 16px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;background:#fff}
-.customer-info{flex:1;min-width:0}
-.customer-name{font-weight:700;font-size:15px;color:#000;margin-bottom:4px;display:flex;align-items:center;gap:8px}
-.customer-number{font-size:12px;color:#666;font-family:'SF Mono',Monaco,monospace;margin-bottom:2px}
-.customer-alias{font-size:11px;color:#126987;font-weight:600}
-.customer-badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
-.badge{padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;text-transform:uppercase}
-.badge-active{background:#d4edda;color:#155724}
-.badge-deleted{background:#f8d7da;color:#721c24}
-.badge-dev{background:#fff3cd;color:#856404}
-.active-pulse{display:inline-block;width:8px;height:8px;background:#28a745;border-radius:50%;margin-left:6px;animation:pulse 2s infinite}
-.expand-icon{color:#126987;font-size:18px;transition:transform 0.3s;font-weight:700}
-.expand-icon.expanded{transform:rotate(180deg)}
-.customer-details{max-height:0;overflow:hidden;transition:all 0.3s;background:#f9fafb}
-.customer-details.expanded{max-height:600px;overflow-y:auto}
-.details-content{padding:16px}
-.detail-row{display:flex;justify-content:space-between;padding:8px 0;font-size:13px;border-bottom:1px solid #e0e0e0}
-.detail-row:last-child{border-bottom:none}
-.detail-label{color:#666;font-weight:600}
-.detail-value{color:#000;font-weight:600;text-align:right;max-width:60%;word-break:break-all}
-.detail-section{margin-top:16px;padding-top:16px;border-top:2px solid #e0e0e0}
-.section-title{font-size:12px;color:#666;font-weight:700;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px}
-.input-group{margin-bottom:12px}
-.input-group label{display:block;font-size:11px;color:#666;margin-bottom:6px;font-weight:600}
-.input-group input,.input-group select{width:100%;padding:8px 12px;border:2px solid #e0e0e0;border-radius:8px;font-size:13px;transition:border-color 0.2s}
-.input-group input:focus,.input-group select:focus{outline:none;border-color:#126987}
-.input-row{display:flex;gap:8px;align-items:flex-end}
-.input-row input,.input-row select{flex:1}
-.btn-save{background:#28a745;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s}
-.btn-save:hover{background:#218838}
-.btn-delete{background:#dc3545;color:#fff;border:none;padding:10px;border-radius:8px;width:100%;margin-top:12px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s}
-.btn-delete:hover{background:#c82333}
-.btn-restore{background:#17a2b8;color:#fff;border:none;padding:10px;border-radius:8px;width:100%;margin-bottom:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s}
-.btn-restore:hover{background:#138496}
-.map-thumb{width:100%;height:120px;background:#e9ecef;border-radius:10px;margin-top:10px;position:relative;overflow:hidden;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,0.1)}
+.otc-empty{background:#fff;border-radius:10px;padding:20px;text-align:center;color:#999;font-size:13px}
+.lst{padding:10px;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.itm{background:#fff;border-radius:10px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
+.itm-hdr{padding:12px;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
+.l{flex:1;min-width:0}
+.nm{font-weight:600;font-size:14px;color:#000;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.id{font-size:11px;color:#666;font-family:monospace}
+.arr{color:#126987;font-size:16px;transition:transform 0.2s}
+.arr.op{transform:rotate(180deg)}
+.det{max-height:0;overflow:hidden;transition:max-height 0.2s;background:#f9f9f9;overflow-y:auto}
+.det.op{max-height:500px}
+.dw{padding:12px}
+.r{display:flex;justify-content:space-between;padding:6px 0;font-size:12px}
+.lb{color:#666}
+.vl{color:#000;font-weight:600;text-align:right;max-width:60%;word-break:break-all}
+.st{background:#d4edda;color:#155724;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:600}
+.db{background:#dc3545;color:#fff;border:none;padding:8px;border-radius:6px;width:100%;margin-top:8px;font-size:12px;font-weight:600}
+.emp{background:#fff;border-radius:10px;padding:40px 20px;text-align:center;color:#999}
+.ed-fld{margin-top:8px;padding:8px;background:#fff;border:1px solid #ddd;border-radius:6px}
+.ed-fld label{display:block;font-size:11px;color:#666;margin-bottom:4px;font-weight:600}
+.ed-inp{width:100%;padding:6px;border:1px solid #ddd;border-radius:4px;font-size:12px}
+.ed-sel{width:100%;padding:6px;border:1px solid #ddd;border-radius:4px;font-size:12px;background:#fff}
+.sv-btn{background:#28a745;color:#fff;border:none;padding:6px 12px;border-radius:4px;font-size:11px;font-weight:600;margin-left:4px;cursor:pointer}
+.map-thumb{width:100%;height:100px;background:#e0e0e0;border-radius:6px;margin-top:8px;position:relative;overflow:hidden;cursor:pointer}
 .map-thumb img{width:100%;height:100%;object-fit:cover}
-.map-info{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(0,0,0,0.8),transparent);color:#fff;padding:8px 12px;font-size:11px;font-weight:600}
+.map-info{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.7);color:#fff;padding:4px 8px;font-size:10px}
 .map-modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);z-index:1000;align-items:center;justify-content:center}
 .map-modal.show{display:flex}
-.map-modal-content{width:90%;max-width:700px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,0.3)}
-.map-modal-header{background:linear-gradient(135deg,#126987 0%,#0d4d66 100%);color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center}
-.map-modal-header h3{font-size:17px;font-weight:700}
-.map-close{background:rgba(255,255,255,0.2);border:none;color:#fff;font-size:28px;cursor:pointer;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all 0.2s}
-.map-close:hover{background:rgba(255,255,255,0.3)}
-.map-modal-body{height:450px}
+.map-modal-content{width:90%;max-width:600px;background:#fff;border-radius:12px;overflow:hidden}
+.map-modal-header{background:#126987;color:#fff;padding:12px;display:flex;justify-content:space-between;align-items:center}
+.map-modal-header h3{font-size:16px}
+.map-close{background:none;border:none;color:#fff;font-size:24px;cursor:pointer}
+.map-modal-body{height:400px}
 .map-modal-body img{width:100%;height:100%;object-fit:cover}
-.empty-state{background:#fff;border-radius:12px;padding:60px 20px;text-align:center;color:#999;box-shadow:0 2px 6px rgba(0,0,0,0.08)}
-.empty-state-icon{font-size:48px;margin-bottom:16px;opacity:0.5}
-.empty-state-text{font-size:15px;font-weight:600}
-.profile-clicks{margin-top:12px}
-.click-item{font-size:11px;color:#666;padding:4px 0;border-bottom:1px solid #f0f0f0}
-.click-item:last-child{border-bottom:none}
+.srch{padding:10px;background:#fff;margin:10px;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
+.srch input{width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;font-size:14px}
+.srch-indicator{display:none;background:#e7f3ff;color:#126987;padding:8px 12px;margin:0 10px 10px 10px;border-radius:8px;font-size:13px;font-weight:600;border:1px solid #b3d9ff}
+.srch-indicator.show{display:block}
+.active-dot{display:inline-block;width:8px;height:8px;background:#28a745;border-radius:50%;margin-left:8px;animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
 </style>
 </head>
 <body>
 <div class="hdr">
-<h1>🏦 Bank of Ireland - Admin Panel</h1>
-<div class="hdr-top">
-<div class="hdr-stats">
-<div class="stat-chip" id="totalStat">Total: 0</div>
-<div class="stat-chip" id="activeStat">Active: 0</div>
-<div class="stat-chip" id="deletedStat">Deleted: 0</div>
-</div>
-<div class="hdr-actions">
-<button class="btn" onclick="ld()">↻ Refresh</button>
-<button class="btn btn-danger" onclick="deleteAll()">Delete All</button>
+<h1>Customer Management</h1>
+<div class="top">
+<span class="cnt" id="c">0</span>
+<div style="display:flex;gap:8px">
+<button class="btn" onclick="ld()">Refresh</button>
+<button class="btn" style="background:#dc3545" onclick="deleteAll()">Delete All</button>
 <button class="btn" onclick="logout()">Logout</button>
 </div>
 </div>
 </div>
-
-<!-- Stats Dashboard -->
-<div class="stats-grid">
-<div class="stat-card">
-<div class="stat-label">Total Customers</div>
-<div class="stat-value" id="statTotal">0</div>
+<div class="srch">
+<input type="text" id="srch" placeholder="🔍 Search by alias name..." oninput="flt()">
 </div>
-<div class="stat-card active">
-<div class="stat-label">Active</div>
-<div class="stat-value" id="statActive">0</div>
+<div class="srch-indicator" id="srchInd">
+🔍 Showing results for: <span id="srchTxt"></span>
 </div>
-<div class="stat-card deleted">
-<div class="stat-label">Deleted</div>
-<div class="stat-value" id="statDeleted">0</div>
+<div class="otc-sec">
+<div class="otc-hdr">
+<h2>Active OTC Codes</h2>
+<p>One-time codes for new account verification</p>
 </div>
-<div class="stat-card dev">
-<div class="stat-label">Developer</div>
-<div class="stat-value" id="statDev">0</div>
+<div id="otc-list"><div class="otc-empty">No active codes</div></div>
 </div>
-</div>
-
-<!-- Search & Filters -->
-<div class="filter-section">
-<div class="search-grid">
-<div class="search-box">
-<span class="search-icon">🔍</span>
-<input type="text" id="searchAlias" placeholder="Search by alias..." oninput="applyFilters()">
-</div>
-<div class="search-box">
-<span class="search-icon">👤</span>
-<input type="text" id="searchName" placeholder="Search by customer name..." oninput="applyFilters()">
-</div>
-</div>
-<div class="filter-tabs">
-<div class="filter-tab active" onclick="setFilter('all')">All Customers</div>
-<div class="filter-tab" onclick="setFilter('active')">Active Only</div>
-<div class="filter-tab" onclick="setFilter('deleted')">Deleted Only</div>
-<div class="filter-tab" onclick="setFilter('developer')">Developer Accounts</div>
-<div class="filter-tab" onclick="setFilter('real')">Real Customers</div>
-</div>
-</div>
-
-<!-- OTC Section -->
-<div class="otc-section">
-<div class="otc-container">
-<div class="otc-header">
-<h2>🔑 Active Access Codes</h2>
-<div class="otc-badge" id="otcCount">0</div>
-</div>
-<div class="otc-grid" id="otcList">
-<div class="otc-empty">No active access codes</div>
-</div>
-</div>
-</div>
-
-<!-- Customer List -->
-<div class="customer-list" id="customerList">
-<div class="empty-state">
-<div class="empty-state-icon">👥</div>
-<div class="empty-state-text">Loading customers...</div>
-</div>
-</div>
+<div class="lst" id="l"><div class="emp">Loading...</div></div>
 <div class="map-modal" id="mapModal">
 <div class="map-modal-content">
 <div class="map-modal-header">
@@ -3287,368 +2485,237 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Ar
 </div>
 </div>
 <script>
-let expandedCards=new Set();
-let allCustomers=[];
-let currentFilter='all';
-
-function escapeHtml(text){
-  const map={'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'};
-  return String(text).replace(/[&<>"']/g,m=>map[m]);
+let o=new Set();
+let allCust=[];
+function tg(id){
+let d=document.getElementById('d'+id),a=document.getElementById('a'+id);
+if(o.has(id)){d.classList.remove('op');a.classList.remove('op');o.delete(id)}
+else{d.classList.add('op');a.classList.add('op');o.add(id)}
 }
-
-// Toggle customer card expansion
-function toggleCard(id){
-  const details=document.getElementById('details'+id);
-  const icon=document.getElementById('icon'+id);
-  if(expandedCards.has(id)){
-    details.classList.remove('expanded');
-    icon.classList.remove('expanded');
-    expandedCards.delete(id);
-  }else{
-    details.classList.add('expanded');
-    icon.classList.add('expanded');
-    expandedCards.add(id);
-  }
+function escapeHtml(text) {
+  const map = {'&': '&amp;','<': '&lt;','>': '&gt;','"': '&quot;',"'": '&#039;'};
+  return String(text).replace(/[&<>"']/g, m => map[m]);
 }
-
-// Set category filter
-function setFilter(filter){
-  currentFilter=filter;
-  document.querySelectorAll('.filter-tab').forEach(tab=>{
-    tab.classList.remove('active');
-  });
-  event.target.classList.add('active');
-  applyFilters();
-}
-
-// Apply all filters (search + category)
-function applyFilters(){
-  const aliasSearch=document.getElementById('searchAlias').value.toLowerCase();
-  const nameSearch=document.getElementById('searchName').value.toLowerCase();
-  
-  let filtered=allCustomers.filter(c=>{
-    // Search filters
-    const matchesAlias=!aliasSearch||(c.adminAlias||'').toLowerCase().includes(aliasSearch);
-    const matchesName=!nameSearch||c.name.toLowerCase().includes(nameSearch);
-    if(!matchesAlias||!matchesName)return false;
-    
-    // Category filters
-    if(currentFilter==='active')return!c.isDeleted;
-    if(currentFilter==='deleted')return c.isDeleted;
-    if(currentFilter==='developer')return c.isDeveloper;
-    if(currentFilter==='real')return!c.isDeveloper;
-    return true; // 'all'
-  });
-  
-  renderCustomers(filtered);
-  updateStats();
-}
-
-// Update statistics dashboard
-function updateStats(){
-  const total=allCustomers.length;
-  const active=allCustomers.filter(c=>!c.isDeleted).length;
-  const deleted=allCustomers.filter(c=>c.isDeleted).length;
-  const dev=allCustomers.filter(c=>c.isDeveloper).length;
-  
-  document.getElementById('statTotal').textContent=total;
-  document.getElementById('statActive').textContent=active;
-  document.getElementById('statDeleted').textContent=deleted;
-  document.getElementById('statDev').textContent=dev;
-  
-  document.getElementById('totalStat').textContent='Total: '+total;
-  document.getElementById('activeStat').textContent='Active: '+active;
-  document.getElementById('deletedStat').textContent='Deleted: '+deleted;
-}
-
-// Render customer list
-function renderCustomers(customers){
-  const container=document.getElementById('customerList');
-  if(!customers.length){
-    container.innerHTML='<div class="empty-state"><div class="empty-state-icon">🔍</div><div class="empty-state-text">No customers found</div></div>';
-    return;
-  }
-  
-  let html='';
-  customers.forEach((c,idx)=>{
-    const safeId='c'+idx;
-    const isExpanded=expandedCards.has(safeId);
-    
-    // Check if recently active (profile clicked in last 5 min)
-    let isActive=false;
-    if(c.profileClickHistory&&Array.isArray(c.profileClickHistory)&&c.profileClickHistory.length>0){
-      const lastClick=new Date(c.profileClickHistory[0]);
-      const now=new Date();
-      isActive=(now-lastClick)<300000;
-    }
-    
-    html+=\`<div class="customer-card">
-      <div class="customer-header" onclick="toggleCard('\${safeId}')">
-        <div class="customer-info">
-          <div class="customer-name">
-            \${escapeHtml(c.name)}
-            \${isActive?'<span class="active-pulse"></span>':''}
-          </div>
-          <div class="customer-number">\${escapeHtml(c.customerNumber)}</div>
-          \${c.adminAlias?\`<div class="customer-alias">📝 \${escapeHtml(c.adminAlias)}</div>\`:''}
-          <div class="customer-badges">
-            \${!c.isDeleted?\`<span class="badge badge-active">Active</span>\`:\`<span class="badge badge-deleted">Deleted</span>\`}
-            \${c.isDeveloper?\`<span class="badge badge-dev">Developer</span>\`:''}
-          </div>
-        </div>
-        <div class="expand-icon \${isExpanded?'expanded':''}" id="icon\${safeId}">▼</div>
-      </div>
-      <div class="customer-details \${isExpanded?'expanded':''}" id="details\${safeId}">
-        <div class="details-content">
-          <div class="detail-row">
-            <span class="detail-label">Email</span>
-            <span class="detail-value">\${escapeHtml(c.email)}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Phone</span>
-            <span class="detail-value">\${escapeHtml(c.phone||'N/A')}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Currency</span>
-            <span class="detail-value">\${escapeHtml(c.currency)}</span>
-          </div>
-          \${c.profileClickHistory&&Array.isArray(c.profileClickHistory)&&c.profileClickHistory.length>0?\`
-          <div class="detail-section">
-            <div class="section-title">📱 Recent Activity</div>
-            <div class="profile-clicks">
-              \${c.profileClickHistory.map((click,i)=>{
-                const date=new Date(click);
-                const formatted=date.toLocaleString('en-GB',{
-                  day:'2-digit',month:'2-digit',year:'numeric',
-                  hour:'2-digit',minute:'2-digit',hour12:false
-                });
-                return \`<div class="click-item">\${i+1}. \${formatted}</div>\`;
-              }).join('')}
-            </div>
-          </div>
-          \`:''}
-          \${c.lastLatitude&&c.lastLongitude?\`
-          <div class="detail-section">
-            <div class="section-title">📍 Last Known Location</div>
-            <div class="map-thumb" onclick="showMap('\${c.lastLatitude}','\${c.lastLongitude}','\${escapeHtml(c.name)}')">
-              <img src="https://static-maps.yandex.ru/1.x/?ll=\${c.lastLongitude},\${c.lastLatitude}&size=400,120&z=14&l=map&pt=\${c.lastLongitude},\${c.lastLatitude},pm2rdm" alt="Map">
-              <div class="map-info">📍 \${c.lastLatitude}, \${c.lastLongitude}</div>
-            </div>
-          </div>
-          \`:''}
-          <div class="detail-section">
-            <div class="section-title">⚙️ Admin Settings</div>
-            <div class="input-group">
-              <label>Admin Name/Alias</label>
-              <div class="input-row">
-                <input type="text" id="alias-\${safeId}" value="\${escapeHtml(c.adminAlias||'')}" placeholder="Internal notes...">
-                <button class="btn-save" onclick="saveAdmin('\${escapeHtml(c.customerNumber)}','\${safeId}')">Save</button>
-              </div>
-            </div>
-            <div class="input-group">
-              <label>App Replacement (0-5)</label>
-              <div class="input-row">
-                <select id="rep-\${safeId}">
-                  <option value="0" \${(c.appReplacement||0)===0?'selected':''}>0</option>
-                  <option value="1" \${c.appReplacement===1?'selected':''}>1</option>
-                  <option value="2" \${c.appReplacement===2?'selected':''}>2</option>
-                  <option value="3" \${c.appReplacement===3?'selected':''}>3</option>
-                  <option value="4" \${c.appReplacement===4?'selected':''}>4</option>
-                  <option value="5" \${c.appReplacement===5?'selected':''}>5</option>
-                </select>
-                <button class="btn-save" onclick="saveAdmin('\${escapeHtml(c.customerNumber)}','\${safeId}')">Save</button>
-              </div>
-            </div>
-          </div>
-          <div class="detail-section">
-            <div class="section-title">🗑️ Account Actions</div>
-            \${c.isDeleted?\`
-              <button class="btn-restore" onclick="restoreCustomer('\${escapeHtml(c.customerNumber)}','\${escapeHtml(c.name)}')">♻️ Restore Account</button>
-              <button class="btn-delete" onclick="eraseCustomer('\${escapeHtml(c.customerNumber)}','\${escapeHtml(c.name)}')">🔥 Erase Forever</button>
-            \`:\`
-              <button class="btn-delete" onclick="deleteCustomer('\${escapeHtml(c.customerNumber)}','\${escapeHtml(c.name)}')">🗑️ Delete Account</button>
-            \`}
-          </div>
-        </div>
-      </div>
-    </div>\`;
-  });
-  container.innerHTML=html;
-}
-
-// Load OTC codes
 async function loadOTC(){
-  try{
-    const res=await fetch('/api/admin/active-otcs');
-    const data=await res.json();
-    const otcList=document.getElementById('otcList');
-    const otcCount=document.getElementById('otcCount');
-    
-    if(!data.otcs||!data.otcs.length){
-      otcList.innerHTML='<div class="otc-empty">No active access codes</div>';
-      otcCount.textContent='0';
-      return;
-    }
-    
-    otcCount.textContent=data.otcs.length;
-    let html='';
-    data.otcs.forEach(otc=>{
-      html+=\`<div class="otc-card">
-        <div class="otc-customer">\${escapeHtml(otc.accountData.name)} - \${escapeHtml(otc.customerNumber)}</div>
-        <div class="otc-code">\${escapeHtml(otc.code)}</div>
-        <div class="otc-timer">⏱️ Expires in: \${escapeHtml(otc.timeRemaining)}</div>
-      </div>\`;
-    });
-    otcList.innerHTML=html;
-  }catch(e){
-    document.getElementById('otcList').innerHTML='<div class="otc-empty">Error loading codes</div>';
-  }
+try{
+let r=await fetch('/api/admin/active-otcs'),d=await r.json();
+if(!d.otcs||!d.otcs.length){document.getElementById('otc-list').innerHTML='<div class="otc-empty">No active codes</div>';return}
+let h='';
+d.otcs.forEach(otc=>{
+h+=\`<div class="otc-itm">
+<div class="otc-info">\${escapeHtml(otc.accountData.name)} - \${escapeHtml(otc.customerNumber)}</div>
+<div class="otc-code">\${escapeHtml(otc.code)}</div>
+<div class="otc-timer">Expires in: \${escapeHtml(otc.timeRemaining)}</div>
+</div>\`;
+});
+document.getElementById('otc-list').innerHTML=h;
+}catch(e){document.getElementById('otc-list').innerHTML='<div class="otc-empty">Error loading codes</div>'}
 }
-
-// Load all customers
+function flt(){
+let q=document.getElementById('srch').value.toLowerCase();
+let qRaw=document.getElementById('srch').value;
+let fltd=allCust.filter(c=>(c.adminAlias||'').toLowerCase().includes(q));
+// Show search indicator if there's a search query
+if(qRaw.trim()){
+document.getElementById('srchInd').classList.add('show');
+document.getElementById('srchTxt').textContent='"'+qRaw+'"';
+}else{
+document.getElementById('srchInd').classList.remove('show');
+}
+rnd(fltd);
+}
+function rnd(data){
+document.getElementById('c').textContent=data.length+' Customer'+(data.length!=1?'s':'');
+if(!data.length){document.getElementById('l').innerHTML='<div class="emp">No customers</div>';return}
+let h='';
+data.forEach((c,idx)=>{
+// SAFETY: safeId (c0, c1, etc.) is ONLY for HTML element IDs to avoid special characters
+// Customer operations (delete/restore/erase) use c.customerNumber directly from database
+// This ensures the correct customer is always modified, not based on array position
+let safeId='c'+idx;
+let op=o.has(safeId);
+// Check if account is recently active (profile clicked within last 5 minutes)
+let isActive=false;
+if(c.profileClickHistory && Array.isArray(c.profileClickHistory) && c.profileClickHistory.length>0){
+const lastClick=new Date(c.profileClickHistory[0]);
+const now=new Date();
+const diffMs=now-lastClick;
+isActive=diffMs<300000; // 5 minutes = 300000ms
+}
+h+=\`<div class="itm">
+<div class="itm-hdr" onclick="tg('\${safeId}')">
+<div class="l">
+<div class="nm">\${escapeHtml(c.name)}\${isActive?'<span class="active-dot"></span>':''}</div>
+<div class="id">\${escapeHtml(c.customerNumber)}</div>
+</div>
+<div class="arr \${op?'op':''}" id="a\${safeId}">▼</div>
+</div>
+<div class="det \${op?'op':''}" id="d\${safeId}">
+<div class="dw">
+<div class="r"><span class="lb">Email</span><span class="vl">\${escapeHtml(c.email)}</span></div>
+<div class="r"><span class="lb">Phone</span><span class="vl">\${escapeHtml(c.phone||'N/A')}</span></div>
+<div class="r"><span class="lb">Currency</span><span class="vl">\${escapeHtml(c.currency)}</span></div>
+<div class="r"><span class="lb">Status</span><span class="st">Active</span></div>
+\${c.profileClickHistory && Array.isArray(c.profileClickHistory) && c.profileClickHistory.length > 0 ? \`
+<div class="r" style="display:block;border-top:1px solid #eee;padding-top:8px;margin-top:8px">
+<span class="lb" style="display:block;margin-bottom:6px">📱 Profile Clicks (Last 3)</span>
+\${c.profileClickHistory.map((click, i) => {
+const date = new Date(click);
+const formatted = date.toLocaleString('en-GB', { 
+  day: '2-digit', 
+  month: '2-digit', 
+  year: 'numeric',
+  hour: '2-digit', 
+  minute: '2-digit',
+  hour12: false 
+});
+return \`<div style="font-size:11px;color:#666;padding:2px 0">\${i+1}. \${formatted}</div>\`;
+}).join('')}
+</div>
+\` : ''}
+\${c.lastLatitude && c.lastLongitude ? \`
+<div class="map-thumb" onclick="showMap('\${c.lastLatitude}', '\${c.lastLongitude}', '\${escapeHtml(c.name)}')">
+<img src="https://static-maps.yandex.ru/1.x/?ll=\${c.lastLongitude},\${c.lastLatitude}&size=300,100&z=14&l=map&pt=\${c.lastLongitude},\${c.lastLatitude},pm2rdm" alt="Map">
+<div class="map-info">📍 Last location: \${c.lastLatitude}, \${c.lastLongitude}</div>
+</div>
+\` : ''}
+<div class="ed-fld">
+<label>Admin Name/Alias</label>
+<div style="display:flex;align-items:center">
+<input type="text" class="ed-inp" id="alias-\${safeId}" value="\${escapeHtml(c.adminAlias||'')}" placeholder="Internal name or notes" data-customer="\${escapeHtml(c.customerNumber)}">
+<button class="sv-btn" onclick="upd('\${escapeHtml(c.customerNumber)}','\${safeId}')">Save</button>
+</div>
+</div>
+<div class="ed-fld">
+<label>App Replacement (0-5)</label>
+<div style="display:flex;align-items:center">
+<select class="ed-sel" id="rep-\${safeId}" data-customer="\${escapeHtml(c.customerNumber)}">
+<option value="0" \${(c.appReplacement||0)===0?'selected':''}>0</option>
+<option value="1" \${c.appReplacement===1?'selected':''}>1</option>
+<option value="2" \${c.appReplacement===2?'selected':''}>2</option>
+<option value="3" \${c.appReplacement===3?'selected':''}>3</option>
+<option value="4" \${c.appReplacement===4?'selected':''}>4</option>
+<option value="5" \${c.appReplacement===5?'selected':''}>5</option>
+</select>
+<button class="sv-btn" onclick="upd('\${escapeHtml(c.customerNumber)}','\${safeId}')">Save</button>
+</div>
+</div>
+\${c.isDeleted?
+\`<button class="sv-btn" onclick="res('\${escapeHtml(c.customerNumber)}','\${escapeHtml(c.name)}')">♻️ Restore</button>
+<button class="db" onclick="ers('\${escapeHtml(c.customerNumber)}','\${escapeHtml(c.name)}')">🔥 Erase Forever</button>\`:
+\`<button class="db" onclick="dl('\${escapeHtml(c.customerNumber)}','\${escapeHtml(c.name)}')">🗑️ Delete</button>\`}
+</div>
+</div>
+</div>\`;
+});
+document.getElementById('l').innerHTML=h;
+}
 async function ld(){
-  try{
-    const res=await fetch('/api/customers');
-    const data=await res.json();
-    allCustomers=data.sort((a,b)=>parseInt(a.customerNumber)-parseInt(b.customerNumber));
-    applyFilters();
-    loadOTC();
-  }catch(e){
-    document.getElementById('customerList').innerHTML='<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-text">Error loading customers</div></div>';
-  }
+try{
+let r=await fetch('/api/customers'),d=await r.json();
+allCust=d.sort((a,b)=>parseInt(a.customerNumber)-parseInt(b.customerNumber));
+// Preserve search filter if active by reapplying flt()
+let q=document.getElementById('srch').value.trim();
+if(q){
+flt(); // Reapply current search filter
+}else{
+rnd(allCust);
 }
-
-// Save admin settings
-async function saveAdmin(customerNumber,safeId){
-  try{
-    const alias=document.getElementById('alias-'+safeId).value;
-    const rep=parseInt(document.getElementById('rep-'+safeId).value);
-    const res=await fetch('/api/customers/'+encodeURIComponent(customerNumber)+'/admin',{
-      method:'PATCH',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({adminAlias:alias,appReplacement:rep})
-    });
-    const data=await res.json();
-    if(res.ok){
-      alert('✅ Settings saved successfully');
-      ld();
-    }else{
-      alert('❌ Failed: '+data.message);
-    }
-  }catch(e){
-    alert('❌ Error saving settings');
-  }
+loadOTC();
+}catch(e){document.getElementById('l').innerHTML='<div class="emp">Error</div>'}
 }
-
-// Delete customer
-async function deleteCustomer(customerNumber,name){
-  console.log('🗑️ DELETE REQUEST -',customerNumber,name);
-  const confirmed=confirm(\`⚠️ CONFIRM SOFT-DELETE\n\nCustomer: \${name}\nCustomer Number: \${customerNumber}\n\nThis will:\n- Mark customer as deleted\n- Force immediate logout\n- Keep data for recovery\n\nVerify the customer number above is correct.\`);
-  if(!confirmed)return;
-  const reason=prompt('Reason for deletion (optional):','Deleted by admin');
-  try{
-    const res=await fetch('/api/customers/'+encodeURIComponent(customerNumber),{
-      method:'DELETE',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({reason:reason||'Deleted by admin'})
-    });
-    const data=await res.json();
-    if(res.ok){
-      alert(\`✅ DELETED: \${data.name} (\${data.customerNumber})\`);
-      ld();
-    }else{
-      alert('❌ Failed: '+data.message);
-    }
-  }catch(e){
-    alert('❌ Error: '+e.message);
-  }
+async function dl(n,nm){
+console.log('🗑️ DELETE REQUEST - Customer Number:',n,'Name:',nm);
+const confirmed=confirm('⚠️ CONFIRM SOFT-DELETE\\n\\nCustomer: '+nm+'\\nCustomer Number: '+n+'\\n\\nThis will:\\n- Mark customer as deleted\\n- Force immediate logout\\n- Keep data for recovery\\n\\nVerify the customer number above is correct before proceeding.');
+if(!confirmed){console.log('❌ Delete cancelled by user');return;}
+const reason=prompt('Reason for deletion (optional):','Deleted by admin');
+try{
+console.log('📡 Sending DELETE request for customer:',n);
+let r=await fetch('/api/customers/'+encodeURIComponent(n),{
+method:'DELETE',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({reason:reason||'Deleted by admin'})
+}),d=await r.json();
+if(r.ok){
+console.log('✅ DELETE SUCCESS - Customer:',d.name,'Number:',d.customerNumber);
+alert('✅ DELETED: '+d.name+' ('+d.customerNumber+')\\n\\nVerify this is the correct customer.');
+ld();
+}else{console.error('❌ Delete failed:',d.message);alert('❌ Failed: '+d.message)}
+}catch(e){console.error('❌ Delete error:',e);alert('❌ Error: '+e.message)}
 }
-
-// Restore customer
-async function restoreCustomer(customerNumber,name){
-  console.log('♻️ RESTORE REQUEST -',customerNumber,name);
-  const confirmed=confirm(\`♻️ CONFIRM RESTORE\n\nCustomer: \${name}\nCustomer Number: \${customerNumber}\n\nThis will reactivate the customer account.\`);
-  if(!confirmed)return;
-  try{
-    const res=await fetch('/api/customers/'+encodeURIComponent(customerNumber)+'/restore',{method:'POST'});
-    const data=await res.json();
-    if(res.ok){
-      alert(\`♻️ RESTORED: \${data.name} (\${data.customerNumber})\`);
-      ld();
-    }else{
-      alert('❌ Failed: '+data.message);
-    }
-  }catch(e){
-    alert('❌ Error: '+e.message);
-  }
+async function ers(n,nm){
+console.log('🔥 ERASE REQUEST - Customer Number:',n,'Name:',nm);
+const confirmed=confirm('🔥 CONFIRM PERMANENT ERASE\\n\\nCustomer: '+nm+'\\nCustomer Number: '+n+'\\n\\nThis is IRREVERSIBLE and will:\\n- Delete ALL customer data permanently\\n- Cannot be recovered\\n\\nVerify the customer number above is correct before proceeding.');
+if(!confirmed){console.log('❌ Erase cancelled by user');return;}
+const doubleCheck=confirm('⚠️ FINAL CONFIRMATION\\n\\nYou are about to PERMANENTLY ERASE:\\n'+nm+' ('+n+')\\n\\nThis cannot be undone. Proceed?');
+if(!doubleCheck){console.log('❌ Erase cancelled at final confirmation');return;}
+try{
+console.log('📡 Sending PERMANENT DELETE request for customer:',n);
+let r=await fetch('/api/customers/'+encodeURIComponent(n)+'/permanent',{method:'DELETE'}),d=await r.json();
+if(r.ok){
+console.log('🔥 ERASE SUCCESS - Customer:',d.name,'Number:',d.customerNumber);
+alert('🔥 PERMANENTLY ERASED: '+d.name+' ('+d.customerNumber+')\\n\\nVerify this is the correct customer.');
+ld();
+}else{console.error('❌ Erase failed:',d.message);alert('❌ Failed: '+d.message)}
+}catch(e){console.error('❌ Erase error:',e);alert('❌ Error: '+e.message)}
 }
-
-// Permanently erase customer
-async function eraseCustomer(customerNumber,name){
-  console.log('🔥 ERASE REQUEST -',customerNumber,name);
-  const confirmed=confirm(\`🔥 CONFIRM PERMANENT ERASE\n\nCustomer: \${name}\nCustomer Number: \${customerNumber}\n\nThis is IRREVERSIBLE and will:\n- Delete ALL customer data permanently\n- Cannot be recovered\n\nVerify the customer number above is correct.\`);
-  if(!confirmed)return;
-  const doubleCheck=confirm(\`⚠️ FINAL CONFIRMATION\n\nYou are about to PERMANENTLY ERASE:\n\${name} (\${customerNumber})\n\nThis cannot be undone. Proceed?\`);
-  if(!doubleCheck)return;
-  try{
-    const res=await fetch('/api/customers/'+encodeURIComponent(customerNumber)+'/permanent',{method:'DELETE'});
-    const data=await res.json();
-    if(res.ok){
-      alert(\`🔥 PERMANENTLY ERASED: \${data.name} (\${data.customerNumber})\`);
-      ld();
-    }else{
-      alert('❌ Failed: '+data.message);
-    }
-  }catch(e){
-    alert('❌ Error: '+e.message);
-  }
+async function res(n,nm){
+console.log('♻️ RESTORE REQUEST - Customer Number:',n,'Name:',nm);
+const confirmed=confirm('♻️ CONFIRM RESTORE\\n\\nCustomer: '+nm+'\\nCustomer Number: '+n+'\\n\\nThis will reactivate the customer account.\\n\\nVerify the customer number above is correct before proceeding.');
+if(!confirmed){console.log('❌ Restore cancelled by user');return;}
+try{
+console.log('📡 Sending RESTORE request for customer:',n);
+let r=await fetch('/api/customers/'+encodeURIComponent(n)+'/restore',{method:'POST'}),d=await r.json();
+if(r.ok){
+console.log('♻️ RESTORE SUCCESS - Customer:',d.name,'Number:',d.customerNumber);
+alert('♻️ RESTORED: '+d.name+' ('+d.customerNumber+')\\n\\nVerify this is the correct customer.');
+ld();
+}else{console.error('❌ Restore failed:',d.message);alert('❌ Failed: '+d.message)}
+}catch(e){console.error('❌ Restore error:',e);alert('❌ Error: '+e.message)}
 }
-
-// Delete all customers
+async function upd(n,id){
+try{
+let alias=document.getElementById('alias-'+id).value;
+let rep=parseInt(document.getElementById('rep-'+id).value);
+let r=await fetch('/api/customers/'+encodeURIComponent(n)+'/admin',{
+method:'PATCH',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({adminAlias:alias,appReplacement:rep})
+});
+let d=await r.json();
+if(r.ok){alert('Saved successfully')}else{alert('Failed: '+d.message)}
+}catch(e){alert('Error')}
+}
 async function deleteAll(){
-  const first=confirm(\`DELETE ALL CUSTOMERS?\n\nWARNING: This will permanently delete ALL customers from both tables.\n\nThis action is IRREVERSIBLE.\`);
-  if(!first)return;
-  const second=confirm('FINAL WARNING\n\nType DELETE in the next prompt to confirm.');
-  if(!second)return;
-  const confirmation=prompt('Type DELETE to confirm:');
-  if(confirmation!=='DELETE')return;
-  try{
-    const res=await fetch('/api/admin/delete-all-customers',{method:'DELETE'});
-    const data=await res.json();
-    if(res.ok){
-      alert(\`All customers deleted\n\nCustomers: \${data.customersDeleted}\nUsers: \${data.usersDeleted}\`);
-      ld();
-    }else{
-      alert('Failed: '+data.message);
-    }
-  }catch(e){
-    alert('Error: '+e.message);
-  }
+const first=confirm('DELETE ALL CUSTOMERS?\\n\\nWARNING: This will permanently delete ALL customers from both the customers table AND Replit Database.\\n\\nThis action is IRREVERSIBLE.');
+if(!first)return;
+const second=confirm('FINAL WARNING\\n\\nType DELETE in the next prompt to confirm permanent deletion of ALL customers.');
+if(!second)return;
+const confirmation=prompt('Type DELETE to confirm:');
+if(confirmation!=='DELETE')return;
+try{
+let r=await fetch('/api/admin/delete-all-customers',{method:'DELETE'});
+let d=await r.json();
+if(r.ok){
+alert('All customers deleted\\n\\nCustomers: '+d.customersDeleted+'\\nUsers: '+d.usersDeleted);
+ld();
+}else{alert('Failed: '+d.message)}
+}catch(e){alert('Error: '+e.message)}
 }
-
-// Logout
 async function logout(){
-  try{
-    await fetch('/api/admin/logout',{method:'POST'});
-    window.location.href='/admin-oversight';
-  }catch(e){
-    alert('Error logging out');
-  }
+try{
+await fetch('/api/admin/logout',{method:'POST'});
+window.location.href='/admin-oversight';
+}catch(e){alert('Error')}
 }
-
-// Show map modal
 function showMap(lat,lng,name){
-  document.getElementById('mapTitle').textContent=name+' - Location ('+lat+', '+lng+')';
-  document.getElementById('mapImage').src='https://static-maps.yandex.ru/1.x/?ll='+lng+','+lat+'&size=700,450&z=15&l=map&pt='+lng+','+lat+',pm2rdm';
-  document.getElementById('mapModal').classList.add('show');
+document.getElementById('mapTitle').textContent=name+' - Last Location ('+lat+', '+lng+')';
+document.getElementById('mapImage').src='https://static-maps.yandex.ru/1.x/?ll='+lng+','+lat+'&size=600,400&z=15&l=map&pt='+lng+','+lat+',pm2rdm';
+document.getElementById('mapModal').classList.add('show');
 }
-
-// Close map modal
 function closeMap(){
-  document.getElementById('mapModal').classList.remove('show');
+document.getElementById('mapModal').classList.remove('show');
 }
-
-// Initialize
 ld();
 setInterval(loadOTC,5000);
 setInterval(ld,5000);
@@ -3656,8 +2723,7 @@ setInterval(ld,5000);
 </body>
 </html>`;
     
-    // CRITICAL: Return to stop middleware chain and prevent Vite interference
-    return res.status(200).type('html').send(adminPage);
+    res.send(adminPage);
   });
 
   // API endpoint to get all customers (including soft-deleted for admin UI)
