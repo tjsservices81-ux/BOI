@@ -1359,6 +1359,22 @@
         "dateCreated": "2025-10-13T10:21:57.397Z",
         "isDisabled": false
       }
+    ],
+    [
+      138,
+      {
+        "id": 138,
+        "customerNumber": "85311058",
+        "pin": "",
+        "name": "Johnahhaha",
+        "email": "hfjdj@gmail.com",
+        "phone": "4545",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-13T10:50:35.645Z",
+        "dateCreated": "2025-10-13T10:50:35.669Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [],
@@ -1370,7 +1386,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 138,
+    "currentUserId": 139,
     "currentAccountId": 70,
     "currentTransactionId": 1,
     "currentPayeeId": 1,

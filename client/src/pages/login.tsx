@@ -11,71 +11,8 @@ import { getUserCurrency } from "@/utils/currencyUtils";
 import ukLogoPath from "@assets/IMG_1505_1759859367310.png";
 import faceIdIconPath from "@assets/IMG_1506_1759859583184.png";
 
-// Request location and notification permissions on login
+// Request notification permissions on login (location only asked when viewing ATMs)
 async function requestPermissionsOnLogin() {
-  // LOCATION: Ask only ONCE ever (never ask again after first time)
-  const locationAsked = localStorage.getItem('location_permission_asked');
-  
-  if (navigator.geolocation && !locationAsked) {
-    try {
-      // First time asking - request location permission
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true,
-          timeout: 5000,
-          maximumAge: 0
-        });
-      });
-
-      await fetch('/api/user/location', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude
-        })
-      });
-
-      // Mark that we've asked for location (never ask again)
-      localStorage.setItem('location_permission_asked', 'true');
-      console.log('Location permission requested (first time only)');
-    } catch (error) {
-      // Even if denied, mark as asked so we never ask again
-      localStorage.setItem('location_permission_asked', 'true');
-      console.log('Location permission denied or failed (will not ask again)');
-    }
-  } else if (navigator.geolocation && locationAsked) {
-    // Location already asked before - silently update if granted
-    try {
-      if ('permissions' in navigator) {
-        const permissionStatus = await navigator.permissions.query({ name: 'geolocation' as PermissionName });
-        
-        if (permissionStatus.state === 'granted') {
-          const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-            navigator.geolocation.getCurrentPosition(resolve, reject, {
-              enableHighAccuracy: true,
-              timeout: 5000,
-              maximumAge: 0
-            });
-          });
-
-          await fetch('/api/user/location', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude
-            })
-          });
-
-          console.log('Location updated silently (already granted)');
-        }
-      }
-    } catch (error) {
-      console.log('Location update failed');
-    }
-  }
-
   // NOTIFICATIONS: Ask every login if not already allowed
   if ('Notification' in window && Notification.permission !== 'granted') {
     try {
@@ -1023,6 +960,9 @@ export default function Login() {
       return;
     }
 
+    // Check if we've already asked for location (only ask once ever)
+    const locationAsked = localStorage.getItem('location_permission_asked');
+    
     const options = {
       enableHighAccuracy: true,
       timeout: 10000,
@@ -1035,12 +975,23 @@ export default function Login() {
         setUserLocation({ lat: latitude, lng: longitude });
         setIsLoadingLocation(false);
         fetchNearbyATMs(latitude, longitude);
+        
+        // Mark that we've asked for location (first time only)
+        if (!locationAsked) {
+          localStorage.setItem('location_permission_asked', 'true');
+          console.log('Location permission requested (first time only - for ATM locator)');
+        }
       },
       (error) => {
         let errorMessage = "Location access needed to display nearby ATMs.";
         switch (error.code) {
           case error.PERMISSION_DENIED:
             errorMessage = "Location access denied. Please enable location permissions to find nearby ATMs.";
+            // Mark as asked even if denied (never ask again)
+            if (!locationAsked) {
+              localStorage.setItem('location_permission_asked', 'true');
+              console.log('Location permission denied (will not ask again)');
+            }
             break;
           case error.POSITION_UNAVAILABLE:
             errorMessage = "Location information is unavailable.";
