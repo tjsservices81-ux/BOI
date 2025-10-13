@@ -2941,9 +2941,11 @@ setInterval(ld,5000);
               isDisabled: false
             };
             
-            const createdUser = await storage.createUser(newUser, customer.id); // Use PostgreSQL ID to keep IDs in sync
+            // Use original user ID if available (for session continuity), otherwise use PostgreSQL ID
+            const restoreUserId = customer.originalUserId || customer.id;
+            const createdUser = await storage.createUser(newUser, restoreUserId);
             if (createdUser) {
-              console.log(`♻️  USER RECREATED IN MEMORY with matching ID ${createdUser.id}: ${customerNumber}`);
+              console.log(`♻️  USER RECREATED IN MEMORY with original ID ${createdUser.id}: ${customerNumber}`);
             }
           } else {
             // User somehow still exists - just re-enable them

@@ -419,12 +419,17 @@ class MemStorage implements IStorage {
     const { db } = await import('./db');
     const { eq } = await import('drizzle-orm');
     
+    // Get the user's ID before deleting to store it for restore
+    const user = await this.getUserByCustomerNumber(customerNumber);
+    const originalUserId = user?.id;
+    
     const result = await db
       .update(customers)
       .set({
         isDeleted: true,
         deletedAt: new Date(),
-        deleteReason: reason || 'Deleted by admin'
+        deleteReason: reason || 'Deleted by admin',
+        originalUserId: originalUserId // Store original user ID for restore
       })
       .where(eq(customers.customerNumber, customerNumber))
       .returning();
