@@ -5,29 +5,19 @@ async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     // Clone response before consuming body to avoid "body used already" errors
     const clonedRes = res.clone();
-    const text = (await clonedRes.text()) || res.statusText;
     
-    // Check if response indicates deleted customer (account access revoked)
     try {
-      const errorData = JSON.parse(text);
-      if (errorData.redirectToLogin && errorData.requiresNewAccount) {
-        // Customer was deleted - clear local storage and redirect to login
-        console.log('🚫 Account access revoked - redirecting to login');
-        localStorage.clear();
-        window.location.href = '/?message=account_revoked';
-        
-        // Throw error to prevent further processing
-        throw new Error('Account access revoked - redirecting to login');
-      }
+      const text = await clonedRes.text();
+      throw new Error(`${res.status}: ${text || res.statusText}`);
     } catch (e) {
-      // If it's the error we just threw, re-throw it
-      if (e instanceof Error && e.message === 'Account access revoked - redirecting to login') {
-        throw e;
+      // If text() fails (malformed response), use status text
+      if (e instanceof Error && !e.message.startsWith(`${res.status}:`)) {
+        console.error('Error parsing response:', e);
+        throw new Error(`${res.status}: ${res.statusText}`);
       }
-      // Not JSON, continue with normal error handling
+      // Re-throw the error we just created
+      throw e;
     }
-    
-    throw new Error(`${res.status}: ${text}`);
   }
 }
 

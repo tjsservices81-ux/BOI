@@ -1,7 +1,6 @@
-// Set Twilio environment variables first
-process.env.TWILIO_ACCOUNT_SID = 'ACfb6104431dc681bd562257cad773c58d';
-process.env.TWILIO_AUTH_TOKEN = 'ff7bc789a8898b95f9968cb3a6ac1a89';
-process.env.TWILIO_PHONE_NUMBER = '+14379803631';
+// SECURITY: Twilio credentials MUST be loaded from environment variables only
+// DO NOT hard-code secrets here - set them in Replit Secrets
+// Required secrets: TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER
 
 import dotenv from 'dotenv';
 import path from 'path';

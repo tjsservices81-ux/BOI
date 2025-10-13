@@ -72,11 +72,17 @@ function startSessionHeartbeat() {
             // Redirect to login with message
             window.location.href = '/login?message=Account%20Access%20Revoked';
           }
+        }).catch(jsonError => {
+          // If JSON parsing fails, log error but don't logout (only explicit flags trigger logout)
+          console.error('Heartbeat JSON parse error (401):', jsonError);
         });
       } else if (response.status === 403) {
+        // CRITICAL: Only logout if response explicitly has forceDisconnect/nukeCaches flags
+        // Generic 403 responses (from middleware, guards, etc.) should NOT trigger logout
         return response.json().then(data => {
-          if (data.forceDisconnect || data.nukeCaches) {
-            console.log('🔴 NUCLEAR ACCESS REVOCATION - Destroying PWA session completely');
+          // Only process logout if explicit flags are present
+          if (data && (data.forceDisconnect === true || data.nukeCaches === true)) {
+            console.log('🔴 EXPLICIT REVOCATION - Destroying session with logout flags');
             
             // Nuclear data clearing for PWA apps
             localStorage.clear();
@@ -100,7 +106,13 @@ function startSessionHeartbeat() {
             
             // Force complete reload to destroy any cached state
             window.location.replace('/?nuked=true');
+          } else {
+            // 403 without explicit logout flags - ignore and stay logged in
+            console.log('⚠️ 403 response without logout flags - staying logged in');
           }
+        }).catch(jsonError => {
+          // If JSON parsing fails, it's not a logout response - stay logged in
+          console.log('⚠️ 403 with malformed JSON - staying logged in');
         });
       }
     }).catch((error) => {

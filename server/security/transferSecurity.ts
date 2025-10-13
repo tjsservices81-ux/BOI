@@ -25,20 +25,24 @@ class TransferSecurityService {
   private confirmations: Map<string, SecurityConfirmation> = new Map();
 
   constructor() {
-    // Set Twilio credentials directly for now
-    const accountSid = process.env.TWILIO_ACCOUNT_SID || 'ACfb6104431dc681bd562257cad773c58d';
-    const authToken = process.env.TWILIO_AUTH_TOKEN || 'ff7bc789a8898b95f9968cb3a6ac1a89';
-    this.twilioNumber = process.env.TWILIO_PHONE_NUMBER || '+14379803631';
+    // SECURITY: Load Twilio credentials from environment variables only
+    const accountSid = process.env.TWILIO_ACCOUNT_SID;
+    const authToken = process.env.TWILIO_AUTH_TOKEN;
+    this.twilioNumber = process.env.TWILIO_PHONE_NUMBER || '';
 
-    console.log('Twilio Config Debug:', {
-      accountSid: accountSid ? `${accountSid.substring(0, 6)}...` : 'undefined',
-      authToken: authToken ? `${authToken.substring(0, 6)}...` : 'undefined',
+    if (!accountSid || !authToken) {
+      console.warn('⚠️ Twilio credentials not configured - SMS features disabled');
+      console.warn('   Set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_PHONE_NUMBER in Replit Secrets');
+      return;
+    }
+
+    console.log('✅ Twilio configured:', {
+      accountSid: `${accountSid.substring(0, 6)}...`,
+      authToken: `${authToken.substring(0, 6)}...`,
       phoneNumber: this.twilioNumber
     });
 
-    if (accountSid && authToken) {
-      this.client = twilio(accountSid, authToken);
-    }
+    this.client = twilio(accountSid, authToken);
   }
 
   async initiateTransferSecurity(request: TransferSecurityRequest): Promise<{ success: boolean; callSid?: string; error?: string }> {

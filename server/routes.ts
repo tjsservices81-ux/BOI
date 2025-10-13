@@ -223,58 +223,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // Check for force revocation of current access code
-      const accessCode = req.headers['x-access-code'] as string || 
-                        req.query.access as string ||
-                        req.body.accessCode as string;
-      
-      if (accessCode) {
-        try {
-          // Check if this access code has been force revoked
-          function processBlacklist(data) {
-            if (!data) return [];
-            if (Array.isArray(data)) return data;
-            if (data.value && Array.isArray(data.value)) return data.value;
-            return [];
-          }
-          
-          const revokedFlag = await db.get(`revoked_${accessCode}`);
-          const forceLogoutFlag = await db.get(`force_logout_${accessCode}`);
-          const blacklistData = await db.get('permanent_blacklist');
-          const pwaBlacklistData = await db.get('pwa_blacklist');
-          const blacklist = processBlacklist(blacklistData);
-          const pwaBlacklist = processBlacklist(pwaBlacklistData);
-          const accessCodes = await db.get('access_codes') || {};
-          const codeInfo = accessCodes[accessCode];
-          
-          const isRevoked = revokedFlag?.revoked || 
-                           revokedFlag?.nuked || 
-                           forceLogoutFlag?.forced ||
-                           blacklist.includes(accessCode) ||
-                           pwaBlacklist.includes(accessCode) ||
-                           codeInfo?.revoked || 
-                           codeInfo?.forceDisconnect;
-          
-          if (isRevoked) {
-            console.log(`🔴 NUCLEAR REVOCATION DETECTED: ${accessCode} - DESTROYING PWA SESSION`);
-            
-            // Destroy session immediately
-            req.session.destroy((err) => {
-              if (err) console.error('Session destruction error:', err);
-            });
-            
-            return res.status(403).json({ 
-              status: "access_revoked", 
-              message: "Access permanently revoked",
-              forceDisconnect: true,
-              nukeCaches: true,
-              timestamp: new Date().toISOString()
-            });
-          }
-        } catch (error) {
-          console.error('Revocation check error:', error);
-        }
-      }
+      // REMOVED: Access code revocation check
+      // Access code revocation should NOT force logout - it's not the same as admin deletion
+      // Only customer deletion (checked above) should trigger forced logout
+      // Access code issues are handled by OTC verification, not heartbeat
       
       req.session.touch(); // Refresh session expiry
       (req.session as any).lastHeartbeat = new Date().toISOString();
@@ -831,15 +783,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               if (!customerExists) {
                 console.log(`🚫 DELETED CUSTOMER ATTEMPT: ${user.customerNumber} tried to access customer panel`);
                 
-                // Destroy session to force logout
-                if (req.session) {
-                  req.session.destroy(() => {});
-                }
-                
+                // Return 403 without logout flags - heartbeat will handle the logout
                 return res.status(403).json({ 
-                  message: "Account access revoked", 
-                  requiresNewAccount: true,
-                  redirectToLogin: true
+                  message: "Account access revoked"
                 });
               }
             } catch (dbError) {
@@ -880,15 +826,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (!customerExists) {
           console.log(`🚫 DELETED CUSTOMER ATTEMPT: ${user.customerNumber} tried to view accounts`);
           
-          // Destroy session to force logout
-          if (req.session) {
-            req.session.destroy(() => {});
-          }
-          
+          // Return 403 without logout flags - heartbeat will handle the logout
           return res.status(403).json({ 
-            message: "Account access revoked", 
-            requiresNewAccount: true,
-            redirectToLogin: true
+            message: "Account access revoked"
           });
         }
       }
@@ -915,15 +855,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (!customerExists) {
             console.log(`🚫 DELETED CUSTOMER ATTEMPT: ${user.customerNumber} tried to view transactions`);
             
-            // Destroy session to force logout
-            if (req.session) {
-              req.session.destroy(() => {});
-            }
-            
+            // Return 403 without logout flags - heartbeat will handle the logout
             return res.status(403).json({ 
-              message: "Account access revoked", 
-              requiresNewAccount: true,
-              redirectToLogin: true
+              message: "Account access revoked"
             });
           }
         }
@@ -955,15 +889,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (!customerExists) {
           console.log(`🚫 DELETED CUSTOMER ATTEMPT: ${accountUser.customerNumber} tried to transfer`);
           
-          // Destroy session to force logout
-          if (req.session) {
-            req.session.destroy(() => {});
-          }
-          
+          // Return 403 without logout flags - heartbeat will handle the logout
           return res.status(403).json({ 
-            message: "Account access revoked", 
-            requiresNewAccount: true,
-            redirectToLogin: true
+            message: "Account access revoked"
           });
         }
       }
