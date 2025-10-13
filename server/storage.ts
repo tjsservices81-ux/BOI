@@ -444,9 +444,9 @@ class MemStorage implements IStorage {
     const { sql } = await import('drizzle-orm');
     
     try {
-      // Get customer from PostgreSQL (user already deleted from memory during soft-delete)
-      const customer = await this.getCustomerByCustomerNumber(customerNumber, true);
-      const userId = customer?.id; // Use customer ID from PostgreSQL
+      // Get user ID first to delete related records
+      const user = await this.getUserByCustomerNumber(customerNumber);
+      const userId = user?.id;
       
       // Delete from ALL tables that reference this customer
       if (userId) {

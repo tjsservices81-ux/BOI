@@ -2894,8 +2894,7 @@ setInterval(ld,5000);
         res.json({ 
           success: true, 
           message: "Customer permanently erased",
-          customerNumber: customerNumber,
-          name: customer.name // Include name for frontend display
+          customerNumber: customerNumber
         });
       } else {
         res.status(500).json({ 
