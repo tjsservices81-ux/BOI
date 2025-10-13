@@ -15,43 +15,13 @@ export function startPWARevocationChecker(): void {
 
   console.log('🔴 Starting aggressive revocation checker - checking every 10 seconds');
   
-  // Check every 10 seconds for all installations (enhanced protection)
+  // DISABLED: Access code revocation checking removed
+  // Only admin deletion (via heartbeat checkCustomerExists) should trigger logout
+  // Access code issues should NOT log out existing users
+  
   revocationCheckInterval = setInterval(async () => {
-    const accessCode = getActiveAccessCode();
-    
-    if (accessCode) {
-      try {
-        // Direct revocation check
-        const response = await fetch('/api/check-revocation', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-          body: JSON.stringify({ accessCode })
-        });
-
-        console.log(`Revocation check for ${accessCode}: Status ${response.status}`);
-        
-        if (response.status === 403) {
-          const data = await response.json();
-          console.log('Revocation response:', data);
-          if (data.revoked || data.nuked) {
-            console.log('🔴 NUCLEAR REVOCATION DETECTED - Complete destruction initiated');
-            await forceLogoutPWA(true);
-          }
-        } else if (response.ok) {
-          const data = await response.json();
-          if (data.revoked) {
-            console.log('🔴 REVOCATION DETECTED via success response - logging out');
-            await forceLogoutPWA(true);
-          }
-        }
-      } catch (error) {
-        // Continue checking even if request fails
-        console.log('Revocation check failed, continuing...');
-      }
-    }
+    // Revocation checks disabled - users only logout on admin deletion
+    console.log('⚠️ PWA revocation checks disabled - heartbeat handles all logout logic');
   }, 10000); // Every 10 seconds
 }
 
