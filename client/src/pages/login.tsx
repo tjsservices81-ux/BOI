@@ -1357,7 +1357,7 @@ export default function Login() {
         {/* Main Content - Scrollable */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden ios-scroll">
           <div className="px-5 pt-8 pb-32">
-            <div className="w-full max-w-xs mx-auto space-y-3">
+            <div className="w-full max-w-xs mx-auto space-y-3" style={{ maxWidth: '300px' }}>
               {/* Main White Login Card */}
               <div className="bg-white ios-card p-4">
 
