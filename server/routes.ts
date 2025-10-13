@@ -2484,11 +2484,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
 <div class="stats">
 <div class="stat-card">
 <div class="stat-val" id="statTotal">0</div>
-<div class="stat-lbl">Total</div>
+<div class="stat-lbl">Active Accounts</div>
 </div>
 <div class="stat-card">
 <div class="stat-val" id="statActive">0</div>
-<div class="stat-lbl">Active</div>
+<div class="stat-lbl">Recently Active</div>
 </div>
 <div class="stat-card">
 <div class="stat-val" id="statDev">0</div>
@@ -2496,15 +2496,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
 </div>
 <div class="stat-card">
 <div class="stat-val" id="statReal">0</div>
-<div class="stat-lbl">Real Users</div>
+<div class="stat-lbl">Real Customers</div>
 </div>
 </div>
 </div>
 <div class="controls">
-<button class="ctrl-btn active" onclick="setFilter('all')">All</button>
-<button class="ctrl-btn" onclick="setFilter('developer')">Developers</button>
-<button class="ctrl-btn" onclick="setFilter('real')">Real Users</button>
-<button class="ctrl-btn" onclick="setFilter('active')">Recently Active</button>
+<button class="ctrl-btn active" onclick="setFilter('active')">Active Accounts</button>
+<button class="ctrl-btn" onclick="setFilter('deleted')">Deleted Accounts</button>
 <button class="ctrl-btn" onclick="setSort('name')">Sort: Name</button>
 <button class="ctrl-btn" onclick="setSort('number')">Sort: Number</button>
 <button class="ctrl-btn" onclick="setSort('date')">Sort: Date</button>
@@ -2638,8 +2636,7 @@ return \`<div style="font-size:11px;color:#666;padding:2px 0">\${i+1}. \${format
 </div>
 </div>
 \${c.isDeleted?
-\`<button class="sv-btn" onclick="res('\${escapeHtml(c.customerNumber)}','\${escapeHtml(c.name)}')">♻️ Restore</button>
-<button class="db" onclick="ers('\${escapeHtml(c.customerNumber)}','\${escapeHtml(c.name)}')">🔥 Erase Forever</button>\`:
+\`<button class="sv-btn" onclick="res('\${escapeHtml(c.customerNumber)}','\${escapeHtml(c.name)}')">♻️ Restore Account</button>\`:
 \`<button class="db" onclick="dl('\${escapeHtml(c.customerNumber)}','\${escapeHtml(c.name)}')">🗑️ Delete</button>\`}
 </div>
 </div>
@@ -2748,27 +2745,29 @@ document.getElementById('mapModal').classList.add('show');
 function closeMap(){
 document.getElementById('mapModal').classList.remove('show');
 }
-let currentFilter='all';
+let currentFilter='active';
 let currentSort='number';
 function updateStats(){
-const total=allCust.length;
-const active=allCust.filter(c=>{
+const total=allCust.filter(c=>!c.isDeleted).length;
+const deleted=allCust.filter(c=>c.isDeleted).length;
+const recentActive=allCust.filter(c=>{
+if(c.isDeleted)return false;
 if(c.profileClickHistory&&Array.isArray(c.profileClickHistory)&&c.profileClickHistory.length>0){
 const lastClick=new Date(c.profileClickHistory[0]);
 return (new Date()-lastClick)<300000;
 }return false;
 }).length;
-const dev=allCust.filter(c=>c.isDeveloper).length;
+const dev=allCust.filter(c=>c.isDeveloper&&!c.isDeleted).length;
 const real=total-dev;
 document.getElementById('statTotal').textContent=total;
-document.getElementById('statActive').textContent=active;
+document.getElementById('statActive').textContent=recentActive;
 document.getElementById('statDev').textContent=dev;
 document.getElementById('statReal').textContent=real;
 }
 function setFilter(type){
 currentFilter=type;
 document.querySelectorAll('.ctrl-btn').forEach(btn=>{
-if(btn.textContent.includes('All')||btn.textContent.includes('Developer')||btn.textContent.includes('Real')||btn.textContent.includes('Active')){
+if(btn.textContent.includes('Active')||btn.textContent.includes('Deleted')){
 btn.classList.remove('active');
 }
 });
@@ -2787,17 +2786,10 @@ applyFiltersAndSort();
 }
 function applyFiltersAndSort(){
 let filtered=allCust;
-if(currentFilter==='developer'){
-filtered=filtered.filter(c=>c.isDeveloper);
-}else if(currentFilter==='real'){
-filtered=filtered.filter(c=>!c.isDeveloper);
-}else if(currentFilter==='active'){
-filtered=filtered.filter(c=>{
-if(c.profileClickHistory&&Array.isArray(c.profileClickHistory)&&c.profileClickHistory.length>0){
-const lastClick=new Date(c.profileClickHistory[0]);
-return (new Date()-lastClick)<300000;
-}return false;
-});
+if(currentFilter==='active'){
+filtered=filtered.filter(c=>!c.isDeleted);
+}else if(currentFilter==='deleted'){
+filtered=filtered.filter(c=>c.isDeleted);
 }
 const query=document.getElementById('srch').value.toLowerCase();
 if(query){
