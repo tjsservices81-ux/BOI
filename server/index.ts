@@ -37,8 +37,8 @@ app.use(session({
     pruneSessionInterval: false, // Never auto-prune sessions
     errorLog: (...args: any[]) => console.error('Session store error:', ...args)
   }),
-  resave: false,
-  saveUninitialized: true, // Changed to true to ensure cookie is set
+  resave: true, // FIXED: Always save sessions to prevent loss
+  saveUninitialized: false, // Don't create sessions for unauthenticated users
   cookie: {
     secure: false,
     httpOnly: true,

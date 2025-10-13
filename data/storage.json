@@ -1199,6 +1199,150 @@
         "dateCreated": "2025-10-11T13:19:50.692Z",
         "isDisabled": false
       }
+    ],
+    [
+      128,
+      {
+        "id": 128,
+        "customerNumber": "74658371",
+        "pin": "",
+        "name": "Jack kile",
+        "email": "jackkily@gmail.com",
+        "phone": "0851234567",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-11T19:46:56.968Z",
+        "dateCreated": "2025-10-11T19:46:56.988Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      129,
+      {
+        "id": 129,
+        "customerNumber": "77929643",
+        "pin": "",
+        "name": "Thomas Mongan ",
+        "email": "thomasmongan844@gmail.com",
+        "phone": "07351461634",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-11T21:03:29.889Z",
+        "dateCreated": "2025-10-11T21:03:29.910Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      130,
+      {
+        "id": 130,
+        "customerNumber": "38972431",
+        "pin": "",
+        "name": "James",
+        "email": "james@live.com",
+        "phone": "07855226681",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-13T09:21:09.608Z",
+        "dateCreated": "2025-10-13T09:21:09.631Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      131,
+      {
+        "id": 131,
+        "customerNumber": "64265828",
+        "pin": "",
+        "name": "Michael Flynn",
+        "email": "michaelflynn2896@gmail.com",
+        "phone": "0851218251",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2022-03-12T13:43:53.651Z",
+        "dateCreated": "2025-10-12T13:43:53.808Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      132,
+      {
+        "id": 132,
+        "customerNumber": "48086908",
+        "pin": "",
+        "name": "Owen ward",
+        "email": "owenward2024@gmail.com",
+        "phone": "+44 7769 143195",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-12T11:54:51.374Z",
+        "dateCreated": "2025-10-12T11:54:51.545Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      133,
+      {
+        "id": 133,
+        "customerNumber": "59482911",
+        "pin": "",
+        "name": "Peter jones  IBAN ER00729512985438108",
+        "email": "peterjones371@gmail.com",
+        "phone": "0035357920845631",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-12T12:31:14.134Z",
+        "dateCreated": "2025-10-12T12:31:14.297Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      134,
+      {
+        "id": 134,
+        "customerNumber": "24652824",
+        "pin": "",
+        "name": "Robert gaskin",
+        "email": "rgaskin113@gmail.com",
+        "phone": "+353851402488",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2023-02-12T11:03:28.379Z",
+        "dateCreated": "2025-10-12T11:03:28.403Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      135,
+      {
+        "id": 135,
+        "customerNumber": "78375864",
+        "pin": "",
+        "name": "Peter Dwyer",
+        "email": "peterdw32123@icloud.com",
+        "phone": "+447871775774",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-13T09:47:27.605Z",
+        "dateCreated": "2025-10-13T09:47:27.625Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      136,
+      {
+        "id": 136,
+        "customerNumber": "92357054",
+        "pin": "",
+        "name": "tom",
+        "email": "tom2345@icloud.con",
+        "phone": "07404091066",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-13T09:52:26.063Z",
+        "dateCreated": "2025-10-13T09:52:26.083Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [],
@@ -1210,7 +1354,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 128,
+    "currentUserId": 137,
     "currentAccountId": 70,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
