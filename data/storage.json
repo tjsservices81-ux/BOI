@@ -1322,8 +1322,8 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 201,
-    "currentAccountId": 76,
+    "currentUserId": 202,
+    "currentAccountId": 79,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
     "currentScheduledPaymentId": 1,
