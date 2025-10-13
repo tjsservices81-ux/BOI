@@ -1237,44 +1237,25 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
           setTimeout(() => {
             setIsTyping(true);
             setTypingText(`${chatState.agentName} is typing...`);
+            
+            // NOW start AI response generation for transfer queries (after checking message sent + wait)
+            generateAndDisplayResponse();
           }, transferWaitTime);
         }, checkingTypingTime);
       }, readingDelay);
     }
     
-    // Start processing after reading delay
-    setTimeout(async () => {
+    // Function to generate and display AI response
+    const generateAndDisplayResponse = async () => {
       try {
-        // Generate response while agent is "reading" - use captured messages for context
+        // Generate response - use captured messages for context
         const responseData = await generateAIResponse(userMessage.text, currentMessages);
         
         // Calculate typing delay
-        let typingDelay: number;
-        if (isTransferConfirmQuery) {
-          // For transfer confirmations: wait for checking message + coordinated wait time + final typing
-          const avgCheckingWords = 8; // Average words in checking messages (now with more variations)
-          const typingWPM = getAgentTypingSpeed(chatState.agentName);
-          const checkingTypingTime = Math.max(800, (avgCheckingWords / typingWPM) * 60 * 1000);
-          
-          // Calculate final response typing time
-          const responseWords = responseData.text.split(' ').length;
-          const responseTypingTime = Math.max(800, (responseWords / typingWPM) * 60 * 1000);
-          
-          // Use the same transferWaitTime that was calculated earlier for coordination
-          typingDelay = checkingTypingTime + transferWaitTime + responseTypingTime;
-        } else {
-          // Calculate realistic typing time based on agent personality
-          const responseWords = responseData.text.split(' ').length;
-          const typingWPM = getAgentTypingSpeed(chatState.agentName);
-          const typingTimeMs = (responseWords / typingWPM) * 60 * 1000;
-          typingDelay = Math.max(800, typingTimeMs); // Minimum 0.8 seconds (faster!)
-        }
-        
-        // Show typing indicator if not already shown (for non-transfer queries)
-        if (!isTransferConfirmQuery) {
-          setIsTyping(true);
-          setTypingText(`${chatState.agentName} is typing...`);
-        }
+        const responseWords = responseData.text.split(' ').length;
+        const typingWPM = getAgentTypingSpeed(chatState.agentName);
+        const typingTimeMs = (responseWords / typingWPM) * 60 * 1000;
+        const typingDelay = Math.max(800, typingTimeMs); // Minimum 0.8 seconds (faster!)
         
         // Display response after typing delay
         setTimeout(() => {
@@ -1321,7 +1302,16 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
           setTypingText("");
         }, 1000); // 1 second typing delay for error message (faster!)
       }
-    }, readingDelay);
+    };
+    
+    // For non-transfer queries, start AI response after reading delay
+    if (!isTransferConfirmQuery) {
+      setTimeout(() => {
+        setIsTyping(true);
+        setTypingText(`${chatState.agentName} is typing...`);
+        generateAndDisplayResponse();
+      }, readingDelay);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
