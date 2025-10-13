@@ -2982,6 +2982,50 @@ setInterval(ld,5000);
     }
   });
 
+  // DEBUG: Simple test page to show customers work
+  app.get("/test-customers", async (req, res) => {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-store');
+    
+    try {
+      const customers = await storage.getAllCustomers();
+      
+      let html = `<!DOCTYPE html>
+<html>
+<head>
+<title>Customer Test</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+body{font-family:monospace;padding:20px;background:#000;color:#0f0}
+.customer{border:1px solid #0f0;margin:10px 0;padding:10px}
+.name{font-size:18px;font-weight:bold}
+.number{color:#ff0}
+</style>
+</head>
+<body>
+<h1>🔍 CUSTOMER DATA TEST</h1>
+<p>Total Customers Found: <strong>${customers.length}</strong></p>
+<hr>`;
+      
+      customers.slice(0, 10).forEach(c => {
+        html += `<div class="customer">
+<div class="name">${c.name}</div>
+<div class="number">Customer #: ${c.customerNumber}</div>
+<div>Email: ${c.email}</div>
+<div>Deleted: ${c.isDeleted ? 'YES' : 'NO'}</div>
+</div>`;
+      });
+      
+      html += `<hr><p>Showing first 10 of ${customers.length} customers</p>
+<button onclick="location.href='/admin-panel-v2'">Go to Admin Panel</button>
+</body></html>`;
+      
+      return res.send(html);
+    } catch (error) {
+      return res.send(`<h1>ERROR</h1><pre>${error}</pre>`);
+    }
+  });
+
   // OLD Admin Oversight - iPhone Optimized (KEEP THIS FOR OLD ROUTE)
   app.get("/admin-oversight", async (req, res) => {
     // CRITICAL: Set headers to prevent Vite/React from interfering
