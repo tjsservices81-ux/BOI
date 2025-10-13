@@ -413,13 +413,46 @@ class MemStorage implements IStorage {
     return result.length > 0;
   }
 
-  // Permanent erase customer (destructive, irreversible)
+  // Permanent erase customer (destructive, irreversible) - DELETE FROM ALL TABLES
   async permanentlyEraseCustomer(customerNumber: string): Promise<boolean> {
     const { db } = await import('./db');
     const { eq } = await import('drizzle-orm');
+    const { sql } = await import('drizzle-orm');
     
-    const result = await db.delete(customers).where(eq(customers.customerNumber, customerNumber)).returning();
-    return result.length > 0;
+    try {
+      // Get user ID first to delete related records
+      const user = await this.getUserByCustomerNumber(customerNumber);
+      const userId = user?.id;
+      
+      // Delete from ALL tables that reference this customer
+      if (userId) {
+        // Delete user-related data from PostgreSQL tables
+        await db.execute(sql`DELETE FROM access_codes WHERE user_id = ${userId}`);
+        await db.execute(sql`DELETE FROM accounts WHERE user_id = ${userId}`);
+        await db.execute(sql`DELETE FROM chat_messages WHERE user_id = ${userId}`);
+        await db.execute(sql`DELETE FROM payees WHERE user_id = ${userId}`);
+        await db.execute(sql`DELETE FROM permanent_tokens WHERE user_id = ${userId}`);
+        await db.execute(sql`DELETE FROM permanent_user_sessions WHERE user_id = ${userId} OR customer_number = ${customerNumber}`);
+        await db.execute(sql`DELETE FROM scheduled_payments WHERE user_id = ${userId}`);
+        await db.execute(sql`DELETE FROM statements WHERE user_id = ${userId}`);
+        await db.execute(sql`DELETE FROM transactions WHERE user_id = ${userId}`);
+        await db.execute(sql`DELETE FROM users WHERE customer_number = ${customerNumber}`); // PostgreSQL users table
+        
+        console.log(`🔥 Deleted all related data for user ${userId} (${customerNumber})`);
+      }
+      
+      // Delete from customers table (main record)
+      const result = await db.delete(customers).where(eq(customers.customerNumber, customerNumber)).returning();
+      
+      // Also delete from session tables
+      await db.execute(sql`DELETE FROM user_sessions WHERE sess::text LIKE '%${customerNumber}%'`);
+      await db.execute(sql`DELETE FROM sessions WHERE sess::text LIKE '%${customerNumber}%'`);
+      
+      return result.length > 0;
+    } catch (error) {
+      console.error('Error permanently erasing customer:', error);
+      return false;
+    }
   }
 
   // Restore soft-deleted customer
