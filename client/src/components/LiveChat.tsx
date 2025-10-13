@@ -1160,7 +1160,7 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
         setIsTyping(true);
         setTypingText(`${chatState.agentName} is typing...`);
         
-        // Different checking message variations
+        // Different checking message variations (loads of options!)
         const checkingVariations = [
           "Let me check that for you.",
           "One moment, let me pull that up.",
@@ -1169,7 +1169,39 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
           "Just a moment, checking that now.",
           "Hold on, let me find that.",
           "Let me grab those details for you.",
-          "One sec, pulling that up now."
+          "One sec, pulling that up now.",
+          "Give me a minute while I look into your account.",
+          "Let me have a look at your account for that.",
+          "Just checking your account now.",
+          "Let me pull up your account details.",
+          "One moment while I check your account.",
+          "Give me a second to look through your account.",
+          "Let me access your account and check that.",
+          "Hold on, looking into your account now.",
+          "Just a moment, I'm checking your recent activity.",
+          "Let me review your account for that information.",
+          "Give me a moment to check your transaction history.",
+          "One sec, I'm looking at your account now.",
+          "Let me bring up your account details.",
+          "Just pulling up your account information.",
+          "One moment, accessing your account.",
+          "Let me check your recent transactions.",
+          "Give me a second, I'm reviewing your account.",
+          "Hold on, let me look at your payment history.",
+          "Just checking your transaction records now.",
+          "Let me see what's in your account.",
+          "One moment while I look through your records.",
+          "Give me a sec to check your account activity.",
+          "Let me pull your transaction details.",
+          "Just a moment, reviewing your account now.",
+          "Hold on, I'm checking your recent payments.",
+          "Let me have a quick look at your account.",
+          "One sec, accessing your transaction history.",
+          "Give me a moment to review your records.",
+          "Let me check what's showing on your account.",
+          "Just looking into your account details now.",
+          "One moment, I'm pulling up your information.",
+          "Let me see what I can find in your account."
         ];
         const checkingMessage = checkingVariations[Math.floor(Math.random() * checkingVariations.length)];
         
@@ -1215,17 +1247,7 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
         let typingDelay: number;
         if (isTransferConfirmQuery) {
           // For transfer confirmations: wait for checking message + wait time + final typing
-          const checkingVariations = [
-            "Let me check that for you.",
-            "One moment, let me pull that up.",
-            "Give me a second to check that.",
-            "Let me look that up for you.",
-            "Just a moment, checking that now.",
-            "Hold on, let me find that.",
-            "Let me grab those details for you.",
-            "One sec, pulling that up now."
-          ];
-          const avgCheckingWords = 6; // Average words in checking messages
+          const avgCheckingWords = 8; // Average words in checking messages (now with more variations)
           const typingWPM = getAgentTypingSpeed(chatState.agentName);
           const checkingTypingTime = Math.max(800, (avgCheckingWords / typingWPM) * 60 * 1000);
           const waitTime = Math.random() * 10000 + 20000; // 20-30 seconds
