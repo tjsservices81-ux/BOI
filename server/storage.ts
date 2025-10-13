@@ -14,7 +14,7 @@ export type { InsertUser, User, Account, Transaction };
 export interface IStorage {
   // User operations
   getUserByCredentials(customerNumber: string, pin: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  createUser(user: InsertUser, customId?: number): Promise<User>;
   getUser(customerNumber: string): Promise<User | undefined>;
   getUserById(userId: number): Promise<User | undefined>;
   getUserByCustomerNumber(customerNumber: string): Promise<User | undefined>;
