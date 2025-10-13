@@ -113,22 +113,6 @@
       }
     ],
     [
-      60,
-      {
-        "id": 60,
-        "customerNumber": "23718748",
-        "pin": "",
-        "name": "Briain cave",
-        "email": "cavebriain350@gmail.com",
-        "phone": "07434661891",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "2025-10-08T19:40:03.756Z",
-        "dateCreated": "2025-10-08T19:40:03.930Z",
-        "isDisabled": false
-      }
-    ],
-    [
       61,
       {
         "id": 61,
@@ -337,22 +321,6 @@
       }
     ],
     [
-      74,
-      {
-        "id": 74,
-        "customerNumber": "63856606",
-        "pin": "",
-        "name": "Patrick Macer ",
-        "email": "Patrickmacer999@hotmail.com",
-        "phone": "07403848176",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "2025-10-09T08:50:04.535Z",
-        "dateCreated": "2025-10-09T08:50:04.696Z",
-        "isDisabled": false
-      }
-    ],
-    [
       75,
       {
         "id": 75,
@@ -513,22 +481,6 @@
       }
     ],
     [
-      85,
-      {
-        "id": 85,
-        "customerNumber": "47724729",
-        "pin": "",
-        "name": "Owen Kennedy",
-        "email": "owenkennedy1005@gmail.com",
-        "phone": "+353857881697",
-        "address": null,
-        "dateOfBirth": "2000-09-06",
-        "joinDate": "2025-10-09T11:47:02.917Z",
-        "dateCreated": "2025-10-09T11:47:02.938Z",
-        "isDisabled": false
-      }
-    ],
-    [
       86,
       {
         "id": 86,
@@ -545,22 +497,6 @@
       }
     ],
     [
-      87,
-      {
-        "id": 87,
-        "customerNumber": "14791554",
-        "pin": "",
-        "name": "Sean Flanagan",
-        "email": "flanagansean911@gmail.com",
-        "phone": "+447862186459",
-        "address": null,
-        "dateOfBirth": "2000-02-19",
-        "joinDate": "2025-10-09T11:38:24.085Z",
-        "dateCreated": "2025-10-09T11:38:24.106Z",
-        "isDisabled": false
-      }
-    ],
-    [
       88,
       {
         "id": 88,
@@ -573,22 +509,6 @@
         "dateOfBirth": "1995-08-05",
         "joinDate": "15/10/2016",
         "dateCreated": "2025-10-09T12:20:51.443Z",
-        "isDisabled": false
-      }
-    ],
-    [
-      89,
-      {
-        "id": 89,
-        "customerNumber": "19499204",
-        "pin": "",
-        "name": "James O’Leary",
-        "email": "pwall8560@gmail.com",
-        "phone": "+44 7454 145715",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "2025-10-09T11:47:47.610Z",
-        "dateCreated": "2025-10-09T11:47:47.631Z",
         "isDisabled": false
       }
     ],
@@ -733,22 +653,6 @@
         "dateOfBirth": null,
         "joinDate": "2025-10-09T16:45:04.507Z",
         "dateCreated": "2025-10-09T16:45:04.529Z",
-        "isDisabled": false
-      }
-    ],
-    [
-      99,
-      {
-        "id": 99,
-        "customerNumber": "66807363",
-        "pin": "",
-        "name": "11121",
-        "email": "jhon@email.com",
-        "phone": "07354008447",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "2025-10-09T17:13:01.052Z",
-        "dateCreated": "2025-10-09T17:13:01.223Z",
         "isDisabled": false
       }
     ],
@@ -993,22 +897,6 @@
       }
     ],
     [
-      115,
-      {
-        "id": 115,
-        "customerNumber": "35946816",
-        "pin": "",
-        "name": "Patrick Macer ",
-        "email": "Patrickmacer999@hotmail.com",
-        "phone": "07460189880",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "2025-10-10T09:10:49.120Z",
-        "dateCreated": "2025-10-10T09:10:49.280Z",
-        "isDisabled": false
-      }
-    ],
-    [
       116,
       {
         "id": 116,
@@ -1069,22 +957,6 @@
         "dateOfBirth": null,
         "joinDate": "2025-10-10T16:51:17.713Z",
         "dateCreated": "2025-10-10T16:51:17.901Z",
-        "isDisabled": false
-      }
-    ],
-    [
-      120,
-      {
-        "id": 120,
-        "customerNumber": "96932208",
-        "pin": "",
-        "name": "Edward Dawson ",
-        "email": "EdwardDawson177@gmail.com",
-        "phone": "07856677741",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "2025-10-10T19:34:07.541Z",
-        "dateCreated": "2025-10-10T19:34:07.709Z",
         "isDisabled": false
       }
     ],
@@ -1373,22 +1245,6 @@
         "dateOfBirth": null,
         "joinDate": "2025-10-13T10:50:35.645Z",
         "dateCreated": "2025-10-13T10:50:35.669Z",
-        "isDisabled": false
-      }
-    ],
-    [
-      139,
-      {
-        "id": 139,
-        "customerNumber": "13994455",
-        "pin": "",
-        "name": "Testing",
-        "email": "testing@gmail.com",
-        "phone": "2434664",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "2025-10-13T11:18:20.782Z",
-        "dateCreated": "2025-10-13T11:18:20.810Z",
         "isDisabled": false
       }
     ],

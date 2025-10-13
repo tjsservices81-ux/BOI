@@ -3087,6 +3087,112 @@ setInterval(ld,5000);
     }
   });
 
+  // Admin endpoint to check and sync users and customers tables
+  app.get("/api/admin/check-sync", async (req, res) => {
+    try {
+      // Get all users from memory
+      const allUsers = await storage.getAllUsers();
+      const userCustomerNumbers = allUsers.map(u => u.customerNumber).sort();
+      
+      // Get all active customers from PostgreSQL  
+      const allCustomers = await storage.getAllCustomers(false); // Only active
+      const customerNumbers = allCustomers.map(c => c.customerNumber).sort();
+      
+      // Find mismatches
+      const usersNotInCustomers = userCustomerNumbers.filter(u => !customerNumbers.includes(u));
+      const customersNotInUsers = customerNumbers.filter(c => !userCustomerNumbers.includes(c));
+      
+      res.json({
+        totalUsers: allUsers.length,
+        totalCustomers: allCustomers.length,
+        usersNotInCustomers: usersNotInCustomers.length > 0 ? usersNotInCustomers : [],
+        customersNotInUsers: customersNotInUsers.length > 0 ? customersNotInUsers : [],
+        inSync: usersNotInCustomers.length === 0 && customersNotInUsers.length === 0
+      });
+    } catch (error) {
+      console.error('Error checking sync:', error);
+      res.status(500).json({ message: "Failed to check sync" });
+    }
+  });
+
+  // Admin endpoint to fix sync by removing orphaned users
+  app.post("/api/admin/fix-sync", async (req, res) => {
+    try {
+      // Get all users from memory
+      const allUsers = await storage.getAllUsers();
+      
+      // Get all active customers from PostgreSQL
+      const allCustomers = await storage.getAllCustomers(false);
+      const customerNumbers = allCustomers.map(c => c.customerNumber);
+      
+      // Find orphaned users (users without corresponding customers)
+      const orphanedUsers = allUsers.filter(u => !customerNumbers.includes(u.customerNumber));
+      
+      // Delete orphaned users
+      let deleted = 0;
+      for (const user of orphanedUsers) {
+        const success = await storage.deleteUser(user.customerNumber);
+        if (success) {
+          deleted++;
+          console.log(`🗑️  Removed orphaned user: ${user.customerNumber} (${user.name})`);
+        }
+      }
+      
+      res.json({
+        success: true,
+        orphanedUsersRemoved: deleted,
+        removedUsers: orphanedUsers.map(u => ({ 
+          customerNumber: u.customerNumber, 
+          name: u.name 
+        }))
+      });
+    } catch (error) {
+      console.error('Error fixing sync:', error);
+      res.status(500).json({ message: "Failed to fix sync" });
+    }
+  });
+
   const httpServer = createServer(app);
+  
+  // Check sync between users and customers on startup
+  (async () => {
+    try {
+      const allUsers = await storage.getAllUsers();
+      const allCustomers = await storage.getAllCustomers(false);
+      const userCustomerNumbers = allUsers.map(u => u.customerNumber).sort();
+      const customerNumbers = allCustomers.map(c => c.customerNumber).sort();
+      
+      const usersNotInCustomers = userCustomerNumbers.filter(u => !customerNumbers.includes(u));
+      const customersNotInUsers = customerNumbers.filter(c => !userCustomerNumbers.includes(c));
+      
+      if (usersNotInCustomers.length > 0 || customersNotInUsers.length > 0) {
+        console.log('\n⚠️  SYNC CHECK: Users and Customers tables are OUT OF SYNC');
+        console.log(`   Total users: ${allUsers.length}, Total customers: ${allCustomers.length}`);
+        
+        if (usersNotInCustomers.length > 0) {
+          console.log(`   🔴 ${usersNotInCustomers.length} users WITHOUT matching customers:`);
+          for (const cn of usersNotInCustomers) {
+            const user = allUsers.find(u => u.customerNumber === cn);
+            console.log(`      - ${cn} (${user?.name || 'Unknown'})`);
+          }
+        }
+        
+        if (customersNotInUsers.length > 0) {
+          console.log(`   🔴 ${customersNotInUsers.length} customers WITHOUT matching users:`);
+          for (const cn of customersNotInUsers) {
+            const customer = allCustomers.find(c => c.customerNumber === cn);
+            console.log(`      - ${cn} (${customer?.name || 'Unknown'})`);
+          }
+        }
+        
+        console.log('   💡 Run POST /api/admin/fix-sync to remove orphaned users\n');
+      } else {
+        console.log(`✅ SYNC CHECK: All ${allUsers.length} users match ${allCustomers.length} customers\n`);
+      }
+    } catch (error) {
+      console.error('Error checking sync:', error);
+    }
+  })();
+  
   return httpServer;
 }
