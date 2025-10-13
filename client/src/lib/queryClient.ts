@@ -1,4 +1,5 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
+import { OfflineAuthGuard } from "@/utils/offlineAuthGuard";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -71,10 +72,38 @@ export const queryClient = new QueryClient({
       refetchInterval: false,
       refetchOnWindowFocus: false,
       staleTime: Infinity,
-      retry: false,
+      retry: (failureCount, error) => {
+        // Never retry on admin deletion (401/403 with specific message)
+        if (error instanceof Error && error.message.includes('Account access revoked')) {
+          return false;
+        }
+        
+        // Retry network errors up to 3 times
+        if (error instanceof TypeError && error.message.includes('fetch')) {
+          console.log(`🔄 Network error - retry ${failureCount}/3`);
+          return failureCount < 3;
+        }
+        
+        // Don't retry other errors
+        return false;
+      },
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
     },
     mutations: {
-      retry: false,
+      retry: (failureCount, error) => {
+        // Never retry mutations on admin deletion
+        if (error instanceof Error && error.message.includes('Account access revoked')) {
+          return false;
+        }
+        
+        // Retry network errors for mutations once
+        if (error instanceof TypeError && error.message.includes('fetch')) {
+          console.log(`🔄 Mutation network error - retry ${failureCount}/1`);
+          return failureCount < 1;
+        }
+        
+        return false;
+      },
     },
   },
 });

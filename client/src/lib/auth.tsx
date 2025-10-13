@@ -1,5 +1,6 @@
 // Authentication context for the banking app
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { OfflineAuthGuard } from "@/utils/offlineAuthGuard";
 
 interface User {
   id: number;
@@ -101,8 +102,19 @@ function startSessionHeartbeat() {
           }
         });
       }
-    }).catch(() => {
-      // Ignore heartbeat failures - user stays logged in locally
+    }).catch((error) => {
+      // Handle network failures - user stays logged in unless admin deletion
+      const action = OfflineAuthGuard.handleNetworkFailure(error);
+      
+      if (action === 'logout') {
+        // Admin deletion - clear everything
+        OfflineAuthGuard.clearAllUserData();
+        window.location.href = '/login?message=Account%20Access%20Revoked';
+      } else {
+        // Network error - backup user data and stay logged in
+        OfflineAuthGuard.backupUserData();
+        console.log('💾 User data backed up - staying logged in offline');
+      }
     });
   }, 15000); // Every 15 seconds for faster PWA revocation detection
 }
@@ -126,50 +138,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     const initializeAuth = async () => {
       try {
-        // Check multiple storage locations for user data
-        // Users stay logged in permanently until admin deletion
-        let foundUser = null;
+        // Initialize offline auth guard
+        OfflineAuthGuard.initialize();
         
-        // Try primary localStorage
-        try {
-          const cachedUser = localStorage.getItem('bankingUser');
-          if (cachedUser) {
-            try {
+        // Check if auth should persist
+        if (!OfflineAuthGuard.shouldPersistAuth()) {
+          console.log('Auth persistence disabled - clearing session');
+          if (isMounted) {
+            setIsLoading(false);
+            setIsInitialized(true);
+          }
+          return;
+        }
+        
+        // Try to restore user from any available storage
+        let foundUser = OfflineAuthGuard.restoreUserData();
+        
+        // Fallback to legacy storage check
+        if (!foundUser) {
+          try {
+            const cachedUser = localStorage.getItem('bankingUser');
+            if (cachedUser) {
               foundUser = JSON.parse(cachedUser);
-            } catch (parseError) {
-              console.warn('Primary storage parse failed, trying backup');
-            }
-          }
-        } catch (storageError) {
-          console.warn('Primary localStorage access failed');
-        }
-        
-        // Try backup localStorage if primary failed
-        if (!foundUser) {
-          try {
-            const backupUser = localStorage.getItem('bankingUserBackup');
-            if (backupUser) {
-              foundUser = JSON.parse(backupUser);
-              // Restore to primary storage
-              localStorage.setItem('bankingUser', backupUser);
+              // Save to new system
+              OfflineAuthGuard.saveUserData(foundUser);
             }
           } catch (error) {
-            console.warn('Backup localStorage access failed');
-          }
-        }
-        
-        // Try sessionStorage as last resort
-        if (!foundUser) {
-          try {
-            const sessionUser = sessionStorage.getItem('bankingUser');
-            if (sessionUser) {
-              foundUser = JSON.parse(sessionUser);
-              // Restore to localStorage
-              localStorage.setItem('bankingUser', sessionUser);
-              localStorage.setItem('bankingUserBackup', sessionUser);
-            }
-          } catch (error) {
-            console.warn('SessionStorage access failed');
+            console.warn('Legacy storage check failed:', error);
           }
         }
         
@@ -180,8 +175,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           localStorage.setItem('bankingSessionActive', 'true');
           // Start heartbeat to maintain session
           startSessionHeartbeat();
-          // Reset parse failure counter on success
-          localStorage.removeItem('bankingUser_parseFailures');
+          // Backup user data
+          OfflineAuthGuard.backupUserData();
         }
         
         if (isMounted) {
@@ -255,21 +250,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       persistentSession: true
     };
     
-    // Primary storage - localStorage (permanent)
+    // Save to offline auth guard (multi-location backup)
+    OfflineAuthGuard.saveUserData(userDataWithTimestamp);
+    
+    // Legacy storage for compatibility
     localStorage.setItem('bankingUser', JSON.stringify(userDataWithTimestamp));
-    
-    // Secondary storage - sessionStorage (browser session backup)
-    sessionStorage.setItem('bankingUser', JSON.stringify(userDataWithTimestamp));
-    
-    // Tertiary storage - localStorage backup with different key
-    localStorage.setItem('bankingUserBackup', JSON.stringify(userDataWithTimestamp));
     
     // Set session activity tracker
     localStorage.setItem('bankingSessionActive', 'true');
     localStorage.setItem('lastSessionActivity', Date.now().toString());
-    
-    // Reset parse failure counter on successful login
-    localStorage.removeItem('bankingUser_parseFailures');
     
     // Start activity heartbeat to maintain session
     startSessionHeartbeat();
@@ -302,12 +291,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     stopSessionHeartbeat();
     setUser(null);
     
-    // Clear all storage locations
-    localStorage.removeItem('bankingUser');
-    localStorage.removeItem('bankingUserBackup');
+    // Use offline auth guard to clear all data
+    OfflineAuthGuard.clearAllUserData();
+    
+    // Clear additional session markers
     localStorage.removeItem('bankingSessionActive');
     localStorage.removeItem('lastSessionActivity');
-    sessionStorage.removeItem('bankingUser');
     
     // Clear offline permissions
     try {

@@ -18,7 +18,7 @@ Preferred communication style: Simple, everyday language.
 ### Backend
 - **Runtime**: Node.js with Express.js.
 - **Database**: Replit Database (primary storage); PostgreSQL for customers table and session store; Drizzle ORM for PostgreSQL configuration.
-- **Authentication**: Session-based with 1-year persistent cookies; PostgreSQL session store with connect-pg-simple for reliable session persistence.
+- **Authentication**: Session-based with 1-year persistent cookies; PostgreSQL session store with connect-pg-simple (resave: true, saveUninitialized: false) for reliable session persistence; OfflineAuthGuard system ensures users stay logged in through all network failures, WiFi loss, server restarts, and browser crashes until admin deletion.
 - **API**: RESTful endpoints for authentication, banking operations, and administration.
 - **Security**: Device-specific one-time access codes, PIN-based authentication, session validation; automatic logout within 15 seconds when customer is deleted from admin panel; per-user data isolation (localStorage stores only authenticated user's data, not all customers); secure `/api/users/me` endpoint requires authentication before returning user data.
 
