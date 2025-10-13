@@ -401,13 +401,13 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
               isInQueue: false
             }));
             
-            // Add welcome message from agent with natural delay
+            // Add welcome message from agent with faster delay
             setTimeout(() => {
               const welcomeText = getPersonalityResponse(chatState.agentName, 'welcome');
               const words = welcomeText.split(' ').length;
-              const wordsPerSecond = Math.random() * 2 + 3; // 3-5 words per second
-              const realisticDelay = Math.max(1000, (words / wordsPerSecond) * 1000);
-              const variation = (Math.random() - 0.5) * 0.4;
+              const wordsPerSecond = Math.random() * 3 + 6; // 6-9 words per second (faster!)
+              const realisticDelay = Math.max(600, (words / wordsPerSecond) * 1000);
+              const variation = (Math.random() - 0.5) * 0.3;
               const finalDelay = realisticDelay * (1 + variation);
               
               setIsTyping(true);
@@ -846,42 +846,42 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     return responses[Math.floor(Math.random() * responses.length)];
   };
 
-  // Get typing speed based on agent personality
+  // Get typing speed based on agent personality (ALL FASTER - max 30-40 second responses)
   const getAgentTypingSpeed = (agentName: string): number => {
     const typingSpeeds: { [key: string]: number } = {
-      'Emma': 45,        // Friendly - average speed
-      'James': 50,       // Formal - measured speed
-      'Sarah': 35,       // Overly helpful - slower, thoughtful
-      'Zoe': 60,         // Sarcastic - quick responses
-      'Aoife': 40,       // Relaxed - laid back speed
-      'Liam': 80,        // Quick texter - very fast
-      'Rachel': 15,      // Slow typer - very slow
-      'Connor': 55,      // Emoji lover - fast but pauses for emojis
-      'Sophie': 70,      // Bubbly - excited, fast typing
-      'David': 45,       // Professional - consistent speed
-      'Claire': 30,      // Patient - slow and careful
-      'Ryan': 65,        // Direct - fast, no nonsense
-      'Rebecca': 75,     // Tech savvy - very fast typing
-      'Sean': 35,        // Chatty - slower due to long messages
-      'Katie': 40,       // Cautious - careful typing
-      'Adam': 50,        // Laid back - average speed
-      'Niamh': 85,       // Enthusiastic - extremely fast
-      'Daniel': 55,      // Punctual - precise speed
-      'Amy': 35,         // Empathetic - thoughtful, slower
-      'Jack': 65,        // Trendy - fast modern typing
-      'Laura': 45,       // Methodical - consistent average
-      'Thomas': 40,      // Worldly - thoughtful responses
-      'Hannah': 80,      // Millennial - very fast mobile typing
-      'Mark': 70,        // No nonsense - quick and direct
-      'Grace': 25,       // Reassuring - slow, caring responses
-      'Oliver': 50,      // Witty - average with pauses for humor
-      'Ella': 45,        // Thorough - careful but efficient
-      'Luke': 90,        // Geeky - extremely fast technical typing
-      'Chloe': 55,       // Warm - enthusiastic but caring
-      'Ben': 45          // Curious - average speed with thoughtful pauses
+      'Emma': 120,       // Friendly - fast speed
+      'James': 130,      // Formal - fast measured speed
+      'Sarah': 100,      // Overly helpful - faster, thoughtful
+      'Zoe': 150,        // Sarcastic - very quick responses
+      'Aoife': 110,      // Relaxed - faster laid back speed
+      'Liam': 180,       // Quick texter - extremely fast
+      'Rachel': 80,      // Slow typer - now faster
+      'Connor': 140,     // Emoji lover - fast
+      'Sophie': 160,     // Bubbly - excited, very fast typing
+      'David': 120,      // Professional - fast consistent speed
+      'Claire': 90,      // Patient - faster careful
+      'Ryan': 150,       // Direct - very fast, no nonsense
+      'Rebecca': 170,    // Tech savvy - extremely fast typing
+      'Sean': 100,       // Chatty - faster long messages
+      'Katie': 110,      // Cautious - faster careful typing
+      'Adam': 130,       // Laid back - faster average speed
+      'Niamh': 190,      // Enthusiastic - super fast
+      'Daniel': 140,     // Punctual - fast precise speed
+      'Amy': 100,        // Empathetic - faster thoughtful
+      'Jack': 150,       // Trendy - very fast modern typing
+      'Laura': 120,      // Methodical - fast consistent average
+      'Thomas': 110,     // Worldly - faster thoughtful responses
+      'Hannah': 180,     // Millennial - extremely fast mobile typing
+      'Mark': 160,       // No nonsense - very quick and direct
+      'Grace': 85,       // Reassuring - faster caring responses
+      'Oliver': 130,     // Witty - fast with pauses for humor
+      'Ella': 120,       // Thorough - faster but efficient
+      'Luke': 200,       // Geeky - super fast technical typing
+      'Chloe': 140,      // Warm - fast enthusiastic but caring
+      'Ben': 120         // Curious - fast speed with thoughtful pauses
     };
 
-    return typingSpeeds[agentName] || 45; // Default to average speed
+    return typingSpeeds[agentName] || 120; // Default to fast speed
   };
 
   // Get personality-based banking responses
@@ -1136,12 +1136,12 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
     }
     startInactivityTimer();
     
-    // Calculate realistic reading time for user's message
-    // Average reading speed: 150-200 words per minute
+    // Calculate realistic reading time for user's message (faster!)
+    // Average reading speed: 200-300 words per minute
     const userWords = userMessage.text.split(' ').length;
-    const readingWPM = Math.random() * 50 + 150; // 150-200 WPM
+    const readingWPM = Math.random() * 100 + 200; // 200-300 WPM (faster reading)
     const readingTimeMs = (userWords / readingWPM) * 60 * 1000;
-    const readingDelay = Math.max(1000, readingTimeMs); // Minimum 1 second
+    const readingDelay = Math.max(500, readingTimeMs); // Minimum 0.5 seconds (faster!)
     
     // Start processing after reading delay
     setTimeout(async () => {
@@ -1153,7 +1153,7 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
         const responseWords = responseData.text.split(' ').length;
         const typingWPM = getAgentTypingSpeed(chatState.agentName);
         const typingTimeMs = (responseWords / typingWPM) * 60 * 1000;
-        const typingDelay = Math.max(1500, typingTimeMs); // Minimum 1.5 seconds
+        const typingDelay = Math.max(800, typingTimeMs); // Minimum 0.8 seconds (faster!)
         
         // Show typing indicator
         setIsTyping(true);
@@ -1202,7 +1202,7 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
           
           setIsTyping(false);
           setTypingText("");
-        }, 3000); // 3 second typing delay for error message
+        }, 1000); // 1 second typing delay for error message (faster!)
       }
     }, readingDelay);
   };
