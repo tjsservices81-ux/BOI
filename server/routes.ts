@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { loginSchema, transferSchema } from "@shared/schema";
+import { loginSchema, transferSchema, type InsertUser } from "@shared/schema";
 import { z } from "zod";
 import { otcService } from "./otcService";
 import { transferSecurityService } from "./security/transferSecurity";
@@ -13,6 +13,18 @@ import { sendTransferConfirmation, sendBankStatement, type TransferConfirmationD
 import { generateTransferConfirmationPDF } from "./pdfService";
 import { StatementService } from "./statementService";
 import Database from "@replit/database";
+
+// Extend express-session types
+declare module 'express-session' {
+  interface SessionData {
+    user?: { id: number; name: string; email: string; customerNumber: string };
+    userId?: number;
+    customerNumber?: string;
+    adminAuthenticated?: boolean;
+    deviceSessionId?: string;
+    lastHeartbeat?: string;
+  }
+}
 
 // Initialize Replit Database for access codes
 const db = new Database();
@@ -112,6 +124,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Helper function to process blacklist data
+  const processBlacklist = (data: any): string[] => {
+    if (!data) return [];
+    if (Array.isArray(data)) return data;
+    if (data.value && Array.isArray(data.value)) return data.value;
+    return [];
+  };
+
   // Direct revocation check endpoint for PWA apps
   app.post("/api/check-revocation", async (req, res) => {
     try {
@@ -122,21 +142,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Check if this access code has been revoked or blacklisted
-      function processBlacklist(data) {
-        if (!data) return [];
-        if (Array.isArray(data)) return data;
-        if (data.value && Array.isArray(data.value)) return data.value;
-        return [];
-      }
       
-      const revokedFlag = await db.get(`revoked_${accessCode}`);
-      const forceLogoutFlag = await db.get(`force_logout_${accessCode}`);
+      const revokedFlag: any = await db.get(`revoked_${accessCode}`);
+      const forceLogoutFlag: any = await db.get(`force_logout_${accessCode}`);
       const blacklistData = await db.get('permanent_blacklist');
       const pwaBlacklistData = await db.get('pwa_blacklist');
       const blacklist = processBlacklist(blacklistData);
       const pwaBlacklist = processBlacklist(pwaBlacklistData);
-      const accessCodes = await db.get('access_codes') || {};
-      const codeInfo = accessCodes[accessCode];
+      const accessCodes: any = await db.get('access_codes') || {};
+      const codeInfo: any = accessCodes[accessCode];
       
       const isRevoked = revokedFlag?.revoked || 
                        revokedFlag?.nuked || 
@@ -267,13 +281,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Check permanent blacklist - codes that can never be used again
-      function processBlacklist(data) {
-        if (!data) return [];
-        if (Array.isArray(data)) return data;
-        if (data.value && Array.isArray(data.value)) return data.value;
-        return [];
-      }
-      
       const blacklistData = await db.get('permanent_blacklist');
       const pwaBlacklistData = await db.get('pwa_blacklist');
       const blacklist = processBlacklist(blacklistData);
@@ -579,7 +586,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         name: `${userData.firstName} ${userData.lastName}`,
         email: userData.email,
         pin: userData.pin,
-        dateOfBirth: userData.dateOfBirth
+        phone: '',
+        address: '',
+        dateOfBirth: userData.dateOfBirth,
+        joinDate: new Date().toISOString(),
+        isDisabled: false
       });
 
       console.log(`✅ USER REGISTERED: ${newUser.name} (${newUser.customerNumber})`);
@@ -1220,9 +1231,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Create user in database with proper date conversion
-      const { dateCreated, ...userDataWithoutDate } = userData;
+      const { dateCreated, address, dateOfBirth, joinDate, ...userDataCore } = userData;
       const newUser = await storage.createUser({
-        ...userDataWithoutDate,
+        ...userDataCore,
+        address: address || '',
+        dateOfBirth: dateOfBirth || '',
+        joinDate: joinDate || new Date().toISOString(),
+        isDisabled: false,
         dateCreated: dateCreated ? new Date(dateCreated) : new Date()
       });
       
@@ -1325,7 +1340,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           address: updates.address || "",
           dateOfBirth: updates.dateOfBirth || "",
           pin: "000000", // Default PIN, user can change later
-          joinDate: updates.joinDate || new Date().toISOString()
+          joinDate: updates.joinDate || new Date().toISOString(),
+          isDisabled: false
         });
         updatedUser = newUser;
       }
@@ -1494,7 +1510,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             address: userData.address || "",
             dateOfBirth: userData.dateOfBirth || "",
             pin: "000000", // Default PIN
-            joinDate: userData.joinDate || new Date().toISOString()
+            joinDate: userData.joinDate || new Date().toISOString(),
+            isDisabled: false
           });
 
           // Create default accounts for the new user
@@ -2769,7 +2786,7 @@ setInterval(ld,5000);
           
           // Remove device sessions
           const { removeDeviceSession } = await import('./deviceSessions');
-          removeDeviceSession(user.id);
+          removeDeviceSession(user.id.toString());
         }
         
         // Invalidate all sessions for this customer

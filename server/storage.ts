@@ -8,6 +8,9 @@ import {
 } from "@shared/schema";
 import { PersistentDataManager } from "./persistentStorage";
 
+// Re-export types for use in other files
+export type { InsertUser, User, Account, Transaction };
+
 export interface IStorage {
   // User operations
   getUserByCredentials(customerNumber: string, pin: string): Promise<User | undefined>;
