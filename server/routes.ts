@@ -2291,52 +2291,6 @@ No transfers found yet on your account.`;
     res.json({ success: true });
   });
 
-  // Sync users from Replit Database to PostgreSQL customers table
-  app.post("/api/admin/sync-users", async (req, res) => {
-    try {
-      const allUsers = await storage.getAllUsers();
-      const existingCustomers = await storage.getAllCustomers(true); // Include deleted
-      
-      const existingCustomerNumbers = new Set(
-        existingCustomers.map(c => c.customerNumber)
-      );
-      
-      const usersToSync = allUsers.filter(
-        user => !existingCustomerNumbers.has(user.customerNumber)
-      );
-      
-      let syncedCount = 0;
-      for (const user of usersToSync) {
-        try {
-          await storage.createCustomer({
-            customerNumber: user.customerNumber,
-            name: user.name,
-            email: user.email,
-            phone: user.phone || '',
-            dateOfBirth: user.dateOfBirth || '',
-            joinDate: user.joinDate || 'Member since 2018',
-            currency: user.currency || 'EUR'
-          });
-          syncedCount++;
-          console.log(`✅ Synced user to customers table: ${user.name} (${user.customerNumber})`);
-        } catch (error) {
-          console.error(`❌ Failed to sync user ${user.customerNumber}:`, error);
-        }
-      }
-      
-      res.json({ 
-        success: true, 
-        synced: syncedCount,
-        total: allUsers.length,
-        existing: existingCustomers.length,
-        message: `Synced ${syncedCount} users to customers table`
-      });
-    } catch (error) {
-      console.error('Sync users failed:', error);
-      res.status(500).json({ success: false, error: "Failed to sync users" });
-    }
-  });
-
   // Delete ALL customers (destructive, irreversible)
   app.delete("/api/admin/delete-all-customers", async (req, res) => {
     try {
@@ -2499,7 +2453,6 @@ body{font-family:-apple-system,sans-serif;background:#f0f0f0;overflow:hidden;wid
 <div class="top">
 <span class="cnt" id="c">0</span>
 <div style="display:flex;gap:8px">
-<button class="btn" onclick="sync()">Sync Users</button>
 <button class="btn" onclick="ld()">Refresh</button>
 <button class="btn" style="background:#dc3545" onclick="deleteAll()">Delete All</button>
 <button class="btn" onclick="logout()">Logout</button>
@@ -2732,18 +2685,6 @@ body:JSON.stringify({adminAlias:alias,appReplacement:rep})
 let d=await r.json();
 if(r.ok){alert('Saved successfully')}else{alert('Failed: '+d.message)}
 }catch(e){alert('Error')}
-}
-async function sync(){
-const confirmed=confirm('Sync all users from Replit Database to the customers table?\\n\\nThis will add users who are not already in the database.\\n\\nDelete functionality will work for synced users.');
-if(!confirmed)return;
-try{
-let r=await fetch('/api/admin/sync-users',{method:'POST'});
-let d=await r.json();
-if(r.ok){
-alert('Sync Complete\\n\\nSynced: '+d.synced+' users\\nTotal users: '+d.total+'\\nAlready in DB: '+d.existing);
-ld();
-}else{alert('Failed: '+d.error)}
-}catch(e){alert('Error: '+e.message)}
 }
 async function deleteAll(){
 const first=confirm('DELETE ALL CUSTOMERS?\\n\\nWARNING: This will permanently delete ALL customers from both the customers table AND Replit Database.\\n\\nThis action is IRREVERSIBLE.');
