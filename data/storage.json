@@ -1391,6 +1391,54 @@
         "dateCreated": "2025-10-13T11:18:20.810Z",
         "isDisabled": false
       }
+    ],
+    [
+      140,
+      {
+        "id": 140,
+        "customerNumber": "43411047",
+        "pin": "",
+        "name": "Owen kennedy ",
+        "email": "owenkennedy167@gmail.com",
+        "phone": "073107980122",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-13T12:58:25.784Z",
+        "dateCreated": "2025-10-13T12:58:25.805Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      141,
+      {
+        "id": 141,
+        "customerNumber": "70999101",
+        "pin": "",
+        "name": "Oscar Quinn ",
+        "email": "oscarquinn999@hotmail.com",
+        "phone": "07456607518",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-13T12:24:18.259Z",
+        "dateCreated": "2025-10-13T12:24:18.430Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      142,
+      {
+        "id": 142,
+        "customerNumber": "45301192",
+        "pin": "000000",
+        "name": "Testing 2",
+        "email": "testing2@gmail.com",
+        "phone": "48454",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-13T14:00:44.896Z",
+        "dateCreated": "2025-10-13T14:00:44.896Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [],
@@ -1402,7 +1450,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 140,
+    "currentUserId": 143,
     "currentAccountId": 70,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
