@@ -1317,14 +1317,14 @@
       {
         "id": 199,
         "customerNumber": "37789031",
-        "pin": "000000",
+        "pin": "",
         "name": "Test6",
         "email": "test6g@gmail.com",
         "phone": "55",
         "address": null,
         "dateOfBirth": null,
-        "joinDate": "2025-10-13T17:18:29.725Z",
-        "dateCreated": "2025-10-13T17:18:29.725Z",
+        "joinDate": "Member since 2018",
+        "dateCreated": "2025-10-13T17:20:33.796Z",
         "isDisabled": false
       }
     ]
@@ -1339,7 +1339,7 @@
   "chatSessions": [],
   "counters": {
     "currentUserId": 200,
-    "currentAccountId": 70,
+    "currentAccountId": 73,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
     "currentScheduledPaymentId": 1,
