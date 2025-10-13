@@ -1375,6 +1375,22 @@
         "dateCreated": "2025-10-13T10:50:35.669Z",
         "isDisabled": false
       }
+    ],
+    [
+      139,
+      {
+        "id": 139,
+        "customerNumber": "13994455",
+        "pin": "",
+        "name": "Testing",
+        "email": "testing@gmail.com",
+        "phone": "2434664",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-13T11:18:20.782Z",
+        "dateCreated": "2025-10-13T11:18:20.810Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [],
@@ -1386,7 +1402,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 139,
+    "currentUserId": 140,
     "currentAccountId": 70,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
