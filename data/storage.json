@@ -1327,6 +1327,22 @@
         "dateCreated": "2025-10-13T14:48:44.148Z",
         "isDisabled": false
       }
+    ],
+    [
+      199,
+      {
+        "id": 199,
+        "customerNumber": "12520613",
+        "pin": "000000",
+        "name": "Test8",
+        "email": "test8@gmail.com",
+        "phone": "4554",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-13T18:39:51.966Z",
+        "dateCreated": "2025-10-13T18:39:51.966Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [],
@@ -1338,7 +1354,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 199,
+    "currentUserId": 200,
     "currentAccountId": 70,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
