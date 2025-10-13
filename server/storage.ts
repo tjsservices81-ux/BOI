@@ -137,58 +137,10 @@ class MemStorage implements IStorage {
         console.log("No persisted data found, starting with empty state");
       }
       
-      // CRITICAL FIX: Two-way sync to ensure data consistency
-      // First sync Memory → PostgreSQL (catch old customers missing from DB)
-      await this.syncUsersToCustomers();
-      // Then sync PostgreSQL → Memory (catch customers created via admin)
+      // CRITICAL FIX: Sync PostgreSQL customers to local users storage
       await this.syncCustomersToUsers();
     } catch (error) {
       console.error('Error loading persisted data:', error);
-    }
-  }
-
-  // Sync local users Map to PostgreSQL customers table (catch old registrations)
-  private async syncUsersToCustomers(): Promise<void> {
-    try {
-      const { db } = await import('./db');
-      const { eq } = await import('drizzle-orm');
-      
-      // Get all customers from PostgreSQL
-      const allCustomers = await db.select().from(customers);
-      const existingCustomerNumbers = new Set(allCustomers.map(c => c.customerNumber));
-      
-      // Find users in memory that don't exist in PostgreSQL
-      const usersToSync = Array.from(this.users.values()).filter(
-        user => user.customerNumber && !existingCustomerNumbers.has(user.customerNumber)
-      );
-      
-      console.log(`🔄 Syncing ${usersToSync.length} users from memory to PostgreSQL...`);
-      
-      let syncedCount = 0;
-      for (const user of usersToSync) {
-        try {
-          await db.insert(customers).values({
-            customerNumber: user.customerNumber,
-            name: user.name,
-            email: user.email,
-            phone: user.phone || '',
-            dateOfBirth: user.dateOfBirth || '',
-            joinDate: user.joinDate || 'Member since 2018',
-            currency: 'EUR',
-            isDeleted: false
-          });
-          syncedCount++;
-          console.log(`✅ Synced user to PostgreSQL: ${user.name} (${user.customerNumber})`);
-        } catch (error) {
-          console.error(`❌ Failed to sync user ${user.customerNumber}:`, error);
-        }
-      }
-      
-      if (syncedCount > 0) {
-        console.log(`✅ Auto-synced ${syncedCount} old customers to PostgreSQL - they won't be logged out!`);
-      }
-    } catch (error) {
-      console.error('Error syncing users to customers:', error);
     }
   }
 
