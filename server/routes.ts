@@ -2891,14 +2891,11 @@ setInterval(ld,5000);
           console.log(`🔥 USER ALSO DELETED FROM MEMORY (was still present): ${customerNumber}`);
         }
         
-        // Send force disconnect flag to trigger PWA wipe
         res.json({ 
           success: true, 
           message: "Customer permanently erased",
           customerNumber: customerNumber,
-          name: customer.name,
-          forceDisconnect: true, // Trigger complete PWA wipe
-          logout: true // Force logout
+          name: customer.name // Include name for frontend display
         });
       } else {
         res.status(500).json({ 

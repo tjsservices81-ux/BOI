@@ -456,10 +456,7 @@ class MemStorage implements IStorage {
         await db.execute(sql`DELETE FROM chat_messages WHERE user_id = ${userId}`);
         await db.execute(sql`DELETE FROM payees WHERE user_id = ${userId}`);
         await db.execute(sql`DELETE FROM permanent_tokens WHERE user_id = ${userId}`);
-        // Delete user sessions by user_id first
-        await db.execute(sql`DELETE FROM permanent_user_sessions WHERE user_id = ${userId}`);
-        // Then delete any remaining sessions by customer_number
-        await db.execute(sql`DELETE FROM permanent_user_sessions WHERE customer_number = ${customerNumber}`);
+        await db.execute(sql`DELETE FROM permanent_user_sessions WHERE user_id = ${userId} OR customer_number = ${customerNumber}`);
         await db.execute(sql`DELETE FROM scheduled_payments WHERE user_id = ${userId}`);
         await db.execute(sql`DELETE FROM statements WHERE user_id = ${userId}`);
         await db.execute(sql`DELETE FROM transactions WHERE user_id = ${userId}`);
