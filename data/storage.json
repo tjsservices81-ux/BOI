@@ -513,6 +513,22 @@
       }
     ],
     [
+      198,
+      {
+        "id": 198,
+        "customerNumber": "76128602",
+        "pin": "000000",
+        "name": "Testing 5",
+        "email": "testing5@gmail.com",
+        "phone": "4554",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-13T16:40:21.053Z",
+        "dateCreated": "2025-10-13T16:40:21.053Z",
+        "isDisabled": false
+      }
+    ],
+    [
       115,
       {
         "id": 115,
@@ -1311,22 +1327,6 @@
         "dateCreated": "2025-10-13T14:48:44.148Z",
         "isDisabled": false
       }
-    ],
-    [
-      199,
-      {
-        "id": 199,
-        "customerNumber": "37789031",
-        "pin": "",
-        "name": "Test6",
-        "email": "test6g@gmail.com",
-        "phone": "55",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "Member since 2018",
-        "dateCreated": "2025-10-13T17:20:33.796Z",
-        "isDisabled": false
-      }
     ]
   ],
   "accounts": [],
@@ -1338,8 +1338,8 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 200,
-    "currentAccountId": 73,
+    "currentUserId": 199,
+    "currentAccountId": 70,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
     "currentScheduledPaymentId": 1,
