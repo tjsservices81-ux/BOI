@@ -2339,6 +2339,8 @@ No transfers found yet on your account.`;
 
   // Admin Panel V2 - Brand new route to bypass browser cache
   app.get("/admin-panel-v2", async (req, res) => {
+    console.log('🔵 ADMIN ROUTE HIT - /admin-panel-v2', req.query);
+    
     // CRITICAL: Set headers to prevent Vite/React from interfering
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
@@ -2348,6 +2350,8 @@ No transfers found yet on your account.`;
     // Check if admin is authenticated via URL token
     const isAuthenticated = req.query.auth === 'verified';
     const hasError = req.query.error === 'invalid';
+    
+    console.log('🔵 Auth status:', isAuthenticated, 'Error:', hasError);
     
     if (!isAuthenticated) {
       const loginPage = `<!DOCTYPE html>
