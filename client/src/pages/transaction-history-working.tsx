@@ -690,7 +690,7 @@ export default function TransactionHistoryWorking() {
                         <Globe className="w-4 h-4 text-[#126987]" />
                       )}
                       <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        {selectedTransaction.paymentMethod}
+                        {selectedTransaction.paymentMethod === 'Manual Entry' ? 'Direct Transaction' : selectedTransaction.paymentMethod}
                       </span>
                     </div>
                   </div>
