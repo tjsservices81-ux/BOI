@@ -282,38 +282,12 @@ export default function UkTransfer() {
             form.setValue('recipientName', payee.name);
             form.setValue('sortCode', sortCodeClean);
             form.setValue('accountNumber', accountNumber);
+            setDisplaySortCode(sortCodeFormatted);
             
             // Pre-fill reference if available
             if (payee.reference) {
               form.setValue('reference', payee.reference);
             }
-            
-            // Force update the form fields after a brief delay
-            setTimeout(() => {
-              // Update sort code input field display
-              const sortCodeInput = document.querySelector('input[placeholder="12-34-56"]') as HTMLInputElement;
-              if (sortCodeInput) {
-                sortCodeInput.value = sortCodeFormatted;
-              }
-              
-              // Update account number input field
-              const accountInput = document.querySelector('input[placeholder="12345678"]') as HTMLInputElement;
-              if (accountInput) {
-                accountInput.value = accountNumber;
-              }
-              
-              // Update recipient name input field
-              const nameInput = document.querySelector('input[placeholder="Recipient full name"]') as HTMLInputElement;
-              if (nameInput) {
-                nameInput.value = payee.name;
-              }
-              
-              // Update reference input field
-              const referenceInput = document.querySelector('input[placeholder="Payment reference (optional)"]') as HTMLInputElement;
-              if (referenceInput && payee.reference) {
-                referenceInput.value = payee.reference;
-              }
-            }, 200);
           }
           
           // Clear the session storage after using
