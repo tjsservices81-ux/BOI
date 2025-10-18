@@ -73,7 +73,7 @@ export async function sendEmailWithPDF(
     const mailOptions = {
       from: {
         name: 'Bank of Ireland',
-        address: process.env.SMTP_USER || 'bankofireland2007@gmail.com'
+        address: process.env.SENDER_EMAIL || 'info@bankofirelands.com'
       },
       to: to,
       subject: subject,
