@@ -91,23 +91,8 @@ export default function Profile() {
   });
   const [profileData, setProfileData] = useState(() => {
     const currentCustomerNumber = UserDataManager.getCurrentUser();
-    // Try to get cached data first to prevent flash
-    if (currentCustomerNumber) {
-      const allUsers = JSON.parse(localStorage.getItem('bankUsers') || '{}');
-      const cachedUser = allUsers[currentCustomerNumber];
-      if (cachedUser) {
-        return {
-          name: cachedUser.name || "",
-          email: cachedUser.email || "",
-          phone: cachedUser.phone || "",
-          address: cachedUser.address || "",
-          dateOfBirth: cachedUser.dateOfBirth || "",
-          customerNumber: currentCustomerNumber,
-          joinDate: cachedUser.joinDate || "",
-          currency: cachedUser.currency || "EUR"
-        };
-      }
-    }
+    // Start with empty state - database will be the source of truth
+    // This prevents showing stale cached data after user restore
     return {
       name: "",
       email: "",
@@ -151,21 +136,26 @@ export default function Profile() {
             // Update userCurrency state
             setUserCurrency(userData.currency || "EUR");
             
-            // Update UserDataManager with fresh data (silent update to prevent loops)
+            // ALWAYS update localStorage with database data (database is source of truth)
+            // This ensures stale cache is overwritten after user restore
             const allUsers = JSON.parse(localStorage.getItem('bankUsers') || '{}');
-            if (allUsers[userData.customerNumber]) {
-              allUsers[userData.customerNumber] = {
-                ...allUsers[userData.customerNumber],
-                name: userData.name,
-                email: userData.email,
-                phone: userData.phone || "",
-                dateOfBirth: userData.dateOfBirth || "",
-                address: userData.address || "",
-                joinDate: userData.joinDate || "",
-                currency: userData.currency || "EUR"
-              };
-              localStorage.setItem('bankUsers', JSON.stringify(allUsers));
-            }
+            allUsers[userData.customerNumber] = {
+              ...allUsers[userData.customerNumber],
+              customerNumber: userData.customerNumber,
+              name: userData.name,
+              email: userData.email,
+              phone: userData.phone || "",
+              dateOfBirth: userData.dateOfBirth || "",
+              address: userData.address || "",
+              joinDate: userData.joinDate || "",
+              currency: userData.currency || "EUR"
+            };
+            localStorage.setItem('bankUsers', JSON.stringify(allUsers));
+            
+            // Dispatch event to update all components with fresh database data
+            window.dispatchEvent(new CustomEvent('profileUpdated', { 
+              detail: allUsers[userData.customerNumber]
+            }));
           }
         } else if (response.status === 410 || response.status === 401) {
           // Account deleted - activate aggressive blocking

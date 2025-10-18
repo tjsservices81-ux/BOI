@@ -751,7 +751,8 @@ export default function Login() {
       return;
     }
 
-    // Check if account has been deleted from database
+    // Check if account has been deleted from database AND fetch fresh profile data
+    let freshUserProfile;
     try {
       const response = await fetch(`/api/profile/${currentUser}`, {
         credentials: 'include'
@@ -777,6 +778,26 @@ export default function Login() {
         setPinVerified(false);
         return;
       }
+      
+      // Get fresh profile data from database (source of truth)
+      freshUserProfile = await response.json();
+      
+      // CRITICAL: Update localStorage with fresh database data immediately
+      // This ensures restored users get their current name, not cached old name
+      const allUsers = JSON.parse(localStorage.getItem('bankUsers') || '{}');
+      allUsers[currentUser] = {
+        ...allUsers[currentUser],
+        customerNumber: freshUserProfile.customerNumber,
+        name: freshUserProfile.name,
+        email: freshUserProfile.email,
+        phone: freshUserProfile.phone || "",
+        dateOfBirth: freshUserProfile.dateOfBirth || "",
+        address: freshUserProfile.address || "",
+        joinDate: freshUserProfile.joinDate || "",
+        currency: freshUserProfile.currency || "EUR"
+      };
+      localStorage.setItem('bankUsers', JSON.stringify(allUsers));
+      
     } catch (error) {
       toast({
         title: "Connection Error",
@@ -796,24 +817,19 @@ export default function Login() {
         throw new Error('User not found in local storage');
       }
 
-      const userProfile = UserDataManager.getUserProfile();
-      
-      if (!userProfile) {
-        throw new Error('Unable to load user profile');
-      }
-
       // Record login time and authenticate through auth context first
       UserDataManager.recordLoginTime(currentUser);
 
+      // Use fresh profile data from database instead of localStorage cache
       login({
         id: parseInt(currentUser.replace(/\D/g, '')) || 1,
-        name: userProfile.name,
-        email: userProfile.email,
+        name: freshUserProfile.name,
+        email: freshUserProfile.email,
         customerNumber: currentUser
       });
 
       // Save authenticated user's data to localStorage (secure - only this user)
-      saveAuthenticatedUserData(currentUser, userProfile);
+      saveAuthenticatedUserData(currentUser, freshUserProfile);
 
       // Smooth single-pass animation: 0% -> 100% over 4 seconds
       const totalDuration = 4000; // 4 seconds total
