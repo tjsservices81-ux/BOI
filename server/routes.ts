@@ -2503,6 +2503,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
 </div>
 <div class="controls">
 <button class="ctrl-btn active" onclick="setFilter('active')">Active Accounts</button>
+<button class="ctrl-btn" onclick="setFilter('developer')">Developer Accounts</button>
 <button class="ctrl-btn" onclick="setFilter('deleted')">Deleted Accounts</button>
 <button class="ctrl-btn" onclick="setSort('name')">Sort: Name</button>
 <button class="ctrl-btn" onclick="setSort('number')">Sort: Number</button>
@@ -2770,6 +2771,12 @@ document.getElementById('mapModal').classList.remove('show');
 }
 let currentFilter='active';
 let currentSort='number';
+function isDeveloperAccount(c){
+const devKeywords=['test','developer','demo','dev','sample','example'];
+const nameLower=(c.name||'').toLowerCase();
+const aliasLower=(c.adminAlias||'').toLowerCase();
+return devKeywords.some(kw=>nameLower.includes(kw)||aliasLower.includes(kw));
+}
 function updateStats(){
 const total=allCust.filter(c=>!c.isDeleted).length;
 const deleted=allCust.filter(c=>c.isDeleted).length;
@@ -2780,7 +2787,7 @@ const lastClick=new Date(c.profileClickHistory[0]);
 return (new Date()-lastClick)<300000;
 }return false;
 }).length;
-const dev=allCust.filter(c=>c.isDeveloper&&!c.isDeleted).length;
+const dev=allCust.filter(c=>!c.isDeleted&&isDeveloperAccount(c)).length;
 const real=total-dev;
 document.getElementById('statTotal').textContent=total;
 document.getElementById('statActive').textContent=recentActive;
@@ -2790,7 +2797,7 @@ document.getElementById('statReal').textContent=real;
 function setFilter(type){
 currentFilter=type;
 document.querySelectorAll('.ctrl-btn').forEach(btn=>{
-if(btn.textContent.includes('Active')||btn.textContent.includes('Deleted')){
+if(btn.textContent.includes('Active')||btn.textContent.includes('Deleted')||btn.textContent.includes('Developer')){
 btn.classList.remove('active');
 }
 });
@@ -2811,6 +2818,8 @@ function applyFiltersAndSort(){
 let filtered=allCust;
 if(currentFilter==='active'){
 filtered=filtered.filter(c=>!c.isDeleted);
+}else if(currentFilter==='developer'){
+filtered=filtered.filter(c=>!c.isDeleted&&isDeveloperAccount(c));
 }else if(currentFilter==='deleted'){
 filtered=filtered.filter(c=>c.isDeleted);
 }
