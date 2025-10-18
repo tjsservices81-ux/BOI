@@ -2511,7 +2511,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
 <button class="ctrl-btn" onclick="exportData()">📥 Export CSV</button>
 </div>
 <div class="srch">
-<input type="text" id="srch" placeholder="🔍 Search customers..." oninput="flt()">
+<div style="display:flex;align-items:center;gap:10px">
+<input type="text" id="srch" placeholder="🔍 Search customers..." oninput="flt()" style="flex:1">
+<button id="exitFullscreen" onclick="toggleListSize()" style="display:none;background:#667eea;color:#fff;border:none;padding:10px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">Exit Fullscreen</button>
+</div>
 </div>
 <div class="otc-sec">
 <div class="otc-hdr">
@@ -2650,6 +2653,7 @@ document.getElementById('l').innerHTML=h;
 function toggleListSize(){
 const listElement=document.getElementById('l');
 const toggleBtn=document.getElementById('sizeToggle');
+const exitBtn=document.getElementById('exitFullscreen');
 const otcSection=document.querySelector('.otc-sec');
 const searchSection=document.querySelector('.srch');
 const header=document.querySelector('.hdr');
@@ -2657,8 +2661,11 @@ const controls=document.querySelector('.controls');
 listExpanded=!listExpanded;
 if(listExpanded){
 listElement.classList.add('expanded');
+if(toggleBtn){
 toggleBtn.textContent='📏 Normal Size';
 toggleBtn.classList.add('active');
+}
+if(exitBtn)exitBtn.style.display='block';
 if(otcSection)otcSection.style.display='none';
 if(header)header.style.display='none';
 if(controls)controls.style.display='none';
@@ -2677,8 +2684,11 @@ listElement.style.height='100vh';
 }
 }else{
 listElement.classList.remove('expanded');
+if(toggleBtn){
 toggleBtn.textContent='📏 Expand List';
 toggleBtn.classList.remove('active');
+}
+if(exitBtn)exitBtn.style.display='none';
 if(otcSection)otcSection.style.display='';
 if(header)header.style.display='';
 if(controls)controls.style.display='';
