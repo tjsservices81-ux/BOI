@@ -2411,7 +2411,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
 .ctrl-btn{background:rgba(102,126,234,0.15);color:#667eea;border:1px solid rgba(102,126,234,0.3);padding:8px 14px;border-radius:8px;font-size:12px;white-space:nowrap;cursor:pointer;transition:all 0.2s}
 .ctrl-btn.active{background:#667eea;color:#fff;border-color:#667eea}
 .ctrl-btn:hover{background:#667eea;color:#fff}
-.srch{padding:12px 20px;background:rgba(26,26,46,0.8);border-bottom:1px solid rgba(255,255,255,0.05)}
+.srch{padding:12px 20px;background:rgba(26,26,46,0.8);border-bottom:1px solid rgba(255,255,255,0.05);transition:all 0.3s ease}
 .srch input{width:100%;padding:12px 16px;border:1px solid rgba(102,126,234,0.3);border-radius:10px;font-size:14px;background:rgba(102,126,234,0.05);color:#fff;transition:all 0.3s}
 .srch input::placeholder{color:#8b8ba5}
 .srch input:focus{outline:none;border-color:#667eea;background:rgba(102,126,234,0.1);box-shadow:0 0 0 3px rgba(102,126,234,0.1)}
@@ -2424,8 +2424,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
 .otc-info{font-size:11px;color:#ffc107;margin-bottom:4px;font-weight:600}
 .otc-timer{font-size:11px;color:#ff6b6b;font-weight:700}
 .otc-empty{background:rgba(102,126,234,0.05);border:1px solid rgba(102,126,234,0.2);border-radius:10px;padding:20px;text-align:center;color:#8b8ba5;font-size:12px}
-.lst{padding:12px 20px 80px;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;transition:height 0.3s ease}
-.lst.expanded{max-height:none;height:calc(100vh - 180px)}
+.lst{padding:12px 20px 80px;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;transition:all 0.3s ease}
 .itm{background:rgba(26,26,46,0.8);border:1px solid rgba(102,126,234,0.2);border-radius:12px;margin-bottom:12px;transition:all 0.3s}
 .itm:hover{border-color:#667eea;box-shadow:0 4px 20px rgba(102,126,234,0.3);transform:translateY(-2px)}
 .itm-hdr{padding:14px;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
@@ -2653,19 +2652,49 @@ const listElement=document.getElementById('l');
 const toggleBtn=document.getElementById('sizeToggle');
 const otcSection=document.querySelector('.otc-sec');
 const searchSection=document.querySelector('.srch');
+const header=document.querySelector('.hdr');
+const controls=document.querySelector('.controls');
 listExpanded=!listExpanded;
 if(listExpanded){
 listElement.classList.add('expanded');
 toggleBtn.textContent='📏 Normal Size';
 toggleBtn.classList.add('active');
 if(otcSection)otcSection.style.display='none';
-if(searchSection)searchSection.style.marginBottom='0';
+if(header)header.style.display='none';
+if(controls)controls.style.display='none';
+if(searchSection){
+searchSection.style.position='fixed';
+searchSection.style.top='0';
+searchSection.style.left='0';
+searchSection.style.right='0';
+searchSection.style.zIndex='1000';
+searchSection.style.background='rgba(26,26,46,0.98)';
+searchSection.style.backdropFilter='blur(20px)';
+}
+if(listElement){
+listElement.style.paddingTop='80px';
+listElement.style.height='100vh';
+}
 }else{
 listElement.classList.remove('expanded');
 toggleBtn.textContent='📏 Expand List';
 toggleBtn.classList.remove('active');
 if(otcSection)otcSection.style.display='';
-if(searchSection)searchSection.style.marginBottom='';
+if(header)header.style.display='';
+if(controls)controls.style.display='';
+if(searchSection){
+searchSection.style.position='';
+searchSection.style.top='';
+searchSection.style.left='';
+searchSection.style.right='';
+searchSection.style.zIndex='';
+searchSection.style.background='';
+searchSection.style.backdropFilter='';
+}
+if(listElement){
+listElement.style.paddingTop='';
+listElement.style.height='';
+}
 }
 }
 async function ld(){
