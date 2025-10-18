@@ -2424,7 +2424,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
 .otc-info{font-size:11px;color:#ffc107;margin-bottom:4px;font-weight:600}
 .otc-timer{font-size:11px;color:#ff6b6b;font-weight:700}
 .otc-empty{background:rgba(102,126,234,0.05);border:1px solid rgba(102,126,234,0.2);border-radius:10px;padding:20px;text-align:center;color:#8b8ba5;font-size:12px}
-.lst{padding:12px 20px 80px;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.lst{padding:12px 20px 80px;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;transition:height 0.3s ease}
+.lst.expanded{max-height:none;height:calc(100vh - 180px)}
 .itm{background:rgba(26,26,46,0.8);border:1px solid rgba(102,126,234,0.2);border-radius:12px;margin-bottom:12px;transition:all 0.3s}
 .itm:hover{border-color:#667eea;box-shadow:0 4px 20px rgba(102,126,234,0.3);transform:translateY(-2px)}
 .itm-hdr{padding:14px;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
@@ -2506,6 +2507,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
 <button class="ctrl-btn" onclick="setSort('name')">Sort: Name</button>
 <button class="ctrl-btn" onclick="setSort('number')">Sort: Number</button>
 <button class="ctrl-btn" onclick="setSort('date')">Sort: Date</button>
+<button class="ctrl-btn" onclick="toggleListSize()" id="sizeToggle">📏 Expand List</button>
 <button class="ctrl-btn" onclick="exportData()">📥 Export CSV</button>
 </div>
 <div class="srch">
@@ -2533,6 +2535,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
 <script>
 let o=new Set();
 let allCust=[];
+let listExpanded=false;
 function tg(id){
 let d=document.getElementById('d'+id),a=document.getElementById('a'+id);
 if(o.has(id)){d.classList.remove('op');a.classList.remove('op');o.delete(id)}
@@ -2643,6 +2646,26 @@ return \`<div style="font-size:11px;color:#666;padding:2px 0">\${i+1}. \${format
 </div>\`;
 });
 document.getElementById('l').innerHTML=h;
+}
+function toggleListSize(){
+const listElement=document.getElementById('l');
+const toggleBtn=document.getElementById('sizeToggle');
+const otcSection=document.querySelector('.otc-sec');
+const searchSection=document.querySelector('.srch');
+listExpanded=!listExpanded;
+if(listExpanded){
+listElement.classList.add('expanded');
+toggleBtn.textContent='📏 Normal Size';
+toggleBtn.classList.add('active');
+if(otcSection)otcSection.style.display='none';
+if(searchSection)searchSection.style.marginBottom='0';
+}else{
+listElement.classList.remove('expanded');
+toggleBtn.textContent='📏 Expand List';
+toggleBtn.classList.remove('active');
+if(otcSection)otcSection.style.display='';
+if(searchSection)searchSection.style.marginBottom='';
+}
 }
 async function ld(){
 try{
