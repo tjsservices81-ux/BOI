@@ -328,7 +328,7 @@ export class StatementService {
        .font('Helvetica-Bold')
        .text('Date', 50, currentY)
        .text('Description', 120, currentY)
-       .text('Reference', 300, currentY)
+       .text('Type', 300, currentY)
        .text('Amount', 400, currentY)
        .text('Balance', 480, currentY);
     
@@ -393,7 +393,7 @@ export class StatementService {
            .font('Helvetica-Bold')
            .text('Date', 50, currentY)
            .text('Description', 120, currentY)
-           .text('Reference', 300, currentY)
+           .text('Type', 300, currentY)
            .text('Amount', 400, currentY)
            .text('Balance', 480, currentY);
         
@@ -422,13 +422,14 @@ export class StatementService {
          .text(date, 50, currentY)
          .text(transaction.description.substring(0, 30), 120, currentY);
       
-      // Use smaller font size for BOI references to prevent overlap with Amount column
-      const reference = transaction.reference || '-';
-      if (reference.startsWith('BOI')) {
-        doc.fontSize(8).text(reference, 300, currentY);
-      } else {
-        doc.fontSize(9).text(reference, 300, currentY);
+      // Display transaction type code
+      let typeCode = 'DEB';
+      if (transaction.type === 'credit') {
+        typeCode = 'INC';
+      } else if (transaction.category === 'transfer') {
+        typeCode = 'FPO';
       }
+      doc.fontSize(9).text(typeCode, 300, currentY);
       
       // Render amount with proper currency symbol spacing
       doc.fontSize(9);
