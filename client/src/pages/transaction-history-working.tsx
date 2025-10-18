@@ -652,7 +652,7 @@ export default function TransactionHistoryWorking() {
                   </div>
                   <div>
                     <p className="font-semibold text-green-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      {selectedTransaction.paymentMethod ? 'Transfer Complete' : 'Transaction Complete'}
+                      Transaction Complete
                     </p>
                     <p className="text-sm text-green-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                       Successfully processed
