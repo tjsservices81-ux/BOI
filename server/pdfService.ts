@@ -149,10 +149,11 @@ export async function generateTransferConfirmationPDF(
            .fillColor('#000000')
            .text('Sort Code:', leftCol, yPos);
         
+        const formattedSortCode = transferData.recipientSortCode.replace(/(\d{2})(\d{2})(\d{2})/, '$1-$2-$3');
         doc.font('Helvetica')
            .fontSize(12)
            .fillColor('#000000')
-           .text(transferData.recipientSortCode, rightCol, yPos);
+           .text(formattedSortCode, rightCol, yPos);
         
         yPos += 30;
       }
