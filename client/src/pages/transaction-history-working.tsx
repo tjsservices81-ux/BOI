@@ -682,7 +682,9 @@ export default function TransactionHistoryWorking() {
 
                 {selectedTransaction.paymentMethod && (
                   <div className="flex justify-between">
-                    <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Transfer Type:</span>
+                    <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      {selectedTransaction.paymentMethod === 'Manual Entry' ? 'Payment Method:' : 'Transfer Type:'}
+                    </span>
                     <div className="flex items-center space-x-2">
                       {selectedTransaction.paymentMethod === 'UK Transfer' ? (
                         <MapPin className="w-4 h-4 text-[#126987]" />
