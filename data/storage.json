@@ -1367,13 +1367,14 @@
         "customerNumber": "19917666",
         "pin": "000000",
         "name": "Test 12",
-        "email": "michaelmurphy18@icloud.com",
+        "email": "ryank19192@gmail.com",
         "phone": "7310658405",
-        "address": null,
-        "dateOfBirth": null,
+        "address": "",
+        "dateOfBirth": "",
         "joinDate": "2025-10-17T23:51:19.873Z",
         "dateCreated": "2025-10-17T23:51:19.873Z",
-        "isDisabled": false
+        "isDisabled": false,
+        "currency": "EUR"
       }
     ]
   ],
