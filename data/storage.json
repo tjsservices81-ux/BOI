@@ -273,22 +273,6 @@
       }
     ],
     [
-      126,
-      {
-        "id": 126,
-        "customerNumber": "53711759",
-        "pin": "",
-        "name": "Mark Lee",
-        "email": "marklee777121@icloud.com",
-        "phone": "07346575602",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "2025-10-09T13:35:48.346Z",
-        "dateCreated": "2025-10-09T13:35:48.370Z",
-        "isDisabled": false
-      }
-    ],
-    [
       128,
       {
         "id": 128,
@@ -509,22 +493,6 @@
         "dateOfBirth": null,
         "joinDate": "2025-10-08T19:25:06.377Z",
         "dateCreated": "2025-10-08T19:25:06.400Z",
-        "isDisabled": false
-      }
-    ],
-    [
-      83,
-      {
-        "id": 83,
-        "customerNumber": "16505092",
-        "pin": "",
-        "name": "Jason Andrew Mccarthy",
-        "email": "martincl1993@outlook.com",
-        "phone": "+353851323788",
-        "address": null,
-        "dateOfBirth": "1992-06-18",
-        "joinDate": "2018-05-08T18:22:30.956Z",
-        "dateCreated": "2025-10-08T18:22:31.120Z",
         "isDisabled": false
       }
     ],
@@ -1201,22 +1169,6 @@
       }
     ],
     [
-      216,
-      {
-        "id": 216,
-        "customerNumber": "74914946",
-        "pin": "",
-        "name": "Jake lee",
-        "email": "jakelee112@gmail.com",
-        "phone": "07432954325",
-        "address": null,
-        "dateOfBirth": "2006-06-18",
-        "joinDate": "2025-10-16T22:15:43.279Z",
-        "dateCreated": "2025-10-16T22:15:43.239Z",
-        "isDisabled": false
-      }
-    ],
-    [
       217,
       {
         "id": 217,
@@ -1376,6 +1328,86 @@
         "isDisabled": false,
         "currency": "EUR"
       }
+    ],
+    [
+      220,
+      {
+        "id": 220,
+        "customerNumber": "98081392",
+        "pin": "",
+        "name": "JOHN HENRY",
+        "email": "JOHN27@GMAIL.COM",
+        "phone": "003532415249",
+        "address": null,
+        "dateOfBirth": "1995-03-19",
+        "joinDate": "2025-10-19T23:26:30.600Z",
+        "dateCreated": "2025-10-19T23:26:30.558Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      224,
+      {
+        "id": 224,
+        "customerNumber": "48275964",
+        "pin": "",
+        "name": "Peter",
+        "email": "u4martin76@outlook.com",
+        "phone": "07828111545",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "dateCreated": "2025-10-20T11:36:23.966Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      225,
+      {
+        "id": 225,
+        "customerNumber": "81661588",
+        "pin": "",
+        "name": "Issac Macer",
+        "email": "issacmacer@gmail.com",
+        "phone": "777",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-10-20T12:01:24.528Z",
+        "dateCreated": "2025-10-20T12:01:24.500Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      222,
+      {
+        "id": 222,
+        "customerNumber": "19785363",
+        "pin": "",
+        "name": "Jake lee",
+        "email": "jakelee111@gmail.com",
+        "phone": "07404139151",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "dateCreated": "2025-10-20T11:15:51.333Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      223,
+      {
+        "id": 223,
+        "customerNumber": "54451354",
+        "pin": "",
+        "name": "Mark Lee",
+        "email": "marklee777121@icloud.com",
+        "phone": "+447346575602",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "dateCreated": "2025-10-20T11:19:06.581Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [],
@@ -1387,7 +1419,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 219,
+    "currentUserId": 226,
     "currentAccountId": 79,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
