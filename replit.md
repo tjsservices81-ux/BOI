@@ -6,6 +6,12 @@ This project is a comprehensive mobile banking application, implemented as a Pro
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
+**Deployment Protocol:**
+- **ALWAYS** increment the PWA version number in `sw.js` (line 6: `CACHE_NAME`) before every deployment/republishing
+- Current version format: `boi-mobile-v1.X.X`
+- Increment the minor version number (e.g., v1.2.0 → v1.3.0) for each deployment
+- This ensures all users with the PWA installed automatically receive updates when they next open the app
+
 ## System Architecture
 
 ### Frontend
