@@ -1408,6 +1408,22 @@
         "dateCreated": "2025-10-20T11:19:06.581Z",
         "isDisabled": false
       }
+    ],
+    [
+      226,
+      {
+        "id": 226,
+        "customerNumber": "26262660",
+        "pin": "",
+        "name": "p",
+        "email": "mcd@outlook.com",
+        "phone": "075254596555",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "dateCreated": "2025-10-20T12:29:45.422Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [],
@@ -1419,7 +1435,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 226,
+    "currentUserId": 227,
     "currentAccountId": 79,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
