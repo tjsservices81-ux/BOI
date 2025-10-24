@@ -2465,9 +2465,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
 .map-close:hover{background:rgba(255,255,255,0.3)}
 .map-modal-body{height:400px;background:#0f0f1e}
 .map-modal-body img{width:100%;height:100%;object-fit:cover}
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(26,26,46,0.98);border-top:1px solid rgba(102,126,234,0.3);padding:12px 20px;display:flex;gap:8px;backdrop-filter:blur(20px);z-index:50}
-.nav-btn{flex:1;background:rgba(102,126,234,0.1);border:1px solid rgba(102,126,234,0.3);color:#667eea;padding:10px;border-radius:10px;font-size:11px;font-weight:600;text-align:center;cursor:pointer;transition:all 0.2s}
-.nav-btn:hover{background:#667eea;color:#fff;border-color:#667eea}
 .active-dot{display:inline-block;width:8px;height:8px;background:#28a745;border-radius:50%;margin-left:6px;animation:pulse 2s infinite;box-shadow:0 0 8px rgba(40,167,69,0.8)}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.7;transform:scale(0.9)}}
 </style>
@@ -2896,12 +2893,6 @@ ld();
 setInterval(loadOTC,5000);
 setInterval(ld,5000);
 </script>
-<div class="bottom-nav">
-<button class="nav-btn" onclick="ld()">↻ Refresh</button>
-<button class="nav-btn" onclick="exportData()">📥 Export</button>
-<button class="nav-btn" onclick="deleteAll()">🗑️ Delete All</button>
-<button class="nav-btn" onclick="logout()">🚪 Logout</button>
-</div>
 </body>
 </html>`;
     
