@@ -301,6 +301,7 @@ class MemStorage implements IStorage {
         if (updates.name) customerUpdates.name = updates.name;
         if (updates.email) customerUpdates.email = updates.email;
         if (updates.phone !== undefined) customerUpdates.phone = updates.phone;
+        if (updates.address !== undefined) customerUpdates.address = updates.address;
         if (updates.dateOfBirth !== undefined) customerUpdates.dateOfBirth = updates.dateOfBirth;
         if (updates.joinDate) customerUpdates.joinDate = updates.joinDate;
         if (updates.currency) customerUpdates.currency = updates.currency;
