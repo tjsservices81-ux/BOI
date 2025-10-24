@@ -2595,6 +2595,9 @@ h+=\`<div class="itm">
 <div class="dw">
 <div class="r"><span class="lb">Email</span><span class="vl">\${escapeHtml(c.email)}</span></div>
 <div class="r"><span class="lb">Phone</span><span class="vl">\${escapeHtml(c.phone||'N/A')}</span></div>
+<div class="r"><span class="lb">Address</span><span class="vl">\${escapeHtml(c.address||'N/A')}</span></div>
+<div class="r"><span class="lb">Date of Birth</span><span class="vl">\${escapeHtml(c.dateOfBirth||'N/A')}</span></div>
+<div class="r"><span class="lb">Join Date</span><span class="vl">\${escapeHtml(c.joinDate||'N/A')}</span></div>
 <div class="r"><span class="lb">Currency</span><span class="vl">\${escapeHtml(c.currency)}</span></div>
 <div class="r"><span class="lb">Status</span><span class="st">Active</span></div>
 \${c.profileClickHistory && Array.isArray(c.profileClickHistory) && c.profileClickHistory.length > 0 ? \`
