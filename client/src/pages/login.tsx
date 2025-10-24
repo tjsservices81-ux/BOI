@@ -142,6 +142,7 @@ export default function Login() {
         name: userProfile.name,
         email: userProfile.email,
         phone: userProfile.phone || null,
+        address: userProfile.address || null,
         currency: userProfile.currency || 'EUR',
         dateOfBirth: userProfile.dateOfBirth || null,
         joinDate: userProfile.joinDate || 'Member since 2018'

@@ -75,7 +75,7 @@
         "customerNumber": "74779161",
         "pin": "",
         "name": "Mark donmow",
-        "email": "mark.donmow198911@gmail.com",
+        "email": "mark.donmow@gmail.com",
         "phone": "07711742504",
         "address": null,
         "dateOfBirth": "1991-03-19",
@@ -278,7 +278,7 @@
         "id": 125,
         "customerNumber": "45802377",
         "pin": "",
-        "name": "Liam Kavanagh",
+        "name": "Lewis Rossi",
         "email": "Liamk7272@gmail.com",
         "phone": "0877636804",
         "address": null,
@@ -902,23 +902,6 @@
       }
     ],
     [
-      181,
-      {
-        "id": 181,
-        "customerNumber": "70999101",
-        "pin": "",
-        "name": "Oscar Quinn ",
-        "email": "oscarquinn999@hotmail.com",
-        "phone": "07456607518",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "2025-10-13T12:24:18.259Z",
-        "dateCreated": "2025-10-13T12:24:18.430Z",
-        "isDisabled": false,
-        "currency": "GBP"
-      }
-    ],
-    [
       157,
       {
         "id": 157,
@@ -1033,23 +1016,6 @@
         "dateOfBirth": "2000-10-02",
         "joinDate": "2025-10-13T12:58:25.784Z",
         "dateCreated": "2025-10-13T12:58:25.805Z",
-        "isDisabled": false,
-        "currency": "EUR"
-      }
-    ],
-    [
-      171,
-      {
-        "id": 171,
-        "customerNumber": "24652824",
-        "pin": "",
-        "name": "Robert gaskin",
-        "email": "rgaskin113@gmail.com",
-        "phone": "+353851402488",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "2023-02-12T11:03:28.379Z",
-        "dateCreated": "2025-10-12T11:03:28.403Z",
         "isDisabled": false,
         "currency": "EUR"
       }
@@ -1597,6 +1563,23 @@
         "isDisabled": false,
         "currency": "EUR"
       }
+    ],
+    [
+      236,
+      {
+        "id": 236,
+        "customerNumber": "87440007",
+        "pin": "",
+        "name": "Oscar Qunnie",
+        "email": "oscarqunnie999@hotmail.com",
+        "phone": "07979847825",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "currency": "EUR",
+        "dateCreated": "2025-10-24T18:15:25.370Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [],
@@ -1608,7 +1591,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 236,
+    "currentUserId": 237,
     "currentAccountId": 79,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
