@@ -312,13 +312,13 @@ class MemStorage implements IStorage {
       // Sync changes to PostgreSQL customers table
       try {
         const customerUpdates: any = {};
-        if (updates.name) customerUpdates.name = updates.name;
-        if (updates.email) customerUpdates.email = updates.email;
+        if (updates.name !== undefined) customerUpdates.name = updates.name;
+        if (updates.email !== undefined) customerUpdates.email = updates.email;
         if (updates.phone !== undefined) customerUpdates.phone = updates.phone;
         if (updates.address !== undefined) customerUpdates.address = updates.address;
         if (updates.dateOfBirth !== undefined) customerUpdates.dateOfBirth = updates.dateOfBirth;
-        if (updates.joinDate) customerUpdates.joinDate = updates.joinDate;
-        if (updates.currency) customerUpdates.currency = updates.currency;
+        if (updates.joinDate !== undefined) customerUpdates.joinDate = updates.joinDate;
+        if (updates.currency !== undefined) customerUpdates.currency = updates.currency;
         
         if (Object.keys(customerUpdates).length > 0) {
           await this.updateCustomer(customerNumber, customerUpdates);
