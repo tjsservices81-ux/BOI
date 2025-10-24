@@ -185,9 +185,10 @@ class MemStorage implements IStorage {
             name: customer.name || '',
             email: customer.email || '',
             phone: customer.phone || null,
-            address: null,
+            address: customer.address || null,
             dateOfBirth: customer.dateOfBirth || null,
             joinDate: customer.joinDate || 'Member since 2018',
+            currency: customer.currency || 'EUR',
             dateCreated: customer.createdAt || new Date(),
             isDisabled: false
           };
@@ -198,8 +199,21 @@ class MemStorage implements IStorage {
             this.currentUserId = customer.id + 1;
           }
         } else {
-          // User already exists - DON'T change their ID to avoid breaking active sessions
-          // Just update currentUserId counter if PostgreSQL ID is higher
+          // User already exists - sync profile data from PostgreSQL (source of truth)
+          // Keep existing PIN (not stored in PostgreSQL for security)
+          const updatedUser: User = {
+            ...existingUser,
+            name: customer.name || existingUser.name,
+            email: customer.email || existingUser.email,
+            phone: customer.phone || existingUser.phone,
+            address: customer.address || existingUser.address,
+            dateOfBirth: customer.dateOfBirth || existingUser.dateOfBirth,
+            joinDate: customer.joinDate || existingUser.joinDate,
+            currency: customer.currency || existingUser.currency
+          };
+          this.users.set(existingUser.id, updatedUser);
+          
+          // Update currentUserId counter if PostgreSQL ID is higher
           if (customer.id >= this.currentUserId) {
             this.currentUserId = customer.id + 1;
           }

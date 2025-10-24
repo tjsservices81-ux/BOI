@@ -98,6 +98,7 @@ export const customers = pgTable("customers", {
   name: text("name").notNull(),
   email: text("email").notNull(),
   phone: text("phone"),
+  address: text("address"),
   dateOfBirth: text("date_of_birth"),
   joinDate: text("join_date").notNull(),
   currency: text("currency").notNull().default("EUR"),
