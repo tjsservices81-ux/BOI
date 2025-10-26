@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, CreditCard, ArrowUpRight, ArrowDownRight, Banknote, ShoppingCart, Zap, Home, DollarSign, TrendingUp, Coins } from "lucide-react";
 import { useLocation } from "wouter";
 import { useState, useEffect } from "react";
 import { UserDataManager } from "../utils/userDataManager";
@@ -159,6 +159,38 @@ export default function Transactions() {
     }
   };
 
+  const getTransactionIcon = (description: string, type: string) => {
+    const desc = description.toUpperCase();
+    
+    if (desc.includes('ATM') || desc.includes('WITHDRAWAL')) {
+      return { icon: Banknote, color: 'bg-blue-500', bgColor: 'bg-blue-100' };
+    }
+    if (desc.includes('DIRECT DEBIT') || desc.includes('ELECTRIC') || desc.includes('BILL')) {
+      return { icon: Zap, color: 'bg-orange-500', bgColor: 'bg-orange-100' };
+    }
+    if (desc.includes('PURCHASE') || desc.includes('SHOP') || desc.includes('TESCO') || desc.includes('SUPERVALU')) {
+      return { icon: ShoppingCart, color: 'bg-purple-500', bgColor: 'bg-purple-100' };
+    }
+    if (desc.includes('SALARY') || desc.includes('PAYMENT RECEIVED') || desc.includes('INTEREST')) {
+      return { icon: TrendingUp, color: 'bg-green-500', bgColor: 'bg-green-100' };
+    }
+    if (desc.includes('RENT') || desc.includes('STANDING ORDER')) {
+      return { icon: Home, color: 'bg-indigo-500', bgColor: 'bg-indigo-100' };
+    }
+    if (desc.includes('TRANSFER') || desc.includes('DEPOSIT')) {
+      return { icon: ArrowDownRight, color: 'bg-cyan-500', bgColor: 'bg-cyan-100' };
+    }
+    if (desc.includes('CASHBACK') || desc.includes('REWARD')) {
+      return { icon: Coins, color: 'bg-yellow-500', bgColor: 'bg-yellow-100' };
+    }
+    
+    // Default based on transaction type
+    if (type === 'credit') {
+      return { icon: ArrowDownRight, color: 'bg-green-500', bgColor: 'bg-green-100' };
+    }
+    return { icon: CreditCard, color: 'bg-blue-500', bgColor: 'bg-blue-100' };
+  };
+
   const getTransactions = (): Transaction[] => {
     // If user has dynamic transactions, use those, otherwise fall back to default data
     if (dynamicTransactions.length > 0) {
@@ -245,50 +277,72 @@ export default function Transactions() {
         </div>
       </div>
 
-      {/* Transaction List - BOI Style */}
-      <div className="flex-1 overflow-y-auto bg-white ios-scroll -mt-2" style={{ overscrollBehavior: 'contain' }}>
-        <div className="bg-white rounded-t-2xl pt-6">
-          <div className="px-4 pb-2">
-            <h2 className="text-lg font-medium text-gray-800 mb-3 boi-regular-font">Recent Transactions</h2>
+      {/* Transaction List - Modern Card Design */}
+      <div className="flex-1 overflow-y-auto bg-gray-50 ios-scroll -mt-2 pb-4" style={{ overscrollBehavior: 'contain' }}>
+        <div className="bg-gray-50 rounded-t-2xl pt-6">
+          <div className="px-4 pb-4">
+            <h2 className="text-lg font-semibold text-gray-900 mb-1 boi-semibold-font">Recent Activity</h2>
+            <p className="text-sm text-gray-500 boi-regular-font">{transactions.length} transactions</p>
           </div>
           
-          <div className="space-y-0">
-            {transactions.map((transaction, index) => (
-              <div 
-                key={transaction.id}
-                className="px-4 py-4 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer haptic-feedback stagger-item"
-                style={{ animationDelay: `${index * 0.05}s` }}
-                onClick={() => {
-                  const currency = getUserCurrency();
-                  const currencySymbol = getCurrencySymbol(currency);
-                  alert(`Transaction details: ${transaction.description}\nAmount: ${currencySymbol}${Math.abs(transaction.amount).toFixed(2)}\nDate: ${transaction.date}\nBalance after: ${currencySymbol}${transaction.balance.toFixed(2)}`);
-                }}
-              >
-                <div className="flex justify-between items-start">
-                  {/* Left side - Transaction info */}
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900 boi-regular-font leading-tight">
-                      {transaction.description}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1 boi-regular-font">
-                      {transaction.date}
-                    </p>
-                  </div>
-                  
-                  {/* Right side - Amount */}
-                  <div className="text-right ml-4">
-                    <p className={`text-sm font-semibold boi-semibold-font ${
-                      transaction.type === 'credit' 
-                        ? 'text-green-600' 
-                        : 'text-gray-900'
-                    }`}>
-                      {transaction.type === 'credit' ? '+' : ''}{formatCurrency(transaction.amount, getUserCurrency())}
-                    </p>
+          <div className="space-y-3 px-4">
+            {transactions.map((transaction, index) => {
+              const iconData = getTransactionIcon(transaction.description, transaction.type);
+              const Icon = iconData.icon;
+              
+              return (
+                <div 
+                  key={transaction.id}
+                  data-testid={`transaction-card-${transaction.id}`}
+                  className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-all cursor-pointer haptic-feedback stagger-item active:scale-[0.98]"
+                  style={{ animationDelay: `${index * 0.05}s` }}
+                  onClick={() => {
+                    const currency = getUserCurrency();
+                    const currencySymbol = getCurrencySymbol(currency);
+                    alert(`Transaction details: ${transaction.description}\nAmount: ${currencySymbol}${Math.abs(transaction.amount).toFixed(2)}\nDate: ${transaction.date}\nBalance after: ${currencySymbol}${transaction.balance.toFixed(2)}`);
+                  }}
+                >
+                  <div className="flex items-center gap-3">
+                    {/* Blue Square Icon Box */}
+                    <div className={`w-12 h-12 rounded-xl ${iconData.bgColor} flex items-center justify-center flex-shrink-0 shadow-sm`}>
+                      <Icon className={`w-6 h-6 ${iconData.color.replace('bg-', 'text-')}`} />
+                    </div>
+                    
+                    {/* Transaction Details */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-900 boi-semibold-font truncate leading-tight">
+                        {transaction.description}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1 boi-regular-font">
+                        {transaction.date}
+                      </p>
+                    </div>
+                    
+                    {/* Amount */}
+                    <div className="text-right flex-shrink-0">
+                      <p className={`text-base font-bold boi-semibold-font ${
+                        transaction.type === 'credit' 
+                          ? 'text-green-600' 
+                          : 'text-gray-900'
+                      }`}>
+                        {transaction.type === 'credit' ? '+' : ''}{formatCurrency(transaction.amount, getUserCurrency())}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
+          
+          {/* Empty State */}
+          {transactions.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-12 px-4">
+              <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                <CreditCard className="w-8 h-8 text-gray-400" />
+              </div>
+              <p className="text-gray-500 text-center boi-regular-font">No transactions yet</p>
+            </div>
+          )}
         </div>
       </div>
 
