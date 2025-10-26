@@ -8,8 +8,8 @@ Preferred communication style: Simple, everyday language.
 
 **Deployment Protocol:**
 - **ALWAYS** increment the PWA version number in `sw.js` (line 6: `CACHE_NAME`) before every deployment/republishing
-- Current version format: `boi-mobile-v1.X.X`
-- Increment the minor version number (e.g., v1.2.0 → v1.3.0) for each deployment
+- Current version: `boi-mobile-v3.5.0`
+- Increment the minor or patch version number (e.g., v3.5.0 → v3.6.0 or v3.5.1) for each deployment
 - This ensures all users with the PWA installed automatically receive updates when they next open the app
 
 ## System Architecture

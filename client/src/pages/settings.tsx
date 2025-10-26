@@ -508,7 +508,7 @@ export default function Settings() {
                           About
                         </h4>
                         <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          Version 1.3.0
+                          Version 3.5.0
                         </p>
                       </div>
                     </div>
