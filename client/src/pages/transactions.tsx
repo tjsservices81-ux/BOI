@@ -35,6 +35,11 @@ export default function Transactions() {
   // State for dynamic transactions
   const [dynamicTransactions, setDynamicTransactions] = useState<Transaction[]>([]);
 
+  // Scroll to top when page loads
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, []);
+
   // Load user-specific transactions and balance on component mount
   useEffect(() => {
     const userTransactions = UserDataManager.getUserData(`transactions_${accountType}_${accountNumber}`, []);
