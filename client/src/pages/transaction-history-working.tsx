@@ -55,11 +55,6 @@ export default function TransactionHistoryWorking() {
   
   const accountId = params?.accountId ? parseInt(params.accountId) : 1;
 
-  // Scroll to top when page loads
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'instant' });
-  }, []);
-
   // Listen for setting changes
   useEffect(() => {
     const handleStorageChange = () => {
