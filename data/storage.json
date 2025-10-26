@@ -1597,9 +1597,63 @@
         "dateCreated": "2025-10-25T10:49:13.314Z",
         "isDisabled": false
       }
+    ],
+    [
+      238,
+      {
+        "id": 238,
+        "customerNumber": "26690147",
+        "pin": "000000",
+        "name": "Test",
+        "email": "test@gmail.com",
+        "phone": "1545",
+        "address": "",
+        "dateOfBirth": "",
+        "joinDate": "2025-10-26T09:43:36.947Z",
+        "dateCreated": "2025-10-26T09:43:36.947Z",
+        "isDisabled": false,
+        "currency": "EUR"
+      }
     ]
   ],
-  "accounts": [],
+  "accounts": [
+    [
+      79,
+      {
+        "id": 79,
+        "userId": 238,
+        "accountType": "current",
+        "accountNumber": "****2091",
+        "balance": "0.00",
+        "displayName": "Current Account",
+        "sortCode": "90-78-68"
+      }
+    ],
+    [
+      80,
+      {
+        "id": 80,
+        "userId": 238,
+        "accountType": "credit",
+        "accountNumber": "****1820",
+        "balance": "0.00",
+        "displayName": "Credit Card",
+        "sortCode": "90-78-68"
+      }
+    ],
+    [
+      81,
+      {
+        "id": 81,
+        "userId": 238,
+        "accountType": "savings",
+        "accountNumber": "****0978",
+        "balance": "0.00",
+        "displayName": "Savings Account",
+        "sortCode": "90-78-68"
+      }
+    ]
+  ],
   "transactions": [],
   "payees": [],
   "scheduledPayments": [],
@@ -1608,8 +1662,8 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 238,
-    "currentAccountId": 79,
+    "currentUserId": 239,
+    "currentAccountId": 82,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
     "currentScheduledPaymentId": 1,
