@@ -1,5 +1,5 @@
 import { useLocation } from "wouter";
-import { ChevronLeft, Bell, Mail, ScanFace } from "lucide-react";
+import { ChevronLeft, Bell, Mail, ScanFace, Shield, ChevronRight, MapPin, FileText, Download, Globe, Clock, HelpCircle, Phone, Info } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Switch } from "@/components/ui/switch";
 import { getUserCurrency } from "../utils/currencyUtils";
@@ -29,16 +29,6 @@ export default function Settings() {
     return saved !== null ? JSON.parse(saved) : false;
   });
 
-  const [recipientEmailEnabled, setRecipientEmailEnabled] = useState(() => {
-    const saved = localStorage.getItem('recipientEmailEnabled');
-    return saved !== null ? JSON.parse(saved) : false;
-  });
-
-  const [ibanEmailEnabled, setIbanEmailEnabled] = useState(() => {
-    const saved = localStorage.getItem('ibanEmailEnabled');
-    return saved !== null ? JSON.parse(saved) : false;
-  });
-
   // Save settings to localStorage when they change
   useEffect(() => {
     localStorage.setItem('notificationsEnabled', JSON.stringify(notificationsEnabled));
@@ -51,18 +41,6 @@ export default function Settings() {
   useEffect(() => {
     localStorage.setItem('faceIdEnabled', JSON.stringify(faceIdEnabled));
   }, [faceIdEnabled]);
-
-  useEffect(() => {
-    localStorage.setItem('recipientEmailEnabled', JSON.stringify(recipientEmailEnabled));
-    // Dispatch custom event so other components can react
-    window.dispatchEvent(new CustomEvent('recipientEmailEnabledChanged', { detail: recipientEmailEnabled }));
-  }, [recipientEmailEnabled]);
-
-  useEffect(() => {
-    localStorage.setItem('ibanEmailEnabled', JSON.stringify(ibanEmailEnabled));
-    // Dispatch custom event so other components can react
-    window.dispatchEvent(new CustomEvent('ibanEmailEnabledChanged', { detail: ibanEmailEnabled }));
-  }, [ibanEmailEnabled]);
 
   const handleNavigation = (path: string) => {
     setIsNavigating(true);
@@ -323,52 +301,220 @@ export default function Settings() {
                     />
                   </div>
                 </div>
+              </div>
+            </div>
 
-                {/* Recipient Email on UK Transfer */}
+            {/* Privacy & Permissions */}
+            <div>
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Privacy & Permissions
+              </h3>
+              <div className="bg-gray-50 rounded-2xl p-1 space-y-1">
                 <div className="bg-white rounded-xl p-4 shadow-sm">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <div className="w-10 h-10 bg-gradient-to-br from-[#126987] to-[#0d4e63] rounded-xl flex items-center justify-center">
-                        <Mail className="w-5 h-5 text-white" />
+                        <Shield className="w-5 h-5 text-white" />
                       </div>
                       <div>
                         <h4 className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          Recipient Email (UK)
+                          Biometric Data
                         </h4>
                         <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          Send copy to recipient
+                          Face ID and fingerprint
                         </p>
                       </div>
                     </div>
-                    <Switch
-                      checked={recipientEmailEnabled}
-                      onCheckedChange={setRecipientEmailEnabled}
-                      data-testid="toggle-recipient-email"
-                    />
+                    <button className="text-gray-400" data-testid="button-biometric-info">
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
                   </div>
                 </div>
-
-                {/* SEPA Email */}
                 <div className="bg-white rounded-xl p-4 shadow-sm">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <div className="w-10 h-10 bg-gradient-to-br from-[#126987] to-[#0d4e63] rounded-xl flex items-center justify-center">
-                        <Mail className="w-5 h-5 text-white" />
+                        <MapPin className="w-5 h-5 text-white" />
                       </div>
                       <div>
                         <h4 className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          Recipient Email (SEPA)
+                          Location Services
                         </h4>
                         <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          Send copy to recipient
+                          For ATM finder and security
                         </p>
                       </div>
                     </div>
-                    <Switch
-                      checked={ibanEmailEnabled}
-                      onCheckedChange={setIbanEmailEnabled}
-                      data-testid="toggle-iban-email"
-                    />
+                    <button className="text-gray-400" data-testid="button-location-info">
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Statements & Documents */}
+            <div>
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Statements & Documents
+              </h3>
+              <div className="bg-gray-50 rounded-2xl p-1 space-y-1">
+                <div className="bg-white rounded-xl p-4 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-[#126987] to-[#0d4e63] rounded-xl flex items-center justify-center">
+                        <FileText className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Statement Frequency
+                        </h4>
+                        <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Monthly statements
+                        </p>
+                      </div>
+                    </div>
+                    <button className="text-gray-400" data-testid="button-statement-frequency">
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+                <div className="bg-white rounded-xl p-4 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-[#126987] to-[#0d4e63] rounded-xl flex items-center justify-center">
+                        <Download className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Document Delivery
+                        </h4>
+                        <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Email or post
+                        </p>
+                      </div>
+                    </div>
+                    <button className="text-gray-400" data-testid="button-document-delivery">
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* App Preferences */}
+            <div>
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                App Preferences
+              </h3>
+              <div className="bg-gray-50 rounded-2xl p-1 space-y-1">
+                <div className="bg-white rounded-xl p-4 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-[#126987] to-[#0d4e63] rounded-xl flex items-center justify-center">
+                        <Globe className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Language
+                        </h4>
+                        <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          English (UK)
+                        </p>
+                      </div>
+                    </div>
+                    <button className="text-gray-400" data-testid="button-language">
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+                <div className="bg-white rounded-xl p-4 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-[#126987] to-[#0d4e63] rounded-xl flex items-center justify-center">
+                        <Clock className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Auto-Lock
+                        </h4>
+                        <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          After 5 minutes
+                        </p>
+                      </div>
+                    </div>
+                    <button className="text-gray-400" data-testid="button-auto-lock">
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Help & Support */}
+            <div className="pb-4">
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Help & Support
+              </h3>
+              <div className="bg-gray-50 rounded-2xl p-1 space-y-1">
+                <div className="bg-white rounded-xl p-4 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-[#126987] to-[#0d4e63] rounded-xl flex items-center justify-center">
+                        <HelpCircle className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Help Centre
+                        </h4>
+                        <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          FAQs and guides
+                        </p>
+                      </div>
+                    </div>
+                    <button className="text-gray-400" data-testid="button-help-centre">
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+                <div className="bg-white rounded-xl p-4 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-[#126987] to-[#0d4e63] rounded-xl flex items-center justify-center">
+                        <Phone className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Contact Us
+                        </h4>
+                        <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          24/7 customer support
+                        </p>
+                      </div>
+                    </div>
+                    <button className="text-gray-400" data-testid="button-contact-us">
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+                <div className="bg-white rounded-xl p-4 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-[#126987] to-[#0d4e63] rounded-xl flex items-center justify-center">
+                        <Info className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          About
+                        </h4>
+                        <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Version 1.3.0
+                        </p>
+                      </div>
+                    </div>
+                    <button className="text-gray-400" data-testid="button-about">
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
                   </div>
                 </div>
               </div>

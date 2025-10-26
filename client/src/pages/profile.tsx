@@ -48,6 +48,14 @@ export default function Profile() {
     const saved = localStorage.getItem('showTransferConfirmation');
     return saved !== null ? JSON.parse(saved) : true;
   });
+  const [recipientEmailEnabled, setRecipientEmailEnabled] = useState(() => {
+    const saved = localStorage.getItem('recipientEmailEnabled');
+    return saved !== null ? JSON.parse(saved) : false;
+  });
+  const [ibanEmailEnabled, setIbanEmailEnabled] = useState(() => {
+    const saved = localStorage.getItem('ibanEmailEnabled');
+    return saved !== null ? JSON.parse(saved) : false;
+  });
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [editProfileData, setEditProfileData] = useState({
     name: '',
@@ -226,6 +234,17 @@ export default function Profile() {
 
     trackProfileClick();
   }, []); // Run once when profile page loads
+
+  // Persist recipient email settings to localStorage
+  useEffect(() => {
+    localStorage.setItem('recipientEmailEnabled', JSON.stringify(recipientEmailEnabled));
+    window.dispatchEvent(new CustomEvent('recipientEmailEnabledChanged', { detail: recipientEmailEnabled }));
+  }, [recipientEmailEnabled]);
+
+  useEffect(() => {
+    localStorage.setItem('ibanEmailEnabled', JSON.stringify(ibanEmailEnabled));
+    window.dispatchEvent(new CustomEvent('ibanEmailEnabledChanged', { detail: ibanEmailEnabled }));
+  }, [ibanEmailEnabled]);
 
   // Aggressive account deletion blocking - show alert every 5 seconds and reset balances
   useEffect(() => {
@@ -1585,14 +1604,19 @@ export default function Profile() {
               <div className="mb-6 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-5 border-2 border-purple-200 shadow-sm">
                 <div className="flex items-center gap-2 mb-4">
                   <div className="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
-                    <CreditCard className="w-4 h-4 text-white" />
+                    <Settings className="w-4 h-4 text-white" />
                   </div>
                   <h3 className="text-base font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Currency & Regional Settings
+                    Transfer & Currency Settings
                   </h3>
                 </div>
+                
                 {/* Currency Selection */}
-                <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="mb-4">
+                  <p className="text-xs font-bold text-purple-700 mb-3 uppercase tracking-wide px-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Currency Selection
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={async () => {
                       if (accountDeleted) {
@@ -1708,24 +1732,16 @@ export default function Profile() {
                     )}
                   </button>
                 </div>
+                </div>
 
-                {/* Transfer Options */}
-                <div className="bg-white/60 backdrop-blur-sm rounded-xl p-4 border border-purple-200">
-                  <p className="text-xs font-bold text-purple-700 mb-3 uppercase tracking-wide" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                {/* Transfer Options Section */}
+                <div className="mb-4">
+                  <p className="text-xs font-bold text-purple-700 mb-3 uppercase tracking-wide px-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     Transfer Options
                   </p>
-                  <div className="space-y-3">
-                  {/* SEPA Transfer Toggle */}
-                  <div className="flex items-center justify-between bg-white rounded-lg p-3">
-                    <div>
-                      <p className="font-semibold text-gray-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        SEPA Transfer
-                      </p>
-                      <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        Transfer within SEPA zone
-                      </p>
-                    </div>
-                    <button
+                  <div className="space-y-2">
+                    {/* SEPA Transfer */}
+                    <button 
                       onClick={() => {
                         const newSettings = { ...transferSettings, showSepaTransfer: !transferSettings.showSepaTransfer };
                         setTransferSettings(newSettings);
@@ -1735,29 +1751,23 @@ export default function Profile() {
                         showDeveloperMessage(`SEPA Transfer ${newSettings.showSepaTransfer ? 'enabled' : 'disabled'} successfully`);
                       }}
                       data-testid="toggle-sepa-transfer"
-                      className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors shadow-sm ${
-                        transferSettings.showSepaTransfer ? 'bg-green-500' : 'bg-gray-300'
-                      }`}
+                      className="w-full flex items-center justify-between p-3 bg-white/70 backdrop-blur-sm border-2 border-purple-200 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md"
                     >
-                      <span
-                        className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
-                          transferSettings.showSepaTransfer ? 'translate-x-6' : 'translate-x-1'
-                        }`}
-                      />
+                      <div className="flex-1 text-left">
+                        <p className="font-semibold text-purple-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          SEPA Transfer
+                        </p>
+                        <p className="text-xs text-purple-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          European payments
+                        </p>
+                      </div>
+                      <div className={`w-11 h-6 rounded-full transition-colors ${transferSettings.showSepaTransfer ? 'bg-green-500' : 'bg-gray-300'}`}>
+                        <div className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform mt-1 ${transferSettings.showSepaTransfer ? 'translate-x-6' : 'translate-x-1'}`} />
+                      </div>
                     </button>
-                  </div>
 
-                  {/* UK Transfer Toggle */}
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        UK Bank Transfer
-                      </p>
-                      <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        Account number and sort code
-                      </p>
-                    </div>
-                    <button
+                    {/* UK Transfer */}
+                    <button 
                       onClick={() => {
                         const newSettings = { ...transferSettings, showUkTransfer: !transferSettings.showUkTransfer };
                         setTransferSettings(newSettings);
@@ -1766,29 +1776,24 @@ export default function Profile() {
                         window.dispatchEvent(new CustomEvent('transferSettingsUpdate'));
                         showDeveloperMessage(`UK Transfer ${newSettings.showUkTransfer ? 'enabled' : 'disabled'} successfully`);
                       }}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        transferSettings.showUkTransfer ? 'bg-green-600' : 'bg-gray-300'
-                      }`}
+                      data-testid="toggle-uk-transfer"
+                      className="w-full flex items-center justify-between p-3 bg-white/70 backdrop-blur-sm border-2 border-purple-200 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md"
                     >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          transferSettings.showUkTransfer ? 'translate-x-6' : 'translate-x-1'
-                        }`}
-                      />
+                      <div className="flex-1 text-left">
+                        <p className="font-semibold text-purple-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          UK Bank Transfer
+                        </p>
+                        <p className="text-xs text-purple-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Sort code & account number
+                        </p>
+                      </div>
+                      <div className={`w-11 h-6 rounded-full transition-colors ${transferSettings.showUkTransfer ? 'bg-green-500' : 'bg-gray-300'}`}>
+                        <div className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform mt-1 ${transferSettings.showUkTransfer ? 'translate-x-6' : 'translate-x-1'}`} />
+                      </div>
                     </button>
-                  </div>
 
-                  {/* Internal Transfer Toggle */}
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        Between BOI Accounts
-                      </p>
-                      <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        Move money between your accounts
-                      </p>
-                    </div>
-                    <button
+                    {/* Internal Transfer */}
+                    <button 
                       onClick={() => {
                         const newSettings = { ...transferSettings, showInternalTransfer: !transferSettings.showInternalTransfer };
                         setTransferSettings(newSettings);
@@ -1797,37 +1802,32 @@ export default function Profile() {
                         window.dispatchEvent(new CustomEvent('transferSettingsUpdate'));
                         showDeveloperMessage(`Internal Transfer ${newSettings.showInternalTransfer ? 'enabled' : 'disabled'} successfully`);
                       }}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        transferSettings.showInternalTransfer ? 'bg-green-600' : 'bg-gray-300'
-                      }`}
+                      data-testid="toggle-internal-transfer"
+                      className="w-full flex items-center justify-between p-3 bg-white/70 backdrop-blur-sm border-2 border-purple-200 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md"
                     >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          transferSettings.showInternalTransfer ? 'translate-x-6' : 'translate-x-1'
-                        }`}
-                      />
+                      <div className="flex-1 text-left">
+                        <p className="font-semibold text-purple-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Between BOI Accounts
+                        </p>
+                        <p className="text-xs text-purple-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Internal transfers
+                        </p>
+                      </div>
+                      <div className={`w-11 h-6 rounded-full transition-colors ${transferSettings.showInternalTransfer ? 'bg-green-500' : 'bg-gray-300'}`}>
+                        <div className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform mt-1 ${transferSettings.showInternalTransfer ? 'translate-x-6' : 'translate-x-1'}`} />
+                      </div>
                     </button>
                   </div>
                 </div>
-                </div>
-              </div>
 
-              {/* Transfer Confirmation Visibility */}
-              <div className="mb-6">
-                <h3 className="text-sm font-medium text-gray-700 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Transfer Confirmation
-                </h3>
-                <div className="space-y-3 bg-gray-50 p-4 rounded-xl">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        Show Confirmation Button
-                      </p>
-                      <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        Display confirmation on transaction details
-                      </p>
-                    </div>
-                    <button
+                {/* Email Notification Settings */}
+                <div className="mb-4">
+                  <p className="text-xs font-bold text-purple-700 mb-3 uppercase tracking-wide px-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Email Notifications
+                  </p>
+                  <div className="space-y-2">
+                    {/* Transfer Confirmation */}
+                    <button 
                       onClick={() => {
                         const newValue = !showTransferConfirmation;
                         setShowTransferConfirmation(newValue);
@@ -1836,15 +1836,63 @@ export default function Profile() {
                         showDeveloperMessage(`Transfer Confirmation ${newValue ? 'enabled' : 'disabled'} successfully`);
                       }}
                       data-testid="toggle-transfer-confirmation"
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                        showTransferConfirmation ? 'bg-green-600' : 'bg-gray-300'
-                      }`}
+                      className="w-full flex items-center justify-between p-3 bg-white/70 backdrop-blur-sm border-2 border-purple-200 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md"
                     >
-                      <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                          showTransferConfirmation ? 'translate-x-6' : 'translate-x-1'
-                        }`}
-                      />
+                      <div className="flex-1 text-left">
+                        <p className="font-semibold text-purple-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Show Confirmation Button
+                        </p>
+                        <p className="text-xs text-purple-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Display on transaction details
+                        </p>
+                      </div>
+                      <div className={`w-11 h-6 rounded-full transition-colors ${showTransferConfirmation ? 'bg-green-500' : 'bg-gray-300'}`}>
+                        <div className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform mt-1 ${showTransferConfirmation ? 'translate-x-6' : 'translate-x-1'}`} />
+                      </div>
+                    </button>
+
+                    {/* Recipient Email UK */}
+                    <button 
+                      onClick={() => {
+                        setRecipientEmailEnabled(!recipientEmailEnabled);
+                        showDeveloperMessage(`Recipient Email (UK) ${!recipientEmailEnabled ? 'enabled' : 'disabled'} successfully`);
+                      }}
+                      data-testid="toggle-recipient-email-uk"
+                      className="w-full flex items-center justify-between p-3 bg-white/70 backdrop-blur-sm border-2 border-purple-200 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md"
+                    >
+                      <div className="flex-1 text-left">
+                        <p className="font-semibold text-purple-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Recipient Email (UK)
+                        </p>
+                        <p className="text-xs text-purple-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Send copy to UK transfer recipients
+                        </p>
+                      </div>
+                      <div className={`w-11 h-6 rounded-full transition-colors ${recipientEmailEnabled ? 'bg-green-500' : 'bg-gray-300'}`}>
+                        <div className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform mt-1 ${recipientEmailEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                      </div>
+                    </button>
+
+                    {/* Recipient Email SEPA */}
+                    <button 
+                      onClick={() => {
+                        setIbanEmailEnabled(!ibanEmailEnabled);
+                        showDeveloperMessage(`Recipient Email (SEPA) ${!ibanEmailEnabled ? 'enabled' : 'disabled'} successfully`);
+                      }}
+                      data-testid="toggle-recipient-email-sepa"
+                      className="w-full flex items-center justify-between p-3 bg-white/70 backdrop-blur-sm border-2 border-purple-200 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md"
+                    >
+                      <div className="flex-1 text-left">
+                        <p className="font-semibold text-purple-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Recipient Email (SEPA)
+                        </p>
+                        <p className="text-xs text-purple-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Send copy to SEPA transfer recipients
+                        </p>
+                      </div>
+                      <div className={`w-11 h-6 rounded-full transition-colors ${ibanEmailEnabled ? 'bg-green-500' : 'bg-gray-300'}`}>
+                        <div className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform mt-1 ${ibanEmailEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                      </div>
                     </button>
                   </div>
                 </div>
