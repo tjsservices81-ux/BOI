@@ -675,16 +675,9 @@ export default function IbanTransfer() {
                   <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
                     <Check className="w-5 h-5 text-green-600" />
                   </div>
-                  <div>
-                    <p className="text-sm font-semibold text-green-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      {detectedBank}
-                    </p>
-                    {detectedCountry && (
-                      <p className="text-xs text-green-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        {detectedCountry}
-                      </p>
-                    )}
-                  </div>
+                  <p className="text-sm font-semibold text-green-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {detectedBank}
+                  </p>
                 </div>
               )}
               {!detectedBank && detectedCountry && (
