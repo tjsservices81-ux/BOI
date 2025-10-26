@@ -28,7 +28,6 @@ export interface IStorage {
   getAccountById(accountId: number): Promise<Account | undefined>;
   createAccount(account: InsertAccount): Promise<Account>;
   updateAccountBalance(accountId: number, newBalance: string): Promise<void>;
-  updateAccountNumber(accountId: number, newAccountNumber: string): Promise<void>;
   deleteAccountsByUserId(userId: number): Promise<boolean>;
   
   // Transaction operations
@@ -555,15 +554,6 @@ class MemStorage implements IStorage {
     if (account) {
       account.balance = newBalance;
       this.accounts.set(accountId, account);
-    }
-  }
-
-  async updateAccountNumber(accountId: number, newAccountNumber: string): Promise<void> {
-    const account = this.accounts.get(accountId);
-    if (account) {
-      account.accountNumber = newAccountNumber.trim();
-      this.accounts.set(accountId, account);
-      await this.saveData(); // Persist changes immediately
     }
   }
 

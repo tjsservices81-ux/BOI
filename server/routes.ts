@@ -887,36 +887,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update account number
-  app.patch("/api/accounts/:accountId/number", requireAuth, async (req, res) => {
-    try {
-      const accountId = parseInt(req.params.accountId);
-      const { accountNumber } = req.body;
-
-      if (!accountNumber || typeof accountNumber !== 'string') {
-        return res.status(400).json({ message: "Invalid account number" });
-      }
-
-      // Check if account exists and belongs to the user
-      const account = await storage.getAccountById(accountId);
-      if (!account) {
-        return res.status(404).json({ message: "Account not found" });
-      }
-
-      // Verify user owns this account
-      const sessionUser = (req as any).session.user;
-      if (account.userId !== sessionUser.id) {
-        return res.status(403).json({ message: "Unauthorized" });
-      }
-
-      await storage.updateAccountNumber(accountId, accountNumber);
-      res.json({ success: true, message: "Account number updated successfully" });
-    } catch (error) {
-      console.error('Update account number error:', error);
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
-
   // Get account transactions
   app.get("/api/transactions/:accountId", requireAuth, async (req, res) => {
     try {

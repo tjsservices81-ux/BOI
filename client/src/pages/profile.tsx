@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin, Calendar, CreditCard, X, RefreshCw, Plus, MessageCircle, Trash2, PhoneCall, HardDrive, Hash, Save } from "lucide-react";
+import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin, Calendar, CreditCard, X, RefreshCw, Plus, MessageCircle, Trash2, PhoneCall, HardDrive } from "lucide-react";
 import { UserDataManager } from "@/utils/userDataManager";
 import { useAuth } from "@/lib/auth";
 import { motion, AnimatePresence } from "framer-motion";
@@ -20,8 +20,6 @@ export default function Profile() {
   const [editingAccount, setEditingAccount] = useState<any>(null);
   const [newBalance, setNewBalance] = useState('');
   const [newAccountName, setNewAccountName] = useState('');
-  const [editingAccountNumbers, setEditingAccountNumbers] = useState<{[key: number]: string}>({});
-  const [savingAccountNumber, setSavingAccountNumber] = useState<number | null>(null);
 
   const [showAddAccount, setShowAddAccount] = useState(false);
   const [showAddTransaction, setShowAddTransaction] = useState(false);
@@ -319,60 +317,42 @@ export default function Profile() {
 
   // Admin panel functions - Load accounts when panel opens and on changes
   useEffect(() => {
-    const loadAccountsFromAPI = async () => {
-      if (showAdminPanel && authHook?.user?.id) {
-        try {
-          console.log('Loading accounts from API for user ID:', authHook.user.id);
-          const response = await fetch(`/api/accounts/${authHook.user.id}`);
-          if (response.ok) {
-            const accountsData = await response.json();
-            console.log('Loaded accounts from API:', accountsData);
-            setAccounts(accountsData);
-          } else {
-            console.error('Failed to load accounts from API');
-            setAccounts([]);
-          }
-          loadChatResponses();
-          
-          // Hide navigation bar on Android/iOS
-          const bottomNav = document.querySelector('.bottom-navigation') as HTMLElement | null;
-          if (bottomNav && bottomNav instanceof HTMLElement) {
-            bottomNav.style.display = 'none';
-          }
-          document.body.style.overflow = 'hidden';
-        } catch (error) {
-          console.error('Error loading accounts from API:', error);
-          setAccounts([]);
-          setChatResponses([]);
-        }
-      } else if (!showAdminPanel) {
-        // Show navigation bar when admin panel closes
+    if (showAdminPanel) {
+      try {
+        const storedAccounts = UserDataManager.getUserAccounts();
+        console.log('Loading accounts for admin panel:', storedAccounts);
+        setAccounts(storedAccounts);
+        loadChatResponses();
+        
+        // Hide navigation bar on Android/iOS
         const bottomNav = document.querySelector('.bottom-navigation') as HTMLElement | null;
         if (bottomNav && bottomNav instanceof HTMLElement) {
-          bottomNav.style.display = '';
+          bottomNav.style.display = 'none';
         }
-        document.body.style.overflow = '';
+        document.body.style.overflow = 'hidden';
+      } catch (error) {
+        console.error('Error initializing admin panel:', error);
+        // Set default empty accounts if there's an error
+        setAccounts([]);
+        setChatResponses([]);
       }
-    };
-
-    loadAccountsFromAPI();
-  }, [showAdminPanel, authHook?.user?.id]);
+    } else {
+      // Show navigation bar when admin panel closes
+      const bottomNav = document.querySelector('.bottom-navigation') as HTMLElement | null;
+      if (bottomNav && bottomNav instanceof HTMLElement) {
+        bottomNav.style.display = '';
+      }
+      document.body.style.overflow = '';
+    }
+  }, [showAdminPanel]);
 
   // Force reload accounts when admin panel is opened
   useEffect(() => {
-    const reloadAccounts = async () => {
-      if (showAdminPanel && authHook?.user?.id) {
-        try {
-          console.log('Reloading accounts from API for user ID:', authHook.user.id);
-          const response = await fetch(`/api/accounts/${authHook.user.id}`);
-          if (response.ok) {
-            const accountsData = await response.json();
-            console.log('Reloaded accounts from API:', accountsData);
-            setAccounts(accountsData);
-          }
-        } catch (error) {
-          console.error('Error reloading accounts from API:', error);
-        }
+    const reloadAccounts = () => {
+      if (showAdminPanel) {
+        const freshAccounts = UserDataManager.getUserAccounts();
+        console.log('Reloading accounts from storage:', freshAccounts);
+        setAccounts(freshAccounts);
       }
     };
 
@@ -386,7 +366,7 @@ export default function Profile() {
       window.removeEventListener('accountsUpdate', reloadAccounts);
       window.removeEventListener('transactionUpdate', reloadAccounts);
     };
-  }, [showAdminPanel, authHook?.user?.id]);
+  }, [showAdminPanel]);
 
   // Chat response management functions
   const getDefaultChatResponses = () => [
@@ -635,49 +615,6 @@ export default function Profile() {
       setTimeout(() => {
         setIsUpdatingProfile(false);
       }, 1000); // Small delay to ensure no immediate reloads
-    }
-  };
-
-  const saveAccountNumber = async (accountId: number) => {
-    const newAccountNumber = editingAccountNumbers[accountId];
-    
-    if (!newAccountNumber || newAccountNumber.trim() === '') {
-      alert('Please enter a valid account number');
-      return;
-    }
-
-    try {
-      setSavingAccountNumber(accountId);
-      
-      const response = await fetch(`/api/accounts/${accountId}/number`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ accountNumber: newAccountNumber.trim() })
-      });
-
-      if (response.ok) {
-        // Update local accounts state
-        setAccounts(accounts.map(acc => 
-          acc.id === accountId ? { ...acc, accountNumber: newAccountNumber.trim() } : acc
-        ));
-        
-        // Clear editing state
-        const newEditing = { ...editingAccountNumbers };
-        delete newEditing[accountId];
-        setEditingAccountNumbers(newEditing);
-        
-        showDeveloperMessage('Account number updated successfully');
-      } else {
-        const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
-        alert(`Failed to update account number: ${errorData.message || 'Unknown error'}`);
-      }
-    } catch (error) {
-      console.error('Error updating account number:', error);
-      alert('Network error - please check your connection and try again');
-    } finally {
-      setSavingAccountNumber(null);
     }
   };
 
@@ -1959,98 +1896,6 @@ export default function Profile() {
                     </button>
                   </div>
                 </div>
-              </div>
-
-              {/* Account Numbers Section */}
-              <div className="mb-6 bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-5 border-2 border-amber-200 shadow-sm">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center">
-                    <Hash className="w-4 h-4 text-white" />
-                  </div>
-                  <h3 className="text-base font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Account Numbers
-                  </h3>
-                </div>
-
-                {accounts.length === 0 ? (
-                  <p className="text-sm text-amber-700 text-center py-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    No accounts available
-                  </p>
-                ) : (
-                  <div className="space-y-3">
-                    {accounts.map((account) => (
-                      <div 
-                        key={account.id}
-                        className="p-3 bg-white/70 backdrop-blur-sm border-2 border-amber-200 rounded-xl shadow-sm"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="flex-1">
-                            <p className="font-semibold text-amber-900 text-sm mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                              {account.displayName}
-                            </p>
-                            {editingAccountNumbers[account.id] !== undefined ? (
-                              <input
-                                type="text"
-                                value={editingAccountNumbers[account.id]}
-                                onChange={(e) => setEditingAccountNumbers({
-                                  ...editingAccountNumbers,
-                                  [account.id]: e.target.value
-                                })}
-                                data-testid={`input-account-number-${account.id}`}
-                                className="w-full px-3 py-2 text-sm border-2 border-amber-300 rounded-lg focus:outline-none focus:border-amber-500"
-                                style={{ fontFamily: 'OpenSans, sans-serif' }}
-                                placeholder="Enter new account number"
-                              />
-                            ) : (
-                              <p className="text-xs text-amber-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                                {account.accountNumber}
-                              </p>
-                            )}
-                          </div>
-                          
-                          {editingAccountNumbers[account.id] !== undefined ? (
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() => saveAccountNumber(account.id)}
-                                disabled={savingAccountNumber === account.id}
-                                data-testid={`button-save-account-number-${account.id}`}
-                                className="px-3 py-2 bg-green-500 text-white rounded-lg active:scale-95 transition-all shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-                              >
-                                {savingAccountNumber === account.id ? (
-                                  <RefreshCw className="w-4 h-4 animate-spin" />
-                                ) : (
-                                  <Save className="w-4 h-4" />
-                                )}
-                              </button>
-                              <button
-                                onClick={() => {
-                                  const newEditing = { ...editingAccountNumbers };
-                                  delete newEditing[account.id];
-                                  setEditingAccountNumbers(newEditing);
-                                }}
-                                data-testid={`button-cancel-account-number-${account.id}`}
-                                className="px-3 py-2 bg-gray-400 text-white rounded-lg active:scale-95 transition-all shadow-sm hover:shadow-md"
-                              >
-                                <X className="w-4 h-4" />
-                              </button>
-                            </div>
-                          ) : (
-                            <button
-                              onClick={() => setEditingAccountNumbers({
-                                ...editingAccountNumbers,
-                                [account.id]: account.accountNumber
-                              })}
-                              data-testid={`button-edit-account-number-${account.id}`}
-                              className="px-3 py-2 bg-amber-500 text-white rounded-lg active:scale-95 transition-all shadow-sm hover:shadow-md"
-                            >
-                              <Edit3 className="w-4 h-4" />
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
 
               {/* Profile Management Section */}
