@@ -86,6 +86,7 @@ export default function Profile() {
   const [accountTransactions, setAccountTransactions] = useState<any[]>([]);
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [transactionSearchQuery, setTransactionSearchQuery] = useState('');
   
   // Date range selection for sample transactions
   const [startDate, setStartDate] = useState(() => {
@@ -1289,10 +1290,17 @@ export default function Profile() {
     showDeveloperMessage(`Data reset to defaults successfully - all balances set to ${currencySymbol}0.00, transactions cleared`);
   };
 
-  // Load transactions for selected account
+  // Load transactions for selected account - sorted by latest first
   const loadAccountTransactions = (accountId: string) => {
     const allTransactions = UserDataManager.getUserData('bankTransactions', []);
-    const accountSpecificTransactions = allTransactions.filter((tx: any) => tx.accountId === parseInt(accountId));
+    const accountSpecificTransactions = allTransactions
+      .filter((tx: any) => tx.accountId === parseInt(accountId))
+      .sort((a: any, b: any) => {
+        // Sort by timestamp descending (latest first)
+        const dateA = new Date(a.timestamp).getTime();
+        const dateB = new Date(b.timestamp).getTime();
+        return dateB - dateA;
+      });
     setAccountTransactions(accountSpecificTransactions);
   };
 
@@ -2767,7 +2775,9 @@ export default function Profile() {
                     setSelectedAccountId('');
                     setAccountTransactions([]);
                     setSelectedTransaction(null);
+                    setTransactionSearchQuery('');
                   }}
+                  data-testid="button-close-delete-transaction-modal"
                   className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
                 >
                   <X className="w-4 h-4 text-gray-600" />
@@ -2790,7 +2800,9 @@ export default function Profile() {
                         setAccountTransactions([]);
                       }
                       setSelectedTransaction(null);
+                      setTransactionSearchQuery('');
                     }}
+                    data-testid="select-account-for-deletion"
                     className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     style={{ fontFamily: 'OpenSans, sans-serif' }}
                   >
@@ -2805,24 +2817,69 @@ export default function Profile() {
                   </select>
                 </div>
 
-                {/* Step 2: Show Account Transactions */}
+                {/* Step 2: Search and Filter Transactions */}
                 {selectedAccountId && accountTransactions.length > 0 && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      2. Select Transaction to Delete ({accountTransactions.length} transactions)
+                      2. Search & Select Transaction ({accountTransactions.filter((tx: any) => {
+                        const searchLower = transactionSearchQuery.toLowerCase();
+                        return tx.description.toLowerCase().includes(searchLower) ||
+                          (tx.reference && tx.reference.toLowerCase().includes(searchLower)) ||
+                          (tx.recipientName && tx.recipientName.toLowerCase().includes(searchLower)) ||
+                          tx.amount.toString().includes(searchLower);
+                      }).length} of {accountTransactions.length} transactions)
                     </label>
+                    
+                    {/* Search Box */}
+                    <div className="mb-3">
+                      <input
+                        type="text"
+                        value={transactionSearchQuery}
+                        onChange={(e) => setTransactionSearchQuery(e.target.value)}
+                        placeholder="Search by description, reference, recipient, or amount..."
+                        data-testid="input-search-transactions"
+                        className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        style={{ fontFamily: 'OpenSans, sans-serif' }}
+                      />
+                    </div>
+
                     <div className="max-h-96 overflow-y-auto border border-gray-200 rounded-xl">
-                      {accountTransactions.map((transaction, index) => (
+                      {accountTransactions.filter((tx: any) => {
+                        const searchLower = transactionSearchQuery.toLowerCase();
+                        return tx.description.toLowerCase().includes(searchLower) ||
+                          (tx.reference && tx.reference.toLowerCase().includes(searchLower)) ||
+                          (tx.recipientName && tx.recipientName.toLowerCase().includes(searchLower)) ||
+                          tx.amount.toString().includes(searchLower);
+                      }).map((transaction, index) => (
                         <div
                           key={transaction.id}
+                          data-testid={`transaction-item-${transaction.id}`}
                           className={`p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors ${
                             selectedTransaction?.id === transaction.id ? 'bg-red-50 border-2 border-red-300 shadow-md' : ''
                           }`}
                           onClick={() => setSelectedTransaction(transaction)}
                         >
-                          <div className="flex justify-between items-start">
-                            <div className="flex-1">
-                              <div className="flex items-center space-x-2 mb-1">
+                          <div className="flex justify-between items-start gap-4">
+                            <div className="flex-1 min-w-0">
+                              {/* Date - Made more prominent */}
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className="font-bold text-gray-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                                  {new Date(transaction.timestamp).toLocaleDateString('en-GB', { 
+                                    day: '2-digit', 
+                                    month: 'short', 
+                                    year: 'numeric' 
+                                  })}
+                                </span>
+                                <span className="text-xs text-gray-500">
+                                  {new Date(transaction.timestamp).toLocaleTimeString('en-GB', { 
+                                    hour: '2-digit', 
+                                    minute: '2-digit' 
+                                  })}
+                                </span>
+                              </div>
+                              
+                              {/* Payment Method Badge */}
+                              <div className="mb-2">
                                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                                   transaction.paymentMethod === 'UK Transfer' ? 'bg-blue-100 text-blue-800' :
                                   transaction.paymentMethod === 'SEPA Transfer' ? 'bg-green-100 text-green-800' :
@@ -2831,27 +2888,32 @@ export default function Profile() {
                                 }`}>
                                   {transaction.paymentMethod || 'Other'}
                                 </span>
-                                <span className="text-xs text-gray-500">
-                                  {new Date(transaction.timestamp).toLocaleDateString()} {new Date(transaction.timestamp).toLocaleTimeString()}
-                                </span>
                               </div>
-                              <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                              
+                              {/* Description */}
+                              <p className="font-semibold text-gray-900 mb-1 truncate" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                                 {transaction.description}
                               </p>
-                              {transaction.reference && (
-                                <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                                  Ref: {transaction.reference}
-                                </p>
-                              )}
-                              {transaction.recipientName && (
-                                <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                                  To: {transaction.recipientName}
-                                </p>
-                              )}
+                              
+                              {/* Reference and Recipient */}
+                              <div className="space-y-1">
+                                {transaction.reference && (
+                                  <p className="text-sm text-gray-600 truncate" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                                    Ref: {transaction.reference}
+                                  </p>
+                                )}
+                                {transaction.recipientName && (
+                                  <p className="text-sm text-gray-600 truncate" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                                    To: {transaction.recipientName}
+                                  </p>
+                                )}
+                              </div>
                             </div>
-                            <div className="text-right flex flex-col items-end space-y-2">
+                            
+                            {/* Amount and Delete Button */}
+                            <div className="text-right flex flex-col items-end justify-between space-y-2 flex-shrink-0">
                               <div>
-                                <p className={`font-bold text-lg ${
+                                <p className={`font-bold text-lg whitespace-nowrap ${
                                   transaction.amount.startsWith('-') ? 'text-red-600' : 'text-green-600'
                                 }`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
                                   {formatCurrency(Math.abs(parseFloat(transaction.amount)), userCurrency)}
@@ -2866,7 +2928,8 @@ export default function Profile() {
                                     e.stopPropagation();
                                     setShowDeleteConfirm(true);
                                   }}
-                                  className="px-3 py-1 bg-red-600 text-white text-xs rounded-lg hover:bg-red-700 transition-colors"
+                                  data-testid="button-confirm-delete-transaction"
+                                  className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors shadow-sm active:scale-95"
                                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                                 >
                                   Delete
@@ -2890,10 +2953,16 @@ export default function Profile() {
 
                 {/* Instructions */}
                 {selectedAccountId && accountTransactions.length > 0 && (
-                  <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-xl">
-                    <p className="text-sm text-blue-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      <strong>Instructions:</strong> Click on a transaction to select it. A red highlight will appear with a Delete button.
+                  <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl">
+                    <p className="text-sm text-blue-900 font-medium mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      <strong>✨ Quick Guide:</strong>
                     </p>
+                    <ul className="text-sm text-blue-800 space-y-1 ml-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      <li>• Latest transactions appear first at the top</li>
+                      <li>• Use the search box to filter by description, reference, recipient, or amount</li>
+                      <li>• Click any transaction to select it - it will highlight in red</li>
+                      <li>• Click the Delete button to remove the transaction</li>
+                    </ul>
                   </div>
                 )}
               </div>
@@ -2916,14 +2985,16 @@ export default function Profile() {
               <div className="flex space-x-3">
                 <button
                   onClick={() => setShowDeleteConfirm(false)}
-                  className="flex-1 px-4 py-3 bg-gray-200 text-gray-800 rounded-xl font-medium hover:bg-gray-300 transition-colors"
+                  data-testid="button-cancel-delete-confirmation"
+                  className="flex-1 px-4 py-3 bg-gray-200 text-gray-800 rounded-xl font-medium hover:bg-gray-300 transition-colors active:scale-95"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleDeleteTransaction}
-                  className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 transition-colors"
+                  data-testid="button-final-delete-transaction"
+                  className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 transition-colors active:scale-95"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                 >
                   Delete Transaction
