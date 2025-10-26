@@ -319,42 +319,60 @@ export default function Profile() {
 
   // Admin panel functions - Load accounts when panel opens and on changes
   useEffect(() => {
-    if (showAdminPanel) {
-      try {
-        const storedAccounts = UserDataManager.getUserAccounts();
-        console.log('Loading accounts for admin panel:', storedAccounts);
-        setAccounts(storedAccounts);
-        loadChatResponses();
-        
-        // Hide navigation bar on Android/iOS
+    const loadAccountsFromAPI = async () => {
+      if (showAdminPanel && authHook?.user?.id) {
+        try {
+          console.log('Loading accounts from API for user ID:', authHook.user.id);
+          const response = await fetch(`/api/accounts/${authHook.user.id}`);
+          if (response.ok) {
+            const accountsData = await response.json();
+            console.log('Loaded accounts from API:', accountsData);
+            setAccounts(accountsData);
+          } else {
+            console.error('Failed to load accounts from API');
+            setAccounts([]);
+          }
+          loadChatResponses();
+          
+          // Hide navigation bar on Android/iOS
+          const bottomNav = document.querySelector('.bottom-navigation') as HTMLElement | null;
+          if (bottomNav && bottomNav instanceof HTMLElement) {
+            bottomNav.style.display = 'none';
+          }
+          document.body.style.overflow = 'hidden';
+        } catch (error) {
+          console.error('Error loading accounts from API:', error);
+          setAccounts([]);
+          setChatResponses([]);
+        }
+      } else if (!showAdminPanel) {
+        // Show navigation bar when admin panel closes
         const bottomNav = document.querySelector('.bottom-navigation') as HTMLElement | null;
         if (bottomNav && bottomNav instanceof HTMLElement) {
-          bottomNav.style.display = 'none';
+          bottomNav.style.display = '';
         }
-        document.body.style.overflow = 'hidden';
-      } catch (error) {
-        console.error('Error initializing admin panel:', error);
-        // Set default empty accounts if there's an error
-        setAccounts([]);
-        setChatResponses([]);
+        document.body.style.overflow = '';
       }
-    } else {
-      // Show navigation bar when admin panel closes
-      const bottomNav = document.querySelector('.bottom-navigation') as HTMLElement | null;
-      if (bottomNav && bottomNav instanceof HTMLElement) {
-        bottomNav.style.display = '';
-      }
-      document.body.style.overflow = '';
-    }
-  }, [showAdminPanel]);
+    };
+
+    loadAccountsFromAPI();
+  }, [showAdminPanel, authHook?.user?.id]);
 
   // Force reload accounts when admin panel is opened
   useEffect(() => {
-    const reloadAccounts = () => {
-      if (showAdminPanel) {
-        const freshAccounts = UserDataManager.getUserAccounts();
-        console.log('Reloading accounts from storage:', freshAccounts);
-        setAccounts(freshAccounts);
+    const reloadAccounts = async () => {
+      if (showAdminPanel && authHook?.user?.id) {
+        try {
+          console.log('Reloading accounts from API for user ID:', authHook.user.id);
+          const response = await fetch(`/api/accounts/${authHook.user.id}`);
+          if (response.ok) {
+            const accountsData = await response.json();
+            console.log('Reloaded accounts from API:', accountsData);
+            setAccounts(accountsData);
+          }
+        } catch (error) {
+          console.error('Error reloading accounts from API:', error);
+        }
       }
     };
 
@@ -368,7 +386,7 @@ export default function Profile() {
       window.removeEventListener('accountsUpdate', reloadAccounts);
       window.removeEventListener('transactionUpdate', reloadAccounts);
     };
-  }, [showAdminPanel]);
+  }, [showAdminPanel, authHook?.user?.id]);
 
   // Chat response management functions
   const getDefaultChatResponses = () => [
