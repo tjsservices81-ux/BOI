@@ -42,5 +42,53 @@ async function initializeApp() {
   createRoot(document.getElementById("root")!).render(<App />);
 }
 
+// Listen for service worker updates
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'SW_ACTIVATED') {
+      // Show update notification
+      console.log('🎉 App updated to v3.5.0!');
+      
+      // Create a temporary notification banner
+      const banner = document.createElement('div');
+      banner.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: linear-gradient(135deg, #126987 0%, #0e5a75 100%);
+        color: white;
+        padding: 16px 24px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        z-index: 999999;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        text-align: center;
+        animation: slideDown 0.3s ease-out;
+      `;
+      banner.innerHTML = '✅ App Updated to v3.5.0 - Latest Features Active!';
+      
+      // Add animation
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes slideDown {
+          from { transform: translate(-50%, -100%); opacity: 0; }
+          to { transform: translate(-50%, 0); opacity: 1; }
+        }
+      `;
+      document.head.appendChild(style);
+      document.body.appendChild(banner);
+      
+      // Remove banner after 4 seconds
+      setTimeout(() => {
+        banner.style.animation = 'slideDown 0.3s ease-in reverse';
+        setTimeout(() => banner.remove(), 300);
+      }, 4000);
+    }
+  });
+}
+
 // Start the app with device detection
 initializeApp();
