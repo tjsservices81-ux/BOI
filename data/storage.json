@@ -1699,6 +1699,23 @@
         "dateCreated": "2025-10-27T11:27:48.115Z",
         "isDisabled": false
       }
+    ],
+    [
+      253,
+      {
+        "id": 253,
+        "customerNumber": "64092297",
+        "pin": "000000",
+        "name": "Test",
+        "email": "test5@gmail.com",
+        "phone": "454545",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "dateCreated": "2025-11-03T15:29:22.485Z",
+        "isDisabled": false,
+        "currency": "EUR"
+      }
     ]
   ],
   "accounts": [
@@ -1747,7 +1764,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 253,
+    "currentUserId": 254,
     "currentAccountId": 82,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
