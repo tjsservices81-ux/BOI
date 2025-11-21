@@ -267,6 +267,17 @@ class MemStorage implements IStorage {
     // Use custom ID if provided (for PostgreSQL sync), otherwise auto-increment
     const userId = customId !== undefined ? customId : this.currentUserId++;
     
+    // CRITICAL: Detect ID collision (should never happen after sequence fix)
+    const existingUser = this.users.get(userId);
+    if (existingUser) {
+      console.error(`🚨 CRITICAL: ID COLLISION DETECTED!`);
+      console.error(`   - Existing user: ${existingUser.name} (${existingUser.customerNumber})`);
+      console.error(`   - New user attempt: ${insertUser.name} (${insertUser.customerNumber})`);
+      console.error(`   - Colliding ID: ${userId}`);
+      console.error(`   - This indicates the PostgreSQL customers_id_seq needs to be reset!`);
+      throw new Error(`ID collision detected: User ID ${userId} already in use. PostgreSQL sequence out of sync.`);
+    }
+    
     // Update currentUserId if custom ID is higher (keeps counter in sync)
     if (customId !== undefined && customId >= this.currentUserId) {
       this.currentUserId = customId + 1;
