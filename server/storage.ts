@@ -505,9 +505,10 @@ class MemStorage implements IStorage {
       // Delete from customers table (main record)
       const result = await db.delete(customers).where(eq(customers.customerNumber, customerNumber)).returning();
       
-      // Also delete from session tables
-      await db.execute(sql`DELETE FROM user_sessions WHERE sess::text LIKE '%${customerNumber}%'`);
-      await db.execute(sql`DELETE FROM sessions WHERE sess::text LIKE '%${customerNumber}%'`);
+      // Also delete from session tables (using parameterized LIKE queries)
+      const pattern = `%${customerNumber}%`;
+      await db.execute(sql`DELETE FROM user_sessions WHERE sess::text LIKE ${pattern}`);
+      await db.execute(sql`DELETE FROM sessions WHERE sess::text LIKE ${pattern}`);
       
       return result.length > 0;
     } catch (error) {
