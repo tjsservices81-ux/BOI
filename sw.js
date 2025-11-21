@@ -3,7 +3,7 @@
  * Handles caching, offline functionality, and prevents blank screens
  */
 
-const CACHE_NAME = 'boi-mobile-v3.5.0';
+const CACHE_NAME = 'boi-mobile-v3.6.0';
 const FALLBACK_CACHE = 'boi-fallback-v1.0.0';
 
 // Critical assets that must be cached for PWA to work
