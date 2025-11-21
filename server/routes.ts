@@ -2642,7 +2642,10 @@ return \`<div style="font-size:11px;color:#666;padding:2px 0">\${i+1}. \${format
 </div>
 </div>
 \${c.isDeleted?
-\`<button class="sv-btn" onclick="res('\${escapeHtml(c.customerNumber)}','\${escapeHtml(c.name)}')">♻️ Restore Account</button>\`:
+\`<div style="display:flex;gap:8px;margin-top:10px">
+<button class="sv-btn" onclick="res('\${escapeHtml(c.customerNumber)}','\${escapeHtml(c.name)}')" style="flex:1">♻️ Restore Account</button>
+<button class="db" onclick="ers('\${escapeHtml(c.customerNumber)}','\${escapeHtml(c.name)}')" style="flex:1;font-size:11px">🔥 Permanent Delete</button>
+</div>\`:
 \`<button class="db" onclick="dl('\${escapeHtml(c.customerNumber)}','\${escapeHtml(c.name)}')">🗑️ Delete</button>\`}
 </div>
 </div>
