@@ -3243,6 +3243,58 @@ setInterval(ld,5000);
     }
   });
 
+  // Admin endpoint to restore users from memory to PostgreSQL
+  app.post("/api/admin/restore-to-postgres", async (req, res) => {
+    try {
+      // Get all users from memory
+      const allUsers = await storage.getAllUsers();
+      
+      // Get all active customers from PostgreSQL
+      const allCustomers = await storage.getAllCustomers(false);
+      const customerNumbers = allCustomers.map(c => c.customerNumber);
+      
+      // Find users that don't have customer records
+      const usersToMigrate = allUsers.filter(u => !customerNumbers.includes(u.customerNumber));
+      
+      // Create customer records for each user
+      let migrated = 0;
+      const migratedCustomers = [];
+      
+      for (const user of usersToMigrate) {
+        try {
+          const newCustomer = await storage.createCustomer({
+            customerNumber: user.customerNumber,
+            name: user.name,
+            email: user.email,
+            joinDate: new Date().toISOString().split('T')[0], // Set to today's date
+            currency: 'EUR',
+            isDeveloper: user.name.toLowerCase().includes('dev test') || user.name.toLowerCase().includes('test'),
+            adminAlias: null,
+            appReplacement: 0
+          });
+          migrated++;
+          migratedCustomers.push({
+            customerNumber: newCustomer.customerNumber,
+            name: newCustomer.name
+          });
+          console.log(`✅ Migrated user to PostgreSQL: ${user.customerNumber} (${user.name})`);
+        } catch (error) {
+          console.error(`❌ Failed to migrate user ${user.customerNumber}:`, error);
+        }
+      }
+      
+      res.json({
+        success: true,
+        usersMigrated: migrated,
+        totalUsers: allUsers.length,
+        migratedCustomers: migratedCustomers
+      });
+    } catch (error) {
+      console.error('Error restoring to PostgreSQL:', error);
+      res.status(500).json({ message: "Failed to restore to PostgreSQL" });
+    }
+  });
+
   // Admin endpoint to fix sync by removing orphaned users
   app.post("/api/admin/fix-sync", async (req, res) => {
     try {
