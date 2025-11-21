@@ -485,6 +485,10 @@ class MemStorage implements IStorage {
       if (userId) {
         // Delete user-related data from PostgreSQL tables
         await db.execute(sql`DELETE FROM access_codes WHERE user_id = ${userId}`);
+        // Delete statements and transactions BEFORE deleting accounts (they reference account_id)
+        await db.execute(sql`DELETE FROM transactions WHERE account_id IN (SELECT id FROM accounts WHERE user_id = ${userId})`);
+        await db.execute(sql`DELETE FROM statements WHERE account_id IN (SELECT id FROM accounts WHERE user_id = ${userId})`);
+        // Now safe to delete accounts
         await db.execute(sql`DELETE FROM accounts WHERE user_id = ${userId}`);
         await db.execute(sql`DELETE FROM chat_messages WHERE user_id = ${userId}`);
         await db.execute(sql`DELETE FROM payees WHERE user_id = ${userId}`);
@@ -494,8 +498,6 @@ class MemStorage implements IStorage {
         // Then delete any remaining sessions by customer_number
         await db.execute(sql`DELETE FROM permanent_user_sessions WHERE customer_number = ${customerNumber}`);
         await db.execute(sql`DELETE FROM scheduled_payments WHERE user_id = ${userId}`);
-        await db.execute(sql`DELETE FROM statements WHERE user_id = ${userId}`);
-        await db.execute(sql`DELETE FROM transactions WHERE user_id = ${userId}`);
         
         console.log(`🔥 Deleted all related data for user ${userId} (${customerNumber})`);
       }

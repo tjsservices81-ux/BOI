@@ -2209,6 +2209,23 @@
         "dateCreated": "2025-11-21T14:00:45.731Z",
         "isDisabled": false
       }
+    ],
+    [
+      297,
+      {
+        "id": 297,
+        "customerNumber": "27604663",
+        "pin": "",
+        "name": "Edward Dawson",
+        "email": "edward@example.com",
+        "phone": "0871234567",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2024-01-15",
+        "currency": "EUR",
+        "dateCreated": "2025-11-21T15:02:49.901Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [
@@ -2257,7 +2274,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 297,
+    "currentUserId": 298,
     "currentAccountId": 82,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
