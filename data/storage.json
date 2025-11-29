@@ -31,7 +31,7 @@
         "joinDate": "2025-10-08T19:43:47.681Z",
         "dateCreated": "2025-10-08T19:43:47.703Z",
         "isDisabled": false,
-        "currency": "GBP"
+        "currency": "EUR"
       }
     ],
     [
@@ -142,10 +142,10 @@
         "id": 112,
         "customerNumber": "20982711",
         "pin": "",
-        "name": "Owen",
+        "name": "Bernard Larkin",
         "email": "owenlarkin688@icloud.com",
         "phone": "07874623172",
-        "address": null,
+        "address": "25 lakeside Court, Kilbernie KA25 6HE",
         "dateOfBirth": "2025-10-24",
         "joinDate": "2025-10-09T10:55:49.469Z",
         "dateCreated": "2025-10-09T10:55:49.496Z",
@@ -166,23 +166,6 @@
         "dateOfBirth": null,
         "joinDate": "2025-10-09T10:57:33.300Z",
         "dateCreated": "2025-10-09T10:57:33.324Z",
-        "isDisabled": false,
-        "currency": "EUR"
-      }
-    ],
-    [
-      114,
-      {
-        "id": 114,
-        "customerNumber": "80721376",
-        "pin": "",
-        "name": "Josh cooper",
-        "email": "joshcooper21@gmail.com",
-        "phone": "0857528954",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "2025-10-09T10:59:57.111Z",
-        "dateCreated": "2025-10-09T10:59:57.139Z",
         "isDisabled": false,
         "currency": "EUR"
       }
@@ -235,7 +218,7 @@
         "joinDate": "2022-07-09T13:01:52.037Z",
         "dateCreated": "2025-10-09T13:01:52.060Z",
         "isDisabled": false,
-        "currency": "EUR"
+        "currency": "GBP"
       }
     ],
     [
@@ -482,12 +465,12 @@
         "id": 85,
         "customerNumber": "46952418",
         "pin": "",
-        "name": "Sam Jones",
-        "email": "samjones@outlook.com",
+        "name": "James Parker",
+        "email": "jamesparker@outlook.com",
         "phone": "+44 7480 920687",
-        "address": "54 high street Belfast",
+        "address": "12 High Street Belfast",
         "dateOfBirth": "1996-12-13",
-        "joinDate": "2018-10-08T18:30:38.571Z",
+        "joinDate": "2016-10-08T18:30:38.571Z",
         "dateCreated": "2025-10-08T18:30:38.601Z",
         "isDisabled": false,
         "currency": "GBP"
@@ -499,7 +482,7 @@
         "id": 156,
         "customerNumber": "89205437",
         "pin": "",
-        "name": "Jonathan Conway",
+        "name": "Andrew Langley",
         "email": "Jonathanconway627@gmail.co.com",
         "phone": "+447768420785",
         "address": null,
@@ -525,23 +508,6 @@
         "dateCreated": "2025-10-09T22:16:47.407Z",
         "isDisabled": false,
         "currency": "EUR"
-      }
-    ],
-    [
-      153,
-      {
-        "id": 153,
-        "customerNumber": "15909702",
-        "pin": "",
-        "name": "John lee",
-        "email": "john.lqnnneb282@gmail.com",
-        "phone": "07564313583",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "2025-10-08T20:58:41.528Z",
-        "dateCreated": "2025-10-08T20:58:41.550Z",
-        "isDisabled": false,
-        "currency": "GBP"
       }
     ],
     [
@@ -608,23 +574,6 @@
         "dateOfBirth": null,
         "joinDate": "2013-10-11T12:25:10.603Z",
         "dateCreated": "2025-10-11T12:25:10.625Z",
-        "isDisabled": false,
-        "currency": "EUR"
-      }
-    ],
-    [
-      151,
-      {
-        "id": 151,
-        "customerNumber": "41873977",
-        "pin": "",
-        "name": "James ",
-        "email": "bigballds978@gmail.com",
-        "phone": "07747401698",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "2025-10-08T18:09:52.372Z",
-        "dateCreated": "2025-10-08T18:09:52.543Z",
         "isDisabled": false,
         "currency": "EUR"
       }
@@ -720,12 +669,12 @@
         "id": 120,
         "customerNumber": "52624282",
         "pin": "",
-        "name": "John McDonagh",
-        "email": "johnmcdonagh791@gmail.com",
-        "phone": "+353857428985",
-        "address": "17 Walnut Rise Courtlands Dublin 9 D09 F6K4 Ireland",
-        "dateOfBirth": "1996-12-04",
-        "joinDate": "15/10/2018",
+        "name": "Paul Brown",
+        "email": "paulbrown483@outlook.com",
+        "phone": "+353859243862",
+        "address": "26 Walnut Rise Courtlands Dublin 9 D09 F6K4 Ireland",
+        "dateOfBirth": "1997-09-16",
+        "joinDate": "15/02/2022",
         "dateCreated": "2025-10-09T12:20:51.443Z",
         "isDisabled": false,
         "currency": "EUR"
@@ -761,23 +710,6 @@
         "dateOfBirth": "1998-04-05",
         "joinDate": "09052025",
         "dateCreated": "2025-10-11T13:19:50.692Z",
-        "isDisabled": false,
-        "currency": "EUR"
-      }
-    ],
-    [
-      195,
-      {
-        "id": 195,
-        "customerNumber": "38972431",
-        "pin": "",
-        "name": "James",
-        "email": "james@live.com",
-        "phone": "07855226681",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "2025-10-13T09:21:09.608Z",
-        "dateCreated": "2025-10-13T14:28:17.415Z",
         "isDisabled": false,
         "currency": "EUR"
       }
@@ -822,8 +754,8 @@
         "id": 173,
         "customerNumber": "59482911",
         "pin": "",
-        "name": "Peter parke  IBAN ER00729512985438108",
-        "email": "peterparke371@gmail.com",
+        "name": "Patrick murphey  IBAN ER00729512985438108",
+        "email": "patrickmurphey371@gmail.com",
         "phone": "0035357920845631",
         "address": "9 swords Road Dublin Co Dublin",
         "dateOfBirth": null,
@@ -851,23 +783,6 @@
       }
     ],
     [
-      185,
-      {
-        "id": 185,
-        "customerNumber": "43115983",
-        "pin": "",
-        "name": "James Jackon",
-        "email": "ahajsj@gmail.con",
-        "phone": "6464",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "2025-10-08T20:05:04.614Z",
-        "dateCreated": "2025-10-08T20:05:04.634Z",
-        "isDisabled": false,
-        "currency": "EUR"
-      }
-    ],
-    [
       186,
       {
         "id": 186,
@@ -880,40 +795,6 @@
         "dateOfBirth": "1998-04-05",
         "joinDate": "28/07/2017",
         "dateCreated": "2025-10-08T19:46:31.343Z",
-        "isDisabled": false,
-        "currency": "EUR"
-      }
-    ],
-    [
-      189,
-      {
-        "id": 189,
-        "customerNumber": "44759580",
-        "pin": "",
-        "name": "Peter dwyer",
-        "email": "peterdw32123@icloud.com",
-        "phone": "+447871775774",
-        "address": null,
-        "dateOfBirth": "1997-03-15",
-        "joinDate": "2023-10-09",
-        "dateCreated": "2025-10-09T09:36:55.581Z",
-        "isDisabled": false,
-        "currency": "EUR"
-      }
-    ],
-    [
-      190,
-      {
-        "id": 190,
-        "customerNumber": "44959773",
-        "pin": "",
-        "name": "Peter Jones",
-        "email": "peterjones3288@gmail.com",
-        "phone": "003538640828",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "2025-10-09T20:05:57.660Z",
-        "dateCreated": "2025-10-13T14:28:17.181Z",
         "isDisabled": false,
         "currency": "EUR"
       }
@@ -1118,23 +999,6 @@
         "dateOfBirth": "",
         "joinDate": "2025-10-17T23:51:19.873Z",
         "dateCreated": "2025-10-17T23:51:19.873Z",
-        "isDisabled": false,
-        "currency": "EUR"
-      }
-    ],
-    [
-      220,
-      {
-        "id": 220,
-        "customerNumber": "98081392",
-        "pin": "",
-        "name": "JAMES PARKER",
-        "email": "Jamesparker7@GMAIL.COM",
-        "phone": "003532415249",
-        "address": null,
-        "dateOfBirth": "1995-03-19",
-        "joinDate": "2025-10-19T23:26:30.600Z",
-        "dateCreated": "2025-10-19T23:26:30.558Z",
         "isDisabled": false,
         "currency": "EUR"
       }
@@ -1474,7 +1338,7 @@
         "address": null,
         "dateOfBirth": null,
         "joinDate": "Member since 2018",
-        "currency": "EUR",
+        "currency": "GBP",
         "dateCreated": "2025-11-01T22:49:07.673Z",
         "isDisabled": false
       }
@@ -1508,7 +1372,7 @@
         "address": null,
         "dateOfBirth": null,
         "joinDate": "Member since 2018",
-        "currency": "EUR",
+        "currency": "GBP",
         "dateCreated": "2025-11-02T13:29:19.508Z",
         "isDisabled": false
       }
@@ -1536,9 +1400,9 @@
         "id": 241,
         "customerNumber": "36632747",
         "pin": "",
-        "name": "Patrick Brooks",
-        "email": "Patrickbrooks999@hotmail.com",
-        "phone": "07378457200",
+        "name": "Oscar Quinn",
+        "email": "oscarouinn999@hotmail.com",
+        "phone": "07533464145",
         "address": "95 Seaview Drive , Belfast , BT15 3ND",
         "dateOfBirth": "1989-09-07",
         "joinDate": "17-11-2009",
@@ -1825,8 +1689,8 @@
         "id": 261,
         "customerNumber": "83391587",
         "pin": "",
-        "name": "Seamus mongan IBAN ER0072934912985438109",
-        "email": "monganseamus3@gmail.com",
+        "name": "Patrick murphey IBAN ER0072934912985438109",
+        "email": "Patrickmurphey@gmail.com",
         "phone": "003538692184384",
         "address": "7 swords road Dublin co Dublin",
         "dateOfBirth": null,
@@ -1961,7 +1825,7 @@
         "id": 277,
         "customerNumber": "50809014",
         "pin": "",
-        "name": "Joseph calby",
+        "name": "James calby",
         "email": "josephcalby@icloud.com",
         "phone": "+353851567143",
         "address": null,
@@ -2058,23 +1922,6 @@
       }
     ],
     [
-      286,
-      {
-        "id": 286,
-        "customerNumber": "66139359",
-        "pin": "",
-        "name": "Tom joyce",
-        "email": "joyceTom808@gmail.com",
-        "phone": "0864002772",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "Member since 2018",
-        "currency": "EUR",
-        "dateCreated": "2025-11-17T21:41:22.461Z",
-        "isDisabled": false
-      }
-    ],
-    [
       289,
       {
         "id": 289,
@@ -2131,11 +1978,11 @@
         "id": 290,
         "customerNumber": "31780779",
         "pin": "",
-        "name": "JAMES WALSH",
-        "email": "jameswalsh321@icloud.com",
-        "phone": "+447598546577",
+        "name": "Aaron green",
+        "email": "aaron245@icloud.com",
+        "phone": "+447598566948",
         "address": "1 HATFIELD STREET, BELFAST BT7 2FB",
-        "dateOfBirth": "1993-11-14",
+        "dateOfBirth": "1994-05-05",
         "joinDate": "Member since 2018",
         "currency": "EUR",
         "dateCreated": "2025-11-20T14:05:16.544Z",
@@ -2187,8 +2034,8 @@
         "phone": "07868801042",
         "address": null,
         "dateOfBirth": null,
-        "joinDate": "Member since 2018",
-        "currency": "EUR",
+        "joinDate": "2025-11-21T13:38:53.865Z",
+        "currency": "GBP",
         "dateCreated": "2025-11-21T13:38:53.824Z",
         "isDisabled": false
       }
@@ -2199,13 +2046,13 @@
         "id": 296,
         "customerNumber": "22381114",
         "pin": "",
-        "name": "Brian Aspil",
-        "email": "brianaspil271@gmail.com",
+        "name": "Michael Ellis",
+        "email": "michaelevans271@gmail.com",
         "phone": "0851597915",
         "address": "17 canal side strabane",
         "dateOfBirth": "1994-05-03",
         "joinDate": "01 04 2020",
-        "currency": "EUR",
+        "currency": "GBP",
         "dateCreated": "2025-11-21T14:00:45.731Z",
         "isDisabled": false
       }
@@ -2216,15 +2063,304 @@
         "id": 297,
         "customerNumber": "27604663",
         "pin": "",
-        "name": "Edward Dawson",
-        "email": "edward@example.com",
-        "phone": "0871234567",
+        "name": "Luke Taylor",
+        "email": "luketaylor980@gmail.com",
+        "phone": "07426942950",
         "address": null,
         "dateOfBirth": null,
         "joinDate": "2024-01-15",
-        "currency": "EUR",
+        "currency": "GBP",
         "dateCreated": "2025-11-21T15:02:49.901Z",
         "isDisabled": false
+      }
+    ],
+    [
+      298,
+      {
+        "id": 298,
+        "customerNumber": "88415316",
+        "pin": "",
+        "name": "Jason Andrew Mccarthy",
+        "email": "jasonMccarthy1992@hotmail.com",
+        "phone": "0851372532",
+        "address": null,
+        "dateOfBirth": "1992-11-21",
+        "joinDate": "2018-04-13 T13:42:55.760Z",
+        "currency": "EUR",
+        "dateCreated": "2025-11-22T13:42:55.717Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      300,
+      {
+        "id": 300,
+        "customerNumber": "81963472",
+        "pin": "",
+        "name": "John Doe",
+        "email": "johndoe@gmail.com",
+        "phone": "5555",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-11-23T14:12:04.130Z",
+        "currency": "GBP",
+        "dateCreated": "2025-11-23T14:12:04.083Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      311,
+      {
+        "id": 311,
+        "customerNumber": "52009700",
+        "pin": "",
+        "name": "John Dev",
+        "email": "joyndev@gmail.com",
+        "phone": "454545",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "currency": "EUR",
+        "dateCreated": "2025-11-27T22:30:11.959Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      304,
+      {
+        "id": 304,
+        "customerNumber": "91556484",
+        "pin": "",
+        "name": "John stokes",
+        "email": "ryanmccullagh106@gmail.comp",
+        "phone": "+353876007900",
+        "address": "Seven water Lane Cottingham Cambridge",
+        "dateOfBirth": "1988-12-12",
+        "joinDate": "2025-11-24T00:23:43.310Z",
+        "currency": "GBP",
+        "dateCreated": "2025-11-24T00:23:43.281Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      301,
+      {
+        "id": 301,
+        "customerNumber": "33593874",
+        "pin": "",
+        "name": "Jonathan Jones",
+        "email": "jonathanjones247@icloud.com",
+        "phone": "07856285422",
+        "address": "137 Spruce Dr, Bicester OX26 3YF",
+        "dateOfBirth": "2000-01-23",
+        "joinDate": "2025-11-23T14:41:15.613Z",
+        "currency": "EUR",
+        "dateCreated": "2025-11-23T14:41:15.573Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      306,
+      {
+        "id": 306,
+        "customerNumber": "17471022",
+        "pin": "",
+        "name": "Tom Joyce ",
+        "email": "joycetom808@gmail.com",
+        "phone": "0864002442",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-11-25T18:04:00.853Z",
+        "currency": "EUR",
+        "dateCreated": "2025-11-25T18:04:00.803Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      302,
+      {
+        "id": 302,
+        "customerNumber": "72438339",
+        "pin": "",
+        "name": "Tom smith ",
+        "email": "p.maughan@yahoo.com",
+        "phone": "00353877779446",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "currency": "GBP",
+        "dateCreated": "2025-11-23T17:52:14.133Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      307,
+      {
+        "id": 307,
+        "customerNumber": "11288862",
+        "pin": "",
+        "name": "Sean Walsh",
+        "email": "Sean22889@gmail.com",
+        "phone": "0852342126",
+        "address": "72 The Cresent, Dublin",
+        "dateOfBirth": "1996-03-18",
+        "joinDate": "2023-11-26T18:52:12.950Z",
+        "currency": "EUR",
+        "dateCreated": "2025-11-26T18:52:12.913Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      299,
+      {
+        "id": 299,
+        "customerNumber": "32530161",
+        "pin": "",
+        "name": "Peter kelly",
+        "email": "peterkelly2244@gmail.com",
+        "phone": "004478556485",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "currency": "GBP",
+        "dateCreated": "2025-11-23T10:29:39.884Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      310,
+      {
+        "id": 310,
+        "customerNumber": "47814315",
+        "pin": "",
+        "name": "MICHAEL JONES",
+        "email": "MICHAELJONES23@GMAIL.com",
+        "phone": "003538656326",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "currency": "EUR",
+        "dateCreated": "2025-11-27T20:16:53.151Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      308,
+      {
+        "id": 308,
+        "customerNumber": "97545147",
+        "pin": "",
+        "name": "Dev",
+        "email": "dev@gmail.com",
+        "phone": "8555",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-11-27T11:18:05.569Z",
+        "currency": "GBP",
+        "dateCreated": "2025-11-27T11:18:05.529Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      309,
+      {
+        "id": 309,
+        "customerNumber": "10725159",
+        "pin": "",
+        "name": "Josh cooper",
+        "email": "cooperj21@gmail.com",
+        "phone": "0857514259",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2022-05-27T17:57:00.184Z",
+        "currency": "EUR",
+        "dateCreated": "2025-11-27T17:57:00.148Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      312,
+      {
+        "id": 312,
+        "customerNumber": "86502283",
+        "pin": "",
+        "name": "Patrick Withers",
+        "email": "patrickwithers086@icloud.com",
+        "phone": "+447383349848",
+        "address": "Bt29 5zv",
+        "dateOfBirth": "2006-06-28",
+        "joinDate": "2023-4-19T23:36:36.665Z",
+        "currency": "GBP",
+        "dateCreated": "2025-11-27T23:36:36.624Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      305,
+      {
+        "id": 305,
+        "customerNumber": "80387887",
+        "pin": "",
+        "name": "Robert gaskin",
+        "email": "gaskinrobert69@gmail.com",
+        "phone": "+353851402488",
+        "address": "13 grangeveiw avenue",
+        "dateOfBirth": "1998-06-20",
+        "joinDate": "20-09-2023",
+        "currency": "EUR",
+        "dateCreated": "2025-11-24T18:34:38.964Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      313,
+      {
+        "id": 313,
+        "customerNumber": "85032432",
+        "pin": "",
+        "name": "Greg duffy",
+        "email": "gregduffy804@gmail.com",
+        "phone": "0834893574",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-11-28T15:40:37.819Z",
+        "currency": "GBP",
+        "dateCreated": "2025-11-28T15:40:37.780Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      314,
+      {
+        "id": 314,
+        "customerNumber": "34921045",
+        "pin": "",
+        "name": "Paul county",
+        "email": "paul1962@gmail.com",
+        "phone": "+35348438187",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2017-11-28T19:54:47.984Z",
+        "currency": "EUR",
+        "dateCreated": "2025-11-28T19:54:47.947Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      315,
+      {
+        "id": 315,
+        "customerNumber": "46011923",
+        "pin": "000000",
+        "name": "John dev",
+        "email": "shehjd@gmail.com",
+        "phone": "454554",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "dateCreated": "2025-11-29T13:33:46.708Z",
+        "isDisabled": false,
+        "currency": "EUR"
       }
     ]
   ],
@@ -2274,7 +2410,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 298,
+    "currentUserId": 316,
     "currentAccountId": 82,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
