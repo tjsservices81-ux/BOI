@@ -1,0 +1,77 @@
+I already have an HTML/CSS version of a screen called “Monthly money in and out”, but the layout and styling are wrong. 
+
+Rewrite / adjust the HTML and CSS so the screen EXACTLY matches this description:
+
+1. GENERAL
+- Mobile banking style layout on a light grey background #F5F7F8.
+- Use a single centered column with about 24px side padding.
+- Font: system UI (-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif).
+- Keep the existing structure if possible, but fix sizes, spacing and colours to match.
+
+2. TOP APP BAR
+- Full-width teal bar at the top, height about 64px, colour #0A6F85.
+- Left: back arrow icon.
+- Centre: title “Monthly money in and out”, white, semibold, about 18px.
+- Right: circular avatar icon with white outline and teal fill.
+
+3. INTRO TEXT SECTION
+- White background section directly under the app bar.
+- Large heading: “Here’s a breakdown of your activity so far this month”
+  - Dark grey (#333), semibold, about 22px, multi-line, left aligned.
+- Subheading paragraph under it:
+  - Smaller light-grey text (#777), about 14px.
+- A thin grey divider line under this section.
+
+4. ACCOUNT SUMMARY CARD
+- A rounded white card floating on the light grey background.
+- Card has a subtle shadow and 12–14px border-radius.
+- Inside top row:
+  - Left: stacked coins icon.
+  - Right of icon: “Current” (bold, 16px) on first line, “3704” (grey, 14px) under it.
+- Horizontal light-grey divider across the card.
+- Bottom row:
+  - Left text: “Activity to date:” grey.
+  - Right text: amount “€0.00” bold, dark grey.
+
+5. “YOUR ACTIVITY” AREA
+- Centre heading text: “Your activity:” dark grey, semibold, about 16px.
+- Below that, month selector with “Nov” on the left and “Dec” on the right.
+  - “Nov” grey, “Dec” dark with a thick teal line directly under “Dec” only, full width between Nov and Dec.
+- Below the month bar:
+  - Two labels side-by-side: “MONEY OUT” and “MONEY IN”.
+  - “MONEY OUT” in teal, “MONEY IN” in green (#00A651).
+  - Amounts under each label: “€0.00” in dark grey.
+- Small grey text under that: “Activity until the 1st”.
+- Vertical central graphic: light-grey bar with tiny coloured bars at the bottom (teal and green) representing the chart.
+- A full-width thin grey divider line below this section.
+
+6. AVERAGE MONEY CARDS
+- Two equal-width white panels side by side:
+  - Left: “€0.00” with label “Average money out to this point”.
+  - Right: “€0.00” with label “Average money in to this point”.
+  - Each has a small payment icon above the amount.
+  - Vertical dividing line between them.
+
+7. MONEY OUT / MONEY IN TOGGLE
+- Centred pill-style buttons below the average cards:
+  - Left pill: “MONEY OUT” filled with teal (#0A6F85), white text, fully rounded 24px radius.
+  - Right pill: “MONEY IN” white background, teal border and teal text, same rounded shape.
+- Place a thin grey divider line under these buttons.
+
+8. TRANSACTIONS EMPTY STATE
+- Section title: “Your December transactions:”, bold dark grey, centred.
+- Subtext: “Tap transaction to recategorise”, lighter grey, smaller.
+- Large pale-grey circle with up/down arrows icon in the middle.
+- Text under the icon: “No transactions this month”, grey, centred.
+
+9. FEEDBACK SECTION
+- Light grey strip at the bottom of the content (not the tab bar).
+- Text centred: “Was this insight helpful?” dark grey.
+- Two outline buttons side by side: “YES” and “NO”.
+  - White background, teal border and teal text, rounded corners.
+
+10. BOTTOM TAB BAR
+- Keep an app-style bottom navigation bar with icons and labels: Accounts, Payments, Cards, Services, Apply.
+- Background white, icons grey, the active tab “Accounts” in teal.
+
+Update the HTML and CSS so that spacing, alignment, colours, fonts and shapes match this description as closely as possible. Output the full corrected HTML and CSS.

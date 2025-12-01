@@ -8,6 +8,7 @@ export default function MonthlyInsights() {
   const [, setLocation] = useLocation();
   const [userCurrency, setUserCurrency] = useState<Currency>(() => getUserCurrency());
   const [activeTab, setActiveTab] = useState<'out' | 'in'>('out');
+  const [selectedMonth, setSelectedMonth] = useState<'current' | 'previous'>('current');
   const [transactions, setTransactions] = useState<any[]>([]);
   const [monthlyData, setMonthlyData] = useState({
     moneyIn: 0,
@@ -15,7 +16,10 @@ export default function MonthlyInsights() {
     avgIn: 0,
     avgOut: 0,
     currentMonth: '',
-    currentDay: 1
+    currentMonthShort: '',
+    previousMonthShort: '',
+    currentDay: 1,
+    activityToDate: 0
   });
 
   useEffect(() => {
@@ -25,7 +29,10 @@ export default function MonthlyInsights() {
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
     const currentDay = now.getDate();
+    const previousMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+    
     const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const monthNamesShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     
     // Get all transactions
     const mainTransactions = UserDataManager.getUserData('bankTransactions', []);
@@ -64,7 +71,6 @@ export default function MonthlyInsights() {
       }
     });
     
-    // Calculate averages (average per day so far this month)
     const avgIn = currentDay > 0 ? moneyIn / currentDay : 0;
     const avgOut = currentDay > 0 ? moneyOut / currentDay : 0;
     
@@ -74,7 +80,10 @@ export default function MonthlyInsights() {
       avgIn,
       avgOut,
       currentMonth: monthNames[currentMonth],
-      currentDay
+      currentMonthShort: monthNamesShort[currentMonth],
+      previousMonthShort: monthNamesShort[previousMonth],
+      currentDay,
+      activityToDate: moneyIn - moneyOut
     });
   }, []);
 
@@ -93,198 +102,248 @@ export default function MonthlyInsights() {
     }
   });
 
+  const getOrdinalSuffix = (day: number) => {
+    if (day > 3 && day < 21) return 'th';
+    switch (day % 10) {
+      case 1: return 'st';
+      case 2: return 'nd';
+      case 3: return 'rd';
+      default: return 'th';
+    }
+  };
+
   return (
-    <div className="fixed inset-0 bg-gray-50 flex flex-col">
-      {/* Header */}
-      <div className="flex-shrink-0 bg-[#126987] text-white px-4 py-4 flex items-center justify-between">
-        <button onClick={() => setLocation('/dashboard')} className="p-1">
-          <ArrowLeft className="h-6 w-6" />
+    <div className="fixed inset-0 flex flex-col" style={{ backgroundColor: '#F5F7F8', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
+      {/* Top App Bar */}
+      <div className="flex-shrink-0 flex items-center justify-between px-4" style={{ backgroundColor: '#0A6F85', height: '64px' }}>
+        <button onClick={() => setLocation('/dashboard')} className="p-2">
+          <ArrowLeft className="h-6 w-6 text-white" />
         </button>
-        <h1 className="text-lg font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+        <h1 className="text-white font-semibold" style={{ fontSize: '18px' }}>
           Monthly money in and out
         </h1>
-        <button onClick={() => setLocation('/profile')} className="p-1">
-          <User className="h-5 w-5" />
+        <button onClick={() => setLocation('/profile')} className="p-2">
+          <div className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center" style={{ backgroundColor: '#0A6F85' }}>
+            <User className="h-4 w-4 text-white" />
+          </div>
         </button>
       </div>
 
-      {/* Content - Scrollable */}
-      <div className="flex-1 overflow-y-auto pb-24" style={{ WebkitOverflowScrolling: 'touch' }}>
-        {/* Intro Section */}
-        <div className="bg-white p-5">
-          <h2 className="text-2xl text-gray-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+        {/* Intro Text Section */}
+        <div className="bg-white px-6 py-5">
+          <h2 className="font-semibold mb-3" style={{ fontSize: '22px', color: '#333', lineHeight: '1.3' }}>
             Here's a breakdown of your activity so far this month
           </h2>
-          <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+          <p style={{ fontSize: '14px', color: '#777', lineHeight: '1.5' }}>
             Activity includes transfers between accounts. Your in progress transactions might not be included yet.
           </p>
         </div>
+        <div style={{ height: '1px', backgroundColor: '#E0E0E0' }}></div>
 
-        {/* Account Card */}
-        <div className="bg-white mx-4 mt-4 p-4 border border-gray-200 shadow-sm">
-          <div className="flex items-center mb-3">
-            <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mr-3">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#126987" strokeWidth="2">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M12 6v12M6 12h12"/>
+        {/* Account Summary Card */}
+        <div className="mx-4 mt-4 bg-white" style={{ borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+          <div className="flex items-center p-4">
+            <div className="mr-3">
+              <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                <circle cx="20" cy="12" r="8" stroke="#666" strokeWidth="2" fill="none"/>
+                <ellipse cx="20" cy="20" rx="10" ry="4" stroke="#666" strokeWidth="2" fill="none"/>
+                <ellipse cx="20" cy="28" rx="10" ry="4" stroke="#666" strokeWidth="2" fill="none"/>
               </svg>
             </div>
             <div>
-              <p className="text-base text-gray-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>Current</p>
-              <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>3704</p>
+              <p className="font-bold" style={{ fontSize: '16px', color: '#333' }}>Current</p>
+              <p style={{ fontSize: '14px', color: '#777' }}>3704</p>
             </div>
           </div>
-          <div className="flex justify-between items-center border-t border-gray-200 pt-3">
-            <span className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Activity to date:</span>
-            <span className="text-base font-medium text-gray-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              {formatCurrency((monthlyData.moneyIn - monthlyData.moneyOut).toFixed(2), userCurrency)}
+          <div style={{ height: '1px', backgroundColor: '#E8E8E8', margin: '0 16px' }}></div>
+          <div className="flex justify-between items-center p-4">
+            <span style={{ fontSize: '14px', color: '#777' }}>Activity to date:</span>
+            <span className="font-bold" style={{ fontSize: '16px', color: '#333' }}>
+              {formatCurrency(monthlyData.activityToDate.toFixed(2), userCurrency)}
             </span>
           </div>
         </div>
 
         {/* Your Activity Section */}
-        <div className="bg-white mt-4 p-4">
-          <h3 className="text-center text-gray-700 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>Your activity:</h3>
+        <div className="mt-6 px-4">
+          <p className="text-center font-semibold mb-4" style={{ fontSize: '16px', color: '#333' }}>Your activity:</p>
           
-          {/* Current Month Tab */}
+          {/* Month Selector */}
           <div className="flex justify-center mb-4">
-            <div className="px-8 py-2 border-b-2 border-[#126987]">
-              <span className="text-gray-800 font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                {monthlyData.currentMonth.slice(0, 3)}
-              </span>
+            <div className="flex" style={{ width: '200px' }}>
+              <button 
+                onClick={() => setSelectedMonth('previous')}
+                className="flex-1 text-center pb-2"
+                style={{ 
+                  fontSize: '15px', 
+                  color: selectedMonth === 'previous' ? '#333' : '#999',
+                  borderBottom: selectedMonth === 'previous' ? '3px solid #0A6F85' : '1px solid #E0E0E0'
+                }}
+              >
+                {monthlyData.previousMonthShort}
+              </button>
+              <button 
+                onClick={() => setSelectedMonth('current')}
+                className="flex-1 text-center pb-2"
+                style={{ 
+                  fontSize: '15px', 
+                  color: selectedMonth === 'current' ? '#333' : '#999',
+                  borderBottom: selectedMonth === 'current' ? '3px solid #0A6F85' : '1px solid #E0E0E0'
+                }}
+              >
+                {monthlyData.currentMonthShort}
+              </button>
             </div>
           </div>
 
-          {/* Money Out / Money In Display */}
-          <div className="flex justify-between mb-4">
-            <div className="text-center flex-1">
-              <p className="text-sm font-medium text-[#126987] mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>MONEY OUT</p>
-              <p className="text-lg text-gray-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+          {/* Money Out / Money In Labels */}
+          <div className="flex justify-between px-8 mb-2">
+            <div className="text-center">
+              <p className="font-semibold" style={{ fontSize: '13px', color: '#0A6F85' }}>MONEY OUT</p>
+              <p style={{ fontSize: '16px', color: '#333' }}>
                 {formatCurrency(monthlyData.moneyOut.toFixed(2), userCurrency)}
               </p>
             </div>
-            <div className="text-center flex-1">
-              <p className="text-sm font-medium text-[#126987] mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>MONEY IN</p>
-              <p className="text-lg text-gray-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+            <div className="text-center">
+              <p className="font-semibold" style={{ fontSize: '13px', color: '#00A651' }}>MONEY IN</p>
+              <p style={{ fontSize: '16px', color: '#333' }}>
                 {formatCurrency(monthlyData.moneyIn.toFixed(2), userCurrency)}
               </p>
             </div>
           </div>
 
-          {/* Activity Bar */}
-          <div className="mb-4">
-            <p className="text-xs text-gray-500 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              ▸ Activity until the {monthlyData.currentDay}{monthlyData.currentDay === 1 ? 'st' : monthlyData.currentDay === 2 ? 'nd' : monthlyData.currentDay === 3 ? 'rd' : 'th'}
-            </p>
-            <div className="h-16 flex items-end justify-center space-x-8">
+          {/* Activity Text */}
+          <p className="text-center mb-3" style={{ fontSize: '12px', color: '#999' }}>
+            ▸ Activity until the {monthlyData.currentDay}{getOrdinalSuffix(monthlyData.currentDay)}
+          </p>
+
+          {/* Bar Chart */}
+          <div className="flex justify-center items-end mb-4" style={{ height: '80px' }}>
+            <div className="flex items-end space-x-6">
               <div 
-                className="w-8 bg-[#126987]" 
-                style={{ height: `${Math.min(Math.max((monthlyData.moneyOut / Math.max(monthlyData.moneyOut + monthlyData.moneyIn, 1)) * 100, 10), 100)}%` }}
+                className="w-6" 
+                style={{ 
+                  backgroundColor: '#0A6F85',
+                  height: monthlyData.moneyOut > 0 ? `${Math.max((monthlyData.moneyOut / Math.max(monthlyData.moneyOut + monthlyData.moneyIn, 1)) * 60 + 20, 20)}px` : '20px'
+                }}
               ></div>
               <div 
-                className="w-8 bg-green-400" 
-                style={{ height: `${Math.min(Math.max((monthlyData.moneyIn / Math.max(monthlyData.moneyOut + monthlyData.moneyIn, 1)) * 100, 10), 100)}%` }}
+                className="w-6" 
+                style={{ 
+                  backgroundColor: '#00A651',
+                  height: monthlyData.moneyIn > 0 ? `${Math.max((monthlyData.moneyIn / Math.max(monthlyData.moneyOut + monthlyData.moneyIn, 1)) * 60 + 20, 20)}px` : '20px'
+                }}
               ></div>
             </div>
           </div>
         </div>
 
-        {/* Average Cards */}
-        <div className="flex mx-4 mt-4 space-x-4">
-          <div className="flex-1 bg-white p-4 border border-gray-200 text-center">
-            <div className="w-12 h-12 mx-auto mb-2 border border-gray-300 rounded flex items-center justify-center">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="1.5">
-                <rect x="3" y="6" width="18" height="12" rx="2"/>
-                <path d="M12 10v4M10 12h4"/>
-                <path d="M12 18v3"/>
-                <path d="M9 21h6"/>
+        <div style={{ height: '1px', backgroundColor: '#E0E0E0', margin: '0 16px' }}></div>
+
+        {/* Average Money Cards */}
+        <div className="flex mx-4 mt-4 bg-white" style={{ borderRadius: '0' }}>
+          <div className="flex-1 p-4 text-center" style={{ borderRight: '1px solid #E8E8E8' }}>
+            <div className="flex justify-center mb-2">
+              <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+                <rect x="6" y="10" width="24" height="16" rx="2" stroke="#666" strokeWidth="1.5" fill="none"/>
+                <line x1="12" y1="18" x2="24" y2="18" stroke="#666" strokeWidth="1.5"/>
+                <circle cx="18" cy="18" r="3" stroke="#666" strokeWidth="1.5" fill="none"/>
+                <path d="M18 26v4M14 30h8" stroke="#666" strokeWidth="1.5"/>
               </svg>
             </div>
-            <p className="text-xl font-medium text-gray-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+            <p className="font-bold" style={{ fontSize: '20px', color: '#333' }}>
               {formatCurrency(monthlyData.avgOut.toFixed(2), userCurrency)}
             </p>
-            <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+            <p style={{ fontSize: '12px', color: '#777', lineHeight: '1.4' }}>
               Average money out to this point
             </p>
           </div>
-          <div className="flex-1 bg-white p-4 border border-gray-200 text-center">
-            <div className="w-12 h-12 mx-auto mb-2 border border-gray-300 rounded flex items-center justify-center">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="1.5">
-                <rect x="3" y="6" width="18" height="12" rx="2"/>
-                <path d="M12 10v4M10 12h4"/>
-                <path d="M12 3v3"/>
-                <path d="M9 3h6"/>
+          <div className="flex-1 p-4 text-center">
+            <div className="flex justify-center mb-2">
+              <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+                <rect x="6" y="10" width="24" height="16" rx="2" stroke="#666" strokeWidth="1.5" fill="none"/>
+                <line x1="12" y1="18" x2="24" y2="18" stroke="#666" strokeWidth="1.5"/>
+                <circle cx="18" cy="18" r="3" stroke="#666" strokeWidth="1.5" fill="none"/>
+                <path d="M18 10V6M14 6h8" stroke="#666" strokeWidth="1.5"/>
               </svg>
             </div>
-            <p className="text-xl font-medium text-gray-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+            <p className="font-bold" style={{ fontSize: '20px', color: '#333' }}>
               {formatCurrency(monthlyData.avgIn.toFixed(2), userCurrency)}
             </p>
-            <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+            <p style={{ fontSize: '12px', color: '#777', lineHeight: '1.4' }}>
               Average money in to this point
             </p>
           </div>
         </div>
 
-        {/* Toggle Buttons */}
-        <div className="flex mx-4 mt-4 space-x-4">
+        {/* Money Out / Money In Toggle */}
+        <div className="flex justify-center space-x-3 mt-6 px-4">
           <button
             onClick={() => setActiveTab('out')}
-            className={`flex-1 py-3 text-center font-medium ${
-              activeTab === 'out' 
-                ? 'bg-[#126987] text-white' 
-                : 'bg-white text-gray-700 border border-gray-300'
-            }`}
-            style={{ fontFamily: 'OpenSans, sans-serif' }}
+            className="flex-1 py-3 font-semibold"
+            style={{
+              backgroundColor: activeTab === 'out' ? '#0A6F85' : '#FFFFFF',
+              color: activeTab === 'out' ? '#FFFFFF' : '#0A6F85',
+              border: activeTab === 'out' ? 'none' : '2px solid #0A6F85',
+              borderRadius: '24px',
+              fontSize: '14px'
+            }}
           >
             MONEY OUT
           </button>
           <button
             onClick={() => setActiveTab('in')}
-            className={`flex-1 py-3 text-center font-medium ${
-              activeTab === 'in' 
-                ? 'bg-[#126987] text-white' 
-                : 'bg-white text-gray-700 border border-gray-300'
-            }`}
-            style={{ fontFamily: 'OpenSans, sans-serif' }}
+            className="flex-1 py-3 font-semibold"
+            style={{
+              backgroundColor: activeTab === 'in' ? '#0A6F85' : '#FFFFFF',
+              color: activeTab === 'in' ? '#FFFFFF' : '#0A6F85',
+              border: activeTab === 'in' ? 'none' : '2px solid #0A6F85',
+              borderRadius: '24px',
+              fontSize: '14px'
+            }}
           >
             MONEY IN
           </button>
         </div>
 
+        <div style={{ height: '1px', backgroundColor: '#E0E0E0', margin: '24px 16px 0' }}></div>
+
         {/* Transactions Section */}
-        <div className="bg-white mx-4 mt-4 p-4 border border-gray-200">
-          <h3 className="text-center text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+        <div className="px-4 py-6">
+          <p className="text-center font-bold mb-1" style={{ fontSize: '16px', color: '#333' }}>
             Your {monthlyData.currentMonth} transactions:
-          </h3>
-          <p className="text-center text-sm text-gray-500 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+          </p>
+          <p className="text-center mb-6" style={{ fontSize: '14px', color: '#777' }}>
             Tap transaction to recategorise
           </p>
 
           {filteredTransactions.length === 0 ? (
-            <div className="text-center py-8">
-              <div className="w-20 h-20 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ccc" strokeWidth="1.5">
-                  <path d="M7 16V4m0 0L3 8m4-4l4 4"/>
-                  <path d="M17 8v12m0 0l4-4m-4 4l-4-4"/>
+            <div className="text-center py-6">
+              <div className="mx-auto mb-4 flex items-center justify-center" style={{ width: '100px', height: '100px', backgroundColor: '#EAEAEA', borderRadius: '50%' }}>
+                <svg width="50" height="50" viewBox="0 0 50 50" fill="none">
+                  <path d="M15 30V15M15 15L10 20M15 15L20 20" stroke="#BBBBBB" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M35 20V35M35 35L30 30M35 35L40 30" stroke="#BBBBBB" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
-              <p className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              <p style={{ fontSize: '16px', color: '#666' }}>
                 No transactions this month
               </p>
             </div>
           ) : (
             <div className="space-y-3">
               {filteredTransactions.map((tx: any, index: number) => (
-                <div key={index} className="flex justify-between items-center py-2 border-b border-gray-100">
+                <div key={index} className="bg-white p-4 flex justify-between items-center" style={{ borderRadius: '8px' }}>
                   <div>
-                    <p className="text-sm text-gray-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    <p className="font-medium" style={{ fontSize: '15px', color: '#333' }}>
                       {tx.description || tx.name || 'Transaction'}
                     </p>
-                    <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    <p style={{ fontSize: '13px', color: '#777' }}>
                       {new Date(tx.date || tx.timestamp).toLocaleDateString()}
                     </p>
                   </div>
-                  <span className={`font-medium ${parseFloat(tx.amount) < 0 ? 'text-red-500' : 'text-green-500'}`}>
+                  <span className="font-semibold" style={{ color: parseFloat(tx.amount) < 0 ? '#D32F2F' : '#00A651' }}>
                     {formatCurrency(Math.abs(parseFloat(tx.amount)).toFixed(2), userCurrency)}
                   </span>
                 </div>
@@ -294,20 +353,32 @@ export default function MonthlyInsights() {
         </div>
 
         {/* Feedback Section */}
-        <div className="bg-gray-100 mx-4 mt-4 p-4 text-center mb-8">
-          <p className="text-gray-700 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+        <div className="py-5 px-4 mb-20" style={{ backgroundColor: '#EAEAEA' }}>
+          <p className="text-center mb-4" style={{ fontSize: '16px', color: '#333' }}>
             Was this insight helpful?
           </p>
           <div className="flex justify-center space-x-4">
             <button 
-              className="px-8 py-2 bg-white border border-gray-300 text-gray-700 font-medium"
-              style={{ fontFamily: 'OpenSans, sans-serif' }}
+              className="px-10 py-2 font-semibold"
+              style={{ 
+                backgroundColor: '#FFFFFF', 
+                border: '2px solid #0A6F85', 
+                color: '#0A6F85',
+                borderRadius: '8px',
+                fontSize: '14px'
+              }}
             >
               YES
             </button>
             <button 
-              className="px-8 py-2 bg-white border border-gray-300 text-gray-700 font-medium"
-              style={{ fontFamily: 'OpenSans, sans-serif' }}
+              className="px-10 py-2 font-semibold"
+              style={{ 
+                backgroundColor: '#FFFFFF', 
+                border: '2px solid #0A6F85', 
+                color: '#0A6F85',
+                borderRadius: '8px',
+                fontSize: '14px'
+              }}
             >
               NO
             </button>
