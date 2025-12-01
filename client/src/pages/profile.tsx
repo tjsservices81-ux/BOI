@@ -1269,25 +1269,25 @@ export default function Profile() {
     showDeveloperMessage(`Successfully added ${count} sample transaction${count === 1 ? '' : 's'} to ${targetAccount.displayName}!\n\nNew Balance: ${currencySymbol}${currentBalance.toFixed(2)}`);
   };
 
-  const resetToDefaults = () => {
+  const resetToDefaults = async () => {
     // Block if account deleted
     if (accountDeleted) {
       alert('Account Deleted');
       return;
     }
     
-    // Reset accounts to zero balances for current user
-    const defaultAccounts = [
-      { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "0.00", accountType: "current" },
-      { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "0.00", accountType: "credit" },
-      { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "0.00", accountType: "savings" },
-    ];
+    // Get current accounts and reset their balances to 0.00
+    const currentAccounts = UserDataManager.getUserData('bankAccounts', []);
+    const resetAccounts = currentAccounts.map((acc: any) => ({
+      ...acc,
+      balance: "0.00"
+    }));
     
     // Clear cache to ensure fresh data
     UserDataManager.clearCache();
     
     // Clear all user data using UserDataManager
-    UserDataManager.setUserAccounts(defaultAccounts);
+    UserDataManager.setUserAccounts(resetAccounts);
     UserDataManager.setUserData('bankTransactions', []);
     UserDataManager.setUserData('savedPayees', []);
     UserDataManager.setUserData('recentPayees', []);
@@ -1308,26 +1308,40 @@ export default function Profile() {
     // Note: not clearing 'bankAccounts', 'bankingUser', 'currentUser', 'lastActiveUser'
     
     // Update local state immediately
-    setAccounts(defaultAccounts);
+    setAccounts(resetAccounts);
     
     // Clear cache again after setting new data
     UserDataManager.clearCache();
+    
+    // Persist reset balances to PostgreSQL for each account
+    for (const account of resetAccounts) {
+      if (account.id) {
+        fetch(`/api/accounts/${account.id}/balance`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ balance: "0.00" })
+        }).then(() => {
+          console.log(`💰 Reset balance persisted for account ${account.id}`);
+        }).catch(console.error);
+      }
+    }
     
     // Dispatch comprehensive events to notify all components
     window.dispatchEvent(new CustomEvent('transactionUpdate'));
     window.dispatchEvent(new CustomEvent('transactionDeleted'));
     window.dispatchEvent(new CustomEvent('balanceUpdate', {
-      detail: { reset: true, accounts: defaultAccounts }
+      detail: { reset: true, accounts: resetAccounts }
     }));
     window.dispatchEvent(new CustomEvent('accountsReset', {
-      detail: { accounts: defaultAccounts }
+      detail: { accounts: resetAccounts }
     }));
     
     // Force refresh by updating accounts again after a short delay
     setTimeout(() => {
-      setAccounts([...defaultAccounts]);
+      setAccounts([...resetAccounts]);
       window.dispatchEvent(new CustomEvent('balanceUpdate', {
-        detail: { reset: true, accounts: defaultAccounts }
+        detail: { reset: true, accounts: resetAccounts }
       }));
     }, 100);
     
