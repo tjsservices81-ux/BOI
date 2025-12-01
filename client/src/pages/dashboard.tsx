@@ -118,8 +118,18 @@ export default function Dashboard() {
     setAccounts(storedAccounts);
     
     // Load saved and recent payees combined
-    const savedPayees = UserDataManager.getUserData('savedPayees', []);
-    const recentPayees = UserDataManager.getUserData('recentPayees', []);
+    let savedPayees = UserDataManager.getUserData('savedPayees', []);
+    let recentPayees = UserDataManager.getUserData('recentPayees', []);
+    
+    // If no saved/recent payees, add default test payees to show functionality
+    if (savedPayees.length === 0 && recentPayees.length === 0) {
+      const defaultTestPayees = [
+        { name: 'John Smith', accountInfo: 'GB82WEST12345698765432', type: 'uk', transferType: 'uk', timestamp: new Date().toISOString() },
+        { name: 'Sarah Johnson', accountInfo: 'DE89370400440532013000', type: 'iban', transferType: 'iban', timestamp: new Date().toISOString() }
+      ];
+      recentPayees = defaultTestPayees;
+    }
+    
     const allPayees = [...savedPayees, ...recentPayees];
     // Remove duplicates by payee name and transferType, convert transferType to type field
     const uniquePayeesMap = new Map();
