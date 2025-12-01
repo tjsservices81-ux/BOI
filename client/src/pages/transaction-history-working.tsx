@@ -1535,9 +1535,14 @@ export default function TransactionHistoryWorking() {
                 {/* Share Button */}
                 <button
                   onClick={async () => {
+                    const sortCode = customBankDisplay.sortCode || accountInfo?.sortCode || '90-38-16';
+                    const accountNumber = customBankDisplay.accountNumber || accountInfo?.accountNumber || '20163704';
+                    const bic = customBankDisplay.bic || accountInfo?.bic || 'BOFIIE2DXXX';
+                    const iban = customBankDisplay.iban || accountInfo?.iban || 'IE40BOFI 903816 20163704';
+                    
                     const shareText = userCurrency === 'GBP' 
-                      ? `Sort Code: ${customBankDisplay.sortCode || accountInfo?.sortCode || '90-38-16'}\nAccount Number: ${customBankDisplay.accountNumber || accountInfo?.accountNumber || '20163704'}`
-                      : `BIC: ${customBankDisplay.bic || accountInfo?.bic || 'BOFIIE2DXXX'}\nIBAN: ${customBankDisplay.iban || accountInfo?.iban || 'IE40BOFI 903816 20163704'}`;
+                      ? `Hi\n\nMy Account details are:\n\nSort Code: ${sortCode}\nAccount Number: ${accountNumber}\n\nThanks`
+                      : `Hi\n\nMy Account details are:\n\nBIC: ${bic}\nIBAN: ${iban}\n\nThanks`;
                     
                     if (navigator.share) {
                       try {
