@@ -1642,18 +1642,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Create the account in the database
           await storage.createAccount(currentAccount);
 
-          // Link the account to the customer in PostgreSQL
-          try {
-            await storage.updateCustomer(userData.customerNumber, {
-              accountNumber: accountNumber,
-              sortCode: sortCode,
-              bic: bic,
-              iban: iban
-            });
-            console.log(`💳 Linked account ${accountNumber} to customer ${userData.customerNumber}`);
-          } catch (linkError) {
-            console.error('Failed to link account to customer:', linkError);
-          }
+          console.log(`💳 Created Current Account for customer ${userData.customerNumber}`);
 
           console.log('User and accounts created in database:', newUser);
 
@@ -2651,10 +2640,6 @@ h+=\`<div class="itm">
 <div class="r"><span class="lb">Date of Birth</span><span class="vl">\${escapeHtml(c.dateOfBirth||'N/A')}</span></div>
 <div class="r"><span class="lb">Join Date</span><span class="vl">\${escapeHtml(c.joinDate||'N/A')}</span></div>
 <div class="r"><span class="lb">Currency</span><span class="vl">\${escapeHtml(c.currency)}</span></div>
-<div class="r"><span class="lb">Account Number</span><span class="vl" style="font-family:monospace;font-weight:600">\${c.accountNumber ? escapeHtml(c.accountNumber) : 'Not linked'}</span></div>
-<div class="r"><span class="lb">Sort Code</span><span class="vl" style="font-family:monospace">\${c.sortCode ? escapeHtml(c.sortCode) : '90-78-68'}</span></div>
-<div class="r"><span class="lb">BIC</span><span class="vl" style="font-family:monospace">\${c.bic ? escapeHtml(c.bic) : 'BOFIIE2D'}</span></div>
-<div class="r"><span class="lb">IBAN</span><span class="vl" style="font-family:monospace;font-size:11px">\${c.iban ? escapeHtml(c.iban) : 'Not generated'}</span></div>
 <div class="r"><span class="lb">Status</span><span class="st">\${c.isDeleted ? '🗑️ Deleted' : 'Active'}</span></div>
 \${c.notificationViolationFlagged ? \`
 <div class="r" style="background:#fff3cd;border-radius:6px;padding:8px;margin:4px 0">
