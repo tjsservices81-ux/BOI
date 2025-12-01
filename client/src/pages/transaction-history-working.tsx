@@ -477,10 +477,11 @@ export default function TransactionHistoryWorking() {
 
   const styles = {
     colors: {
+      headerBg: '#1A5F6E',
       headerGradientStart: '#1B6B7C',
-      headerGradientEnd: '#164E5C',
-      balanceGradientStart: '#164E5C',
-      balanceGradientEnd: '#1B6B7C',
+      headerGradientEnd: '#1A5F6E',
+      balanceGradientStart: '#1B7082',
+      balanceGradientEnd: '#1B7082',
       tabActiveBg: '#1B6B7C',
       tabInactiveBorder: '#D1D5DB',
       tabBg: '#F3F4F6',
@@ -509,11 +510,11 @@ export default function TransactionHistoryWorking() {
       className="page-container h-screen bg-white flex flex-col overflow-hidden page-slide-in-right" 
       style={{ fontFamily: styles.fonts.family, maxWidth: '430px', margin: '0 auto' }}
     >
-      {/* Header - transparent to blend with status bar */}
+      {/* Header - matches status bar color */}
       <div 
         className="flex items-center justify-between flex-shrink-0"
         style={{ 
-          background: styles.colors.headerGradientStart,
+          background: styles.colors.headerBg,
           minHeight: '48px',
           paddingTop: 'env(safe-area-inset-top, 0px)',
           paddingLeft: '16px',
