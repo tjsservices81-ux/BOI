@@ -43,12 +43,10 @@ function ProtectedRoute({ children, fallback }: { children: React.ReactNode; fal
   const authHook = useAuth();
   const user = authHook?.user || null;
   const isLoading = authHook?.isLoading || false;
-  const [loadingTimeout, setLoadingTimeout] = useState(false);
   const [initializationComplete, setInitializationComplete] = useState(false);
   
-  // Check initialization status with timeout fallback
+  // Check initialization status
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
     let initCheckInterval: NodeJS.Timeout;
     
     const checkInitialization = () => {
@@ -68,23 +66,12 @@ function ProtectedRoute({ children, fallback }: { children: React.ReactNode; fal
     checkInitialization();
     initCheckInterval = setInterval(checkInitialization, 100);
     
-    // Fallback timeout after 4 seconds - force navigation to login
-    timeoutId = setTimeout(() => {
-      console.warn('ProtectedRoute: Initialization timeout reached, forcing login redirect');
-      setLoadingTimeout(true);
-      setInitializationComplete(true);
-      if (initCheckInterval) {
-        clearInterval(initCheckInterval);
-      }
-    }, 4000);
-    
     return () => {
-      if (timeoutId) clearTimeout(timeoutId);
       if (initCheckInterval) clearInterval(initCheckInterval);
     };
   }, [user]);
   
-  // Show loading screen during initialization (max 4 seconds)
+  // Show loading screen during initialization
   if (!initializationComplete) {
     return (
       <div className="w-full h-full flex items-center justify-center bg-[#126987]">
@@ -93,23 +80,18 @@ function ProtectedRoute({ children, fallback }: { children: React.ReactNode; fal
     );
   }
   
-  // Handle timeout scenario - force redirect to login
-  if (loadingTimeout && !user) {
-    return fallback ? <>{fallback}</> : <Redirect to="/login" />;
-  }
-  
-  // Normal protection logic after initialization
-  if (!user && !isLoading) {
-    return fallback ? <>{fallback}</> : <Redirect to="/login" />;
-  }
-  
-  // Show brief loading only if auth is actively loading (not during timeout)
-  if (isLoading && !loadingTimeout) {
+  // Normal protection logic after initialization - wait for auth to finish loading
+  if (isLoading) {
     return (
       <div className="w-full h-full flex items-center justify-center bg-[#126987]">
         <div className="text-white">Loading...</div>
       </div>
     );
+  }
+  
+  // Only redirect to login if auth finished loading and there's no user
+  if (!user) {
+    return fallback ? <>{fallback}</> : <Redirect to="/login" />;
   }
   
   return <>{children}</>;
@@ -305,12 +287,12 @@ function AppRoutes() {
 
     initializeApp();
     
-    // Fallback timeout to prevent infinite initialization
+    // Fallback timeout to prevent infinite initialization (15 seconds to allow slow networks)
     initializationTimer = setTimeout(() => {
       console.warn('App initialization timeout reached, forcing completion');
       setIsRestoringState(false);
       setIsInitialized(true);
-    }, 5000);
+    }, 15000);
     
     return () => {
       if (initializationTimer) {

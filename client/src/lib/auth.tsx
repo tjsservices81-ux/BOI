@@ -211,14 +211,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Start initialization immediately
     initializeAuth();
     
-    // Fallback timeout to prevent infinite loading
+    // Fallback timeout to prevent infinite loading (15 seconds to allow slow networks)
     initializationTimer = setTimeout(() => {
       if (isMounted && isLoading) {
         console.warn('Auth initialization timeout reached, forcing completion');
         setIsLoading(false);
         setIsInitialized(true);
       }
-    }, 3000);
+    }, 15000);
     
     return () => {
       isMounted = false;
