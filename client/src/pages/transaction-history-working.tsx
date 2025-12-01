@@ -624,22 +624,26 @@ export default function TransactionHistoryWorking() {
       </div>
 
       {/* Completed Header */}
-      <div style={{ backgroundColor: 'white', padding: '4px 16px 12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span style={{ 
-            fontSize: '18px', 
-            fontWeight: 400, 
-            color: '#17657A',
-            borderBottom: '2px solid #17657A',
-            paddingBottom: '2px'
-          }}>Completed</span>
-          <svg width="18" height="18" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="11" fill="#C68B3F"/>
-            <circle cx="12" cy="8" r="1.5" fill="white"/>
-            <rect x="10.5" y="11" width="3" height="6" rx="1.5" fill="white"/>
-          </svg>
+      <div style={{ backgroundColor: 'white', padding: '4px 16px 8px 16px' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ 
+              fontSize: '18px', 
+              fontWeight: 400, 
+              color: '#17657A',
+              borderBottom: '2px solid #17657A',
+              paddingBottom: '2px'
+            }}>Completed</span>
+            <svg width="18" height="18" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="11" fill="#C68B3F"/>
+              <circle cx="12" cy="8" r="1.5" fill="white"/>
+              <rect x="10.5" y="11" width="3" height="6" rx="1.5" fill="white"/>
+            </svg>
+          </div>
         </div>
-        <span style={{ fontSize: '13px', fontWeight: 400, color: '#888888' }}>Amount in {userCurrency === 'EUR' ? '€' : '£'}</span>
+        <div style={{ textAlign: 'right', marginTop: '8px' }}>
+          <span style={{ fontSize: '13px', fontWeight: 400, color: '#888888' }}>Amount in {userCurrency === 'EUR' ? '€' : '£'}</span>
+        </div>
       </div>
 
       {/* Transaction List */}
@@ -661,7 +665,7 @@ export default function TransactionHistoryWorking() {
                 onClick={() => setSelectedTransaction(transaction)}
                 className="hover:bg-gray-50 transition-colors cursor-pointer"
                 style={{ 
-                  padding: '16px',
+                  padding: '18px 16px',
                   display: 'flex',
                   alignItems: 'flex-start',
                   justifyContent: 'space-between'
@@ -669,10 +673,10 @@ export default function TransactionHistoryWorking() {
               >
                 {/* Left side */}
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: '16px', fontWeight: 600, color: '#1A1A1A', marginBottom: '4px', margin: 0 }}>
+                  <p style={{ fontSize: '16px', fontWeight: 600, color: '#1A1A1A', margin: 0, marginBottom: '4px' }}>
                     {transaction.description || transaction.reference || transaction.id}
                   </p>
-                  <p style={{ fontSize: '14px', fontWeight: 400, color: '#555555', marginBottom: '4px', margin: '4px 0' }}>
+                  <p style={{ fontSize: '14px', fontWeight: 400, color: '#555555', margin: 0, marginBottom: '4px' }}>
                     {transaction.iban || transaction.recipientAccountNumber || `4319401827062009`}
                   </p>
                   <p style={{ fontSize: '13px', fontWeight: 400, color: '#888888', margin: 0 }}>
@@ -681,7 +685,7 @@ export default function TransactionHistoryWorking() {
                 </div>
 
                 {/* Right side */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <div style={{ textAlign: 'right' }}>
                     <p style={{ 
                       fontSize: '15px', 
@@ -692,9 +696,9 @@ export default function TransactionHistoryWorking() {
                     }}>
                       {isDebit ? '' : '+ '}{amount.toFixed(2)}
                     </p>
-                    <p style={{ fontSize: '12px', fontWeight: 400, color: '#888888', fontStyle: 'italic', margin: 0 }}>View details</p>
+                    <p style={{ fontSize: '12px', fontWeight: 400, color: '#999999', fontStyle: 'italic', margin: 0 }}>View details</p>
                   </div>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#AAAAAA" strokeWidth="2">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#BBBBBB" strokeWidth="2.5">
                     <path d="M9 18l6-6-6-6"/>
                   </svg>
                 </div>
