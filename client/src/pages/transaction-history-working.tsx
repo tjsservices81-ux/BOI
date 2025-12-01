@@ -481,7 +481,7 @@ export default function TransactionHistoryWorking() {
       <div 
         className="flex items-center justify-between flex-shrink-0"
         style={{ 
-          backgroundColor: '#3D7A8C',
+          backgroundColor: '#3A7285',
           height: '56px',
           paddingLeft: '16px',
           paddingRight: '16px'
@@ -492,77 +492,75 @@ export default function TransactionHistoryWorking() {
           className="hover:bg-white/10 rounded-full transition-colors"
           style={{ padding: '6px' }}
         >
-          {/* Left arrow ← not chevron */}
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 12H5"/>
             <path d="M12 19l-7-7 7-7"/>
           </svg>
         </button>
         
-        <span style={{ fontSize: '18px', fontWeight: 400, color: 'white', letterSpacing: '0.2px' }}>
+        <span style={{ fontSize: '17px', fontWeight: 400, color: 'white' }}>
           {accountInfo?.displayName || 'Current Account'} ~ {getAccountNumber()}
         </span>
         
         <button className="hover:bg-white/10 rounded-full transition-colors" style={{ padding: '2px' }}>
           <div 
             style={{ 
-              width: '34px', 
-              height: '34px', 
+              width: '32px', 
+              height: '32px', 
               borderRadius: '50%',
-              border: '2px solid white',
+              border: '1.5px solid rgba(255,255,255,0.8)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               backgroundColor: 'transparent'
             }}
           >
-            {/* Filled person silhouette */}
-            <svg width="18" height="18" viewBox="0 0 24 24">
-              <circle cx="12" cy="8" r="4" fill="white"/>
-              <path d="M4 22c0-4 4-6 8-6s8 2 8 6" fill="white"/>
+            <svg width="16" height="16" viewBox="0 0 24 24">
+              <circle cx="12" cy="8" r="3.5" fill="rgba(255,255,255,0.8)"/>
+              <path d="M5 21c0-3.5 3.5-5.5 7-5.5s7 2 7 5.5" fill="rgba(255,255,255,0.8)"/>
             </svg>
           </div>
         </button>
       </div>
 
-      {/* Balance Section - SEPARATE from header */}
+      {/* Balance Section - darker teal */}
       <div 
         style={{ 
-          backgroundColor: '#1B5A6B',
-          padding: '16px 16px 20px 16px'
+          backgroundColor: '#1A5867',
+          padding: '14px 16px 18px 16px'
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-          <span style={{ fontSize: '28px', fontWeight: 400, color: 'white' }}>{formatCurrency(balance, userCurrency)}</span>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+          <span style={{ fontSize: '30px', fontWeight: 400, color: 'white' }}>{formatCurrency(balance, userCurrency)}</span>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="2">
             <circle cx="12" cy="12" r="10"/>
             <path d="M12 16v-4M12 8h.01" strokeLinecap="round"/>
           </svg>
         </div>
         
-        <div style={{ width: '28px', height: '2px', backgroundColor: 'rgba(255,255,255,0.4)', marginBottom: '10px' }}></div>
+        <div style={{ width: '30px', height: '2px', backgroundColor: 'rgba(255,255,255,0.35)', marginBottom: '10px' }}></div>
         
-        <button style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'white' }}>
-          <span style={{ fontSize: '15px', fontWeight: 400 }}>BIC / IBAN</span>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+        <button style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'white' }}>
+          <span style={{ fontSize: '14px', fontWeight: 400 }}>BIC / IBAN</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
             <path d="M9 18l6-6-6-6"/>
           </svg>
         </button>
       </div>
 
       {/* Tabs - light gray background */}
-      <div style={{ backgroundColor: '#EEF1F4', padding: '16px 12px 20px 12px', display: 'flex', gap: '8px' }}>
+      <div style={{ backgroundColor: '#EDF0F3', padding: '18px 14px 22px 14px', display: 'flex', gap: '10px' }}>
         <div style={{ position: 'relative' }}>
           <button
             onClick={() => setActiveTab('transactions')}
             style={{
-              padding: '10px 16px',
-              borderRadius: '20px',
+              padding: '10px 18px',
+              borderRadius: '22px',
               fontSize: '14px',
               fontWeight: 500,
-              backgroundColor: activeTab === 'transactions' ? '#17657A' : 'white',
-              color: activeTab === 'transactions' ? 'white' : '#5A5A5A',
-              border: activeTab === 'transactions' ? 'none' : '1px solid #CBCBCB'
+              backgroundColor: activeTab === 'transactions' ? '#1A5867' : 'white',
+              color: activeTab === 'transactions' ? 'white' : '#555555',
+              border: activeTab === 'transactions' ? 'none' : '1px solid #D0D0D0'
             }}
           >
             Transactions
@@ -573,12 +571,12 @@ export default function TransactionHistoryWorking() {
                 position: 'absolute',
                 left: '50%',
                 transform: 'translateX(-50%)',
-                bottom: '-10px',
+                bottom: '-12px',
                 width: 0,
                 height: 0,
-                borderLeft: '8px solid transparent',
-                borderRight: '8px solid transparent',
-                borderTop: '8px solid #17657A'
+                borderLeft: '9px solid transparent',
+                borderRight: '9px solid transparent',
+                borderTop: '9px solid #1A5867'
               }}
             />
           )}
@@ -589,13 +587,13 @@ export default function TransactionHistoryWorking() {
             setShowStatementModal(true);
           }}
           style={{
-            padding: '10px 16px',
-            borderRadius: '20px',
+            padding: '10px 18px',
+            borderRadius: '22px',
             fontSize: '14px',
             fontWeight: 500,
-            backgroundColor: activeTab === 'statements' ? '#17657A' : 'white',
-            color: activeTab === 'statements' ? 'white' : '#5A5A5A',
-            border: activeTab === 'statements' ? 'none' : '1px solid #CBCBCB'
+            backgroundColor: activeTab === 'statements' ? '#1A5867' : 'white',
+            color: activeTab === 'statements' ? 'white' : '#555555',
+            border: activeTab === 'statements' ? 'none' : '1px solid #D0D0D0'
           }}
         >
           Statements
@@ -603,13 +601,13 @@ export default function TransactionHistoryWorking() {
         <button
           onClick={() => setActiveTab('more')}
           style={{
-            padding: '10px 16px',
-            borderRadius: '20px',
+            padding: '10px 18px',
+            borderRadius: '22px',
             fontSize: '14px',
             fontWeight: 500,
-            backgroundColor: activeTab === 'more' ? '#17657A' : 'white',
-            color: activeTab === 'more' ? 'white' : '#5A5A5A',
-            border: activeTab === 'more' ? 'none' : '1px solid #CBCBCB'
+            backgroundColor: activeTab === 'more' ? '#1A5867' : 'white',
+            color: activeTab === 'more' ? 'white' : '#555555',
+            border: activeTab === 'more' ? 'none' : '1px solid #D0D0D0'
           }}
         >
           More options
@@ -617,36 +615,36 @@ export default function TransactionHistoryWorking() {
       </div>
 
       {/* Filter Row */}
-      <div style={{ backgroundColor: 'white', padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '14px', fontWeight: 400, color: '#666666' }}>Filter completed transactions</span>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#17657A" strokeWidth="2.5" strokeLinecap="round">
-            <circle cx="11" cy="11" r="7"/>
+      <div style={{ backgroundColor: 'white', padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span style={{ fontSize: '14px', fontWeight: 400, color: '#5A5A5A' }}>Filter completed transactions</span>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A5867" strokeWidth="2.5" strokeLinecap="round">
+            <circle cx="11" cy="11" r="6"/>
             <path d="M21 21l-4.35-4.35"/>
           </svg>
         </div>
       </div>
 
       {/* Completed Header */}
-      <div style={{ backgroundColor: 'white', padding: '4px 16px 8px 16px' }}>
+      <div style={{ backgroundColor: 'white', padding: '6px 16px 10px 16px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ 
-              fontSize: '18px', 
+              fontSize: '17px', 
               fontWeight: 400, 
-              color: '#17657A',
-              borderBottom: '2px solid #17657A',
-              paddingBottom: '2px'
+              color: '#1A5867',
+              borderBottom: '2px solid #1A5867',
+              paddingBottom: '3px'
             }}>Completed</span>
             <svg width="18" height="18" viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="11" fill="#C68B3F"/>
+              <circle cx="12" cy="12" r="11" fill="#C4884A"/>
               <circle cx="12" cy="8" r="1.5" fill="white"/>
               <rect x="10.5" y="11" width="3" height="6" rx="1.5" fill="white"/>
             </svg>
           </div>
         </div>
-        <div style={{ textAlign: 'right', marginTop: '8px' }}>
-          <span style={{ fontSize: '13px', fontWeight: 400, color: '#888888' }}>Amount in {userCurrency === 'EUR' ? '€' : '£'}</span>
+        <div style={{ textAlign: 'right', marginTop: '10px' }}>
+          <span style={{ fontSize: '13px', fontWeight: 400, color: '#7A7A7A' }}>Amount in {userCurrency === 'EUR' ? '€' : '£'}</span>
         </div>
       </div>
 
@@ -669,7 +667,7 @@ export default function TransactionHistoryWorking() {
                 onClick={() => setSelectedTransaction(transaction)}
                 className="hover:bg-gray-50 transition-colors cursor-pointer"
                 style={{ 
-                  padding: '18px 16px',
+                  padding: '16px',
                   display: 'flex',
                   alignItems: 'flex-start',
                   justifyContent: 'space-between'
@@ -677,13 +675,13 @@ export default function TransactionHistoryWorking() {
               >
                 {/* Left side */}
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: '16px', fontWeight: 600, color: '#1A1A1A', margin: 0, marginBottom: '4px' }}>
+                  <p style={{ fontSize: '16px', fontWeight: 600, color: '#1A1A1A', margin: 0, marginBottom: '5px' }}>
                     {transaction.description || transaction.reference || transaction.id}
                   </p>
-                  <p style={{ fontSize: '14px', fontWeight: 400, color: '#555555', margin: 0, marginBottom: '4px' }}>
+                  <p style={{ fontSize: '14px', fontWeight: 400, color: '#555555', margin: 0, marginBottom: '5px' }}>
                     {transaction.iban || transaction.recipientAccountNumber || `4319401827062009`}
                   </p>
-                  <p style={{ fontSize: '13px', fontWeight: 400, color: '#888888', margin: 0 }}>
+                  <p style={{ fontSize: '13px', fontWeight: 400, color: '#7A7A7A', margin: 0 }}>
                     {formatDate(transaction.timestamp)}
                   </p>
                 </div>
@@ -693,16 +691,16 @@ export default function TransactionHistoryWorking() {
                   <div style={{ textAlign: 'right' }}>
                     <p style={{ 
                       fontSize: '15px', 
-                      fontWeight: 400, 
+                      fontWeight: 500, 
                       margin: 0,
                       marginBottom: '4px',
-                      color: isDebit ? '#1A1A1A' : '#2E9E6B'
+                      color: isDebit ? '#1A1A1A' : '#1A9E6B'
                     }}>
                       {isDebit ? '' : '+ '}{amount.toFixed(2)}
                     </p>
-                    <p style={{ fontSize: '12px', fontWeight: 400, color: '#999999', fontStyle: 'italic', margin: 0 }}>View details</p>
+                    <p style={{ fontSize: '12px', fontWeight: 400, color: '#7A7A7A', fontStyle: 'italic', margin: 0 }}>View details</p>
                   </div>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#BBBBBB" strokeWidth="2.5">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#AAAAAA" strokeWidth="2.5">
                     <path d="M9 18l6-6-6-6"/>
                   </svg>
                 </div>
@@ -722,7 +720,7 @@ export default function TransactionHistoryWorking() {
       <div 
         className="flex-shrink-0"
         style={{ 
-          background: 'linear-gradient(to bottom, #17657A 0%, #145566 100%)',
+          backgroundColor: '#1A5867',
           height: '48px',
           padding: '0 16px',
           display: 'flex',
@@ -733,14 +731,14 @@ export default function TransactionHistoryWorking() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <svg width="16" height="16" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="11" fill="white"/>
-            <circle cx="12" cy="8" r="1.5" fill="#17657A"/>
-            <rect x="10.5" y="11" width="3" height="6" rx="1.5" fill="#17657A"/>
+            <circle cx="12" cy="8" r="1.5" fill="#1A5867"/>
+            <rect x="10.5" y="11" width="3" height="6" rx="1.5" fill="#1A5867"/>
           </svg>
-          <span style={{ fontSize: '14px', fontWeight: 400, color: 'white' }}>See an unfamiliar transaction?</span>
+          <span style={{ fontSize: '13px', fontWeight: 400, color: 'white' }}>See an unfamiliar transaction?</span>
         </div>
         <button style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <span style={{ fontSize: '14px', fontWeight: 500, color: 'white' }}>Find out more</span>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+          <span style={{ fontSize: '13px', fontWeight: 500, color: 'white' }}>Find out more</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
             <path d="M9 18l6-6-6-6"/>
           </svg>
         </button>
