@@ -93,7 +93,7 @@ export default function Profile() {
   const [editingBankAccount, setEditingBankAccount] = useState<any>(null);
   const [bankDetailsData, setBankDetailsData] = useState({
     sortCode: '',
-    accountNumber: '',
+    propAccountNumber: '',
     bic: '',
     iban: ''
   });
@@ -2335,7 +2335,7 @@ export default function Profile() {
                   onClick={() => {
                     setShowBankDetails(false);
                     setEditingBankAccount(null);
-                    setBankDetailsData({ sortCode: '', accountNumber: '', bic: '', iban: '' });
+                    setBankDetailsData({ sortCode: '', propAccountNumber: '', bic: '', iban: '' });
                   }}
                   className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
                 >
@@ -2355,7 +2355,7 @@ export default function Profile() {
                         setEditingBankAccount(account);
                         setBankDetailsData({
                           sortCode: account.sortCode || '',
-                          accountNumber: account.fullAccountNumber || '',
+                          propAccountNumber: account.propAccountNumber || '',
                           bic: account.bic || '',
                           iban: account.iban || ''
                         });
@@ -2406,8 +2406,8 @@ export default function Profile() {
                         </label>
                         <input
                           type="text"
-                          value={bankDetailsData.accountNumber}
-                          onChange={(e) => setBankDetailsData({ ...bankDetailsData, accountNumber: e.target.value })}
+                          value={bankDetailsData.propAccountNumber}
+                          onChange={(e) => setBankDetailsData({ ...bankDetailsData, propAccountNumber: e.target.value })}
                           className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                           style={{ fontFamily: 'OpenSans, sans-serif' }}
                           placeholder="e.g., 20163704"
@@ -2454,7 +2454,7 @@ export default function Profile() {
                     <button
                       onClick={() => {
                         setEditingBankAccount(null);
-                        setBankDetailsData({ sortCode: '', accountNumber: '', bic: '', iban: '' });
+                        setBankDetailsData({ sortCode: '', propAccountNumber: '', bic: '', iban: '' });
                       }}
                       className="flex-1 py-3 bg-gray-200 text-gray-800 rounded-xl font-semibold hover:bg-gray-300 transition-colors"
                       style={{ fontFamily: 'OpenSans, sans-serif' }}
@@ -2469,7 +2469,7 @@ export default function Profile() {
                             return {
                               ...acc,
                               sortCode: bankDetailsData.sortCode,
-                              fullAccountNumber: bankDetailsData.accountNumber,
+                              propAccountNumber: bankDetailsData.propAccountNumber,
                               bic: bankDetailsData.bic,
                               iban: bankDetailsData.iban
                             };
@@ -2481,7 +2481,7 @@ export default function Profile() {
                         window.dispatchEvent(new CustomEvent('accountsUpdate', { detail: { accounts: updatedAccounts } }));
                         setShowBankDetails(false);
                         setEditingBankAccount(null);
-                        setBankDetailsData({ sortCode: '', accountNumber: '', bic: '', iban: '' });
+                        setBankDetailsData({ sortCode: '', propAccountNumber: '', bic: '', iban: '' });
                         showDeveloperMessage('Bank details updated successfully');
                       }}
                       className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors"
