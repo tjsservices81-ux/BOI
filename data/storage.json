@@ -162,7 +162,7 @@
         "name": "Mr Daniel wood",
         "email": "keiranjoyce9@icloud.com",
         "phone": "7400520645",
-        "address": null,
+        "address": "28 dunclug park bt43 6ns ballymena",
         "dateOfBirth": null,
         "joinDate": "2025-10-09T10:57:33.300Z",
         "dateCreated": "2025-10-09T10:57:33.324Z",
@@ -2496,7 +2496,7 @@
         "joinDate": "Member since 2018",
         "dateCreated": "2025-12-01T02:27:14.410Z",
         "isDisabled": false,
-        "currency": "GBP"
+        "currency": "EUR"
       }
     ],
     [
@@ -2514,6 +2514,23 @@
         "dateCreated": "2025-12-01T02:28:52.279Z",
         "isDisabled": false,
         "currency": "EUR"
+      }
+    ],
+    [
+      325,
+      {
+        "id": 325,
+        "customerNumber": "21092300",
+        "pin": "",
+        "name": "Joe dunn",
+        "email": "joedunn2020@gmail.com",
+        "phone": "07594790181",
+        "address": "4 hill road Dublin d142232",
+        "dateOfBirth": "1990-08-20",
+        "joinDate": "2024-12-01T09:05:34.426Z",
+        "currency": "EUR",
+        "dateCreated": "2025-12-01T09:05:34.384Z",
+        "isDisabled": false
       }
     ]
   ],
@@ -2599,7 +2616,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 325,
+    "currentUserId": 326,
     "currentAccountId": 85,
     "currentTransactionId": 1,
     "currentPayeeId": 1,

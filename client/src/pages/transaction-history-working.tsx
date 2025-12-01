@@ -1381,12 +1381,22 @@ export default function TransactionHistoryWorking() {
         {showAccountDetailsModal && (
           <div 
             onClick={() => setShowAccountDetailsModal(false)}
-            className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center"
-            style={{ zIndex: 1000 }}
+            className="fixed inset-0 z-50 flex items-center justify-center"
+            style={{ 
+              zIndex: 1000,
+              backgroundColor: 'rgba(0, 0, 0, 0.45)'
+            }}
           >
             <motion.div 
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-lg mx-4 w-full max-w-sm overflow-hidden"
+              className="mx-4 overflow-hidden"
+              style={{
+                width: '85%',
+                maxWidth: '340px',
+                backgroundColor: '#ffffff',
+                borderRadius: '12px',
+                boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3)'
+              }}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
@@ -1394,57 +1404,115 @@ export default function TransactionHistoryWorking() {
             >
               {/* Header */}
               <div 
-                className="flex items-center justify-between px-4 py-3"
-                style={{ backgroundColor: '#1a5490' }}
+                className="flex items-center justify-between"
+                style={{ 
+                  backgroundColor: '#0b5fa5',
+                  padding: '14px 16px',
+                  borderTopLeftRadius: '12px',
+                  borderTopRightRadius: '12px'
+                }}
               >
-                <span style={{ color: 'white', fontSize: '16px', fontWeight: 500 }}>
+                <span style={{ 
+                  color: '#ffffff', 
+                  fontSize: '16px', 
+                  fontWeight: 500,
+                  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+                }}>
                   {userCurrency === 'GBP' ? 'Sort Code and Account Number' : 'BIC and IBAN'}
                 </span>
                 <button 
                   onClick={() => setShowAccountDetailsModal(false)}
-                  className="text-white"
+                  className="flex items-center justify-center"
+                  style={{ 
+                    color: '#ffffff',
+                    padding: '4px'
+                  }}
                 >
-                  <X size={22} strokeWidth={2.5} />
+                  <X size={20} strokeWidth={2.5} />
                 </button>
               </div>
 
               {/* Content */}
-              <div className="p-5">
+              <div style={{ padding: '20px 20px 24px 20px' }}>
                 {userCurrency === 'GBP' ? (
                   <>
-                    <div style={{ marginBottom: '16px' }}>
-                      <p style={{ fontSize: '14px', color: '#1a5490', fontWeight: 500, marginBottom: '4px' }}>
+                    <div style={{ marginBottom: '20px' }}>
+                      <p style={{ 
+                        fontSize: '14px', 
+                        color: '#0b5fa5', 
+                        fontWeight: 500, 
+                        marginBottom: '6px',
+                        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+                      }}>
                         Sort Code
                       </p>
-                      <p style={{ fontSize: '16px', color: '#333', fontWeight: 400 }}>
+                      <p style={{ 
+                        fontSize: '17px', 
+                        color: '#333333', 
+                        fontWeight: 400,
+                        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+                      }}>
                         {accountInfo?.sortCode || '90-38-16'}
                       </p>
                     </div>
-                    <div style={{ marginBottom: '24px' }}>
-                      <p style={{ fontSize: '14px', color: '#1a5490', fontWeight: 500, marginBottom: '4px' }}>
+                    <div style={{ marginBottom: '28px' }}>
+                      <p style={{ 
+                        fontSize: '14px', 
+                        color: '#0b5fa5', 
+                        fontWeight: 500, 
+                        marginBottom: '6px',
+                        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+                      }}>
                         Account Number
                       </p>
-                      <p style={{ fontSize: '16px', color: '#333', fontWeight: 400 }}>
+                      <p style={{ 
+                        fontSize: '17px', 
+                        color: '#333333', 
+                        fontWeight: 400,
+                        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+                      }}>
                         {accountInfo?.accountNumber || '20163704'}
                       </p>
                     </div>
                   </>
                 ) : (
                   <>
-                    <div style={{ marginBottom: '16px' }}>
-                      <p style={{ fontSize: '14px', color: '#1a5490', fontWeight: 500, marginBottom: '4px' }}>
+                    <div style={{ marginBottom: '20px' }}>
+                      <p style={{ 
+                        fontSize: '14px', 
+                        color: '#0b5fa5', 
+                        fontWeight: 500, 
+                        marginBottom: '6px',
+                        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+                      }}>
                         BIC
                       </p>
-                      <p style={{ fontSize: '16px', color: '#333', fontWeight: 400 }}>
-                        {accountInfo?.bic || 'BOFIIE2D'}
+                      <p style={{ 
+                        fontSize: '17px', 
+                        color: '#333333', 
+                        fontWeight: 400,
+                        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+                      }}>
+                        {accountInfo?.bic || 'BOFIIE2DXXX'}
                       </p>
                     </div>
-                    <div style={{ marginBottom: '24px' }}>
-                      <p style={{ fontSize: '14px', color: '#1a5490', fontWeight: 500, marginBottom: '4px' }}>
+                    <div style={{ marginBottom: '28px' }}>
+                      <p style={{ 
+                        fontSize: '14px', 
+                        color: '#0b5fa5', 
+                        fontWeight: 500, 
+                        marginBottom: '6px',
+                        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+                      }}>
                         IBAN
                       </p>
-                      <p style={{ fontSize: '16px', color: '#333', fontWeight: 400 }}>
-                        {accountInfo?.iban || 'IE29BOFI 9000 1710 3025 34'}
+                      <p style={{ 
+                        fontSize: '17px', 
+                        color: '#333333', 
+                        fontWeight: 400,
+                        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+                      }}>
+                        {accountInfo?.iban || 'IE40BOFI 903816 20163704'}
                       </p>
                     </div>
                   </>
@@ -1455,7 +1523,7 @@ export default function TransactionHistoryWorking() {
                   onClick={async () => {
                     const shareText = userCurrency === 'GBP' 
                       ? `Sort Code: ${accountInfo?.sortCode || '90-38-16'}\nAccount Number: ${accountInfo?.accountNumber || '20163704'}`
-                      : `BIC: ${accountInfo?.bic || 'BOFIIE2D'}\nIBAN: ${accountInfo?.iban || 'IE29BOFI 9000 1710 3025 34'}`;
+                      : `BIC: ${accountInfo?.bic || 'BOFIIE2DXXX'}\nIBAN: ${accountInfo?.iban || 'IE40BOFI 903816 20163704'}`;
                     
                     if (navigator.share) {
                       try {
@@ -1469,14 +1537,15 @@ export default function TransactionHistoryWorking() {
                   }}
                   style={{
                     width: '100%',
-                    padding: '14px',
+                    padding: '14px 0',
                     fontSize: '16px',
                     fontWeight: 500,
-                    backgroundColor: '#1a5490',
-                    color: '#FFFFFF',
+                    backgroundColor: '#0b5fa5',
+                    color: '#ffffff',
                     border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer'
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
                   }}
                 >
                   Share
