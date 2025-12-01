@@ -68,9 +68,16 @@ export default function IbanTransfer() {
   const [accounts, setAccounts] = useState<any[]>([]);
 
   useEffect(() => {
-    // Check for selected account from dashboard Send money section FIRST
+    // Check for selected account from URL params FIRST (most reliable)
+    const urlParams = new URLSearchParams(window.location.search);
+    const fromAccountParam = urlParams.get('from');
+    if (fromAccountParam) {
+      form.setValue('fromAccount', fromAccountParam);
+    }
+    
+    // Also check sessionStorage as fallback
     const selectedFromAccountData = sessionStorage.getItem('selectedFromAccount');
-    if (selectedFromAccountData) {
+    if (selectedFromAccountData && !fromAccountParam) {
       form.setValue('fromAccount', selectedFromAccountData);
       sessionStorage.removeItem('selectedFromAccount');
     }

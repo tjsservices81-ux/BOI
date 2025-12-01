@@ -233,9 +233,16 @@ export default function UkTransfer() {
   };
 
   useEffect(() => {
-    // Check for selected account from dashboard Send money section FIRST
+    // Check for selected account from URL params FIRST (most reliable)
+    const urlParams = new URLSearchParams(window.location.search);
+    const fromAccountParam = urlParams.get('from');
+    if (fromAccountParam) {
+      form.setValue('fromAccount', fromAccountParam);
+    }
+    
+    // Also check sessionStorage as fallback
     const selectedFromAccountData = sessionStorage.getItem('selectedFromAccount');
-    if (selectedFromAccountData) {
+    if (selectedFromAccountData && !fromAccountParam) {
       form.setValue('fromAccount', selectedFromAccountData);
       sessionStorage.removeItem('selectedFromAccount');
     }
@@ -282,7 +289,7 @@ export default function UkTransfer() {
       const userAccounts = UserDataManager.getUserData('bankAccounts', []);
       setAccounts(userAccounts);
       
-      // Set default account selection only if not already set (from sessionStorage)
+      // Set default account selection only if not already set (from URL or sessionStorage)
       if (userAccounts.length > 0 && !form.getValues('fromAccount')) {
         form.setValue('fromAccount', userAccounts[0].id.toString());
       }
