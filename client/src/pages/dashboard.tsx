@@ -387,7 +387,7 @@ export default function Dashboard() {
         data-scroll-container
         data-scroll-route="/dashboard"
       >
-        <div className="bg-white h-full">
+        <div className="bg-gray-100 h-full">
           <div className="pt-12 px-4 space-y-6" style={{ overscrollBehavior: 'contain' }}>
             {(accounts && Array.isArray(accounts)) && accounts.map((account, index) => {
               const isLoading = loadingAccountId === account.id;
