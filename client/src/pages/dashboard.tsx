@@ -678,7 +678,10 @@ export default function Dashboard() {
             })}
             
             {/* Monthly Insights Section */}
-            <div className="bg-white shadow-sm border border-gray-200 p-4 mt-2">
+            <button 
+              onClick={() => navigateWithAnimation('/monthly-insights')}
+              className="w-full bg-white shadow-sm border border-gray-200 p-4 mt-2 text-left"
+            >
               <div className="flex items-center mb-2">
                 <div className="w-2 h-2 rounded-full bg-[#2d6a7a] mr-2"></div>
                 <span className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>{monthlyInsights.currentDate}</span>
@@ -723,10 +726,11 @@ export default function Dashboard() {
                   <span className="text-xs text-gray-500">Out</span>
                 </div>
               </div>
-            </div>
+            </button>
             
             {/* See more insights button */}
             <button 
+              onClick={() => navigateWithAnimation('/monthly-insights')}
               className="w-full py-3 bg-[#126987] text-white text-center mb-6"
               style={{ fontFamily: 'OpenSans, sans-serif' }}
             >

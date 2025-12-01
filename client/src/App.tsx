@@ -36,6 +36,7 @@ import Profile from "@/pages/profile";
 import Settings from "@/pages/settings";
 import Help from "@/pages/help";
 import CreditScore from "@/pages/credit-score";
+import MonthlyInsights from "@/pages/monthly-insights";
 import NotFound from "@/pages/not-found";
 
 function ProtectedRoute({ children, fallback }: { children: React.ReactNode; fallback?: React.ReactNode }) {
@@ -518,6 +519,11 @@ function AppRoutes() {
           <Route path="/insights">
             <ProtectedRoute>
               <Insights />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/monthly-insights">
+            <ProtectedRoute>
+              <MonthlyInsights />
             </ProtectedRoute>
           </Route>
 
