@@ -262,7 +262,14 @@ export default function UkTransfer() {
     window.addEventListener('balanceUpdate', handleAccountsUpdate as EventListener);
     window.addEventListener('adminProfileUpdate', handleAccountsUpdate as EventListener);
     
-    // Check for selected payee from Recent Payees
+    // Check for selected account from dashboard Send money section
+    const selectedFromAccountData = sessionStorage.getItem('selectedFromAccount');
+    if (selectedFromAccountData) {
+      form.setValue('fromAccount', selectedFromAccountData);
+      sessionStorage.removeItem('selectedFromAccount');
+    }
+    
+    // Check for selected payee from Recent Payees or dashboard Send money
     const selectedPayeeData = sessionStorage.getItem('selectedPayee');
     if (selectedPayeeData) {
       try {

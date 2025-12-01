@@ -603,10 +603,16 @@ export default function Dashboard() {
               onClick={() => {
                 if (selectedFromAccount && selectedPayee) {
                   const payee = payees.find(p => p.name === selectedPayee);
+                  if (payee) {
+                    // Store selected payee data for pre-filling the form (same as Recent Payees)
+                    sessionStorage.setItem('selectedPayee', JSON.stringify(payee));
+                    // Store selected account for pre-filling
+                    sessionStorage.setItem('selectedFromAccount', selectedFromAccount);
+                  }
                   if (transferType === 'uk') {
-                    navigateWithAnimation(`/uk-transfer?from=${selectedFromAccount}&payee=${encodeURIComponent(selectedPayee)}`);
+                    navigateWithAnimation(`/uk-transfer?from=${selectedFromAccount}`);
                   } else {
-                    navigateWithAnimation(`/iban-transfer?from=${selectedFromAccount}&payee=${encodeURIComponent(selectedPayee)}`);
+                    navigateWithAnimation(`/iban-transfer?from=${selectedFromAccount}`);
                   }
                 }
               }}
