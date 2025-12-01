@@ -611,7 +611,7 @@ export default function IbanTransfer() {
               >
                 <option value="">Select account</option>
                 {accounts.map(account => (
-                  <option key={account.id} value={account.id}>
+                  <option key={account.id} value={account.id.toString()}>
                     {account.displayName} {account.accountNumber} - {formatCurrency(account.balance, userCurrency)}
                   </option>
                 ))}
