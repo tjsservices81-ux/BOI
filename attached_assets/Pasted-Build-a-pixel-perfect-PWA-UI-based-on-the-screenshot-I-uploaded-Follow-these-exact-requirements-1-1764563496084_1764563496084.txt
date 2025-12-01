@@ -1,0 +1,53 @@
+Build a pixel-perfect PWA UI based on the screenshot I uploaded. Follow these exact requirements:
+
+1. PLATFORM & STRUCTURE
+- Use HTML, CSS, and JavaScript.
+- Create a fully responsive PWA but design the base layout at 430px width (iPhone 16 Pro).
+- Organize code cleanly; component structure is optional — choose whichever produces the cleanest result.
+
+2. VISUAL ACCURACY
+- Recreate the UI EXACTLY as shown in the screenshot:
+  • Exact icon style and placement
+  • Identical layout spacing, padding, margins, alignment
+  • Exact dimensions for each section, card, button, tab, and row
+  • Perfectly matching border radii and shadows
+  • Exact fonts or closest web-safe matches
+  • Accurate font weights, sizes, and line spacing
+  • Match all colors precisely using HEX values extracted from the screenshot
+
+3. COLORS
+- Sample EVERY distinct color in the screenshot (backgrounds, icons, text, separators, gradients, cards) and use those exact hex values in the CSS.
+
+4. FONTS
+- Match fonts as close as possible to the screenshot. If system iOS fonts are detected, use:
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro', sans-serif;
+
+5. TEXT CONTENT
+- Keep ALL text EXACTLY as it appears in the screenshot, with NO changes.
+- If there are sensitive numbers, DO NOT alter or replace them — preserve them exactly as they appear.
+
+6. ICONS
+- Recreate icons in SVG with the exact shapes, stroke widths, and proportions from the screenshot.
+- Ensure they are positioned with pixel-level accuracy.
+
+7. LAYOUT ELEMENTS TO REPRODUCE
+- Top navigation bar with back arrow, page title, search icon, and profile icon.
+- Balance card with exact color, spacing, font sizes, and alignment.
+- Transaction tabs (e.g., Transactions / Statements / More options) styled exactly as in the screenshot, including active state underline.
+- List items/cards with identical spacing, text hierarchy, alignment, and divider lines.
+- Bottom navigation bar with exact icons, sizes, and labels.
+
+8. INTERACTIONS (BASIC)
+- Tabs should switch visible content (even placeholder content).
+- Bottom navigation should highlight the active section.
+
+9. PWA REQUIREMENTS
+- Include a complete manifest.json
+- Include a working service worker for offline capability
+- Ensure app is installable in browser
+- Add proper meta tags for iPhone PWA display mode and status bar style.
+
+10. QUALITY REQUIREMENT
+- The output must be visually indistinguishable from the screenshot when viewed at 430px width.
+
+Generate the complete code now.
