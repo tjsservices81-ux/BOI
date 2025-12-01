@@ -2651,6 +2651,23 @@
         "dateCreated": "2025-12-01T18:48:02.290Z",
         "isDisabled": false
       }
+    ],
+    [
+      335,
+      {
+        "id": 335,
+        "customerNumber": "20064914",
+        "pin": "000000",
+        "name": "Dev",
+        "email": "dev@gmail.com",
+        "phone": "45464",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "dateCreated": "2025-12-01T20:20:38.369Z",
+        "isDisabled": false,
+        "currency": "EUR"
+      }
     ]
   ],
   "accounts": [
@@ -2725,6 +2742,48 @@
         "displayName": "Savings Account",
         "sortCode": "90-78-68"
       }
+    ],
+    [
+      118,
+      {
+        "id": 118,
+        "userId": 85,
+        "accountType": "credit",
+        "accountNumber": "****6702",
+        "sortCode": "90-78-68",
+        "bic": "BOFIIE2D",
+        "iban": null,
+        "balance": "0.00",
+        "displayName": "Credit Card"
+      }
+    ],
+    [
+      119,
+      {
+        "id": 119,
+        "userId": 85,
+        "accountType": "savings",
+        "accountNumber": "****2159",
+        "sortCode": "90-78-68",
+        "bic": "BOFIIE2D",
+        "iban": null,
+        "balance": "0.00",
+        "displayName": "Savings Account"
+      }
+    ],
+    [
+      117,
+      {
+        "id": 117,
+        "userId": 85,
+        "accountType": "current",
+        "accountNumber": "****9760",
+        "sortCode": "90-78-68",
+        "bic": "BOFIIE2D",
+        "iban": null,
+        "balance": "1075.00",
+        "displayName": "Current Account"
+      }
     ]
   ],
   "transactions": [],
@@ -2735,8 +2794,8 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 335,
-    "currentAccountId": 85,
+    "currentUserId": 336,
+    "currentAccountId": 120,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
     "currentScheduledPaymentId": 1,

@@ -283,13 +283,10 @@ export class UserDataManager {
     }
   }
 
-  // User-specific account operations
+  // User-specific account operations - returns only real accounts from database
   static getUserAccounts() {
-    return this.getUserData('bankAccounts', [
-      { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "0.00", accountType: "current", sortCode: "90-78-68" },
-      { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "0.00", accountType: "credit", sortCode: "90-78-68" },
-      { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "0.00", accountType: "savings", sortCode: "90-78-68" },
-    ]);
+    // Return empty array as default - real accounts must come from server API
+    return this.getUserData('bankAccounts', []);
   }
 
   static setUserAccounts(accounts: any[]) {
@@ -367,7 +364,7 @@ export class UserDataManager {
     return customerNumber in allUsers;
   }
 
-  // Initialize fresh account data for new user only
+  // Initialize fresh account data for new user only - accounts come from server
   static initializeFreshAccount(customerNumber: string) {
     // Set current user first
     this.setCurrentUser(customerNumber);
@@ -375,15 +372,9 @@ export class UserDataManager {
     // Only initialize fresh data if user has no existing account data
     const existingAccounts = this.getUserData('bankAccounts', null);
     if (existingAccounts === null) {
-      // Initialize with fresh account data (zero balances)
-      const freshAccounts = [
-        { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "0.00", accountType: "current" },
-        { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "0.00", accountType: "credit" },
-        { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "0.00", accountType: "savings" },
-      ];
-      
-      // Set fresh data only for new accounts
-      this.setUserData('bankAccounts', freshAccounts);
+      // Initialize with empty arrays - real account comes from server API
+      // Do NOT create fake hardcoded accounts
+      this.setUserData('bankAccounts', []);
       this.setUserData('bankTransactions', []);
       this.setUserData('savedPayees', []);
       this.setUserData('recentPayees', []);
