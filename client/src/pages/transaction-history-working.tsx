@@ -480,8 +480,8 @@ export default function TransactionHistoryWorking() {
       headerBg: '#126987',
       balanceGradientStart: '#0E5C75',
       balanceGradientEnd: '#154B63',
-      tabActiveBg: '#1B6B7C',
-      tabInactiveBorder: '#D1D5DB',
+      tabActiveBg: '#256775',
+      tabInactiveBorder: '#D6D6D6',
       tabBg: '#FFFFFF',
       filterBg: '#F9F9F9',
       completedText: '#1B6B7C',
@@ -599,61 +599,121 @@ export default function TransactionHistoryWorking() {
         </button>
       </div>
 
-      {/* Tabs - padding: 14px vertical, 16px horizontal */}
+      {/* Tabs - white background, proper spacing */}
       <div style={{ 
-        backgroundColor: styles.colors.tabBg, 
-        padding: '14px 16px', 
+        backgroundColor: '#FFFFFF', 
+        padding: '16px 16px 20px 16px', 
         display: 'flex', 
-        gap: '8px' 
+        gap: '10px',
+        justifyContent: 'flex-start'
       }}>
-        <button
-          onClick={() => setActiveTab('transactions')}
-          style={{
-            padding: '10px 18px',
-            borderRadius: '24px',
-            fontSize: '14px',
-            fontWeight: 500,
-            backgroundColor: activeTab === 'transactions' ? styles.colors.tabActiveBg : 'white',
-            color: activeTab === 'transactions' ? 'white' : styles.colors.textSecondary,
-            border: activeTab === 'transactions' ? 'none' : `1px solid ${styles.colors.tabInactiveBorder}`,
-            lineHeight: 1.2
-          }}
-        >
-          Transactions
-        </button>
-        <button
-          onClick={() => {
-            setActiveTab('statements');
-            setShowStatementModal(true);
-          }}
-          style={{
-            padding: '10px 18px',
-            borderRadius: '24px',
-            fontSize: '14px',
-            fontWeight: 500,
-            backgroundColor: activeTab === 'statements' ? styles.colors.tabActiveBg : 'white',
-            color: activeTab === 'statements' ? 'white' : styles.colors.textSecondary,
-            border: activeTab === 'statements' ? 'none' : `1px solid ${styles.colors.tabInactiveBorder}`,
-            lineHeight: 1.2
-          }}
-        >
-          Statements
-        </button>
-        <button
-          onClick={() => setActiveTab('more')}
-          style={{
-            padding: '10px 18px',
-            borderRadius: '24px',
-            fontSize: '14px',
-            fontWeight: 500,
-            backgroundColor: activeTab === 'more' ? styles.colors.tabActiveBg : 'white',
-            color: activeTab === 'more' ? 'white' : styles.colors.textSecondary,
-            border: activeTab === 'more' ? 'none' : `1px solid ${styles.colors.tabInactiveBorder}`,
-            lineHeight: 1.2
-          }}
-        >
-          More options
-        </button>
+        {/* Transactions Tab */}
+        <div style={{ position: 'relative' }}>
+          <button
+            onClick={() => setActiveTab('transactions')}
+            style={{
+              padding: '12px 22px',
+              borderRadius: '24px',
+              fontSize: '15px',
+              fontWeight: 500,
+              backgroundColor: activeTab === 'transactions' ? '#256775' : '#FFFFFF',
+              color: activeTab === 'transactions' ? '#FFFFFF' : '#5A5A5A',
+              border: activeTab === 'transactions' ? 'none' : '1px solid #D6D6D6',
+              lineHeight: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            Transactions
+          </button>
+          {activeTab === 'transactions' && (
+            <div style={{
+              position: 'absolute',
+              bottom: '-8px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: 0,
+              height: 0,
+              borderLeft: '8px solid transparent',
+              borderRight: '8px solid transparent',
+              borderTop: '8px solid #256775'
+            }} />
+          )}
+        </div>
+
+        {/* Statements Tab */}
+        <div style={{ position: 'relative' }}>
+          <button
+            onClick={() => {
+              setActiveTab('statements');
+              setShowStatementModal(true);
+            }}
+            style={{
+              padding: '12px 22px',
+              borderRadius: '24px',
+              fontSize: '15px',
+              fontWeight: 500,
+              backgroundColor: activeTab === 'statements' ? '#256775' : '#FFFFFF',
+              color: activeTab === 'statements' ? '#FFFFFF' : '#5A5A5A',
+              border: activeTab === 'statements' ? 'none' : '1px solid #D6D6D6',
+              lineHeight: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            Statements
+          </button>
+          {activeTab === 'statements' && (
+            <div style={{
+              position: 'absolute',
+              bottom: '-8px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: 0,
+              height: 0,
+              borderLeft: '8px solid transparent',
+              borderRight: '8px solid transparent',
+              borderTop: '8px solid #256775'
+            }} />
+          )}
+        </div>
+
+        {/* More options Tab */}
+        <div style={{ position: 'relative' }}>
+          <button
+            onClick={() => setActiveTab('more')}
+            style={{
+              padding: '12px 22px',
+              borderRadius: '24px',
+              fontSize: '15px',
+              fontWeight: 500,
+              backgroundColor: activeTab === 'more' ? '#256775' : '#FFFFFF',
+              color: activeTab === 'more' ? '#FFFFFF' : '#5A5A5A',
+              border: activeTab === 'more' ? 'none' : '1px solid #D6D6D6',
+              lineHeight: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            More options
+          </button>
+          {activeTab === 'more' && (
+            <div style={{
+              position: 'absolute',
+              bottom: '-8px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: 0,
+              height: 0,
+              borderLeft: '8px solid transparent',
+              borderRight: '8px solid transparent',
+              borderTop: '8px solid #256775'
+            }} />
+          )}
+        </div>
       </div>
 
       {/* Filter Section - height 48px */}
