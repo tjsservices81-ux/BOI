@@ -681,7 +681,7 @@ export default function TransactionHistoryWorking() {
 
       {/* Status Heading and Amount Header */}
       <div style={{ 
-        backgroundColor: styles.colors.filterBg, 
+        backgroundColor: '#FFFFFF', 
         padding: '16px 20px 12px 20px', 
         display: 'flex', 
         alignItems: 'flex-start', 
@@ -724,7 +724,7 @@ export default function TransactionHistoryWorking() {
       <div 
         ref={scrollContainerRef}
         className="transaction-scroll-container flex-1 overflow-y-auto"
-        style={{ backgroundColor: styles.colors.filterBg }}
+        style={{ backgroundColor: '#FFFFFF' }}
         data-scroll-container
         data-scroll-route={`/transactions/${accountId}`}
       >
