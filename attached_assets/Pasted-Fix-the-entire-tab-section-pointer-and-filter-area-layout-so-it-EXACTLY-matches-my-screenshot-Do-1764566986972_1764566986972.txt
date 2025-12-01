@@ -1,0 +1,106 @@
+Fix the entire tab section, pointer, and filter-area layout so it EXACTLY matches my screenshot. 
+Do not change anything else in the project — only fix the issues below.
+
+==============================
+1. TAB BUTTONS — REQUIRED STYLE
+==============================
+For all three tabs ("Transactions", "Statements", "More options"):
+
+Base (inactive tab) styling:
+- Background: #FFFFFF
+- Text color: #4A4A4A
+- Border: 1.5px solid #D0D0D0
+- Fully rounded pill shape: border-radius: 999px
+- Padding: approx 10px 28px
+- No pointer on inactive tabs
+
+Active tab styling (e.g., "Transactions"):
+- Background: #306785
+- Text color: #FFFFFF
+- No border
+- Same pill shape
+
+==============================
+2. ACTIVE TAB POINTER (SPEECH BUBBLE TAIL)
+==============================
+Your current pointer is wrong. Replace it with a rounded diamond shape 
+attached directly under the active tab.
+
+Use this EXACT CSS on the real .tab.active selector in the project:
+
+.tab.active {
+    position: relative;
+    background-color: #306785;
+    color: #ffffff;
+    border: none;
+}
+
+.tab.active::after {
+    content: "";
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    background-color: #306785;
+    bottom: -6px; /* must sit close under the pill */
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    border-radius: 3px; /* softer corners like screenshot */
+}
+
+Requirements:
+- The pointer must NOT look like a triangle.
+- It must be a small, rounded diamond.
+- It must be centered.
+- It must touch the pill visually.
+- It must be the exact same color as the active tab.
+
+==============================
+3. TAB LAYOUT & SPACING
+==============================
+- Tabs must sit on a WHITE background, not grey.
+- There must be a ~12px gap between the tabs.
+- Tabs must appear exactly as in the screenshot.
+
+==============================
+4. FILTER BAR BACKGROUND FIX
+==============================
+Right now, the grey background (#F2F2F2) is applied too far downward.
+It incorrectly covers the "Completed" and "Amount in £" row.
+
+Correct behavior:
+- ONLY the row containing "Filter completed transactions" 
+  and the magnifying glass should have background: #F2F2F2
+- Everything below it (Completed / Amount in £ / transactions) must be white.
+
+Implement:
+- Apply background-color: #F2F2F2 ONLY to the container 
+  that wraps the filter text and search icon.
+- Remove background-color from any parent container wrapping the header.
+
+Example structure you must enforce (adjust class names to match project):
+
+.filter-bar {
+    background-color: #F2F2F2;
+    padding: 12px 16px;
+}
+
+.transactions-header {
+    background-color: #FFFFFF;
+}
+
+==============================
+5. DO NOT CHANGE ANYTHING ELSE
+==============================
+- Do not modify the gradient.
+- Do not modify fonts.
+- Do not modify spacing outside this section.
+- Do not change HTML structure except adding classes if needed.
+- Do not alter the list items, colors, or amounts.
+
+==============================
+6. DELIVERABLE
+==============================
+Return ONLY:
+- The updated CSS for all affected selectors
+- Any added or renamed class names
+- NO additional commentary
