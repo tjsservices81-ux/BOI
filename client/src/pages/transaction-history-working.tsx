@@ -477,11 +477,11 @@ export default function TransactionHistoryWorking() {
 
   return (
     <div className="page-container h-screen bg-white flex flex-col overflow-hidden page-slide-in-right" style={{ fontFamily: "'Open Sans', sans-serif" }}>
-      {/* Header - SEPARATE BOX that blends with status bar */}
+      {/* Header - SEPARATE BOX that matches status bar exactly */}
       <div 
         className="flex items-center justify-between flex-shrink-0"
         style={{ 
-          backgroundColor: '#3A7285',
+          backgroundColor: '#3D7A8C',
           height: '56px',
           paddingLeft: '16px',
           paddingRight: '16px'
