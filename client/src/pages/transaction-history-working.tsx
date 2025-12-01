@@ -35,9 +35,9 @@ export default function TransactionHistoryWorking() {
     const saved = localStorage.getItem('showBankDetailsButton');
     return saved !== null ? JSON.parse(saved) : true;
   });
-  const [customBankDisplay, setCustomBankDisplay] = useState(() => {
-    const saved = localStorage.getItem('customBankDisplay');
-    return saved ? JSON.parse(saved) : { bic: '', iban: '', sortCode: '', accountNumber: '' };
+  const [customBankDisplayByAccount, setCustomBankDisplayByAccount] = useState<Record<number, {bic: string, iban: string, sortCode: string, accountNumber: string}>>(() => {
+    const saved = localStorage.getItem('customBankDisplayByAccount');
+    return saved ? JSON.parse(saved) : {};
   });
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   
@@ -92,8 +92,8 @@ export default function TransactionHistoryWorking() {
       const savedBankButton = localStorage.getItem('showBankDetailsButton');
       setShowBankDetailsButton(savedBankButton !== null ? JSON.parse(savedBankButton) : true);
       
-      const savedBankDisplay = localStorage.getItem('customBankDisplay');
-      setCustomBankDisplay(savedBankDisplay ? JSON.parse(savedBankDisplay) : { bic: '', iban: '', sortCode: '', accountNumber: '' });
+      const savedBankDisplay = localStorage.getItem('customBankDisplayByAccount');
+      setCustomBankDisplayByAccount(savedBankDisplay ? JSON.parse(savedBankDisplay) : {});
     };
 
     window.addEventListener('storage', handleStorageChange);
@@ -1608,7 +1608,7 @@ export default function TransactionHistoryWorking() {
                         fontWeight: 400,
                         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
                       }}>
-                        {customBankDisplay.sortCode || accountInfo?.sortCode || '90-38-16'}
+                        {customBankDisplayByAccount[accountId]?.sortCode || accountInfo?.sortCode || '90-38-16'}
                       </p>
                     </div>
                     <div style={{ marginBottom: '28px' }}>
@@ -1627,7 +1627,7 @@ export default function TransactionHistoryWorking() {
                         fontWeight: 400,
                         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
                       }}>
-                        {customBankDisplay.accountNumber || accountInfo?.accountNumber || '20163704'}
+                        {customBankDisplayByAccount[accountId]?.accountNumber || accountInfo?.accountNumber || '20163704'}
                       </p>
                     </div>
                   </>
@@ -1649,7 +1649,7 @@ export default function TransactionHistoryWorking() {
                         fontWeight: 400,
                         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
                       }}>
-                        {customBankDisplay.bic || accountInfo?.bic || 'BOFIIE2DXXX'}
+                        {customBankDisplayByAccount[accountId]?.bic || accountInfo?.bic || 'BOFIIE2DXXX'}
                       </p>
                     </div>
                     <div style={{ marginBottom: '28px' }}>
@@ -1668,7 +1668,7 @@ export default function TransactionHistoryWorking() {
                         fontWeight: 400,
                         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
                       }}>
-                        {customBankDisplay.iban || accountInfo?.iban || 'IE40BOFI 903816 20163704'}
+                        {customBankDisplayByAccount[accountId]?.iban || accountInfo?.iban || 'IE40BOFI 903816 20163704'}
                       </p>
                     </div>
                   </>
@@ -1677,10 +1677,11 @@ export default function TransactionHistoryWorking() {
                 {/* Share Button */}
                 <button
                   onClick={async () => {
-                    const sortCode = customBankDisplay.sortCode || accountInfo?.sortCode || '90-38-16';
-                    const accountNumber = customBankDisplay.accountNumber || accountInfo?.accountNumber || '20163704';
-                    const bic = customBankDisplay.bic || accountInfo?.bic || 'BOFIIE2DXXX';
-                    const iban = customBankDisplay.iban || accountInfo?.iban || 'IE40BOFI 903816 20163704';
+                    const customDisplay = customBankDisplayByAccount[accountId] || {};
+                    const sortCode = customDisplay.sortCode || accountInfo?.sortCode || '90-38-16';
+                    const accountNumber = customDisplay.accountNumber || accountInfo?.accountNumber || '20163704';
+                    const bic = customDisplay.bic || accountInfo?.bic || 'BOFIIE2DXXX';
+                    const iban = customDisplay.iban || accountInfo?.iban || 'IE40BOFI 903816 20163704';
                     
                     const shareText = userCurrency === 'GBP' 
                       ? `Hi\n\nMy Account details are:\n\nSort Code: ${sortCode}\nAccount Number: ${accountNumber}\n\nThanks`
