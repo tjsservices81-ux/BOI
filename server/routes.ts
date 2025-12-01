@@ -573,10 +573,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Authentication middleware
   const requireAuth = (req: any, res: any, next: any) => {
-    console.log('Auth check - Session ID:', req.sessionID);
-    console.log('Auth check - User ID:', req.session?.userId);
-    console.log('Auth check - Full session:', req.session);
-    
     if (req.session && req.session.userId) {
       // Check if device session is blocked - return error without destroying session
       if (req.session.deviceSessionId && isDeviceBlocked(req.session.deviceSessionId)) {
@@ -589,6 +585,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`🚨 PANIC MODE ACCESS ATTEMPT: Session ${req.session.deviceSessionId}`);
         return res.status(403).json({ message: "System temporarily unavailable" });
       }
+      
+      // Set req.user from session for downstream handlers
+      req.user = req.session.user;
       
       // Refresh session on each authenticated request
       req.session.touch();
