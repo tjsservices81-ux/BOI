@@ -390,7 +390,7 @@ export default function Dashboard() {
         <div className="bg-gray-50 h-full">
           {/* Send money section */}
           <div className="bg-white">
-            <div className="flex items-center justify-between px-5 py-4">
+            <div className="flex items-center justify-between px-5 py-3">
               <div className="flex items-center">
                 <div className="w-10 h-10 rounded-full border-2 border-[#2d6a7a] flex items-center justify-center mr-4">
                   <ArrowRightLeft className="h-5 w-5 text-[#2d6a7a]" />
