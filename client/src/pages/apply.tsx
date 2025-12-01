@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { ChevronLeft, ChevronRight, Home, ArrowRightLeft, CreditCard, Landmark, FileText, X, ExternalLink, RefreshCw } from "lucide-react";
+import { ChevronLeft, ChevronRight, Home, ArrowRightLeft, CreditCard, Landmark, FileText } from "lucide-react";
 import { getUserCurrency, type Currency } from "../utils/currencyUtils";
 
 interface ProductCard {
@@ -18,8 +18,6 @@ export default function Apply() {
   const locationHook = useLocation();
   const [, navigate] = locationHook || [null, () => {}];
   const [userCurrency, setUserCurrency] = useState<Currency>('EUR');
-  const [inAppBrowser, setInAppBrowser] = useState<{ url: string; title: string } | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     setUserCurrency(getUserCurrency());
@@ -296,8 +294,7 @@ export default function Apply() {
   const handleProductClick = (title: string) => {
     const url = productUrls[title];
     if (url) {
-      setIsLoading(true);
-      setInAppBrowser({ url, title });
+      window.open(url, '_blank');
     } else {
       alert(`Opening ${title} application...`);
     }
@@ -562,80 +559,6 @@ export default function Apply() {
           <span className="text-xs text-[#1a5276] font-medium">Apply</span>
         </button>
       </div>
-
-      {/* In-App Browser Modal */}
-      {inAppBrowser && (
-        <div 
-          className="fixed inset-0 z-50 flex flex-col bg-white"
-          style={{ maxWidth: '430px', margin: '0 auto' }}
-        >
-          {/* Browser Header */}
-          <div 
-            className="flex items-center justify-between px-3 py-2 flex-shrink-0"
-            style={{ 
-              backgroundColor: '#126987',
-              paddingTop: 'env(safe-area-inset-top, 8px)'
-            }}
-          >
-            <button 
-              onClick={() => {
-                setInAppBrowser(null);
-                setIsLoading(false);
-              }}
-              className="w-8 h-8 flex items-center justify-center rounded-full"
-              style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}
-            >
-              <X className="w-5 h-5 text-white" />
-            </button>
-            
-            <div className="flex-1 mx-3 text-center">
-              <p className="text-white text-sm font-medium truncate" style={{ maxWidth: '200px', margin: '0 auto' }}>
-                {inAppBrowser.title}
-              </p>
-            </div>
-            
-            <button 
-              onClick={() => window.open(inAppBrowser.url, '_blank')}
-              className="w-8 h-8 flex items-center justify-center rounded-full"
-              style={{ backgroundColor: 'rgba(255,255,255,0.15)' }}
-            >
-              <ExternalLink className="w-4 h-4 text-white" />
-            </button>
-          </div>
-
-          {/* Loading Indicator */}
-          {isLoading && (
-            <div className="h-1 bg-gray-200 overflow-hidden">
-              <div 
-                className="h-full bg-[#126987] animate-pulse"
-                style={{ 
-                  width: '30%',
-                  animation: 'loading 1.5s ease-in-out infinite'
-                }}
-              />
-            </div>
-          )}
-
-          {/* Browser Content */}
-          <div className="flex-1 overflow-hidden bg-gray-100">
-            <iframe
-              src={inAppBrowser.url}
-              className="w-full h-full border-0"
-              onLoad={() => setIsLoading(false)}
-              sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-top-navigation"
-              title={inAppBrowser.title}
-            />
-          </div>
-        </div>
-      )}
-
-      <style>{`
-        @keyframes loading {
-          0% { transform: translateX(-100%); }
-          50% { transform: translateX(200%); }
-          100% { transform: translateX(-100%); }
-        }
-      `}</style>
     </div>
   );
 }
