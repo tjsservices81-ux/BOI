@@ -561,7 +561,11 @@ export default function TransactionHistoryWorking() {
           {accountInfo?.displayName || 'Current Account'} ~ {getAccountNumber()}
         </h1>
         
-        <button className="flex items-center justify-center" style={{ width: '40px', height: '40px' }}>
+        <button 
+          onClick={() => navigateWithAnimation('/profile', 'slide-up')}
+          className="flex items-center justify-center" 
+          style={{ width: '40px', height: '40px' }}
+        >
           <div 
             className="rounded-full flex items-center justify-center"
             style={{ 
