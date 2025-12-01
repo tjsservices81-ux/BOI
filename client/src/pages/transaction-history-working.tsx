@@ -772,7 +772,9 @@ export default function TransactionHistoryWorking() {
         <div style={{ 
           backgroundColor: '#FFFFFF', 
           padding: '16px 20px 20px 20px',
-          borderBottom: '1px solid #E5E5E5'
+          borderBottom: '1px solid #E5E5E5',
+          maxHeight: '60vh',
+          overflowY: 'auto'
         }}>
           {/* Close button */}
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
