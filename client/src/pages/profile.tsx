@@ -862,7 +862,7 @@ export default function Profile() {
     { description: "CHILD BENEFIT", amount: 140.00, type: "credit" }
   ];
 
-  const addCustomTransaction = () => {
+  const addCustomTransaction = async () => {
     // Block if account deleted
     if (accountDeleted) {
       alert('Account Deleted');
@@ -962,20 +962,29 @@ export default function Profile() {
     
     const currentCurrency = getUserCurrency();
     const currencySymbol = currentCurrency === 'EUR' ? '€' : '£';
-    showDeveloperMessage(`Transaction Added Successfully!\n\n${customTransactionData.description}\nAmount: ${currencySymbol}${transactionAmount.toFixed(2)}\nNew Balance: ${currencySymbol}${newBalance.toFixed(2)}`);
     
-    // Update balance in database (background)
-    fetch(`/api/accounts/${accountId}/balance`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ balance: newBalance.toFixed(2) })
-    }).then(() => {
-      console.log('💰 Custom transaction balance updated in database');
-    }).catch(console.error);
+    // Update balance in database FIRST (synchronously wait for it)
+    try {
+      const response = await fetch(`/api/accounts/${accountId}/balance`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ balance: newBalance.toFixed(2) })
+      });
+      
+      if (response.ok) {
+        console.log('💰 Custom transaction balance persisted to database');
+      } else {
+        console.error('Failed to update balance in database:', await response.text());
+      }
+    } catch (error) {
+      console.error('Error updating balance in database:', error);
+    }
+    
+    showDeveloperMessage(`Transaction Added Successfully!\n\n${customTransactionData.description}\nAmount: ${currencySymbol}${transactionAmount.toFixed(2)}\nNew Balance: ${currencySymbol}${newBalance.toFixed(2)}`);
   };
 
-  const addSampleTransaction = (accountId: number) => {
+  const addSampleTransaction = async (accountId: number) => {
     const randomTransaction = sampleTransactions[Math.floor(Math.random() * sampleTransactions.length)];
     
     // Create transaction date that's 2-30 days before current date
@@ -1070,17 +1079,26 @@ export default function Profile() {
     setShowAddTransaction(false);
     const currentCurrency = getUserCurrency();
     const currencySymbol = currentCurrency === 'EUR' ? '€' : '£';
-    showDeveloperMessage(`Transaction Added Successfully!\n\n${randomTransaction.description}\nAmount: ${currencySymbol}${Math.abs(transactionAmount).toFixed(2)}\nNew Balance: ${currencySymbol}${newBalance.toFixed(2)}`);
     
-    // Update balance in database (background)
-    fetch(`/api/accounts/${accountId}/balance`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ balance: newBalance.toFixed(2) })
-    }).then(() => {
-      console.log('💰 Sample transaction balance updated in database');
-    }).catch(console.error);
+    // Update balance in database FIRST (synchronously wait for it)
+    try {
+      const response = await fetch(`/api/accounts/${accountId}/balance`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ balance: newBalance.toFixed(2) })
+      });
+      
+      if (response.ok) {
+        console.log('💰 Sample transaction balance persisted to database');
+      } else {
+        console.error('Failed to update balance in database:', await response.text());
+      }
+    } catch (error) {
+      console.error('Error updating balance in database:', error);
+    }
+    
+    showDeveloperMessage(`Transaction Added Successfully!\n\n${randomTransaction.description}\nAmount: ${currencySymbol}${Math.abs(transactionAmount).toFixed(2)}\nNew Balance: ${currencySymbol}${newBalance.toFixed(2)}`);
   };
 
   const updateBalance = async () => {
