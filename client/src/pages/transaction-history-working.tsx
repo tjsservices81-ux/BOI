@@ -667,7 +667,7 @@ export default function TransactionHistoryWorking() {
         <div className="flex items-center" style={{ gap: '10px' }}>
           <span style={{ 
             fontSize: '15px', 
-            fontWeight: 400, 
+            fontWeight: 600, 
             color: styles.colors.textMuted 
           }}>
             Filter completed transactions
