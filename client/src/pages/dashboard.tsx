@@ -569,7 +569,7 @@ export default function Dashboard() {
             })}
             
             {/* Monthly Insights Section */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mt-2">
+            <div className="bg-white shadow-sm border border-gray-200 p-4 mt-2">
               <div className="flex items-center mb-2">
                 <div className="w-2 h-2 rounded-full bg-[#2d6a7a] mr-2"></div>
                 <span className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>01/12</span>
@@ -580,12 +580,12 @@ export default function Dashboard() {
               <div className="space-y-3">
                 <div className="flex items-center">
                   <span className="text-sm text-gray-700 w-10" style={{ fontFamily: 'OpenSans, sans-serif' }}>Dec</span>
-                  <div className="flex-1 h-2 bg-gray-200 rounded-full ml-2"></div>
+                  <div className="flex-1 h-2 bg-gray-200 ml-2"></div>
                 </div>
                 <div className="flex items-center">
                   <span className="text-sm text-gray-700 w-10" style={{ fontFamily: 'OpenSans, sans-serif' }}>Nov</span>
-                  <div className="flex-1 h-2 bg-gray-200 rounded-full ml-2 overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-green-400 to-green-500 rounded-full" style={{ width: '65%' }}></div>
+                  <div className="flex-1 h-2 bg-gray-200 ml-2 overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-green-400 to-green-500" style={{ width: '65%' }}></div>
                   </div>
                 </div>
               </div>
@@ -593,7 +593,7 @@ export default function Dashboard() {
             
             {/* See more insights button */}
             <button 
-              className="w-full py-3 bg-[#2d6a7a] text-white rounded-lg text-center mb-6"
+              className="w-full py-3 bg-[#126987] text-white text-center mb-6"
               style={{ fontFamily: 'OpenSans, sans-serif' }}
             >
               See more insights
