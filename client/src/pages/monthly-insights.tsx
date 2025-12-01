@@ -186,30 +186,30 @@ export default function MonthlyInsights() {
         <div style={{ height: '1px', backgroundColor: '#E0E0E0' }}></div>
 
         {/* Account Summary Card - Tappable */}
-        <div className="mx-4 mt-4 bg-white relative" style={{ borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+        <div className="mx-4 mt-4 bg-white relative" style={{ borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
           <button 
             onClick={() => setShowAccountPicker(!showAccountPicker)}
-            className="w-full flex items-center justify-between p-4"
+            className="w-full flex items-center justify-between p-3"
           >
             <div className="flex items-center">
-              <div className="mr-3">
-                <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                  <circle cx="20" cy="12" r="8" stroke="#666" strokeWidth="2" fill="none"/>
-                  <ellipse cx="20" cy="20" rx="10" ry="4" stroke="#666" strokeWidth="2" fill="none"/>
-                  <ellipse cx="20" cy="28" rx="10" ry="4" stroke="#666" strokeWidth="2" fill="none"/>
+              <div className="mr-2">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="8" r="4" stroke="#666" strokeWidth="1.5" fill="none"/>
+                  <ellipse cx="12" cy="14" rx="6" ry="2.5" stroke="#666" strokeWidth="1.5" fill="none"/>
+                  <ellipse cx="12" cy="19" rx="6" ry="2.5" stroke="#666" strokeWidth="1.5" fill="none"/>
                 </svg>
               </div>
               <div className="text-left">
-                <p className="font-bold" style={{ fontSize: '16px', color: '#333' }}>{getAccountDisplayName()}</p>
-                {getAccountNumber() && <p style={{ fontSize: '14px', color: '#777' }}>{getAccountNumber()}</p>}
+                <p className="font-semibold" style={{ fontSize: '13px', color: '#333' }}>{getAccountDisplayName()}</p>
+                {getAccountNumber() && <p style={{ fontSize: '12px', color: '#666' }}>{getAccountNumber()}</p>}
               </div>
             </div>
-            <ChevronDown className={`h-5 w-5 text-gray-500 transition-transform ${showAccountPicker ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform flex-shrink-0 ${showAccountPicker ? 'rotate-180' : ''}`} />
           </button>
           
           {/* Account Picker Dropdown */}
           {showAccountPicker && (
-            <div className="absolute left-0 right-0 top-full mt-1 bg-white z-10" style={{ borderRadius: '12px', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}>
+            <div className="absolute left-0 right-0 top-full mt-1 bg-white z-10" style={{ borderRadius: '8px', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}>
               {accounts.map((account) => (
                 <button
                   key={account.id}
@@ -217,25 +217,25 @@ export default function MonthlyInsights() {
                     setSelectedAccountId(account.id);
                     setShowAccountPicker(false);
                   }}
-                  className="w-full flex items-center p-4 hover:bg-gray-50"
+                  className="w-full flex items-center p-3 hover:bg-gray-50"
                   style={{ borderBottom: '1px solid #E8E8E8' }}
                 >
-                  <div className="mr-3">
-                    <svg width="32" height="32" viewBox="0 0 40 40" fill="none">
-                      <circle cx="20" cy="12" r="8" stroke="#666" strokeWidth="2" fill="none"/>
-                      <ellipse cx="20" cy="20" rx="10" ry="4" stroke="#666" strokeWidth="2" fill="none"/>
-                      <ellipse cx="20" cy="28" rx="10" ry="4" stroke="#666" strokeWidth="2" fill="none"/>
+                  <div className="mr-2">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="8" r="4" stroke="#666" strokeWidth="1.5" fill="none"/>
+                      <ellipse cx="12" cy="14" rx="6" ry="2.5" stroke="#666" strokeWidth="1.5" fill="none"/>
+                      <ellipse cx="12" cy="19" rx="6" ry="2.5" stroke="#666" strokeWidth="1.5" fill="none"/>
                     </svg>
                   </div>
                   <div className="text-left flex-1">
-                    <p className="font-medium" style={{ fontSize: '15px', color: '#333' }}>
+                    <p className="font-medium" style={{ fontSize: '13px', color: '#333' }}>
                       {account.displayName.replace(' Account', '')}
                     </p>
-                    <p style={{ fontSize: '13px', color: '#777' }}>{account.accountNumber.slice(-4)}</p>
+                    <p style={{ fontSize: '11px', color: '#666' }}>{account.accountNumber.slice(-4)}</p>
                   </div>
                   {selectedAccountId === account.id && (
-                    <div className="w-5 h-5 rounded-full bg-[#0A6F85] flex items-center justify-center">
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <div className="w-4 h-4 rounded-full bg-[#0A6F85] flex items-center justify-center flex-shrink-0">
+                      <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
                         <path d="M2 6L5 9L10 3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
                     </div>
@@ -245,10 +245,10 @@ export default function MonthlyInsights() {
             </div>
           )}
           
-          <div style={{ height: '1px', backgroundColor: '#E8E8E8', margin: '0 16px' }}></div>
-          <div className="flex justify-between items-center p-4">
-            <span style={{ fontSize: '14px', color: '#777' }}>Activity to date:</span>
-            <span className="font-bold" style={{ fontSize: '16px', color: '#333' }}>
+          <div style={{ height: '1px', backgroundColor: '#E8E8E8', margin: '0 12px' }}></div>
+          <div className="flex justify-between items-center p-3">
+            <span style={{ fontSize: '12px', color: '#666' }}>Activity to date:</span>
+            <span className="font-semibold" style={{ fontSize: '13px', color: '#333' }}>
               {formatCurrency(monthlyData.activityToDate.toFixed(2), userCurrency)}
             </span>
           </div>
