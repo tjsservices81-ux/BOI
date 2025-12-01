@@ -604,21 +604,21 @@ export default function TransactionHistoryWorking() {
         backgroundColor: '#FFFFFF', 
         padding: '16px 16px 20px 16px', 
         display: 'flex', 
-        gap: '10px',
+        gap: '12px',
         justifyContent: 'flex-start'
       }}>
-        {/* Transactions Tab */}
+        {/* Transactions Tab - Speech bubble style */}
         <div style={{ position: 'relative' }}>
           <button
             onClick={() => setActiveTab('transactions')}
             style={{
-              padding: '12px 22px',
-              borderRadius: '24px',
-              fontSize: '15px',
+              padding: '14px 24px',
+              borderRadius: '26px',
+              fontSize: '16px',
               fontWeight: 500,
-              backgroundColor: activeTab === 'transactions' ? '#256775' : '#FFFFFF',
-              color: activeTab === 'transactions' ? '#FFFFFF' : '#5A5A5A',
-              border: activeTab === 'transactions' ? 'none' : '1px solid #D6D6D6',
+              backgroundColor: activeTab === 'transactions' ? '#3D6A78' : '#FFFFFF',
+              color: activeTab === 'transactions' ? '#FFFFFF' : '#4A4A4A',
+              border: activeTab === 'transactions' ? 'none' : '1.5px solid #D8D8D8',
               lineHeight: 1,
               display: 'flex',
               alignItems: 'center',
@@ -630,14 +630,13 @@ export default function TransactionHistoryWorking() {
           {activeTab === 'transactions' && (
             <div style={{
               position: 'absolute',
-              bottom: '-8px',
-              left: '50%',
-              transform: 'translateX(-50%)',
+              bottom: '-10px',
+              left: '20px',
               width: 0,
               height: 0,
-              borderLeft: '8px solid transparent',
-              borderRight: '8px solid transparent',
-              borderTop: '8px solid #256775'
+              borderLeft: '10px solid transparent',
+              borderRight: '10px solid transparent',
+              borderTop: '10px solid #3D6A78'
             }} />
           )}
         </div>
@@ -650,13 +649,13 @@ export default function TransactionHistoryWorking() {
               setShowStatementModal(true);
             }}
             style={{
-              padding: '12px 22px',
-              borderRadius: '24px',
-              fontSize: '15px',
+              padding: '14px 24px',
+              borderRadius: '26px',
+              fontSize: '16px',
               fontWeight: 500,
-              backgroundColor: activeTab === 'statements' ? '#256775' : '#FFFFFF',
-              color: activeTab === 'statements' ? '#FFFFFF' : '#5A5A5A',
-              border: activeTab === 'statements' ? 'none' : '1px solid #D6D6D6',
+              backgroundColor: activeTab === 'statements' ? '#3D6A78' : '#FFFFFF',
+              color: activeTab === 'statements' ? '#FFFFFF' : '#4A4A4A',
+              border: activeTab === 'statements' ? 'none' : '1.5px solid #D8D8D8',
               lineHeight: 1,
               display: 'flex',
               alignItems: 'center',
@@ -668,14 +667,13 @@ export default function TransactionHistoryWorking() {
           {activeTab === 'statements' && (
             <div style={{
               position: 'absolute',
-              bottom: '-8px',
-              left: '50%',
-              transform: 'translateX(-50%)',
+              bottom: '-10px',
+              left: '20px',
               width: 0,
               height: 0,
-              borderLeft: '8px solid transparent',
-              borderRight: '8px solid transparent',
-              borderTop: '8px solid #256775'
+              borderLeft: '10px solid transparent',
+              borderRight: '10px solid transparent',
+              borderTop: '10px solid #3D6A78'
             }} />
           )}
         </div>
@@ -685,13 +683,13 @@ export default function TransactionHistoryWorking() {
           <button
             onClick={() => setActiveTab('more')}
             style={{
-              padding: '12px 22px',
-              borderRadius: '24px',
-              fontSize: '15px',
+              padding: '14px 24px',
+              borderRadius: '26px',
+              fontSize: '16px',
               fontWeight: 500,
-              backgroundColor: activeTab === 'more' ? '#256775' : '#FFFFFF',
-              color: activeTab === 'more' ? '#FFFFFF' : '#5A5A5A',
-              border: activeTab === 'more' ? 'none' : '1px solid #D6D6D6',
+              backgroundColor: activeTab === 'more' ? '#3D6A78' : '#FFFFFF',
+              color: activeTab === 'more' ? '#FFFFFF' : '#4A4A4A',
+              border: activeTab === 'more' ? 'none' : '1.5px solid #D8D8D8',
               lineHeight: 1,
               display: 'flex',
               alignItems: 'center',
@@ -703,14 +701,13 @@ export default function TransactionHistoryWorking() {
           {activeTab === 'more' && (
             <div style={{
               position: 'absolute',
-              bottom: '-8px',
-              left: '50%',
-              transform: 'translateX(-50%)',
+              bottom: '-10px',
+              left: '20px',
               width: 0,
               height: 0,
-              borderLeft: '8px solid transparent',
-              borderRight: '8px solid transparent',
-              borderTop: '8px solid #256775'
+              borderLeft: '10px solid transparent',
+              borderRight: '10px solid transparent',
+              borderTop: '10px solid #3D6A78'
             }} />
           )}
         </div>
