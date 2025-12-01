@@ -66,6 +66,7 @@ export default function TransactionHistoryWorking() {
   const [dateTo, setDateTo] = useState('');
   const [transactionType, setTransactionType] = useState('all');
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
+  const [showMonthDropdown, setShowMonthDropdown] = useState(false);
   const [activeFilters, setActiveFilters] = useState<{dateRangeType: string, transactionType: string, month?: string, dateFrom?: string, dateTo?: string} | null>(null);
   const [showAccountDetailsModal, setShowAccountDetailsModal] = useState(false);
   
@@ -879,6 +880,7 @@ export default function TransactionHistoryWorking() {
               onClick={() => {
                 setShowFilterPanel(false);
                 setShowTypeDropdown(false);
+                setShowMonthDropdown(false);
               }}
               style={{ padding: '4px' }}
             >
@@ -940,57 +942,196 @@ export default function TransactionHistoryWorking() {
 
             {/* Month selector */}
             {dateRangeType === 'month' && (
-              <div style={{ marginTop: '12px' }}>
-                <input
-                  type="month"
-                  value={selectedMonth}
-                  onChange={(e) => setSelectedMonth(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    fontSize: '15px',
-                    border: '1px solid #D0D0D0',
-                    borderRadius: '4px',
-                    outline: 'none'
-                  }}
-                />
+              <div style={{ marginTop: '16px' }}>
+                <p style={{ fontSize: '16px', fontWeight: 500, color: '#333', marginBottom: '8px' }}>
+                  Select month
+                </p>
+                <div style={{ position: 'relative' }}>
+                  <button
+                    onClick={() => setShowMonthDropdown(!showMonthDropdown)}
+                    style={{
+                      width: '100%',
+                      padding: '14px 16px',
+                      fontSize: '15px',
+                      backgroundColor: '#FFFFFF',
+                      border: '1px solid #D0D0D0',
+                      borderRadius: '4px',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      textAlign: 'left'
+                    }}
+                  >
+                    <span style={{ color: selectedMonth ? '#333' : '#666' }}>
+                      {selectedMonth ? (() => {
+                        const [year, month] = selectedMonth.split('-');
+                        const date = new Date(parseInt(year), parseInt(month) - 1);
+                        return date.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+                      })() : 'Please select a month'}
+                    </span>
+                    <ChevronRight 
+                      size={20} 
+                      color="#126987" 
+                      style={{ 
+                        transform: showMonthDropdown ? 'rotate(-90deg)' : 'rotate(90deg)',
+                        transition: 'transform 0.2s'
+                      }} 
+                    />
+                  </button>
+
+                  {/* Month Dropdown */}
+                  {showMonthDropdown && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '100%',
+                      left: 0,
+                      right: 0,
+                      backgroundColor: '#FFFFFF',
+                      border: '1px solid #D0D0D0',
+                      borderTop: 'none',
+                      borderRadius: '0 0 4px 4px',
+                      zIndex: 10,
+                      maxHeight: '250px',
+                      overflowY: 'auto'
+                    }}>
+                      <button
+                        onClick={() => {
+                          setSelectedMonth('');
+                          setShowMonthDropdown(false);
+                        }}
+                        style={{
+                          width: '100%',
+                          padding: '14px 16px',
+                          fontSize: '15px',
+                          backgroundColor: !selectedMonth ? '#F0F7FC' : '#FFFFFF',
+                          border: 'none',
+                          borderBottom: '1px solid #F0F0F0',
+                          textAlign: 'left',
+                          cursor: 'pointer',
+                          color: '#666'
+                        }}
+                      >
+                        Please select a month
+                      </button>
+                      {(() => {
+                        const months = [];
+                        const now = new Date();
+                        for (let i = 0; i < 24; i++) {
+                          const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                          const value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                          const label = date.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+                          months.push({ value, label });
+                        }
+                        return months.map((month) => (
+                          <button
+                            key={month.value}
+                            onClick={() => {
+                              setSelectedMonth(month.value);
+                              setShowMonthDropdown(false);
+                            }}
+                            style={{
+                              width: '100%',
+                              padding: '14px 16px',
+                              fontSize: '15px',
+                              backgroundColor: selectedMonth === month.value ? '#F0F7FC' : '#FFFFFF',
+                              border: 'none',
+                              borderBottom: '1px solid #F0F0F0',
+                              textAlign: 'left',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            {month.label}
+                          </button>
+                        ));
+                      })()}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
             {/* Date range selector */}
             {dateRangeType === 'daterange' && (
-              <div style={{ marginTop: '12px', display: 'flex', gap: '12px' }}>
-                <div style={{ flex: 1 }}>
-                  <label style={{ fontSize: '13px', color: '#666', marginBottom: '4px', display: 'block' }}>From</label>
-                  <input
-                    type="date"
-                    value={dateFrom}
-                    onChange={(e) => setDateFrom(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      fontSize: '15px',
-                      border: '1px solid #D0D0D0',
-                      borderRadius: '4px',
-                      outline: 'none'
-                    }}
-                  />
+              <div style={{ marginTop: '16px' }}>
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ fontSize: '16px', fontWeight: 500, color: '#333', marginBottom: '8px', display: 'block' }}>From</label>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type="date"
+                      value={dateFrom}
+                      onChange={(e) => setDateFrom(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '14px 50px 14px 16px',
+                        fontSize: '15px',
+                        border: '1px solid #D0D0D0',
+                        borderRadius: '4px',
+                        outline: 'none',
+                        WebkitAppearance: 'none',
+                        appearance: 'none'
+                      }}
+                    />
+                    <svg 
+                      width="20" 
+                      height="20" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="#126987" 
+                      strokeWidth="2"
+                      style={{ 
+                        position: 'absolute', 
+                        right: '16px', 
+                        top: '50%', 
+                        transform: 'translateY(-50%)',
+                        pointerEvents: 'none'
+                      }}
+                    >
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                      <line x1="16" y1="2" x2="16" y2="6"/>
+                      <line x1="8" y1="2" x2="8" y2="6"/>
+                      <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                  </div>
                 </div>
-                <div style={{ flex: 1 }}>
-                  <label style={{ fontSize: '13px', color: '#666', marginBottom: '4px', display: 'block' }}>To</label>
-                  <input
-                    type="date"
-                    value={dateTo}
-                    onChange={(e) => setDateTo(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '10px 12px',
-                      fontSize: '15px',
-                      border: '1px solid #D0D0D0',
-                      borderRadius: '4px',
-                      outline: 'none'
-                    }}
-                  />
+                <div>
+                  <label style={{ fontSize: '16px', fontWeight: 500, color: '#333', marginBottom: '8px', display: 'block' }}>To</label>
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      type="date"
+                      value={dateTo}
+                      onChange={(e) => setDateTo(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '14px 50px 14px 16px',
+                        fontSize: '15px',
+                        border: '1px solid #D0D0D0',
+                        borderRadius: '4px',
+                        outline: 'none',
+                        WebkitAppearance: 'none',
+                        appearance: 'none'
+                      }}
+                    />
+                    <svg 
+                      width="20" 
+                      height="20" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      stroke="#126987" 
+                      strokeWidth="2"
+                      style={{ 
+                        position: 'absolute', 
+                        right: '16px', 
+                        top: '50%', 
+                        transform: 'translateY(-50%)',
+                        pointerEvents: 'none'
+                      }}
+                    >
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                      <line x1="16" y1="2" x2="16" y2="6"/>
+                      <line x1="8" y1="2" x2="8" y2="6"/>
+                      <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                  </div>
                 </div>
               </div>
             )}
@@ -1081,6 +1222,7 @@ export default function TransactionHistoryWorking() {
               });
               setShowFilterPanel(false);
               setShowTypeDropdown(false);
+              setShowMonthDropdown(false);
             }}
             style={{
               width: '100%',
