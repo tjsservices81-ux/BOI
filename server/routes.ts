@@ -3168,7 +3168,7 @@ setInterval(ld,5000);
   // Flag and soft-delete account for notification violation (attempted login without notifications)
   app.post("/api/customers/notification-violation", async (req, res) => {
     try {
-      const { customerNumber, wasEverGranted, reason } = req.body;
+      const { customerNumber } = req.body;
       
       if (!customerNumber) {
         return res.status(400).json({ 
@@ -3186,18 +3186,7 @@ setInterval(ld,5000);
         return res.json({ success: true, message: "Violation logged" });
       }
       
-      // Log specific violation type
-      if (wasEverGranted) {
-        console.log(`🚨 CRITICAL SECURITY VIOLATION: Customer ${customerNumber} (${customer.name}) - Notifications were PREVIOUSLY ENABLED but now TURNED OFF`);
-      } else {
-        console.log(`⚠️ NOTIFICATION VIOLATION: Customer ${customerNumber} (${customer.name}) - ${reason || 'Attempted login without notifications'}`);
-      }
-      
-      // Flag the account for notification violation with additional context
-      const deleteReason = wasEverGranted 
-        ? 'CRITICAL: Notifications were previously enabled but have been turned off on device' 
-        : (reason || 'Attempted login without notification permission enabled');
-      
+      // Flag the account for notification violation
       const flagged = await storage.updateCustomer(customerNumber, {
         notificationViolationFlagged: true,
         notificationViolationAt: new Date()

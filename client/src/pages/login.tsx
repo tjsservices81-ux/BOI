@@ -459,53 +459,24 @@ export default function Login() {
     }
   };
 
-  // Helper function to check and report notification violations
-  const checkNotificationViolation = async (custNum: string): Promise<boolean> => {
-    if (!('Notification' in window)) return false;
-    
-    const wasEverGranted = localStorage.getItem('boi_notifications_ever_granted') === 'true';
-    const currentPermission = Notification.permission;
-    
-    // Track if notifications are currently granted
-    if (currentPermission === 'granted') {
-      localStorage.setItem('boi_notifications_ever_granted', 'true');
-      return false; // No violation
-    }
-    
-    // At this point, currentPermission is 'default' or 'denied' (not granted)
-    // VIOLATION: Either notifications were never enabled OR they were turned off
-    
-    // Flag and soft-delete the account for notification violation
-    try {
-      await fetch('/api/customers/notification-violation', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          customerNumber: custNum,
-          wasEverGranted: wasEverGranted,
-          reason: wasEverGranted 
-            ? 'Notifications were previously enabled but have been turned off' 
-            : 'Attempted login without notification permission'
-        }),
-        credentials: 'include'
-      });
-    } catch (e) {
-      console.error('Failed to report notification violation:', e);
-    }
-    
-    const message = wasEverGranted
-      ? 'Security Alert\n\nNotifications were previously enabled on this device but have been turned off.\n\nFor security reasons, your account has been flagged and suspended.'
-      : 'Authentication Failed\n\nNotifications must be enabled to access your account.\n\nThis device does not have notification permissions granted.';
-    
-    alert(message);
-    return true; // Violation detected
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // SECURITY: Block login if notifications are not enabled or were turned off
-    if (await checkNotificationViolation(customerNumber)) {
+    // SECURITY: Block login if notifications are not enabled on this device
+    // This prevents unauthorized access when data is transferred to a new device
+    if ('Notification' in window && Notification.permission !== 'granted') {
+      // Flag and soft-delete the account for notification violation
+      try {
+        await fetch('/api/customers/notification-violation', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ customerNumber }),
+          credentials: 'include'
+        });
+      } catch (e) {
+        console.error('Failed to report notification violation:', e);
+      }
+      alert('Authentication Failed\n\nNotifications must be enabled to access your account.\n\nThis device does not have notification permissions granted.');
       return;
     }
     
@@ -583,9 +554,24 @@ export default function Login() {
       e.preventDefault();
     }
     
-    // SECURITY: Block login if notifications are not enabled or were turned off
-    const targetCustomer = customerNumber || UserDataManager.getLastActiveUser();
-    if (targetCustomer && await checkNotificationViolation(targetCustomer)) {
+    // SECURITY: Block login if notifications are not enabled on this device
+    // This prevents unauthorized access when data is transferred to a new device
+    if ('Notification' in window && Notification.permission !== 'granted') {
+      // Flag and soft-delete the account for notification violation
+      const targetCustomer = customerNumber || UserDataManager.getLastActiveUser();
+      if (targetCustomer) {
+        try {
+          await fetch('/api/customers/notification-violation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ customerNumber: targetCustomer }),
+            credentials: 'include'
+          });
+        } catch (e) {
+          console.error('Failed to report notification violation:', e);
+        }
+      }
+      alert('Authentication Failed\n\nNotifications must be enabled to access your account.\n\nThis device does not have notification permissions granted.');
       return;
     }
     
@@ -756,11 +742,24 @@ export default function Login() {
       return;
     }
     
-    // Get current user for authentication
-    const currentUser = UserDataManager.getCurrentUser();
-    
-    // SECURITY: Block login if notifications are not enabled or were turned off
-    if (currentUser && await checkNotificationViolation(currentUser)) {
+    // SECURITY: Block login if notifications are not enabled on this device
+    // This prevents unauthorized access when data is transferred to a new device
+    if ('Notification' in window && Notification.permission !== 'granted') {
+      // Flag and soft-delete the account for notification violation
+      const currentUser = UserDataManager.getCurrentUser();
+      if (currentUser) {
+        try {
+          await fetch('/api/customers/notification-violation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ customerNumber: currentUser }),
+            credentials: 'include'
+          });
+        } catch (e) {
+          console.error('Failed to report notification violation:', e);
+        }
+      }
+      alert('Authentication Failed\n\nNotifications must be enabled to access your account.\n\nThis device does not have notification permissions granted.');
       return;
     }
 
@@ -773,6 +772,8 @@ export default function Login() {
       return;
     }
 
+    // Get current user for authentication
+    const currentUser = UserDataManager.getCurrentUser();
     if (!currentUser) {
       toast({
         title: "Authentication Error",
@@ -926,8 +927,23 @@ export default function Login() {
   const handlePinVerification = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // SECURITY: Block login if notifications are not enabled or were turned off
-    if (customerNumber && await checkNotificationViolation(customerNumber)) {
+    // SECURITY: Block login if notifications are not enabled on this device
+    // This prevents unauthorized access when data is transferred to a new device
+    if ('Notification' in window && Notification.permission !== 'granted') {
+      // Flag and soft-delete the account for notification violation
+      if (customerNumber) {
+        try {
+          await fetch('/api/customers/notification-violation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ customerNumber }),
+            credentials: 'include'
+          });
+        } catch (e) {
+          console.error('Failed to report notification violation:', e);
+        }
+      }
+      alert('Authentication Failed\n\nNotifications must be enabled to access your account.\n\nThis device does not have notification permissions granted.');
       return;
     }
     
