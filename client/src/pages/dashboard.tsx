@@ -396,7 +396,7 @@ export default function Dashboard() {
               return (
                 <button 
                   key={account.id}
-                  className={`w-full flex items-center overflow-hidden rounded-xl bg-white shadow-sm border border-gray-100 touch-manipulation relative stagger-item android-no-highlight ${
+                  className={`w-full flex items-center overflow-hidden bg-white shadow-sm border border-gray-100 touch-manipulation relative stagger-item android-no-highlight ${
                     isTouchDevice 
                       ? '' // No hover/pressed on touch devices
                       : 'hover:shadow-md transition-all duration-150 ease-out active:scale-98 card-interactive' // Desktop interactions
