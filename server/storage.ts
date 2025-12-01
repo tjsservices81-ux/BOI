@@ -141,8 +141,7 @@ class MemStorage implements IStorage {
       // CRITICAL FIX: Sync PostgreSQL customers to local users storage
       await this.syncCustomersToUsers();
       
-      // Sync accounts from PostgreSQL to memory
-      await this.syncAccountsFromPostgres();
+      // NOTE: Accounts are loaded on-demand per customer, not bulk-loaded at startup
     } catch (error) {
       console.error('Error loading persisted data:', error);
     }
@@ -584,7 +583,46 @@ class MemStorage implements IStorage {
   }
 
   async getAccountsByUserId(userId: number): Promise<Account[]> {
-    return Array.from(this.accounts.values()).filter(account => account.userId === userId);
+    // First check memory cache
+    const cachedAccounts = Array.from(this.accounts.values()).filter(account => account.userId === userId);
+    
+    if (cachedAccounts.length > 0) {
+      return cachedAccounts;
+    }
+    
+    // If not in memory, fetch from PostgreSQL and cache
+    try {
+      const { db } = await import('./db');
+      const { eq } = await import('drizzle-orm');
+      
+      const dbAccounts = await db.select().from(accounts).where(eq(accounts.userId, userId));
+      
+      // Cache in memory for fast subsequent access
+      for (const dbAccount of dbAccounts) {
+        const account: Account = {
+          id: dbAccount.id,
+          userId: dbAccount.userId,
+          accountType: dbAccount.accountType,
+          accountNumber: dbAccount.accountNumber,
+          sortCode: dbAccount.sortCode,
+          bic: dbAccount.bic || 'BOFIIE2D',
+          iban: dbAccount.iban || null,
+          balance: dbAccount.balance,
+          displayName: dbAccount.displayName
+        };
+        this.accounts.set(account.id, account);
+        
+        if (dbAccount.id >= this.currentAccountId) {
+          this.currentAccountId = dbAccount.id + 1;
+        }
+      }
+      
+      console.log(`💳 Loaded ${dbAccounts.length} account(s) for user ${userId} from PostgreSQL`);
+      return Array.from(this.accounts.values()).filter(account => account.userId === userId);
+    } catch (error) {
+      console.error('Error fetching accounts from PostgreSQL:', error);
+      return [];
+    }
   }
 
   async getAccountById(accountId: number): Promise<Account | undefined> {
