@@ -48,10 +48,6 @@ export default function Profile() {
     const saved = localStorage.getItem('showTransferConfirmation');
     return saved !== null ? JSON.parse(saved) : true;
   });
-  const [showBankDetailsButton, setShowBankDetailsButton] = useState(() => {
-    const saved = localStorage.getItem('showBankDetailsButton');
-    return saved !== null ? JSON.parse(saved) : true;
-  });
   const [recipientEmailEnabled, setRecipientEmailEnabled] = useState(() => {
     const saved = localStorage.getItem('recipientEmailEnabled');
     return saved !== null ? JSON.parse(saved) : false;
@@ -91,16 +87,6 @@ export default function Profile() {
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [transactionSearchQuery, setTransactionSearchQuery] = useState('');
-  
-  // Bank details editing states
-  const [showBankDetails, setShowBankDetails] = useState(false);
-  const [editingBankAccount, setEditingBankAccount] = useState<any>(null);
-  const [bankDetailsData, setBankDetailsData] = useState({
-    sortCode: '',
-    propAccountNumber: '',
-    bic: '',
-    iban: ''
-  });
   
   // Date range selection for sample transactions
   const [startDate, setStartDate] = useState(() => {
@@ -1873,31 +1859,6 @@ export default function Profile() {
                       </div>
                     </button>
 
-                    {/* Bank Details Button */}
-                    <button 
-                      onClick={() => {
-                        const newValue = !showBankDetailsButton;
-                        setShowBankDetailsButton(newValue);
-                        localStorage.setItem('showBankDetailsButton', JSON.stringify(newValue));
-                        window.dispatchEvent(new Event('storage'));
-                        showDeveloperMessage(`Bank Details Button ${newValue ? 'shown' : 'hidden'} successfully`);
-                      }}
-                      data-testid="toggle-bank-details-button"
-                      className="w-full flex items-center justify-between p-3 bg-white/70 backdrop-blur-sm border-2 border-purple-200 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md"
-                    >
-                      <div className="flex-1 text-left">
-                        <p className="font-semibold text-purple-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          Show Bank Details Button
-                        </p>
-                        <p className="text-xs text-purple-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          BIC/IBAN or Sort Code button
-                        </p>
-                      </div>
-                      <div className={`w-11 h-6 rounded-full transition-colors ${showBankDetailsButton ? 'bg-green-500' : 'bg-gray-300'}`}>
-                        <div className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform mt-1 ${showBankDetailsButton ? 'translate-x-6' : 'translate-x-1'}`} />
-                      </div>
-                    </button>
-
                     {/* Recipient Email UK */}
                     <button 
                       onClick={() => {
@@ -1960,7 +1921,7 @@ export default function Profile() {
                 <button 
                   onClick={startEditingProfile}
                   data-testid="button-edit-profile"
-                  className="w-full flex items-center space-x-3 p-4 bg-white/80 backdrop-blur-sm border-2 border-blue-300 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md mb-3"
+                  className="w-full flex items-center space-x-3 p-4 bg-white/80 backdrop-blur-sm border-2 border-blue-300 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md"
                 >
                   <div className="w-11 h-11 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center shadow-md">
                     <Edit3 className="w-5 h-5 text-white" />
@@ -1971,31 +1932,6 @@ export default function Profile() {
                     </p>
                     <p className="text-sm text-blue-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                       Update personal information
-                    </p>
-                  </div>
-                </button>
-
-                {/* Edit Bank Details */}
-                <button 
-                  onClick={() => {
-                    if (accountDeleted) {
-                      alert('Account Deleted');
-                      return;
-                    }
-                    setShowBankDetails(true);
-                  }}
-                  data-testid="button-edit-bank-details"
-                  className="w-full flex items-center space-x-3 p-4 bg-white/80 backdrop-blur-sm border-2 border-blue-300 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md"
-                >
-                  <div className="w-11 h-11 bg-gradient-to-br from-teal-500 to-teal-600 rounded-full flex items-center justify-center shadow-md">
-                    <CreditCard className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="flex-1 text-left">
-                    <p className="font-bold text-blue-900 text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Edit Bank Details
-                    </p>
-                    <p className="text-sm text-blue-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Update BIC/IBAN or Sort Code
                     </p>
                   </div>
                 </button>
@@ -2346,182 +2282,6 @@ export default function Profile() {
                   Save Changes
                 </button>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Bank Details Modal */}
-      {showBankDetails && (
-        <div className="modal-overlay bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  {editingBankAccount ? 'Edit Bank Details' : 'Select Account'}
-                </h2>
-                <button
-                  onClick={() => {
-                    setShowBankDetails(false);
-                    setEditingBankAccount(null);
-                    setBankDetailsData({ sortCode: '', propAccountNumber: '', bic: '', iban: '' });
-                  }}
-                  className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
-                >
-                  <X className="w-4 h-4 text-gray-600" />
-                </button>
-              </div>
-
-              {!editingBankAccount ? (
-                <div className="space-y-3">
-                  <p className="text-sm text-gray-600 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Select an account to edit its bank details:
-                  </p>
-                  {accounts && accounts.map((account: any) => (
-                    <button
-                      key={account.id}
-                      onClick={() => {
-                        setEditingBankAccount(account);
-                        setBankDetailsData({
-                          sortCode: account.sortCode || '',
-                          propAccountNumber: account.propAccountNumber || '',
-                          bic: account.bic || '',
-                          iban: account.iban || ''
-                        });
-                      }}
-                      className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl text-left hover:bg-gray-100 transition-colors"
-                    >
-                      <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        {account.displayName}
-                      </p>
-                      <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        {account.accountNumber}
-                      </p>
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="p-3 bg-blue-50 rounded-xl mb-4">
-                    <p className="font-semibold text-blue-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      {editingBankAccount.displayName}
-                    </p>
-                    <p className="text-sm text-blue-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      {editingBankAccount.accountNumber}
-                    </p>
-                  </div>
-
-                  <div className="border-b border-gray-200 pb-4 mb-4">
-                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      UK Bank Details
-                    </p>
-                    <div className="space-y-3">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          Sort Code
-                        </label>
-                        <input
-                          type="text"
-                          value={bankDetailsData.sortCode}
-                          onChange={(e) => setBankDetailsData({ ...bankDetailsData, sortCode: e.target.value })}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          style={{ fontFamily: 'OpenSans, sans-serif' }}
-                          placeholder="e.g., 90-38-16"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          Account Number
-                        </label>
-                        <input
-                          type="text"
-                          value={bankDetailsData.propAccountNumber}
-                          onChange={(e) => setBankDetailsData({ ...bankDetailsData, propAccountNumber: e.target.value })}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          style={{ fontFamily: 'OpenSans, sans-serif' }}
-                          placeholder="e.g., 20163704"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      IBAN/BIC Details
-                    </p>
-                    <div className="space-y-3">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          BIC Code
-                        </label>
-                        <input
-                          type="text"
-                          value={bankDetailsData.bic}
-                          onChange={(e) => setBankDetailsData({ ...bankDetailsData, bic: e.target.value })}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          style={{ fontFamily: 'OpenSans, sans-serif' }}
-                          placeholder="e.g., BOFIIE2DXXX"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          IBAN
-                        </label>
-                        <input
-                          type="text"
-                          value={bankDetailsData.iban}
-                          onChange={(e) => setBankDetailsData({ ...bankDetailsData, iban: e.target.value })}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          style={{ fontFamily: 'OpenSans, sans-serif' }}
-                          placeholder="e.g., IE40BOFI 903816 20163704"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex space-x-3 mt-6">
-                    <button
-                      onClick={() => {
-                        setEditingBankAccount(null);
-                        setBankDetailsData({ sortCode: '', propAccountNumber: '', bic: '', iban: '' });
-                      }}
-                      className="flex-1 py-3 bg-gray-200 text-gray-800 rounded-xl font-semibold hover:bg-gray-300 transition-colors"
-                      style={{ fontFamily: 'OpenSans, sans-serif' }}
-                    >
-                      Back
-                    </button>
-                    <button
-                      onClick={() => {
-                        // Update the account with new bank details
-                        const updatedAccounts = accounts.map((acc: any) => {
-                          if (acc.id === editingBankAccount.id) {
-                            return {
-                              ...acc,
-                              sortCode: bankDetailsData.sortCode,
-                              propAccountNumber: bankDetailsData.propAccountNumber,
-                              accountNumber: bankDetailsData.propAccountNumber || acc.accountNumber,
-                              bic: bankDetailsData.bic,
-                              iban: bankDetailsData.iban
-                            };
-                          }
-                          return acc;
-                        });
-                        setAccounts(updatedAccounts);
-                        UserDataManager.setUserData('bankAccounts', updatedAccounts);
-                        window.dispatchEvent(new CustomEvent('accountsUpdate', { detail: { accounts: updatedAccounts } }));
-                        setShowBankDetails(false);
-                        setEditingBankAccount(null);
-                        setBankDetailsData({ sortCode: '', propAccountNumber: '', bic: '', iban: '' });
-                        showDeveloperMessage('Bank details updated successfully');
-                      }}
-                      className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors"
-                      style={{ fontFamily: 'OpenSans, sans-serif' }}
-                    >
-                      Save
-                    </button>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>
