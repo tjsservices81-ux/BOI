@@ -163,10 +163,12 @@ export default function MonthlyInsights() {
         <h1 className="text-white font-semibold" style={{ fontSize: '18px' }}>
           Monthly money in and out
         </h1>
-        <button onClick={() => setLocation('/profile')} className="p-2">
-          <div className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center" style={{ backgroundColor: '#0A6F85' }}>
-            <User className="h-4 w-4 text-white" />
-          </div>
+        <button 
+          onClick={() => setLocation('/profile')} 
+          className="p-2 text-white hover:bg-white/20 h-8 w-8 rounded-full flex items-center justify-center transition-all duration-150 ease-out active:scale-95"
+          style={{ WebkitTapHighlightColor: 'transparent', outline: 'none' }}
+        >
+          <User className="h-5 w-5" />
         </button>
       </div>
 
