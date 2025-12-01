@@ -31,6 +31,14 @@ export default function TransactionHistoryWorking() {
     const saved = localStorage.getItem('showTransferConfirmation');
     return saved !== null ? JSON.parse(saved) : true;
   });
+  const [showBankDetailsButton, setShowBankDetailsButton] = useState(() => {
+    const saved = localStorage.getItem('showBankDetailsButton');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+  const [customBankDisplay, setCustomBankDisplay] = useState(() => {
+    const saved = localStorage.getItem('customBankDisplay');
+    return saved ? JSON.parse(saved) : { bic: '', iban: '', sortCode: '', accountNumber: '' };
+  });
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   const [showPayBillsForm, setShowPayBillsForm] = useState(false);
@@ -79,6 +87,12 @@ export default function TransactionHistoryWorking() {
     const handleStorageChange = () => {
       const saved = localStorage.getItem('showTransferConfirmation');
       setShowTransferConfirmation(saved !== null ? JSON.parse(saved) : true);
+      
+      const savedBankButton = localStorage.getItem('showBankDetailsButton');
+      setShowBankDetailsButton(savedBankButton !== null ? JSON.parse(savedBankButton) : true);
+      
+      const savedBankDisplay = localStorage.getItem('customBankDisplay');
+      setCustomBankDisplay(savedBankDisplay ? JSON.parse(savedBankDisplay) : { bic: '', iban: '', sortCode: '', accountNumber: '' });
     };
 
     window.addEventListener('storage', handleStorageChange);
@@ -604,19 +618,21 @@ export default function TransactionHistoryWorking() {
           width: '36px', 
           height: '2px', 
           backgroundColor: 'rgba(255,255,255,0.5)', 
-          marginBottom: '14px' 
+          marginBottom: showBankDetailsButton ? '14px' : '0px' 
         }} />
         
-        <button 
-          onClick={() => setShowAccountDetailsModal(true)}
-          className="flex items-center" 
-          style={{ gap: '4px' }}
-        >
-          <span style={{ fontSize: '15px', fontWeight: 400, color: styles.colors.textWhite }}>{userCurrency === 'GBP' ? 'Sort Code / Account Number' : 'BIC / IBAN'}</span>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
-        </button>
+        {showBankDetailsButton && (
+          <button 
+            onClick={() => setShowAccountDetailsModal(true)}
+            className="flex items-center" 
+            style={{ gap: '4px' }}
+          >
+            <span style={{ fontSize: '15px', fontWeight: 400, color: styles.colors.textWhite }}>{userCurrency === 'GBP' ? 'Sort Code / Account Number' : 'BIC / IBAN'}</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        )}
       </div>
 
       {/* Tabs - white background, proper spacing */}
@@ -1450,7 +1466,7 @@ export default function TransactionHistoryWorking() {
                         fontWeight: 400,
                         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
                       }}>
-                        {accountInfo?.sortCode || '90-38-16'}
+                        {customBankDisplay.sortCode || accountInfo?.sortCode || '90-38-16'}
                       </p>
                     </div>
                     <div style={{ marginBottom: '28px' }}>
@@ -1469,7 +1485,7 @@ export default function TransactionHistoryWorking() {
                         fontWeight: 400,
                         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
                       }}>
-                        {accountInfo?.accountNumber || '20163704'}
+                        {customBankDisplay.accountNumber || accountInfo?.accountNumber || '20163704'}
                       </p>
                     </div>
                   </>
@@ -1491,7 +1507,7 @@ export default function TransactionHistoryWorking() {
                         fontWeight: 400,
                         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
                       }}>
-                        {accountInfo?.bic || 'BOFIIE2DXXX'}
+                        {customBankDisplay.bic || accountInfo?.bic || 'BOFIIE2DXXX'}
                       </p>
                     </div>
                     <div style={{ marginBottom: '28px' }}>
@@ -1510,7 +1526,7 @@ export default function TransactionHistoryWorking() {
                         fontWeight: 400,
                         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
                       }}>
-                        {accountInfo?.iban || 'IE40BOFI 903816 20163704'}
+                        {customBankDisplay.iban || accountInfo?.iban || 'IE40BOFI 903816 20163704'}
                       </p>
                     </div>
                   </>
@@ -1520,8 +1536,8 @@ export default function TransactionHistoryWorking() {
                 <button
                   onClick={async () => {
                     const shareText = userCurrency === 'GBP' 
-                      ? `Sort Code: ${accountInfo?.sortCode || '90-38-16'}\nAccount Number: ${accountInfo?.accountNumber || '20163704'}`
-                      : `BIC: ${accountInfo?.bic || 'BOFIIE2DXXX'}\nIBAN: ${accountInfo?.iban || 'IE40BOFI 903816 20163704'}`;
+                      ? `Sort Code: ${customBankDisplay.sortCode || accountInfo?.sortCode || '90-38-16'}\nAccount Number: ${customBankDisplay.accountNumber || accountInfo?.accountNumber || '20163704'}`
+                      : `BIC: ${customBankDisplay.bic || accountInfo?.bic || 'BOFIIE2DXXX'}\nIBAN: ${customBankDisplay.iban || accountInfo?.iban || 'IE40BOFI 903816 20163704'}`;
                     
                     if (navigator.share) {
                       try {

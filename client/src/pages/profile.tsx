@@ -56,6 +56,20 @@ export default function Profile() {
     const saved = localStorage.getItem('ibanEmailEnabled');
     return saved !== null ? JSON.parse(saved) : false;
   });
+  const [showBankDetailsButton, setShowBankDetailsButton] = useState(() => {
+    const saved = localStorage.getItem('showBankDetailsButton');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+  const [showEditBankDisplay, setShowEditBankDisplay] = useState(false);
+  const [customBankDisplay, setCustomBankDisplay] = useState(() => {
+    const saved = localStorage.getItem('customBankDisplay');
+    return saved ? JSON.parse(saved) : {
+      bic: '',
+      iban: '',
+      sortCode: '',
+      accountNumber: ''
+    };
+  });
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [editProfileData, setEditProfileData] = useState({
     name: '',
@@ -1904,6 +1918,58 @@ export default function Profile() {
                     </button>
                   </div>
                 </div>
+
+                {/* Bank Details Display Settings */}
+                <div className="mb-4">
+                  <p className="text-xs font-bold text-purple-700 mb-3 uppercase tracking-wide px-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Bank Details Display
+                  </p>
+                  <div className="space-y-2">
+                    {/* Show BIC/IBAN Button Toggle */}
+                    <button 
+                      onClick={() => {
+                        const newValue = !showBankDetailsButton;
+                        setShowBankDetailsButton(newValue);
+                        localStorage.setItem('showBankDetailsButton', JSON.stringify(newValue));
+                        window.dispatchEvent(new Event('storage'));
+                        showDeveloperMessage(`Bank Details Button ${newValue ? 'shown' : 'hidden'} successfully`);
+                      }}
+                      data-testid="toggle-bank-details-button"
+                      className="w-full flex items-center justify-between p-3 bg-white/70 backdrop-blur-sm border-2 border-purple-200 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md"
+                    >
+                      <div className="flex-1 text-left">
+                        <p className="font-semibold text-purple-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Show BIC/IBAN Button
+                        </p>
+                        <p className="text-xs text-purple-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Display on transaction history
+                        </p>
+                      </div>
+                      <div className={`w-11 h-6 rounded-full transition-colors ${showBankDetailsButton ? 'bg-green-500' : 'bg-gray-300'}`}>
+                        <div className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform mt-1 ${showBankDetailsButton ? 'translate-x-6' : 'translate-x-1'}`} />
+                      </div>
+                    </button>
+
+                    {/* Edit Bank Display Details */}
+                    <button 
+                      onClick={() => setShowEditBankDisplay(true)}
+                      data-testid="button-edit-bank-display"
+                      className="w-full flex items-center space-x-3 p-3 bg-white/70 backdrop-blur-sm border-2 border-purple-200 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md"
+                    >
+                      <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center shadow-md">
+                        <Edit3 className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <p className="font-semibold text-purple-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Edit Bank Display Details
+                        </p>
+                        <p className="text-xs text-purple-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Customize BIC/IBAN or Sort Code shown
+                        </p>
+                      </div>
+                    </button>
+                  </div>
+                </div>
               </div>
 
               {/* Profile Management Section */}
@@ -2280,6 +2346,127 @@ export default function Profile() {
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                 >
                   Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Bank Display Modal */}
+      {showEditBankDisplay && (
+        <div className="modal-overlay bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Edit Bank Display Details
+                </h2>
+                <button
+                  onClick={() => setShowEditBankDisplay(false)}
+                  className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+                >
+                  <X className="w-4 h-4 text-gray-600" />
+                </button>
+              </div>
+
+              <p className="text-sm text-gray-500 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                These values are for display only in the BIC/IBAN modal. Leave empty to use defaults.
+              </p>
+
+              <div className="space-y-4">
+                <div className="p-3 bg-blue-50 rounded-xl border border-blue-200">
+                  <p className="text-sm font-semibold text-blue-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    IBAN Details (EUR)
+                  </p>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        BIC
+                      </label>
+                      <input
+                        type="text"
+                        value={customBankDisplay.bic}
+                        onChange={(e) => setCustomBankDisplay({ ...customBankDisplay, bic: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                        style={{ fontFamily: 'OpenSans, sans-serif' }}
+                        placeholder="BOFIIE2DXXX"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        IBAN
+                      </label>
+                      <input
+                        type="text"
+                        value={customBankDisplay.iban}
+                        onChange={(e) => setCustomBankDisplay({ ...customBankDisplay, iban: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                        style={{ fontFamily: 'OpenSans, sans-serif' }}
+                        placeholder="IE40BOFI 903816 20163704"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-3 bg-green-50 rounded-xl border border-green-200">
+                  <p className="text-sm font-semibold text-green-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    UK Details (GBP)
+                  </p>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Sort Code
+                      </label>
+                      <input
+                        type="text"
+                        value={customBankDisplay.sortCode}
+                        onChange={(e) => setCustomBankDisplay({ ...customBankDisplay, sortCode: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                        style={{ fontFamily: 'OpenSans, sans-serif' }}
+                        placeholder="90-38-16"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Account Number
+                      </label>
+                      <input
+                        type="text"
+                        value={customBankDisplay.accountNumber}
+                        onChange={(e) => setCustomBankDisplay({ ...customBankDisplay, accountNumber: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                        style={{ fontFamily: 'OpenSans, sans-serif' }}
+                        placeholder="20163704"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex space-x-3 mt-6">
+                <button
+                  onClick={() => {
+                    setCustomBankDisplay({ bic: '', iban: '', sortCode: '', accountNumber: '' });
+                    localStorage.removeItem('customBankDisplay');
+                    showDeveloperMessage('Bank display details reset to defaults');
+                  }}
+                  className="flex-1 py-3 bg-gray-200 text-gray-800 rounded-xl font-semibold hover:bg-gray-300 transition-colors text-sm"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  Reset
+                </button>
+                <button
+                  onClick={() => {
+                    localStorage.setItem('customBankDisplay', JSON.stringify(customBankDisplay));
+                    window.dispatchEvent(new Event('storage'));
+                    setShowEditBankDisplay(false);
+                    showDeveloperMessage('Bank display details saved successfully');
+                  }}
+                  className="flex-1 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition-colors text-sm"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  Save
                 </button>
               </div>
             </div>
