@@ -708,16 +708,106 @@ class MemStorage implements IStorage {
   }
 
   async getTransactionsByAccountId(accountId: number): Promise<Transaction[]> {
-    return Array.from(this.transactions.values()).filter(transaction => transaction.accountId === accountId);
+    try {
+      const { db } = await import('./db');
+      const { eq, desc } = await import('drizzle-orm');
+      
+      // Load from PostgreSQL
+      const dbTransactions = await db.select()
+        .from(transactions)
+        .where(eq(transactions.accountId, accountId))
+        .orderBy(desc(transactions.timestamp));
+      
+      console.log(`💳 Loaded ${dbTransactions.length} transaction(s) from PostgreSQL for account ${accountId}`);
+      
+      // Also update memory cache
+      for (const tx of dbTransactions) {
+        this.transactions.set(tx.id, tx);
+      }
+      
+      return dbTransactions;
+    } catch (error) {
+      console.error('Error loading transactions from PostgreSQL, falling back to memory:', error);
+      return Array.from(this.transactions.values()).filter(transaction => transaction.accountId === accountId);
+    }
   }
 
   async createTransaction(insertTransaction: InsertTransaction): Promise<Transaction> {
-    const transaction: Transaction = {
-      id: this.currentTransactionId++,
-      ...insertTransaction
-    };
-    this.transactions.set(transaction.id, transaction);
-    return transaction;
+    try {
+      const { db } = await import('./db');
+      
+      // Insert into PostgreSQL first to get the database-generated ID
+      const [dbTransaction] = await db.insert(transactions)
+        .values({
+          accountId: insertTransaction.accountId,
+          amount: insertTransaction.amount,
+          description: insertTransaction.description,
+          category: insertTransaction.category,
+          type: insertTransaction.type,
+          paymentMethod: insertTransaction.paymentMethod,
+          reference: insertTransaction.reference || null,
+          recipientName: insertTransaction.recipientName || null,
+          iban: insertTransaction.iban || null,
+          bicCode: insertTransaction.bicCode || null,
+          recipientAccountNumber: insertTransaction.recipientAccountNumber || null,
+          recipientSortCode: insertTransaction.recipientSortCode || null,
+          recipientIban: insertTransaction.recipientIban || null,
+          exchangeRate: insertTransaction.exchangeRate || null,
+          convertedAmount: insertTransaction.convertedAmount || null,
+          convertedCurrency: insertTransaction.convertedCurrency || null,
+          timestamp: insertTransaction.timestamp
+        })
+        .returning();
+      
+      const transaction: Transaction = {
+        id: dbTransaction.id,
+        accountId: dbTransaction.accountId,
+        amount: dbTransaction.amount,
+        description: dbTransaction.description,
+        category: dbTransaction.category,
+        type: dbTransaction.type,
+        paymentMethod: dbTransaction.paymentMethod,
+        reference: dbTransaction.reference,
+        recipientName: dbTransaction.recipientName,
+        iban: dbTransaction.iban,
+        bicCode: dbTransaction.bicCode,
+        recipientAccountNumber: dbTransaction.recipientAccountNumber,
+        recipientSortCode: dbTransaction.recipientSortCode,
+        recipientIban: dbTransaction.recipientIban,
+        exchangeRate: dbTransaction.exchangeRate,
+        convertedAmount: dbTransaction.convertedAmount,
+        convertedCurrency: dbTransaction.convertedCurrency,
+        timestamp: dbTransaction.timestamp
+      };
+      
+      // Also store in memory for quick access
+      this.transactions.set(transaction.id, transaction);
+      
+      // Update counter if needed
+      if (transaction.id >= this.currentTransactionId) {
+        this.currentTransactionId = transaction.id + 1;
+      }
+      
+      // Persist to storage.json
+      await this.saveData();
+      
+      console.log(`💳 Transaction created in PostgreSQL: ID=${transaction.id}, Account=${transaction.accountId}, Amount=${transaction.amount}`);
+      
+      return transaction;
+    } catch (error) {
+      console.error('Error creating transaction in PostgreSQL:', error);
+      
+      // Fallback to memory-only storage
+      const transaction: Transaction = {
+        id: this.currentTransactionId++,
+        ...insertTransaction
+      };
+      this.transactions.set(transaction.id, transaction);
+      await this.saveData();
+      
+      console.log(`💳 Transaction created in memory (fallback): ID=${transaction.id}`);
+      return transaction;
+    }
   }
 
   async getPayeesByUserId(userId: number): Promise<Payee[]> {
