@@ -1406,7 +1406,7 @@ export default function TransactionHistoryWorking() {
               <div 
                 className="flex items-center justify-between"
                 style={{ 
-                  backgroundColor: '#0b5fa5',
+                  backgroundColor: '#126987',
                   padding: '14px 16px'
                 }}
               >
@@ -1437,7 +1437,7 @@ export default function TransactionHistoryWorking() {
                     <div style={{ marginBottom: '20px' }}>
                       <p style={{ 
                         fontSize: '14px', 
-                        color: '#0b5fa5', 
+                        color: '#126987', 
                         fontWeight: 500, 
                         marginBottom: '6px',
                         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
@@ -1456,7 +1456,7 @@ export default function TransactionHistoryWorking() {
                     <div style={{ marginBottom: '28px' }}>
                       <p style={{ 
                         fontSize: '14px', 
-                        color: '#0b5fa5', 
+                        color: '#126987', 
                         fontWeight: 500, 
                         marginBottom: '6px',
                         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
@@ -1478,7 +1478,7 @@ export default function TransactionHistoryWorking() {
                     <div style={{ marginBottom: '20px' }}>
                       <p style={{ 
                         fontSize: '14px', 
-                        color: '#0b5fa5', 
+                        color: '#126987', 
                         fontWeight: 500, 
                         marginBottom: '6px',
                         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
@@ -1497,7 +1497,7 @@ export default function TransactionHistoryWorking() {
                     <div style={{ marginBottom: '28px' }}>
                       <p style={{ 
                         fontSize: '14px', 
-                        color: '#0b5fa5', 
+                        color: '#126987', 
                         fontWeight: 500, 
                         marginBottom: '6px',
                         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
@@ -1538,7 +1538,7 @@ export default function TransactionHistoryWorking() {
                     padding: '14px 0',
                     fontSize: '16px',
                     fontWeight: 500,
-                    backgroundColor: '#0b5fa5',
+                    backgroundColor: '#126987',
                     color: '#ffffff',
                     border: 'none',
                     borderRadius: '4px',
