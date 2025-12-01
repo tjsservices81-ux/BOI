@@ -2815,6 +2815,20 @@
         "balance": "0.00",
         "displayName": "Current Account"
       }
+    ],
+    [
+      124,
+      {
+        "id": 124,
+        "userId": 336,
+        "accountType": "current",
+        "accountNumber": "33510019",
+        "sortCode": "90-78-68",
+        "bic": "BOFIIE2D",
+        "iban": "IE75BOFI90786833510019",
+        "balance": "0.00",
+        "displayName": "Current Account"
+      }
     ]
   ],
   "transactions": [],
@@ -2826,7 +2840,7 @@
   "chatSessions": [],
   "counters": {
     "currentUserId": 337,
-    "currentAccountId": 124,
+    "currentAccountId": 125,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
     "currentScheduledPaymentId": 1,
