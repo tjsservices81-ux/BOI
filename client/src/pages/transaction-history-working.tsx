@@ -477,11 +477,11 @@ export default function TransactionHistoryWorking() {
 
   return (
     <div className="page-container h-screen bg-white flex flex-col overflow-hidden page-slide-in-right" style={{ fontFamily: "'Open Sans', sans-serif" }}>
-      {/* Header - exactly 56px, dark teal gradient */}
+      {/* Header - SEPARATE BOX that blends with status bar */}
       <div 
         className="flex items-center justify-between flex-shrink-0"
         style={{ 
-          background: 'linear-gradient(to bottom, #17657A 0%, #145566 100%)',
+          backgroundColor: '#3D7A8C',
           height: '56px',
           paddingLeft: '16px',
           paddingRight: '16px'
@@ -525,11 +525,11 @@ export default function TransactionHistoryWorking() {
         </button>
       </div>
 
-      {/* Balance Section - gradient continues */}
+      {/* Balance Section - SEPARATE from header */}
       <div 
         style={{ 
-          background: 'linear-gradient(to bottom, #145566 0%, #17657A 100%)',
-          padding: '12px 16px 20px 16px'
+          backgroundColor: '#1B5A6B',
+          padding: '16px 16px 20px 16px'
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
@@ -540,7 +540,7 @@ export default function TransactionHistoryWorking() {
           </svg>
         </div>
         
-        <div style={{ width: '28px', height: '2px', backgroundColor: 'rgba(255,255,255,0.4)', marginBottom: '8px' }}></div>
+        <div style={{ width: '28px', height: '2px', backgroundColor: 'rgba(255,255,255,0.4)', marginBottom: '10px' }}></div>
         
         <button style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'white' }}>
           <span style={{ fontSize: '15px', fontWeight: 400 }}>BIC / IBAN</span>
