@@ -1541,7 +1541,7 @@ export default function TransactionHistoryWorking() {
                     backgroundColor: '#126987',
                     color: '#ffffff',
                     border: 'none',
-                    borderRadius: '4px',
+                    borderRadius: '0',
                     cursor: 'pointer',
                     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
                   }}
