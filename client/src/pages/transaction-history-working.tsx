@@ -1364,7 +1364,7 @@ export default function TransactionHistoryWorking() {
                         BIC
                       </p>
                       <p style={{ fontSize: '16px', color: '#333', fontWeight: 400 }}>
-                        {accountInfo?.bic || 'BOFIIE2DXXX'}
+                        {accountInfo?.bic || 'BOFIIE2D'}
                       </p>
                     </div>
                     <div style={{ marginBottom: '24px' }}>
@@ -1372,7 +1372,7 @@ export default function TransactionHistoryWorking() {
                         IBAN
                       </p>
                       <p style={{ fontSize: '16px', color: '#333', fontWeight: 400 }}>
-                        {accountInfo?.iban || 'IE40BOFI 903816 20163704'}
+                        {accountInfo?.iban || 'IE29BOFI 9000 1710 3025 34'}
                       </p>
                     </div>
                   </>
@@ -1383,7 +1383,7 @@ export default function TransactionHistoryWorking() {
                   onClick={async () => {
                     const shareText = userCurrency === 'GBP' 
                       ? `Sort Code: ${accountInfo?.sortCode || '90-38-16'}\nAccount Number: ${accountInfo?.accountNumber || '20163704'}`
-                      : `BIC: ${accountInfo?.bic || 'BOFIIE2DXXX'}\nIBAN: ${accountInfo?.iban || 'IE40BOFI 903816 20163704'}`;
+                      : `BIC: ${accountInfo?.bic || 'BOFIIE2D'}\nIBAN: ${accountInfo?.iban || 'IE29BOFI 9000 1710 3025 34'}`;
                     
                     if (navigator.share) {
                       try {
