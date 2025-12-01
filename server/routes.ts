@@ -918,6 +918,563 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Internal server error" });
     }
   });
+  
+  // Add a new transaction (with auto balance recalculation)
+  app.post("/api/transactions", requireAuth, async (req, res) => {
+    try {
+      const { accountId: rawAccountId, description, amount, type, category, reference, timestamp } = req.body;
+      
+      if (!rawAccountId || !description || amount === undefined) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+      
+      // Parse accountId once at the top
+      const accountId = parseInt(rawAccountId);
+      if (isNaN(accountId)) {
+        return res.status(400).json({ message: "Invalid account ID" });
+      }
+      
+      const account = await storage.getAccountById(accountId);
+      if (!account) {
+        return res.status(404).json({ message: "Account not found" });
+      }
+      
+      // Verify ownership - user must own this account
+      const sessionUser = (req as any).user;
+      if (sessionUser && account.userId !== sessionUser.id) {
+        return res.status(403).json({ message: "Access denied - you don't own this account" });
+      }
+      
+      // Parse and format amount based on type
+      const numAmount = Math.abs(parseFloat(amount));
+      const formattedAmount = type === 'debit' ? `-${numAmount.toFixed(2)}` : numAmount.toFixed(2);
+      
+      // Create the transaction
+      const transaction = await storage.createTransaction({
+        accountId,
+        amount: formattedAmount,
+        description,
+        category: category || (type === 'credit' ? 'Income' : 'Expense'),
+        type: type || 'debit',
+        paymentMethod: 'Online',
+        reference: reference || null,
+        recipientName: null,
+        iban: null,
+        bicCode: null,
+        recipientAccountNumber: null,
+        recipientSortCode: null,
+        recipientIban: null,
+        exchangeRate: null,
+        convertedAmount: null,
+        convertedCurrency: null,
+        timestamp: timestamp ? new Date(timestamp) : new Date()
+      });
+      
+      // Recalculate and update balance
+      const newBalance = await storage.recalculateAccountBalance(accountId);
+      
+      console.log(`📜 Transaction added: ${description}, Amount: ${formattedAmount}, New Balance: ${newBalance}`);
+      
+      res.json({ 
+        success: true, 
+        transaction,
+        newBalance 
+      });
+    } catch (error) {
+      console.error('Error adding transaction:', error);
+      res.status(500).json({ message: "Failed to add transaction" });
+    }
+  });
+  
+  // Delete a transaction by account (with auto balance recalculation)
+  app.delete("/api/transactions/:accountId/:transactionId", requireAuth, async (req, res) => {
+    try {
+      const accountId = parseInt(req.params.accountId);
+      const transactionId = parseInt(req.params.transactionId);
+      
+      const account = await storage.getAccountById(accountId);
+      if (!account) {
+        return res.status(404).json({ message: "Account not found" });
+      }
+      
+      // Verify ownership - user must own this account
+      const sessionUser = (req as any).user;
+      if (sessionUser && account.userId !== sessionUser.id) {
+        return res.status(403).json({ message: "Access denied - you don't own this account" });
+      }
+      
+      // Delete the transaction
+      const deleted = await storage.deleteTransaction(transactionId);
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "Transaction not found" });
+      }
+      
+      // Recalculate balance
+      const newBalance = await storage.recalculateAccountBalance(accountId);
+      
+      console.log(`🗑️ Transaction ${transactionId} deleted from account ${accountId}, New Balance: ${newBalance}`);
+      
+      res.json({ 
+        success: true, 
+        message: "Transaction deleted",
+        newBalance 
+      });
+    } catch (error) {
+      console.error('Error deleting transaction:', error);
+      res.status(500).json({ message: "Failed to delete transaction" });
+    }
+  });
+  
+  // Reset all transactions for an account (clear all and optionally add sample transactions)
+  app.post("/api/transactions/:accountId/reset", requireAuth, async (req, res) => {
+    try {
+      const accountId = parseInt(req.params.accountId);
+      const { addSampleTransactions } = req.body;
+      
+      const account = await storage.getAccountById(accountId);
+      if (!account) {
+        return res.status(404).json({ message: "Account not found" });
+      }
+      
+      // Verify ownership - user must own this account
+      const sessionUser = (req as any).user;
+      if (sessionUser && account.userId !== sessionUser.id) {
+        return res.status(403).json({ message: "Access denied - you don't own this account" });
+      }
+      
+      // Delete all transactions for this account
+      await storage.deleteAllTransactionsByAccountId(accountId);
+      
+      // Optionally add sample transactions
+      if (addSampleTransactions) {
+        const sampleTransactions = [
+          { description: "Salary Deposit", amount: "3500.00", type: "credit", category: "Income" },
+          { description: "Tesco Groceries", amount: "-85.50", type: "debit", category: "Groceries" },
+          { description: "Netflix Subscription", amount: "-15.99", type: "debit", category: "Entertainment" },
+          { description: "Electric Ireland", amount: "-125.00", type: "debit", category: "Utilities" },
+          { description: "Transfer from Savings", amount: "200.00", type: "credit", category: "Transfer" },
+          { description: "Costa Coffee", amount: "-4.50", type: "debit", category: "Food & Drink" },
+        ];
+        
+        for (const tx of sampleTransactions) {
+          const txDate = new Date();
+          txDate.setDate(txDate.getDate() - Math.floor(Math.random() * 30)); // Random date in last 30 days
+          
+          await storage.createTransaction({
+            accountId,
+            amount: tx.amount,
+            description: tx.description,
+            category: tx.category,
+            type: tx.type as 'debit' | 'credit',
+            paymentMethod: 'Card',
+            reference: null,
+            recipientName: null,
+            iban: null,
+            bicCode: null,
+            recipientAccountNumber: null,
+            recipientSortCode: null,
+            recipientIban: null,
+            exchangeRate: null,
+            convertedAmount: null,
+            convertedCurrency: null,
+            timestamp: txDate
+          });
+        }
+      }
+      
+      // Recalculate balance
+      const newBalance = await storage.recalculateAccountBalance(accountId);
+      
+      console.log(`🔄 Transactions reset for account ${accountId}, New Balance: ${newBalance}`);
+      
+      res.json({ 
+        success: true, 
+        message: addSampleTransactions ? "Transactions reset with samples" : "All transactions cleared",
+        newBalance 
+      });
+    } catch (error) {
+      console.error('Error resetting transactions:', error);
+      res.status(500).json({ message: "Failed to reset transactions" });
+    }
+  });
+  
+  // Add sample transactions to an account
+  app.post("/api/transactions/:accountId/sample", requireAuth, async (req, res) => {
+    try {
+      const accountId = parseInt(req.params.accountId);
+      
+      const account = await storage.getAccountById(accountId);
+      if (!account) {
+        return res.status(404).json({ message: "Account not found" });
+      }
+      
+      // Verify ownership - user must own this account
+      const sessionUser = (req as any).user;
+      if (sessionUser && account.userId !== sessionUser.id) {
+        return res.status(403).json({ message: "Access denied - you don't own this account" });
+      }
+      
+      const sampleTransactions = [
+        { description: "Salary Deposit", amount: "3500.00", type: "credit", category: "Income" },
+        { description: "Tesco Groceries", amount: "-85.50", type: "debit", category: "Groceries" },
+        { description: "Netflix Subscription", amount: "-15.99", type: "debit", category: "Entertainment" },
+        { description: "Electric Ireland", amount: "-125.00", type: "debit", category: "Utilities" },
+        { description: "Costa Coffee", amount: "-4.50", type: "debit", category: "Food & Drink" },
+        { description: "Revolut Top-Up", amount: "100.00", type: "credit", category: "Transfer" },
+      ];
+      
+      const createdTransactions = [];
+      for (const tx of sampleTransactions) {
+        const txDate = new Date();
+        txDate.setDate(txDate.getDate() - Math.floor(Math.random() * 30));
+        
+        const created = await storage.createTransaction({
+          accountId,
+          amount: tx.amount,
+          description: tx.description,
+          category: tx.category,
+          type: tx.type as 'debit' | 'credit',
+          paymentMethod: 'Card',
+          reference: null,
+          recipientName: null,
+          iban: null,
+          bicCode: null,
+          recipientAccountNumber: null,
+          recipientSortCode: null,
+          recipientIban: null,
+          exchangeRate: null,
+          convertedAmount: null,
+          convertedCurrency: null,
+          timestamp: txDate
+        });
+        createdTransactions.push(created);
+      }
+      
+      // Recalculate balance
+      const newBalance = await storage.recalculateAccountBalance(accountId);
+      
+      console.log(`📜 Sample transactions added to account ${accountId}, New Balance: ${newBalance}`);
+      
+      res.json({ 
+        success: true, 
+        transactions: createdTransactions,
+        newBalance 
+      });
+    } catch (error) {
+      console.error('Error adding sample transactions:', error);
+      res.status(500).json({ message: "Failed to add sample transactions" });
+    }
+  });
+
+  // ==================== ADMIN TRANSACTION ENDPOINTS ====================
+  // These endpoints require admin PIN authentication and can manage ANY account
+  
+  const ADMIN_PIN = "270309200207";
+  
+  // Helper to verify admin PIN
+  const verifyAdminPin = (req: any, res: any): boolean => {
+    const adminPin = req.body?.adminPin || req.headers['x-admin-pin'];
+    if (adminPin !== ADMIN_PIN) {
+      res.status(403).json({ message: "Invalid admin PIN" });
+      return false;
+    }
+    return true;
+  };
+  
+  // Admin: Add transaction to any account
+  app.post("/api/admin/transactions", async (req, res) => {
+    if (!verifyAdminPin(req, res)) return;
+    
+    try {
+      const { accountId: rawAccountId, description, amount, type, category, reference, timestamp } = req.body;
+      
+      if (!rawAccountId || !description || amount === undefined) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+      
+      // Parse accountId once at the top
+      const accountId = parseInt(rawAccountId);
+      if (isNaN(accountId)) {
+        return res.status(400).json({ message: "Invalid account ID" });
+      }
+      
+      const account = await storage.getAccountById(accountId);
+      if (!account) {
+        return res.status(404).json({ message: "Account not found" });
+      }
+      
+      // Parse and format amount based on type
+      const numAmount = Math.abs(parseFloat(amount));
+      const formattedAmount = type === 'debit' ? `-${numAmount.toFixed(2)}` : numAmount.toFixed(2);
+      
+      // Create the transaction
+      const transaction = await storage.createTransaction({
+        accountId,
+        amount: formattedAmount,
+        description,
+        category: category || (type === 'debit' ? 'expense' : 'income'),
+        type: type || 'debit',
+        paymentMethod: 'Admin Entry',
+        reference: reference || null,
+        recipientName: null,
+        iban: null,
+        bicCode: null,
+        recipientAccountNumber: null,
+        recipientSortCode: null,
+        recipientIban: null,
+        exchangeRate: null,
+        convertedAmount: null,
+        convertedCurrency: null,
+        timestamp: timestamp ? new Date(timestamp) : new Date()
+      });
+      
+      // Recalculate balance
+      const newBalance = await storage.recalculateAccountBalance(accountId);
+      
+      console.log(`🔒 ADMIN: Transaction added to account ${accountId}, New Balance: ${newBalance}`);
+      
+      res.json({ 
+        success: true, 
+        transaction,
+        newBalance 
+      });
+    } catch (error) {
+      console.error('Admin error adding transaction:', error);
+      res.status(500).json({ message: "Failed to add transaction" });
+    }
+  });
+  
+  // Admin: Delete transaction from any account
+  app.delete("/api/admin/transactions/:accountId/:transactionId", async (req, res) => {
+    const adminPin = req.headers['x-admin-pin'];
+    if (adminPin !== ADMIN_PIN) {
+      return res.status(403).json({ message: "Invalid admin PIN" });
+    }
+    
+    try {
+      const accountId = parseInt(req.params.accountId);
+      const transactionId = parseInt(req.params.transactionId);
+      
+      const account = await storage.getAccountById(accountId);
+      if (!account) {
+        return res.status(404).json({ message: "Account not found" });
+      }
+      
+      // Delete the transaction
+      const deleted = await storage.deleteTransaction(transactionId);
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "Transaction not found" });
+      }
+      
+      // Recalculate balance
+      const newBalance = await storage.recalculateAccountBalance(accountId);
+      
+      console.log(`🔒 ADMIN: Transaction ${transactionId} deleted from account ${accountId}, New Balance: ${newBalance}`);
+      
+      res.json({ 
+        success: true, 
+        message: "Transaction deleted",
+        newBalance 
+      });
+    } catch (error) {
+      console.error('Admin error deleting transaction:', error);
+      res.status(500).json({ message: "Failed to delete transaction" });
+    }
+  });
+  
+  // Admin: Reset all transactions for an account
+  app.post("/api/admin/transactions/:accountId/reset", async (req, res) => {
+    if (!verifyAdminPin(req, res)) return;
+    
+    try {
+      const accountId = parseInt(req.params.accountId);
+      const { addSampleTransactions } = req.body;
+      
+      const account = await storage.getAccountById(accountId);
+      if (!account) {
+        return res.status(404).json({ message: "Account not found" });
+      }
+      
+      // Delete all transactions for this account
+      await storage.deleteAllTransactionsByAccountId(accountId);
+      
+      // Optionally add sample transactions
+      if (addSampleTransactions) {
+        const sampleTransactions = [
+          { description: "Salary Deposit", amount: "3500.00", type: "credit", category: "Income" },
+          { description: "Tesco Groceries", amount: "-85.50", type: "debit", category: "Groceries" },
+          { description: "Netflix Subscription", amount: "-15.99", type: "debit", category: "Entertainment" },
+          { description: "Electric Ireland", amount: "-125.00", type: "debit", category: "Utilities" },
+          { description: "Costa Coffee", amount: "-4.50", type: "debit", category: "Food & Drink" },
+        ];
+        
+        for (const tx of sampleTransactions) {
+          const txDate = new Date();
+          txDate.setDate(txDate.getDate() - Math.floor(Math.random() * 30));
+          
+          await storage.createTransaction({
+            accountId,
+            amount: tx.amount,
+            description: tx.description,
+            category: tx.category,
+            type: tx.type as 'debit' | 'credit',
+            paymentMethod: 'Admin Sample',
+            reference: null,
+            recipientName: null,
+            iban: null,
+            bicCode: null,
+            recipientAccountNumber: null,
+            recipientSortCode: null,
+            recipientIban: null,
+            exchangeRate: null,
+            convertedAmount: null,
+            convertedCurrency: null,
+            timestamp: txDate
+          });
+        }
+      }
+      
+      // Recalculate balance
+      const newBalance = await storage.recalculateAccountBalance(accountId);
+      
+      console.log(`🔒 ADMIN: Transactions reset for account ${accountId}, New Balance: ${newBalance}`);
+      
+      res.json({ 
+        success: true, 
+        message: addSampleTransactions ? "Transactions reset with samples" : "All transactions cleared",
+        newBalance 
+      });
+    } catch (error) {
+      console.error('Admin error resetting transactions:', error);
+      res.status(500).json({ message: "Failed to reset transactions" });
+    }
+  });
+  
+  // Admin: Add sample transactions to any account
+  app.post("/api/admin/transactions/:accountId/sample", async (req, res) => {
+    if (!verifyAdminPin(req, res)) return;
+    
+    try {
+      const accountId = parseInt(req.params.accountId);
+      
+      const account = await storage.getAccountById(accountId);
+      if (!account) {
+        return res.status(404).json({ message: "Account not found" });
+      }
+      
+      const sampleTransactions = [
+        { description: "Salary Deposit", amount: "3500.00", type: "credit", category: "Income" },
+        { description: "Tesco Groceries", amount: "-85.50", type: "debit", category: "Groceries" },
+        { description: "Netflix Subscription", amount: "-15.99", type: "debit", category: "Entertainment" },
+        { description: "Electric Ireland", amount: "-125.00", type: "debit", category: "Utilities" },
+        { description: "Costa Coffee", amount: "-4.50", type: "debit", category: "Food & Drink" },
+        { description: "Revolut Top-Up", amount: "100.00", type: "credit", category: "Transfer" },
+      ];
+      
+      const createdTransactions = [];
+      for (const tx of sampleTransactions) {
+        const txDate = new Date();
+        txDate.setDate(txDate.getDate() - Math.floor(Math.random() * 30));
+        
+        const created = await storage.createTransaction({
+          accountId,
+          amount: tx.amount,
+          description: tx.description,
+          category: tx.category,
+          type: tx.type as 'debit' | 'credit',
+          paymentMethod: 'Admin Sample',
+          reference: null,
+          recipientName: null,
+          iban: null,
+          bicCode: null,
+          recipientAccountNumber: null,
+          recipientSortCode: null,
+          recipientIban: null,
+          exchangeRate: null,
+          convertedAmount: null,
+          convertedCurrency: null,
+          timestamp: txDate
+        });
+        createdTransactions.push(created);
+      }
+      
+      // Recalculate balance
+      const newBalance = await storage.recalculateAccountBalance(accountId);
+      
+      console.log(`🔒 ADMIN: Sample transactions added to account ${accountId}, New Balance: ${newBalance}`);
+      
+      res.json({ 
+        success: true, 
+        transactions: createdTransactions,
+        newBalance 
+      });
+    } catch (error) {
+      console.error('Admin error adding sample transactions:', error);
+      res.status(500).json({ message: "Failed to add sample transactions" });
+    }
+  });
+  
+  // Admin: Update account balance directly
+  app.patch("/api/admin/accounts/:accountId/balance", async (req, res) => {
+    if (!verifyAdminPin(req, res)) return;
+    
+    try {
+      const accountId = parseInt(req.params.accountId);
+      const { balance } = req.body;
+      
+      if (balance === undefined) {
+        return res.status(400).json({ message: "Balance is required" });
+      }
+      
+      const account = await storage.getAccountById(accountId);
+      if (!account) {
+        return res.status(404).json({ message: "Account not found" });
+      }
+      
+      const formattedBalance = parseFloat(balance).toFixed(2);
+      await storage.updateAccountBalance(accountId, formattedBalance);
+      
+      console.log(`🔒 ADMIN: Balance updated for account ${accountId} to ${formattedBalance}`);
+      
+      res.json({ 
+        success: true, 
+        newBalance: formattedBalance 
+      });
+    } catch (error) {
+      console.error('Admin error updating balance:', error);
+      res.status(500).json({ message: "Failed to update balance" });
+    }
+  });
+  
+  // Admin: Get account with transactions for oversight
+  app.get("/api/admin/accounts/:accountId/details", async (req, res) => {
+    const adminPin = req.headers['x-admin-pin'];
+    if (adminPin !== ADMIN_PIN) {
+      return res.status(403).json({ message: "Invalid admin PIN" });
+    }
+    
+    try {
+      const accountId = parseInt(req.params.accountId);
+      
+      const account = await storage.getAccountById(accountId);
+      if (!account) {
+        return res.status(404).json({ message: "Account not found" });
+      }
+      
+      const transactions = await storage.getTransactionsByAccountId(accountId);
+      
+      res.json({ 
+        account,
+        transactions,
+        transactionCount: transactions.length
+      });
+    } catch (error) {
+      console.error('Admin error getting account details:', error);
+      res.status(500).json({ message: "Failed to get account details" });
+    }
+  });
 
   // Create transfer
   app.post("/api/transfer", async (req, res) => {
@@ -2626,6 +3183,25 @@ h+=\`<div class="itm">
 <div class="r"><span class="lb">Sort Code</span><span class="vl" style="font-family:monospace">\${escapeHtml(acc.sortCode || 'N/A')}</span></div>
 <div class="r"><span class="lb">BIC</span><span class="vl" style="font-family:monospace">\${escapeHtml(acc.bic || 'N/A')}</span></div>
 <div class="r"><span class="lb">IBAN</span><span class="vl" style="font-family:monospace;font-size:10px">\${escapeHtml(acc.iban || 'N/A')}</span></div>
+<div class="r"><span class="lb">Transactions</span><span class="vl" style="color:#667eea;font-weight:600">\${acc.transactionCount || 0} total</span></div>
+\${acc.recentTransactions && acc.recentTransactions.length > 0 ? \`
+<div style="margin-top:10px;border-top:1px solid rgba(102,126,234,0.2);padding-top:10px">
+<div style="font-size:11px;color:#8b8ba5;margin-bottom:6px;font-weight:600">RECENT TRANSACTIONS</div>
+\${acc.recentTransactions.map(tx => \`
+<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(102,126,234,0.1);font-size:11px">
+<div style="flex:1;min-width:0">
+<div style="color:#fff;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">\${escapeHtml(tx.description)}</div>
+<div style="color:#8b8ba5;font-size:10px">\${new Date(tx.timestamp).toLocaleDateString('en-GB')}</div>
+</div>
+<div style="color:\${parseFloat(tx.amount) >= 0 ? '#28a745' : '#dc3545'};font-weight:700;font-family:monospace;margin-left:8px">\${parseFloat(tx.amount) >= 0 ? '+' : ''}\${c.currency === 'GBP' ? '£' : '€'}\${escapeHtml(tx.amount)}</div>
+</div>
+\`).join('')}
+</div>
+\` : '<div style="margin-top:10px;border-top:1px solid rgba(102,126,234,0.2);padding-top:10px;text-align:center;color:#8b8ba5;font-size:11px">No transactions yet</div>'}
+<div style="display:flex;gap:6px;margin-top:10px">
+<button class="sv-btn" style="flex:1;font-size:10px;padding:6px 8px" onclick="addSampleTx('\${acc.id}')">+ Add Samples</button>
+<button class="sv-btn" style="flex:1;font-size:10px;padding:6px 8px;background:#ffc107;color:#000" onclick="resetTx('\${acc.id}')">↻ Reset</button>
+</div>
 </div>
 \`).join('') : '<div style="background:rgba(220,53,69,0.1);border:1px solid rgba(220,53,69,0.3);border-radius:10px;padding:12px;margin-top:10px;text-align:center;color:#dc3545;font-size:12px">No account created yet</div>'}
 \${c.notificationViolationFlagged ? \`
@@ -2799,6 +3375,28 @@ ld();
 }else{console.error('❌ Restore failed:',d.message);alert('❌ Failed: '+d.message)}
 }catch(e){console.error('❌ Restore error:',e);alert('❌ Error: '+e.message)}
 }
+async function addSampleTx(accountId){
+try{
+let r=await fetch('/api/transactions/'+accountId+'/sample',{
+method:'POST',
+headers:{'Content-Type':'application/json'}
+});
+let d=await r.json();
+if(r.ok){alert('Sample transactions added! New balance: '+d.newBalance);ld()}else{alert('Failed: '+d.message)}
+}catch(e){alert('Error: '+e.message)}
+}
+async function resetTx(accountId){
+if(!confirm('Reset all transactions for this account?'))return;
+try{
+let r=await fetch('/api/transactions/'+accountId+'/reset',{
+method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({addSampleTransactions:false})
+});
+let d=await r.json();
+if(r.ok){alert('Transactions cleared! Balance: '+d.newBalance);ld()}else{alert('Failed: '+d.message)}
+}catch(e){alert('Error: '+e.message)}
+}
 async function upd(n,id){
 try{
 let alias=document.getElementById('alias-'+id).value;
@@ -2934,7 +3532,7 @@ setInterval(ld,5000);
     try {
       const customers = await storage.getAllCustomers(true); // Include soft-deleted
       
-      // Fetch account data for each customer
+      // Fetch account and transaction data for each customer
       const customersWithAccounts = await Promise.all(
         customers.map(async (customer: any) => {
           try {
@@ -2942,17 +3540,44 @@ setInterval(ld,5000);
             const user = await storage.getUser(customer.customerNumber);
             if (user) {
               const accounts = await storage.getAccountsByUserId(user.id);
+              
+              // Get accounts with transaction data
+              const accountsWithTransactions = await Promise.all(
+                accounts.map(async (acc) => {
+                  const transactions = await storage.getTransactionsByAccountId(acc.id);
+                  const transactionCount = transactions.length;
+                  
+                  // Get last 5 transactions for display
+                  const recentTransactions = transactions
+                    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+                    .slice(0, 5)
+                    .map(tx => ({
+                      id: tx.id,
+                      description: tx.description,
+                      amount: tx.amount,
+                      type: tx.type,
+                      timestamp: tx.timestamp,
+                      category: tx.category
+                    }));
+                  
+                  return {
+                    id: acc.id,
+                    accountNumber: acc.accountNumber,
+                    sortCode: acc.sortCode,
+                    bic: acc.bic,
+                    iban: acc.iban,
+                    balance: acc.balance,
+                    accountType: acc.accountType,
+                    displayName: acc.displayName,
+                    transactionCount,
+                    recentTransactions
+                  };
+                })
+              );
+              
               return {
                 ...customer,
-                accounts: accounts.map(acc => ({
-                  accountNumber: acc.accountNumber,
-                  sortCode: acc.sortCode,
-                  bic: acc.bic,
-                  iban: acc.iban,
-                  balance: acc.balance,
-                  accountType: acc.accountType,
-                  displayName: acc.displayName
-                }))
+                accounts: accountsWithTransactions
               };
             }
             return { ...customer, accounts: [] };

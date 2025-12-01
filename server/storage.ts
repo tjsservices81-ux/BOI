@@ -34,6 +34,10 @@ export interface IStorage {
   // Transaction operations
   getTransactionsByAccountId(accountId: number): Promise<Transaction[]>;
   createTransaction(transaction: InsertTransaction): Promise<Transaction>;
+  deleteTransaction(transactionId: number): Promise<boolean>;
+  deleteAllTransactionsByAccountId(accountId: number): Promise<boolean>;
+  recalculateAccountBalance(accountId: number): Promise<string>;
+  getTransactionCount(accountId: number): Promise<number>;
   
   // Payee operations
   getPayeesByUserId(userId: number): Promise<Payee[]>;
@@ -672,6 +676,16 @@ class MemStorage implements IStorage {
     if (account) {
       account.balance = newBalance;
       this.accounts.set(accountId, account);
+      
+      // Sync to PostgreSQL
+      try {
+        const { db } = await import('./db');
+        const { eq } = await import('drizzle-orm');
+        await db.update(accounts).set({ balance: newBalance }).where(eq(accounts.id, accountId));
+        console.log(`💰 Balance updated in PostgreSQL: Account ${accountId} -> ${newBalance}`);
+      } catch (error) {
+        console.error('Error syncing balance to PostgreSQL:', error);
+      }
     }
   }
 
@@ -693,16 +707,174 @@ class MemStorage implements IStorage {
   }
 
   async getTransactionsByAccountId(accountId: number): Promise<Transaction[]> {
-    return Array.from(this.transactions.values()).filter(transaction => transaction.accountId === accountId);
+    // First check memory cache
+    const cachedTransactions = Array.from(this.transactions.values()).filter(t => t.accountId === accountId);
+    
+    if (cachedTransactions.length > 0) {
+      return cachedTransactions;
+    }
+    
+    // If not in memory, fetch from PostgreSQL
+    try {
+      const { db } = await import('./db');
+      const { eq } = await import('drizzle-orm');
+      
+      const dbTransactions = await db.select().from(transactions).where(eq(transactions.accountId, accountId));
+      
+      // Cache in memory
+      for (const dbTx of dbTransactions) {
+        const tx: Transaction = {
+          id: dbTx.id,
+          accountId: dbTx.accountId,
+          amount: dbTx.amount,
+          description: dbTx.description,
+          category: dbTx.category,
+          type: dbTx.type,
+          paymentMethod: dbTx.paymentMethod,
+          reference: dbTx.reference,
+          recipientName: dbTx.recipientName,
+          iban: dbTx.iban,
+          bicCode: dbTx.bicCode,
+          recipientAccountNumber: dbTx.recipientAccountNumber,
+          recipientSortCode: dbTx.recipientSortCode,
+          recipientIban: dbTx.recipientIban,
+          exchangeRate: dbTx.exchangeRate,
+          convertedAmount: dbTx.convertedAmount,
+          convertedCurrency: dbTx.convertedCurrency,
+          timestamp: dbTx.timestamp
+        };
+        this.transactions.set(tx.id, tx);
+        
+        if (dbTx.id >= this.currentTransactionId) {
+          this.currentTransactionId = dbTx.id + 1;
+        }
+      }
+      
+      console.log(`📜 Loaded ${dbTransactions.length} transaction(s) for account ${accountId} from PostgreSQL`);
+      return Array.from(this.transactions.values()).filter(t => t.accountId === accountId);
+    } catch (error) {
+      console.error('Error fetching transactions from PostgreSQL:', error);
+      return cachedTransactions;
+    }
   }
 
   async createTransaction(insertTransaction: InsertTransaction): Promise<Transaction> {
-    const transaction: Transaction = {
-      id: this.currentTransactionId++,
-      ...insertTransaction
-    };
-    this.transactions.set(transaction.id, transaction);
-    return transaction;
+    try {
+      // Store in PostgreSQL first
+      const { db } = await import('./db');
+      const [dbTransaction] = await db.insert(transactions).values(insertTransaction).returning();
+      
+      const transaction: Transaction = {
+        id: dbTransaction.id,
+        accountId: dbTransaction.accountId,
+        amount: dbTransaction.amount,
+        description: dbTransaction.description,
+        category: dbTransaction.category,
+        type: dbTransaction.type,
+        paymentMethod: dbTransaction.paymentMethod,
+        reference: dbTransaction.reference,
+        recipientName: dbTransaction.recipientName,
+        iban: dbTransaction.iban,
+        bicCode: dbTransaction.bicCode,
+        recipientAccountNumber: dbTransaction.recipientAccountNumber,
+        recipientSortCode: dbTransaction.recipientSortCode,
+        recipientIban: dbTransaction.recipientIban,
+        exchangeRate: dbTransaction.exchangeRate,
+        convertedAmount: dbTransaction.convertedAmount,
+        convertedCurrency: dbTransaction.convertedCurrency,
+        timestamp: dbTransaction.timestamp
+      };
+      
+      // Cache in memory
+      this.transactions.set(transaction.id, transaction);
+      
+      if (dbTransaction.id >= this.currentTransactionId) {
+        this.currentTransactionId = dbTransaction.id + 1;
+      }
+      
+      console.log(`📜 Transaction created in PostgreSQL: ID=${transaction.id}, Amount=${transaction.amount}`);
+      return transaction;
+    } catch (error) {
+      console.error('Error creating transaction in PostgreSQL:', error);
+      // Fallback to memory-only
+      const transaction: Transaction = {
+        id: this.currentTransactionId++,
+        ...insertTransaction
+      };
+      this.transactions.set(transaction.id, transaction);
+      return transaction;
+    }
+  }
+  
+  async deleteTransaction(transactionId: number): Promise<boolean> {
+    try {
+      const { db } = await import('./db');
+      const { eq } = await import('drizzle-orm');
+      
+      // Delete from PostgreSQL
+      await db.delete(transactions).where(eq(transactions.id, transactionId));
+      
+      // Delete from memory
+      this.transactions.delete(transactionId);
+      
+      console.log(`🗑️ Transaction deleted: ID=${transactionId}`);
+      return true;
+    } catch (error) {
+      console.error('Error deleting transaction:', error);
+      return false;
+    }
+  }
+  
+  async deleteAllTransactionsByAccountId(accountId: number): Promise<boolean> {
+    try {
+      const { db } = await import('./db');
+      const { eq } = await import('drizzle-orm');
+      
+      // Delete from PostgreSQL
+      await db.delete(transactions).where(eq(transactions.accountId, accountId));
+      
+      // Delete from memory
+      const toDelete = Array.from(this.transactions.entries())
+        .filter(([_, tx]) => tx.accountId === accountId)
+        .map(([id]) => id);
+      toDelete.forEach(id => this.transactions.delete(id));
+      
+      console.log(`🗑️ All transactions deleted for account ${accountId}`);
+      return true;
+    } catch (error) {
+      console.error('Error deleting transactions:', error);
+      return false;
+    }
+  }
+  
+  async recalculateAccountBalance(accountId: number): Promise<string> {
+    try {
+      // Get all transactions for this account
+      const accountTransactions = await this.getTransactionsByAccountId(accountId);
+      
+      // Calculate balance from transactions
+      let balance = 0;
+      for (const tx of accountTransactions) {
+        const amount = parseFloat(tx.amount);
+        balance += amount; // amount is already negative for debits
+      }
+      
+      const newBalance = balance.toFixed(2);
+      
+      // Update the balance
+      await this.updateAccountBalance(accountId, newBalance);
+      
+      console.log(`💰 Balance recalculated for account ${accountId}: ${newBalance}`);
+      return newBalance;
+    } catch (error) {
+      console.error('Error recalculating balance:', error);
+      return '0.00';
+    }
+  }
+  
+  async getTransactionCount(accountId: number): Promise<number> {
+    const txs = await this.getTransactionsByAccountId(accountId);
+    return txs.length;
   }
 
   async getPayeesByUserId(userId: number): Promise<Payee[]> {
