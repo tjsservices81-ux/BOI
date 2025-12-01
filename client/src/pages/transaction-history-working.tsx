@@ -481,7 +481,7 @@ export default function TransactionHistoryWorking() {
       <div 
         className="flex items-center justify-between flex-shrink-0"
         style={{ 
-          backgroundColor: '#3D7A8C',
+          backgroundColor: '#34667E',
           height: '56px',
           paddingLeft: '16px',
           paddingRight: '16px'
