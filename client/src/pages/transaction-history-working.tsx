@@ -538,49 +538,36 @@ export default function TransactionHistoryWorking() {
       </div>
 
       {/* Tabs */}
-      <div style={{ backgroundColor: '#F5F7F9', padding: '16px 12px', display: 'flex', gap: '8px' }}>
-        <div className="relative">
-          <button
-            onClick={() => setActiveTab('transactions')}
-            style={{
-              padding: '10px 12px',
-              borderRadius: '999px',
-              fontSize: '14px',
-              fontWeight: 600,
-              backgroundColor: activeTab === 'transactions' ? '#0E5C75' : 'white',
-              color: activeTab === 'transactions' ? 'white' : '#374151',
-              border: activeTab === 'transactions' ? 'none' : '1px solid #D3D9DD'
-            }}
-          >
-            Transactions
-          </button>
-          {activeTab === 'transactions' && (
-            <div 
-              className="absolute left-1/2 -translate-x-1/2"
-              style={{
-                bottom: '-6px',
-                width: 0,
-                height: 0,
-                borderLeft: '6px solid transparent',
-                borderRight: '6px solid transparent',
-                borderTop: '8px solid #0E5C75'
-              }}
-            />
-          )}
-        </div>
+      <div style={{ backgroundColor: '#F5F7F9', padding: '16px 16px', display: 'flex', gap: '10px' }}>
+        <button
+          onClick={() => setActiveTab('transactions')}
+          style={{
+            padding: '10px 16px',
+            borderRadius: '999px',
+            fontSize: '14px',
+            fontWeight: 500,
+            backgroundColor: activeTab === 'transactions' ? '#0E5C75' : 'white',
+            color: activeTab === 'transactions' ? 'white' : '#374151',
+            border: activeTab === 'transactions' ? 'none' : '1px solid #C5CCD3',
+            boxShadow: activeTab === 'transactions' ? 'none' : '0 1px 2px rgba(0,0,0,0.05)'
+          }}
+        >
+          Transactions
+        </button>
         <button
           onClick={() => {
             setActiveTab('statements');
             setShowStatementModal(true);
           }}
           style={{
-            padding: '10px 12px',
+            padding: '10px 16px',
             borderRadius: '999px',
             fontSize: '14px',
-            fontWeight: 600,
+            fontWeight: 500,
             backgroundColor: activeTab === 'statements' ? '#0E5C75' : 'white',
             color: activeTab === 'statements' ? 'white' : '#374151',
-            border: activeTab === 'statements' ? 'none' : '1px solid #D3D9DD'
+            border: activeTab === 'statements' ? 'none' : '1px solid #C5CCD3',
+            boxShadow: activeTab === 'statements' ? 'none' : '0 1px 2px rgba(0,0,0,0.05)'
           }}
         >
           Statements
@@ -588,13 +575,14 @@ export default function TransactionHistoryWorking() {
         <button
           onClick={() => setActiveTab('more')}
           style={{
-            padding: '10px 12px',
+            padding: '10px 16px',
             borderRadius: '999px',
             fontSize: '14px',
-            fontWeight: 600,
+            fontWeight: 500,
             backgroundColor: activeTab === 'more' ? '#0E5C75' : 'white',
             color: activeTab === 'more' ? 'white' : '#374151',
-            border: activeTab === 'more' ? 'none' : '1px solid #D3D9DD'
+            border: activeTab === 'more' ? 'none' : '1px solid #C5CCD3',
+            boxShadow: activeTab === 'more' ? 'none' : '0 1px 2px rgba(0,0,0,0.05)'
           }}
         >
           More options
@@ -602,28 +590,35 @@ export default function TransactionHistoryWorking() {
       </div>
 
       {/* Filter Section */}
-      <div style={{ backgroundColor: 'white', padding: '16px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-        <div className="flex items-center gap-2">
-          <span style={{ fontSize: '14px', fontWeight: 400, color: '#6B7280' }}>Filter completed transactions</span>
-          <Search style={{ width: '22px', height: '22px', color: '#0E5C75' }} />
+      <div style={{ backgroundColor: 'white', padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+        <div className="flex items-center" style={{ gap: '8px' }}>
+          <span style={{ fontSize: '15px', fontWeight: 400, color: '#6B7280' }}>Filter completed transactions</span>
+          <Search style={{ width: '24px', height: '24px', color: '#0E5C75' }} />
         </div>
       </div>
 
       {/* Status Heading and Amount Header */}
-      <div style={{ backgroundColor: 'white', padding: '16px 16px 12px 16px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-        <div className="flex items-center" style={{ gap: '8px' }}>
-          <span style={{ 
-            fontSize: '16px', 
-            fontWeight: 500, 
-            color: '#0E5C75',
-            borderBottom: '2px solid #0E5C75',
-            paddingBottom: '4px'
-          }}>Completed</span>
-          <button style={{ paddingBottom: '4px' }}>
-            <Info style={{ width: '16px', height: '16px', color: '#8A5A2B' }} />
-          </button>
+      <div style={{ backgroundColor: 'white', padding: '12px 20px 8px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div className="flex items-center" style={{ gap: '6px' }}>
+          <div style={{ position: 'relative', display: 'inline-block' }}>
+            <span style={{ 
+              fontSize: '18px', 
+              fontWeight: 400, 
+              color: '#0E5C75'
+            }}>Completed</span>
+            <div style={{ 
+              position: 'absolute',
+              bottom: '-4px',
+              left: 0,
+              width: '100%',
+              height: '3px',
+              backgroundColor: '#0E5C75',
+              borderRadius: '2px'
+            }} />
+          </div>
+          <Info style={{ width: '18px', height: '18px', color: '#8B7355', marginLeft: '4px' }} />
         </div>
-        <span style={{ fontSize: '13px', fontWeight: 500, color: '#6B7280' }}>Amount in {userCurrency === 'EUR' ? '€' : '£'}</span>
+        <span style={{ fontSize: '14px', fontWeight: 400, color: '#6B7280' }}>Amount in {userCurrency === 'EUR' ? '€' : '£'}</span>
       </div>
 
       {/* Transaction List */}
@@ -645,36 +640,37 @@ export default function TransactionHistoryWorking() {
                 className="hover:bg-gray-50 transition-colors cursor-pointer flex items-start justify-between"
                 style={{ 
                   padding: '16px 20px',
-                  borderBottom: '1px solid #E5E7EB'
+                  borderBottom: '1px solid #EAEAEA'
                 }}
               >
                 {/* Left side */}
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: '16px', fontWeight: 600, color: '#111827', marginBottom: '4px' }}>
+                  <p style={{ fontSize: '16px', fontWeight: 600, color: '#1A1A1A', marginBottom: '2px', lineHeight: '1.3' }}>
                     {transaction.description || transaction.reference || transaction.id}
                   </p>
-                  <p style={{ fontSize: '13px', fontWeight: 400, color: '#374151', marginBottom: '4px' }}>
+                  <p style={{ fontSize: '14px', fontWeight: 400, color: '#4A4A4A', marginBottom: '2px', lineHeight: '1.3' }}>
                     {transaction.iban || transaction.recipientAccountNumber || `4319401827062009`}
                   </p>
-                  <p style={{ fontSize: '13px', fontWeight: 400, color: '#6B7280' }}>
+                  <p style={{ fontSize: '14px', fontWeight: 400, color: '#6B7280', lineHeight: '1.3' }}>
                     {formatDate(transaction.timestamp)}
                   </p>
                 </div>
 
                 {/* Right side */}
-                <div className="flex items-center" style={{ gap: '8px', minWidth: '92px', justifyContent: 'flex-end' }}>
+                <div className="flex items-center" style={{ gap: '6px', marginLeft: '12px' }}>
                   <div style={{ textAlign: 'right' }}>
                     <p style={{ 
                       fontSize: '16px', 
-                      fontWeight: 600, 
-                      marginBottom: '4px',
-                      color: isDebit ? '#111827' : '#1B8A5A'
+                      fontWeight: 500, 
+                      marginBottom: '2px',
+                      color: isDebit ? '#1A1A1A' : '#0E7A50',
+                      lineHeight: '1.3'
                     }}>
                       {isDebit ? '' : '+ '}{amount.toFixed(2)}
                     </p>
-                    <p style={{ fontSize: '12px', fontWeight: 400, color: '#6B7280', fontStyle: 'italic' }}>View details</p>
+                    <p style={{ fontSize: '13px', fontWeight: 400, color: '#6B7280', fontStyle: 'italic', lineHeight: '1.3' }}>View details</p>
                   </div>
-                  <ChevronRight style={{ width: '18px', height: '18px', color: '#0E5C75' }} />
+                  <ChevronRight style={{ width: '18px', height: '18px', color: '#6B7280' }} />
                 </div>
               </div>
             );
