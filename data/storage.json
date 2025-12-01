@@ -2273,7 +2273,7 @@
         "address": null,
         "dateOfBirth": null,
         "joinDate": "2022-05-27T17:57:00.184Z",
-        "currency": "EUR",
+        "currency": "GBP",
         "dateCreated": "2025-11-27T17:57:00.148Z",
         "isDisabled": false
       }
@@ -2362,6 +2362,125 @@
         "isDisabled": false,
         "currency": "EUR"
       }
+    ],
+    [
+      317,
+      {
+        "id": 317,
+        "customerNumber": "45470536",
+        "pin": "",
+        "name": "ARRON CASEY",
+        "email": "martyreilly1794@icloud.com",
+        "phone": "07427318224",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "currency": "EUR",
+        "dateCreated": "2025-11-30T22:44:03.602Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      318,
+      {
+        "id": 318,
+        "customerNumber": "43197594",
+        "pin": "",
+        "name": "Dev1",
+        "email": "dev@gmail.com",
+        "phone": "1516",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "currency": "EUR",
+        "dateCreated": "2025-11-30T23:44:06.126Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      319,
+      {
+        "id": 319,
+        "customerNumber": "75944121",
+        "pin": "",
+        "name": "Dev2",
+        "email": "dev2@gmail.com",
+        "phone": "7845",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "currency": "EUR",
+        "dateCreated": "2025-11-30T23:58:59.906Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      320,
+      {
+        "id": 320,
+        "customerNumber": "29917687",
+        "pin": "",
+        "name": "Dev",
+        "email": "dev@fmail.com",
+        "phone": "418484",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-12-01T00:11:39.731Z",
+        "currency": "GBP",
+        "dateCreated": "2025-12-01T00:11:39.690Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      316,
+      {
+        "id": 316,
+        "customerNumber": "20417400",
+        "pin": "",
+        "name": "Device Test",
+        "email": "devicetest@test.com",
+        "phone": null,
+        "address": null,
+        "dateOfBirth": "1990-01-01",
+        "joinDate": "2025-11-30T19:56:20.226Z",
+        "currency": "EUR",
+        "dateCreated": "2025-11-30T19:56:20.402Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      321,
+      {
+        "id": 321,
+        "customerNumber": "53768795",
+        "pin": "",
+        "name": "Johndev",
+        "email": "john@gmail.com",
+        "phone": "466434",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "currency": "EUR",
+        "dateCreated": "2025-12-01T01:14:28.858Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      322,
+      {
+        "id": 322,
+        "customerNumber": "80685011",
+        "pin": "",
+        "name": "Dev",
+        "email": "dev@gmail.com",
+        "phone": "454646",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "currency": "EUR",
+        "dateCreated": "2025-12-01T01:16:58.860Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [
@@ -2410,7 +2529,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 316,
+    "currentUserId": 323,
     "currentAccountId": 82,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
