@@ -668,10 +668,25 @@ class MemStorage implements IStorage {
   }
 
   async updateAccountBalance(accountId: number, newBalance: string): Promise<void> {
+    // Update in memory cache
     const account = this.accounts.get(accountId);
     if (account) {
       account.balance = newBalance;
       this.accounts.set(accountId, account);
+    }
+    
+    // Update in PostgreSQL database
+    try {
+      const { db } = await import('./db');
+      const { eq } = await import('drizzle-orm');
+      
+      await db.update(accounts)
+        .set({ balance: newBalance })
+        .where(eq(accounts.id, accountId));
+      
+      console.log(`💰 Balance updated in PostgreSQL: Account ID=${accountId}, New Balance=${newBalance}`);
+    } catch (error) {
+      console.error('Error updating balance in PostgreSQL:', error);
     }
   }
 

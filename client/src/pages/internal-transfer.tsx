@@ -198,6 +198,26 @@ export default function InternalTransfer() {
     window.dispatchEvent(new CustomEvent('accountsUpdate', {
       detail: { accounts: updatedAccounts, source: 'internal-transfer' }
     }));
+    
+    // Update balances in database (background)
+    const fromNewBalance = (parseFloat(fromAccount.balance) - transferAmount).toFixed(2);
+    const toNewBalance = (parseFloat(toAccount.balance) + transferAmount).toFixed(2);
+    
+    // Update source account balance
+    fetch(`/api/accounts/${fromAccount.id}/balance`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ balance: fromNewBalance })
+    }).then(() => console.log('💰 Source account balance updated in database')).catch(console.error);
+    
+    // Update destination account balance
+    fetch(`/api/accounts/${toAccount.id}/balance`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ balance: toNewBalance })
+    }).then(() => console.log('💰 Destination account balance updated in database')).catch(console.error);
 
     // ✅ INTERNAL TRANSFER COMPLETED SUCCESSFULLY - NOW SEND EMAIL CONFIRMATION
     console.log('🔵 INTERNAL TRANSFER COMPLETED - Starting email confirmation process');

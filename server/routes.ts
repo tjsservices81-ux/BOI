@@ -887,6 +887,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update account balance (for Customer Panel and transfers)
+  app.put("/api/accounts/:accountId/balance", requireAuth, async (req, res) => {
+    try {
+      const accountId = parseInt(req.params.accountId);
+      const { balance } = req.body;
+      
+      if (balance === undefined || balance === null) {
+        return res.status(400).json({ message: "Balance is required" });
+      }
+      
+      // Get or load the account
+      let account = await storage.getAccountById(accountId);
+      
+      // If account not in memory, try to load from database
+      if (!account) {
+        const sessionUser = (req as any).user;
+        if (sessionUser) {
+          // Load accounts for this user
+          const accounts = await storage.getAccountsByUserId(sessionUser.id);
+          account = accounts.find(a => a.id === accountId);
+        }
+      }
+      
+      if (!account) {
+        return res.status(404).json({ message: "Account not found" });
+      }
+      
+      // Update balance in memory and PostgreSQL
+      const newBalance = parseFloat(balance).toFixed(2);
+      await storage.updateAccountBalance(accountId, newBalance);
+      
+      console.log(`💰 Balance updated via API: Account ID=${accountId}, New Balance=${newBalance}`);
+      
+      res.json({ 
+        success: true, 
+        accountId, 
+        newBalance,
+        message: "Balance updated successfully" 
+      });
+    } catch (error) {
+      console.error('Error updating balance:', error);
+      res.status(500).json({ message: "Failed to update balance" });
+    }
+  });
+
   // Get account transactions
   app.get("/api/transactions/:accountId", requireAuth, async (req, res) => {
     try {

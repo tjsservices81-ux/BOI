@@ -958,6 +958,16 @@ export default function Profile() {
     const currentCurrency = getUserCurrency();
     const currencySymbol = currentCurrency === 'EUR' ? '€' : '£';
     showDeveloperMessage(`Transaction Added Successfully!\n\n${customTransactionData.description}\nAmount: ${currencySymbol}${transactionAmount.toFixed(2)}\nNew Balance: ${currencySymbol}${newBalance.toFixed(2)}`);
+    
+    // Update balance in database (background)
+    fetch(`/api/accounts/${accountId}/balance`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ balance: newBalance.toFixed(2) })
+    }).then(() => {
+      console.log('💰 Custom transaction balance updated in database');
+    }).catch(console.error);
   };
 
   const addSampleTransaction = (accountId: number) => {
@@ -1056,9 +1066,19 @@ export default function Profile() {
     const currentCurrency = getUserCurrency();
     const currencySymbol = currentCurrency === 'EUR' ? '€' : '£';
     showDeveloperMessage(`Transaction Added Successfully!\n\n${randomTransaction.description}\nAmount: ${currencySymbol}${Math.abs(transactionAmount).toFixed(2)}\nNew Balance: ${currencySymbol}${newBalance.toFixed(2)}`);
+    
+    // Update balance in database (background)
+    fetch(`/api/accounts/${accountId}/balance`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ balance: newBalance.toFixed(2) })
+    }).then(() => {
+      console.log('💰 Sample transaction balance updated in database');
+    }).catch(console.error);
   };
 
-  const updateBalance = () => {
+  const updateBalance = async () => {
     // Block if account deleted
     if (accountDeleted) {
       alert('Account Deleted');
@@ -1100,6 +1120,18 @@ export default function Profile() {
     const currentCurrency = getUserCurrency();
     const currencySymbol = currentCurrency === 'EUR' ? '€' : '£';
     showDeveloperMessage(`Account updated successfully!\n\nNew Balance: ${currencySymbol}${numericBalance.toFixed(2)}`);
+    
+    // Update balance in database (background)
+    fetch(`/api/accounts/${editingAccount.id}/balance`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ balance: numericBalance.toFixed(2) })
+    }).then(() => {
+      console.log('💰 Balance updated in database');
+    }).catch((error) => {
+      console.error('Failed to update balance in database:', error);
+    });
     
     // Dispatch multiple comprehensive events for instant app-wide updates
     window.dispatchEvent(new CustomEvent('balanceUpdate', {

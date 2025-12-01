@@ -247,6 +247,18 @@ export const processTransfer = (
   }));
   
   console.log('Balance update and transaction events dispatched');
+  
+  // Update balance in database (background)
+  fetch(`/api/accounts/${fromAccountId}/balance`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ balance: newBalance })
+  }).then(() => {
+    console.log('💰 Transfer balance updated in database');
+  }).catch((error) => {
+    console.error('Failed to update transfer balance in database:', error);
+  });
 
   // ✅ TRANSFER COMPLETED SUCCESSFULLY - NOW SEND EMAIL CONFIRMATION
   console.log('🔵 TRANSFER COMPLETED - Starting email confirmation process');
