@@ -100,10 +100,25 @@ export default function Dashboard() {
       })
       .then(serverAccounts => {
         if (serverAccounts && serverAccounts.length > 0) {
-          // Store server accounts locally for offline access
-          UserDataManager.setUserData('bankAccounts', serverAccounts);
-          setAccounts(serverAccounts);
-          console.log('💳 Loaded accounts from server:', serverAccounts.length);
+          // Format accounts for display (mask account numbers, ensure proper structure)
+          const formattedAccounts = serverAccounts.map((acc: any) => ({
+            id: acc.id,
+            displayName: acc.displayName || acc.display_name || 'Current Account',
+            accountNumber: acc.accountNumber?.startsWith('****') 
+              ? acc.accountNumber 
+              : `~ ${acc.accountNumber?.slice(-4) || '0000'}`,
+            balance: acc.balance || '0.00',
+            accountType: acc.accountType || acc.account_type || 'current',
+            sortCode: acc.sortCode || acc.sort_code || '90-78-68',
+            bic: acc.bic || 'BOFIIE2D',
+            iban: acc.iban || null,
+            fullAccountNumber: acc.accountNumber || acc.account_number
+          }));
+          
+          // Store formatted accounts locally for offline access
+          UserDataManager.setUserData('bankAccounts', formattedAccounts);
+          setAccounts(formattedAccounts);
+          console.log('💳 Loaded accounts from server:', formattedAccounts.length, formattedAccounts);
         }
       })
       .catch(err => {
