@@ -346,29 +346,29 @@ export default function MonthlyInsights() {
         </div>
 
         {/* Money Out / Money In Toggle */}
-        <div className="flex justify-center space-x-3 mt-6 px-4">
+        <div className="flex justify-center space-x-2 mt-4 px-4">
           <button
             onClick={() => setActiveTab('out')}
-            className="flex-1 py-3 font-semibold"
+            className="flex-1 py-2 font-semibold"
             style={{
               backgroundColor: activeTab === 'out' ? '#0A6F85' : '#FFFFFF',
               color: activeTab === 'out' ? '#FFFFFF' : '#0A6F85',
-              border: activeTab === 'out' ? 'none' : '2px solid #0A6F85',
-              borderRadius: '24px',
-              fontSize: '14px'
+              border: activeTab === 'out' ? 'none' : '1.5px solid #0A6F85',
+              borderRadius: '20px',
+              fontSize: '12px'
             }}
           >
             MONEY OUT
           </button>
           <button
             onClick={() => setActiveTab('in')}
-            className="flex-1 py-3 font-semibold"
+            className="flex-1 py-2 font-semibold"
             style={{
               backgroundColor: activeTab === 'in' ? '#0A6F85' : '#FFFFFF',
               color: activeTab === 'in' ? '#FFFFFF' : '#0A6F85',
-              border: activeTab === 'in' ? 'none' : '2px solid #0A6F85',
-              borderRadius: '24px',
-              fontSize: '14px'
+              border: activeTab === 'in' ? 'none' : '1.5px solid #0A6F85',
+              borderRadius: '20px',
+              fontSize: '12px'
             }}
           >
             MONEY IN
