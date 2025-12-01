@@ -1969,9 +1969,6 @@ export default function TransactionHistoryWorking() {
                     <p className="font-semibold text-gray-900">
                       {accountInfo?.displayName || 'Current Account'}
                     </p>
-                    <p className="text-sm text-gray-600 mt-1">
-                      {accountInfo?.accountNumber || '****0000'} • Sort Code: 90-78-68
-                    </p>
                   </div>
 
                   <div>
