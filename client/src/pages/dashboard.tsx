@@ -641,10 +641,10 @@ export default function Dashboard() {
               return (
                 <button 
                   key={account.id}
-                  className={`w-full flex items-center overflow-hidden bg-white shadow-sm border border-gray-200 touch-manipulation relative stagger-item android-no-highlight ${
+                  className={`w-full flex items-center overflow-hidden shadow-md touch-manipulation relative stagger-item android-no-highlight ${
                     isTouchDevice 
                       ? '' // No hover/pressed on touch devices
-                      : 'hover:shadow-md transition-all duration-150 ease-out active:scale-98 card-interactive' // Desktop interactions
+                      : 'hover:shadow-lg transition-all duration-150 ease-out active:scale-98 card-interactive' // Desktop interactions
                   } ${
                     isDisabled ? 'opacity-50 pointer-events-none' : ''
                   }`}
@@ -656,7 +656,9 @@ export default function Dashboard() {
                   style={{ 
                     animationDelay: `${index * 0.1}s`,
                     WebkitTapHighlightColor: 'transparent',
-                    outline: 'none'
+                    outline: 'none',
+                    backgroundColor: '#FFFFFF',
+                    border: '1px solid #f0f0f0'
                   }}
                   data-testid={`account-button-${account.id}`}
                 >
