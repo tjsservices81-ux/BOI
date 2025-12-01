@@ -478,10 +478,8 @@ export default function TransactionHistoryWorking() {
   const styles = {
     colors: {
       headerBg: '#1A5F6E',
-      headerGradientStart: '#1B6B7C',
-      headerGradientEnd: '#1A5F6E',
-      balanceGradientStart: '#1B7082',
-      balanceGradientEnd: '#1B7082',
+      balanceGradientStart: '#0E5C75',
+      balanceGradientEnd: '#154B63',
       tabActiveBg: '#1B6B7C',
       tabInactiveBorder: '#D1D5DB',
       tabBg: '#F3F4F6',
