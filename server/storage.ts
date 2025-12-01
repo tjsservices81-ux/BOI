@@ -140,8 +140,44 @@ class MemStorage implements IStorage {
       
       // CRITICAL FIX: Sync PostgreSQL customers to local users storage
       await this.syncCustomersToUsers();
+      
+      // Sync accounts from PostgreSQL to memory
+      await this.syncAccountsFromPostgres();
     } catch (error) {
       console.error('Error loading persisted data:', error);
+    }
+  }
+  
+  // Sync accounts from PostgreSQL to memory on startup
+  private async syncAccountsFromPostgres(): Promise<void> {
+    try {
+      const { db } = await import('./db');
+      
+      const allAccounts = await db.select().from(accounts);
+      console.log(`🔄 Syncing ${allAccounts.length} accounts from PostgreSQL to memory...`);
+      
+      for (const dbAccount of allAccounts) {
+        const account: Account = {
+          id: dbAccount.id,
+          userId: dbAccount.userId,
+          accountType: dbAccount.accountType,
+          accountNumber: dbAccount.accountNumber,
+          sortCode: dbAccount.sortCode,
+          bic: dbAccount.bic || 'BOFIIE2D',
+          iban: dbAccount.iban || null,
+          balance: dbAccount.balance,
+          displayName: dbAccount.displayName
+        };
+        this.accounts.set(account.id, account);
+        
+        if (dbAccount.id >= this.currentAccountId) {
+          this.currentAccountId = dbAccount.id + 1;
+        }
+      }
+      
+      console.log(`✅ Synced ${allAccounts.length} accounts from PostgreSQL`);
+    } catch (error) {
+      console.error('Error syncing accounts from PostgreSQL:', error);
     }
   }
 
@@ -560,11 +596,36 @@ class MemStorage implements IStorage {
   }
 
   async createAccount(insertAccount: InsertAccount): Promise<Account> {
+    const { db } = await import('./db');
+    
+    // Insert into PostgreSQL first to get the real ID
+    const [dbAccount] = await db
+      .insert(accounts)
+      .values(insertAccount)
+      .returning();
+    
+    // Use the PostgreSQL ID for consistency
     const account: Account = {
-      id: this.currentAccountId++,
-      ...insertAccount
+      id: dbAccount.id,
+      userId: dbAccount.userId,
+      accountType: dbAccount.accountType,
+      accountNumber: dbAccount.accountNumber,
+      sortCode: dbAccount.sortCode,
+      bic: dbAccount.bic || 'BOFIIE2D',
+      iban: dbAccount.iban || null,
+      balance: dbAccount.balance,
+      displayName: dbAccount.displayName
     };
+    
+    // Also store in memory for fast access
     this.accounts.set(account.id, account);
+    
+    // Update counter to avoid ID conflicts
+    if (account.id >= this.currentAccountId) {
+      this.currentAccountId = account.id + 1;
+    }
+    
+    console.log(`💾 Account saved to PostgreSQL and memory: ID=${account.id}, Account=${account.accountNumber}`);
     return account;
   }
 
