@@ -390,14 +390,14 @@ export default function Dashboard() {
         <div className="bg-gray-50 h-full">
           {/* Send money section */}
           <div className="bg-white">
-            <div className="flex items-center justify-between px-5 py-3">
+            <div className="flex items-center justify-between px-4 py-2">
               <div className="flex items-center">
-                <div className="w-10 h-10 rounded-full border-2 border-[#2d6a7a] flex items-center justify-center mr-4">
-                  <ArrowRightLeft className="h-5 w-5 text-[#2d6a7a]" />
+                <div className="w-7 h-7 rounded-full border border-[#2d6a7a] flex items-center justify-center mr-3">
+                  <ArrowRightLeft className="h-3.5 w-3.5 text-[#2d6a7a]" />
                 </div>
-                <span className="text-lg text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>Send money</span>
+                <span className="text-base text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>Send money</span>
               </div>
-              <ChevronDown className="h-5 w-5 text-gray-400" />
+              <ChevronDown className="h-4 w-4 text-gray-400" />
             </div>
             <div className="h-1 bg-gradient-to-r from-[#2d6a7a] to-[#4a9db0]"></div>
           </div>
