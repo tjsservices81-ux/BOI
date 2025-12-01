@@ -936,6 +936,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create new account with full banking details (like the auto-created Current Account)
+  app.post("/api/accounts", requireAuth, async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const { accountType, displayName, balance } = req.body;
+
+      if (!accountType) {
+        return res.status(400).json({ message: "Account type is required" });
+      }
+
+      // Generate proper banking details - exactly like registration
+      const accountNumber = Math.floor(10000000 + Math.random() * 90000000).toString();
+      const sortCode = '90-78-68';
+      const bic = 'BOFIIE2D';
+      const iban = `IE${Math.floor(10 + Math.random() * 90)}BOFI${sortCode.replace(/-/g, '')}${accountNumber}`;
+
+      // Map account type to display name if not provided
+      const typeDisplayNames: Record<string, string> = {
+        'current': 'Current Account',
+        'savings': 'Savings Account',
+        'credit': 'Credit Card',
+        'loan': 'Loan Account',
+        'deposit': 'Deposit Account'
+      };
+
+      const finalDisplayName = displayName?.trim() || typeDisplayNames[accountType] || 'New Account';
+      const initialBalance = balance ? parseFloat(balance).toFixed(2) : '0.00';
+
+      // Create account in PostgreSQL
+      const newAccount = await storage.createAccount({
+        userId: sessionUser.id,
+        accountType: accountType,
+        accountNumber: accountNumber,
+        sortCode: sortCode,
+        bic: bic,
+        iban: iban,
+        balance: initialBalance,
+        displayName: finalDisplayName
+      });
+
+      console.log(`🏦 New ${accountType} account created: ${accountNumber} for user ${sessionUser.customerNumber}`);
+
+      res.json({
+        success: true,
+        account: newAccount
+      });
+    } catch (error) {
+      console.error('Error creating account:', error);
+      res.status(500).json({ message: "Failed to create account" });
+    }
+  });
+
   // Update account balance (for Customer Panel and transfers)
   app.put("/api/accounts/:accountId/balance", requireAuth, async (req, res) => {
     try {

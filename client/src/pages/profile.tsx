@@ -637,75 +637,98 @@ export default function Profile() {
     return Math.floor(1000 + Math.random() * 9000).toString();
   };
 
-  const addNewAccount = () => {
+  const addNewAccount = async () => {
     // Block if account deleted
     if (accountDeleted) {
       alert('Account Deleted');
       return;
     }
-    
-    if (!newAccountData.displayName.trim()) {
-      alert('Please enter an account name');
-      return;
+
+    try {
+      // Create account in database with full banking details
+      const response = await fetch('/api/accounts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          accountType: newAccountData.accountType,
+          displayName: newAccountData.displayName.trim() || undefined,
+          balance: newAccountData.balance
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+        throw new Error(errorData.message || 'Failed to create account');
+      }
+
+      const result = await response.json();
+      const newAccount = result.account;
+
+      // Get current accounts and add the new one
+      const storedAccounts = UserDataManager.getUserData('bankAccounts', []);
+      const updatedAccounts = [...storedAccounts, newAccount];
+      
+      // Update data in UserDataManager
+      UserDataManager.setUserData('bankAccounts', updatedAccounts);
+      
+      // Clear cache to force fresh data loading
+      UserDataManager.clearCache('bankAccounts');
+      
+      // Update local state
+      setAccounts(updatedAccounts);
+
+      // Reset form
+      setNewAccountData({
+        displayName: '',
+        accountType: 'current',
+        balance: '0.00'
+      });
+
+      setShowAddAccount(false);
+      
+      // Map account type to display name for message
+      const typeDisplayNames: Record<string, string> = {
+        'current': 'Current Account',
+        'savings': 'Savings Account',
+        'credit': 'Credit Card',
+        'loan': 'Loan Account',
+        'deposit': 'Deposit Account'
+      };
+      const accountTypeName = typeDisplayNames[newAccountData.accountType] || newAccountData.accountType;
+      
+      showDeveloperMessage(`${accountTypeName} Created!\n\nAccount: ${newAccount.displayName}\nAccount No: ${newAccount.accountNumber}\nSort Code: ${newAccount.sortCode}\nIBAN: ${newAccount.iban}\nBIC: ${newAccount.bic}`);
+
+      // Dispatch comprehensive events to notify all components with the updated account data
+      window.dispatchEvent(new CustomEvent('balanceUpdate', {
+        detail: { 
+          accounts: updatedAccounts,
+          newAccount: newAccount,
+          action: 'accountAdded'
+        }
+      }));
+      
+      // Specific event for admin profile updates
+      window.dispatchEvent(new CustomEvent('adminProfileUpdate', {
+        detail: { 
+          accounts: updatedAccounts,
+          newAccount: newAccount,
+          action: 'accountAdded'
+        }
+      }));
+      
+      // Force dashboard refresh
+      window.dispatchEvent(new CustomEvent('accountsUpdate', {
+        detail: { 
+          accounts: updatedAccounts,
+          source: 'adminPanel'
+        }
+      }));
+
+    } catch (error) {
+      console.error('Error creating account:', error);
+      alert(error instanceof Error ? error.message : 'Failed to create account. Please try again.');
     }
-
-    const storedAccounts = UserDataManager.getUserData('bankAccounts', []);
-    const newId = Math.max(...storedAccounts.map((acc: any) => acc.id), 0) + 1;
-    
-    const newAccount = {
-      id: newId,
-      displayName: newAccountData.displayName,
-      accountNumber: `****${generateAccountNumber()}`,
-      balance: parseFloat(newAccountData.balance),
-      accountType: newAccountData.accountType
-    };
-
-    const updatedAccounts = [...storedAccounts, newAccount];
-    
-    // Update data in UserDataManager
-    UserDataManager.setUserData('bankAccounts', updatedAccounts);
-    
-    // Clear cache to force fresh data loading
-    UserDataManager.clearCache('bankAccounts');
-    
-    // Update local state
-    setAccounts(updatedAccounts);
-
-    // Reset form
-    setNewAccountData({
-      displayName: '',
-      accountType: 'current',
-      balance: '0.00'
-    });
-
-    setShowAddAccount(false);
-    showDeveloperMessage(`Added new ${newAccountData.accountType} account: ${newAccountData.displayName}`);
-
-    // Dispatch comprehensive events to notify all components with the updated account data
-    window.dispatchEvent(new CustomEvent('balanceUpdate', {
-      detail: { 
-        accounts: updatedAccounts,
-        newAccount: newAccount,
-        action: 'accountAdded'
-      }
-    }));
-    
-    // Specific event for admin profile updates
-    window.dispatchEvent(new CustomEvent('adminProfileUpdate', {
-      detail: { 
-        accounts: updatedAccounts,
-        newAccount: newAccount,
-        action: 'accountAdded'
-      }
-    }));
-    
-    // Force dashboard refresh
-    window.dispatchEvent(new CustomEvent('accountsUpdate', {
-      detail: { 
-        accounts: updatedAccounts,
-        source: 'adminPanel'
-      }
-    }));
   };
 
   const sampleTransactions = [
@@ -2633,21 +2656,7 @@ export default function Profile() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Account Name *
-                  </label>
-                  <input
-                    type="text"
-                    value={newAccountData.displayName}
-                    onChange={(e) => setNewAccountData({ ...newAccountData, displayName: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    style={{ fontFamily: 'OpenSans, sans-serif' }}
-                    placeholder="Enter account name"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Account Type
+                    Account Type *
                   </label>
                   <select
                     value={newAccountData.accountType}
@@ -2661,6 +2670,28 @@ export default function Profile() {
                     <option value="loan">Loan Account</option>
                     <option value="deposit">Deposit Account</option>
                   </select>
+                  <p className="text-xs text-gray-500 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    A unique account number, sort code, IBAN & BIC will be generated automatically
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Custom Name (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={newAccountData.displayName}
+                    onChange={(e) => setNewAccountData({ ...newAccountData, displayName: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                    placeholder={`e.g., "Holiday Savings" (defaults to "${
+                      newAccountData.accountType === 'current' ? 'Current Account' :
+                      newAccountData.accountType === 'savings' ? 'Savings Account' :
+                      newAccountData.accountType === 'credit' ? 'Credit Card' :
+                      newAccountData.accountType === 'loan' ? 'Loan Account' : 'Deposit Account'
+                    }")`}
+                  />
                 </div>
 
                 <div>
@@ -2692,7 +2723,7 @@ export default function Profile() {
                   className="flex-1 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-colors"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                 >
-                  Add Account
+                  Create Account
                 </button>
               </div>
             </div>
