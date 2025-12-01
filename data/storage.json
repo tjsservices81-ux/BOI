@@ -2481,6 +2481,40 @@
         "dateCreated": "2025-12-01T01:16:58.860Z",
         "isDisabled": false
       }
+    ],
+    [
+      323,
+      {
+        "id": 323,
+        "customerNumber": "20305518",
+        "pin": "000000",
+        "name": "Dev",
+        "email": "dev@gmail.com",
+        "phone": "8784",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "dateCreated": "2025-12-01T02:27:14.410Z",
+        "isDisabled": false,
+        "currency": "EUR"
+      }
+    ],
+    [
+      324,
+      {
+        "id": 324,
+        "customerNumber": "34162581",
+        "pin": "000000",
+        "name": "Dev1922",
+        "email": "dev1@gmail.com",
+        "phone": "774",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "dateCreated": "2025-12-01T02:28:52.279Z",
+        "isDisabled": false,
+        "currency": "EUR"
+      }
     ]
   ],
   "accounts": [
@@ -2519,6 +2553,42 @@
         "displayName": "Savings Account",
         "sortCode": "90-78-68"
       }
+    ],
+    [
+      82,
+      {
+        "id": 82,
+        "userId": 323,
+        "accountType": "current",
+        "accountNumber": "****2091",
+        "balance": "0.00",
+        "displayName": "Current Account",
+        "sortCode": "90-78-68"
+      }
+    ],
+    [
+      83,
+      {
+        "id": 83,
+        "userId": 323,
+        "accountType": "credit",
+        "accountNumber": "****1820",
+        "balance": "0.00",
+        "displayName": "Credit Card",
+        "sortCode": "90-78-68"
+      }
+    ],
+    [
+      84,
+      {
+        "id": 84,
+        "userId": 323,
+        "accountType": "savings",
+        "accountNumber": "****0978",
+        "balance": "0.00",
+        "displayName": "Savings Account",
+        "sortCode": "90-78-68"
+      }
     ]
   ],
   "transactions": [],
@@ -2529,8 +2599,8 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 323,
-    "currentAccountId": 82,
+    "currentUserId": 325,
+    "currentAccountId": 85,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
     "currentScheduledPaymentId": 1,
