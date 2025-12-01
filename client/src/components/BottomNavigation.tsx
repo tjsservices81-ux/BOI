@@ -106,14 +106,14 @@ export default function BottomNavigation() {
   return (
     <div 
       data-bottom-nav
-      className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-2 py-2 ios-safe-bottom z-50 bottom-nav-container bottom-navigation"
+      className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 ios-safe-bottom z-50 bottom-nav-container bottom-navigation"
     >
-      <div className="flex justify-around items-center h-12">
+      <div className="flex items-center justify-evenly h-14">
         {navigationItems.map((item) => (
           <button
             key={item.id}
-            className={`navigation-item flex flex-col items-center space-y-1 py-2 px-3 rounded-lg touch-manipulation relative android-no-highlight ${
-              item.isActive ? 'text-[#126987]' : 'text-gray-400 hover:text-[#126987]'
+            className={`navigation-item flex flex-col items-center justify-center w-16 h-full touch-manipulation android-no-highlight ${
+              item.isActive ? 'text-[#126987]' : 'text-gray-400'
             }`}
             onClick={() => setLocation(item.path)}
             style={{
@@ -124,7 +124,7 @@ export default function BottomNavigation() {
             <img 
               src={item.isActive ? item.highlightIcon : item.icon} 
               alt={item.label} 
-              className="w-6 h-6 asset-instant"
+              className="w-6 h-6 asset-instant mb-1"
               loading="eager"
               decoding="sync"
               style={{ 
@@ -135,7 +135,7 @@ export default function BottomNavigation() {
               }}
             />
             <span 
-              className={`text-xs font-medium asset-instant ${item.isActive ? 'text-[#126987]' : 'text-gray-600'}`}
+              className={`text-[10px] font-medium asset-instant ${item.isActive ? 'text-[#126987]' : 'text-gray-500'}`}
               style={{ 
                 fontFamily: 'OpenSans, sans-serif',
                 opacity: 1,
@@ -144,7 +144,6 @@ export default function BottomNavigation() {
             >
               {item.label}
             </span>
-
           </button>
         ))}
       </div>
