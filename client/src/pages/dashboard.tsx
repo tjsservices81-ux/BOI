@@ -1,4 +1,4 @@
-import { ChevronRight, User, Loader2 } from "lucide-react";
+import { ChevronRight, ChevronDown, User, Loader2, ArrowRightLeft } from "lucide-react";
 import { useLocation } from "wouter";
 import { useState, useEffect, useRef } from "react";
 import SpendingVisualization from "../components/SpendingVisualization";
@@ -388,7 +388,21 @@ export default function Dashboard() {
         data-scroll-route="/dashboard"
       >
         <div className="bg-gray-50 h-full">
-          <div className="pt-12 px-4 space-y-6" style={{ overscrollBehavior: 'contain' }}>
+          {/* Send money section */}
+          <div className="bg-white">
+            <div className="flex items-center justify-between px-5 py-4">
+              <div className="flex items-center">
+                <div className="w-10 h-10 rounded-full border-2 border-[#2d6a7a] flex items-center justify-center mr-4">
+                  <ArrowRightLeft className="h-5 w-5 text-[#2d6a7a]" />
+                </div>
+                <span className="text-lg text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>Send money</span>
+              </div>
+              <ChevronDown className="h-5 w-5 text-gray-400" />
+            </div>
+            <div className="h-1 bg-gradient-to-r from-[#2d6a7a] to-[#4a9db0]"></div>
+          </div>
+          
+          <div className="pt-6 px-4 space-y-6" style={{ overscrollBehavior: 'contain' }}>
             {(accounts && Array.isArray(accounts)) && accounts.map((account, index) => {
               const isLoading = loadingAccountId === account.id;
               const isDisabled = loadingAccountId !== null || isNavigating;
