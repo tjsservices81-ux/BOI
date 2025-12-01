@@ -2600,6 +2600,23 @@
         "dateCreated": "2025-12-01T15:35:19.701Z",
         "isDisabled": false
       }
+    ],
+    [
+      330,
+      {
+        "id": 330,
+        "customerNumber": "14423893",
+        "pin": "000000",
+        "name": "Dev282",
+        "email": "dve@gmail.com",
+        "phone": "4546",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "dateCreated": "2025-12-01T15:57:41.293Z",
+        "isDisabled": false,
+        "currency": "EUR"
+      }
     ]
   ],
   "accounts": [
@@ -2684,7 +2701,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 330,
+    "currentUserId": 331,
     "currentAccountId": 85,
     "currentTransactionId": 1,
     "currentPayeeId": 1,

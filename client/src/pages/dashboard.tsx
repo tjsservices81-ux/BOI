@@ -150,17 +150,19 @@ export default function Dashboard() {
       let previousMonthOut = 0;
       
       // Get transactions from main bankTransactions
-      const mainTransactions = UserDataManager.getUserData('bankTransactions', []);
+      const mainTransactions = UserDataManager.getUserData('bankTransactions', []) || [];
       
       // Also check for account-specific transactions
-      const accounts = UserDataManager.getUserData('bankAccounts', []);
+      const accounts = UserDataManager.getUserData('bankAccounts', []) || [];
       let allTransactions = [...mainTransactions];
       
       // Collect transactions from each account if stored separately
-      accounts.forEach((account: any) => {
-        const accountTransactions = UserDataManager.getUserData(`transactions_${account.id}`, []);
-        allTransactions = [...allTransactions, ...accountTransactions];
-      });
+      if (Array.isArray(accounts)) {
+        accounts.forEach((account: any) => {
+          const accountTransactions = UserDataManager.getUserData(`transactions_${account.id}`, []) || [];
+          allTransactions = [...allTransactions, ...accountTransactions];
+        });
+      }
       
       // Remove duplicates by transaction id if present
       const seenIds = new Set();
@@ -562,7 +564,7 @@ export default function Dashboard() {
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                 >
                   <option value="">Select account</option>
-                  {accounts.map(account => (
+                  {(accounts && Array.isArray(accounts)) && accounts.map(account => (
                     <option key={account.id} value={account.id.toString()}>
                       {account.displayName} ({account.accountNumber}) - {formatCurrency(account.balance, userCurrency)}
                     </option>

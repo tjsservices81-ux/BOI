@@ -937,6 +937,7 @@ export default function Login() {
             email: apiUserData.email || '',
             phone: '',
             pin: '',
+            joinDate: new Date().toISOString(),
             dateCreated: new Date().toISOString()
           };
           UserDataManager.registerUser(newUserProfile);
