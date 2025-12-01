@@ -761,7 +761,7 @@ export default function TransactionHistoryWorking() {
               position: 'absolute',
               left: 0,
               bottom: '-6px',
-              width: '66px',
+              width: '60px',
               height: '3px',
               backgroundColor: '#306785',
               borderRadius: '1.5px'
