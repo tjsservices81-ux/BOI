@@ -141,7 +141,9 @@ export default function Profile() {
       }
 
       try {
-        const response = await fetch(`/api/profile/${currentCustomerNumber}`);
+        const response = await fetch(`/api/profile/${currentCustomerNumber}`, {
+          credentials: 'include'
+        });
         if (response.ok) {
           const userData = await response.json();
           if (userData) {
@@ -180,14 +182,17 @@ export default function Profile() {
               detail: allUsers[userData.customerNumber]
             }));
           }
-        } else if (response.status === 410 || response.status === 401) {
-          // Account deleted - activate aggressive blocking
+        } else if (response.status === 410) {
+          // Account explicitly deleted (410 Gone) - activate aggressive blocking
           const data = await response.json().catch(() => ({}));
-          if (data.accountDeleted || data.blockAllFunctions) {
+          if (data.accountDeleted === true || data.blockAllFunctions === true) {
             console.error('🚨 ACCOUNT DELETED - BLOCKING ALL FUNCTIONS');
             setAccountDeleted(true);
             setProfileData(prev => ({ ...prev, name: 'User' })); // Change name to "User"
           }
+        } else if (response.status === 401) {
+          // 401 is just authentication issue, not account deletion - ignore
+          console.warn('Profile fetch returned 401 - session may have expired');
         } else {
           console.error('Failed to load profile data:', response.status);
         }
