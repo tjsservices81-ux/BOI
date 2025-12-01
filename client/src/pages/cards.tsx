@@ -1,49 +1,17 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { ChevronLeft, User, Snowflake, Shield, Lock, CreditCard, AlertTriangle, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, User, Home, ArrowRightLeft, CreditCard, Landmark, FileText, AlertTriangle, X, Shield } from "lucide-react";
 import { UserDataManager } from "../utils/userDataManager";
 
 export default function Cards() {
   const [, navigate] = useLocation();
-  const [currentCard, setCurrentCard] = useState(0);
   const [freezeToggle, setFreezeToggle] = useState(false);
   const [cardHolderName, setCardHolderName] = useState("JOHN MURPHY");
   const [showBlockModal, setShowBlockModal] = useState(false);
   const [isCardBlocked, setIsCardBlocked] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const [accountNumber, setAccountNumber] = useState("3704");
 
-  const cards = [
-    {
-      type: "DEBIT CARD",
-      typeShort: "21",
-      bank: "Bank of Ireland",
-      number: "5375 4140 1234 5678",
-      maskedNumber: "**** **** **** 5678",
-      name: cardHolderName,
-      expiry: "05/27",
-      cvv: "***",
-      gradient: "from-[#1e3a8a] via-[#3b82f6] to-[#1e40af]",
-      logo: "VISA",
-      logoColor: "text-white"
-    },
-    {
-      type: "CREDIT CARD", 
-      typeShort: "22",
-      bank: "Bank of Ireland",
-      number: "4532 1500 1234 5678",
-      maskedNumber: "**** **** **** 5678",
-      name: cardHolderName, 
-      expiry: "08/26",
-      cvv: "***",
-      gradient: "from-[#0891b2] via-[#0284c7] to-[#0369a1]",
-      logo: "VISA",
-      logoColor: "text-white"
-    }
-  ];
-
-  // Load cardholder name and card status from profile and listen for updates
   useEffect(() => {
-    // Load name from profile data
     const loadCardholderName = () => {
       const userProfile = UserDataManager.getUserProfile();
       if (userProfile && userProfile.name) {
@@ -53,16 +21,33 @@ export default function Cards() {
       }
     };
 
-    // Load card blocked status
     const loadCardStatus = () => {
       const blocked = UserDataManager.getUserData('cardBlocked', false);
       setIsCardBlocked(blocked);
     };
 
+    const loadAccountNumber = async () => {
+      try {
+        const customerNumber = localStorage.getItem('customerNumber');
+        if (customerNumber) {
+          const response = await fetch(`/api/accounts/${customerNumber}`);
+          if (response.ok) {
+            const accounts = await response.json();
+            if (accounts && accounts.length > 0) {
+              const accNum = accounts[0].accountNumber;
+              setAccountNumber(accNum.slice(-4));
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error loading account:', error);
+      }
+    };
+
     loadCardholderName();
     loadCardStatus();
+    loadAccountNumber();
 
-    // Listen for profile updates and card unblock events
     const handleStorageChange = () => {
       loadCardholderName();
       loadCardStatus();
@@ -76,16 +61,11 @@ export default function Cards() {
       loadCardholderName();
     };
 
-    const handleCardNameUpdate = () => {
-      loadCardholderName();
-    };
-
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('cardUnblocked', handleCardUnblocked);
     window.addEventListener('profileUpdated', handleProfileUpdate);
     window.addEventListener('adminProfileUpdate', handleProfileUpdate);
     window.addEventListener('userProfileUpdate', handleProfileUpdate);
-    window.addEventListener('cardNameUpdate', handleCardNameUpdate);
     
     return () => {
       window.removeEventListener('storage', handleStorageChange);
@@ -93,25 +73,7 @@ export default function Cards() {
       window.removeEventListener('profileUpdated', handleProfileUpdate);
       window.removeEventListener('adminProfileUpdate', handleProfileUpdate);
       window.removeEventListener('userProfileUpdate', handleProfileUpdate);
-      window.removeEventListener('cardNameUpdate', handleCardNameUpdate);
     };
-  }, []);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (scrollRef.current) {
-        const scrollLeft = scrollRef.current.scrollLeft;
-        const cardWidth = scrollRef.current.offsetWidth;
-        const newIndex = Math.round(scrollLeft / cardWidth);
-        setCurrentCard(newIndex);
-      }
-    };
-
-    const scrollElement = scrollRef.current;
-    if (scrollElement) {
-      scrollElement.addEventListener('scroll', handleScroll);
-      return () => scrollElement.removeEventListener('scroll', handleScroll);
-    }
   }, []);
 
   const handleReportLostStolen = () => {
@@ -119,287 +81,353 @@ export default function Cards() {
   };
 
   const confirmBlockCard = () => {
-    // Block the card and save to storage
     setIsCardBlocked(true);
     UserDataManager.setUserData('cardBlocked', true);
-    // Clear cache to ensure fresh data is loaded when navigating back
     UserDataManager.clearCache('cardBlocked');
     setShowBlockModal(false);
   };
 
+  const navigateWithAnimation = (path: string) => {
+    navigate(path);
+  };
+
   return (
-    <div className="h-screen flex flex-col bg-white ios-safe-top ios-safe-bottom page-fade-in">
+    <div className="h-screen flex flex-col bg-white" style={{ maxWidth: '430px', margin: '0 auto' }}>
       
       {/* Header */}
-      <div className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0">
+      <div 
+        className="flex items-center justify-between px-4 py-3 flex-shrink-0"
+        style={{ 
+          backgroundColor: '#126987',
+          paddingTop: 'env(safe-area-inset-top, 12px)'
+        }}
+      >
         <button 
           onClick={() => navigate("/dashboard")}
           className="flex items-center text-white"
         >
           <ChevronLeft className="w-6 h-6" />
         </button>
-        <h1 className="text-white text-lg font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+        <h1 className="text-white text-lg font-semibold">
           Manage Card
         </h1>
         <button 
-          className="text-white hover:bg-white/20 h-8 w-8 rounded-full flex items-center justify-center transition-all duration-150 ease-out active:scale-95"
           onClick={() => navigate('/profile')}
+          className="text-white hover:bg-white/20 h-8 w-8 rounded-full flex items-center justify-center"
         >
-          <User className="w-6 h-6" />
+          <User className="h-5 w-5" />
         </button>
       </div>
 
       {/* Content */}
-      <div className="flex-1 bg-gray-50 px-4 py-6 pb-32 ios-scroll overflow-y-auto">
-        {/* Card Type Label */}
-        <div className="text-center mb-6">
-          <p className="text-gray-600 text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-            {cards[currentCard].type} - {cards[currentCard].typeShort}
+      <div className="flex-1 bg-white overflow-y-auto pb-24">
+        {/* Account Label */}
+        <div className="text-center py-4 border-b border-gray-100">
+          <p style={{ 
+            fontSize: '16px', 
+            color: '#333',
+            fontWeight: 500,
+            letterSpacing: '0.5px'
+          }}>
+            CURRENT ACCOUNT ~{accountNumber}
           </p>
         </div>
 
         {/* Card Display */}
-        <div className="relative mb-8">
-          <div 
-            ref={scrollRef}
-            className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
-            style={{ scrollBehavior: 'smooth' }}
-          >
-            {cards.map((card, index) => (
-              <div
-                key={index}
-                className="flex-shrink-0 w-full px-2 snap-center stagger-item"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <div className="relative">
-                  {/* Card */}
-                  <div className={`w-full h-56 rounded-2xl shadow-xl bg-gradient-to-br ${card.gradient} relative overflow-hidden`}>
-                    {/* Bank Logo */}
-                    <div className="absolute top-6 left-6">
-                      <img src="/boi_logo.svg" alt="Bank of Ireland" className="h-6 filter brightness-0 invert" />
-                    </div>
+        <div className="px-8 py-6">
+          <div className="relative">
+            {/* Bank of Ireland Debit Card */}
+            <div 
+              style={{
+                background: 'linear-gradient(135deg, #0077B6 0%, #00A8E8 50%, #48CAE4 100%)',
+                borderRadius: '12px',
+                padding: '24px',
+                aspectRatio: '1.586',
+                position: 'relative',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.15)'
+              }}
+            >
+              {/* Top Row - Logo and Card Type */}
+              <div className="flex justify-between items-start">
+                <div className="flex items-center gap-2">
+                  <img 
+                    src="/boi_logo.svg" 
+                    alt="Bank of Ireland" 
+                    className="h-5 filter brightness-0 invert"
+                  />
+                  <span className="text-white text-sm font-medium opacity-90">Bank of Ireland</span>
+                </div>
+                <span className="text-white text-sm">Debit Card</span>
+              </div>
 
-                    {/* Card Type */}
-                    <div className="absolute top-6 right-6">
-                      <span className="text-white text-xs font-medium opacity-80" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        {card.type.split(' ')[0]}
-                      </span>
-                    </div>
+              {/* Card Number */}
+              <div style={{ marginTop: '32px' }}>
+                <p style={{ 
+                  color: 'white', 
+                  fontSize: '18px', 
+                  fontFamily: 'monospace',
+                  letterSpacing: '2px'
+                }}>
+                  **** **** **** {accountNumber}
+                </p>
+              </div>
 
-                    {/* Chip */}
-                    <div className="absolute top-16 left-6 w-10 h-8 bg-gradient-to-br from-yellow-200 to-yellow-400 rounded-md opacity-90"></div>
+              {/* Cardholder Name */}
+              <div style={{ marginTop: '16px' }}>
+                <p style={{ 
+                  color: 'white', 
+                  fontSize: '14px',
+                  fontWeight: 500
+                }}>
+                  {cardHolderName}
+                </p>
+              </div>
 
-                    {/* Card Number */}
-                    <div className="absolute top-28 left-6">
-                      <p className="text-white text-lg font-mono tracking-wider" style={{ fontFamily: 'Courier, monospace' }}>
-                        {card.maskedNumber}
-                      </p>
-                    </div>
-
-                    {/* Card Details */}
-                    <div className="absolute bottom-6 left-6 right-6 flex justify-between items-end">
-                      <div>
-                        <p className="text-white text-xs opacity-70 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          {card.name}
-                        </p>
-                        <p className="text-white text-xs opacity-70" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          {card.expiry}
-                        </p>
-                      </div>
-                      
-                      <div className="text-right">
-                        <span className={`text-2xl font-bold ${card.logoColor}`} style={{ fontFamily: 'serif' }}>
-                          {card.logo}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Contactless Symbol */}
-                    <div className="absolute top-16 right-6">
-                      <div className="w-6 h-6 border-2 border-white opacity-60 rounded-full flex items-center justify-center">
-                        <div className="w-3 h-3 border border-white rounded-full"></div>
-                      </div>
-                    </div>
+              {/* Bottom Row - Expiry, CVV, VISA */}
+              <div className="flex justify-between items-end" style={{ marginTop: '16px' }}>
+                <div className="flex gap-6">
+                  <div>
+                    <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '10px' }}>Expires</p>
+                    <p style={{ color: 'white', fontSize: '14px' }}>11/29</p>
                   </div>
-                  
-                  {/* Freeze Overlay */}
-                  {freezeToggle && !isCardBlocked && (
-                    <div className="absolute inset-0 bg-gray-500 bg-opacity-50 rounded-2xl flex items-center justify-center">
-                      <div className="bg-white px-3 py-2 rounded-lg flex items-center space-x-2">
-                        <Snowflake className="w-4 h-4 text-blue-600" />
-                        <span className="text-sm font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          Frozen
-                        </span>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Blocked Card Overlay */}
-                  {isCardBlocked && (
-                    <div className="absolute inset-0 bg-red-600 bg-opacity-90 rounded-2xl flex items-center justify-center">
-                      <div className="bg-white px-4 py-3 rounded-lg flex items-center space-x-2">
-                        <Shield className="w-5 h-5 text-red-600" />
-                        <div className="text-center">
-                          <span className="text-sm font-bold text-red-600 block" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                            BLOCKED
-                          </span>
-                          <span className="text-xs text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                            Lost/Stolen
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                  <div>
+                    <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '10px' }}>CVV</p>
+                    <p style={{ color: 'white', fontSize: '14px' }}>***</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span style={{ 
+                    color: 'white', 
+                    fontSize: '24px', 
+                    fontWeight: 700,
+                    fontStyle: 'italic',
+                    fontFamily: 'serif'
+                  }}>
+                    VISA
+                  </span>
+                  <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '10px', marginTop: '-4px' }}>Debit</p>
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
 
-          {/* Card Indicators */}
-          <div className="flex justify-center space-x-2 mt-6">
-            {cards.map((_, index) => (
-              <div
-                key={index}
-                className={`w-2 h-2 rounded-full transition-colors ${
-                  index === currentCard ? 'bg-gray-600' : 'bg-gray-300'
-                }`}
-              />
-            ))}
+            {/* Freeze Overlay */}
+            {freezeToggle && !isCardBlocked && (
+              <div className="absolute inset-0 bg-gray-500 bg-opacity-60 rounded-xl flex items-center justify-center">
+                <div className="bg-white px-4 py-2 rounded-lg flex items-center gap-2">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="#1a5490">
+                    <path d="M12 2L14.39 6.26L19 7.27L15.5 10.97L16.24 15.63L12 13.38L7.76 15.63L8.5 10.97L5 7.27L9.61 6.26L12 2Z"/>
+                  </svg>
+                  <span className="text-sm font-medium text-gray-900">Frozen</span>
+                </div>
+              </div>
+            )}
+
+            {/* Blocked Card Overlay */}
+            {isCardBlocked && (
+              <div className="absolute inset-0 bg-red-600 bg-opacity-90 rounded-xl flex items-center justify-center">
+                <div className="bg-white px-4 py-3 rounded-lg flex items-center gap-2">
+                  <Shield className="w-5 h-5 text-red-600" />
+                  <div className="text-center">
+                    <span className="text-sm font-bold text-red-600 block">BLOCKED</span>
+                    <span className="text-xs text-gray-600">Lost/Stolen</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Card Actions */}
-        <div className="space-y-3">
+        <div>
           {/* Freeze Card */}
-          <div className="bg-white rounded-2xl p-4 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
-                  <Snowflake className="w-5 h-5 text-blue-600" />
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Freeze card
-                  </p>
-                  <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Limit use of card for now
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center">
-                <span className="text-xs text-gray-500 mr-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  {freezeToggle ? 'On' : 'Off'}
-                </span>
-                <button 
-                  onClick={() => setFreezeToggle(!freezeToggle)}
-                  className={`w-12 h-6 rounded-full relative transition-colors duration-200 ${
-                    freezeToggle ? 'bg-blue-600' : 'bg-gray-200'
-                  }`}
-                >
-                  <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 shadow-sm transition-transform duration-200 ${
-                    freezeToggle ? 'translate-x-6' : 'translate-x-0.5'
-                  }`}></div>
-                </button>
+          <div 
+            className="flex items-center justify-between px-4 py-4 border-b border-gray-100"
+            style={{ backgroundColor: 'white' }}
+          >
+            <div className="flex items-center gap-4">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="#1a5490">
+                <path d="M12 2L14.39 6.26L19 7.27L15.5 10.97L16.24 15.63L12 13.38L7.76 15.63L8.5 10.97L5 7.27L9.61 6.26L12 2Z"/>
+                <circle cx="12" cy="12" r="2" fill="#1a5490"/>
+                <line x1="12" y1="2" x2="12" y2="6" stroke="#1a5490" strokeWidth="1.5"/>
+                <line x1="12" y1="18" x2="12" y2="22" stroke="#1a5490" strokeWidth="1.5"/>
+                <line x1="2" y1="12" x2="6" y2="12" stroke="#1a5490" strokeWidth="1.5"/>
+                <line x1="18" y1="12" x2="22" y2="12" stroke="#1a5490" strokeWidth="1.5"/>
+              </svg>
+              <div>
+                <p style={{ fontSize: '16px', color: '#333', fontWeight: 500 }}>Freeze card</p>
+                <p style={{ fontSize: '13px', color: '#666' }}>Limit use of card for now</p>
               </div>
             </div>
+            <div className="flex items-center gap-2">
+              <span style={{ fontSize: '14px', color: '#666' }}>{freezeToggle ? 'On' : 'Off'}</span>
+              <button 
+                onClick={() => setFreezeToggle(!freezeToggle)}
+                style={{
+                  width: '48px',
+                  height: '28px',
+                  borderRadius: '14px',
+                  backgroundColor: freezeToggle ? '#1a5490' : '#E5E7EB',
+                  position: 'relative',
+                  transition: 'background-color 0.2s'
+                }}
+              >
+                <div style={{
+                  width: '24px',
+                  height: '24px',
+                  borderRadius: '12px',
+                  backgroundColor: 'white',
+                  position: 'absolute',
+                  top: '2px',
+                  left: freezeToggle ? '22px' : '2px',
+                  transition: 'left 0.2s',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                }} />
+              </button>
+            </div>
           </div>
+
+          {/* Add to Apple Wallet */}
+          <button 
+            className="w-full flex items-center justify-between px-4 py-4 border-b border-gray-100"
+            style={{ backgroundColor: 'white' }}
+          >
+            <div className="flex items-center gap-4">
+              <div style={{ 
+                border: '1px solid #333', 
+                borderRadius: '4px', 
+                padding: '2px 6px',
+                fontSize: '12px',
+                fontWeight: 600
+              }}>
+                <span style={{ fontFamily: 'system-ui' }}>Pay</span>
+              </div>
+              <p style={{ fontSize: '16px', color: '#333', fontWeight: 500 }}>Add to Apple Wallet</p>
+            </div>
+            <ChevronRight size={20} color="#999" />
+          </button>
 
           {/* Report Lost or Stolen */}
           <button 
             onClick={handleReportLostStolen}
             disabled={isCardBlocked}
-            className={`w-full bg-white rounded-2xl p-4 ios-card flex items-center justify-between active:scale-98 transition-transform ${
-              isCardBlocked ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
+            className={`w-full flex items-center justify-between px-4 py-4 border-b border-gray-100 ${isCardBlocked ? 'opacity-50' : ''}`}
+            style={{ backgroundColor: 'white' }}
           >
-            <div className="flex items-center space-x-3">
-              <div className={`w-8 h-8 ${isCardBlocked ? 'bg-red-100' : 'bg-blue-100'} rounded-full flex items-center justify-center`}>
-                {isCardBlocked ? (
-                  <Shield className="w-4 h-4 text-red-600" />
-                ) : (
-                  <img src="/cert.svg" alt="Report" className="w-4 h-4" />
-                )}
-              </div>
-              <span className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+            <div className="flex items-center gap-4">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1a5490" strokeWidth="1.5">
+                <rect x="3" y="6" width="18" height="12" rx="2"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+                <line x1="7" y1="14" x2="13" y2="14"/>
+              </svg>
+              <p style={{ fontSize: '16px', color: '#333', fontWeight: 500 }}>
                 {isCardBlocked ? 'Card blocked - Contact us' : 'Report lost or stolen'}
-              </span>
+              </p>
             </div>
-            <span className="text-gray-400">›</span>
+            <ChevronRight size={20} color="#999" />
           </button>
 
           {/* Replace Damaged Card */}
-          <button className="w-full bg-white rounded-2xl p-4 ios-card flex items-center justify-between active:scale-98 transition-transform">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <img src="/reorder_card_icon.svg" alt="Replace" className="w-4 h-4" />
-              </div>
-              <span className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Replace damaged card
-              </span>
+          <button 
+            className="w-full flex items-center justify-between px-4 py-4 border-b border-gray-100"
+            style={{ backgroundColor: 'white' }}
+          >
+            <div className="flex items-center gap-4">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1a5490" strokeWidth="1.5">
+                <path d="M4 4V9H9"/>
+                <path d="M20 20V15H15"/>
+                <path d="M4 9C5.5 5.5 9 3 13 3C17.97 3 22 7.03 22 12"/>
+                <path d="M20 15C18.5 18.5 15 21 11 21C6.03 21 2 16.97 2 12"/>
+              </svg>
+              <p style={{ fontSize: '16px', color: '#333', fontWeight: 500 }}>Replace damaged card</p>
             </div>
-            <span className="text-gray-400">›</span>
+            <ChevronRight size={20} color="#999" />
           </button>
 
           {/* View Card PIN */}
-          <button className="w-full bg-white rounded-2xl p-4 ios-card flex items-center justify-between active:scale-98 transition-transform">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <svg className="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12,17A2,2 0 0,0 14,15C14,13.89 13.1,13 12,13A2,2 0 0,0 10,15A2,2 0 0,0 12,17M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V10C4,8.89 4.9,8 6,8H7V6A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,3A3,3 0 0,0 9,6V8H15V6A3,3 0 0,0 12,3Z"/>
-                </svg>
-              </div>
-              <span className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                View card PIN
-              </span>
+          <button 
+            className="w-full flex items-center justify-between px-4 py-4 border-b border-gray-100"
+            style={{ backgroundColor: 'white' }}
+          >
+            <div className="flex items-center gap-4">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1a5490" strokeWidth="1.5">
+                <path d="M21 10C21 7 19 5 16 5H8C5 5 3 7 3 10V14C3 17 5 19 8 19H16C19 19 21 17 21 14V10Z"/>
+                <circle cx="12" cy="12" r="2"/>
+                <path d="M8 5V3"/>
+                <path d="M16 5V3"/>
+              </svg>
+              <p style={{ fontSize: '16px', color: '#333', fontWeight: 500 }}>View card PIN</p>
             </div>
-            <span className="text-gray-400">›</span>
-          </button>
-
-          {/* Set up Apple Pay */}
-          <button className="w-full bg-white rounded-2xl p-4 ios-card flex items-center justify-between active:scale-98 transition-transform">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <img src="/apple_Pay_Mark.svg" alt="Apple Pay" className="w-4 h-4" />
-              </div>
-              <span className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Set up Apple Pay
-              </span>
-            </div>
-            <span className="text-gray-400">›</span>
+            <ChevronRight size={20} color="#999" />
           </button>
         </div>
+      </div>
+
+      {/* Bottom Navigation */}
+      <div className="bg-white border-t border-gray-200 px-2 py-2 flex justify-around items-center flex-shrink-0">
+        <button 
+          onClick={() => navigateWithAnimation('/dashboard')}
+          className="flex flex-col items-center gap-1 p-2"
+        >
+          <Home className="h-5 w-5 text-gray-500" />
+          <span className="text-xs text-gray-500">Accounts</span>
+        </button>
+        <button 
+          onClick={() => navigateWithAnimation('/payments')}
+          className="flex flex-col items-center gap-1 p-2"
+        >
+          <ArrowRightLeft className="h-5 w-5 text-gray-500" />
+          <span className="text-xs text-gray-500">Payments</span>
+        </button>
+        <button 
+          className="flex flex-col items-center gap-1 p-2"
+        >
+          <CreditCard className="h-5 w-5 text-[#1a5276]" />
+          <span className="text-xs text-[#1a5276] font-medium">Cards</span>
+        </button>
+        <button 
+          onClick={() => navigateWithAnimation('/more')}
+          className="flex flex-col items-center gap-1 p-2"
+        >
+          <Landmark className="h-5 w-5 text-gray-500" />
+          <span className="text-xs text-gray-500">Services</span>
+        </button>
+        <button 
+          onClick={() => navigateWithAnimation('/apply')}
+          className="flex flex-col items-center gap-1 p-2"
+        >
+          <FileText className="h-5 w-5 text-gray-500" />
+          <span className="text-xs text-gray-500">Apply</span>
+        </button>
       </div>
 
       {/* Block Card Confirmation Modal */}
       {showBlockModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-sm w-full p-6 animate-fade-in">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-6">
             <div className="text-center">
               <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <AlertTriangle className="w-8 h-8 text-red-600" />
               </div>
               
-              <h3 className="text-lg font-bold text-gray-900 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">
                 Block This Card?
               </h3>
               
-              <p className="text-sm text-gray-600 mb-6 leading-relaxed" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              <p className="text-sm text-gray-600 mb-6 leading-relaxed">
                 This will immediately block your card and prevent all transactions. You'll need to order a new card and only an administrator can reverse this action.
               </p>
               
               <div className="space-y-3">
                 <button
                   onClick={confirmBlockCard}
-                  className="w-full bg-red-600 text-white py-3 rounded-xl font-semibold active:scale-98 transition-transform"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  className="w-full bg-red-600 text-white py-3 rounded-xl font-semibold"
                 >
                   Yes, Block Card
                 </button>
                 
                 <button
                   onClick={() => setShowBlockModal(false)}
-                  className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold active:scale-98 transition-transform"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-semibold"
                 >
                   Cancel
                 </button>
@@ -408,7 +436,6 @@ export default function Cards() {
           </div>
         </div>
       )}
-
     </div>
   );
 }
