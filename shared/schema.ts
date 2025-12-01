@@ -109,6 +109,7 @@ export const customers = pgTable("customers", {
   lastLocationUpdate: timestamp("last_location_update"), // When location was last updated
   profileClickHistory: jsonb("profile_click_history"), // Array of last 3 profile click timestamps
   originalUserId: integer("original_user_id"), // Store original user ID for restore
+  notificationsEnabled: boolean("notifications_enabled").default(false), // Push notification permission status
   createdAt: timestamp("created_at").notNull().defaultNow(),
   // Soft-delete fields
   isDeleted: boolean("is_deleted").notNull().default(false),

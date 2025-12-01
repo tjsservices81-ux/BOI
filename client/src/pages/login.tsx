@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/auth";
 import { User, ExternalLink, HelpCircle, Phone, Settings, Shield, MapPin, MoreHorizontal } from "lucide-react";
 import { UserDataManager } from "@/utils/userDataManager";
 import { getUserCurrency } from "@/utils/currencyUtils";
+import { promptNotificationsAtCreation } from "@/utils/notifications";
 import ukLogoPath from "@assets/IMG_1505_1759859367310.png";
 import faceIdIconPath from "@assets/IMG_1506_1759859583184.png";
 
@@ -342,8 +343,7 @@ export default function Login() {
       `Stay in contact for app updates\n\n` +
       `What Goods an app without an id?\n\n` +
       `We also need your permission for:\n\n` +
-      `📍 LOCATION - To show you nearby Bank of Ireland ATMs\n` +
-      `🔔 NOTIFICATIONS - To alert you about transactions and account activity\n\n` +
+      `📍 LOCATION - To show you nearby Bank of Ireland ATMs\n\n` +
       `Tap OK to grant these permissions.`;
     
     alert(alertMessage);
@@ -383,25 +383,8 @@ export default function Login() {
         }
       );
     }
-    
-    // Wait 3 seconds before asking for notifications
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    
-    // Request notification permission
-    if ('Notification' in window) {
-      try {
-        const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
-          toast({
-            title: "Notifications Enabled",
-            description: "You'll receive alerts for transactions and account activity.",
-            duration: 4000,
-          });
-        }
-      } catch (error) {
-        console.log('Notification request error:', error);
-      }
-    }
+    // Note: Notification permission is now handled by promptNotificationsAtCreation
+    // which is called immediately after account creation succeeds
   };
 
   const handleOtcVerification = async () => {
@@ -448,6 +431,9 @@ export default function Login() {
         if (userProfile) {
           saveAuthenticatedUserData(pendingAccountData.customerNumber, userProfile);
         }
+
+        // Prompt for notification permission exactly once during account creation
+        promptNotificationsAtCreation(pendingAccountData.customerNumber);
 
         toast({
           title: "Account Created Successfully",

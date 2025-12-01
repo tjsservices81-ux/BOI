@@ -10,6 +10,37 @@ interface NotificationPermission {
 }
 
 /**
+ * Prompts for notification permission exactly once during account creation
+ * and updates the server with the result
+ * @param userId - The customer number/user ID
+ */
+export function promptNotificationsAtCreation(userId: string): void {
+  if (!('Notification' in window)) {
+    console.log('Notifications not supported on this device');
+    fetch('/api/set-notifications-flag', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, notifications_enabled: false })
+    }).catch(console.error);
+    return;
+  }
+
+  Notification.requestPermission().then(permission => {
+    const enabled = permission === 'granted';
+
+    fetch('/api/set-notifications-flag', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, notifications_enabled: enabled })
+    }).catch(console.error);
+
+    if (enabled) {
+      console.log('Notifications granted, account fully active.');
+    }
+  });
+}
+
+/**
  * Requests notification permission from the user
  * @returns Promise<boolean> - true if permission is granted
  */

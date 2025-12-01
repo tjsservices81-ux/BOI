@@ -3121,6 +3121,35 @@ setInterval(ld,5000);
     }
   });
 
+  // Set notifications flag for a user
+  app.post("/api/set-notifications-flag", async (req, res) => {
+    try {
+      const { userId, notifications_enabled } = req.body;
+      
+      if (!userId || typeof notifications_enabled !== 'boolean') {
+        return res.status(400).json({ 
+          success: false, 
+          message: "userId and notifications_enabled (boolean) are required" 
+        });
+      }
+      
+      // Update customer notification preference in database
+      const updated = await storage.updateCustomer(userId, {
+        notificationsEnabled: notifications_enabled
+      });
+      
+      if (updated) {
+        console.log(`Notifications ${notifications_enabled ? 'enabled' : 'disabled'} for user ${userId}`);
+        res.json({ success: true });
+      } else {
+        res.status(404).json({ success: false, message: "User not found" });
+      }
+    } catch (error) {
+      console.error('Error setting notifications flag:', error);
+      res.status(500).json({ success: false, message: "Failed to update notification preference" });
+    }
+  });
+
   // Track profile page clicks
   app.post("/api/customers/track-profile-click", async (req, res) => {
     try {
