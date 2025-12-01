@@ -76,46 +76,45 @@ export default function Dashboard() {
     return () => clearTimeout(timeoutId);
   };
 
-  // Load accounts using UserDataManager on mount
+  // Load accounts from server API on mount
   useEffect(() => {
-    // Ensure there's a current user - if not, set a default
+    // Ensure there's a current user
     let currentUser = UserDataManager.getCurrentUser();
     if (!currentUser) {
-      // Set a default user if none exists
-      currentUser = '12345678';
-      UserDataManager.setCurrentUser(currentUser);
-      
-      // Register default user if they don't exist
-      if (!UserDataManager.userExists(currentUser)) {
-        UserDataManager.registerUser({
-          customerNumber: currentUser,
-          pin: '0000',
-          name: '',
-          email: '',
-          phone: '',
-          joinDate: '',
-          dateCreated: new Date().toISOString()
-        });
-      }
+      // No user logged in - redirect to login
+      setLocation('/login');
+      return;
     }
     
-    // Load or initialize accounts with clean default data
-    let storedAccounts = UserDataManager.getUserData('bankAccounts', null);
-    if (!storedAccounts || storedAccounts.length === 0) {
-      // Initialize default accounts with zero balances
-      const defaultAccounts = [
-        { id: 1, displayName: "Current Account", accountNumber: "****2091", balance: "0.00", accountType: "current" },
-        { id: 2, displayName: "Credit Card", accountNumber: "****1820", balance: "0.00", accountType: "credit" },
-        { id: 3, displayName: "Savings Account", accountNumber: "****0978", balance: "0.00", accountType: "savings" },
-      ];
-      UserDataManager.setUserData('bankAccounts', defaultAccounts);
-      storedAccounts = defaultAccounts;
-      
-      // Initialize empty transactions array
+    // First try to load cached accounts from localStorage
+    let storedAccounts = UserDataManager.getUserData('bankAccounts', []);
+    if (storedAccounts && storedAccounts.length > 0) {
+      setAccounts(storedAccounts);
+    }
+    
+    // Fetch real accounts from server API
+    fetch('/api/accounts', { credentials: 'include' })
+      .then(res => {
+        if (res.ok) return res.json();
+        throw new Error('Failed to fetch accounts');
+      })
+      .then(serverAccounts => {
+        if (serverAccounts && serverAccounts.length > 0) {
+          // Store server accounts locally for offline access
+          UserDataManager.setUserData('bankAccounts', serverAccounts);
+          setAccounts(serverAccounts);
+          console.log('💳 Loaded accounts from server:', serverAccounts.length);
+        }
+      })
+      .catch(err => {
+        console.log('Using cached accounts:', err.message);
+        // Keep using cached accounts if server fetch fails
+      });
+    
+    // Initialize empty transactions array if needed
+    if (!UserDataManager.getUserData('bankTransactions', null)) {
       UserDataManager.setUserData('bankTransactions', []);
     }
-    
-    setAccounts(storedAccounts);
     
     // Load recent payees (saved after successful transfers)
     const recentPayees = UserDataManager.getRecentPayees();
