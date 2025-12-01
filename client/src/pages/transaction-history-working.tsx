@@ -1674,53 +1674,6 @@ export default function TransactionHistoryWorking() {
                   </>
                 )}
 
-                {/* Share Button */}
-                <button
-                  onClick={async () => {
-                    const sortCode = customBankDisplay.sortCode || accountInfo?.sortCode || '90-38-16';
-                    const accountNumber = customBankDisplay.accountNumber || accountInfo?.accountNumber || '20163704';
-                    const bic = customBankDisplay.bic || accountInfo?.bic || 'BOFIIE2DXXX';
-                    const iban = customBankDisplay.iban || accountInfo?.iban || 'IE40BOFI 903816 20163704';
-                    
-                    const shareText = userCurrency === 'GBP' 
-                      ? `Hi\n\nMy Account details are:\n\nSort Code: ${sortCode}\nAccount Number: ${accountNumber}\n\nThanks`
-                      : `Hi\n\nMy Account details are:\n\nBIC: ${bic}\nIBAN: ${iban}\n\nThanks`;
-                    
-                    if (navigator.share) {
-                      try {
-                        await navigator.share({ text: shareText });
-                      } catch (err: any) {
-                        if (err.name !== 'AbortError') {
-                          try {
-                            await navigator.clipboard.writeText(shareText);
-                          } catch (clipErr) {
-                            console.log('Share cancelled or clipboard unavailable');
-                          }
-                        }
-                      }
-                    } else {
-                      try {
-                        await navigator.clipboard.writeText(shareText);
-                      } catch (clipErr) {
-                        console.log('Clipboard unavailable');
-                      }
-                    }
-                  }}
-                  style={{
-                    width: '100%',
-                    padding: '14px 0',
-                    fontSize: '16px',
-                    fontWeight: 500,
-                    backgroundColor: '#126987',
-                    color: '#ffffff',
-                    border: 'none',
-                    borderRadius: '0',
-                    cursor: 'pointer',
-                    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-                  }}
-                >
-                  Share
-                </button>
               </div>
             </motion.div>
           </div>
