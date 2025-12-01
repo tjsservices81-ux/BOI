@@ -494,7 +494,7 @@ export default function TransactionHistoryWorking() {
   };
 
   const getAccountNumber = () => {
-    return accountInfo?.fullAccountNumber || accountInfo?.accountNumber?.replace('****', '') || '2091';
+    return accountInfo?.accountNumber?.replace('****', '') || '2091';
   };
 
   const styles = {
@@ -1469,7 +1469,7 @@ export default function TransactionHistoryWorking() {
                         fontWeight: 400,
                         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
                       }}>
-                        {accountInfo?.fullAccountNumber || accountInfo?.accountNumber || '20163704'}
+                        {accountInfo?.accountNumber || '20163704'}
                       </p>
                     </div>
                   </>
@@ -1520,7 +1520,7 @@ export default function TransactionHistoryWorking() {
                 <button
                   onClick={async () => {
                     const shareText = userCurrency === 'GBP' 
-                      ? `Sort Code: ${accountInfo?.sortCode || '90-38-16'}\nAccount Number: ${accountInfo?.fullAccountNumber || accountInfo?.accountNumber || '20163704'}`
+                      ? `Sort Code: ${accountInfo?.sortCode || '90-38-16'}\nAccount Number: ${accountInfo?.accountNumber || '20163704'}`
                       : `BIC: ${accountInfo?.bic || 'BOFIIE2DXXX'}\nIBAN: ${accountInfo?.iban || 'IE40BOFI 903816 20163704'}`;
                     
                     if (navigator.share) {
@@ -1939,7 +1939,7 @@ export default function TransactionHistoryWorking() {
                       {accountInfo?.displayName || 'Current Account'}
                     </p>
                     <p className="text-sm text-gray-600 mt-1">
-                      {accountInfo?.fullAccountNumber || accountInfo?.accountNumber || '****0000'} • Sort Code: {accountInfo?.sortCode || '90-78-68'}
+                      {accountInfo?.accountNumber || '****0000'} • Sort Code: 90-78-68
                     </p>
                   </div>
 
