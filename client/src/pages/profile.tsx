@@ -2165,7 +2165,7 @@ export default function Profile() {
                               {account.displayName}
                             </p>
                             <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                              {account.accountNumber}
+                              {account.accountNumber?.replace('****', '') || account.accountNumber?.slice(-4)}
                             </p>
                           </div>
                           <button
@@ -2395,7 +2395,7 @@ export default function Profile() {
                         {account.displayName}
                       </p>
                       <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        {account.accountNumber}
+                        {account.accountNumber?.replace('****', '') || account.accountNumber?.slice(-4)}
                       </p>
                     </button>
                   ))}
@@ -2407,7 +2407,7 @@ export default function Profile() {
                       {editingBankAccount.displayName}
                     </p>
                     <p className="text-sm text-blue-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      {editingBankAccount.accountNumber}
+                      {editingBankAccount.accountNumber?.replace('****', '') || editingBankAccount.accountNumber?.slice(-4)}
                     </p>
                   </div>
 
@@ -2549,7 +2549,7 @@ export default function Profile() {
 
               <div className="mb-4">
                 <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  {editingAccount.accountNumber}
+                  {editingAccount.accountNumber?.replace('****', '') || editingAccount.accountNumber?.slice(-4)}
                 </p>
               </div>
 
@@ -2927,7 +2927,7 @@ export default function Profile() {
                                   {account.displayName}
                                 </p>
                                 <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                                  {account.accountNumber}
+                                  {account.accountNumber?.replace('****', '') || account.accountNumber?.slice(-4)}
                                 </p>
                                 <p className="text-sm font-medium text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                                   Current: {formatCurrency(account.balance, userCurrency)}
