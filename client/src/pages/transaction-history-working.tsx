@@ -483,7 +483,7 @@ export default function TransactionHistoryWorking() {
       tabActiveBg: '#1B6B7C',
       tabInactiveBorder: '#D1D5DB',
       tabBg: '#FFFFFF',
-      filterBg: '#F7F7F7',
+      filterBg: '#F9F9F9',
       completedText: '#1B6B7C',
       completedUnderline: '#1B6B7C',
       goldInfoIcon: '#B8860B',
