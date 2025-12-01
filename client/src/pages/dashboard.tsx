@@ -562,7 +562,7 @@ export default function Dashboard() {
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                 >
                   <option value="">Select account</option>
-                  {accounts.filter(acc => acc.accountType !== 'credit').map(account => (
+                  {accounts.map(account => (
                     <option key={account.id} value={account.id.toString()}>
                       {account.displayName} ({account.accountNumber}) - {formatCurrency(account.balance, userCurrency)}
                     </option>
