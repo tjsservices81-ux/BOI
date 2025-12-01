@@ -687,7 +687,7 @@ export default function Dashboard() {
               <p className="text-sm text-gray-500 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>See what came in and went out of your account this month. Tap for details.</p>
               
               <div className="space-y-3">
-                {/* Current Month */}
+                {/* Current Month Only */}
                 <div className="flex items-center">
                   <span className="text-sm text-gray-700 w-10" style={{ fontFamily: 'OpenSans, sans-serif' }}>{monthlyInsights.currentMonth.name}</span>
                   <div className="flex-1 h-2 bg-gray-200 ml-2 overflow-hidden relative">
@@ -705,29 +705,6 @@ export default function Dashboard() {
                         style={{ 
                           left: `${(monthlyInsights.currentMonth.moneyIn / Math.max(monthlyInsights.currentMonth.moneyIn + monthlyInsights.currentMonth.moneyOut, 1)) * 100}%`,
                           width: `${Math.min((monthlyInsights.currentMonth.moneyOut / Math.max(monthlyInsights.currentMonth.moneyIn + monthlyInsights.currentMonth.moneyOut, 1)) * 100, 100)}%` 
-                        }}
-                      ></div>
-                    )}
-                  </div>
-                </div>
-                {/* Previous Month */}
-                <div className="flex items-center">
-                  <span className="text-sm text-gray-700 w-10" style={{ fontFamily: 'OpenSans, sans-serif' }}>{monthlyInsights.previousMonth.name}</span>
-                  <div className="flex-1 h-2 bg-gray-200 ml-2 overflow-hidden relative">
-                    {monthlyInsights.previousMonth.moneyIn > 0 && (
-                      <div 
-                        className="absolute left-0 top-0 h-full bg-green-500" 
-                        style={{ 
-                          width: `${Math.min((monthlyInsights.previousMonth.moneyIn / Math.max(monthlyInsights.previousMonth.moneyIn + monthlyInsights.previousMonth.moneyOut, 1)) * 100, 100)}%` 
-                        }}
-                      ></div>
-                    )}
-                    {monthlyInsights.previousMonth.moneyOut > 0 && (
-                      <div 
-                        className="absolute top-0 h-full bg-red-400" 
-                        style={{ 
-                          left: `${(monthlyInsights.previousMonth.moneyIn / Math.max(monthlyInsights.previousMonth.moneyIn + monthlyInsights.previousMonth.moneyOut, 1)) * 100}%`,
-                          width: `${Math.min((monthlyInsights.previousMonth.moneyOut / Math.max(monthlyInsights.previousMonth.moneyIn + monthlyInsights.previousMonth.moneyOut, 1)) * 100, 100)}%` 
                         }}
                       ></div>
                     )}
