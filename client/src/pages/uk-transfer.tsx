@@ -233,16 +233,38 @@ export default function UkTransfer() {
   };
 
   useEffect(() => {
-    // Check for selected account from URL params FIRST (most reliable)
-    const urlParams = new URLSearchParams(window.location.search);
-    const fromAccountParam = urlParams.get('from');
-    if (fromAccountParam) {
-      form.setValue('fromAccount', fromAccountParam);
-    }
+    const loadAccounts = () => {
+      // Use UserDataManager to get consistent account data
+      UserDataManager.clearCache('bankAccounts');
+      const userAccounts = UserDataManager.getUserData('bankAccounts', []);
+      setAccounts(userAccounts);
+      
+      // Set default account selection if not already set
+      if (userAccounts.length > 0 && !form.getValues('fromAccount')) {
+        form.setValue('fromAccount', userAccounts[0].id.toString());
+      }
+    };
     
-    // Also check sessionStorage as fallback
+    loadAccounts();
+    
+    // Load user's currency preference
+    setUserCurrency(getUserCurrency());
+    
+    // Listen for account updates from admin panel
+    const handleAccountsUpdate = (event: CustomEvent) => {
+      const { accounts: updatedAccounts } = event.detail || {};
+      if (updatedAccounts) {
+        setAccounts(updatedAccounts);
+      }
+    };
+
+    window.addEventListener('accountsUpdate', handleAccountsUpdate as EventListener);
+    window.addEventListener('balanceUpdate', handleAccountsUpdate as EventListener);
+    window.addEventListener('adminProfileUpdate', handleAccountsUpdate as EventListener);
+    
+    // Check for selected account from dashboard Send money section
     const selectedFromAccountData = sessionStorage.getItem('selectedFromAccount');
-    if (selectedFromAccountData && !fromAccountParam) {
+    if (selectedFromAccountData) {
       form.setValue('fromAccount', selectedFromAccountData);
       sessionStorage.removeItem('selectedFromAccount');
     }
@@ -274,43 +296,15 @@ export default function UkTransfer() {
               form.setValue('reference', payee.reference);
             }
           }
+          
+          // Clear the session storage after using
+          sessionStorage.removeItem('selectedPayee');
         }
-        // Clear the session storage after using
-        sessionStorage.removeItem('selectedPayee');
       } catch (error) {
         console.error('Error parsing selected payee data:', error);
         sessionStorage.removeItem('selectedPayee');
       }
     }
-    
-    const loadAccounts = () => {
-      // Use UserDataManager to get consistent account data
-      UserDataManager.clearCache('bankAccounts');
-      const userAccounts = UserDataManager.getUserData('bankAccounts', []);
-      setAccounts(userAccounts);
-      
-      // Set default account selection only if not already set (from URL or sessionStorage)
-      if (userAccounts.length > 0 && !form.getValues('fromAccount')) {
-        form.setValue('fromAccount', userAccounts[0].id.toString());
-      }
-    };
-    
-    loadAccounts();
-    
-    // Load user's currency preference
-    setUserCurrency(getUserCurrency());
-    
-    // Listen for account updates from admin panel
-    const handleAccountsUpdate = (event: CustomEvent) => {
-      const { accounts: updatedAccounts } = event.detail || {};
-      if (updatedAccounts) {
-        setAccounts(updatedAccounts);
-      }
-    };
-
-    window.addEventListener('accountsUpdate', handleAccountsUpdate as EventListener);
-    window.addEventListener('balanceUpdate', handleAccountsUpdate as EventListener);
-    window.addEventListener('adminProfileUpdate', handleAccountsUpdate as EventListener);
     
     return () => {
       window.removeEventListener('accountsUpdate', handleAccountsUpdate as EventListener);
@@ -825,7 +819,7 @@ export default function UkTransfer() {
               >
                 <option value="">Select account</option>
                 {accounts.map(account => (
-                  <option key={account.id} value={account.id.toString()}>
+                  <option key={account.id} value={account.id}>
                     {account.displayName} {account.accountNumber} - {formatCurrency(account.balance, userCurrency)}
                   </option>
                 ))}
