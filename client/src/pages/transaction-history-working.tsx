@@ -545,11 +545,11 @@ export default function TransactionHistoryWorking() {
             style={{ 
               width: '36px', 
               height: '36px', 
-              border: '2px solid rgba(255,255,255,0.5)',
+              border: '2px solid rgba(255,255,255,0.7)',
               backgroundColor: 'transparent'
             }}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="rgba(255,255,255,0.9)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
               <circle cx="12" cy="8" r="4"/>
               <path d="M12 14c-5 0-8 2.5-8 5v1h16v-1c0-2.5-3-5-8-5z"/>
             </svg>
