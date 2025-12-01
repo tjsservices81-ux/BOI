@@ -173,22 +173,49 @@ export default function Dashboard() {
       });
       
       uniqueTransactions.forEach((tx: any) => {
-        const txDate = new Date(tx.date);
+        // Try parsing date in multiple formats
+        let txDate: Date;
+        if (tx.date) {
+          txDate = new Date(tx.date);
+        } else if (tx.timestamp) {
+          txDate = new Date(tx.timestamp);
+        } else if (tx.createdAt) {
+          txDate = new Date(tx.createdAt);
+        } else {
+          return; // Skip if no date
+        }
+        
+        // Check if date is valid
+        if (isNaN(txDate.getTime())) return;
+        
         const txMonth = txDate.getMonth();
         const txYear = txDate.getFullYear();
-        const amount = parseFloat(tx.amount) || 0;
+        
+        // Parse amount - handle string with currency symbols
+        let amount = 0;
+        if (typeof tx.amount === 'number') {
+          amount = tx.amount;
+        } else if (typeof tx.amount === 'string') {
+          amount = parseFloat(tx.amount.replace(/[^0-9.-]/g, '')) || 0;
+        }
+        
+        // Determine if it's money in or out based on type or amount sign
+        const isMoneyOut = tx.type === 'debit' || tx.type === 'withdrawal' || tx.type === 'transfer_out' || amount < 0;
+        const isMoneyIn = tx.type === 'credit' || tx.type === 'deposit' || tx.type === 'transfer_in' || amount > 0;
+        
+        const absAmount = Math.abs(amount);
         
         if (txMonth === currentMonth && txYear === currentYear) {
-          if (amount > 0) {
-            currentMonthIn += amount;
-          } else {
-            currentMonthOut += Math.abs(amount);
+          if (isMoneyIn && amount > 0) {
+            currentMonthIn += absAmount;
+          } else if (isMoneyOut || amount < 0) {
+            currentMonthOut += absAmount;
           }
         } else if (txMonth === previousMonth && txYear === previousYear) {
-          if (amount > 0) {
-            previousMonthIn += amount;
-          } else {
-            previousMonthOut += Math.abs(amount);
+          if (isMoneyIn && amount > 0) {
+            previousMonthIn += absAmount;
+          } else if (isMoneyOut || amount < 0) {
+            previousMonthOut += absAmount;
           }
         }
       });
@@ -663,52 +690,46 @@ export default function Dashboard() {
                 {/* Current Month */}
                 <div className="flex items-center">
                   <span className="text-sm text-gray-700 w-10" style={{ fontFamily: 'OpenSans, sans-serif' }}>{monthlyInsights.currentMonth.name}</span>
-                  <div className="flex-1 h-2 bg-gray-200 ml-2 overflow-hidden">
-                    {(monthlyInsights.currentMonth.moneyIn > 0 || monthlyInsights.currentMonth.moneyOut > 0) && (
-                      <div className="h-full flex">
-                        {monthlyInsights.currentMonth.moneyIn > 0 && (
-                          <div 
-                            className="h-full bg-green-500" 
-                            style={{ 
-                              width: `${(monthlyInsights.currentMonth.moneyIn / (monthlyInsights.currentMonth.moneyIn + monthlyInsights.currentMonth.moneyOut)) * 100}%` 
-                            }}
-                          ></div>
-                        )}
-                        {monthlyInsights.currentMonth.moneyOut > 0 && (
-                          <div 
-                            className="h-full bg-red-400" 
-                            style={{ 
-                              width: `${(monthlyInsights.currentMonth.moneyOut / (monthlyInsights.currentMonth.moneyIn + monthlyInsights.currentMonth.moneyOut)) * 100}%` 
-                            }}
-                          ></div>
-                        )}
-                      </div>
+                  <div className="flex-1 h-2 bg-gray-200 ml-2 overflow-hidden relative">
+                    {monthlyInsights.currentMonth.moneyIn > 0 && (
+                      <div 
+                        className="absolute left-0 top-0 h-full bg-green-500" 
+                        style={{ 
+                          width: `${Math.min((monthlyInsights.currentMonth.moneyIn / Math.max(monthlyInsights.currentMonth.moneyIn + monthlyInsights.currentMonth.moneyOut, 1)) * 100, 100)}%` 
+                        }}
+                      ></div>
+                    )}
+                    {monthlyInsights.currentMonth.moneyOut > 0 && (
+                      <div 
+                        className="absolute top-0 h-full bg-red-400" 
+                        style={{ 
+                          left: `${(monthlyInsights.currentMonth.moneyIn / Math.max(monthlyInsights.currentMonth.moneyIn + monthlyInsights.currentMonth.moneyOut, 1)) * 100}%`,
+                          width: `${Math.min((monthlyInsights.currentMonth.moneyOut / Math.max(monthlyInsights.currentMonth.moneyIn + monthlyInsights.currentMonth.moneyOut, 1)) * 100, 100)}%` 
+                        }}
+                      ></div>
                     )}
                   </div>
                 </div>
                 {/* Previous Month */}
                 <div className="flex items-center">
                   <span className="text-sm text-gray-700 w-10" style={{ fontFamily: 'OpenSans, sans-serif' }}>{monthlyInsights.previousMonth.name}</span>
-                  <div className="flex-1 h-2 bg-gray-200 ml-2 overflow-hidden">
-                    {(monthlyInsights.previousMonth.moneyIn > 0 || monthlyInsights.previousMonth.moneyOut > 0) && (
-                      <div className="h-full flex">
-                        {monthlyInsights.previousMonth.moneyIn > 0 && (
-                          <div 
-                            className="h-full bg-green-500" 
-                            style={{ 
-                              width: `${(monthlyInsights.previousMonth.moneyIn / (monthlyInsights.previousMonth.moneyIn + monthlyInsights.previousMonth.moneyOut)) * 100}%` 
-                            }}
-                          ></div>
-                        )}
-                        {monthlyInsights.previousMonth.moneyOut > 0 && (
-                          <div 
-                            className="h-full bg-red-400" 
-                            style={{ 
-                              width: `${(monthlyInsights.previousMonth.moneyOut / (monthlyInsights.previousMonth.moneyIn + monthlyInsights.previousMonth.moneyOut)) * 100}%` 
-                            }}
-                          ></div>
-                        )}
-                      </div>
+                  <div className="flex-1 h-2 bg-gray-200 ml-2 overflow-hidden relative">
+                    {monthlyInsights.previousMonth.moneyIn > 0 && (
+                      <div 
+                        className="absolute left-0 top-0 h-full bg-green-500" 
+                        style={{ 
+                          width: `${Math.min((monthlyInsights.previousMonth.moneyIn / Math.max(monthlyInsights.previousMonth.moneyIn + monthlyInsights.previousMonth.moneyOut, 1)) * 100, 100)}%` 
+                        }}
+                      ></div>
+                    )}
+                    {monthlyInsights.previousMonth.moneyOut > 0 && (
+                      <div 
+                        className="absolute top-0 h-full bg-red-400" 
+                        style={{ 
+                          left: `${(monthlyInsights.previousMonth.moneyIn / Math.max(monthlyInsights.previousMonth.moneyIn + monthlyInsights.previousMonth.moneyOut, 1)) * 100}%`,
+                          width: `${Math.min((monthlyInsights.previousMonth.moneyOut / Math.max(monthlyInsights.previousMonth.moneyIn + monthlyInsights.previousMonth.moneyOut, 1)) * 100, 100)}%` 
+                        }}
+                      ></div>
                     )}
                   </div>
                 </div>
