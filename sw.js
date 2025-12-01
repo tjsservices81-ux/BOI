@@ -3,14 +3,16 @@
  * Handles caching, offline functionality, and prevents blank screens
  */
 
-const CACHE_NAME = 'boi-mobile-v3.7.1';
+const CACHE_NAME = 'boi-mobile-v3.6.1';
 const FALLBACK_CACHE = 'boi-fallback-v1.0.0';
 
 // Critical assets that must be cached for PWA to work
-// Note: In production, Vite bundles assets into /assets/ directory
-// We cache root paths that exist in both dev and prod
 const CRITICAL_ASSETS = [
   '/',
+  '/client/index.html',
+  '/client/src/main.tsx',
+  '/client/src/App.tsx',
+  '/client/src/index.css',
   '/manifest.json',
   '/boi_app_icon.png',
   '/boi_logo.svg'
@@ -51,31 +53,10 @@ self.addEventListener('install', (event) => {
   
   event.waitUntil(
     Promise.all([
-      // Cache critical assets individually to handle missing files gracefully
-      caches.open(CACHE_NAME).then(async (cache) => {
+      // Cache critical assets
+      caches.open(CACHE_NAME).then((cache) => {
         console.log('💾 Caching critical assets');
-        const allAssets = CRITICAL_ASSETS.concat(CACHE_ASSETS);
-        
-        // Cache each asset individually - don't fail if some are missing
-        const results = await Promise.allSettled(
-          allAssets.map(async (url) => {
-            try {
-              const response = await fetch(url, { cache: 'no-cache' });
-              if (response.ok) {
-                await cache.put(url, response);
-                return { url, status: 'cached' };
-              }
-              return { url, status: 'not-found' };
-            } catch (e) {
-              console.log('Asset not available for caching:', url);
-              return { url, status: 'error' };
-            }
-          })
-        );
-        
-        const cached = results.filter(r => r.status === 'fulfilled' && r.value.status === 'cached').length;
-        console.log(`💾 Cached ${cached}/${allAssets.length} assets`);
-        return results;
+        return cache.addAll(CRITICAL_ASSETS.concat(CACHE_ASSETS));
       }),
       
       // Create fallback cache with offline page
