@@ -2290,7 +2290,7 @@
         "address": null,
         "dateOfBirth": null,
         "joinDate": "2025-11-28T15:40:37.819Z",
-        "currency": "EUR",
+        "currency": "GBP",
         "dateCreated": "2025-11-28T15:40:37.780Z",
         "isDisabled": false
       }
@@ -2815,20 +2815,6 @@
         "balance": "0.00",
         "displayName": "Current Account"
       }
-    ],
-    [
-      124,
-      {
-        "id": 124,
-        "userId": 336,
-        "accountType": "current",
-        "accountNumber": "33510019",
-        "sortCode": "90-78-68",
-        "bic": "BOFIIE2D",
-        "iban": "IE75BOFI90786833510019",
-        "balance": "0.00",
-        "displayName": "Current Account"
-      }
     ]
   ],
   "transactions": [],
@@ -2840,7 +2826,7 @@
   "chatSessions": [],
   "counters": {
     "currentUserId": 337,
-    "currentAccountId": 125,
+    "currentAccountId": 124,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
     "currentScheduledPaymentId": 1,

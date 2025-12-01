@@ -141,9 +141,7 @@ export default function Profile() {
       }
 
       try {
-        const response = await fetch(`/api/profile/${currentCustomerNumber}`, {
-          credentials: 'include'
-        });
+        const response = await fetch(`/api/profile/${currentCustomerNumber}`);
         if (response.ok) {
           const userData = await response.json();
           if (userData) {
@@ -182,17 +180,14 @@ export default function Profile() {
               detail: allUsers[userData.customerNumber]
             }));
           }
-        } else if (response.status === 410) {
-          // Account explicitly deleted (410 Gone) - activate aggressive blocking
+        } else if (response.status === 410 || response.status === 401) {
+          // Account deleted - activate aggressive blocking
           const data = await response.json().catch(() => ({}));
-          if (data.accountDeleted === true || data.blockAllFunctions === true) {
+          if (data.accountDeleted || data.blockAllFunctions) {
             console.error('🚨 ACCOUNT DELETED - BLOCKING ALL FUNCTIONS');
             setAccountDeleted(true);
             setProfileData(prev => ({ ...prev, name: 'User' })); // Change name to "User"
           }
-        } else if (response.status === 401) {
-          // 401 is just authentication issue, not account deletion - ignore
-          console.warn('Profile fetch returned 401 - session may have expired');
         } else {
           console.error('Failed to load profile data:', response.status);
         }
@@ -862,7 +857,7 @@ export default function Profile() {
     { description: "CHILD BENEFIT", amount: 140.00, type: "credit" }
   ];
 
-  const addCustomTransaction = async () => {
+  const addCustomTransaction = () => {
     // Block if account deleted
     if (accountDeleted) {
       alert('Account Deleted');
@@ -941,9 +936,14 @@ export default function Profile() {
     // Update local state
     setAccounts(updatedAccounts);
     
-    // Update UserDataManager and clear cache for instant propagation
-    UserDataManager.clearCache('bankAccounts');
-    UserDataManager.clearCache(); // Clear all caches
+    // Dispatch events for real-time updates
+    window.dispatchEvent(new CustomEvent('accountsUpdate', {
+      detail: { accounts: updatedAccounts, source: 'customTransaction' }
+    }));
+    
+    window.dispatchEvent(new CustomEvent('forceRefresh', {
+      detail: { type: 'transactionAdded', accountId: accountId }
+    }));
     
     // Reset form and close modal
     setCustomTransactionData({
@@ -957,66 +957,20 @@ export default function Profile() {
     
     const currentCurrency = getUserCurrency();
     const currencySymbol = currentCurrency === 'EUR' ? '€' : '£';
-    
-    // CRITICAL: Update balance in database FIRST and WAIT for it to complete
-    // This prevents race condition where dashboard fetches old balance before DB updates
-    try {
-      const response = await fetch(`/api/accounts/${accountId}/balance`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ balance: newBalance.toFixed(2) })
-      });
-      
-      if (response.ok) {
-        console.log('💰 Custom transaction balance persisted to database');
-      } else {
-        console.error('Failed to update balance in database:', await response.text());
-      }
-    } catch (error) {
-      console.error('Error updating balance in database:', error);
-    }
-    
-    // Force localStorage update for immediate persistence
-    const currentUser = UserDataManager.getCurrentUser();
-    if (currentUser) {
-      localStorage.setItem(`user_${currentUser}_bankAccounts`, JSON.stringify(updatedAccounts));
-    }
-    
-    // NOW dispatch events AFTER database is updated (prevents race condition)
-    window.dispatchEvent(new CustomEvent('balanceUpdate', {
-      detail: { 
-        accountId: accountId, 
-        newBalance: newBalance.toFixed(2),
-        accounts: updatedAccounts,
-        source: 'customTransaction'
-      }
-    }));
-    
-    window.dispatchEvent(new CustomEvent('accountsUpdate', {
-      detail: { 
-        accounts: updatedAccounts,
-        source: 'customTransaction'
-      }
-    }));
-    
-    window.dispatchEvent(new CustomEvent('forceRefresh', {
-      detail: { 
-        type: 'balanceChange',
-        accountId: accountId,
-        newBalance: newBalance.toFixed(2)
-      }
-    }));
-    
-    window.dispatchEvent(new CustomEvent('transactionUpdate'));
-    window.dispatchEvent(new CustomEvent('transactionAdded', {
-      detail: { transaction: newTransaction, accountId }
-    }));
-    
     showDeveloperMessage(`Transaction Added Successfully!\n\n${customTransactionData.description}\nAmount: ${currencySymbol}${transactionAmount.toFixed(2)}\nNew Balance: ${currencySymbol}${newBalance.toFixed(2)}`);
+    
+    // Update balance in database (background)
+    fetch(`/api/accounts/${accountId}/balance`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ balance: newBalance.toFixed(2) })
+    }).then(() => {
+      console.log('💰 Custom transaction balance updated in database');
+    }).catch(console.error);
   };
 
-  const addSampleTransaction = async (accountId: number) => {
+  const addSampleTransaction = (accountId: number) => {
     const randomTransaction = sampleTransactions[Math.floor(Math.random() * sampleTransactions.length)];
     
     // Create transaction date that's 2-30 days before current date
@@ -1077,14 +1031,15 @@ export default function Profile() {
       return acc;
     });
     
-    // Save everything to storage (same pattern as updateBalance)
+    // Save everything to storage
     UserDataManager.setUserData('bankTransactions', updatedTransactions);
     UserDataManager.setUserData('bankAccounts', updatedAccounts);
-    UserDataManager.clearCache('bankAccounts');
-    UserDataManager.clearCache(); // Clear all caches
     
     // Update local state
     setAccounts(updatedAccounts);
+    
+    // Clear cache again after updates
+    UserDataManager.clearCache();
 
     console.log('Sample Transaction Details:', {
       account: targetAccount.type,
@@ -1093,67 +1048,34 @@ export default function Profile() {
       newBalance: newBalance.toFixed(2),
       description: randomTransaction.description
     });
-    
-    setShowAddTransaction(false);
-    const currentCurrency = getUserCurrency();
-    const currencySymbol = currentCurrency === 'EUR' ? '€' : '£';
-    
-    // CRITICAL: Update balance in database FIRST and WAIT for it to complete
-    // This prevents race condition where dashboard fetches old balance before DB updates
-    try {
-      const response = await fetch(`/api/accounts/${accountId}/balance`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ balance: newBalance.toFixed(2) })
-      });
-      
-      if (response.ok) {
-        console.log('💰 Sample transaction balance persisted to database');
-      } else {
-        console.error('Failed to update balance in database:', await response.text());
-      }
-    } catch (error) {
-      console.error('Error updating balance in database:', error);
-    }
-    
-    // Force localStorage update for immediate persistence
-    const currentUser = UserDataManager.getCurrentUser();
-    if (currentUser) {
-      localStorage.setItem(`user_${currentUser}_bankAccounts`, JSON.stringify(updatedAccounts));
-    }
-    
-    // NOW dispatch events AFTER database is updated (prevents race condition)
-    window.dispatchEvent(new CustomEvent('balanceUpdate', {
-      detail: { 
-        accountId: accountId, 
-        newBalance: newBalance.toFixed(2),
-        accounts: updatedAccounts,
-        source: 'sampleTransaction'
-      }
-    }));
-    
-    window.dispatchEvent(new CustomEvent('accountsUpdate', {
-      detail: { 
-        accounts: updatedAccounts,
-        source: 'sampleTransaction'
-      }
-    }));
-    
-    window.dispatchEvent(new CustomEvent('forceRefresh', {
-      detail: { 
-        type: 'balanceChange',
-        accountId: accountId,
-        newBalance: newBalance.toFixed(2)
-      }
-    }));
-    
+
+    // Notify all components of the changes
     window.dispatchEvent(new CustomEvent('transactionUpdate'));
     window.dispatchEvent(new CustomEvent('transactionAdded', {
       detail: { transaction, accountId }
     }));
+    window.dispatchEvent(new CustomEvent('balanceUpdate', {
+      detail: { 
+        accountId, 
+        newBalance: newBalance.toFixed(2), 
+        accounts: updatedAccounts 
+      }
+    }));
     
+    setShowAddTransaction(false);
+    const currentCurrency = getUserCurrency();
+    const currencySymbol = currentCurrency === 'EUR' ? '€' : '£';
     showDeveloperMessage(`Transaction Added Successfully!\n\n${randomTransaction.description}\nAmount: ${currencySymbol}${Math.abs(transactionAmount).toFixed(2)}\nNew Balance: ${currencySymbol}${newBalance.toFixed(2)}`);
+    
+    // Update balance in database (background)
+    fetch(`/api/accounts/${accountId}/balance`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ balance: newBalance.toFixed(2) })
+    }).then(() => {
+      console.log('💰 Sample transaction balance updated in database');
+    }).catch(console.error);
   };
 
   const updateBalance = async () => {
