@@ -156,7 +156,7 @@ export default function MonthlyInsights() {
   return (
     <div className="fixed inset-0 flex flex-col" style={{ backgroundColor: '#F5F7F8', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
       {/* Top App Bar */}
-      <div className="flex-shrink-0 flex items-center justify-between px-4" style={{ backgroundColor: '#0A6F85', height: '64px' }}>
+      <div className="flex-shrink-0 flex items-center justify-between px-4" style={{ backgroundColor: '#126987', height: '64px' }}>
         <button onClick={() => setLocation('/dashboard')} className="p-2">
           <ArrowLeft className="h-6 w-6 text-white" />
         </button>
@@ -265,17 +265,17 @@ export default function MonthlyInsights() {
             </div>
           </div>
 
-          {/* Money Out / Money In Bar - Same as Header */}
-          <div className="flex justify-between px-6 py-3" style={{ backgroundColor: '#126987' }}>
+          {/* Money Out / Money In Labels */}
+          <div className="flex justify-between px-8 mb-2">
             <div className="text-center">
-              <p className="font-semibold text-white" style={{ fontSize: '13px' }}>MONEY OUT</p>
-              <p className="text-white" style={{ fontSize: '16px' }}>
+              <p className="font-semibold" style={{ fontSize: '13px', color: '#0A6F85' }}>MONEY OUT</p>
+              <p style={{ fontSize: '16px', color: '#333' }}>
                 {formatCurrency(monthlyData.moneyOut.toFixed(2), userCurrency)}
               </p>
             </div>
             <div className="text-center">
-              <p className="font-semibold text-white" style={{ fontSize: '13px' }}>MONEY IN</p>
-              <p className="text-white" style={{ fontSize: '16px' }}>
+              <p className="font-semibold" style={{ fontSize: '13px', color: '#00A651' }}>MONEY IN</p>
+              <p style={{ fontSize: '16px', color: '#333' }}>
                 {formatCurrency(monthlyData.moneyIn.toFixed(2), userCurrency)}
               </p>
             </div>
