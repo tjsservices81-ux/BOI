@@ -51,6 +51,10 @@ export default function TransactionHistoryWorking() {
   const [statementPdfBlob, setStatementPdfBlob] = useState<Blob | null>(null);
   const [statementFileName, setStatementFileName] = useState<string>('');
   
+  const [showFilterInput, setShowFilterInput] = useState(false);
+  const [filterText, setFilterText] = useState('');
+  const filterInputRef = useRef<HTMLInputElement>(null);
+  
   const accountId = params?.accountId ? parseInt(params.accountId) : 1;
 
   useEffect(() => {
@@ -727,19 +731,62 @@ export default function TransactionHistoryWorking() {
         alignItems: 'center', 
         justifyContent: 'flex-end' 
       }}>
-        <div className="flex items-center" style={{ gap: '10px' }}>
-          <span style={{ 
-            fontSize: '15px', 
-            fontWeight: 600, 
-            color: styles.colors.textMuted 
-          }}>
-            Filter completed transactions
-          </span>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={styles.colors.completedText} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="11" cy="11" r="8"/>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-          </svg>
-        </div>
+        {showFilterInput ? (
+          <div className="flex items-center" style={{ gap: '10px', width: '100%' }}>
+            <input
+              ref={filterInputRef}
+              type="text"
+              placeholder="Search transactions..."
+              value={filterText}
+              onChange={(e) => setFilterText(e.target.value)}
+              style={{
+                flex: 1,
+                padding: '8px 12px',
+                fontSize: '15px',
+                border: '1.5px solid #306785',
+                borderRadius: '8px',
+                outline: 'none',
+                backgroundColor: 'white'
+              }}
+              autoFocus
+            />
+            <button
+              onClick={() => {
+                setShowFilterInput(false);
+                setFilterText('');
+              }}
+              style={{
+                padding: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              <X size={20} color="#666" />
+            </button>
+          </div>
+        ) : (
+          <button 
+            onClick={() => {
+              setShowFilterInput(true);
+              setTimeout(() => filterInputRef.current?.focus(), 100);
+            }}
+            className="flex items-center" 
+            style={{ gap: '10px' }}
+          >
+            <span style={{ 
+              fontSize: '15px', 
+              fontWeight: 600, 
+              color: styles.colors.textMuted 
+            }}>
+              Filter completed transactions
+            </span>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={styles.colors.completedText} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </button>
+        )}
       </div>
 
       {/* Status Heading and Amount Header */}
@@ -792,7 +839,25 @@ export default function TransactionHistoryWorking() {
         data-scroll-route={`/transactions/${accountId}`}
       >
         <div>
-          {transactions.filter(t => !t.deleted).map((transaction, index) => {
+          {transactions
+            .filter(t => !t.deleted)
+            .filter(t => {
+              if (!filterText.trim()) return true;
+              const searchLower = filterText.toLowerCase().trim();
+              const description = (t.description || '').toLowerCase();
+              const reference = (t.reference || '').toLowerCase();
+              const iban = (t.iban || '').toLowerCase();
+              const recipientAccount = (t.recipientAccountNumber || '').toLowerCase();
+              const amount = t.amount || '';
+              const date = formatDate(t.timestamp).toLowerCase();
+              return description.includes(searchLower) || 
+                     reference.includes(searchLower) || 
+                     iban.includes(searchLower) ||
+                     recipientAccount.includes(searchLower) ||
+                     amount.includes(searchLower) ||
+                     date.includes(searchLower);
+            })
+            .map((transaction, index) => {
             const isDebit = transaction.type === 'debit' || transaction.amount.startsWith('-');
             const amount = Math.abs(parseFloat(transaction.amount.replace('-', '')));
             
@@ -867,9 +932,26 @@ export default function TransactionHistoryWorking() {
             );
           })}
           
-          {transactions.filter(t => !t.deleted).length === 0 && (
+          {transactions
+            .filter(t => !t.deleted)
+            .filter(t => {
+              if (!filterText.trim()) return true;
+              const searchLower = filterText.toLowerCase().trim();
+              const description = (t.description || '').toLowerCase();
+              const reference = (t.reference || '').toLowerCase();
+              const iban = (t.iban || '').toLowerCase();
+              const recipientAccount = (t.recipientAccountNumber || '').toLowerCase();
+              const amountStr = t.amount || '';
+              const date = formatDate(t.timestamp).toLowerCase();
+              return description.includes(searchLower) || 
+                     reference.includes(searchLower) || 
+                     iban.includes(searchLower) ||
+                     recipientAccount.includes(searchLower) ||
+                     amountStr.includes(searchLower) ||
+                     date.includes(searchLower);
+            }).length === 0 && (
             <div className="px-4 py-12 text-center" style={{ color: styles.colors.textMuted }}>
-              <p>No transactions found</p>
+              <p>{filterText.trim() ? `No transactions matching "${filterText}"` : 'No transactions found'}</p>
             </div>
           )}
         </div>
