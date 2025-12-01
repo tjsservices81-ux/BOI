@@ -1547,11 +1547,21 @@ export default function TransactionHistoryWorking() {
                     if (navigator.share) {
                       try {
                         await navigator.share({ text: shareText });
-                      } catch (err) {
-                        navigator.clipboard.writeText(shareText);
+                      } catch (err: any) {
+                        if (err.name !== 'AbortError') {
+                          try {
+                            await navigator.clipboard.writeText(shareText);
+                          } catch (clipErr) {
+                            console.log('Share cancelled or clipboard unavailable');
+                          }
+                        }
                       }
                     } else {
-                      navigator.clipboard.writeText(shareText);
+                      try {
+                        await navigator.clipboard.writeText(shareText);
+                      } catch (clipErr) {
+                        console.log('Clipboard unavailable');
+                      }
                     }
                   }}
                   style={{
