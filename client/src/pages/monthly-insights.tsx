@@ -1,8 +1,16 @@
-import { ArrowLeft, User } from "lucide-react";
+import { ArrowLeft, User, ChevronDown } from "lucide-react";
 import { useLocation } from "wouter";
 import { useState, useEffect } from "react";
 import { UserDataManager } from "../utils/userDataManager";
 import { formatCurrency, getUserCurrency, type Currency } from "../utils/currencyUtils";
+
+interface Account {
+  id: number;
+  displayName: string;
+  accountNumber: string;
+  balance: string;
+  accountType: string;
+}
 
 export default function MonthlyInsights() {
   const [, setLocation] = useLocation();
@@ -10,6 +18,9 @@ export default function MonthlyInsights() {
   const [activeTab, setActiveTab] = useState<'out' | 'in'>('out');
   const [selectedMonth, setSelectedMonth] = useState<'current' | 'previous'>('current');
   const [transactions, setTransactions] = useState<any[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [selectedAccountId, setSelectedAccountId] = useState<number | 'all'>(1);
+  const [showAccountPicker, setShowAccountPicker] = useState(false);
   const [monthlyData, setMonthlyData] = useState({
     moneyIn: 0,
     moneyOut: 0,
@@ -22,6 +33,16 @@ export default function MonthlyInsights() {
     activityToDate: 0
   });
 
+  // Load accounts on mount
+  useEffect(() => {
+    const storedAccounts = UserDataManager.getUserData('bankAccounts', []);
+    setAccounts(storedAccounts);
+    if (storedAccounts.length > 0) {
+      setSelectedAccountId(storedAccounts[0].id);
+    }
+  }, []);
+
+  // Calculate data when account changes
   useEffect(() => {
     setUserCurrency(getUserCurrency());
     
@@ -34,18 +55,26 @@ export default function MonthlyInsights() {
     const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     const monthNamesShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     
-    // Get all transactions
+    // Get transactions based on selected account
     const mainTransactions = UserDataManager.getUserData('bankTransactions', []);
-    const accounts = UserDataManager.getUserData('bankAccounts', []);
+    const storedAccounts = UserDataManager.getUserData('bankAccounts', []);
     let allTransactions = [...mainTransactions];
     
-    accounts.forEach((account: any) => {
+    storedAccounts.forEach((account: any) => {
       const accountTransactions = UserDataManager.getUserData(`transactions_${account.id}`, []);
       allTransactions = [...allTransactions, ...accountTransactions];
     });
     
+    // Filter by selected account if not 'all'
+    let accountTransactions = allTransactions;
+    if (selectedAccountId !== 'all') {
+      accountTransactions = allTransactions.filter((tx: any) => 
+        tx.accountId === selectedAccountId || tx.account_id === selectedAccountId
+      );
+    }
+    
     // Filter for current month only
-    const currentMonthTransactions = allTransactions.filter((tx: any) => {
+    const currentMonthTransactions = accountTransactions.filter((tx: any) => {
       const txDate = new Date(tx.date || tx.timestamp || tx.createdAt);
       return txDate.getMonth() === currentMonth && txDate.getFullYear() === currentYear;
     });
@@ -85,7 +114,19 @@ export default function MonthlyInsights() {
       currentDay,
       activityToDate: moneyIn - moneyOut
     });
-  }, []);
+  }, [selectedAccountId]);
+  
+  const selectedAccount = accounts.find(a => a.id === selectedAccountId);
+  const getAccountDisplayName = () => {
+    if (selectedAccountId === 'all') return 'All Accounts';
+    if (!selectedAccount) return 'Current';
+    return selectedAccount.displayName.replace(' Account', '');
+  };
+  const getAccountNumber = () => {
+    if (selectedAccountId === 'all') return '';
+    if (!selectedAccount) return '3704';
+    return selectedAccount.accountNumber.slice(-4);
+  };
 
   const filteredTransactions = transactions.filter((tx: any) => {
     let amount = 0;
@@ -142,21 +183,66 @@ export default function MonthlyInsights() {
         </div>
         <div style={{ height: '1px', backgroundColor: '#E0E0E0' }}></div>
 
-        {/* Account Summary Card */}
-        <div className="mx-4 mt-4 bg-white" style={{ borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-          <div className="flex items-center p-4">
-            <div className="mr-3">
-              <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                <circle cx="20" cy="12" r="8" stroke="#666" strokeWidth="2" fill="none"/>
-                <ellipse cx="20" cy="20" rx="10" ry="4" stroke="#666" strokeWidth="2" fill="none"/>
-                <ellipse cx="20" cy="28" rx="10" ry="4" stroke="#666" strokeWidth="2" fill="none"/>
-              </svg>
+        {/* Account Summary Card - Tappable */}
+        <div className="mx-4 mt-4 bg-white relative" style={{ borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+          <button 
+            onClick={() => setShowAccountPicker(!showAccountPicker)}
+            className="w-full flex items-center justify-between p-4"
+          >
+            <div className="flex items-center">
+              <div className="mr-3">
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                  <circle cx="20" cy="12" r="8" stroke="#666" strokeWidth="2" fill="none"/>
+                  <ellipse cx="20" cy="20" rx="10" ry="4" stroke="#666" strokeWidth="2" fill="none"/>
+                  <ellipse cx="20" cy="28" rx="10" ry="4" stroke="#666" strokeWidth="2" fill="none"/>
+                </svg>
+              </div>
+              <div className="text-left">
+                <p className="font-bold" style={{ fontSize: '16px', color: '#333' }}>{getAccountDisplayName()}</p>
+                {getAccountNumber() && <p style={{ fontSize: '14px', color: '#777' }}>{getAccountNumber()}</p>}
+              </div>
             </div>
-            <div>
-              <p className="font-bold" style={{ fontSize: '16px', color: '#333' }}>Current</p>
-              <p style={{ fontSize: '14px', color: '#777' }}>3704</p>
+            <ChevronDown className={`h-5 w-5 text-gray-500 transition-transform ${showAccountPicker ? 'rotate-180' : ''}`} />
+          </button>
+          
+          {/* Account Picker Dropdown */}
+          {showAccountPicker && (
+            <div className="absolute left-0 right-0 top-full mt-1 bg-white z-10" style={{ borderRadius: '12px', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}>
+              {accounts.map((account) => (
+                <button
+                  key={account.id}
+                  onClick={() => {
+                    setSelectedAccountId(account.id);
+                    setShowAccountPicker(false);
+                  }}
+                  className="w-full flex items-center p-4 hover:bg-gray-50"
+                  style={{ borderBottom: '1px solid #E8E8E8' }}
+                >
+                  <div className="mr-3">
+                    <svg width="32" height="32" viewBox="0 0 40 40" fill="none">
+                      <circle cx="20" cy="12" r="8" stroke="#666" strokeWidth="2" fill="none"/>
+                      <ellipse cx="20" cy="20" rx="10" ry="4" stroke="#666" strokeWidth="2" fill="none"/>
+                      <ellipse cx="20" cy="28" rx="10" ry="4" stroke="#666" strokeWidth="2" fill="none"/>
+                    </svg>
+                  </div>
+                  <div className="text-left flex-1">
+                    <p className="font-medium" style={{ fontSize: '15px', color: '#333' }}>
+                      {account.displayName.replace(' Account', '')}
+                    </p>
+                    <p style={{ fontSize: '13px', color: '#777' }}>{account.accountNumber.slice(-4)}</p>
+                  </div>
+                  {selectedAccountId === account.id && (
+                    <div className="w-5 h-5 rounded-full bg-[#0A6F85] flex items-center justify-center">
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path d="M2 6L5 9L10 3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </div>
+                  )}
+                </button>
+              ))}
             </div>
-          </div>
+          )}
+          
           <div style={{ height: '1px', backgroundColor: '#E8E8E8', margin: '0 16px' }}></div>
           <div className="flex justify-between items-center p-4">
             <span style={{ fontSize: '14px', color: '#777' }}>Activity to date:</span>
