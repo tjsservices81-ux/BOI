@@ -12,18 +12,6 @@ import { promptNotificationsAtCreation } from "@/utils/notifications";
 import ukLogoPath from "@assets/IMG_1505_1759859367310.png";
 import faceIdIconPath from "@assets/IMG_1506_1759859583184.png";
 
-// Request notification permissions on login (location only asked when viewing ATMs)
-async function requestPermissionsOnLogin() {
-  // NOTIFICATIONS: Ask every login if not already allowed
-  if ('Notification' in window && Notification.permission !== 'granted') {
-    try {
-      await Notification.requestPermission();
-      console.log('Notification permission requested on login');
-    } catch (error) {
-      console.log('Notification permission request failed');
-    }
-  }
-}
 
 export default function Login() {
   const [customerNumber, setCustomerNumber] = useState("");
@@ -537,9 +525,6 @@ export default function Login() {
         });
       }
       
-      // Request permissions on login
-      await requestPermissionsOnLogin();
-      
       navigate("/dashboard");
     } catch (error) {
       toast({
@@ -877,9 +862,6 @@ export default function Login() {
 
       // Wait a moment at 100% before navigating
       await new Promise(resolve => setTimeout(resolve, 300));
-
-      // Request permissions on login
-      await requestPermissionsOnLogin();
 
       // Authentication successful
       navigate("/dashboard");
