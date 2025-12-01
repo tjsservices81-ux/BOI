@@ -387,7 +387,7 @@ export default function Dashboard() {
         data-scroll-container
         data-scroll-route="/dashboard"
       >
-        <div className="bg-gray-100 h-full">
+        <div className="bg-gray-50 h-full">
           <div className="pt-12 px-4 space-y-6" style={{ overscrollBehavior: 'contain' }}>
             {(accounts && Array.isArray(accounts)) && accounts.map((account, index) => {
               const isLoading = loadingAccountId === account.id;
@@ -396,7 +396,7 @@ export default function Dashboard() {
               return (
                 <button 
                   key={account.id}
-                  className={`w-full flex items-center overflow-hidden bg-white shadow-sm border border-gray-100 touch-manipulation relative stagger-item android-no-highlight ${
+                  className={`w-full flex items-center overflow-hidden bg-white shadow-sm border border-gray-200 touch-manipulation relative stagger-item android-no-highlight ${
                     isTouchDevice 
                       ? '' // No hover/pressed on touch devices
                       : 'hover:shadow-md transition-all duration-150 ease-out active:scale-98 card-interactive' // Desktop interactions
