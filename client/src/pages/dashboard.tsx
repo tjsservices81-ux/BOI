@@ -590,6 +590,33 @@ export default function Dashboard() {
             {/* To Payee */}
             <div className="mb-4">
               <p className="text-sm text-gray-600 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>To</p>
+              
+              {/* Recent Payees Quick Select */}
+              {payees.filter(p => transferType === 'uk' ? p.type === 'uk' : p.type === 'iban').length > 0 && (
+                <div className="mb-3 pb-3 border-b border-gray-200">
+                  <p className="text-xs text-gray-500 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>Recent</p>
+                  <div className="flex flex-wrap gap-2">
+                    {payees
+                      .filter(p => transferType === 'uk' ? p.type === 'uk' : p.type === 'iban')
+                      .slice(0, 5)
+                      .map((payee, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setSelectedPayee(payee.name)}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                            selectedPayee === payee.name
+                              ? 'bg-[#2d6a7a] text-white'
+                              : 'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-50'
+                          }`}
+                          style={{ fontFamily: 'OpenSans, sans-serif' }}
+                        >
+                          {payee.name}
+                        </button>
+                      ))}
+                  </div>
+                </div>
+              )}
+              
               <div className="relative">
                 <select
                   value={selectedPayee}
