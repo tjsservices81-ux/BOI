@@ -1148,7 +1148,7 @@ export default function TransactionHistoryWorking() {
                     marginBottom: '4px', 
                     lineHeight: 1.25
                   }}>
-                    {transaction.iban || transaction.recipientAccountNumber || `4319401827062009`}
+                    {transaction.iban || transaction.recipientAccountNumber || transaction.reference || `TXN${transaction.id}`}
                   </p>
                   <p style={{ 
                     fontSize: '14px', 
