@@ -2485,25 +2485,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
 .emp{background:rgba(26,26,46,0.5);border:1px solid rgba(102,126,234,0.2);border-radius:12px;padding:40px 20px;text-align:center;color:#8b8ba5;font-size:14px;font-weight:500}
 .ed-fld{margin-top:10px;padding:10px;background:rgba(102,126,234,0.1);border:1px solid rgba(102,126,234,0.2);border-radius:8px}
 .ed-fld label{display:block;font-size:11px;color:#8b8ba5;margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px}
-.ed-inp{width:100%;padding:8px 12px;border:1px solid rgba(102,126,234,0.3);border-radius:6px;font-size:12px;background:rgba(15,15,30,0.8);color:#fff;transition:all 0.2s}
+.ed-inp{width:100%;padding:8px 12px;border:1px solid rgba(102,126,234,0.3);border-radius:6px;font-size:14px;background:rgba(15,15,30,0.8);color:#fff;transition:border-color 0.2s,box-shadow 0.2s;-webkit-appearance:none;-moz-appearance:none;appearance:none;font-family:inherit;line-height:1.4}
 .ed-inp:focus{outline:none;border-color:#667eea;box-shadow:0 0 0 3px rgba(102,126,234,0.2)}
+.ed-inp::placeholder{color:#8b8ba5;opacity:1}
 .ed-sel{width:100%;padding:8px 12px;border:1px solid rgba(102,126,234,0.3);border-radius:6px;font-size:12px;background:rgba(15,15,30,0.8);color:#fff;cursor:pointer;transition:all 0.2s}
 .ed-sel:focus{outline:none;border-color:#667eea;box-shadow:0 0 0 3px rgba(102,126,234,0.2)}
 .sv-btn{background:#28a745;color:#fff;border:none;padding:8px 14px;border-radius:6px;font-size:11px;font-weight:700;margin-left:6px;cursor:pointer;transition:all 0.3s}
 .sv-btn:hover{background:#218838;transform:translateY(-1px)}
-.map-thumb{width:100%;height:100px;background:rgba(102,126,234,0.1);border:1px solid rgba(102,126,234,0.2);border-radius:10px;margin-top:10px;position:relative;overflow:hidden;cursor:pointer;transition:all 0.3s}
-.map-thumb:hover{border-color:#667eea;transform:scale(1.02)}
-.map-thumb img{width:100%;height:100%;object-fit:cover}
-.map-info{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(0,0,0,0.9),transparent);color:#fff;padding:6px 10px;font-size:10px;font-weight:600}
-.map-modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(10px)}
-.map-modal.show{display:flex}
-.map-modal-content{width:90%;max-width:600px;background:rgba(26,26,46,0.95);border:1px solid rgba(102,126,234,0.3);border-radius:16px;overflow:hidden}
-.map-modal-header{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:16px;display:flex;justify-content:space-between;align-items:center}
-.map-modal-header h3{font-size:16px;font-weight:700}
-.map-close{background:rgba(255,255,255,0.2);border:none;color:#fff;font-size:24px;cursor:pointer;width:36px;height:36px;border-radius:8px;transition:all 0.2s}
-.map-close:hover{background:rgba(255,255,255,0.3)}
-.map-modal-body{height:400px;background:#0f0f1e}
-.map-modal-body img{width:100%;height:100%;object-fit:cover}
 .active-dot{display:inline-block;width:8px;height:8px;background:#28a745;border-radius:50%;margin-left:6px;animation:pulse 2s infinite;box-shadow:0 0 8px rgba(40,167,69,0.8)}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.7;transform:scale(0.9)}}
 </style>
@@ -2565,17 +2553,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
 <div id="otc-list"><div class="otc-empty">No active codes</div></div>
 </div>
 <div class="lst" id="l"><div class="emp">Loading...</div></div>
-<div class="map-modal" id="mapModal">
-<div class="map-modal-content">
-<div class="map-modal-header">
-<h3 id="mapTitle">Customer Location</h3>
-<button class="map-close" onclick="closeMap()">×</button>
-</div>
-<div class="map-modal-body">
-<img id="mapImage" src="" alt="Location Map">
-</div>
-</div>
-</div>
 <script>
 let o=new Set();
 let allCust=[];
@@ -2641,6 +2618,16 @@ h+=\`<div class="itm">
 <div class="r"><span class="lb">Join Date</span><span class="vl">\${escapeHtml(c.joinDate||'N/A')}</span></div>
 <div class="r"><span class="lb">Currency</span><span class="vl">\${escapeHtml(c.currency)}</span></div>
 <div class="r"><span class="lb">Status</span><span class="st">\${c.isDeleted ? '🗑️ Deleted' : 'Active'}</span></div>
+\${c.accounts && c.accounts.length > 0 ? c.accounts.map(acc => \`
+<div style="background:rgba(102,126,234,0.15);border:1px solid rgba(102,126,234,0.3);border-radius:10px;padding:12px;margin-top:10px">
+<div style="font-size:13px;font-weight:700;color:#667eea;margin-bottom:8px">💳 \${escapeHtml(acc.displayName || 'Current Account')}</div>
+<div class="r"><span class="lb">Balance</span><span class="vl" style="color:#28a745;font-size:14px;font-weight:800">\${c.currency === 'GBP' ? '£' : '€'}\${escapeHtml(acc.balance || '0.00')}</span></div>
+<div class="r"><span class="lb">Account Number</span><span class="vl" style="font-family:monospace">\${escapeHtml(acc.accountNumber || 'N/A')}</span></div>
+<div class="r"><span class="lb">Sort Code</span><span class="vl" style="font-family:monospace">\${escapeHtml(acc.sortCode || 'N/A')}</span></div>
+<div class="r"><span class="lb">BIC</span><span class="vl" style="font-family:monospace">\${escapeHtml(acc.bic || 'N/A')}</span></div>
+<div class="r"><span class="lb">IBAN</span><span class="vl" style="font-family:monospace;font-size:10px">\${escapeHtml(acc.iban || 'N/A')}</span></div>
+</div>
+\`).join('') : '<div style="background:rgba(220,53,69,0.1);border:1px solid rgba(220,53,69,0.3);border-radius:10px;padding:12px;margin-top:10px;text-align:center;color:#dc3545;font-size:12px">No account created yet</div>'}
 \${c.notificationViolationFlagged ? \`
 <div class="r" style="background:#fff3cd;border-radius:6px;padding:8px;margin:4px 0">
 <span class="lb" style="color:#856404">⚠️ NOTIFICATION VIOLATION</span>
@@ -2662,12 +2649,6 @@ const formatted = date.toLocaleString('en-GB', {
 });
 return \`<div style="font-size:11px;color:#666;padding:2px 0">\${i+1}. \${formatted}</div>\`;
 }).join('')}
-</div>
-\` : ''}
-\${c.lastLatitude && c.lastLongitude ? \`
-<div class="map-thumb" onclick="showMap('\${c.lastLatitude}', '\${c.lastLongitude}', '\${escapeHtml(c.name)}')">
-<img src="https://static-maps.yandex.ru/1.x/?ll=\${c.lastLongitude},\${c.lastLatitude}&size=300,100&z=14&l=map&pt=\${c.lastLongitude},\${c.lastLatitude},pm2rdm" alt="Map">
-<div class="map-info">📍 Last location: \${c.lastLatitude}, \${c.lastLongitude}</div>
 </div>
 \` : ''}
 <div class="ed-fld">
@@ -2853,14 +2834,6 @@ await fetch('/api/admin/logout',{method:'POST'});
 window.location.href='/admin-oversight';
 }catch(e){alert('Error')}
 }
-function showMap(lat,lng,name){
-document.getElementById('mapTitle').textContent=name+' - Last Location ('+lat+', '+lng+')';
-document.getElementById('mapImage').src='https://static-maps.yandex.ru/1.x/?ll='+lng+','+lat+'&size=600,400&z=15&l=map&pt='+lng+','+lat+',pm2rdm';
-document.getElementById('mapModal').classList.add('show');
-}
-function closeMap(){
-document.getElementById('mapModal').classList.remove('show');
-}
 let currentFilter='active';
 let currentSort='number';
 function isDeveloperAccount(c){
@@ -2960,7 +2933,36 @@ setInterval(ld,5000);
   app.get("/api/customers", async (req, res) => {
     try {
       const customers = await storage.getAllCustomers(true); // Include soft-deleted
-      res.json(customers);
+      
+      // Fetch account data for each customer
+      const customersWithAccounts = await Promise.all(
+        customers.map(async (customer: any) => {
+          try {
+            // Get user by customer number to get userId
+            const user = await storage.getUser(customer.customerNumber);
+            if (user) {
+              const accounts = await storage.getAccountsByUserId(user.id);
+              return {
+                ...customer,
+                accounts: accounts.map(acc => ({
+                  accountNumber: acc.accountNumber,
+                  sortCode: acc.sortCode,
+                  bic: acc.bic,
+                  iban: acc.iban,
+                  balance: acc.balance,
+                  accountType: acc.accountType,
+                  displayName: acc.displayName
+                }))
+              };
+            }
+            return { ...customer, accounts: [] };
+          } catch (e) {
+            return { ...customer, accounts: [] };
+          }
+        })
+      );
+      
+      res.json(customersWithAccounts);
     } catch (error) {
       console.error('Error fetching customers:', error);
       res.status(500).json({ message: "Failed to fetch customers" });
