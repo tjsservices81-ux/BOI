@@ -1,0 +1,56 @@
+// Example: Account creation + single notifications prompt
+
+async function createAccount(username, password) {
+    try {
+        // 1. Create account on server
+        const res = await fetch('/api/create-account', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+
+        if (!res.ok) throw new Error('Account creation failed');
+
+        const user = await res.json();
+
+        // 2. Prompt for notifications immediately AFTER account creation
+        const permission = await Notification.requestPermission();
+
+        if (permission !== 'granted') {
+            // 3. Update server: mark notifications as not enabled
+            await fetch('/api/set-notifications-flag', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: user.id, notifications_enabled: false })
+            });
+
+            // 4. Block access
+            alert('Notifications are required. You cannot use this account.');
+            return; // Stop further execution
+        }
+
+        // 5. Update server: mark notifications as enabled
+        await fetch('/api/set-notifications-flag', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: user.id, notifications_enabled: true })
+        });
+
+        // 6. Proceed to app
+        alert('Account created and notifications enabled!');
+        // redirect to app dashboard or initialize PWA
+        window.location.href = '/app';
+
+    } catch (err) {
+        console.error(err);
+        alert('Error creating account: ' + err.message);
+    }
+}
+
+// Usage example
+document.getElementById('signupForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const username = e.target.username.value;
+    const password = e.target.password.value;
+    createAccount(username, password);
+});
