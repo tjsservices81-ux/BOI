@@ -61,14 +61,16 @@ export default function Profile() {
     return saved !== null ? JSON.parse(saved) : true;
   });
   const [showEditBankDisplay, setShowEditBankDisplay] = useState(false);
-  const [customBankDisplay, setCustomBankDisplay] = useState(() => {
-    const saved = localStorage.getItem('customBankDisplay');
-    return saved ? JSON.parse(saved) : {
-      bic: '',
-      iban: '',
-      sortCode: '',
-      accountNumber: ''
-    };
+  const [editingBankDisplayAccount, setEditingBankDisplayAccount] = useState<any>(null);
+  const [customBankDisplayByAccount, setCustomBankDisplayByAccount] = useState<Record<number, {bic: string, iban: string, sortCode: string, accountNumber: string}>>(() => {
+    const saved = localStorage.getItem('customBankDisplayByAccount');
+    return saved ? JSON.parse(saved) : {};
+  });
+  const [editingBankDisplayData, setEditingBankDisplayData] = useState({
+    bic: '',
+    iban: '',
+    sortCode: '',
+    accountNumber: ''
   });
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [editProfileData, setEditProfileData] = useState({
@@ -2045,24 +2047,46 @@ export default function Profile() {
                       </div>
                     </button>
 
-                    {/* Edit Bank Display Details */}
-                    <button 
-                      onClick={() => setShowEditBankDisplay(true)}
-                      data-testid="button-edit-bank-display"
-                      className="w-full flex items-center space-x-3 p-3 bg-white/70 backdrop-blur-sm border-2 border-purple-200 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md"
-                    >
-                      <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center shadow-md">
-                        <Edit3 className="w-5 h-5 text-white" />
-                      </div>
-                      <div className="flex-1 text-left">
-                        <p className="font-semibold text-purple-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          Edit Bank Display Details
+                    {/* Edit Bank Display Details - Per Account */}
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium text-purple-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Edit Bank Display Details (per account)
+                      </p>
+                      {accounts && accounts.length > 0 ? accounts.map((account) => (
+                        <button 
+                          key={account.id}
+                          onClick={() => {
+                            setEditingBankDisplayAccount(account);
+                            const existingDisplay = customBankDisplayByAccount[account.id] || {
+                              bic: '',
+                              iban: '',
+                              sortCode: '',
+                              accountNumber: ''
+                            };
+                            setEditingBankDisplayData(existingDisplay);
+                            setShowEditBankDisplay(true);
+                          }}
+                          data-testid={`button-edit-bank-display-${account.id}`}
+                          className="w-full flex items-center space-x-3 p-2.5 bg-white/70 backdrop-blur-sm border border-purple-200 rounded-lg active:scale-95 transition-all shadow-sm hover:shadow-md"
+                        >
+                          <div className="w-8 h-8 bg-gradient-to-br from-purple-400 to-purple-500 rounded-full flex items-center justify-center shadow-sm">
+                            <Edit3 className="w-4 h-4 text-white" />
+                          </div>
+                          <div className="flex-1 text-left">
+                            <p className="font-medium text-purple-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                              {account.displayName}
+                            </p>
+                            <p className="text-xs text-purple-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                              {customBankDisplayByAccount[account.id] ? 'Custom display set' : 'Using defaults'}
+                            </p>
+                          </div>
+                        </button>
+                      )) : (
+                        <p className="text-xs text-purple-500 italic" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          No accounts available
                         </p>
-                        <p className="text-xs text-purple-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          Customize BIC/IBAN or Sort Code shown
-                        </p>
-                      </div>
-                    </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -2448,17 +2472,25 @@ export default function Profile() {
         </div>
       )}
 
-      {/* Edit Bank Display Modal */}
-      {showEditBankDisplay && (
+      {/* Edit Bank Display Modal - Per Account */}
+      {showEditBankDisplay && editingBankDisplayAccount && (
         <div className="modal-overlay bg-black bg-opacity-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-sm mx-4 shadow-xl">
             <div className="p-5">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Bank Display Details
-                </h2>
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Bank Display Details
+                  </h2>
+                  <p className="text-xs text-purple-600 font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {editingBankDisplayAccount.displayName}
+                  </p>
+                </div>
                 <button
-                  onClick={() => setShowEditBankDisplay(false)}
+                  onClick={() => {
+                    setShowEditBankDisplay(false);
+                    setEditingBankDisplayAccount(null);
+                  }}
                   className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
                 >
                   <X className="w-4 h-4 text-gray-500" />
@@ -2466,7 +2498,7 @@ export default function Profile() {
               </div>
 
               <p className="text-xs text-gray-400 mb-5" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Custom values for display only. Leave empty for defaults.
+                Custom values for this account only. Leave empty for defaults.
               </p>
 
               <div className="space-y-4">
@@ -2476,11 +2508,11 @@ export default function Profile() {
                   </label>
                   <input
                     type="text"
-                    value={customBankDisplay.bic}
-                    onChange={(e) => setCustomBankDisplay({ ...customBankDisplay, bic: e.target.value })}
+                    value={editingBankDisplayData.bic}
+                    onChange={(e) => setEditingBankDisplayData({ ...editingBankDisplayData, bic: e.target.value })}
                     className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm text-gray-800"
                     style={{ fontFamily: 'OpenSans, sans-serif' }}
-                    placeholder="BOFIIE2DXXX"
+                    placeholder={editingBankDisplayAccount.bic || "BOFIIE2DXXX"}
                   />
                 </div>
                 <div>
@@ -2489,11 +2521,11 @@ export default function Profile() {
                   </label>
                   <input
                     type="text"
-                    value={customBankDisplay.iban}
-                    onChange={(e) => setCustomBankDisplay({ ...customBankDisplay, iban: e.target.value })}
+                    value={editingBankDisplayData.iban}
+                    onChange={(e) => setEditingBankDisplayData({ ...editingBankDisplayData, iban: e.target.value })}
                     className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm text-gray-800"
                     style={{ fontFamily: 'OpenSans, sans-serif' }}
-                    placeholder="IE40BOFI 903816 20163704"
+                    placeholder={editingBankDisplayAccount.iban || "IE40BOFI 903816 20163704"}
                   />
                 </div>
                 
@@ -2503,11 +2535,11 @@ export default function Profile() {
                   </label>
                   <input
                     type="text"
-                    value={customBankDisplay.sortCode}
-                    onChange={(e) => setCustomBankDisplay({ ...customBankDisplay, sortCode: e.target.value })}
+                    value={editingBankDisplayData.sortCode}
+                    onChange={(e) => setEditingBankDisplayData({ ...editingBankDisplayData, sortCode: e.target.value })}
                     className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm text-gray-800"
                     style={{ fontFamily: 'OpenSans, sans-serif' }}
-                    placeholder="90-38-16"
+                    placeholder={editingBankDisplayAccount.sortCode || "90-38-16"}
                   />
                 </div>
                 <div>
@@ -2516,11 +2548,11 @@ export default function Profile() {
                   </label>
                   <input
                     type="text"
-                    value={customBankDisplay.accountNumber}
-                    onChange={(e) => setCustomBankDisplay({ ...customBankDisplay, accountNumber: e.target.value })}
+                    value={editingBankDisplayData.accountNumber}
+                    onChange={(e) => setEditingBankDisplayData({ ...editingBankDisplayData, accountNumber: e.target.value })}
                     className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm text-gray-800"
                     style={{ fontFamily: 'OpenSans, sans-serif' }}
-                    placeholder="20163704"
+                    placeholder={editingBankDisplayAccount.accountNumber || "20163704"}
                   />
                 </div>
               </div>
@@ -2528,9 +2560,13 @@ export default function Profile() {
               <div className="flex space-x-3 mt-6">
                 <button
                   onClick={() => {
-                    setCustomBankDisplay({ bic: '', iban: '', sortCode: '', accountNumber: '' });
-                    localStorage.removeItem('customBankDisplay');
-                    showDeveloperMessage('Reset to defaults');
+                    const accountId = editingBankDisplayAccount.id;
+                    const newDisplayByAccount = { ...customBankDisplayByAccount };
+                    delete newDisplayByAccount[accountId];
+                    setCustomBankDisplayByAccount(newDisplayByAccount);
+                    localStorage.setItem('customBankDisplayByAccount', JSON.stringify(newDisplayByAccount));
+                    setEditingBankDisplayData({ bic: '', iban: '', sortCode: '', accountNumber: '' });
+                    showDeveloperMessage(`Reset ${editingBankDisplayAccount.displayName} to defaults`);
                   }}
                   className="flex-1 py-2.5 bg-gray-100 text-gray-600 rounded-lg font-medium hover:bg-gray-200 transition-colors text-sm"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
@@ -2539,10 +2575,17 @@ export default function Profile() {
                 </button>
                 <button
                   onClick={() => {
-                    localStorage.setItem('customBankDisplay', JSON.stringify(customBankDisplay));
+                    const accountId = editingBankDisplayAccount.id;
+                    const newDisplayByAccount = {
+                      ...customBankDisplayByAccount,
+                      [accountId]: editingBankDisplayData
+                    };
+                    setCustomBankDisplayByAccount(newDisplayByAccount);
+                    localStorage.setItem('customBankDisplayByAccount', JSON.stringify(newDisplayByAccount));
                     window.dispatchEvent(new Event('storage'));
                     setShowEditBankDisplay(false);
-                    showDeveloperMessage('Saved');
+                    setEditingBankDisplayAccount(null);
+                    showDeveloperMessage(`Saved for ${editingBankDisplayAccount.displayName}`);
                   }}
                   className="flex-1 py-2.5 bg-[#126987] text-white rounded-lg font-medium hover:bg-[#0f5a75] transition-colors text-sm"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
