@@ -483,39 +483,43 @@ export default function TransactionHistoryWorking() {
         style={{ 
           background: 'linear-gradient(to bottom, #17657A 0%, #145566 100%)',
           height: '56px',
-          paddingLeft: '12px',
-          paddingRight: '12px'
+          paddingLeft: '16px',
+          paddingRight: '16px'
         }}
       >
         <button 
           onClick={() => navigateWithAnimation('/dashboard', 'slide-left')}
           className="hover:bg-white/10 rounded-full transition-colors"
-          style={{ padding: '8px' }}
+          style={{ padding: '6px' }}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M15 18l-6-6 6-6"/>
+          {/* Left arrow ← not chevron */}
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 12H5"/>
+            <path d="M12 19l-7-7 7-7"/>
           </svg>
         </button>
         
-        <span style={{ fontSize: '17px', fontWeight: 400, color: 'white' }}>
+        <span style={{ fontSize: '18px', fontWeight: 400, color: 'white', letterSpacing: '0.2px' }}>
           {accountInfo?.displayName || 'Current Account'} ~ {getAccountNumber()}
         </span>
         
-        <button className="hover:bg-white/10 rounded-full transition-colors" style={{ padding: '4px' }}>
+        <button className="hover:bg-white/10 rounded-full transition-colors" style={{ padding: '2px' }}>
           <div 
             style={{ 
-              width: '32px', 
-              height: '32px', 
+              width: '34px', 
+              height: '34px', 
               borderRadius: '50%',
-              border: '2px solid #7EC4D6',
+              border: '2px solid white',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              backgroundColor: 'transparent'
             }}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7EC4D6" strokeWidth="2">
-              <circle cx="12" cy="8" r="4"/>
-              <path d="M4 21v-1a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v1"/>
+            {/* Filled person silhouette */}
+            <svg width="18" height="18" viewBox="0 0 24 24">
+              <circle cx="12" cy="8" r="4" fill="white"/>
+              <path d="M4 22c0-4 4-6 8-6s8 2 8 6" fill="white"/>
             </svg>
           </div>
         </button>
