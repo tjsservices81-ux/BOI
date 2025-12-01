@@ -668,11 +668,41 @@ class MemStorage implements IStorage {
   }
 
   async updateAccountBalance(accountId: number, newBalance: string): Promise<void> {
+    // First, ensure account is in memory (load from PostgreSQL if needed)
+    let account = this.accounts.get(accountId);
+    
+    if (!account) {
+      // Account not in memory - fetch from PostgreSQL first
+      try {
+        const { db } = await import('./db');
+        const { eq } = await import('drizzle-orm');
+        
+        const [dbAccount] = await db.select().from(accounts).where(eq(accounts.id, accountId));
+        if (dbAccount) {
+          account = {
+            id: dbAccount.id,
+            userId: dbAccount.userId,
+            accountType: dbAccount.accountType,
+            accountNumber: dbAccount.accountNumber,
+            sortCode: dbAccount.sortCode,
+            bic: dbAccount.bic || 'BOFIIE2D',
+            iban: dbAccount.iban || null,
+            balance: dbAccount.balance,
+            displayName: dbAccount.displayName
+          };
+          this.accounts.set(account.id, account);
+          console.log(`💳 Loaded account ${accountId} from PostgreSQL for balance update`);
+        }
+      } catch (error) {
+        console.error('Error loading account from PostgreSQL:', error);
+      }
+    }
+    
     // Update in memory cache
-    const account = this.accounts.get(accountId);
     if (account) {
       account.balance = newBalance;
       this.accounts.set(accountId, account);
+      console.log(`💾 Balance updated in memory: Account ID=${accountId}, New Balance=${newBalance}`);
     }
     
     // Update in PostgreSQL database
@@ -688,6 +718,10 @@ class MemStorage implements IStorage {
     } catch (error) {
       console.error('Error updating balance in PostgreSQL:', error);
     }
+    
+    // Persist to JSON file for consistency
+    await this.saveData();
+    console.log(`📁 Balance persisted to JSON storage`);
   }
 
   async deleteAccountsByUserId(userId: number): Promise<boolean> {
