@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useRoute } from "wouter";
-import { ChevronLeft, ArrowUpRight, CreditCard, Building2, Zap, Check, Clock, MapPin, Globe, X, FileText } from "lucide-react";
+import { ChevronLeft, ChevronRight, ArrowUpRight, CreditCard, Building2, Zap, Check, Clock, MapPin, Globe, X, FileText, Search, Info, Home, ArrowRightLeft, Landmark } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import MiniSpendingChart from "../components/MiniSpendingChart";
 import { UserDataManager } from "../utils/userDataManager.ts";
 import { StateManager } from "../utils/stateManager";
 import { formatCurrency, getUserCurrency, getCurrencySymbol, type Currency } from "../utils/currencyUtils";
@@ -27,13 +26,13 @@ export default function TransactionHistoryWorking() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
   const [userCurrency, setUserCurrency] = useState<Currency>('EUR');
+  const [activeTab, setActiveTab] = useState('transactions');
   const [showTransferConfirmation, setShowTransferConfirmation] = useState(() => {
     const saved = localStorage.getItem('showTransferConfirmation');
     return saved !== null ? JSON.parse(saved) : true;
   });
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   
-  // Pay Bills state
   const [showPayBillsForm, setShowPayBillsForm] = useState(false);
   const [payBillsForm, setPayBillsForm] = useState({
     payee: '',
@@ -41,7 +40,6 @@ export default function TransactionHistoryWorking() {
     datetime: ''
   });
   
-  // Statement Generation state
   const [showStatementModal, setShowStatementModal] = useState(false);
   const [statementDateRange, setStatementDateRange] = useState({
     from: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0],
@@ -55,7 +53,6 @@ export default function TransactionHistoryWorking() {
   
   const accountId = params?.accountId ? parseInt(params.accountId) : 1;
 
-  // Listen for setting changes
   useEffect(() => {
     const handleStorageChange = () => {
       const saved = localStorage.getItem('showTransferConfirmation');
@@ -69,22 +66,18 @@ export default function TransactionHistoryWorking() {
     };
   }, []);
 
-  // Enhanced navigation with smooth animations
   const navigateWithAnimation = (path: string, animationType: 'slide-right' | 'slide-left' | 'slide-up' = 'slide-right') => {
     setIsNavigating(true);
     
-    // Add page transition classes
     const currentPage = document.querySelector('.page-container') || document.body;
     document.body.classList.add('page-transitioning');
     
-    // Add exit animation based on type
     if (animationType === 'slide-right') {
       currentPage.classList.add('page-slide-out-left');
     } else if (animationType === 'slide-left') {
       currentPage.classList.add('page-slide-out-right');
     }
     
-    // Navigate after animation starts
     setTimeout(() => {
       setLocation(path);
       setIsNavigating(false);
@@ -108,7 +101,6 @@ export default function TransactionHistoryWorking() {
       return;
     }
 
-    // Create new transaction
     const newBalance = currentBalance - amount;
     const transactionDate = new Date(payBillsForm.datetime);
     
@@ -125,31 +117,25 @@ export default function TransactionHistoryWorking() {
       payee: payBillsForm.payee
     };
 
-    // Update transactions
     const currentTransactions = UserDataManager.getUserData('bankTransactions', []);
     const updatedTransactions = [...currentTransactions, newTransaction];
     
-    // Sort all transactions by timestamp (newest first)
     updatedTransactions.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
     
     UserDataManager.setUserData('bankTransactions', updatedTransactions);
     
-    // Update balance
     const newBalanceString = newBalance.toFixed(2);
     setBalance(newBalanceString);
     
-    // Update account balance in accounts list
     const accounts = UserDataManager.getUserAccounts();
     const updatedAccounts = accounts.map((acc: Account) => 
       acc.id === accountId ? { ...acc, balance: newBalanceString } : acc
     );
     UserDataManager.setUserData('bankAccounts', updatedAccounts);
     
-    // Refresh transactions display with sorted transactions for this account
     const accountTransactions = updatedTransactions.filter(t => t.accountId === accountId);
     setTransactions(accountTransactions);
     
-    // Reset form and close modal
     setPayBillsForm({ payee: '', amount: '', datetime: '' });
     setShowPayBillsForm(false);
     
@@ -172,10 +158,8 @@ export default function TransactionHistoryWorking() {
     console.log('Opening transfer confirmation for:', selectedTransaction);
 
     try {
-      // Check if PDF is already saved with the transaction
       if (selectedTransaction.confirmationPdfData) {
         console.log('Using saved PDF data');
-        // Convert base64 back to blob and open
         const byteCharacters = atob(selectedTransaction.confirmationPdfData.split(',')[1]);
         const byteNumbers = new Array(byteCharacters.length);
         for (let i = 0; i < byteCharacters.length; i++) {
@@ -192,11 +176,10 @@ export default function TransactionHistoryWorking() {
         return;
       }
 
-      // If no saved PDF, generate it
       console.log('Generating new PDF');
       const userProfile = UserDataManager.getUserProfile();
       const accounts = UserDataManager.getUserAccounts();
-      const accountInfo = accounts.find((acc: any) => acc.id === selectedTransaction.accountId);
+      const accountInfoData = accounts.find((acc: any) => acc.id === selectedTransaction.accountId);
       
       const response = await fetch('/api/generate-transfer-confirmation', {
         method: 'POST',
@@ -206,7 +189,7 @@ export default function TransactionHistoryWorking() {
         body: JSON.stringify({
           transaction: selectedTransaction,
           senderName: userProfile?.name || 'Customer',
-          accountInfo: accountInfo?.displayName || 'Account',
+          accountInfo: accountInfoData?.displayName || 'Account',
           userCurrency: userProfile?.currency || 'EUR'
         }),
       });
@@ -245,7 +228,6 @@ export default function TransactionHistoryWorking() {
   const handleShareStatement = async () => {
     if (!statementPdfBlob || !statementFileName) return;
     
-    // Check if Web Share API is available (for mobile devices)
     if (navigator.share && navigator.canShare && navigator.canShare()) {
       try {
         const file = new File([statementPdfBlob], statementFileName, { type: 'application/pdf' });
@@ -255,7 +237,6 @@ export default function TransactionHistoryWorking() {
           files: [file]
         });
       } catch (error: any) {
-        // Only fallback to save if it's not a user cancellation
         if (error.name !== 'AbortError') {
           console.log('Share failed, falling back to save');
           handleSaveStatement();
@@ -264,13 +245,11 @@ export default function TransactionHistoryWorking() {
         }
       }
     } else {
-      // Fallback to save if Web Share API is not available
       handleSaveStatement();
     }
   };
 
   const handleCloseStatementSuccess = () => {
-    // Clean up any blob URLs to avoid memory leaks
     if (statementPdfBlob) {
       const blobUrl = window.URL.createObjectURL(statementPdfBlob);
       window.URL.revokeObjectURL(blobUrl);
@@ -284,7 +263,6 @@ export default function TransactionHistoryWorking() {
   };
 
   const handleGenerateStatement = async () => {
-    // Validate date range
     const fromDate = new Date(statementDateRange.from);
     const toDate = new Date(statementDateRange.to);
     
@@ -297,16 +275,13 @@ export default function TransactionHistoryWorking() {
     setStatementError('');
     
     try {
-      // Get user data
       const userData = UserDataManager.getUserProfile();
       const allTransactions = UserDataManager.getUserData('bankTransactions', []);
       const allAccounts = UserDataManager.getUserAccounts();
       
-      // Check if emails are enabled
       const emailsEnabled = localStorage.getItem('emailsEnabled');
       const sendEmail = emailsEnabled !== null ? JSON.parse(emailsEnabled) : true;
 
-      // Prepare request payload
       const requestPayload = {
         accountId: String(accountId),
         startDate: statementDateRange.from,
@@ -321,7 +296,6 @@ export default function TransactionHistoryWorking() {
         emailsEnabled: sendEmail
       };
       
-      // Call the backend API
       const response = await fetch('/api/generate-statement', {
         method: 'POST',
         headers: {
@@ -329,23 +303,21 @@ export default function TransactionHistoryWorking() {
         },
         body: JSON.stringify(requestPayload),
       });
-      
-      if (!response.ok) {
-        throw new Error('Failed to generate statement');
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const fileName = `BOI_Statement_${statementDateRange.from}_to_${statementDateRange.to}.pdf`;
+        
+        setStatementPdfBlob(blob);
+        setStatementFileName(fileName);
+        setStatementSuccessState(true);
+      } else {
+        const errorData = await response.json();
+        setStatementError(errorData.message || 'Failed to generate statement');
       }
-      
-      // Store the PDF blob and filename
-      const blob = await response.blob();
-      const fileName = `statement_${accountInfo?.displayName?.replace(/\s+/g, '_')}_${statementDateRange.from}_to_${statementDateRange.to}.pdf`;
-      
-      setStatementPdfBlob(blob);
-      setStatementFileName(fileName);
-      setStatementSuccessState(true);
-      setStatementError('');
-      
     } catch (error) {
       console.error('Error generating statement:', error);
-      setStatementError('Failed to generate statement. Please try again.');
+      setStatementError('An error occurred while generating the statement');
     } finally {
       setIsGeneratingStatement(false);
     }
@@ -354,61 +326,51 @@ export default function TransactionHistoryWorking() {
   const handleDeleteTransaction = () => {
     if (!selectedTransaction) return;
     
-    // Get all transactions using UserDataManager
-    const storedTransactions = UserDataManager.getUserData('bankTransactions', []);
+    const allTransactions = UserDataManager.getUserData('bankTransactions', []);
     
-    // Filter out the selected transaction
-    const updatedTransactions = storedTransactions.filter((tx: any) => tx.id !== selectedTransaction.id);
-    
-    // Add exchange rate data to existing UK transfers that don't have it
-    const enhancedTransactions = updatedTransactions.map((tx: any) => {
-      if (tx.paymentMethod === 'UK Transfer' && !tx.exchangeRate) {
+    const enhancedTransactions = allTransactions.map((tx: any) => {
+      if (tx.id === selectedTransaction.id) {
         const amount = parseFloat(tx.amount.replace('-', ''));
-        const sampleRate = 0.8456; // Sample EUR to GBP rate
-        return {
-          ...tx,
-          exchangeRate: sampleRate,
-          convertedAmount: (amount * sampleRate).toFixed(2),
-          convertedCurrency: 'GBP'
-        };
+        const currentBal = parseFloat(balance);
+        const newBal = tx.type === 'debit' ? currentBal + amount : currentBal - amount;
+        setBalance(newBal.toFixed(2));
+        
+        const accounts = UserDataManager.getUserAccounts();
+        const updatedAccounts = accounts.map((acc: Account) => 
+          acc.id === accountId ? { ...acc, balance: newBal.toFixed(2) } : acc
+        );
+        UserDataManager.setUserData('bankAccounts', updatedAccounts);
+        
+        return { ...tx, deleted: true };
       }
       return tx;
     });
     
-    // Update data using UserDataManager
     UserDataManager.setUserData('bankTransactions', enhancedTransactions);
     
-    // Update local state immediately with filtered account transactions
     const accountTransactions = enhancedTransactions.filter((tx: any) => tx.accountId === accountId);
     setTransactions(accountTransactions);
     
-    // Close modals
     setSelectedTransaction(null);
     setShowDeleteConfirm(false);
     
-    // Dispatch events to update other components
     window.dispatchEvent(new CustomEvent('transactionDeleted', {
       detail: { transactionId: selectedTransaction?.id }
     }));
     window.dispatchEvent(new CustomEvent('transactionUpdate'));
   };
 
-
-
   useEffect(() => {
     const loadData = () => {
-      // Clear cache to ensure we get fresh data
       UserDataManager.clearCache('bankTransactions');
       UserDataManager.clearCache('bankAccounts');
       
-      // Get stored transactions for this specific account using UserDataManager
       const storedTransactions = UserDataManager.getUserData('bankTransactions', []);
       
-      // Add exchange rate data to existing UK transfers that don't have it
       const updatedTransactions = storedTransactions.map((tx: any) => {
         if (tx.paymentMethod === 'UK Transfer' && !tx.exchangeRate) {
           const amount = parseFloat(tx.amount.replace('-', ''));
-          const sampleRate = 0.8456; // Sample EUR to GBP rate
+          const sampleRate = 0.8456;
           return {
             ...tx,
             exchangeRate: sampleRate,
@@ -419,7 +381,6 @@ export default function TransactionHistoryWorking() {
         return tx;
       });
       
-      // Update data with enhanced transactions using UserDataManager
       if (JSON.stringify(updatedTransactions) !== JSON.stringify(storedTransactions)) {
         UserDataManager.setUserData('bankTransactions', updatedTransactions);
       }
@@ -427,15 +388,10 @@ export default function TransactionHistoryWorking() {
       const accountTransactions = updatedTransactions.filter((tx: any) => tx.accountId === accountId);
       console.log('Loaded transactions for account', accountId, ':', accountTransactions);
       
-      // Don't set transactions here - wait for sorting
-      
-      // Load user's currency preference
       setUserCurrency(getUserCurrency());
       
-      // Get account info and balance using UserDataManager
       const storedAccounts = UserDataManager.getUserData('bankAccounts', []);
       
-      // Ensure storedAccounts is an array and not null
       if (Array.isArray(storedAccounts) && storedAccounts.length > 0) {
         const currentAccount = storedAccounts.find((acc: any) => acc.id === accountId);
         
@@ -444,7 +400,6 @@ export default function TransactionHistoryWorking() {
           setAccountInfo(currentAccount);
         }
       } else {
-        // Set default values if no accounts found
         setBalance('0.00');
         setAccountInfo({
           id: accountId,
@@ -455,9 +410,8 @@ export default function TransactionHistoryWorking() {
         });
       }
       
-      // Format stored transactions for this account (preserve all data including exchange rates)
       const formattedStored = accountTransactions.map((tx: any) => ({
-        ...tx, // Keep all original transaction data
+        ...tx,
         id: tx.id,
         amount: tx.amount,
         description: tx.description,
@@ -465,7 +419,6 @@ export default function TransactionHistoryWorking() {
         type: tx.type
       }));
       
-      // Only use actual stored transactions - no sample data
       const sortedTransactions = formattedStored.sort((a: any, b: any) => 
         new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
       );
@@ -475,7 +428,6 @@ export default function TransactionHistoryWorking() {
     
     loadData();
 
-    // Listen for transaction events
     const handleTransactionUpdate = () => {
       loadData();
     };
@@ -493,14 +445,11 @@ export default function TransactionHistoryWorking() {
     };
   }, []);
 
-  // Handle scroll position persistence
   useEffect(() => {
     const currentRoute = `/transactions/${accountId}`;
     
-    // Restore scroll position after component mounts
     StateManager.restoreScrollPosition(currentRoute, '.transaction-scroll-container');
     
-    // Save scroll position on scroll
     const handleScroll = () => {
       if (scrollContainerRef.current) {
         StateManager.saveScrollPosition(currentRoute, scrollContainerRef.current.scrollTop);
@@ -514,102 +463,221 @@ export default function TransactionHistoryWorking() {
     }
   }, [accountId]);
 
-  const getIcon = (description: string) => {
-    if (description.includes('Transfer')) return ArrowUpRight;
-    if (description.includes('ATM')) return CreditCard;
-    if (description.includes('ELECTRIC')) return Zap;
-    return Building2;
-  };
-
   const formatDate = (timestamp: string) => {
     const date = new Date(timestamp);
     const day = date.getDate().toString().padStart(2, '0');
-    const month = date.toLocaleDateString('en-GB', { month: 'short' });
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const year = date.getFullYear();
-    return `${day} ${month} ${year}`;
+    return `${day}/${month}/${year}`;
+  };
+
+  const getAccountNumber = () => {
+    return accountInfo?.accountNumber?.replace('****', '') || '2091';
   };
 
   return (
-    <div className="page-container h-screen bg-gray-50 flex flex-col overflow-hidden page-slide-in-right"
-      style={{ backgroundColor: '#f9fafb' }}>
-      <div className="bg-[#126987] text-white p-6 flex-shrink-0">
-        <div className="flex items-center justify-between mb-4">
-          <button onClick={() => navigateWithAnimation('/dashboard', 'slide-left')} className="flex items-center text-white">
-            <ChevronLeft className="w-5 h-5 mr-2" />
-            <span className="font-semibold text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              {accountInfo?.displayName || 'Account'}
-            </span>
-          </button>
-          <button
-            onClick={() => setShowStatementModal(true)}
-            className="p-2 hover:bg-white/10 rounded-full transition-colors"
-            aria-label="Generate statement"
-            data-testid="button-generate-statement"
-          >
-            <FileText className="w-5 h-5 text-white" />
+    <div className="page-container h-screen bg-white flex flex-col overflow-hidden page-slide-in-right">
+      {/* Header */}
+      <div className="bg-[#1a5276] px-4 py-4 flex items-center justify-between flex-shrink-0">
+        <button 
+          onClick={() => navigateWithAnimation('/dashboard', 'slide-left')}
+          className="p-2 hover:bg-white/20 rounded-full transition-colors"
+        >
+          <ChevronLeft className="h-6 w-6 text-white" />
+        </button>
+        
+        <h1 className="text-lg font-medium text-white flex-1 text-center">
+          {accountInfo?.displayName || 'Current Account'} ~ {getAccountNumber()}
+        </h1>
+        
+        <button className="p-2 hover:bg-white/20 rounded-full transition-colors">
+          <div className="w-7 h-7 rounded-full border-2 border-white/70 flex items-center justify-center">
+            <span className="text-white text-xs">👤</span>
+          </div>
+        </button>
+      </div>
+
+      {/* Balance Section */}
+      <div className="bg-[#2980b9] px-6 py-6 text-white">
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-4xl font-bold">{formatCurrency(balance, userCurrency)}</span>
+          <button className="p-1 hover:bg-white/20 rounded-full transition-colors">
+            <Info className="h-5 w-5 text-white/80" />
           </button>
         </div>
-        <div className="flex justify-between items-center">
-          <div>
-            <p className="text-sm opacity-90" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Account ending {accountInfo?.accountNumber?.replace('****', '-') || '-0000'}
-            </p>
-            <p className="text-xs opacity-75" style={{ fontFamily: 'OpenSans, sans-serif' }}>Available Balance</p>
-          </div>
-          <div className="text-right">
-            <p className="text-3xl font-bold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              {formatCurrency(balance, userCurrency)}
-            </p>
-          </div>
+        
+        <div className="border-b border-white/30 w-12 mb-4" />
+        
+        <button className="flex items-center gap-1 text-white hover:opacity-80 transition-opacity">
+          <span className="text-sm font-medium">BIC / IBAN</span>
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      </div>
+
+      {/* Tabs */}
+      <div className="bg-white px-4 py-4 flex gap-2 border-b border-gray-100">
+        <button
+          onClick={() => setActiveTab('transactions')}
+          className={`px-5 py-2.5 rounded-full font-medium text-sm transition-all ${
+            activeTab === 'transactions'
+              ? 'bg-[#1a5276] text-white'
+              : 'bg-white border border-gray-300 text-gray-700 hover:border-gray-400'
+          }`}
+        >
+          Transactions
+        </button>
+        <button
+          onClick={() => {
+            setActiveTab('statements');
+            setShowStatementModal(true);
+          }}
+          className={`px-5 py-2.5 rounded-full font-medium text-sm transition-all ${
+            activeTab === 'statements'
+              ? 'bg-[#1a5276] text-white'
+              : 'bg-white border border-gray-300 text-gray-700 hover:border-gray-400'
+          }`}
+        >
+          Statements
+        </button>
+        <button
+          onClick={() => setActiveTab('more')}
+          className={`px-5 py-2.5 rounded-full font-medium text-sm transition-all ${
+            activeTab === 'more'
+              ? 'bg-[#1a5276] text-white'
+              : 'bg-white border border-gray-300 text-gray-700 hover:border-gray-400'
+          }`}
+        >
+          More options
+        </button>
+      </div>
+
+      {/* Filter Section */}
+      <div className="bg-white px-4 py-4 border-b border-gray-100">
+        <div className="flex items-center justify-center gap-2">
+          <span className="text-gray-600 text-sm">Filter completed transactions</span>
+          <Search className="h-5 w-5 text-[#1a5276]" />
         </div>
       </div>
 
+      {/* Status Heading */}
+      <div className="bg-white px-4 pt-4 pb-2">
+        <div className="flex items-center gap-2">
+          <span className="text-[#1a5276] text-base font-medium border-b-2 border-[#1a5276] pb-2">Completed</span>
+          <button className="pb-2">
+            <Info className="h-4 w-4 text-gray-500" />
+          </button>
+        </div>
+      </div>
+
+      {/* Amount Header */}
+      <div className="bg-white px-4 py-2 flex justify-end">
+        <span className="text-gray-600 text-sm">Amount in {userCurrency === 'EUR' ? '€' : '£'}</span>
+      </div>
+
+      {/* Transaction List */}
       <div 
         ref={scrollContainerRef}
-        className="transaction-scroll-container flex-1 overflow-y-auto p-4"
-        style={{ 
-          minHeight: 0
-        }}
+        className="transaction-scroll-container flex-1 overflow-y-auto bg-white"
         data-scroll-container
         data-scroll-route={`/transactions/${accountId}`}
       >
-        {/* Mini spending chart for visual insights */}
-        <MiniSpendingChart accountId={accountId} />
-        
-        <h2 className="text-lg font-semibold text-gray-900 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-          Recent Transactions
-        </h2>
-
-        <div className="space-y-2 mb-6">
-          {transactions.map((transaction, index) => {
-            const IconComponent = getIcon(transaction.description);
+        <div className="divide-y divide-gray-100">
+          {transactions.filter(t => !t.deleted).map((transaction, index) => {
             const isDebit = transaction.type === 'debit' || transaction.amount.startsWith('-');
+            const amount = Math.abs(parseFloat(transaction.amount.replace('-', '')));
             
             return (
-              <button 
-                key={`${transaction.id}-${index}`} 
+              <div 
+                key={`${transaction.id}-${index}`}
                 onClick={() => setSelectedTransaction(transaction)}
-                className="w-full bg-white rounded-lg flex items-center justify-between px-4 py-4 shadow-sm border border-gray-100 active:scale-98 transition-transform active:bg-gray-50"
+                className="px-4 py-4 hover:bg-gray-50 transition-colors cursor-pointer flex items-center justify-between"
               >
-                <div className="flex items-center flex-1">
-                  <div className="text-left">
-                    <p className="font-medium text-gray-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      {transaction.description}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      {formatDate(transaction.timestamp)}
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className={`font-semibold text-sm ${isDebit ? 'text-gray-900' : 'text-green-600'}`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {formatCurrency(transaction.amount.replace('-', ''), userCurrency)}
+                {/* Left side */}
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-900 mb-1">
+                    {transaction.reference || transaction.id}
+                  </p>
+                  <p className="text-xs text-gray-600 mb-1">
+                    {transaction.iban || transaction.recipientAccountNumber || `4319401827062009`}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {formatDate(transaction.timestamp)}
                   </p>
                 </div>
-              </button>
+
+                {/* Right side */}
+                <div className="ml-4 flex items-center gap-3">
+                  <div className="text-right">
+                    <p className={`text-sm font-semibold mb-1 ${
+                      isDebit ? 'text-gray-900' : 'text-green-600'
+                    }`}>
+                      {isDebit ? '−' : '+'} {amount.toFixed(2)}
+                    </p>
+                    <p className="text-xs text-gray-500 italic">View details</p>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-[#1a5276]" />
+                </div>
+              </div>
             );
           })}
+          
+          {transactions.filter(t => !t.deleted).length === 0 && (
+            <div className="px-4 py-12 text-center text-gray-500">
+              <p>No transactions found</p>
+            </div>
+          )}
         </div>
+      </div>
+
+      {/* Bottom Banner */}
+      <div className="bg-[#1a5276] px-4 py-4 text-white flex items-center justify-between flex-shrink-0">
+        <div className="flex items-center gap-2">
+          <Info className="h-4 w-4" />
+          <span className="text-sm">See an unfamiliar transaction?</span>
+        </div>
+        <button className="flex items-center gap-1 hover:opacity-80 transition-opacity">
+          <span className="text-sm font-medium">Find out more</span>
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      </div>
+
+      {/* Bottom Navigation */}
+      <div className="bg-white border-t border-gray-200 px-2 py-2 flex justify-around items-center flex-shrink-0">
+        <button 
+          onClick={() => navigateWithAnimation('/dashboard', 'slide-left')}
+          className="flex flex-col items-center gap-1 p-2 hover:bg-gray-100 rounded-lg transition-colors"
+        >
+          <Home className="h-5 w-5 text-[#1a5276]" />
+          <span className="text-xs text-[#1a5276] font-medium">Accounts</span>
+        </button>
+        <button 
+          onClick={() => navigateWithAnimation('/payments', 'slide-right')}
+          className="flex flex-col items-center gap-1 p-2 hover:bg-gray-100 rounded-lg transition-colors"
+        >
+          <ArrowRightLeft className="h-5 w-5 text-gray-500" />
+          <span className="text-xs text-gray-500">Payments</span>
+        </button>
+        <button 
+          onClick={() => navigateWithAnimation('/cards', 'slide-right')}
+          className="flex flex-col items-center gap-1 p-2 hover:bg-gray-100 rounded-lg transition-colors"
+        >
+          <CreditCard className="h-5 w-5 text-gray-500" />
+          <span className="text-xs text-gray-500">Cards</span>
+        </button>
+        <button 
+          onClick={() => navigateWithAnimation('/more', 'slide-right')}
+          className="flex flex-col items-center gap-1 p-2 hover:bg-gray-100 rounded-lg transition-colors"
+        >
+          <Landmark className="h-5 w-5 text-gray-500" />
+          <span className="text-xs text-gray-500">Services</span>
+        </button>
+        <button 
+          onClick={() => navigateWithAnimation('/apply', 'slide-right')}
+          className="flex flex-col items-center gap-1 p-2 hover:bg-gray-100 rounded-lg transition-colors"
+        >
+          <FileText className="h-5 w-5 text-gray-500" />
+          <span className="text-xs text-gray-500">Apply</span>
+        </button>
       </div>
 
       {/* Transaction Detail Modal */}
@@ -627,9 +695,8 @@ export default function TransactionHistoryWorking() {
               exit={{ y: "100%" }}
               transition={{ type: "tween", duration: 0.3, ease: "easeOut" }}
             >
-            {/* Fixed header with close button */}
             <div className="flex items-center justify-between p-6 pb-4 border-b border-gray-200 flex-shrink-0">
-              <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              <h2 className="text-xl font-bold text-gray-900">
                 Transaction Details
               </h2>
               <button 
@@ -640,49 +707,45 @@ export default function TransactionHistoryWorking() {
               </button>
             </div>
 
-            {/* Scrollable content area */}
             <div className="flex-1 overflow-y-auto" style={{ maxHeight: 'calc(90vh - 120px)' }}>
               <div className="p-6 pt-4 pb-24">
                 <div className="space-y-6">
-              {/* Transaction Status */}
               <div className="flex items-center justify-center py-4 bg-green-50 rounded-xl">
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                     <Check className="w-6 h-6 text-green-600" />
                   </div>
                   <div>
-                    <p className="font-semibold text-green-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    <p className="font-semibold text-green-900">
                       Transaction Complete
                     </p>
-                    <p className="text-sm text-green-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    <p className="text-sm text-green-700">
                       Successfully processed
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* Amount */}
               <div className="text-center py-4 border-b border-gray-200">
-                <p className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                <p className="text-3xl font-bold text-gray-900">
                   {formatCurrency(selectedTransaction.amount.replace('-', ''), userCurrency)}
                 </p>
-                <p className="text-sm text-gray-500 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                <p className="text-sm text-gray-500 mt-1">
                   {selectedTransaction.type === 'debit' ? 'Sent' : 'Received'}
                 </p>
               </div>
 
-              {/* Transaction Details */}
               <div className="space-y-4">
                 <div className="flex justify-between">
-                  <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Description:</span>
-                  <span className="font-semibold text-gray-900 text-right" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  <span className="text-gray-600">Description:</span>
+                  <span className="font-semibold text-gray-900 text-right">
                     {selectedTransaction.description}
                   </span>
                 </div>
 
                 {selectedTransaction.paymentMethod && (
                   <div className="flex justify-between">
-                    <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    <span className="text-gray-600">
                       {selectedTransaction.paymentMethod === 'Manual Entry' ? 'Payment Method:' : 'Transfer Type:'}
                     </span>
                     <div className="flex items-center space-x-2">
@@ -691,7 +754,7 @@ export default function TransactionHistoryWorking() {
                       ) : (
                         <Globe className="w-4 h-4 text-[#126987]" />
                       )}
-                      <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      <span className="font-semibold text-gray-900">
                         {selectedTransaction.paymentMethod === 'Manual Entry' ? 'Direct Transaction' : selectedTransaction.paymentMethod}
                       </span>
                     </div>
@@ -699,16 +762,16 @@ export default function TransactionHistoryWorking() {
                 )}
 
                 <div className="flex justify-between">
-                  <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Date & Time:</span>
+                  <span className="text-gray-600">Date & Time:</span>
                   <div className="text-right">
-                    <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    <p className="font-semibold text-gray-900">
                       {new Date(selectedTransaction.timestamp).toLocaleDateString('en-IE', { 
                         day: 'numeric', 
                         month: 'long', 
                         year: 'numeric' 
                       })}
                     </p>
-                    <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    <p className="text-sm text-gray-500">
                       {new Date(selectedTransaction.timestamp).toLocaleTimeString('en-IE', { 
                         hour: '2-digit', 
                         minute: '2-digit' 
@@ -718,67 +781,61 @@ export default function TransactionHistoryWorking() {
                 </div>
 
                 <div className="flex justify-between">
-                  <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Transaction ID:</span>
-                  <span className="font-mono text-sm text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {selectedTransaction.id || ''}
+                  <span className="text-gray-600">Transaction ID:</span>
+                  <span className="font-mono text-sm text-gray-900">
+                    {selectedTransaction.reference || `TXN${selectedTransaction.id}`}
                   </span>
                 </div>
 
                 <div className="flex justify-between">
-                  <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Category:</span>
-                  <span className="font-semibold text-gray-900 capitalize" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  <span className="text-gray-600">Category:</span>
+                  <span className="font-semibold text-gray-900 capitalize">
                     {selectedTransaction.category}
                   </span>
                 </div>
 
-                {/* Recipient Information for all transfer types */}
                 {(selectedTransaction.paymentMethod === 'UK Transfer' || selectedTransaction.paymentMethod === 'IBAN Transfer' || selectedTransaction.iban || selectedTransaction.recipientAccountNumber) && (
                   <>
-                    {/* Recipient Name */}
                     {selectedTransaction.recipientName && (
                       <div className="flex justify-between">
-                        <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Recipient:</span>
-                        <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <span className="text-gray-600">Recipient:</span>
+                        <span className="font-semibold text-gray-900">
                           {selectedTransaction.recipientName}
                         </span>
                       </div>
                     )}
 
-                    {/* IBAN for SEPA Transfers */}
                     {selectedTransaction.iban && (
                       <div className="flex justify-between">
-                        <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>IBAN:</span>
-                        <span className="font-semibold text-gray-900 font-mono text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <span className="text-gray-600">IBAN:</span>
+                        <span className="font-semibold text-gray-900 font-mono text-sm">
                           {selectedTransaction.iban}
                         </span>
                       </div>
                     )}
 
-                    {/* BIC Code for SEPA Transfers */}
                     {selectedTransaction.bicCode && (
                       <div className="flex justify-between">
-                        <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>BIC Code:</span>
-                        <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <span className="text-gray-600">BIC Code:</span>
+                        <span className="font-semibold text-gray-900">
                           {selectedTransaction.bicCode}
                         </span>
                       </div>
                     )}
 
-                    {/* Reference for IBAN Transfers */}
                     {selectedTransaction.paymentMethod === 'SEPA Transfer' && selectedTransaction.reference && (
                       <div className="flex justify-between">
-                        <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Reference:</span>
-                        <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <span className="text-gray-600">Reference:</span>
+                        <span className="font-semibold text-gray-900">
                           {selectedTransaction.reference}
                         </span>
                       </div>
                     )}
 
-                    {/* UK Transfer Details */}
                     {selectedTransaction.paymentMethod === 'UK Transfer' && selectedTransaction.recipientSortCode && (
                       <div className="flex justify-between">
-                        <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Sort Code:</span>
-                        <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <span className="text-gray-600">Sort Code:</span>
+                        <span className="font-semibold text-gray-900">
                           {selectedTransaction.recipientSortCode.replace(/(\d{2})(\d{2})(\d{2})/, '$1-$2-$3')}
                         </span>
                       </div>
@@ -786,18 +843,17 @@ export default function TransactionHistoryWorking() {
                     
                     {selectedTransaction.paymentMethod === 'UK Transfer' && selectedTransaction.recipientAccountNumber && (
                       <div className="flex justify-between">
-                        <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Account Number:</span>
-                        <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <span className="text-gray-600">Account Number:</span>
+                        <span className="font-semibold text-gray-900">
                           {selectedTransaction.recipientAccountNumber}
                         </span>
                       </div>
                     )}
 
-                    {/* Payment Reference for UK Transfers only */}
                     {selectedTransaction.paymentMethod === 'UK Transfer' && selectedTransaction.reference && (
                       <div className="flex justify-between">
-                        <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Reference:</span>
-                        <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <span className="text-gray-600">Reference:</span>
+                        <span className="font-semibold text-gray-900">
                           {selectedTransaction.reference}
                         </span>
                       </div>
@@ -805,29 +861,28 @@ export default function TransactionHistoryWorking() {
                   </>
                 )}
 
-                {/* Conversion Rate for UK Transfers - Only show when user currency is EUR */}
                 {selectedTransaction.paymentMethod === 'UK Transfer' && selectedTransaction.exchangeRate && userCurrency === 'EUR' && (
                   <>
                     <div className="border-t border-gray-200 pt-4 mt-4">
-                      <h4 className="font-semibold text-gray-900 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      <h4 className="font-semibold text-gray-900 mb-3">
                         Currency Conversion
                       </h4>
                     </div>
                     
                     <div className="flex justify-between">
-                      <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Exchange Rate:</span>
-                      <span className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      <span className="text-gray-600">Exchange Rate:</span>
+                      <span className="font-semibold text-gray-900">
                         €1 = £{selectedTransaction.exchangeRate.toFixed(4)}
                       </span>
                     </div>
 
                     <div className="flex justify-between">
-                      <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>GBP Equivalent:</span>
+                      <span className="text-gray-600">GBP Equivalent:</span>
                       <div className="text-right">
-                        <span className="font-semibold text-green-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <span className="font-semibold text-green-700">
                           £{selectedTransaction.convertedAmount}
                         </span>
-                        <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <p className="text-xs text-gray-500">
                           Live rate at time of transfer
                         </p>
                       </div>
@@ -835,11 +890,10 @@ export default function TransactionHistoryWorking() {
                   </>
                 )}
 
-                {/* Timescale and warning for UK Transfers - Always show */}
                 {selectedTransaction.paymentMethod === 'UK Transfer' && (
                   <div className="border-t border-gray-200 pt-4 mt-4">
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                      <p className="text-sm text-blue-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      <p className="text-sm text-blue-800">
                         {userCurrency === 'EUR' 
                           ? <><strong>International Transfer:</strong> UK transfers typically take 24 hours to reach the recipient.</>
                           : <>UK transfers typically take 24 hours to reach the recipient.</>}
@@ -847,37 +901,34 @@ export default function TransactionHistoryWorking() {
                     </div>
 
                     <div className="bg-red-50 border border-red-300 rounded-lg p-3 mt-3">
-                      <p className="text-sm text-red-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      <p className="text-sm text-red-700">
                         This payment cannot be cancelled
                       </p>
                     </div>
                   </div>
                 )}
 
-                {/* Show processing time message for SEPA transfers */}
                 {selectedTransaction.paymentMethod === 'SEPA Transfer' && (
                   <div className="border-t border-gray-200 pt-4 mt-4">
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                      <p className="text-sm text-blue-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      <p className="text-sm text-blue-800">
                         <strong>SEPA Transfer:</strong> Transfers within the SEPA zone typically take 24 hours to complete.
                       </p>
                     </div>
 
                     <div className="bg-red-50 border border-red-300 rounded-lg p-3 mt-3">
-                      <p className="text-sm text-red-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      <p className="text-sm text-red-700">
                         This payment cannot be cancelled
                       </p>
                     </div>
                   </div>
                 )}
 
-                {/* Open Transfer Confirmation Button - Only for transfers (exclude custom transactions) and if enabled in settings */}
                 {selectedTransaction.paymentMethod && selectedTransaction.paymentMethod !== 'Manual Entry' && showTransferConfirmation && (
                   <div className="border-t border-gray-200 pt-6 mt-6">
                     <button
                       onClick={handleOpenTransferConfirmation}
                       className="w-full px-4 py-3 bg-[#126987] text-white rounded-lg font-medium hover:bg-[#3a5963] transition-colors flex items-center justify-center space-x-2"
-                      style={{ fontFamily: 'OpenSans, sans-serif' }}
                       data-testid="button-open-transfer-confirmation"
                     >
                       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -889,8 +940,6 @@ export default function TransactionHistoryWorking() {
                   </div>
                 )}
               </div>
-
-
                 </div>
               </div>
             </div>
@@ -904,9 +953,8 @@ export default function TransactionHistoryWorking() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
              style={{ zIndex: 9999 }}>
           <div className="bg-white rounded-lg w-full max-w-md">
-            {/* Modal Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>Pay Bills</h2>
+              <h2 className="text-lg font-semibold text-gray-900">Pay Bills</h2>
               <button
                 onClick={() => setShowPayBillsForm(false)}
                 className="p-1 hover:bg-gray-100 rounded-full transition-colors"
@@ -915,10 +963,9 @@ export default function TransactionHistoryWorking() {
               </button>
             </div>
 
-            {/* Modal Form */}
             <form onSubmit={handlePayBillsSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Payee
                 </label>
                 <input
@@ -926,14 +973,13 @@ export default function TransactionHistoryWorking() {
                   value={payBillsForm.payee}
                   onChange={(e) => setPayBillsForm(prev => ({ ...prev, payee: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
                   placeholder="Enter payee name (e.g., Electric Ireland)"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Amount (€)
                 </label>
                 <input
@@ -944,17 +990,16 @@ export default function TransactionHistoryWorking() {
                   value={payBillsForm.amount}
                   onChange={(e) => setPayBillsForm(prev => ({ ...prev, amount: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
                   placeholder="0.00"
                   required
                 />
-                <p className="text-xs text-gray-500 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                <p className="text-xs text-gray-500 mt-1">
                   Available balance: €{balance}
                 </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Date & Time
                 </label>
                 <input
@@ -962,25 +1007,21 @@ export default function TransactionHistoryWorking() {
                   value={payBillsForm.datetime}
                   onChange={(e) => setPayBillsForm(prev => ({ ...prev, datetime: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
                   required
                 />
               </div>
 
-              {/* Submit Button */}
               <div className="flex space-x-3 mt-6">
                 <button
                   type="button"
                   onClick={() => setShowPayBillsForm(false)}
                   className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   className="flex-1 px-4 py-2 bg-[#126987] text-white rounded-lg font-medium hover:bg-[#3a5963] transition-colors"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
                 >
                   Submit Payment
                 </button>
@@ -1002,9 +1043,8 @@ export default function TransactionHistoryWorking() {
               exit={{ y: "100%" }}
               transition={{ type: "tween", duration: 0.3, ease: "easeOut" }}
             >
-            {/* Modal Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
-              <h2 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              <h2 className="text-lg font-semibold text-gray-900">
                 Generate Statement
               </h2>
               <button
@@ -1016,24 +1056,21 @@ export default function TransactionHistoryWorking() {
               </button>
             </div>
 
-            {/* Modal Content */}
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
               {!statementSuccessState ? (
                 <>
-                  {/* Account Info - Read Only */}
                   <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>Account</p>
-                    <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    <p className="text-sm text-gray-600 mb-1">Account</p>
+                    <p className="font-semibold text-gray-900">
                       {accountInfo?.displayName || 'Current Account'}
                     </p>
-                    <p className="text-sm text-gray-600 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    <p className="text-sm text-gray-600 mt-1">
                       {accountInfo?.accountNumber || '****0000'} • Sort Code: 90-78-68
                     </p>
                   </div>
 
-                  {/* Date Range Selection */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       From Date
                     </label>
                     <input
@@ -1044,13 +1081,12 @@ export default function TransactionHistoryWorking() {
                         setStatementError('');
                       }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent"
-                      style={{ fontFamily: 'OpenSans, sans-serif' }}
                       data-testid="input-statement-from-date"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       To Date
                     </label>
                     <input
@@ -1061,21 +1097,18 @@ export default function TransactionHistoryWorking() {
                         setStatementError('');
                       }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#126987] focus:border-transparent"
-                      style={{ fontFamily: 'OpenSans, sans-serif' }}
                       data-testid="input-statement-to-date"
                     />
                   </div>
 
-                  {/* Error Message */}
                   {statementError && (
                     <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                      <p className="text-sm text-red-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      <p className="text-sm text-red-800">
                         {statementError}
                       </p>
                     </div>
                   )}
 
-                  {/* Action Buttons */}
                   <div className="flex space-x-3 mt-6">
                     <button
                       type="button"
@@ -1084,7 +1117,6 @@ export default function TransactionHistoryWorking() {
                         setStatementError('');
                       }}
                       className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
-                      style={{ fontFamily: 'OpenSans, sans-serif' }}
                       disabled={isGeneratingStatement}
                       data-testid="button-cancel-statement"
                     >
@@ -1094,7 +1126,6 @@ export default function TransactionHistoryWorking() {
                       type="button"
                       onClick={handleGenerateStatement}
                       className="flex-1 px-4 py-2 bg-[#126987] text-white rounded-lg font-medium hover:bg-[#3a5963] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                      style={{ fontFamily: 'OpenSans, sans-serif' }}
                       disabled={isGeneratingStatement}
                       data-testid="button-generate-statement"
                     >
@@ -1111,26 +1142,23 @@ export default function TransactionHistoryWorking() {
                 </>
               ) : (
                 <>
-                  {/* Success State with Quick Actions */}
                   <div className="text-center py-4">
                     <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
                       <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
                       Statement Generated Successfully
                     </h3>
-                    <p className="text-sm text-gray-600 mb-6" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    <p className="text-sm text-gray-600 mb-6">
                       Your statement for {accountInfo?.displayName || 'account'} is ready
                     </p>
 
-                    {/* Quick Action Buttons */}
                     <div className="space-y-3">
                       <button
                         onClick={handleOpenStatement}
                         className="w-full px-4 py-3 bg-[#126987] text-white rounded-lg font-medium hover:bg-[#3a5963] transition-colors flex items-center justify-center space-x-2"
-                        style={{ fontFamily: 'OpenSans, sans-serif' }}
                         data-testid="button-open-statement"
                       >
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
