@@ -134,9 +134,8 @@ export default function Dashboard() {
     };
     checkTouchDevice();
     
-    // Calculate monthly insights from transactions
+    // Calculate monthly insights from ALL accounts combined
     const calculateMonthlyInsights = () => {
-      const transactions = UserDataManager.getUserData('bankTransactions', []);
       const now = new Date();
       const currentMonth = now.getMonth();
       const currentYear = now.getFullYear();
@@ -150,7 +149,30 @@ export default function Dashboard() {
       let previousMonthIn = 0;
       let previousMonthOut = 0;
       
-      transactions.forEach((tx: any) => {
+      // Get transactions from main bankTransactions
+      const mainTransactions = UserDataManager.getUserData('bankTransactions', []);
+      
+      // Also check for account-specific transactions
+      const accounts = UserDataManager.getUserData('bankAccounts', []);
+      let allTransactions = [...mainTransactions];
+      
+      // Collect transactions from each account if stored separately
+      accounts.forEach((account: any) => {
+        const accountTransactions = UserDataManager.getUserData(`transactions_${account.id}`, []);
+        allTransactions = [...allTransactions, ...accountTransactions];
+      });
+      
+      // Remove duplicates by transaction id if present
+      const seenIds = new Set();
+      const uniqueTransactions = allTransactions.filter((tx: any) => {
+        if (tx.id && seenIds.has(tx.id)) {
+          return false;
+        }
+        if (tx.id) seenIds.add(tx.id);
+        return true;
+      });
+      
+      uniqueTransactions.forEach((tx: any) => {
         const txDate = new Date(tx.date);
         const txMonth = txDate.getMonth();
         const txYear = txDate.getFullYear();
