@@ -141,7 +141,8 @@ class MemStorage implements IStorage {
       // CRITICAL FIX: Sync PostgreSQL customers to local users storage
       await this.syncCustomersToUsers();
       
-      // NOTE: Accounts are loaded on-demand per customer, not bulk-loaded at startup
+      // CRITICAL FIX: Sync accounts from PostgreSQL to memory at startup
+      await this.syncAccountsFromPostgres();
     } catch (error) {
       console.error('Error loading persisted data:', error);
     }
@@ -236,9 +237,13 @@ class MemStorage implements IStorage {
           }
         } else {
           // User already exists - sync profile data from PostgreSQL (source of truth)
-          // Keep existing PIN (not stored in PostgreSQL for security)
+          // CRITICAL FIX: Also update user ID to match PostgreSQL customer ID
+          const oldId = existingUser.id;
+          const newId = customer.id;
+          
           const updatedUser: User = {
             ...existingUser,
+            id: newId, // CRITICAL: Update ID to match PostgreSQL
             name: customer.name || existingUser.name,
             email: customer.email || existingUser.email,
             phone: customer.phone || existingUser.phone,
@@ -247,7 +252,28 @@ class MemStorage implements IStorage {
             joinDate: customer.joinDate || existingUser.joinDate,
             currency: customer.currency || existingUser.currency
           };
-          this.users.set(existingUser.id, updatedUser);
+          
+          // Remove old entry if ID changed
+          if (oldId !== newId) {
+            this.users.delete(oldId);
+            console.log(`🔄 Updated user ID: ${oldId} → ${newId} for ${customer.customerNumber}`);
+            
+            // Also update any accounts in PostgreSQL that use the old ID
+            try {
+              const { db } = await import('./db');
+              const { eq } = await import('drizzle-orm');
+              
+              const accountsToUpdate = await db.select().from(accounts).where(eq(accounts.userId, oldId));
+              if (accountsToUpdate.length > 0) {
+                await db.update(accounts).set({ userId: newId }).where(eq(accounts.userId, oldId));
+                console.log(`🔄 Migrated ${accountsToUpdate.length} accounts from user ID ${oldId} → ${newId}`);
+              }
+            } catch (migrationError) {
+              console.error(`Error migrating accounts for user ${customer.customerNumber}:`, migrationError);
+            }
+          }
+          
+          this.users.set(newId, updatedUser);
           
           // Update currentUserId counter if PostgreSQL ID is higher
           if (customer.id >= this.currentUserId) {
