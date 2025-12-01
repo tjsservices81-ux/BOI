@@ -1,0 +1,151 @@
+You are updating an existing PWA banking app UI. The app already exists — you are ONLY fixing and rebuilding the transaction history screen to match the most recent screenshot I uploaded, with pixel-perfect accuracy.
+
+Follow ALL instructions below:
+
+===========================================================
+1. GENERAL BUILD REQUIREMENTS
+===========================================================
+• Platform: HTML, CSS, JavaScript (PWA).
+• Width: 430px fixed layout (iPhone 16 Pro base width).
+• The rest of the app already exists — ONLY rebuild the transaction history screen.
+• All text, numbers, amounts, and labels MUST be kept EXACTLY as shown in the screenshot.
+• Do not generate placeholders where the screenshot contains text — keep everything exactly as the screenshot shows.
+
+===========================================================
+2. SCREEN ELEMENTS THAT MUST BE PERFECT
+===========================================================
+Recreate these EXACTLY as they appear in the screenshot:
+
+• Status bar spacing
+• Top header/navigation bar
+• Account title + right profile icon
+• Balance card section with gradient + exact currency formatting + info icon
+• Divider below balance
+• “BIC / IBAN >” row
+• Tab bar: Transactions / Statements / More options
+• Search filter line with magnifying glass icon
+• “Completed” header with gold/brown info icon + underline
+• FULL transaction list EXACTLY as shown:
+    - Transaction titles
+    - IDs
+    - Dates
+    - Amounts (black and green)
+    - Row spacing, padding, background tints
+    - Right chevron icons
+• Bottom teal info bar (“See an unfamiliar transaction?”)
+• Bottom navigation bar with exact icons and labels
+
+Everything must match the screenshot visually, spacing-wise, and structurally.
+
+===========================================================
+3. COLOR MAP REQUIREMENT (MANDATORY)
+===========================================================
+Extract EVERY unique color from the screenshot and define them as CSS variables.
+Include:
+
+• All teal/blue backgrounds and gradients
+• Tab active-state bubble blue
+• Divider line blues
+• Text colors (black variations, gray variations, white variations)
+• Gold/brown info icon color
+• Positive-green amount color
+• Background off-white tints
+• Bottom-nav bar color
+• Icon stroke colors
+
+Use EXACT HEX values taken from the screenshot (no approximations).
+Apply these variables consistently throughout the CSS.
+
+===========================================================
+4. MEASUREMENT MAP REQUIREMENT (MANDATORY)
+===========================================================
+For EACH visible element, measure and implement:
+
+• Exact pixel height
+• Exact pixel width (if fixed)
+• Vertical spacing between blocks
+• Left/right padding
+• Line heights
+• Font sizes
+• Border radiuses
+• Icon sizes
+• Tab shapes and padding
+• Row heights in the transaction list
+• Underline length for the “Completed” tab
+• Position of all icons relative to text
+
+Match the screenshot with pixel-level accuracy.
+
+===========================================================
+5. SVG ICON RECREATION (MANDATORY)
+===========================================================
+Recreate every icon as SVG:
+
+• Back arrow
+• User profile circle icon
+• Info (i) icons — both the balance version and the “Completed” gold/brown version
+• Magnifying glass search icon
+• Right chevron arrows for each transaction row
+• Bottom nav icons (Accounts, Payments, Cards, Apply, More)
+
+SVGs must match:
+
+• Exact proportions
+• Exact stroke width
+• Exact roundness/joins
+• Exact opacity and color
+
+Icons must visually match screenshot shape, not just generic replacements.
+
+===========================================================
+6. TYPOGRAPHY REQUIREMENTS
+===========================================================
+Use closest-match iOS typography:
+
+font-family: -apple-system, BlinkMacSystemFont, 'SF Pro', sans-serif;
+
+Match EXACT:
+
+• Font weight hierarchy
+• Font sizes
+• Letter spacing
+• Line height
+• Alignment
+
+===========================================================
+7. INTERACTION REQUIREMENTS
+===========================================================
+• Tabs must switch views (placeholder content acceptable for non-active tabs).
+• Clicking a transaction row should highlight or ripple.
+• Bottom nav should highlight the active section.
+
+===========================================================
+8. REFINEMENT LOOP (MANDATORY)
+===========================================================
+After generating the first version, run a refinement pass:
+
+1) Compare your output visually to the screenshot.
+2) Adjust spacing, color, and typography until nearly identical.
+3) Ensure no rounding errors or mismatched colors.
+4) Ensure icons match perfectly.
+5) Correct any off-by-1px alignments.
+
+===========================================================
+9. QUALITY STANDARD
+===========================================================
+The final rendered result must be:
+• Visually indistinguishable from the screenshot at 430px width.
+• Pixel-perfect in spacing, layout, typography, and color.
+• Fully functional as part of the existing PWA.
+
+===========================================================
+10. DELIVERABLES
+===========================================================
+Produce:
+• Updated HTML
+• Updated CSS (with full color map variables)
+• SVG icon files or inline <svg> tags
+• Updated JS for interactions (tabs + row feedback)
+• A refinement summary describing improvements
+
+Now generate the complete pixel-perfect updated transaction history screen.

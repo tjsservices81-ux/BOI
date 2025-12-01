@@ -475,81 +475,145 @@ export default function TransactionHistoryWorking() {
     return accountInfo?.accountNumber?.replace('****', '') || '2091';
   };
 
+  const styles = {
+    colors: {
+      headerGradientStart: '#1B6B7C',
+      headerGradientEnd: '#164E5C',
+      balanceGradientStart: '#164E5C',
+      balanceGradientEnd: '#1B6B7C',
+      tabActiveBg: '#1B6B7C',
+      tabInactiveBorder: '#D1D5DB',
+      tabBg: '#F3F4F6',
+      filterBg: '#FFFFFF',
+      completedText: '#1B6B7C',
+      completedUnderline: '#1B6B7C',
+      goldInfoIcon: '#B8860B',
+      amountPositive: '#16A34A',
+      amountNegative: '#1F2937',
+      textPrimary: '#1F2937',
+      textSecondary: '#4B5563',
+      textMuted: '#6B7280',
+      textWhite: '#FFFFFF',
+      profileBorder: '#7DD3E8',
+      profileBg: 'rgba(27, 107, 124, 0.35)',
+      dividerLight: '#E5E7EB',
+      bannerBg: '#1B6B7C',
+    },
+    fonts: {
+      family: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', sans-serif",
+    }
+  };
+
   return (
-    <div className="page-container h-screen bg-white flex flex-col overflow-hidden page-slide-in-right" style={{ fontFamily: "'Open Sans', sans-serif" }}>
-      {/* Header - 64px height, gradient background */}
+    <div 
+      className="page-container h-screen bg-white flex flex-col overflow-hidden page-slide-in-right" 
+      style={{ fontFamily: styles.fonts.family, maxWidth: '430px', margin: '0 auto' }}
+    >
+      {/* Header - 56px height */}
       <div 
         className="flex items-center justify-between flex-shrink-0"
         style={{ 
-          background: 'linear-gradient(180deg, #0E5C75 0%, #154B63 100%)',
+          background: `linear-gradient(180deg, ${styles.colors.headerGradientStart} 0%, ${styles.colors.headerGradientEnd} 100%)`,
           height: '56px',
           padding: '0 16px'
         }}
       >
         <button 
           onClick={() => navigateWithAnimation('/dashboard', 'slide-left')}
-          className="p-1 hover:bg-white/20 rounded-full transition-colors"
+          className="flex items-center justify-center"
+          style={{ width: '40px', height: '40px' }}
         >
-          <ChevronLeft className="text-white" style={{ width: '24px', height: '24px' }} />
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
         </button>
         
-        <h1 style={{ fontSize: '16px', fontWeight: 600, color: 'white', letterSpacing: 0 }}>
+        <h1 style={{ 
+          fontSize: '17px', 
+          fontWeight: 600, 
+          color: styles.colors.textWhite, 
+          letterSpacing: '-0.2px'
+        }}>
           {accountInfo?.displayName || 'Current Account'} ~ {getAccountNumber()}
         </h1>
         
-        <button className="hover:bg-white/20 rounded-full transition-colors">
+        <button className="flex items-center justify-center" style={{ width: '40px', height: '40px' }}>
           <div 
             className="rounded-full flex items-center justify-center"
             style={{ 
-              width: '32px', 
-              height: '32px', 
-              border: '2px solid #8CCBDE',
-              backgroundColor: 'rgba(26, 103, 133, 0.3)'
+              width: '34px', 
+              height: '34px', 
+              border: `2px solid ${styles.colors.profileBorder}`,
+              backgroundColor: styles.colors.profileBg
             }}
           >
-            <svg style={{ width: '18px', height: '18px', color: '#8CCBDE' }} fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill={styles.colors.profileBorder}>
+              <circle cx="12" cy="8" r="4"/>
+              <path d="M12 14c-4 0-7 2-7 4v2h14v-2c0-2-3-4-7-4z"/>
             </svg>
           </div>
         </button>
       </div>
 
-      {/* Balance Section */}
+      {/* Balance Section - padding: 16px top, 24px bottom, 20px sides */}
       <div 
-        className="text-white"
         style={{ 
-          background: 'linear-gradient(180deg, #154B63 0%, #0E5C75 100%)',
-          padding: '8px 20px 20px 20px'
+          background: `linear-gradient(180deg, ${styles.colors.balanceGradientStart} 0%, ${styles.colors.balanceGradientEnd} 100%)`,
+          padding: '16px 20px 24px 20px'
         }}
       >
-        <div className="flex items-center gap-2" style={{ marginBottom: '12px' }}>
-          <span style={{ fontSize: '34px', fontWeight: 700, letterSpacing: 0 }}>{formatCurrency(balance, userCurrency)}</span>
-          <button className="hover:bg-white/20 rounded-full transition-colors p-1">
-            <Info style={{ width: '18px', height: '18px', color: 'rgba(255,255,255,0.7)' }} />
+        <div className="flex items-center" style={{ gap: '8px', marginBottom: '16px' }}>
+          <span style={{ 
+            fontSize: '32px', 
+            fontWeight: 700, 
+            color: styles.colors.textWhite,
+            letterSpacing: '-0.5px',
+            lineHeight: 1.1
+          }}>
+            {formatCurrency(balance, userCurrency)}
+          </span>
+          <button className="flex items-center justify-center" style={{ marginTop: '4px' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="16" x2="12" y2="12"/>
+              <line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
           </button>
         </div>
         
-        <div style={{ width: '40px', height: '2px', backgroundColor: 'rgba(255,255,255,0.5)', marginBottom: '12px' }} />
+        <div style={{ 
+          width: '36px', 
+          height: '2px', 
+          backgroundColor: 'rgba(255,255,255,0.5)', 
+          marginBottom: '14px' 
+        }} />
         
-        <button className="flex items-center gap-1 text-white hover:opacity-80 transition-opacity">
-          <span style={{ fontSize: '14px', fontWeight: 400 }}>BIC / IBAN</span>
-          <ChevronRight style={{ width: '16px', height: '16px' }} />
+        <button className="flex items-center" style={{ gap: '4px' }}>
+          <span style={{ fontSize: '15px', fontWeight: 400, color: styles.colors.textWhite }}>BIC / IBAN</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
         </button>
       </div>
 
-      {/* Tabs */}
-      <div style={{ backgroundColor: '#F5F7F9', padding: '16px 16px', display: 'flex', gap: '10px' }}>
+      {/* Tabs - padding: 14px vertical, 16px horizontal */}
+      <div style={{ 
+        backgroundColor: styles.colors.tabBg, 
+        padding: '14px 16px', 
+        display: 'flex', 
+        gap: '8px' 
+      }}>
         <button
           onClick={() => setActiveTab('transactions')}
           style={{
-            padding: '10px 16px',
-            borderRadius: '999px',
+            padding: '10px 18px',
+            borderRadius: '24px',
             fontSize: '14px',
             fontWeight: 500,
-            backgroundColor: activeTab === 'transactions' ? '#0E5C75' : 'white',
-            color: activeTab === 'transactions' ? 'white' : '#374151',
-            border: activeTab === 'transactions' ? 'none' : '1px solid #C5CCD3',
-            boxShadow: activeTab === 'transactions' ? 'none' : '0 1px 2px rgba(0,0,0,0.05)'
+            backgroundColor: activeTab === 'transactions' ? styles.colors.tabActiveBg : 'white',
+            color: activeTab === 'transactions' ? 'white' : styles.colors.textSecondary,
+            border: activeTab === 'transactions' ? 'none' : `1px solid ${styles.colors.tabInactiveBorder}`,
+            lineHeight: 1.2
           }}
         >
           Transactions
@@ -560,14 +624,14 @@ export default function TransactionHistoryWorking() {
             setShowStatementModal(true);
           }}
           style={{
-            padding: '10px 16px',
-            borderRadius: '999px',
+            padding: '10px 18px',
+            borderRadius: '24px',
             fontSize: '14px',
             fontWeight: 500,
-            backgroundColor: activeTab === 'statements' ? '#0E5C75' : 'white',
-            color: activeTab === 'statements' ? 'white' : '#374151',
-            border: activeTab === 'statements' ? 'none' : '1px solid #C5CCD3',
-            boxShadow: activeTab === 'statements' ? 'none' : '0 1px 2px rgba(0,0,0,0.05)'
+            backgroundColor: activeTab === 'statements' ? styles.colors.tabActiveBg : 'white',
+            color: activeTab === 'statements' ? 'white' : styles.colors.textSecondary,
+            border: activeTab === 'statements' ? 'none' : `1px solid ${styles.colors.tabInactiveBorder}`,
+            lineHeight: 1.2
           }}
         >
           Statements
@@ -575,56 +639,89 @@ export default function TransactionHistoryWorking() {
         <button
           onClick={() => setActiveTab('more')}
           style={{
-            padding: '10px 16px',
-            borderRadius: '999px',
+            padding: '10px 18px',
+            borderRadius: '24px',
             fontSize: '14px',
             fontWeight: 500,
-            backgroundColor: activeTab === 'more' ? '#0E5C75' : 'white',
-            color: activeTab === 'more' ? 'white' : '#374151',
-            border: activeTab === 'more' ? 'none' : '1px solid #C5CCD3',
-            boxShadow: activeTab === 'more' ? 'none' : '0 1px 2px rgba(0,0,0,0.05)'
+            backgroundColor: activeTab === 'more' ? styles.colors.tabActiveBg : 'white',
+            color: activeTab === 'more' ? 'white' : styles.colors.textSecondary,
+            border: activeTab === 'more' ? 'none' : `1px solid ${styles.colors.tabInactiveBorder}`,
+            lineHeight: 1.2
           }}
         >
           More options
         </button>
       </div>
 
-      {/* Filter Section */}
-      <div style={{ backgroundColor: 'white', padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-        <div className="flex items-center" style={{ gap: '8px' }}>
-          <span style={{ fontSize: '15px', fontWeight: 400, color: '#6B7280' }}>Filter completed transactions</span>
-          <Search style={{ width: '24px', height: '24px', color: '#0E5C75' }} />
+      {/* Filter Section - height 48px */}
+      <div style={{ 
+        backgroundColor: styles.colors.filterBg, 
+        padding: '14px 20px', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'flex-end' 
+      }}>
+        <div className="flex items-center" style={{ gap: '10px' }}>
+          <span style={{ 
+            fontSize: '15px', 
+            fontWeight: 400, 
+            color: styles.colors.textMuted 
+          }}>
+            Filter completed transactions
+          </span>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={styles.colors.completedText} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
         </div>
       </div>
 
       {/* Status Heading and Amount Header */}
-      <div style={{ backgroundColor: 'white', padding: '12px 20px 8px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div className="flex items-center" style={{ gap: '6px' }}>
-          <div style={{ position: 'relative', display: 'inline-block' }}>
+      <div style={{ 
+        backgroundColor: styles.colors.filterBg, 
+        padding: '16px 20px 12px 20px', 
+        display: 'flex', 
+        alignItems: 'flex-start', 
+        justifyContent: 'space-between' 
+      }}>
+        <div className="flex items-center" style={{ gap: '8px' }}>
+          <div style={{ position: 'relative', display: 'inline-block', paddingBottom: '6px' }}>
             <span style={{ 
-              fontSize: '18px', 
+              fontSize: '17px', 
               fontWeight: 400, 
-              color: '#0E5C75'
+              color: styles.colors.completedText
             }}>Completed</span>
             <div style={{ 
               position: 'absolute',
-              bottom: '-4px',
+              bottom: '0',
               left: 0,
               width: '100%',
               height: '3px',
-              backgroundColor: '#0E5C75',
-              borderRadius: '2px'
+              backgroundColor: styles.colors.completedUnderline,
+              borderRadius: '1.5px'
             }} />
           </div>
-          <Info style={{ width: '18px', height: '18px', color: '#8B7355', marginLeft: '4px' }} />
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={styles.colors.goldInfoIcon} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '2px' }}>
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="16" x2="12" y2="12"/>
+            <line x1="12" y1="8" x2="12.01" y2="8"/>
+          </svg>
         </div>
-        <span style={{ fontSize: '14px', fontWeight: 400, color: '#6B7280' }}>Amount in {userCurrency === 'EUR' ? '€' : '£'}</span>
+        <span style={{ 
+          fontSize: '13px', 
+          fontWeight: 400, 
+          color: styles.colors.textMuted,
+          marginTop: '4px'
+        }}>
+          Amount in {userCurrency === 'EUR' ? '€' : '£'}
+        </span>
       </div>
 
       {/* Transaction List */}
       <div 
         ref={scrollContainerRef}
-        className="transaction-scroll-container flex-1 overflow-y-auto bg-white"
+        className="transaction-scroll-container flex-1 overflow-y-auto"
+        style={{ backgroundColor: styles.colors.filterBg }}
         data-scroll-container
         data-scroll-route={`/transactions/${accountId}`}
       >
@@ -637,69 +734,103 @@ export default function TransactionHistoryWorking() {
               <div 
                 key={`${transaction.id}-${index}`}
                 onClick={() => setSelectedTransaction(transaction)}
-                className="hover:bg-gray-50 transition-colors cursor-pointer flex items-start justify-between"
+                className="active:bg-gray-100 transition-colors cursor-pointer flex items-start justify-between"
                 style={{ 
-                  padding: '16px 20px',
-                  borderBottom: '1px solid #EAEAEA'
+                  padding: '18px 20px',
+                  borderBottom: `1px solid ${styles.colors.dividerLight}`,
+                  backgroundColor: 'white'
                 }}
               >
                 {/* Left side */}
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: '16px', fontWeight: 600, color: '#1A1A1A', marginBottom: '2px', lineHeight: '1.3' }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ 
+                    fontSize: '16px', 
+                    fontWeight: 600, 
+                    color: styles.colors.textPrimary, 
+                    marginBottom: '4px', 
+                    lineHeight: 1.25
+                  }}>
                     {transaction.description || transaction.reference || transaction.id}
                   </p>
-                  <p style={{ fontSize: '14px', fontWeight: 400, color: '#4A4A4A', marginBottom: '2px', lineHeight: '1.3' }}>
+                  <p style={{ 
+                    fontSize: '14px', 
+                    fontWeight: 400, 
+                    color: styles.colors.textSecondary, 
+                    marginBottom: '4px', 
+                    lineHeight: 1.25
+                  }}>
                     {transaction.iban || transaction.recipientAccountNumber || `4319401827062009`}
                   </p>
-                  <p style={{ fontSize: '14px', fontWeight: 400, color: '#6B7280', lineHeight: '1.3' }}>
+                  <p style={{ 
+                    fontSize: '14px', 
+                    fontWeight: 400, 
+                    color: styles.colors.textMuted, 
+                    lineHeight: 1.25
+                  }}>
                     {formatDate(transaction.timestamp)}
                   </p>
                 </div>
 
                 {/* Right side */}
-                <div className="flex items-center" style={{ gap: '6px', marginLeft: '12px' }}>
+                <div className="flex items-center" style={{ gap: '8px', marginLeft: '16px', flexShrink: 0 }}>
                   <div style={{ textAlign: 'right' }}>
                     <p style={{ 
                       fontSize: '16px', 
                       fontWeight: 500, 
-                      marginBottom: '2px',
-                      color: isDebit ? '#1A1A1A' : '#0E7A50',
-                      lineHeight: '1.3'
+                      marginBottom: '4px',
+                      color: isDebit ? styles.colors.amountNegative : styles.colors.amountPositive,
+                      lineHeight: 1.25
                     }}>
                       {isDebit ? '' : '+ '}{amount.toFixed(2)}
                     </p>
-                    <p style={{ fontSize: '13px', fontWeight: 400, color: '#6B7280', fontStyle: 'italic', lineHeight: '1.3' }}>View details</p>
+                    <p style={{ 
+                      fontSize: '12px', 
+                      fontWeight: 400, 
+                      color: styles.colors.textMuted, 
+                      fontStyle: 'italic', 
+                      lineHeight: 1.25
+                    }}>
+                      View details
+                    </p>
                   </div>
-                  <ChevronRight style={{ width: '18px', height: '18px', color: '#6B7280' }} />
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={styles.colors.textMuted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
                 </div>
               </div>
             );
           })}
           
           {transactions.filter(t => !t.deleted).length === 0 && (
-            <div className="px-4 py-12 text-center text-gray-500">
+            <div className="px-4 py-12 text-center" style={{ color: styles.colors.textMuted }}>
               <p>No transactions found</p>
             </div>
           )}
         </div>
       </div>
 
-      {/* Bottom Banner */}
+      {/* Bottom Banner - 52px height */}
       <div 
-        className="flex items-center justify-between flex-shrink-0 text-white"
+        className="flex items-center justify-between flex-shrink-0"
         style={{ 
-          background: 'linear-gradient(180deg, #0E5C75 0%, #154B63 100%)',
-          height: '56px',
+          backgroundColor: styles.colors.bannerBg,
+          height: '52px',
           padding: '0 20px'
         }}
       >
-        <div className="flex items-center" style={{ gap: '8px' }}>
-          <Info style={{ width: '20px', height: '20px' }} />
-          <span style={{ fontSize: '14px', fontWeight: 500 }}>See an unfamiliar transaction?</span>
+        <div className="flex items-center" style={{ gap: '10px' }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="16" x2="12" y2="12"/>
+            <line x1="12" y1="8" x2="12.01" y2="8"/>
+          </svg>
+          <span style={{ fontSize: '14px', fontWeight: 400, color: 'white' }}>See an unfamiliar transaction?</span>
         </div>
-        <button className="flex items-center hover:opacity-80 transition-opacity" style={{ gap: '4px' }}>
-          <span style={{ fontSize: '14px', fontWeight: 500 }}>Find out more</span>
-          <ChevronRight style={{ width: '20px', height: '20px' }} />
+        <button className="flex items-center" style={{ gap: '4px' }}>
+          <span style={{ fontSize: '14px', fontWeight: 500, color: 'white' }}>Find out more</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
         </button>
       </div>
 
