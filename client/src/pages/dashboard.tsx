@@ -117,34 +117,9 @@ export default function Dashboard() {
     
     setAccounts(storedAccounts);
     
-    // Load saved and recent payees combined
-    let savedPayees = UserDataManager.getUserData('savedPayees', []);
-    let recentPayees = UserDataManager.getUserData('recentPayees', []);
-    
-    // If no saved/recent payees, add default test payees to show functionality
-    if (savedPayees.length === 0 && recentPayees.length === 0) {
-      const defaultTestPayees = [
-        { name: 'John Smith', accountInfo: 'GB82WEST12345698765432', type: 'uk', transferType: 'uk', timestamp: new Date().toISOString() },
-        { name: 'Sarah Johnson', accountInfo: 'DE89370400440532013000', type: 'iban', transferType: 'iban', timestamp: new Date().toISOString() }
-      ];
-      recentPayees = defaultTestPayees;
-    }
-    
-    const allPayees = [...savedPayees, ...recentPayees];
-    // Remove duplicates by payee name and transferType, convert transferType to type field
-    const uniquePayeesMap = new Map();
-    allPayees.forEach(p => {
-      const key = `${p.name}-${p.transferType || p.type}`;
-      if (!uniquePayeesMap.has(key)) {
-        // Normalize the payee structure: ensure it has a 'type' field for the filter
-        const normalizedPayee = {
-          ...p,
-          type: p.transferType || p.type || 'uk' // Convert transferType to type for compatibility
-        };
-        uniquePayeesMap.set(key, normalizedPayee);
-      }
-    });
-    setPayees(Array.from(uniquePayeesMap.values()));
+    // Load saved payees
+    const savedPayees = UserDataManager.getUserData('savedPayees', []);
+    setPayees(savedPayees);
     
     // Load user's currency preference
     setUserCurrency(getUserCurrency());
@@ -600,33 +575,6 @@ export default function Dashboard() {
             {/* To Payee */}
             <div className="mb-4">
               <p className="text-sm text-gray-600 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>To</p>
-              
-              {/* Recent Payees Quick Select */}
-              {payees.filter(p => transferType === 'uk' ? p.type === 'uk' : p.type === 'iban').length > 0 && (
-                <div className="mb-3 pb-3 border-b border-gray-200">
-                  <p className="text-xs text-gray-500 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>Recent</p>
-                  <div className="flex flex-wrap gap-2">
-                    {payees
-                      .filter(p => transferType === 'uk' ? p.type === 'uk' : p.type === 'iban')
-                      .slice(0, 5)
-                      .map((payee, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => setSelectedPayee(payee.name)}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                            selectedPayee === payee.name
-                              ? 'bg-[#2d6a7a] text-white'
-                              : 'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-50'
-                          }`}
-                          style={{ fontFamily: 'OpenSans, sans-serif' }}
-                        >
-                          {payee.name}
-                        </button>
-                      ))}
-                  </div>
-                </div>
-              )}
-              
               <div className="relative">
                 <select
                   value={selectedPayee}
