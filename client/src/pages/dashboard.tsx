@@ -388,7 +388,7 @@ export default function Dashboard() {
         data-scroll-route="/dashboard"
       >
         <div className="bg-white rounded-t-3xl h-full">
-          <div className="pt-6" style={{ overscrollBehavior: 'contain' }}>
+          <div className="pt-6 px-4 space-y-3" style={{ overscrollBehavior: 'contain' }}>
             {(accounts && Array.isArray(accounts)) && accounts.map((account, index) => {
               const isLoading = loadingAccountId === account.id;
               const isDisabled = loadingAccountId !== null || isNavigating;
@@ -396,10 +396,10 @@ export default function Dashboard() {
               return (
                 <button 
                   key={account.id}
-                  className={`w-full flex items-center justify-between border-b border-gray-100 touch-manipulation relative stagger-item android-no-highlight ${
+                  className={`w-full flex items-center overflow-hidden rounded-xl bg-white shadow-sm border border-gray-100 touch-manipulation relative stagger-item android-no-highlight ${
                     isTouchDevice 
                       ? '' // No hover/pressed on touch devices
-                      : 'hover:bg-gray-50 transition-all duration-150 ease-out active:scale-98 card-interactive' // Desktop interactions
+                      : 'hover:shadow-md transition-all duration-150 ease-out active:scale-98 card-interactive' // Desktop interactions
                   } ${
                     isDisabled ? 'opacity-50 pointer-events-none' : ''
                   }`}
@@ -416,9 +416,9 @@ export default function Dashboard() {
                   data-testid={`account-button-${account.id}`}
                 >
                   {/* Colored side bar */}
-                  <div className={`absolute left-0 top-0 bottom-0 w-1 ${getAccountColor(account.accountType)}`}></div>
+                  <div className={`w-1.5 self-stretch ${getAccountColor(account.accountType)}`}></div>
                   
-                  <div className="flex items-center justify-between w-full px-6 py-4">
+                  <div className="flex items-center justify-between w-full px-4 py-4">
                     <div className="text-left">
                       <p className="font-medium text-sm text-gray-800 boi-regular-font">{account.displayName.toUpperCase()}</p>
                       <p className="text-xs text-gray-500 mt-0.5 boi-regular-font">{account.accountNumber}</p>
