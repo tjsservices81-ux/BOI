@@ -263,8 +263,41 @@ export default function Apply() {
     { id: 'graduate-loan', title: 'Graduate Loan' }
   ];
 
+  const productUrls: Record<string, string> = {
+    'Home Insurance': 'https://personalbanking.bankofireland.com/insure-and-protect/insurance/home/',
+    'Travel Insurance': 'https://personalbanking.bankofireland.com/insure-and-protect/insurance/travel/',
+    'Family Protection': 'https://personalbanking.bankofireland.com/insure-and-protect/life-insurance/',
+    'Personal Loan': 'https://personalbanking.bankofireland.com/borrow/personal-loan/',
+    'Personal Credit Cards': 'https://personalbanking.bankofireland.com/borrow/credit-cards/',
+    'Aer Credit Card': 'https://personalbanking.bankofireland.com/borrow/credit-cards/aer-credit-card/',
+    'Classic Credit Card': 'https://personalbanking.bankofireland.com/borrow/credit-cards/classic-credit-card/',
+    'Platinum Credit Card': 'https://personalbanking.bankofireland.com/borrow/credit-cards/platinum-credit-card/',
+    'Student Credit Card': 'https://personalbanking.bankofireland.com/borrow/credit-cards/student-credit-card/',
+    'Add Card Holder': 'https://personalbanking.bankofireland.com/borrow/credit-cards/',
+    'Instalment Plan': 'https://personalbanking.bankofireland.com/borrow/credit-cards/',
+    'Student Loan': 'https://personalbanking.bankofireland.com/borrow/student-loan/',
+    'Graduate Loan': 'https://personalbanking.bankofireland.com/borrow/graduate-loan/',
+    'Mortgage Online Application': 'https://personalbanking.bankofireland.com/borrow/mortgages/',
+    'Mortgage Appointment': 'https://personalbanking.bankofireland.com/borrow/mortgages/mortgage-appointment/',
+    'MortgageSaver': 'https://personalbanking.bankofireland.com/save/mortgagesaver/',
+    'SuperSaver': 'https://personalbanking.bankofireland.com/save/supersaver/',
+    'GoalSaver': 'https://personalbanking.bankofireland.com/save/goalsaver/',
+    'Instant Access Demand': 'https://personalbanking.bankofireland.com/save/demand-deposit/',
+    'Investments': 'https://personalbanking.bankofireland.com/invest/',
+    'Advantage Fixed Term Deposit': 'https://personalbanking.bankofireland.com/save/fixed-term-deposit/',
+    'Pension': 'https://personalbanking.bankofireland.com/invest/pensions/',
+    'Business Loans': 'https://businessbanking.bankofireland.com/borrow/business-loans/',
+    'Business Overdraft': 'https://businessbanking.bankofireland.com/borrow/business-overdraft/',
+    'Personal Overdraft': 'https://personalbanking.bankofireland.com/borrow/overdraft/'
+  };
+
   const handleProductClick = (title: string) => {
-    alert(`Opening ${title} application...`);
+    const url = productUrls[title];
+    if (url) {
+      window.open(url, '_blank');
+    } else {
+      alert(`Opening ${title} application...`);
+    }
   };
 
   const navigateWithAnimation = (path: string) => {
