@@ -68,35 +68,7 @@ export default function IbanTransfer() {
   const [accounts, setAccounts] = useState<any[]>([]);
 
   useEffect(() => {
-    const loadAccounts = () => {
-      UserDataManager.clearCache('bankAccounts');
-      const userAccounts = UserDataManager.getUserData('bankAccounts', []);
-      setAccounts(userAccounts);
-      
-      // Set default account selection if not already set
-      if (userAccounts.length > 0 && !form.getValues('fromAccount')) {
-        form.setValue('fromAccount', userAccounts[0].id.toString());
-      }
-    };
-    
-    loadAccounts();
-    
-    // Load user's currency preference
-    setUserCurrency(getUserCurrency());
-    
-    // Listen for account updates from admin panel
-    const handleAccountsUpdate = (event: CustomEvent) => {
-      const { accounts: updatedAccounts } = event.detail || {};
-      if (updatedAccounts) {
-        setAccounts(updatedAccounts);
-      }
-    };
-
-    window.addEventListener('accountsUpdate', handleAccountsUpdate as EventListener);
-    window.addEventListener('balanceUpdate', handleAccountsUpdate as EventListener);
-    window.addEventListener('adminProfileUpdate', handleAccountsUpdate as EventListener);
-    
-    // Check for selected account from dashboard Send money section
+    // Check for selected account from dashboard Send money section FIRST
     const selectedFromAccountData = sessionStorage.getItem('selectedFromAccount');
     if (selectedFromAccountData) {
       form.setValue('fromAccount', selectedFromAccountData);
@@ -149,15 +121,42 @@ export default function IbanTransfer() {
               referenceInput.value = payee.reference;
             }
           }, 200);
-          
-          // Clear the session storage after using
-          sessionStorage.removeItem('selectedPayee');
         }
+        // Clear the session storage after using
+        sessionStorage.removeItem('selectedPayee');
       } catch (error) {
         console.error('Error parsing selected payee data:', error);
         sessionStorage.removeItem('selectedPayee');
       }
     }
+    
+    const loadAccounts = () => {
+      UserDataManager.clearCache('bankAccounts');
+      const userAccounts = UserDataManager.getUserData('bankAccounts', []);
+      setAccounts(userAccounts);
+      
+      // Set default account selection only if not already set (from sessionStorage)
+      if (userAccounts.length > 0 && !form.getValues('fromAccount')) {
+        form.setValue('fromAccount', userAccounts[0].id.toString());
+      }
+    };
+    
+    loadAccounts();
+    
+    // Load user's currency preference
+    setUserCurrency(getUserCurrency());
+    
+    // Listen for account updates from admin panel
+    const handleAccountsUpdate = (event: CustomEvent) => {
+      const { accounts: updatedAccounts } = event.detail || {};
+      if (updatedAccounts) {
+        setAccounts(updatedAccounts);
+      }
+    };
+
+    window.addEventListener('accountsUpdate', handleAccountsUpdate as EventListener);
+    window.addEventListener('balanceUpdate', handleAccountsUpdate as EventListener);
+    window.addEventListener('adminProfileUpdate', handleAccountsUpdate as EventListener);
     
     return () => {
       window.removeEventListener('accountsUpdate', handleAccountsUpdate as EventListener);
