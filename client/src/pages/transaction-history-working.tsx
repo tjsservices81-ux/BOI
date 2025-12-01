@@ -31,6 +31,10 @@ export default function TransactionHistoryWorking() {
     const saved = localStorage.getItem('showTransferConfirmation');
     return saved !== null ? JSON.parse(saved) : true;
   });
+  const [showBankDetailsButton, setShowBankDetailsButton] = useState(() => {
+    const saved = localStorage.getItem('showBankDetailsButton');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   const [showPayBillsForm, setShowPayBillsForm] = useState(false);
@@ -79,6 +83,8 @@ export default function TransactionHistoryWorking() {
     const handleStorageChange = () => {
       const saved = localStorage.getItem('showTransferConfirmation');
       setShowTransferConfirmation(saved !== null ? JSON.parse(saved) : true);
+      const savedBankDetails = localStorage.getItem('showBankDetailsButton');
+      setShowBankDetailsButton(savedBankDetails !== null ? JSON.parse(savedBankDetails) : true);
     };
 
     window.addEventListener('storage', handleStorageChange);
@@ -607,16 +613,18 @@ export default function TransactionHistoryWorking() {
           marginBottom: '14px' 
         }} />
         
-        <button 
-          onClick={() => setShowAccountDetailsModal(true)}
-          className="flex items-center" 
-          style={{ gap: '4px' }}
-        >
-          <span style={{ fontSize: '15px', fontWeight: 400, color: styles.colors.textWhite }}>{userCurrency === 'GBP' ? 'Sort Code / Account Number' : 'BIC / IBAN'}</span>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
-        </button>
+        {showBankDetailsButton && (
+          <button 
+            onClick={() => setShowAccountDetailsModal(true)}
+            className="flex items-center" 
+            style={{ gap: '4px' }}
+          >
+            <span style={{ fontSize: '15px', fontWeight: 400, color: styles.colors.textWhite }}>{userCurrency === 'GBP' ? 'Sort Code / Account Number' : 'BIC / IBAN'}</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        )}
       </div>
 
       {/* Tabs - white background, proper spacing */}

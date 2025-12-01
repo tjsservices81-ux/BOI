@@ -48,6 +48,10 @@ export default function Profile() {
     const saved = localStorage.getItem('showTransferConfirmation');
     return saved !== null ? JSON.parse(saved) : true;
   });
+  const [showBankDetailsButton, setShowBankDetailsButton] = useState(() => {
+    const saved = localStorage.getItem('showBankDetailsButton');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
   const [recipientEmailEnabled, setRecipientEmailEnabled] = useState(() => {
     const saved = localStorage.getItem('recipientEmailEnabled');
     return saved !== null ? JSON.parse(saved) : false;
@@ -1866,6 +1870,31 @@ export default function Profile() {
                       </div>
                       <div className={`w-11 h-6 rounded-full transition-colors ${showTransferConfirmation ? 'bg-green-500' : 'bg-gray-300'}`}>
                         <div className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform mt-1 ${showTransferConfirmation ? 'translate-x-6' : 'translate-x-1'}`} />
+                      </div>
+                    </button>
+
+                    {/* Bank Details Button */}
+                    <button 
+                      onClick={() => {
+                        const newValue = !showBankDetailsButton;
+                        setShowBankDetailsButton(newValue);
+                        localStorage.setItem('showBankDetailsButton', JSON.stringify(newValue));
+                        window.dispatchEvent(new Event('storage'));
+                        showDeveloperMessage(`Bank Details Button ${newValue ? 'shown' : 'hidden'} successfully`);
+                      }}
+                      data-testid="toggle-bank-details-button"
+                      className="w-full flex items-center justify-between p-3 bg-white/70 backdrop-blur-sm border-2 border-purple-200 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md"
+                    >
+                      <div className="flex-1 text-left">
+                        <p className="font-semibold text-purple-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Show Bank Details Button
+                        </p>
+                        <p className="text-xs text-purple-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          BIC/IBAN or Sort Code button
+                        </p>
+                      </div>
+                      <div className={`w-11 h-6 rounded-full transition-colors ${showBankDetailsButton ? 'bg-green-500' : 'bg-gray-300'}`}>
+                        <div className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform mt-1 ${showBankDetailsButton ? 'translate-x-6' : 'translate-x-1'}`} />
                       </div>
                     </button>
 
