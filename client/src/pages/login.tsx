@@ -925,17 +925,38 @@ export default function Login() {
         UserDataManager.initializeFreshAccount(customerNumber);
         UserDataManager.recordLoginTime(customerNumber);
         
-        const userProfile = UserDataManager.getUserProfile();
-        if (userProfile) {
+        // Use API response data (source of truth) for new accounts
+        const apiUserData = result.user;
+        let userProfile = UserDataManager.getUserProfile();
+        
+        // If user profile doesn't exist locally, create it from API data
+        if (!userProfile && apiUserData) {
+          const newUserProfile = {
+            customerNumber: apiUserData.customerNumber || customerNumber,
+            name: apiUserData.name || '',
+            email: apiUserData.email || '',
+            phone: '',
+            pin: '',
+            dateCreated: new Date().toISOString()
+          };
+          UserDataManager.registerUser(newUserProfile);
+          userProfile = newUserProfile;
+        }
+        
+        // Login with API data or local profile
+        const userData = apiUserData || userProfile;
+        if (userData) {
           login({
-            id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
-            name: userProfile.name,
-            email: userProfile.email,
+            id: apiUserData?.id || parseInt(customerNumber.replace(/\D/g, '')) || 1,
+            name: userData.name || '',
+            email: userData.email || '',
             customerNumber: customerNumber
           });
           
           // Save authenticated user's data to localStorage (secure - only this user)
-          saveAuthenticatedUserData(customerNumber, userProfile);
+          if (userProfile) {
+            saveAuthenticatedUserData(customerNumber, userProfile);
+          }
         }
         
         setPinVerified(true);
