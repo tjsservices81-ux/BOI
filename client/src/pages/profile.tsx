@@ -2165,7 +2165,7 @@ export default function Profile() {
                               {account.displayName}
                             </p>
                             <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                              {account.accountNumber?.replace('****', '') || account.accountNumber?.slice(-4)}
+                              {account.accountNumber}
                             </p>
                           </div>
                           <button
@@ -2395,7 +2395,7 @@ export default function Profile() {
                         {account.displayName}
                       </p>
                       <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        {account.accountNumber?.replace('****', '') || account.accountNumber?.slice(-4)}
+                        {account.accountNumber}
                       </p>
                     </button>
                   ))}
@@ -2407,7 +2407,7 @@ export default function Profile() {
                       {editingBankAccount.displayName}
                     </p>
                     <p className="text-sm text-blue-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      {editingBankAccount.accountNumber?.replace('****', '') || editingBankAccount.accountNumber?.slice(-4)}
+                      {editingBankAccount.accountNumber}
                     </p>
                   </div>
 
@@ -2499,6 +2499,7 @@ export default function Profile() {
                               ...acc,
                               sortCode: bankDetailsData.sortCode,
                               propAccountNumber: bankDetailsData.propAccountNumber,
+                              accountNumber: bankDetailsData.propAccountNumber || acc.accountNumber,
                               bic: bankDetailsData.bic,
                               iban: bankDetailsData.iban
                             };
@@ -2549,7 +2550,7 @@ export default function Profile() {
 
               <div className="mb-4">
                 <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  {editingAccount.accountNumber?.replace('****', '') || editingAccount.accountNumber?.slice(-4)}
+                  {editingAccount.accountNumber}
                 </p>
               </div>
 
@@ -2927,7 +2928,7 @@ export default function Profile() {
                                   {account.displayName}
                                 </p>
                                 <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                                  {account.accountNumber?.replace('****', '') || account.accountNumber?.slice(-4)}
+                                  {account.accountNumber}
                                 </p>
                                 <p className="text-sm font-medium text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                                   Current: {formatCurrency(account.balance, userCurrency)}

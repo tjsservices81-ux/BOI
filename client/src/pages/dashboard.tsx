@@ -564,7 +564,7 @@ export default function Dashboard() {
                   <option value="">Select account</option>
                   {accounts.map(account => (
                     <option key={account.id} value={account.id.toString()}>
-                      {account.displayName} ({account.accountNumber?.replace('****', '') || account.accountNumber?.slice(-4)}) - {formatCurrency(account.balance, userCurrency)}
+                      {account.displayName} ({account.accountNumber}) - {formatCurrency(account.balance, userCurrency)}
                     </option>
                   ))}
                 </select>
