@@ -387,8 +387,8 @@ export default function Dashboard() {
         data-scroll-container
         data-scroll-route="/dashboard"
       >
-        <div className="bg-[#F5F5F5] rounded-t-3xl h-full">
-          <div className="pt-4" style={{ overscrollBehavior: 'contain' }}>
+        <div className="bg-white rounded-t-3xl h-full">
+          <div className="pt-6" style={{ overscrollBehavior: 'contain' }}>
             {(accounts && Array.isArray(accounts)) && accounts.map((account, index) => {
               const isLoading = loadingAccountId === account.id;
               const isDisabled = loadingAccountId !== null || isNavigating;
@@ -396,10 +396,10 @@ export default function Dashboard() {
               return (
                 <button 
                   key={account.id}
-                  className={`w-full bg-white touch-manipulation relative stagger-item android-no-highlight flex items-stretch ${
+                  className={`w-full flex items-center justify-between border-b border-gray-100 touch-manipulation relative stagger-item android-no-highlight ${
                     isTouchDevice 
-                      ? '' 
-                      : 'transition-all duration-150 ease-out active:bg-gray-50 card-interactive'
+                      ? '' // No hover/pressed on touch devices
+                      : 'hover:bg-gray-50 transition-all duration-150 ease-out active:scale-98 card-interactive' // Desktop interactions
                   } ${
                     isDisabled ? 'opacity-50 pointer-events-none' : ''
                   }`}
@@ -411,48 +411,25 @@ export default function Dashboard() {
                   style={{ 
                     animationDelay: `${index * 0.1}s`,
                     WebkitTapHighlightColor: 'transparent',
-                    outline: 'none',
-                    borderRadius: 0,
-                    marginBottom: index < accounts.length - 1 ? '1px' : '0'
+                    outline: 'none'
                   }}
                   data-testid={`account-button-${account.id}`}
                 >
-                  {/* Left color stripe - straight thick bar */}
-                  <div 
-                    style={{ 
-                      width: '5px',
-                      backgroundColor: account.accountType === 'current' ? '#1B9AAA' : 
-                                      account.accountType === 'credit' ? '#D64541' : '#68B037',
-                      flexShrink: 0
-                    }}
-                  ></div>
+                  {/* Colored side bar */}
+                  <div className={`absolute left-0 top-0 bottom-0 w-1 ${getAccountColor(account.accountType)}`}></div>
                   
-                  <div className="flex items-center justify-between flex-1 py-4 px-4">
+                  <div className="flex items-center justify-between w-full px-6 py-4">
                     <div className="text-left">
-                      <h3 style={{ 
-                        fontSize: '17px', 
-                        fontWeight: 500, 
-                        color: '#1A1A1A', 
-                        margin: 0 
-                      }}>{account.displayName}</h3>
-                      <span style={{ 
-                        fontSize: '14px', 
-                        color: '#666666', 
-                        marginTop: '2px', 
-                        display: 'block' 
-                      }}>~ {account.accountNumber.replace('****', '')}</span>
+                      <p className="font-medium text-sm text-gray-800 boi-regular-font">{account.displayName.toUpperCase()}</p>
+                      <p className="text-xs text-gray-500 mt-0.5 boi-regular-font">{account.accountNumber}</p>
                     </div>
                     <div className="flex items-center">
                       {isLoading ? (
-                        <Loader2 className="h-5 w-5 text-[#1B9AAA] animate-spin" data-testid={`loader-${account.id}`} />
+                        <Loader2 className="h-5 w-5 text-[#126987] animate-spin mr-3" data-testid={`loader-${account.id}`} />
                       ) : (
                         <>
-                          <span style={{ 
-                            fontSize: '20px', 
-                            fontWeight: 400, 
-                            color: '#1B9AAA' 
-                          }}>{formatCurrency(account.balance, userCurrency)}</span>
-                          <ChevronRight className="h-5 w-5 ml-0.5" style={{ color: '#1B9AAA' }} />
+                          <p className="text-lg font-semibold text-[#126987] boi-semibold-font">{formatCurrency(account.balance, userCurrency)}</p>
+                          <ChevronRight className="h-4 w-4 ml-3 text-gray-400" />
                         </>
                       )}
                     </div>
