@@ -477,11 +477,11 @@ export default function TransactionHistoryWorking() {
 
   return (
     <div className="page-container h-screen bg-white flex flex-col overflow-hidden page-slide-in-right" style={{ fontFamily: "'Open Sans', sans-serif" }}>
-      {/* Header - gradient background */}
+      {/* Header */}
       <div 
         className="flex items-center justify-between flex-shrink-0"
         style={{ 
-          background: 'linear-gradient(180deg, #0E5C75 0%, #154B63 100%)',
+          background: 'linear-gradient(180deg, #1B6B7C 0%, #195A6B 100%)',
           height: '56px',
           padding: '0 16px'
         }}
@@ -489,13 +489,14 @@ export default function TransactionHistoryWorking() {
         <button 
           onClick={() => navigateWithAnimation('/dashboard', 'slide-left')}
           className="p-2 hover:bg-white/20 rounded-full transition-colors"
+          style={{ marginLeft: '-8px' }}
         >
-          <svg style={{ width: '24px', height: '24px' }} fill="none" stroke="white" strokeWidth="2.5" viewBox="0 0 24 24">
+          <svg style={{ width: '22px', height: '22px' }} fill="none" stroke="white" strokeWidth="2" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
         </button>
         
-        <h1 style={{ fontSize: '17px', fontWeight: 500, color: 'white', letterSpacing: 0 }}>
+        <h1 style={{ fontSize: '17px', fontWeight: 400, color: 'white', letterSpacing: 0 }}>
           {accountInfo?.displayName || 'Current Account'} ~ {getAccountNumber()}
         </h1>
         
@@ -503,15 +504,15 @@ export default function TransactionHistoryWorking() {
           <div 
             className="rounded-full flex items-center justify-center"
             style={{ 
-              width: '34px', 
-              height: '34px', 
-              border: '2px solid #7FBFD4',
+              width: '32px', 
+              height: '32px', 
+              border: '2px solid #7EC8DB',
               backgroundColor: 'transparent'
             }}
           >
-            <svg style={{ width: '20px', height: '20px' }} fill="none" stroke="#7FBFD4" strokeWidth="1.5" viewBox="0 0 24 24">
-              <circle cx="12" cy="8" r="4" />
-              <path d="M4 20c0-4 4-6 8-6s8 2 8 6" />
+            <svg style={{ width: '18px', height: '18px' }} fill="none" stroke="#7EC8DB" strokeWidth="1.5" viewBox="0 0 24 24">
+              <circle cx="12" cy="8" r="3.5" />
+              <path d="M5.5 19.5c0-3.5 3-5.5 6.5-5.5s6.5 2 6.5 5.5" />
             </svg>
           </div>
         </button>
@@ -521,42 +522,42 @@ export default function TransactionHistoryWorking() {
       <div 
         className="text-white"
         style={{ 
-          background: 'linear-gradient(180deg, #154B63 0%, #0E5C75 100%)',
-          padding: '16px 20px 20px 20px'
+          background: 'linear-gradient(180deg, #195A6B 0%, #1B6B7C 100%)',
+          padding: '14px 18px 22px 18px'
         }}
       >
-        <div className="flex items-center" style={{ gap: '10px', marginBottom: '12px' }}>
-          <span style={{ fontSize: '30px', fontWeight: 400, letterSpacing: '-0.5px' }}>{formatCurrency(balance, userCurrency)}</span>
-          <button className="hover:bg-white/20 rounded-full transition-colors">
-            <svg style={{ width: '22px', height: '22px' }} viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="10" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" />
-              <circle cx="12" cy="8" r="1" fill="rgba(255,255,255,0.7)" />
+        <div className="flex items-center" style={{ gap: '8px', marginBottom: '10px' }}>
+          <span style={{ fontSize: '28px', fontWeight: 400, letterSpacing: '-0.3px' }}>{formatCurrency(balance, userCurrency)}</span>
+          <button className="hover:bg-white/20 rounded-full transition-colors" style={{ marginTop: '2px' }}>
+            <svg style={{ width: '20px', height: '20px' }} viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="9" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" />
+              <circle cx="12" cy="8" r="1.2" fill="rgba(255,255,255,0.7)" />
               <rect x="11" y="11" width="2" height="5" rx="0.5" fill="rgba(255,255,255,0.7)" />
             </svg>
           </button>
         </div>
         
-        <div style={{ width: '28px', height: '2px', backgroundColor: 'rgba(255,255,255,0.5)', marginBottom: '12px' }} />
+        <div style={{ width: '26px', height: '2px', backgroundColor: 'rgba(255,255,255,0.5)', marginBottom: '10px' }} />
         
-        <button className="flex items-center text-white hover:opacity-80 transition-opacity" style={{ gap: '6px' }}>
-          <span style={{ fontSize: '15px', fontWeight: 400 }}>BIC / IBAN</span>
+        <button className="flex items-center text-white hover:opacity-80 transition-opacity" style={{ gap: '4px' }}>
+          <span style={{ fontSize: '14px', fontWeight: 400 }}>BIC / IBAN</span>
           <ChevronRight style={{ width: '16px', height: '16px' }} />
         </button>
       </div>
 
       {/* Tabs */}
-      <div style={{ backgroundColor: '#F5F7F9', padding: '20px 16px', display: 'flex', gap: '10px' }}>
+      <div style={{ backgroundColor: '#F3F5F7', padding: '18px 14px 22px 14px', display: 'flex', gap: '8px' }}>
         <div className="relative">
           <button
             onClick={() => setActiveTab('transactions')}
             style={{
-              padding: '10px 16px',
+              padding: '9px 14px',
               borderRadius: '999px',
-              fontSize: '15px',
+              fontSize: '14px',
               fontWeight: 500,
-              backgroundColor: activeTab === 'transactions' ? '#0E5C75' : 'white',
-              color: activeTab === 'transactions' ? 'white' : '#4B5563',
-              border: activeTab === 'transactions' ? 'none' : '1px solid #D1D5DB'
+              backgroundColor: activeTab === 'transactions' ? '#1B6B7C' : 'white',
+              color: activeTab === 'transactions' ? 'white' : '#5F6368',
+              border: activeTab === 'transactions' ? 'none' : '1px solid #DADCE0'
             }}
           >
             Transactions
@@ -565,12 +566,12 @@ export default function TransactionHistoryWorking() {
             <div 
               className="absolute left-1/2 -translate-x-1/2"
               style={{
-                bottom: '-10px',
+                bottom: '-12px',
                 width: 0,
                 height: 0,
                 borderLeft: '8px solid transparent',
                 borderRight: '8px solid transparent',
-                borderTop: '10px solid #0E5C75'
+                borderTop: '10px solid #1B6B7C'
               }}
             />
           )}
@@ -581,13 +582,13 @@ export default function TransactionHistoryWorking() {
             setShowStatementModal(true);
           }}
           style={{
-            padding: '10px 16px',
+            padding: '9px 14px',
             borderRadius: '999px',
-            fontSize: '15px',
+            fontSize: '14px',
             fontWeight: 500,
-            backgroundColor: activeTab === 'statements' ? '#0E5C75' : 'white',
-            color: activeTab === 'statements' ? 'white' : '#4B5563',
-            border: activeTab === 'statements' ? 'none' : '1px solid #D1D5DB'
+            backgroundColor: activeTab === 'statements' ? '#1B6B7C' : 'white',
+            color: activeTab === 'statements' ? 'white' : '#5F6368',
+            border: activeTab === 'statements' ? 'none' : '1px solid #DADCE0'
           }}
         >
           Statements
@@ -595,13 +596,13 @@ export default function TransactionHistoryWorking() {
         <button
           onClick={() => setActiveTab('more')}
           style={{
-            padding: '10px 16px',
+            padding: '9px 14px',
             borderRadius: '999px',
-            fontSize: '15px',
+            fontSize: '14px',
             fontWeight: 500,
-            backgroundColor: activeTab === 'more' ? '#0E5C75' : 'white',
-            color: activeTab === 'more' ? 'white' : '#4B5563',
-            border: activeTab === 'more' ? 'none' : '1px solid #D1D5DB'
+            backgroundColor: activeTab === 'more' ? '#1B6B7C' : 'white',
+            color: activeTab === 'more' ? 'white' : '#5F6368',
+            border: activeTab === 'more' ? 'none' : '1px solid #DADCE0'
           }}
         >
           More options
@@ -609,33 +610,33 @@ export default function TransactionHistoryWorking() {
       </div>
 
       {/* Filter Section */}
-      <div style={{ backgroundColor: 'white', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-        <div className="flex items-center" style={{ gap: '10px' }}>
-          <span style={{ fontSize: '15px', fontWeight: 400, color: '#6B7280' }}>Filter completed transactions</span>
-          <svg style={{ width: '28px', height: '28px' }} viewBox="0 0 24 24">
-            <circle cx="10" cy="10" r="6" fill="none" stroke="#0E5C75" strokeWidth="2.5" />
-            <path d="M15 15l5 5" stroke="#0E5C75" strokeWidth="2.5" strokeLinecap="round" />
+      <div style={{ backgroundColor: 'white', padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+        <div className="flex items-center" style={{ gap: '8px' }}>
+          <span style={{ fontSize: '14px', fontWeight: 400, color: '#5F6368' }}>Filter completed transactions</span>
+          <svg style={{ width: '26px', height: '26px' }} viewBox="0 0 24 24">
+            <circle cx="10" cy="10" r="6" fill="none" stroke="#1B6B7C" strokeWidth="2.5" />
+            <path d="M15 15l5 5" stroke="#1B6B7C" strokeWidth="2.5" strokeLinecap="round" />
           </svg>
         </div>
       </div>
 
-      {/* Status Heading and Amount Header */}
-      <div style={{ backgroundColor: 'white', padding: '12px 20px 8px 20px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        <div className="flex items-center" style={{ gap: '8px' }}>
+      {/* Completed Heading Row */}
+      <div style={{ backgroundColor: 'white', padding: '6px 18px 10px 18px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+        <div className="flex items-center" style={{ gap: '6px' }}>
           <span style={{ 
-            fontSize: '20px', 
+            fontSize: '18px', 
             fontWeight: 400, 
-            color: '#0E5C75',
-            borderBottom: '2px solid #0E5C75',
-            paddingBottom: '4px'
+            color: '#1B6B7C',
+            borderBottom: '2px solid #1B6B7C',
+            paddingBottom: '2px'
           }}>Completed</span>
-          <svg style={{ width: '20px', height: '20px' }} viewBox="0 0 24 24">
+          <svg style={{ width: '18px', height: '18px', marginTop: '-2px' }} viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10" fill="#C4884A" />
-            <circle cx="12" cy="8" r="1.5" fill="white" />
-            <rect x="10.5" y="11" width="3" height="6" rx="1" fill="white" />
+            <circle cx="12" cy="7.5" r="1.3" fill="white" />
+            <rect x="10.8" y="10.5" width="2.4" height="5.5" rx="0.8" fill="white" />
           </svg>
         </div>
-        <span style={{ fontSize: '14px', fontWeight: 400, color: '#9CA3AF', marginTop: '4px' }}>Amount in {userCurrency === 'EUR' ? '€' : '£'}</span>
+        <span style={{ fontSize: '13px', fontWeight: 400, color: '#9CA3AF' }}>Amount in {userCurrency === 'EUR' ? '€' : '£'}</span>
       </div>
 
       {/* Transaction List */}
@@ -656,37 +657,37 @@ export default function TransactionHistoryWorking() {
                 onClick={() => setSelectedTransaction(transaction)}
                 className="hover:bg-gray-50 transition-colors cursor-pointer flex items-start justify-between"
                 style={{ 
-                  padding: '16px 20px',
-                  borderBottom: '1px solid #F3F4F6'
+                  padding: '14px 18px',
+                  borderBottom: 'none'
                 }}
               >
                 {/* Left side */}
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: '17px', fontWeight: 600, color: '#1F2937', marginBottom: '4px' }}>
+                  <p style={{ fontSize: '16px', fontWeight: 600, color: '#202124', marginBottom: '3px' }}>
                     {transaction.description || transaction.reference || transaction.id}
                   </p>
-                  <p style={{ fontSize: '15px', fontWeight: 400, color: '#4B5563', marginBottom: '4px' }}>
+                  <p style={{ fontSize: '14px', fontWeight: 400, color: '#5F6368', marginBottom: '3px' }}>
                     {transaction.iban || transaction.recipientAccountNumber || `4319401827062009`}
                   </p>
-                  <p style={{ fontSize: '14px', fontWeight: 400, color: '#6B7280' }}>
+                  <p style={{ fontSize: '13px', fontWeight: 400, color: '#80868B' }}>
                     {formatDate(transaction.timestamp)}
                   </p>
                 </div>
 
                 {/* Right side */}
-                <div className="flex items-center" style={{ gap: '6px', minWidth: '100px', justifyContent: 'flex-end' }}>
+                <div className="flex items-center" style={{ gap: '4px', minWidth: '90px', justifyContent: 'flex-end' }}>
                   <div style={{ textAlign: 'right' }}>
                     <p style={{ 
-                      fontSize: '16px', 
+                      fontSize: '15px', 
                       fontWeight: 400, 
                       marginBottom: '2px',
-                      color: isDebit ? '#1F2937' : '#0E9F6E'
+                      color: isDebit ? '#202124' : '#0D9F6E'
                     }}>
                       {isDebit ? '' : '+ '}{amount.toFixed(2)}
                     </p>
-                    <p style={{ fontSize: '13px', fontWeight: 400, color: '#9CA3AF', fontStyle: 'italic' }}>View details</p>
+                    <p style={{ fontSize: '12px', fontWeight: 400, color: '#9CA3AF', fontStyle: 'italic' }}>View details</p>
                   </div>
-                  <ChevronRight style={{ width: '18px', height: '18px', color: '#6B7280' }} />
+                  <ChevronRight style={{ width: '16px', height: '16px', color: '#9CA3AF' }} />
                 </div>
               </div>
             );
@@ -704,21 +705,22 @@ export default function TransactionHistoryWorking() {
       <div 
         className="flex items-center justify-between flex-shrink-0 text-white"
         style={{ 
-          background: 'linear-gradient(180deg, #0E5C75 0%, #154B63 100%)',
-          height: '52px',
+          background: 'linear-gradient(180deg, #1B6B7C 0%, #195A6B 100%)',
+          height: '48px',
           padding: '0 16px'
         }}
       >
-        <div className="flex items-center" style={{ gap: '10px' }}>
-          <svg style={{ width: '18px', height: '18px' }} fill="white" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="10" />
-            <text x="12" y="16" textAnchor="middle" fill="#0E5C75" fontSize="13" fontWeight="bold">i</text>
+        <div className="flex items-center" style={{ gap: '8px' }}>
+          <svg style={{ width: '16px', height: '16px' }} viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10" fill="white" />
+            <circle cx="12" cy="7.5" r="1.3" fill="#1B6B7C" />
+            <rect x="10.8" y="10.5" width="2.4" height="5.5" rx="0.8" fill="#1B6B7C" />
           </svg>
-          <span style={{ fontSize: '15px', fontWeight: 400 }}>See an unfamiliar transaction?</span>
+          <span style={{ fontSize: '14px', fontWeight: 400 }}>See an unfamiliar transaction?</span>
         </div>
         <button className="flex items-center hover:opacity-80 transition-opacity" style={{ gap: '4px' }}>
-          <span style={{ fontSize: '15px', fontWeight: 500 }}>Find out more</span>
-          <ChevronRight style={{ width: '18px', height: '18px' }} />
+          <span style={{ fontSize: '14px', fontWeight: 500 }}>Find out more</span>
+          <ChevronRight style={{ width: '16px', height: '16px' }} />
         </button>
       </div>
 
