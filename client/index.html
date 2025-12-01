@@ -19,9 +19,9 @@
     
     <!-- iOS Web App Configuration -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="theme-color" content="#0047ab" />
+    <meta name="theme-color" content="#1B6B7C" />
     
     <!-- Critical font preloading for instant rendering -->
     <link rel="preload" href="/OpenSans-Regular-webfont.woff2" as="font" type="font/woff2" crossorigin>
@@ -168,7 +168,7 @@
         html, body { 
           height: 100vh;
           height: calc(var(--vh, 1vh) * 100);
-          padding-top: env(safe-area-inset-top);
+          padding-top: 0;
           padding-bottom: env(safe-area-inset-bottom);
           padding-left: env(safe-area-inset-left);
           padding-right: env(safe-area-inset-right);
@@ -200,10 +200,10 @@
     </style>
     
     <script>
-      // Set theme color to correct blue immediately before React loads
+      // Set theme color to match header for seamless status bar blend
       const themeColorMeta = document.querySelector('meta[name="theme-color"]');
       if (themeColorMeta) {
-        themeColorMeta.setAttribute('content', '#000DFF');
+        themeColorMeta.setAttribute('content', '#1B6B7C');
       }
 
       // Security measures to prevent sharing and copying
