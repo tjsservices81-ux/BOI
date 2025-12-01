@@ -1572,9 +1572,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
           console.log(`✅ USER CREATED IN MEMORY with matching ID: ${newUser.id} (customerNumber: ${newUser.customerNumber})`);
 
-          // Generate unique account number for this customer
-          const accountNumber = `****${Math.floor(1000 + Math.random() * 9000)}`;
+          // Generate unique 8-digit account number (check database for uniqueness)
+          const generateUniqueAccountNumber = async (): Promise<string> => {
+            const existingAccounts = await storage.getAllAccounts();
+            const existingNumbers = new Set(existingAccounts.map(a => a.accountNumber));
+            
+            let accountNum: string;
+            let attempts = 0;
+            do {
+              // Generate random 8-digit number (10000000 to 99999999)
+              accountNum = String(Math.floor(10000000 + Math.random() * 90000000));
+              attempts++;
+              if (attempts > 100) throw new Error('Could not generate unique account number');
+            } while (existingNumbers.has(accountNum));
+            
+            return accountNum;
+          };
+
+          // Generate valid Irish IBAN using MOD-97 algorithm
+          const generateIrishIBAN = (accountNum: string, sortCode: string): string => {
+            // Bank of Ireland BIC identifier (first 4 chars)
+            const bankId = 'BOFI';
+            // Sort code without hyphens (6 digits)
+            const sortCodeNum = sortCode.replace(/-/g, '');
+            // BBAN = bank identifier + sort code + account number
+            const bban = bankId + sortCodeNum + accountNum;
+            
+            // Calculate IBAN check digits using MOD-97
+            // Move 'IE00' to end and convert letters to numbers (A=10, B=11, etc.)
+            const rearranged = bban + 'IE00';
+            let numStr = '';
+            for (const char of rearranged) {
+              if (char >= 'A' && char <= 'Z') {
+                numStr += (char.charCodeAt(0) - 55).toString();
+              } else {
+                numStr += char;
+              }
+            }
+            
+            // Calculate MOD-97 on the numeric string
+            let remainder = 0;
+            for (let i = 0; i < numStr.length; i++) {
+              remainder = (remainder * 10 + parseInt(numStr[i])) % 97;
+            }
+            const checkDigits = String(98 - remainder).padStart(2, '0');
+            
+            return 'IE' + checkDigits + bban;
+          };
+
+          const accountNumber = await generateUniqueAccountNumber();
           const sortCode = "90-78-68";
+          const bic = "BOFIIE2D";
+          const iban = generateIrishIBAN(accountNumber, sortCode);
+
+          console.log(`🏦 Generated banking details: Account=${accountNumber}, IBAN=${iban}, BIC=${bic}`);
 
           // Create single current account for the new user
           const currentAccount = {
@@ -1583,7 +1634,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             accountNumber: accountNumber,
             balance: "0.00",
             displayName: "Current Account",
-            sortCode: sortCode
+            sortCode: sortCode,
+            bic: bic,
+            iban: iban
           };
 
           // Create the account in the database
@@ -1593,7 +1646,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           try {
             await storage.updateCustomer(userData.customerNumber, {
               accountNumber: accountNumber,
-              sortCode: sortCode
+              sortCode: sortCode,
+              bic: bic,
+              iban: iban
             });
             console.log(`💳 Linked account ${accountNumber} to customer ${userData.customerNumber}`);
           } catch (linkError) {
@@ -2598,6 +2653,8 @@ h+=\`<div class="itm">
 <div class="r"><span class="lb">Currency</span><span class="vl">\${escapeHtml(c.currency)}</span></div>
 <div class="r"><span class="lb">Account Number</span><span class="vl" style="font-family:monospace;font-weight:600">\${c.accountNumber ? escapeHtml(c.accountNumber) : 'Not linked'}</span></div>
 <div class="r"><span class="lb">Sort Code</span><span class="vl" style="font-family:monospace">\${c.sortCode ? escapeHtml(c.sortCode) : '90-78-68'}</span></div>
+<div class="r"><span class="lb">BIC</span><span class="vl" style="font-family:monospace">\${c.bic ? escapeHtml(c.bic) : 'BOFIIE2D'}</span></div>
+<div class="r"><span class="lb">IBAN</span><span class="vl" style="font-family:monospace;font-size:11px">\${c.iban ? escapeHtml(c.iban) : 'Not generated'}</span></div>
 <div class="r"><span class="lb">Status</span><span class="st">\${c.isDeleted ? '🗑️ Deleted' : 'Active'}</span></div>
 \${c.notificationViolationFlagged ? \`
 <div class="r" style="background:#fff3cd;border-radius:6px;padding:8px;margin:4px 0">

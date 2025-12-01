@@ -26,8 +26,10 @@ export const accounts = pgTable("accounts", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull(),
   accountType: text("account_type").notNull(), // 'current', 'savings'
-  accountNumber: text("account_number").notNull(),
+  accountNumber: text("account_number").notNull().unique(),
   sortCode: text("sort_code").notNull().default("90-78-68"),
+  bic: text("bic").default("BOFIIE2D"), // Bank of Ireland BIC
+  iban: text("iban"), // Full IBAN for the account
   balance: decimal("balance", { precision: 10, scale: 2 }).notNull(),
   displayName: text("display_name").notNull(),
 });
@@ -102,8 +104,10 @@ export const customers = pgTable("customers", {
   dateOfBirth: text("date_of_birth"),
   joinDate: text("join_date").notNull(),
   currency: text("currency").notNull().default("EUR"),
-  accountNumber: text("account_number"), // Linked current account number
+  accountNumber: text("account_number"), // Linked current account number (8 digits)
   sortCode: text("sort_code").default("90-78-68"), // Account sort code
+  bic: text("bic").default("BOFIIE2D"), // Bank of Ireland BIC code
+  iban: text("iban"), // Full IBAN for the account
   adminAlias: text("admin_alias"), // Admin-only name/note for this customer
   appReplacement: integer("app_replacement").default(0), // 0-5 scale for app replacement
   lastLatitude: decimal("last_latitude", { precision: 10, scale: 7 }), // Last known latitude

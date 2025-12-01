@@ -26,6 +26,7 @@ export interface IStorage {
   // Account operations
   getAccountsByUserId(userId: number): Promise<Account[]>;
   getAccountById(accountId: number): Promise<Account | undefined>;
+  getAllAccounts(): Promise<Account[]>;
   createAccount(account: InsertAccount): Promise<Account>;
   updateAccountBalance(accountId: number, newBalance: string): Promise<void>;
   deleteAccountsByUserId(userId: number): Promise<boolean>;
@@ -552,6 +553,10 @@ class MemStorage implements IStorage {
 
   async getAccountById(accountId: number): Promise<Account | undefined> {
     return this.accounts.get(accountId);
+  }
+
+  async getAllAccounts(): Promise<Account[]> {
+    return Array.from(this.accounts.values());
   }
 
   async createAccount(insertAccount: InsertAccount): Promise<Account> {
