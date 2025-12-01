@@ -121,9 +121,20 @@ export default function Dashboard() {
     const savedPayees = UserDataManager.getUserData('savedPayees', []);
     const recentPayees = UserDataManager.getUserData('recentPayees', []);
     const allPayees = [...savedPayees, ...recentPayees];
-    // Remove duplicates by payee name and type
-    const uniquePayees = Array.from(new Map(allPayees.map(p => [`${p.name}-${p.type}`, p])).values());
-    setPayees(uniquePayees);
+    // Remove duplicates by payee name and transferType, convert transferType to type field
+    const uniquePayeesMap = new Map();
+    allPayees.forEach(p => {
+      const key = `${p.name}-${p.transferType || p.type}`;
+      if (!uniquePayeesMap.has(key)) {
+        // Normalize the payee structure: ensure it has a 'type' field for the filter
+        const normalizedPayee = {
+          ...p,
+          type: p.transferType || p.type || 'uk' // Convert transferType to type for compatibility
+        };
+        uniquePayeesMap.set(key, normalizedPayee);
+      }
+    });
+    setPayees(Array.from(uniquePayeesMap.values()));
     
     // Load user's currency preference
     setUserCurrency(getUserCurrency());
