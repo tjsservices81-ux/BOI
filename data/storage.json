@@ -2290,7 +2290,7 @@
         "address": null,
         "dateOfBirth": null,
         "joinDate": "2025-11-28T15:40:37.819Z",
-        "currency": "GBP",
+        "currency": "EUR",
         "dateCreated": "2025-11-28T15:40:37.780Z",
         "isDisabled": false
       }
@@ -2685,6 +2685,23 @@
         "isDisabled": false,
         "currency": "EUR"
       }
+    ],
+    [
+      337,
+      {
+        "id": 337,
+        "customerNumber": "58602197",
+        "pin": "",
+        "name": "James McDonagh",
+        "email": "jameseinkey@icloud.com",
+        "phone": "+353851903077",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-12-01T22:39:17.705Z",
+        "currency": "EUR",
+        "dateCreated": "2025-12-01T22:39:17.664Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [
@@ -2825,7 +2842,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 337,
+    "currentUserId": 338,
     "currentAccountId": 124,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
