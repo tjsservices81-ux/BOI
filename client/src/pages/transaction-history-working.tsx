@@ -1469,7 +1469,7 @@ export default function TransactionHistoryWorking() {
                         fontWeight: 400,
                         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
                       }}>
-                        {accountInfo?.accountNumber || '20163704'}
+                        {accountInfo?.propAccountNumber || '20163704'}
                       </p>
                     </div>
                   </>
@@ -1520,7 +1520,7 @@ export default function TransactionHistoryWorking() {
                 <button
                   onClick={async () => {
                     const shareText = userCurrency === 'GBP' 
-                      ? `Sort Code: ${accountInfo?.sortCode || '90-38-16'}\nAccount Number: ${accountInfo?.accountNumber || '20163704'}`
+                      ? `Sort Code: ${accountInfo?.sortCode || '90-38-16'}\nAccount Number: ${accountInfo?.propAccountNumber || '20163704'}`
                       : `BIC: ${accountInfo?.bic || 'BOFIIE2DXXX'}\nIBAN: ${accountInfo?.iban || 'IE40BOFI 903816 20163704'}`;
                     
                     if (navigator.share) {
