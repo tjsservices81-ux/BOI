@@ -2355,7 +2355,7 @@ export default function Profile() {
                         setEditingBankAccount(account);
                         setBankDetailsData({
                           sortCode: account.sortCode || '',
-                          accountNumber: account.fullAccountNumber || account.accountNumber?.replace('****', '') || '',
+                          accountNumber: account.fullAccountNumber || '',
                           bic: account.bic || '',
                           iban: account.iban || ''
                         });
