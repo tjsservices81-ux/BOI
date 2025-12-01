@@ -543,15 +543,15 @@ export default function TransactionHistoryWorking() {
           <div 
             className="rounded-full flex items-center justify-center"
             style={{ 
-              width: '34px', 
-              height: '34px', 
-              border: `2px solid ${styles.colors.profileBorder}`,
-              backgroundColor: styles.colors.profileBg
+              width: '36px', 
+              height: '36px', 
+              border: '2px solid rgba(255,255,255,0.5)',
+              backgroundColor: 'transparent'
             }}
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill={styles.colors.profileBorder}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="rgba(255,255,255,0.9)">
               <circle cx="12" cy="8" r="4"/>
-              <path d="M12 14c-4 0-7 2-7 4v2h14v-2c0-2-3-4-7-4z"/>
+              <path d="M12 14c-5 0-8 2.5-8 5v1h16v-1c0-2.5-3-5-8-5z"/>
             </svg>
           </div>
         </button>
