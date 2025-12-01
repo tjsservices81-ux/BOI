@@ -37,6 +37,17 @@ export default function Dashboard() {
   const [selectedFromAccount, setSelectedFromAccount] = useState<string>('');
   const [selectedPayee, setSelectedPayee] = useState<string>('');
   const [payees, setPayees] = useState<any[]>([]);
+  
+  // Monthly insights state
+  const [monthlyInsights, setMonthlyInsights] = useState<{
+    currentMonth: { name: string; moneyIn: number; moneyOut: number };
+    previousMonth: { name: string; moneyIn: number; moneyOut: number };
+    currentDate: string;
+  }>({
+    currentMonth: { name: '', moneyIn: 0, moneyOut: 0 },
+    previousMonth: { name: '', moneyIn: 0, moneyOut: 0 },
+    currentDate: ''
+  });
 
   // Enhanced navigation with smooth animations
   const navigateWithAnimation = (path: string, animationType: 'slide-right' | 'slide-left' | 'slide-up' = 'slide-right') => {
@@ -122,6 +133,55 @@ export default function Dashboard() {
       );
     };
     checkTouchDevice();
+    
+    // Calculate monthly insights from transactions
+    const calculateMonthlyInsights = () => {
+      const transactions = UserDataManager.getUserData('bankTransactions', []);
+      const now = new Date();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+      const previousMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+      const previousYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+      
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      
+      let currentMonthIn = 0;
+      let currentMonthOut = 0;
+      let previousMonthIn = 0;
+      let previousMonthOut = 0;
+      
+      transactions.forEach((tx: any) => {
+        const txDate = new Date(tx.date);
+        const txMonth = txDate.getMonth();
+        const txYear = txDate.getFullYear();
+        const amount = parseFloat(tx.amount) || 0;
+        
+        if (txMonth === currentMonth && txYear === currentYear) {
+          if (amount > 0) {
+            currentMonthIn += amount;
+          } else {
+            currentMonthOut += Math.abs(amount);
+          }
+        } else if (txMonth === previousMonth && txYear === previousYear) {
+          if (amount > 0) {
+            previousMonthIn += amount;
+          } else {
+            previousMonthOut += Math.abs(amount);
+          }
+        }
+      });
+      
+      const day = now.getDate().toString().padStart(2, '0');
+      const month = (now.getMonth() + 1).toString().padStart(2, '0');
+      
+      setMonthlyInsights({
+        currentMonth: { name: monthNames[currentMonth], moneyIn: currentMonthIn, moneyOut: currentMonthOut },
+        previousMonth: { name: monthNames[previousMonth], moneyIn: previousMonthIn, moneyOut: previousMonthOut },
+        currentDate: `${day}/${month}`
+      });
+    };
+    
+    calculateMonthlyInsights();
   }, []);
 
   // Listen for balance updates from transfers and admin profile updates
@@ -572,21 +632,75 @@ export default function Dashboard() {
             <div className="bg-white shadow-sm border border-gray-200 p-4 mt-2">
               <div className="flex items-center mb-2">
                 <div className="w-2 h-2 rounded-full bg-[#2d6a7a] mr-2"></div>
-                <span className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>01/12</span>
+                <span className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>{monthlyInsights.currentDate}</span>
               </div>
               <h3 className="text-lg font-medium text-gray-800 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>Monthly money in and out</h3>
               <p className="text-sm text-gray-500 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>See what came in and went out of your account this month. Tap for details.</p>
               
               <div className="space-y-3">
+                {/* Current Month */}
                 <div className="flex items-center">
-                  <span className="text-sm text-gray-700 w-10" style={{ fontFamily: 'OpenSans, sans-serif' }}>Dec</span>
-                  <div className="flex-1 h-2 bg-gray-200 ml-2"></div>
+                  <span className="text-sm text-gray-700 w-10" style={{ fontFamily: 'OpenSans, sans-serif' }}>{monthlyInsights.currentMonth.name}</span>
+                  <div className="flex-1 h-2 bg-gray-200 ml-2 overflow-hidden">
+                    {(monthlyInsights.currentMonth.moneyIn > 0 || monthlyInsights.currentMonth.moneyOut > 0) && (
+                      <div className="h-full flex">
+                        {monthlyInsights.currentMonth.moneyIn > 0 && (
+                          <div 
+                            className="h-full bg-green-500" 
+                            style={{ 
+                              width: `${(monthlyInsights.currentMonth.moneyIn / (monthlyInsights.currentMonth.moneyIn + monthlyInsights.currentMonth.moneyOut)) * 100}%` 
+                            }}
+                          ></div>
+                        )}
+                        {monthlyInsights.currentMonth.moneyOut > 0 && (
+                          <div 
+                            className="h-full bg-red-400" 
+                            style={{ 
+                              width: `${(monthlyInsights.currentMonth.moneyOut / (monthlyInsights.currentMonth.moneyIn + monthlyInsights.currentMonth.moneyOut)) * 100}%` 
+                            }}
+                          ></div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                {/* Previous Month */}
+                <div className="flex items-center">
+                  <span className="text-sm text-gray-700 w-10" style={{ fontFamily: 'OpenSans, sans-serif' }}>{monthlyInsights.previousMonth.name}</span>
+                  <div className="flex-1 h-2 bg-gray-200 ml-2 overflow-hidden">
+                    {(monthlyInsights.previousMonth.moneyIn > 0 || monthlyInsights.previousMonth.moneyOut > 0) && (
+                      <div className="h-full flex">
+                        {monthlyInsights.previousMonth.moneyIn > 0 && (
+                          <div 
+                            className="h-full bg-green-500" 
+                            style={{ 
+                              width: `${(monthlyInsights.previousMonth.moneyIn / (monthlyInsights.previousMonth.moneyIn + monthlyInsights.previousMonth.moneyOut)) * 100}%` 
+                            }}
+                          ></div>
+                        )}
+                        {monthlyInsights.previousMonth.moneyOut > 0 && (
+                          <div 
+                            className="h-full bg-red-400" 
+                            style={{ 
+                              width: `${(monthlyInsights.previousMonth.moneyOut / (monthlyInsights.previousMonth.moneyIn + monthlyInsights.previousMonth.moneyOut)) * 100}%` 
+                            }}
+                          ></div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Legend */}
+              <div className="flex items-center justify-end mt-3 space-x-4">
+                <div className="flex items-center">
+                  <div className="w-3 h-3 bg-green-500 mr-1"></div>
+                  <span className="text-xs text-gray-500">In</span>
                 </div>
                 <div className="flex items-center">
-                  <span className="text-sm text-gray-700 w-10" style={{ fontFamily: 'OpenSans, sans-serif' }}>Nov</span>
-                  <div className="flex-1 h-2 bg-gray-200 ml-2 overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-green-400 to-green-500" style={{ width: '65%' }}></div>
-                  </div>
+                  <div className="w-3 h-3 bg-red-400 mr-1"></div>
+                  <span className="text-xs text-gray-500">Out</span>
                 </div>
               </div>
             </div>
