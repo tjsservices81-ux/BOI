@@ -876,7 +876,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Account access revoked" });
       }
       
-      const accounts = await storage.getAccountsByUserId(sessionUser.id);
+      let accounts = await storage.getAccountsByUserId(sessionUser.id);
+      
+      // Auto-create Current Account if user has no accounts
+      if (accounts.length === 0) {
+        console.log(`🏦 Creating Current Account for user ${sessionUser.customerNumber} (id: ${sessionUser.id})`);
+        
+        // Generate unique 8-digit account number
+        const accountNumber = Math.floor(10000000 + Math.random() * 90000000).toString();
+        const sortCode = '90-78-68';
+        const bic = 'BOFIIE2D';
+        const iban = `IE${Math.floor(10 + Math.random() * 90)}BOFI${sortCode.replace(/-/g, '')}${accountNumber}`;
+        
+        const newAccount = await storage.createAccount({
+          userId: sessionUser.id,
+          accountType: 'current',
+          accountNumber: accountNumber,
+          sortCode: sortCode,
+          bic: bic,
+          iban: iban,
+          balance: '0.00',
+          displayName: 'Current Account'
+        });
+        
+        accounts = [newAccount];
+        console.log(`✅ Created Current Account ${accountNumber} for ${sessionUser.customerNumber}`);
+      }
+      
       console.log(`💳 Loaded ${accounts.length} account(s) for user ${sessionUser.customerNumber}`);
       res.json(accounts);
     } catch (error) {
