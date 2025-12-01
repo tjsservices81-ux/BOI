@@ -267,7 +267,7 @@ export default function Apply() {
     'Home Insurance': 'https://personalbanking.bankofireland.com/insure-and-protect/insurance/home/',
     'Travel Insurance': 'https://personalbanking.bankofireland.com/insure-and-protect/insurance/travel/',
     'Family Protection': 'https://personalbanking.bankofireland.com/insure-and-protect/life-insurance/',
-    'Personal Loan': 'https://personalbanking.bankofireland.com/borrow/personal-loan/',
+    'Personal Loan': 'https://personalbanking.bankofireland.com/borrow/loans/personal-loan/',
     'Personal Credit Cards': 'https://personalbanking.bankofireland.com/borrow/credit-cards/',
     'Aer Credit Card': 'https://personalbanking.bankofireland.com/borrow/credit-cards/aer-credit-card/',
     'Classic Credit Card': 'https://personalbanking.bankofireland.com/borrow/credit-cards/classic-credit-card/',
