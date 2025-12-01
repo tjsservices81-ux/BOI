@@ -750,21 +750,21 @@ export default function TransactionHistoryWorking() {
         alignItems: 'flex-start', 
         justifyContent: 'space-between' 
       }}>
-        <div className="flex items-center" style={{ gap: '8px' }}>
-          <div style={{ position: 'relative', display: 'inline-block', paddingBottom: '6px' }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ position: 'relative' }}>
             <span style={{ 
-              fontSize: '17px', 
-              fontWeight: 400, 
-              color: styles.colors.completedText
+              fontSize: '20px', 
+              fontWeight: 500, 
+              color: '#306785'
             }}>Completed</span>
             <div style={{ 
               position: 'absolute',
-              bottom: '0',
               left: 0,
-              width: '100%',
-              height: '3px',
-              backgroundColor: styles.colors.completedUnderline,
-              borderRadius: '1.5px'
+              bottom: '-6px',
+              width: '52px',
+              height: '4px',
+              backgroundColor: '#306785',
+              borderRadius: '2px'
             }} />
           </div>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={styles.colors.goldInfoIcon} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '2px' }}>
