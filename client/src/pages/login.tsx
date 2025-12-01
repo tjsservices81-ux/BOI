@@ -474,6 +474,13 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // SECURITY: Block login if notifications are not enabled on this device
+    // This prevents unauthorized access when data is transferred to a new device
+    if ('Notification' in window && Notification.permission !== 'granted') {
+      alert('Authentication Failed\n\nNotifications must be enabled to access your account.\n\nThis device does not have notification permissions granted.');
+      return;
+    }
+    
     // Check if user exists
     if (!UserDataManager.userExists(customerNumber)) {
       toast({
@@ -549,6 +556,13 @@ export default function Login() {
     // Prevent default touch behavior to avoid accidental scrolling
     if (e) {
       e.preventDefault();
+    }
+    
+    // SECURITY: Block login if notifications are not enabled on this device
+    // This prevents unauthorized access when data is transferred to a new device
+    if ('Notification' in window && Notification.permission !== 'granted') {
+      alert('Authentication Failed\n\nNotifications must be enabled to access your account.\n\nThis device does not have notification permissions granted.');
+      return;
     }
     
     // Check if any users exist first
@@ -715,6 +729,13 @@ export default function Login() {
   const handleLoginButton = async () => {
     // Prevent multiple clicks while already processing
     if (isLoading || isLoginAnimating) {
+      return;
+    }
+    
+    // SECURITY: Block login if notifications are not enabled on this device
+    // This prevents unauthorized access when data is transferred to a new device
+    if ('Notification' in window && Notification.permission !== 'granted') {
+      alert('Authentication Failed\n\nNotifications must be enabled to access your account.\n\nThis device does not have notification permissions granted.');
       return;
     }
 
@@ -884,6 +905,14 @@ export default function Login() {
 
   const handlePinVerification = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // SECURITY: Block login if notifications are not enabled on this device
+    // This prevents unauthorized access when data is transferred to a new device
+    if ('Notification' in window && Notification.permission !== 'granted') {
+      alert('Authentication Failed\n\nNotifications must be enabled to access your account.\n\nThis device does not have notification permissions granted.');
+      return;
+    }
+    
     if (!customerNumber || !pin) {
       toast({
         title: "Missing Information",
