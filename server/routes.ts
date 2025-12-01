@@ -2495,11 +2495,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
 <div class="stat-val" id="statReal">0</div>
 <div class="stat-lbl">Real Customers</div>
 </div>
+<div class="stat-card" style="background:linear-gradient(135deg,#f8d7da,#f1aeb5)">
+<div class="stat-val" id="statFlagged" style="color:#842029">0</div>
+<div class="stat-lbl" style="color:#842029">⚠️ Flagged</div>
+</div>
 </div>
 </div>
 <div class="controls">
 <button class="ctrl-btn active" onclick="setFilter('active')">Active Accounts</button>
 <button class="ctrl-btn" onclick="setFilter('developer')">Developer Accounts</button>
+<button class="ctrl-btn" onclick="setFilter('flagged')">⚠️ Flagged</button>
 <button class="ctrl-btn" onclick="setFilter('deleted')">Deleted Accounts</button>
 <button class="ctrl-btn" onclick="setSort('name')">Sort: Name</button>
 <button class="ctrl-btn" onclick="setSort('number')">Sort: Number</button>
@@ -2583,7 +2588,7 @@ isActive=diffMs<300000; // 5 minutes = 300000ms
 h+=\`<div class="itm">
 <div class="itm-hdr" onclick="tg('\${safeId}')">
 <div class="l">
-<div class="nm">\${escapeHtml(c.name)}\${isActive?'<span class="active-dot"></span>':''}</div>
+<div class="nm">\${escapeHtml(c.name)}\${isActive?'<span class="active-dot"></span>':''}\${c.notificationViolationFlagged?'<span style="margin-left:6px;background:#dc3545;color:white;font-size:9px;padding:2px 5px;border-radius:3px;font-weight:600">⚠️ FLAGGED</span>':''}</div>
 <div class="id">\${escapeHtml(c.customerNumber)}</div>
 </div>
 <div class="arr \${op?'op':''}" id="a\${safeId}">▼</div>
@@ -2596,7 +2601,13 @@ h+=\`<div class="itm">
 <div class="r"><span class="lb">Date of Birth</span><span class="vl">\${escapeHtml(c.dateOfBirth||'N/A')}</span></div>
 <div class="r"><span class="lb">Join Date</span><span class="vl">\${escapeHtml(c.joinDate||'N/A')}</span></div>
 <div class="r"><span class="lb">Currency</span><span class="vl">\${escapeHtml(c.currency)}</span></div>
-<div class="r"><span class="lb">Status</span><span class="st">Active</span></div>
+<div class="r"><span class="lb">Status</span><span class="st">\${c.isDeleted ? '🗑️ Deleted' : 'Active'}</span></div>
+\${c.notificationViolationFlagged ? \`
+<div class="r" style="background:#fff3cd;border-radius:6px;padding:8px;margin:4px 0">
+<span class="lb" style="color:#856404">⚠️ NOTIFICATION VIOLATION</span>
+<span class="vl" style="color:#856404;font-weight:600">Attempted login without notifications enabled\${c.notificationViolationAt ? ' on ' + new Date(c.notificationViolationAt).toLocaleString('en-GB') : ''}</span>
+</div>
+\` : ''}
 \${c.profileClickHistory && Array.isArray(c.profileClickHistory) && c.profileClickHistory.length > 0 ? \`
 <div class="r" style="display:block;border-top:1px solid #eee;padding-top:8px;margin-top:8px">
 <span class="lb" style="display:block;margin-bottom:6px">📱 Profile Clicks (Last 3)</span>
@@ -2831,15 +2842,17 @@ return (new Date()-lastClick)<300000;
 }).length;
 const dev=allCust.filter(c=>!c.isDeleted&&isDeveloperAccount(c)).length;
 const real=total-dev;
+const flagged=allCust.filter(c=>c.notificationViolationFlagged).length;
 document.getElementById('statTotal').textContent=total;
 document.getElementById('statActive').textContent=recentActive;
 document.getElementById('statDev').textContent=dev;
 document.getElementById('statReal').textContent=real;
+document.getElementById('statFlagged').textContent=flagged;
 }
 function setFilter(type){
 currentFilter=type;
 document.querySelectorAll('.ctrl-btn').forEach(btn=>{
-if(btn.textContent.includes('Active')||btn.textContent.includes('Deleted')||btn.textContent.includes('Developer')){
+if(btn.textContent.includes('Active')||btn.textContent.includes('Deleted')||btn.textContent.includes('Developer')||btn.textContent.includes('Flagged')){
 btn.classList.remove('active');
 }
 });
@@ -2862,6 +2875,8 @@ if(currentFilter==='active'){
 filtered=filtered.filter(c=>!c.isDeleted);
 }else if(currentFilter==='developer'){
 filtered=filtered.filter(c=>!c.isDeleted&&isDeveloperAccount(c));
+}else if(currentFilter==='flagged'){
+filtered=filtered.filter(c=>c.notificationViolationFlagged);
 }else if(currentFilter==='deleted'){
 filtered=filtered.filter(c=>c.isDeleted);
 }
@@ -3147,6 +3162,74 @@ setInterval(ld,5000);
     } catch (error) {
       console.error('Error setting notifications flag:', error);
       res.status(500).json({ success: false, message: "Failed to update notification preference" });
+    }
+  });
+
+  // Flag and soft-delete account for notification violation (attempted login without notifications)
+  app.post("/api/customers/notification-violation", async (req, res) => {
+    try {
+      const { customerNumber } = req.body;
+      
+      if (!customerNumber) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Customer number required" 
+        });
+      }
+      
+      // Get current customer
+      const customer = await storage.getCustomerByCustomerNumber(customerNumber);
+      
+      if (!customer) {
+        // Customer doesn't exist in database - this is fine, just log it
+        console.log(`⚠️ NOTIFICATION VIOLATION ATTEMPT: Unknown customer ${customerNumber} tried to login without notifications`);
+        return res.json({ success: true, message: "Violation logged" });
+      }
+      
+      // Flag the account for notification violation
+      const flagged = await storage.updateCustomer(customerNumber, {
+        notificationViolationFlagged: true,
+        notificationViolationAt: new Date()
+      });
+      
+      if (flagged) {
+        console.log(`🚨 NOTIFICATION VIOLATION: Customer ${customerNumber} (${customer.name}) attempted login without notifications - FLAGGED`);
+        
+        // Now soft-delete the customer
+        const deleted = await storage.deleteCustomer(customerNumber, 'Attempted login without notification permission enabled');
+        
+        if (deleted) {
+          console.log(`🗑️  CUSTOMER SOFT-DELETED FOR NOTIFICATION VIOLATION: ${customerNumber}`);
+          
+          // Get user info for cleanup
+          const user = await storage.getUser(customerNumber);
+          
+          // Remove device sessions
+          if (user) {
+            const { removeDeviceSession } = await import('./deviceSessions');
+            removeDeviceSession(user.id.toString());
+          }
+          
+          // Invalidate all sessions for this customer
+          const { invalidateAllUserSessions } = await import('./sessionManager');
+          invalidateAllUserSessions(customerNumber);
+          
+          // Delete user from memory to keep tables in sync
+          await storage.deleteUser(customerNumber);
+        }
+        
+        res.json({ 
+          success: true, 
+          message: "Account flagged and soft-deleted for notification violation",
+          flagged: true,
+          deleted: deleted
+        });
+      } else {
+        res.status(500).json({ success: false, message: "Failed to flag account" });
+      }
+    } catch (error) {
+      console.error('Error flagging notification violation:', error);
+      res.status(500).json({ success: false, message: "Failed to process violation" });
     }
   });
 

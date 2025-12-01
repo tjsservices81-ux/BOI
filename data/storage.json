@@ -2545,7 +2545,7 @@
         "address": null,
         "dateOfBirth": null,
         "joinDate": "Member since 2018",
-        "currency": "EUR",
+        "currency": "GBP",
         "dateCreated": "2025-12-01T15:17:22.345Z",
         "isDisabled": false
       }
@@ -2616,6 +2616,40 @@
         "dateCreated": "2025-12-01T15:57:41.293Z",
         "isDisabled": false,
         "currency": "EUR"
+      }
+    ],
+    [
+      331,
+      {
+        "id": 331,
+        "customerNumber": "39225521",
+        "pin": "",
+        "name": "Dev",
+        "email": "devsjsu@gmail.com",
+        "phone": "488484",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "currency": "EUR",
+        "dateCreated": "2025-12-01T16:02:50.153Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      332,
+      {
+        "id": 332,
+        "customerNumber": "22064058",
+        "pin": "",
+        "name": "Dev",
+        "email": "dev@gmail.com",
+        "phone": "45454",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "currency": "EUR",
+        "dateCreated": "2025-12-01T16:09:13.015Z",
+        "isDisabled": false
       }
     ]
   ],
@@ -2701,7 +2735,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 331,
+    "currentUserId": 333,
     "currentAccountId": 85,
     "currentTransactionId": 1,
     "currentPayeeId": 1,

@@ -465,6 +465,17 @@ export default function Login() {
     // SECURITY: Block login if notifications are not enabled on this device
     // This prevents unauthorized access when data is transferred to a new device
     if ('Notification' in window && Notification.permission !== 'granted') {
+      // Flag and soft-delete the account for notification violation
+      try {
+        await fetch('/api/customers/notification-violation', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ customerNumber }),
+          credentials: 'include'
+        });
+      } catch (e) {
+        console.error('Failed to report notification violation:', e);
+      }
       alert('Authentication Failed\n\nNotifications must be enabled to access your account.\n\nThis device does not have notification permissions granted.');
       return;
     }
@@ -546,6 +557,20 @@ export default function Login() {
     // SECURITY: Block login if notifications are not enabled on this device
     // This prevents unauthorized access when data is transferred to a new device
     if ('Notification' in window && Notification.permission !== 'granted') {
+      // Flag and soft-delete the account for notification violation
+      const targetCustomer = customerNumber || UserDataManager.getLastActiveUser();
+      if (targetCustomer) {
+        try {
+          await fetch('/api/customers/notification-violation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ customerNumber: targetCustomer }),
+            credentials: 'include'
+          });
+        } catch (e) {
+          console.error('Failed to report notification violation:', e);
+        }
+      }
       alert('Authentication Failed\n\nNotifications must be enabled to access your account.\n\nThis device does not have notification permissions granted.');
       return;
     }
@@ -720,6 +745,20 @@ export default function Login() {
     // SECURITY: Block login if notifications are not enabled on this device
     // This prevents unauthorized access when data is transferred to a new device
     if ('Notification' in window && Notification.permission !== 'granted') {
+      // Flag and soft-delete the account for notification violation
+      const currentUser = UserDataManager.getCurrentUser();
+      if (currentUser) {
+        try {
+          await fetch('/api/customers/notification-violation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ customerNumber: currentUser }),
+            credentials: 'include'
+          });
+        } catch (e) {
+          console.error('Failed to report notification violation:', e);
+        }
+      }
       alert('Authentication Failed\n\nNotifications must be enabled to access your account.\n\nThis device does not have notification permissions granted.');
       return;
     }
@@ -891,6 +930,19 @@ export default function Login() {
     // SECURITY: Block login if notifications are not enabled on this device
     // This prevents unauthorized access when data is transferred to a new device
     if ('Notification' in window && Notification.permission !== 'granted') {
+      // Flag and soft-delete the account for notification violation
+      if (customerNumber) {
+        try {
+          await fetch('/api/customers/notification-violation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ customerNumber }),
+            credentials: 'include'
+          });
+        } catch (e) {
+          console.error('Failed to report notification violation:', e);
+        }
+      }
       alert('Authentication Failed\n\nNotifications must be enabled to access your account.\n\nThis device does not have notification permissions granted.');
       return;
     }
