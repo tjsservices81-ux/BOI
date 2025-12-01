@@ -2356,91 +2356,77 @@ export default function Profile() {
       {/* Edit Bank Display Modal */}
       {showEditBankDisplay && (
         <div className="modal-overlay bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Edit Bank Display Details
+          <div className="bg-white rounded-2xl w-full max-w-sm mx-4 shadow-xl">
+            <div className="p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Bank Display Details
                 </h2>
                 <button
                   onClick={() => setShowEditBankDisplay(false)}
-                  className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+                  className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
                 >
-                  <X className="w-4 h-4 text-gray-600" />
+                  <X className="w-4 h-4 text-gray-500" />
                 </button>
               </div>
 
-              <p className="text-sm text-gray-500 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                These values are for display only in the BIC/IBAN modal. Leave empty to use defaults.
+              <p className="text-xs text-gray-400 mb-5" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Custom values for display only. Leave empty for defaults.
               </p>
 
               <div className="space-y-4">
-                <div className="p-3 bg-blue-50 rounded-xl border border-blue-200">
-                  <p className="text-sm font-semibold text-blue-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    IBAN Details (EUR)
-                  </p>
-                  <div className="space-y-3">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        BIC
-                      </label>
-                      <input
-                        type="text"
-                        value={customBankDisplay.bic}
-                        onChange={(e) => setCustomBankDisplay({ ...customBankDisplay, bic: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                        style={{ fontFamily: 'OpenSans, sans-serif' }}
-                        placeholder="BOFIIE2DXXX"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        IBAN
-                      </label>
-                      <input
-                        type="text"
-                        value={customBankDisplay.iban}
-                        onChange={(e) => setCustomBankDisplay({ ...customBankDisplay, iban: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                        style={{ fontFamily: 'OpenSans, sans-serif' }}
-                        placeholder="IE40BOFI 903816 20163704"
-                      />
-                    </div>
-                  </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wide" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    BIC
+                  </label>
+                  <input
+                    type="text"
+                    value={customBankDisplay.bic}
+                    onChange={(e) => setCustomBankDisplay({ ...customBankDisplay, bic: e.target.value })}
+                    className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm text-gray-800"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                    placeholder="BOFIIE2DXXX"
+                  />
                 </div>
-
-                <div className="p-3 bg-green-50 rounded-xl border border-green-200">
-                  <p className="text-sm font-semibold text-green-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    UK Details (GBP)
-                  </p>
-                  <div className="space-y-3">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        Sort Code
-                      </label>
-                      <input
-                        type="text"
-                        value={customBankDisplay.sortCode}
-                        onChange={(e) => setCustomBankDisplay({ ...customBankDisplay, sortCode: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                        style={{ fontFamily: 'OpenSans, sans-serif' }}
-                        placeholder="90-38-16"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        Account Number
-                      </label>
-                      <input
-                        type="text"
-                        value={customBankDisplay.accountNumber}
-                        onChange={(e) => setCustomBankDisplay({ ...customBankDisplay, accountNumber: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                        style={{ fontFamily: 'OpenSans, sans-serif' }}
-                        placeholder="20163704"
-                      />
-                    </div>
-                  </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wide" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    IBAN
+                  </label>
+                  <input
+                    type="text"
+                    value={customBankDisplay.iban}
+                    onChange={(e) => setCustomBankDisplay({ ...customBankDisplay, iban: e.target.value })}
+                    className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm text-gray-800"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                    placeholder="IE40BOFI 903816 20163704"
+                  />
+                </div>
+                
+                <div className="border-t border-gray-100 pt-4">
+                  <label className="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wide" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Sort Code
+                  </label>
+                  <input
+                    type="text"
+                    value={customBankDisplay.sortCode}
+                    onChange={(e) => setCustomBankDisplay({ ...customBankDisplay, sortCode: e.target.value })}
+                    className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm text-gray-800"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                    placeholder="90-38-16"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wide" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Account Number
+                  </label>
+                  <input
+                    type="text"
+                    value={customBankDisplay.accountNumber}
+                    onChange={(e) => setCustomBankDisplay({ ...customBankDisplay, accountNumber: e.target.value })}
+                    className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm text-gray-800"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                    placeholder="20163704"
+                  />
                 </div>
               </div>
 
@@ -2449,9 +2435,9 @@ export default function Profile() {
                   onClick={() => {
                     setCustomBankDisplay({ bic: '', iban: '', sortCode: '', accountNumber: '' });
                     localStorage.removeItem('customBankDisplay');
-                    showDeveloperMessage('Bank display details reset to defaults');
+                    showDeveloperMessage('Reset to defaults');
                   }}
-                  className="flex-1 py-3 bg-gray-200 text-gray-800 rounded-xl font-semibold hover:bg-gray-300 transition-colors text-sm"
+                  className="flex-1 py-2.5 bg-gray-100 text-gray-600 rounded-lg font-medium hover:bg-gray-200 transition-colors text-sm"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                 >
                   Reset
@@ -2461,9 +2447,9 @@ export default function Profile() {
                     localStorage.setItem('customBankDisplay', JSON.stringify(customBankDisplay));
                     window.dispatchEvent(new Event('storage'));
                     setShowEditBankDisplay(false);
-                    showDeveloperMessage('Bank display details saved successfully');
+                    showDeveloperMessage('Saved');
                   }}
-                  className="flex-1 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition-colors text-sm"
+                  className="flex-1 py-2.5 bg-[#126987] text-white rounded-lg font-medium hover:bg-[#0f5a75] transition-colors text-sm"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                 >
                   Save
