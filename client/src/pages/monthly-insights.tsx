@@ -94,9 +94,9 @@ export default function MonthlyInsights() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="fixed inset-0 bg-gray-50 flex flex-col">
       {/* Header */}
-      <div className="bg-[#126987] text-white px-4 py-4 flex items-center justify-between">
+      <div className="flex-shrink-0 bg-[#126987] text-white px-4 py-4 flex items-center justify-between">
         <button onClick={() => setLocation('/dashboard')} className="p-1">
           <ArrowLeft className="h-6 w-6" />
         </button>
@@ -108,8 +108,8 @@ export default function MonthlyInsights() {
         </button>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto pb-20">
+      {/* Content - Scrollable */}
+      <div className="flex-1 overflow-y-auto pb-24" style={{ WebkitOverflowScrolling: 'touch' }}>
         {/* Intro Section */}
         <div className="bg-white p-5">
           <h2 className="text-2xl text-gray-800 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
