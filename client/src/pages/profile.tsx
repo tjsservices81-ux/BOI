@@ -970,7 +970,7 @@ export default function Profile() {
     }).catch(console.error);
   };
 
-  const addSampleTransaction = (accountId: number) => {
+  const addSampleTransaction = async (accountId: number) => {
     const randomTransaction = sampleTransactions[Math.floor(Math.random() * sampleTransactions.length)];
     
     // Create transaction date that's 2-30 days before current date
@@ -1005,77 +1005,85 @@ export default function Profile() {
     const currentBalance = parseFloat(targetAccount.balance) || 0;
     const rawAmount = Math.abs(randomTransaction.amount);
     const transactionAmount = randomTransaction.type === 'credit' ? rawAmount : -rawAmount;
-    const newBalance = currentBalance + transactionAmount;
     
-    // Create properly formatted transaction
-    const transaction = {
-      id: Date.now(),
+    // Create properly formatted transaction data for API
+    const transactionData = {
       accountId: accountId,
       amount: transactionAmount >= 0 ? `+${transactionAmount.toFixed(2)}` : transactionAmount.toFixed(2),
       description: randomTransaction.description,
       category: randomTransaction.type === 'credit' ? 'income' : 'expense',
       type: randomTransaction.type,
       timestamp: transactionDate.toISOString()
-      // Note: paymentMethod should only be added for actual transfer transactions, not regular purchases
     };
 
-    // Get current transactions and add new one
-    const currentTransactions = UserDataManager.getUserData('bankTransactions', []);
-    const updatedTransactions = [...currentTransactions, transaction];
-    
-    // Update account with new balance
-    const updatedAccounts = currentAccounts.map((acc: any) => {
-      if (acc.id === accountId) {
-        return { ...acc, balance: newBalance.toFixed(2) };
-      }
-      return acc;
-    });
-    
-    // Save everything to storage
-    UserDataManager.setUserData('bankTransactions', updatedTransactions);
-    UserDataManager.setUserData('bankAccounts', updatedAccounts);
-    
-    // Update local state
-    setAccounts(updatedAccounts);
-    
-    // Clear cache again after updates
-    UserDataManager.clearCache();
+    try {
+      // Create transaction in database (this also updates balance)
+      const response = await fetch('/api/transactions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(transactionData)
+      });
 
-    console.log('Sample Transaction Details:', {
-      account: targetAccount.type,
-      previousBalance: currentBalance.toFixed(2),
-      transactionAmount: transactionAmount.toFixed(2),
-      newBalance: newBalance.toFixed(2),
-      description: randomTransaction.description
-    });
-
-    // Notify all components of the changes
-    window.dispatchEvent(new CustomEvent('transactionUpdate'));
-    window.dispatchEvent(new CustomEvent('transactionAdded', {
-      detail: { transaction, accountId }
-    }));
-    window.dispatchEvent(new CustomEvent('balanceUpdate', {
-      detail: { 
-        accountId, 
-        newBalance: newBalance.toFixed(2), 
-        accounts: updatedAccounts 
+      if (!response.ok) {
+        throw new Error('Failed to create transaction');
       }
-    }));
-    
-    setShowAddTransaction(false);
-    const currentCurrency = getUserCurrency();
-    const currencySymbol = currentCurrency === 'EUR' ? '€' : '£';
-    showDeveloperMessage(`Transaction Added Successfully!\n\n${randomTransaction.description}\nAmount: ${currencySymbol}${Math.abs(transactionAmount).toFixed(2)}\nNew Balance: ${currencySymbol}${newBalance.toFixed(2)}`);
-    
-    // Update balance in database (background)
-    fetch(`/api/accounts/${accountId}/balance`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ balance: newBalance.toFixed(2) })
-    }).then(() => {
-      console.log('💰 Sample transaction balance updated in database');
-    }).catch(console.error);
+
+      const result = await response.json();
+      const newBalance = parseFloat(result.newBalance);
+
+      // Update local state with the new balance from server
+      const updatedAccounts = currentAccounts.map((acc: any) => {
+        if (acc.id === accountId) {
+          return { ...acc, balance: newBalance.toFixed(2) };
+        }
+        return acc;
+      });
+      
+      // Also update local transactions cache
+      const currentTransactions = UserDataManager.getUserData('bankTransactions', []);
+      const updatedTransactions = [...currentTransactions, result.transaction];
+      
+      // Save to local storage
+      UserDataManager.setUserData('bankTransactions', updatedTransactions);
+      UserDataManager.setUserData('bankAccounts', updatedAccounts);
+      
+      // Update local state
+      setAccounts(updatedAccounts);
+      
+      // Clear cache after updates
+      UserDataManager.clearCache();
+
+      console.log('💳 Sample Transaction Created in Database:', {
+        account: targetAccount.type,
+        previousBalance: currentBalance.toFixed(2),
+        transactionAmount: transactionAmount.toFixed(2),
+        newBalance: newBalance.toFixed(2),
+        description: randomTransaction.description
+      });
+
+      // Notify all components of the changes
+      window.dispatchEvent(new CustomEvent('transactionUpdate'));
+      window.dispatchEvent(new CustomEvent('transactionAdded', {
+        detail: { transaction: result.transaction, accountId }
+      }));
+      window.dispatchEvent(new CustomEvent('balanceUpdate', {
+        detail: { 
+          accountId, 
+          newBalance: newBalance.toFixed(2), 
+          accounts: updatedAccounts 
+        }
+      }));
+      
+      setShowAddTransaction(false);
+      const currentCurrency = getUserCurrency();
+      const currencySymbol = currentCurrency === 'EUR' ? '€' : '£';
+      showDeveloperMessage(`Transaction Added Successfully!\n\n${randomTransaction.description}\nAmount: ${currencySymbol}${Math.abs(transactionAmount).toFixed(2)}\nNew Balance: ${currencySymbol}${newBalance.toFixed(2)}`);
+
+    } catch (error) {
+      console.error('Failed to create transaction:', error);
+      alert('Failed to add transaction. Please try again.');
+    }
   };
 
   const updateBalance = async () => {
@@ -1166,7 +1174,7 @@ export default function Profile() {
     }
   };
 
-  const addSampleTransactions = (accountId: number, count: number, startDateStr: string = startDate, endDateStr: string = endDate) => {
+  const addSampleTransactions = async (accountId: number, count: number, startDateStr: string = startDate, endDateStr: string = endDate) => {
     // Block if account deleted
     if (accountDeleted) {
       alert('Account Deleted');
@@ -1190,83 +1198,101 @@ export default function Profile() {
       return;
     }
 
-    const currentTransactions = UserDataManager.getUserData('bankTransactions', []);
-    const newTransactions = [];
-    let currentBalance = parseFloat(targetAccount.balance) || 0;
+    try {
+      const currentTransactions = UserDataManager.getUserData('bankTransactions', []);
+      const newTransactions = [];
+      let finalBalance = parseFloat(targetAccount.balance) || 0;
 
-    for (let i = 0; i < count; i++) {
-      // Randomly select a transaction template
-      const randomTransaction = sampleTransactions[Math.floor(Math.random() * sampleTransactions.length)];
+      // Create all transactions via API
+      for (let i = 0; i < count; i++) {
+        // Randomly select a transaction template
+        const randomTransaction = sampleTransactions[Math.floor(Math.random() * sampleTransactions.length)];
+        
+        // Create a random date within the specified date range
+        const startDateObj = new Date(startDateStr);
+        const endDateObj = new Date(endDateStr);
+        const timeDiff = endDateObj.getTime() - startDateObj.getTime();
+        const randomTime = Math.random() * timeDiff;
+        const transactionDate = new Date(startDateObj.getTime() + randomTime);
+        const randomHours = Math.floor(Math.random() * 24);
+        const randomMinutes = Math.floor(Math.random() * 60);
+        transactionDate.setHours(randomHours, randomMinutes, 0, 0);
+        
+        // Calculate transaction amount
+        const rawAmount = Math.abs(randomTransaction.amount);
+        const transactionAmount = randomTransaction.type === 'credit' ? rawAmount : -rawAmount;
+        
+        // Create transaction via API
+        const transactionData = {
+          accountId: accountId,
+          amount: transactionAmount >= 0 ? `+${transactionAmount.toFixed(2)}` : transactionAmount.toFixed(2),
+          description: randomTransaction.description,
+          category: randomTransaction.type === 'credit' ? 'income' : 'expense',
+          type: randomTransaction.type,
+          timestamp: transactionDate.toISOString()
+        };
+
+        const response = await fetch('/api/transactions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(transactionData)
+        });
+
+        if (!response.ok) {
+          console.error(`Failed to create transaction ${i + 1}/${count}`);
+          continue;
+        }
+
+        const result = await response.json();
+        newTransactions.push(result.transaction);
+        finalBalance = parseFloat(result.newBalance);
+      }
+
+      // Update local state with the final balance from server
+      const updatedAccounts = currentAccounts.map((acc: any) => {
+        if (acc.id === accountId) {
+          return { ...acc, balance: finalBalance.toFixed(2) };
+        }
+        return acc;
+      });
+
+      // Combine with existing transactions
+      const allTransactions = [...currentTransactions, ...newTransactions];
       
-      // Create a random date within the specified date range
-      const startDateObj = new Date(startDateStr);
-      const endDateObj = new Date(endDateStr);
-      const timeDiff = endDateObj.getTime() - startDateObj.getTime();
-      const randomTime = Math.random() * timeDiff;
-      const transactionDate = new Date(startDateObj.getTime() + randomTime);
-      const randomHours = Math.floor(Math.random() * 24);
-      const randomMinutes = Math.floor(Math.random() * 60);
-      transactionDate.setHours(randomHours, randomMinutes, 0, 0);
+      // Save everything to local storage
+      UserDataManager.setUserData('bankTransactions', allTransactions);
+      UserDataManager.setUserData('bankAccounts', updatedAccounts);
       
-      // Calculate transaction amount and new balance
-      const rawAmount = Math.abs(randomTransaction.amount);
-      const transactionAmount = randomTransaction.type === 'credit' ? rawAmount : -rawAmount;
-      currentBalance += transactionAmount;
+      // Update local state
+      setAccounts(updatedAccounts);
       
-      // Create properly formatted transaction
-      const transaction = {
-        id: Date.now() + i, // Ensure unique IDs
-        accountId: accountId,
-        amount: transactionAmount >= 0 ? `+${transactionAmount.toFixed(2)}` : transactionAmount.toFixed(2),
-        description: randomTransaction.description,
-        category: randomTransaction.type === 'credit' ? 'income' : 'expense',
-        type: randomTransaction.type,
-        timestamp: transactionDate.toISOString()
-      };
+      // Clear cache again after updates
+      UserDataManager.clearCache();
+
+      console.log(`💳 Added ${newTransactions.length} sample transactions to ${targetAccount.displayName} in database`);
+
+      // Notify all components of the changes
+      window.dispatchEvent(new CustomEvent('transactionUpdate'));
+      window.dispatchEvent(new CustomEvent('transactionAdded', {
+        detail: { transactions: newTransactions, count: newTransactions.length, accountId }
+      }));
+      window.dispatchEvent(new CustomEvent('balanceUpdate', {
+        detail: { 
+          accountId, 
+          newBalance: finalBalance.toFixed(2), 
+          accounts: updatedAccounts 
+        }
+      }));
       
-      newTransactions.push(transaction);
+      setShowSampleTransactions(false);
+      const currentCurrency = getUserCurrency();
+      const currencySymbol = currentCurrency === 'EUR' ? '€' : '£';
+      showDeveloperMessage(`Successfully added ${newTransactions.length} sample transaction${newTransactions.length === 1 ? '' : 's'} to ${targetAccount.displayName}!\n\nNew Balance: ${currencySymbol}${finalBalance.toFixed(2)}`);
+    } catch (error) {
+      console.error('Failed to create sample transactions:', error);
+      alert('Failed to add transactions. Please try again.');
     }
-
-    // Update account with new balance
-    const updatedAccounts = currentAccounts.map((acc: any) => {
-      if (acc.id === accountId) {
-        return { ...acc, balance: currentBalance.toFixed(2) };
-      }
-      return acc;
-    });
-
-    // Combine with existing transactions
-    const allTransactions = [...currentTransactions, ...newTransactions];
-    
-    // Save everything to storage
-    UserDataManager.setUserData('bankTransactions', allTransactions);
-    UserDataManager.setUserData('bankAccounts', updatedAccounts);
-    
-    // Update local state
-    setAccounts(updatedAccounts);
-    
-    // Clear cache again after updates
-    UserDataManager.clearCache();
-
-    console.log(`Added ${count} sample transactions to ${targetAccount.displayName}`);
-
-    // Notify all components of the changes
-    window.dispatchEvent(new CustomEvent('transactionUpdate'));
-    window.dispatchEvent(new CustomEvent('transactionAdded', {
-      detail: { transactions: newTransactions, count, accountId }
-    }));
-    window.dispatchEvent(new CustomEvent('balanceUpdate', {
-      detail: { 
-        accountId, 
-        newBalance: currentBalance.toFixed(2), 
-        accounts: updatedAccounts 
-      }
-    }));
-    
-    setShowSampleTransactions(false);
-    const currentCurrency = getUserCurrency();
-    const currencySymbol = currentCurrency === 'EUR' ? '€' : '£';
-    showDeveloperMessage(`Successfully added ${count} sample transaction${count === 1 ? '' : 's'} to ${targetAccount.displayName}!\n\nNew Balance: ${currencySymbol}${currentBalance.toFixed(2)}`);
   };
 
   const resetToDefaults = async () => {

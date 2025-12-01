@@ -1010,6 +1010,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create sample/custom transaction (also updates balance)
+  app.post("/api/transactions", requireAuth, async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const { accountId, amount, description, category, type, timestamp, paymentMethod } = req.body;
+
+      if (!accountId || amount === undefined || !description || !category || !type) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      // Verify account belongs to user
+      const account = await storage.getAccountById(accountId);
+      if (!account) {
+        return res.status(404).json({ message: "Account not found" });
+      }
+
+      if (account.userId !== sessionUser.id) {
+        return res.status(403).json({ message: "Not authorized to add transactions to this account" });
+      }
+
+      // Parse the amount - handle both "+100.00" and "-100.00" formats
+      const amountStr = String(amount);
+      const numericAmount = parseFloat(amountStr.replace('+', ''));
+
+      // Create the transaction in PostgreSQL
+      const transaction = await storage.createTransaction({
+        accountId,
+        amount: amountStr,
+        description,
+        category,
+        type,
+        paymentMethod: paymentMethod || (type === 'credit' ? 'Deposit' : 'Purchase'),
+        timestamp: timestamp ? new Date(timestamp) : new Date(),
+        reference: null,
+        recipientName: null,
+        iban: null,
+        bicCode: null,
+        recipientAccountNumber: null,
+        recipientSortCode: null,
+        recipientIban: null,
+        exchangeRate: null,
+        convertedAmount: null,
+        convertedCurrency: null
+      });
+
+      // Update the account balance
+      const currentBalance = parseFloat(account.balance);
+      const balanceChange = type === 'credit' ? Math.abs(numericAmount) : -Math.abs(numericAmount);
+      const newBalance = (currentBalance + balanceChange).toFixed(2);
+      
+      await storage.updateAccountBalance(accountId, newBalance);
+
+      console.log(`💳 Sample transaction created: ${description}, Amount: ${amountStr}, New Balance: ${newBalance}`);
+
+      res.json({ 
+        success: true, 
+        transaction,
+        newBalance 
+      });
+    } catch (error) {
+      console.error('Error creating transaction:', error);
+      res.status(500).json({ message: "Failed to create transaction" });
+    }
+  });
+
   // Create transfer
   app.post("/api/transfer", async (req, res) => {
     try {
