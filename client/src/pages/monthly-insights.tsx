@@ -420,31 +420,31 @@ export default function MonthlyInsights() {
         </div>
 
         {/* Feedback Section */}
-        <div className="py-5 px-4 mb-20" style={{ backgroundColor: '#EAEAEA' }}>
-          <p className="text-center mb-4" style={{ fontSize: '16px', color: '#333' }}>
+        <div className="py-4 px-4 mb-20" style={{ backgroundColor: '#EAEAEA' }}>
+          <p className="text-center mb-3" style={{ fontSize: '14px', color: '#333' }}>
             Was this insight helpful?
           </p>
-          <div className="flex justify-center space-x-4">
+          <div className="flex justify-center space-x-2">
             <button 
-              className="px-10 py-2 font-semibold"
+              className="px-6 py-1.5 font-semibold"
               style={{ 
-                backgroundColor: '#FFFFFF', 
-                border: '2px solid #0A6F85', 
+                backgroundColor: '#EAEAEA', 
+                border: '1.5px solid #0A6F85', 
                 color: '#0A6F85',
-                borderRadius: '8px',
-                fontSize: '14px'
+                borderRadius: '6px',
+                fontSize: '11px'
               }}
             >
               YES
             </button>
             <button 
-              className="px-10 py-2 font-semibold"
+              className="px-6 py-1.5 font-semibold"
               style={{ 
-                backgroundColor: '#FFFFFF', 
-                border: '2px solid #0A6F85', 
+                backgroundColor: '#EAEAEA', 
+                border: '1.5px solid #0A6F85', 
                 color: '#0A6F85',
-                borderRadius: '8px',
-                fontSize: '14px'
+                borderRadius: '6px',
+                fontSize: '11px'
               }}
             >
               NO
