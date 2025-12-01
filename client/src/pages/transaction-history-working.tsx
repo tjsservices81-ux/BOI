@@ -753,6 +753,82 @@ export default function TransactionHistoryWorking() {
         data-scroll-container
         data-scroll-route={`/transactions/${accountId}`}
       >
+        {/* More Options Content */}
+        {activeTab === 'more' && (
+          <div style={{ padding: '20px' }}>
+            {/* Cheques Section */}
+            <div style={{ marginBottom: '24px' }}>
+              <div style={{ position: 'relative', display: 'inline-block', marginBottom: '16px' }}>
+                <span style={{ 
+                  fontSize: '18px', 
+                  fontWeight: 400, 
+                  color: '#1a5490'
+                }}>Cheques</span>
+                <div style={{ 
+                  position: 'absolute',
+                  left: 0,
+                  bottom: '-4px',
+                  width: '40px',
+                  height: '2px',
+                  backgroundColor: '#1a5490'
+                }} />
+              </div>
+              
+              <button 
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '16px 0',
+                  borderBottom: '1px solid #E5E5E5',
+                  backgroundColor: 'transparent'
+                }}
+              >
+                <span style={{ fontSize: '16px', color: '#333' }}>Search cheque</span>
+                <ChevronRight size={20} color="#999" />
+              </button>
+            </div>
+
+            {/* Account settings Section */}
+            <div>
+              <div style={{ position: 'relative', display: 'inline-block', marginBottom: '16px' }}>
+                <span style={{ 
+                  fontSize: '18px', 
+                  fontWeight: 400, 
+                  color: '#1a5490'
+                }}>Account settings</span>
+                <div style={{ 
+                  position: 'absolute',
+                  left: 0,
+                  bottom: '-4px',
+                  width: '40px',
+                  height: '2px',
+                  backgroundColor: '#1a5490'
+                }} />
+              </div>
+              
+              <button 
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '16px 0',
+                  borderBottom: '1px solid #E5E5E5',
+                  backgroundColor: 'transparent'
+                }}
+              >
+                <span style={{ fontSize: '16px', color: '#333' }}>Account nickname</span>
+                <ChevronRight size={20} color="#999" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Transactions Tab Content */}
+        {activeTab === 'transactions' && (
+          <>
         {/* Filter Section - height 48px */}
         <div style={{ 
           backgroundColor: styles.colors.filterBg, 
@@ -1262,6 +1338,8 @@ export default function TransactionHistoryWorking() {
             </div>
           )}
         </div>
+        </>
+        )}
       </div>
 
 
