@@ -899,7 +899,7 @@ export default function TransactionHistoryWorking() {
                   padding: '12px 16px',
                   fontSize: '15px',
                   fontWeight: 500,
-                  backgroundColor: dateRangeType === 'all' ? '#1a5490' : '#FFFFFF',
+                  backgroundColor: dateRangeType === 'all' ? '#126987' : '#FFFFFF',
                   color: dateRangeType === 'all' ? '#FFFFFF' : '#333',
                   border: 'none',
                   borderRight: '1px solid #D0D0D0'
@@ -914,7 +914,7 @@ export default function TransactionHistoryWorking() {
                   padding: '12px 16px',
                   fontSize: '15px',
                   fontWeight: 500,
-                  backgroundColor: dateRangeType === 'month' ? '#1a5490' : '#FFFFFF',
+                  backgroundColor: dateRangeType === 'month' ? '#126987' : '#FFFFFF',
                   color: dateRangeType === 'month' ? '#FFFFFF' : '#333',
                   border: 'none',
                   borderRight: '1px solid #D0D0D0'
@@ -929,7 +929,7 @@ export default function TransactionHistoryWorking() {
                   padding: '12px 16px',
                   fontSize: '15px',
                   fontWeight: 500,
-                  backgroundColor: dateRangeType === 'daterange' ? '#1a5490' : '#FFFFFF',
+                  backgroundColor: dateRangeType === 'daterange' ? '#126987' : '#FFFFFF',
                   color: dateRangeType === 'daterange' ? '#FFFFFF' : '#333',
                   border: 'none'
                 }}
@@ -1087,7 +1087,7 @@ export default function TransactionHistoryWorking() {
               padding: '14px',
               fontSize: '16px',
               fontWeight: 600,
-              backgroundColor: '#1a5490',
+              backgroundColor: '#126987',
               color: '#FFFFFF',
               border: 'none',
               borderRadius: '4px',
