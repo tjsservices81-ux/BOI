@@ -522,24 +522,25 @@ export default function TransactionHistoryWorking() {
         className="text-white"
         style={{ 
           background: 'linear-gradient(180deg, #154B63 0%, #0E5C75 100%)',
-          padding: '12px 20px 24px 20px'
+          padding: '16px 20px 20px 20px'
         }}
       >
-        <div className="flex items-center" style={{ gap: '8px', marginBottom: '14px' }}>
-          <span style={{ fontSize: '32px', fontWeight: 400, letterSpacing: '-0.5px' }}>{formatCurrency(balance, userCurrency)}</span>
-          <button className="hover:bg-white/20 rounded-full transition-colors p-0.5">
-            <svg style={{ width: '20px', height: '20px' }} fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="1.5" viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="10" />
-              <path d="M12 16v-4M12 8h.01" strokeLinecap="round" />
+        <div className="flex items-center" style={{ gap: '10px', marginBottom: '12px' }}>
+          <span style={{ fontSize: '30px', fontWeight: 400, letterSpacing: '-0.5px' }}>{formatCurrency(balance, userCurrency)}</span>
+          <button className="hover:bg-white/20 rounded-full transition-colors">
+            <svg style={{ width: '22px', height: '22px' }} viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" />
+              <circle cx="12" cy="8" r="1" fill="rgba(255,255,255,0.7)" />
+              <rect x="11" y="11" width="2" height="5" rx="0.5" fill="rgba(255,255,255,0.7)" />
             </svg>
           </button>
         </div>
         
-        <div style={{ width: '32px', height: '2px', backgroundColor: 'rgba(255,255,255,0.6)', marginBottom: '14px' }} />
+        <div style={{ width: '28px', height: '2px', backgroundColor: 'rgba(255,255,255,0.5)', marginBottom: '12px' }} />
         
-        <button className="flex items-center text-white hover:opacity-80 transition-opacity" style={{ gap: '4px' }}>
+        <button className="flex items-center text-white hover:opacity-80 transition-opacity" style={{ gap: '6px' }}>
           <span style={{ fontSize: '15px', fontWeight: 400 }}>BIC / IBAN</span>
-          <ChevronRight style={{ width: '18px', height: '18px' }} />
+          <ChevronRight style={{ width: '16px', height: '16px' }} />
         </button>
       </div>
 
@@ -608,32 +609,33 @@ export default function TransactionHistoryWorking() {
       </div>
 
       {/* Filter Section */}
-      <div style={{ backgroundColor: 'white', padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-        <div className="flex items-center" style={{ gap: '8px' }}>
+      <div style={{ backgroundColor: 'white', padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+        <div className="flex items-center" style={{ gap: '10px' }}>
           <span style={{ fontSize: '15px', fontWeight: 400, color: '#6B7280' }}>Filter completed transactions</span>
-          <svg style={{ width: '26px', height: '26px' }} fill="none" stroke="#0E5C75" strokeWidth="2.5" viewBox="0 0 24 24">
-            <circle cx="11" cy="11" r="7" />
-            <path d="M21 21l-4.35-4.35" strokeLinecap="round" />
+          <svg style={{ width: '28px', height: '28px' }} viewBox="0 0 24 24">
+            <circle cx="10" cy="10" r="6" fill="none" stroke="#0E5C75" strokeWidth="2.5" />
+            <path d="M15 15l5 5" stroke="#0E5C75" strokeWidth="2.5" strokeLinecap="round" />
           </svg>
         </div>
       </div>
 
       {/* Status Heading and Amount Header */}
-      <div style={{ backgroundColor: 'white', padding: '8px 20px 16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div className="flex items-center" style={{ gap: '6px' }}>
+      <div style={{ backgroundColor: 'white', padding: '12px 20px 8px 20px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+        <div className="flex items-center" style={{ gap: '8px' }}>
           <span style={{ 
-            fontSize: '18px', 
+            fontSize: '20px', 
             fontWeight: 400, 
             color: '#0E5C75',
             borderBottom: '2px solid #0E5C75',
-            paddingBottom: '2px'
+            paddingBottom: '4px'
           }}>Completed</span>
-          <svg style={{ width: '18px', height: '18px', marginTop: '-2px' }} fill="#C87941" viewBox="0 0 24 24">
-            <circle cx="12" cy="12" r="10" />
-            <text x="12" y="16" textAnchor="middle" fill="white" fontSize="12" fontWeight="bold">i</text>
+          <svg style={{ width: '20px', height: '20px' }} viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10" fill="#C4884A" />
+            <circle cx="12" cy="8" r="1.5" fill="white" />
+            <rect x="10.5" y="11" width="3" height="6" rx="1" fill="white" />
           </svg>
         </div>
-        <span style={{ fontSize: '14px', fontWeight: 400, color: '#6B7280' }}>Amount in {userCurrency === 'EUR' ? '€' : '£'}</span>
+        <span style={{ fontSize: '14px', fontWeight: 400, color: '#9CA3AF', marginTop: '4px' }}>Amount in {userCurrency === 'EUR' ? '€' : '£'}</span>
       </div>
 
       {/* Transaction List */}
@@ -672,19 +674,19 @@ export default function TransactionHistoryWorking() {
                 </div>
 
                 {/* Right side */}
-                <div className="flex items-center" style={{ gap: '8px', minWidth: '100px', justifyContent: 'flex-end' }}>
+                <div className="flex items-center" style={{ gap: '6px', minWidth: '100px', justifyContent: 'flex-end' }}>
                   <div style={{ textAlign: 'right' }}>
                     <p style={{ 
-                      fontSize: '17px', 
-                      fontWeight: 500, 
-                      marginBottom: '4px',
+                      fontSize: '16px', 
+                      fontWeight: 400, 
+                      marginBottom: '2px',
                       color: isDebit ? '#1F2937' : '#0E9F6E'
                     }}>
-                      {isDebit ? '' : '+'}{amount.toFixed(2)}
+                      {isDebit ? '' : '+ '}{amount.toFixed(2)}
                     </p>
-                    <p style={{ fontSize: '13px', fontWeight: 400, color: '#6B7280', fontStyle: 'italic' }}>View details</p>
+                    <p style={{ fontSize: '13px', fontWeight: 400, color: '#9CA3AF', fontStyle: 'italic' }}>View details</p>
                   </div>
-                  <ChevronRight style={{ width: '20px', height: '20px', color: '#0E5C75' }} />
+                  <ChevronRight style={{ width: '18px', height: '18px', color: '#6B7280' }} />
                 </div>
               </div>
             );
