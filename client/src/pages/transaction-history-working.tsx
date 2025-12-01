@@ -526,7 +526,7 @@ export default function TransactionHistoryWorking() {
       {/* Balance Section - darker teal */}
       <div 
         style={{ 
-          backgroundColor: '#1A5867',
+          backgroundColor: '#306785',
           padding: '14px 16px 18px 16px'
         }}
       >
