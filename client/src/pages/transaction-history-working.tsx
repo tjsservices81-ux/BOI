@@ -1394,7 +1394,7 @@ export default function TransactionHistoryWorking() {
                 width: '85%',
                 maxWidth: '340px',
                 backgroundColor: '#ffffff',
-                borderRadius: '12px',
+                borderRadius: '4px',
                 boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3)'
               }}
               initial={{ opacity: 0, scale: 0.9 }}
@@ -1407,9 +1407,7 @@ export default function TransactionHistoryWorking() {
                 className="flex items-center justify-between"
                 style={{ 
                   backgroundColor: '#0b5fa5',
-                  padding: '14px 16px',
-                  borderTopLeftRadius: '12px',
-                  borderTopRightRadius: '12px'
+                  padding: '14px 16px'
                 }}
               >
                 <span style={{ 
@@ -1543,7 +1541,7 @@ export default function TransactionHistoryWorking() {
                     backgroundColor: '#0b5fa5',
                     color: '#ffffff',
                     border: 'none',
-                    borderRadius: '8px',
+                    borderRadius: '4px',
                     cursor: 'pointer',
                     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
                   }}
