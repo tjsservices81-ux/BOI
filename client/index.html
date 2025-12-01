@@ -511,31 +511,9 @@
         }
       });
 
-      // Prevent URL visibility in sharing menus
-      if ('navigator' in window && 'share' in navigator) {
-        // Override Web Share API completely
-        Object.defineProperty(navigator, 'share', {
-          value: function() {
-            return Promise.reject(new Error('Sharing disabled for security'));
-          },
-          writable: false,
-          configurable: false
-        });
-      }
+      // Share API allowed for bank details sharing functionality
 
-      // Block clipboard operations
-      if ('navigator' in window && 'clipboard' in navigator) {
-        Object.defineProperty(navigator, 'clipboard', {
-          value: {
-            writeText: () => Promise.reject(new Error('Clipboard disabled')),
-            readText: () => Promise.reject(new Error('Clipboard disabled')),
-            write: () => Promise.reject(new Error('Clipboard disabled')),
-            read: () => Promise.reject(new Error('Clipboard disabled'))
-          },
-          writable: false,
-          configurable: false
-        });
-      }
+      // Clipboard operations allowed for app functionality
 
       // Access control system
       async function checkAccess() {
