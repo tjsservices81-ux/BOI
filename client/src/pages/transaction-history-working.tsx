@@ -477,7 +477,7 @@ export default function TransactionHistoryWorking() {
 
   const styles = {
     colors: {
-      headerBg: '#1A5F6E',
+      headerBg: '#236B7B',
       balanceGradientStart: '#0E5C75',
       balanceGradientEnd: '#154B63',
       tabActiveBg: '#1B6B7C',
