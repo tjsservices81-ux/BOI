@@ -613,7 +613,7 @@ export default function TransactionHistoryWorking() {
         }} />
         
         <button className="flex items-center" style={{ gap: '4px' }}>
-          <span style={{ fontSize: '15px', fontWeight: 400, color: styles.colors.textWhite }}>BIC / IBAN</span>
+          <span style={{ fontSize: '15px', fontWeight: 400, color: styles.colors.textWhite }}>{userCurrency === 'GBP' ? 'Sort Code / Account Number' : 'BIC / IBAN'}</span>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="9 18 15 12 9 6"></polyline>
           </svg>
