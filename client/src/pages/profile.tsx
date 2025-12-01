@@ -2353,13 +2353,9 @@ export default function Profile() {
                       key={account.id}
                       onClick={() => {
                         setEditingBankAccount(account);
-                        // Only use fullAccountNumber if it's a valid full account number (8+ digits)
-                        // Ignore values that were incorrectly derived from masked accountNumber
-                        const storedFullAccNum = account.fullAccountNumber || '';
-                        const isValidFullAccountNumber = storedFullAccNum.length >= 6 && !storedFullAccNum.includes('*');
                         setBankDetailsData({
                           sortCode: account.sortCode || '',
-                          accountNumber: isValidFullAccountNumber ? storedFullAccNum : '',
+                          accountNumber: account.bankAccountNumber || '',
                           bic: account.bic || '',
                           iban: account.iban || ''
                         });
@@ -2473,7 +2469,7 @@ export default function Profile() {
                             return {
                               ...acc,
                               sortCode: bankDetailsData.sortCode,
-                              fullAccountNumber: bankDetailsData.accountNumber,
+                              bankAccountNumber: bankDetailsData.accountNumber,
                               bic: bankDetailsData.bic,
                               iban: bankDetailsData.iban
                             };
