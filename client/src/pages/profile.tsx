@@ -2499,7 +2499,6 @@ export default function Profile() {
                               ...acc,
                               sortCode: bankDetailsData.sortCode,
                               propAccountNumber: bankDetailsData.propAccountNumber,
-                              accountNumber: bankDetailsData.propAccountNumber || acc.accountNumber,
                               bic: bankDetailsData.bic,
                               iban: bankDetailsData.iban
                             };
