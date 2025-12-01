@@ -761,16 +761,16 @@ export default function TransactionHistoryWorking() {
               position: 'absolute',
               left: 0,
               bottom: '-6px',
-              width: '52px',
-              height: '4px',
+              width: '85px',
+              height: '3px',
               backgroundColor: '#306785',
-              borderRadius: '2px'
+              borderRadius: '1.5px'
             }} />
           </div>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={styles.colors.goldInfoIcon} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '2px' }}>
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="12" y1="16" x2="12" y2="12"/>
-            <line x1="12" y1="8" x2="12.01" y2="8"/>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#306785" stroke="none" style={{ marginLeft: '2px' }}>
+            <circle cx="12" cy="12" r="10" fill="#306785"/>
+            <line x1="12" y1="16" x2="12" y2="12" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+            <circle cx="12" cy="8" r="1" fill="white"/>
           </svg>
         </div>
         <span style={{ 
