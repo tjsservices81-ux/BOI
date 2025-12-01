@@ -380,28 +380,28 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Main content area - white card with rounded top corners */}
+      {/* Send money section - fixed */}
+      <div className="bg-white flex-shrink-0 -mt-8 relative z-10">
+        <div className="flex items-center justify-between px-4 py-2">
+          <div className="flex items-center">
+            <div className="w-7 h-7 rounded-full border border-[#2d6a7a] flex items-center justify-center mr-3">
+              <ArrowRightLeft className="h-3.5 w-3.5 text-[#2d6a7a]" />
+            </div>
+            <span className="text-base text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>Send money</span>
+          </div>
+          <ChevronDown className="h-4 w-4 text-gray-400" />
+        </div>
+        <div className="h-1 bg-gradient-to-r from-[#2d6a7a] to-[#4a9db0]"></div>
+      </div>
+
+      {/* Main content area - scrollable */}
       <div 
         ref={scrollContainerRef}
-        className="main-scroll-container flex-1 px-0 -mt-8 overflow-y-auto ios-scroll" 
+        className="main-scroll-container flex-1 px-0 overflow-y-auto ios-scroll" 
         data-scroll-container
         data-scroll-route="/dashboard"
       >
         <div className="bg-gray-50 h-full">
-          {/* Send money section */}
-          <div className="bg-white">
-            <div className="flex items-center justify-between px-4 py-2">
-              <div className="flex items-center">
-                <div className="w-7 h-7 rounded-full border border-[#2d6a7a] flex items-center justify-center mr-3">
-                  <ArrowRightLeft className="h-3.5 w-3.5 text-[#2d6a7a]" />
-                </div>
-                <span className="text-base text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>Send money</span>
-              </div>
-              <ChevronDown className="h-4 w-4 text-gray-400" />
-            </div>
-            <div className="h-1 bg-gradient-to-r from-[#2d6a7a] to-[#4a9db0]"></div>
-          </div>
-          
           <div className="pt-6 px-4 space-y-6" style={{ overscrollBehavior: 'contain' }}>
             {(accounts && Array.isArray(accounts)) && accounts.map((account, index) => {
               const isLoading = loadingAccountId === account.id;
