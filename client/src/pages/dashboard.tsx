@@ -387,7 +387,7 @@ export default function Dashboard() {
         data-scroll-container
         data-scroll-route="/dashboard"
       >
-        <div className="bg-white rounded-t-3xl h-full">
+        <div className="rounded-t-3xl h-full" style={{ backgroundColor: '#f0f0f0' }}>
           <div className="pt-6 px-4 space-y-6" style={{ overscrollBehavior: 'contain' }}>
             {(accounts && Array.isArray(accounts)) && accounts.map((account, index) => {
               const isLoading = loadingAccountId === account.id;
@@ -418,18 +418,18 @@ export default function Dashboard() {
                   {/* Colored side bar */}
                   <div className={`w-1 self-stretch ${getAccountColor(account.accountType)}`}></div>
                   
-                  <div className="flex items-center justify-between w-full px-4 py-6">
+                  <div className="flex items-center justify-between w-full px-5 py-6">
                     <div className="text-left">
-                      <p className="font-medium text-sm text-gray-800 boi-regular-font">{account.displayName.toUpperCase()}</p>
-                      <p className="text-xs text-gray-500 mt-0.5 boi-regular-font">{account.accountNumber}</p>
+                      <p className="text-lg text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>{account.displayName}</p>
+                      <p className="text-base text-gray-400 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>~ {account.accountNumber.slice(-4)}</p>
                     </div>
                     <div className="flex items-center">
                       {isLoading ? (
                         <Loader2 className="h-5 w-5 text-[#126987] animate-spin mr-3" data-testid={`loader-${account.id}`} />
                       ) : (
                         <>
-                          <p className="text-lg font-semibold text-[#126987] boi-semibold-font">{formatCurrency(account.balance, userCurrency)}</p>
-                          <ChevronRight className="h-4 w-4 ml-3 text-gray-400" />
+                          <p className="text-xl text-[#2d6a7a]" style={{ fontFamily: 'OpenSans, sans-serif' }}>{formatCurrency(account.balance, userCurrency)}</p>
+                          <ChevronRight className="h-5 w-5 ml-2 text-[#2d6a7a]" />
                         </>
                       )}
                     </div>
