@@ -388,7 +388,7 @@ export default function Dashboard() {
         data-scroll-route="/dashboard"
       >
         <div className="bg-white rounded-t-3xl h-full">
-          <div className="pt-6" style={{ overscrollBehavior: 'contain' }}>
+          <div className="pt-6 px-4 space-y-2" style={{ overscrollBehavior: 'contain' }}>
             {(accounts && Array.isArray(accounts)) && accounts.map((account, index) => {
               const isLoading = loadingAccountId === account.id;
               const isDisabled = loadingAccountId !== null || isNavigating;
@@ -396,10 +396,10 @@ export default function Dashboard() {
               return (
                 <button 
                   key={account.id}
-                  className={`w-full flex items-center justify-between border-b border-gray-100 touch-manipulation relative stagger-item android-no-highlight ${
+                  className={`w-full bg-white rounded-2xl shadow-sm touch-manipulation relative stagger-item android-no-highlight overflow-hidden border-2 border-transparent hover:border-[#126987]/20 ${
                     isTouchDevice 
-                      ? '' // No hover/pressed on touch devices
-                      : 'hover:bg-gray-50 transition-all duration-150 ease-out active:scale-98 card-interactive' // Desktop interactions
+                      ? '' 
+                      : 'transition-all duration-150 ease-out active:scale-98 card-interactive'
                   } ${
                     isDisabled ? 'opacity-50 pointer-events-none' : ''
                   }`}
@@ -415,23 +415,31 @@ export default function Dashboard() {
                   }}
                   data-testid={`account-button-${account.id}`}
                 >
-                  {/* Colored side bar */}
-                  <div className={`absolute left-0 top-0 bottom-0 w-1 ${getAccountColor(account.accountType)}`}></div>
-                  
-                  <div className="flex items-center justify-between w-full px-6 py-4">
-                    <div className="text-left">
-                      <p className="font-medium text-sm text-gray-800 boi-regular-font">{account.displayName.toUpperCase()}</p>
-                      <p className="text-xs text-gray-500 mt-0.5 boi-regular-font">{account.accountNumber}</p>
-                    </div>
-                    <div className="flex items-center">
-                      {isLoading ? (
-                        <Loader2 className="h-5 w-5 text-[#126987] animate-spin mr-3" data-testid={`loader-${account.id}`} />
-                      ) : (
-                        <>
-                          <p className="text-lg font-semibold text-[#126987] boi-semibold-font">{formatCurrency(account.balance, userCurrency)}</p>
-                          <ChevronRight className="h-4 w-4 ml-3 text-gray-400" />
-                        </>
-                      )}
+                  <div className="flex items-center w-full p-5">
+                    {/* Colored side bar */}
+                    <div 
+                      className="w-1.5 rounded-full mr-4 self-stretch"
+                      style={{ 
+                        backgroundColor: account.accountType === 'current' ? '#1B76A0' : 
+                                        account.accountType === 'credit' ? '#D64541' : '#4FAE52'
+                      }}
+                    ></div>
+                    
+                    <div className="flex items-center justify-between flex-1">
+                      <div className="text-left">
+                        <p className="font-medium text-sm text-gray-800 boi-regular-font">{account.displayName.toUpperCase()}</p>
+                        <p className="text-xs text-gray-500 mt-0.5 boi-regular-font">{account.accountNumber}</p>
+                      </div>
+                      <div className="flex items-center">
+                        {isLoading ? (
+                          <Loader2 className="h-5 w-5 text-[#126987] animate-spin mr-3" data-testid={`loader-${account.id}`} />
+                        ) : (
+                          <>
+                            <p className="text-lg font-semibold text-[#126987] boi-semibold-font">{formatCurrency(account.balance, userCurrency)}</p>
+                            <ChevronRight className="h-4 w-4 ml-3 text-gray-400" />
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </button>
