@@ -186,25 +186,25 @@ export default function MonthlyInsights() {
         <div style={{ height: '1px', backgroundColor: '#E0E0E0' }}></div>
 
         {/* Account Summary Card - Tappable */}
-        <div className="mx-4 mt-4 bg-white relative" style={{ borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
+        <div className="mx-auto mt-4 bg-white relative" style={{ borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)', width: '280px' }}>
           <button 
             onClick={() => setShowAccountPicker(!showAccountPicker)}
-            className="w-full flex items-center justify-between p-3"
+            className="w-full flex items-center justify-between px-3 py-2"
           >
             <div className="flex items-center">
               <div className="mr-2">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                   <circle cx="12" cy="8" r="4" stroke="#666" strokeWidth="1.5" fill="none"/>
                   <ellipse cx="12" cy="14" rx="6" ry="2.5" stroke="#666" strokeWidth="1.5" fill="none"/>
                   <ellipse cx="12" cy="19" rx="6" ry="2.5" stroke="#666" strokeWidth="1.5" fill="none"/>
                 </svg>
               </div>
-              <div className="text-left">
-                <p className="font-semibold" style={{ fontSize: '13px', color: '#333' }}>{getAccountDisplayName()}</p>
-                {getAccountNumber() && <p style={{ fontSize: '12px', color: '#666' }}>{getAccountNumber()}</p>}
+              <div className="text-left min-w-0">
+                <p className="font-semibold truncate" style={{ fontSize: '12px', color: '#333' }}>{getAccountDisplayName()}</p>
+                {getAccountNumber() && <p className="truncate" style={{ fontSize: '11px', color: '#666' }}>{getAccountNumber()}</p>}
               </div>
             </div>
-            <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform flex-shrink-0 ${showAccountPicker ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`h-3.5 w-3.5 text-gray-400 transition-transform flex-shrink-0 ${showAccountPicker ? 'rotate-180' : ''}`} />
           </button>
           
           {/* Account Picker Dropdown */}
@@ -217,25 +217,25 @@ export default function MonthlyInsights() {
                     setSelectedAccountId(account.id);
                     setShowAccountPicker(false);
                   }}
-                  className="w-full flex items-center p-3 hover:bg-gray-50"
+                  className="w-full flex items-center px-3 py-2 hover:bg-gray-50"
                   style={{ borderBottom: '1px solid #E8E8E8' }}
                 >
                   <div className="mr-2">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                       <circle cx="12" cy="8" r="4" stroke="#666" strokeWidth="1.5" fill="none"/>
                       <ellipse cx="12" cy="14" rx="6" ry="2.5" stroke="#666" strokeWidth="1.5" fill="none"/>
                       <ellipse cx="12" cy="19" rx="6" ry="2.5" stroke="#666" strokeWidth="1.5" fill="none"/>
                     </svg>
                   </div>
-                  <div className="text-left flex-1">
-                    <p className="font-medium" style={{ fontSize: '13px', color: '#333' }}>
+                  <div className="text-left flex-1 min-w-0">
+                    <p className="font-medium truncate" style={{ fontSize: '12px', color: '#333' }}>
                       {account.displayName.replace(' Account', '')}
                     </p>
-                    <p style={{ fontSize: '11px', color: '#666' }}>{account.accountNumber.slice(-4)}</p>
+                    <p className="truncate" style={{ fontSize: '10px', color: '#666' }}>{account.accountNumber.slice(-4)}</p>
                   </div>
                   {selectedAccountId === account.id && (
-                    <div className="w-4 h-4 rounded-full bg-[#0A6F85] flex items-center justify-center flex-shrink-0">
-                      <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+                    <div className="w-3.5 h-3.5 rounded-full bg-[#0A6F85] flex items-center justify-center flex-shrink-0">
+                      <svg width="8" height="8" viewBox="0 0 12 12" fill="none">
                         <path d="M2 6L5 9L10 3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
                     </div>
@@ -245,10 +245,10 @@ export default function MonthlyInsights() {
             </div>
           )}
           
-          <div style={{ height: '1px', backgroundColor: '#E8E8E8', margin: '0 12px' }}></div>
-          <div className="flex justify-between items-center p-3">
-            <span style={{ fontSize: '12px', color: '#666' }}>Activity to date:</span>
-            <span className="font-semibold" style={{ fontSize: '13px', color: '#333' }}>
+          <div style={{ height: '1px', backgroundColor: '#E8E8E8', margin: '0 10px' }}></div>
+          <div className="flex justify-between items-center px-3 py-2">
+            <span style={{ fontSize: '11px', color: '#666' }}>Activity to date:</span>
+            <span className="font-semibold" style={{ fontSize: '12px', color: '#333' }}>
               {formatCurrency(monthlyData.activityToDate.toFixed(2), userCurrency)}
             </span>
           </div>
