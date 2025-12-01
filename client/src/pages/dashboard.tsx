@@ -432,7 +432,7 @@ export default function Dashboard() {
                   {/* Colored side bar */}
                   <div className={`w-1 self-stretch ${getAccountColor(account.accountType)}`}></div>
                   
-                  <div className="flex items-center justify-between w-full px-5 py-3">
+                  <div className="flex items-center justify-between w-full px-5 py-4">
                     <div className="text-left">
                       <p className="text-lg text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>{account.displayName}</p>
                       <p className="text-base text-gray-400 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>~ {account.accountNumber.slice(-4)}</p>
