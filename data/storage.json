@@ -2583,6 +2583,23 @@
         "dateCreated": "2025-12-01T15:35:19.701Z",
         "isDisabled": false
       }
+    ],
+    [
+      329,
+      {
+        "id": 329,
+        "customerNumber": "69101269",
+        "pin": "",
+        "name": "Dev",
+        "email": "dec1@gmail.com",
+        "phone": "4554",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "currency": "EUR",
+        "dateCreated": "2025-12-01T15:48:13.765Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [
@@ -2667,7 +2684,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 329,
+    "currentUserId": 330,
     "currentAccountId": 85,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
