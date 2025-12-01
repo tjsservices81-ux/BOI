@@ -1055,23 +1055,6 @@
       }
     ],
     [
-      230,
-      {
-        "id": 230,
-        "customerNumber": "73567550",
-        "pin": "",
-        "name": "James parker",
-        "email": "jamespark02838@icloud.com",
-        "phone": "+353802943884",
-        "address": "33 Harcourt St, Saint Kevin's, Dublin 2, Ireland",
-        "dateOfBirth": "2000-09-10",
-        "joinDate": "2023-10-23T12:29:04.230Z",
-        "dateCreated": "2025-10-23T12:29:04.142Z",
-        "isDisabled": false,
-        "currency": "EUR"
-      }
-    ],
-    [
       228,
       {
         "id": 228,
@@ -2256,7 +2239,7 @@
         "address": null,
         "dateOfBirth": null,
         "joinDate": "2022-05-27T17:57:00.184Z",
-        "currency": "GBP",
+        "currency": "EUR",
         "dateCreated": "2025-11-27T17:57:00.148Z",
         "isDisabled": false
       }
@@ -2634,6 +2617,40 @@
         "dateCreated": "2025-12-01T16:09:13.015Z",
         "isDisabled": false
       }
+    ],
+    [
+      333,
+      {
+        "id": 333,
+        "customerNumber": "22447225",
+        "pin": "",
+        "name": "Mark",
+        "email": "wbbshdjd@gmail.com",
+        "phone": "18485445",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "currency": "EUR",
+        "dateCreated": "2025-12-01T18:45:27.078Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      334,
+      {
+        "id": 334,
+        "customerNumber": "91446454",
+        "pin": "",
+        "name": "james parker ",
+        "email": "james929@icloud.com",
+        "phone": "353067676469",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "currency": "EUR",
+        "dateCreated": "2025-12-01T18:48:02.290Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [
@@ -2718,7 +2735,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 333,
+    "currentUserId": 335,
     "currentAccountId": 85,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
