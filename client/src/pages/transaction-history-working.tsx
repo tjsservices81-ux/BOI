@@ -740,41 +740,47 @@ export default function TransactionHistoryWorking() {
         </div>
       </div>
 
-      {/* Filter Section - height 48px */}
-      <div style={{ 
-        backgroundColor: styles.colors.filterBg, 
-        padding: '14px 20px', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'flex-end' 
-      }}>
-        <button 
-          onClick={() => setShowFilterPanel(!showFilterPanel)}
-          className="flex items-center" 
-          style={{ gap: '10px' }}
-        >
-          <span style={{ 
-            fontSize: '15px', 
-            fontWeight: 600, 
-            color: styles.colors.textMuted 
-          }}>
-            Filter completed transactions
-          </span>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={styles.colors.completedText} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="11" cy="11" r="8"/>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-          </svg>
-        </button>
-      </div>
+      {/* Scrollable Content Area - contains filter and transactions */}
+      <div 
+        ref={scrollContainerRef}
+        className="flex-1 overflow-y-auto"
+        style={{ backgroundColor: '#FFFFFF' }}
+        data-scroll-container
+        data-scroll-route={`/transactions/${accountId}`}
+      >
+        {/* Filter Section - height 48px */}
+        <div style={{ 
+          backgroundColor: styles.colors.filterBg, 
+          padding: '14px 20px', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'flex-end' 
+        }}>
+          <button 
+            onClick={() => setShowFilterPanel(!showFilterPanel)}
+            className="flex items-center" 
+            style={{ gap: '10px' }}
+          >
+            <span style={{ 
+              fontSize: '15px', 
+              fontWeight: 600, 
+              color: styles.colors.textMuted 
+            }}>
+              Filter completed transactions
+            </span>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={styles.colors.completedText} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </button>
+        </div>
 
-      {/* Filter Panel */}
+        {/* Filter Panel */}
       {showFilterPanel && (
         <div style={{ 
           backgroundColor: '#FFFFFF', 
           padding: '16px 20px 20px 20px',
-          borderBottom: '1px solid #E5E5E5',
-          maxHeight: '60vh',
-          overflowY: 'auto'
+          borderBottom: '1px solid #E5E5E5'
         }}>
           {/* Close button */}
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
@@ -1044,13 +1050,6 @@ export default function TransactionHistoryWorking() {
       </div>
 
       {/* Transaction List */}
-      <div 
-        ref={scrollContainerRef}
-        className="transaction-scroll-container flex-1 overflow-y-auto"
-        style={{ backgroundColor: '#FFFFFF' }}
-        data-scroll-container
-        data-scroll-route={`/transactions/${accountId}`}
-      >
         <div>
           {transactions
             .filter(t => !t.deleted)
