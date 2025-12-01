@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useRoute } from "wouter";
-import { ChevronLeft, ChevronRight, ArrowUpRight, CreditCard, Building2, Zap, Check, Clock, MapPin, Globe, X, FileText, Search, Info, Home, ArrowRightLeft, Landmark } from "lucide-react";
+import { ChevronLeft, ChevronRight, ArrowUpRight, CreditCard, Building2, Zap, Check, Clock, MapPin, Globe, X, FileText, Search, Info, Home, ArrowRightLeft, Landmark, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { UserDataManager } from "../utils/userDataManager.ts";
 import { StateManager } from "../utils/stateManager";
@@ -563,23 +563,13 @@ export default function TransactionHistoryWorking() {
         
         <button 
           onClick={() => navigateWithAnimation('/profile', 'slide-up')}
-          className="flex items-center justify-center" 
-          style={{ width: '40px', height: '40px' }}
+          className="text-white hover:bg-white/20 h-8 w-8 rounded-full flex items-center justify-center touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-95 android-no-highlight"
+          style={{
+            WebkitTapHighlightColor: 'transparent',
+            outline: 'none'
+          }}
         >
-          <div 
-            className="rounded-full flex items-center justify-center"
-            style={{ 
-              width: '36px', 
-              height: '36px', 
-              border: '2px solid rgba(255,255,255,0.7)',
-              backgroundColor: 'transparent'
-            }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-              <circle cx="12" cy="8" r="4"/>
-              <path d="M12 14c-5 0-8 2.5-8 5v1h16v-1c0-2.5-3-5-8-5z"/>
-            </svg>
-          </div>
+          <User className="h-5 w-5" />
         </button>
       </div>
 
