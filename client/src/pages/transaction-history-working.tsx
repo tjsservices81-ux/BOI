@@ -561,7 +561,7 @@ export default function TransactionHistoryWorking() {
       {/* Balance Section */}
       <div 
         style={{ 
-          background: 'linear-gradient(to bottom right, #264559 0%, #284557 15%, #355A74 35%, #325166 55%, #375972 75%, #487F9D 100%)',
+          background: 'linear-gradient(to bottom right, #22586D 0%, #2E6177 22%, #2C5D73 45%, #53879F 72%, #669CB0 100%)',
           padding: '16px 20px 24px 20px'
         }}
       >
