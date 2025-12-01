@@ -809,30 +809,6 @@ export default function TransactionHistoryWorking() {
         </div>
       </div>
 
-      {/* Bottom Banner - 52px height */}
-      <div 
-        className="flex items-center justify-between flex-shrink-0"
-        style={{ 
-          backgroundColor: styles.colors.bannerBg,
-          height: '52px',
-          padding: '0 20px'
-        }}
-      >
-        <div className="flex items-center" style={{ gap: '10px' }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="12" y1="16" x2="12" y2="12"/>
-            <line x1="12" y1="8" x2="12.01" y2="8"/>
-          </svg>
-          <span style={{ fontSize: '14px', fontWeight: 400, color: 'white' }}>See an unfamiliar transaction?</span>
-        </div>
-        <button className="flex items-center" style={{ gap: '4px' }}>
-          <span style={{ fontSize: '14px', fontWeight: 500, color: 'white' }}>Find out more</span>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
-        </button>
-      </div>
 
       {/* Bottom Navigation */}
       <div className="bg-white border-t border-gray-200 px-2 py-2 flex justify-around items-center flex-shrink-0">
