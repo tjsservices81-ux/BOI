@@ -51,9 +51,26 @@ export default function TransactionHistoryWorking() {
   const [statementPdfBlob, setStatementPdfBlob] = useState<Blob | null>(null);
   const [statementFileName, setStatementFileName] = useState<string>('');
   
-  const [showFilterInput, setShowFilterInput] = useState(false);
-  const [filterText, setFilterText] = useState('');
-  const filterInputRef = useRef<HTMLInputElement>(null);
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const [dateRangeType, setDateRangeType] = useState<'all' | 'month' | 'daterange'>('all');
+  const [selectedMonth, setSelectedMonth] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [transactionType, setTransactionType] = useState('all');
+  const [showTypeDropdown, setShowTypeDropdown] = useState(false);
+  const [activeFilters, setActiveFilters] = useState<{dateRangeType: string, transactionType: string, month?: string, dateFrom?: string, dateTo?: string} | null>(null);
+  
+  const transactionTypes = [
+    { value: 'all', label: 'All' },
+    { value: 'direct_debit', label: 'Direct Debits/Credits' },
+    { value: 'contactless', label: 'Contactless' },
+    { value: 'atm', label: 'ATM' },
+    { value: 'lodgement', label: 'Lodgements\\Credits' },
+    { value: 'credit_transfer', label: 'Credit transfers' },
+    { value: 'cheque', label: 'Cheques' },
+    { value: 'other_debit', label: 'Other Debits' },
+    { value: 'cash_withdrawal', label: 'Cash Withdrawals' }
+  ];
   
   const accountId = params?.accountId ? parseInt(params.accountId) : 1;
 
@@ -731,63 +748,257 @@ export default function TransactionHistoryWorking() {
         alignItems: 'center', 
         justifyContent: 'flex-end' 
       }}>
-        {showFilterInput ? (
-          <div className="flex items-center" style={{ gap: '10px', width: '100%' }}>
-            <input
-              ref={filterInputRef}
-              type="text"
-              placeholder="Search transactions..."
-              value={filterText}
-              onChange={(e) => setFilterText(e.target.value)}
-              style={{
-                flex: 1,
-                padding: '8px 12px',
-                fontSize: '15px',
-                border: '1.5px solid #306785',
-                borderRadius: '8px',
-                outline: 'none',
-                backgroundColor: 'white'
-              }}
-              autoFocus
-            />
-            <button
+        <button 
+          onClick={() => setShowFilterPanel(!showFilterPanel)}
+          className="flex items-center" 
+          style={{ gap: '10px' }}
+        >
+          <span style={{ 
+            fontSize: '15px', 
+            fontWeight: 600, 
+            color: styles.colors.textMuted 
+          }}>
+            Filter completed transactions
+          </span>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={styles.colors.completedText} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </button>
+      </div>
+
+      {/* Filter Panel */}
+      {showFilterPanel && (
+        <div style={{ 
+          backgroundColor: '#FFFFFF', 
+          padding: '16px 20px 20px 20px',
+          borderBottom: '1px solid #E5E5E5'
+        }}>
+          {/* Close button */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
+            <button 
               onClick={() => {
-                setShowFilterInput(false);
-                setFilterText('');
+                setShowFilterPanel(false);
+                setShowTypeDropdown(false);
               }}
-              style={{
-                padding: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
+              style={{ padding: '4px' }}
             >
-              <X size={20} color="#666" />
+              <X size={22} color="#666" strokeWidth={2.5} />
             </button>
           </div>
-        ) : (
-          <button 
+
+          {/* Month/date range */}
+          <div style={{ marginBottom: '20px' }}>
+            <p style={{ fontSize: '16px', fontWeight: 500, color: '#333', marginBottom: '12px' }}>
+              Month/date range
+            </p>
+            <div style={{ display: 'flex', borderRadius: '4px', overflow: 'hidden', border: '1px solid #D0D0D0' }}>
+              <button
+                onClick={() => setDateRangeType('all')}
+                style={{
+                  flex: 1,
+                  padding: '12px 16px',
+                  fontSize: '15px',
+                  fontWeight: 500,
+                  backgroundColor: dateRangeType === 'all' ? '#1a5490' : '#FFFFFF',
+                  color: dateRangeType === 'all' ? '#FFFFFF' : '#333',
+                  border: 'none',
+                  borderRight: '1px solid #D0D0D0'
+                }}
+              >
+                All
+              </button>
+              <button
+                onClick={() => setDateRangeType('month')}
+                style={{
+                  flex: 1,
+                  padding: '12px 16px',
+                  fontSize: '15px',
+                  fontWeight: 500,
+                  backgroundColor: dateRangeType === 'month' ? '#1a5490' : '#FFFFFF',
+                  color: dateRangeType === 'month' ? '#FFFFFF' : '#333',
+                  border: 'none',
+                  borderRight: '1px solid #D0D0D0'
+                }}
+              >
+                Month
+              </button>
+              <button
+                onClick={() => setDateRangeType('daterange')}
+                style={{
+                  flex: 1,
+                  padding: '12px 16px',
+                  fontSize: '15px',
+                  fontWeight: 500,
+                  backgroundColor: dateRangeType === 'daterange' ? '#1a5490' : '#FFFFFF',
+                  color: dateRangeType === 'daterange' ? '#FFFFFF' : '#333',
+                  border: 'none'
+                }}
+              >
+                Date range
+              </button>
+            </div>
+
+            {/* Month selector */}
+            {dateRangeType === 'month' && (
+              <div style={{ marginTop: '12px' }}>
+                <input
+                  type="month"
+                  value={selectedMonth}
+                  onChange={(e) => setSelectedMonth(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    fontSize: '15px',
+                    border: '1px solid #D0D0D0',
+                    borderRadius: '4px',
+                    outline: 'none'
+                  }}
+                />
+              </div>
+            )}
+
+            {/* Date range selector */}
+            {dateRangeType === 'daterange' && (
+              <div style={{ marginTop: '12px', display: 'flex', gap: '12px' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: '13px', color: '#666', marginBottom: '4px', display: 'block' }}>From</label>
+                  <input
+                    type="date"
+                    value={dateFrom}
+                    onChange={(e) => setDateFrom(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      fontSize: '15px',
+                      border: '1px solid #D0D0D0',
+                      borderRadius: '4px',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: '13px', color: '#666', marginBottom: '4px', display: 'block' }}>To</label>
+                  <input
+                    type="date"
+                    value={dateTo}
+                    onChange={(e) => setDateTo(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      fontSize: '15px',
+                      border: '1px solid #D0D0D0',
+                      borderRadius: '4px',
+                      outline: 'none'
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Transaction type */}
+          <div style={{ marginBottom: '20px' }}>
+            <p style={{ fontSize: '16px', fontWeight: 500, color: '#333', marginBottom: '12px' }}>
+              Transaction type
+            </p>
+            <div style={{ position: 'relative' }}>
+              <button
+                onClick={() => setShowTypeDropdown(!showTypeDropdown)}
+                style={{
+                  width: '100%',
+                  padding: '14px 16px',
+                  fontSize: '15px',
+                  backgroundColor: '#FFFFFF',
+                  border: '1px solid #D0D0D0',
+                  borderRadius: '4px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  textAlign: 'left'
+                }}
+              >
+                <span>{transactionTypes.find(t => t.value === transactionType)?.label || 'All'}</span>
+                <ChevronRight 
+                  size={20} 
+                  color="#1a5490" 
+                  style={{ 
+                    transform: showTypeDropdown ? 'rotate(-90deg)' : 'rotate(90deg)',
+                    transition: 'transform 0.2s'
+                  }} 
+                />
+              </button>
+
+              {/* Dropdown */}
+              {showTypeDropdown && (
+                <div style={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: 0,
+                  right: 0,
+                  backgroundColor: '#FFFFFF',
+                  border: '1px solid #D0D0D0',
+                  borderTop: 'none',
+                  borderRadius: '0 0 4px 4px',
+                  zIndex: 10,
+                  maxHeight: '250px',
+                  overflowY: 'auto'
+                }}>
+                  {transactionTypes.map((type) => (
+                    <button
+                      key={type.value}
+                      onClick={() => {
+                        setTransactionType(type.value);
+                        setShowTypeDropdown(false);
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '14px 16px',
+                        fontSize: '15px',
+                        backgroundColor: transactionType === type.value ? '#F0F7FC' : '#FFFFFF',
+                        border: 'none',
+                        borderBottom: '1px solid #F0F0F0',
+                        textAlign: 'left',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {type.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Filter button */}
+          <button
             onClick={() => {
-              setShowFilterInput(true);
-              setTimeout(() => filterInputRef.current?.focus(), 100);
+              setActiveFilters({
+                dateRangeType,
+                transactionType,
+                month: selectedMonth,
+                dateFrom,
+                dateTo
+              });
+              setShowFilterPanel(false);
+              setShowTypeDropdown(false);
             }}
-            className="flex items-center" 
-            style={{ gap: '10px' }}
+            style={{
+              width: '100%',
+              padding: '14px',
+              fontSize: '16px',
+              fontWeight: 600,
+              backgroundColor: '#1a5490',
+              color: '#FFFFFF',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
           >
-            <span style={{ 
-              fontSize: '15px', 
-              fontWeight: 600, 
-              color: styles.colors.textMuted 
-            }}>
-              Filter completed transactions
-            </span>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={styles.colors.completedText} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8"/>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </svg>
+            Filter
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Status Heading and Amount Header */}
       <div style={{ 
@@ -842,20 +1053,66 @@ export default function TransactionHistoryWorking() {
           {transactions
             .filter(t => !t.deleted)
             .filter(t => {
-              if (!filterText.trim()) return true;
-              const searchLower = filterText.toLowerCase().trim();
-              const description = (t.description || '').toLowerCase();
-              const reference = (t.reference || '').toLowerCase();
-              const iban = (t.iban || '').toLowerCase();
-              const recipientAccount = (t.recipientAccountNumber || '').toLowerCase();
-              const amount = t.amount || '';
-              const date = formatDate(t.timestamp).toLowerCase();
-              return description.includes(searchLower) || 
-                     reference.includes(searchLower) || 
-                     iban.includes(searchLower) ||
-                     recipientAccount.includes(searchLower) ||
-                     amount.includes(searchLower) ||
-                     date.includes(searchLower);
+              if (!activeFilters) return true;
+              
+              const txDate = new Date(t.timestamp);
+              
+              // Date range filter
+              if (activeFilters.dateRangeType === 'month' && activeFilters.month) {
+                const [year, month] = activeFilters.month.split('-').map(Number);
+                if (txDate.getFullYear() !== year || txDate.getMonth() + 1 !== month) {
+                  return false;
+                }
+              }
+              
+              if (activeFilters.dateRangeType === 'daterange') {
+                if (activeFilters.dateFrom) {
+                  const fromDate = new Date(activeFilters.dateFrom);
+                  fromDate.setHours(0, 0, 0, 0);
+                  if (txDate < fromDate) return false;
+                }
+                if (activeFilters.dateTo) {
+                  const toDate = new Date(activeFilters.dateTo);
+                  toDate.setHours(23, 59, 59, 999);
+                  if (txDate > toDate) return false;
+                }
+              }
+              
+              // Transaction type filter
+              if (activeFilters.transactionType !== 'all') {
+                const category = (t.category || '').toLowerCase();
+                const paymentMethod = (t.paymentMethod || '').toLowerCase();
+                const description = (t.description || '').toLowerCase();
+                
+                switch (activeFilters.transactionType) {
+                  case 'direct_debit':
+                    if (!category.includes('direct') && !paymentMethod.includes('direct')) return false;
+                    break;
+                  case 'contactless':
+                    if (!paymentMethod.includes('contactless') && !category.includes('contactless')) return false;
+                    break;
+                  case 'atm':
+                    if (!category.includes('atm') && !description.includes('atm') && !paymentMethod.includes('atm')) return false;
+                    break;
+                  case 'lodgement':
+                    if (t.type !== 'credit' && !category.includes('lodgement') && !category.includes('credit')) return false;
+                    break;
+                  case 'credit_transfer':
+                    if (!category.includes('transfer') && !paymentMethod.includes('transfer')) return false;
+                    break;
+                  case 'cheque':
+                    if (!category.includes('cheque') && !paymentMethod.includes('cheque')) return false;
+                    break;
+                  case 'other_debit':
+                    if (t.type !== 'debit') return false;
+                    break;
+                  case 'cash_withdrawal':
+                    if (!category.includes('cash') && !description.includes('withdrawal')) return false;
+                    break;
+                }
+              }
+              
+              return true;
             })
             .map((transaction, index) => {
             const isDebit = transaction.type === 'debit' || transaction.amount.startsWith('-');
@@ -935,23 +1192,67 @@ export default function TransactionHistoryWorking() {
           {transactions
             .filter(t => !t.deleted)
             .filter(t => {
-              if (!filterText.trim()) return true;
-              const searchLower = filterText.toLowerCase().trim();
-              const description = (t.description || '').toLowerCase();
-              const reference = (t.reference || '').toLowerCase();
-              const iban = (t.iban || '').toLowerCase();
-              const recipientAccount = (t.recipientAccountNumber || '').toLowerCase();
-              const amountStr = t.amount || '';
-              const date = formatDate(t.timestamp).toLowerCase();
-              return description.includes(searchLower) || 
-                     reference.includes(searchLower) || 
-                     iban.includes(searchLower) ||
-                     recipientAccount.includes(searchLower) ||
-                     amountStr.includes(searchLower) ||
-                     date.includes(searchLower);
+              if (!activeFilters) return true;
+              
+              const txDate = new Date(t.timestamp);
+              
+              if (activeFilters.dateRangeType === 'month' && activeFilters.month) {
+                const [year, month] = activeFilters.month.split('-').map(Number);
+                if (txDate.getFullYear() !== year || txDate.getMonth() + 1 !== month) {
+                  return false;
+                }
+              }
+              
+              if (activeFilters.dateRangeType === 'daterange') {
+                if (activeFilters.dateFrom) {
+                  const fromDate = new Date(activeFilters.dateFrom);
+                  fromDate.setHours(0, 0, 0, 0);
+                  if (txDate < fromDate) return false;
+                }
+                if (activeFilters.dateTo) {
+                  const toDate = new Date(activeFilters.dateTo);
+                  toDate.setHours(23, 59, 59, 999);
+                  if (txDate > toDate) return false;
+                }
+              }
+              
+              if (activeFilters.transactionType !== 'all') {
+                const category = (t.category || '').toLowerCase();
+                const paymentMethod = (t.paymentMethod || '').toLowerCase();
+                const description = (t.description || '').toLowerCase();
+                
+                switch (activeFilters.transactionType) {
+                  case 'direct_debit':
+                    if (!category.includes('direct') && !paymentMethod.includes('direct')) return false;
+                    break;
+                  case 'contactless':
+                    if (!paymentMethod.includes('contactless') && !category.includes('contactless')) return false;
+                    break;
+                  case 'atm':
+                    if (!category.includes('atm') && !description.includes('atm') && !paymentMethod.includes('atm')) return false;
+                    break;
+                  case 'lodgement':
+                    if (t.type !== 'credit' && !category.includes('lodgement') && !category.includes('credit')) return false;
+                    break;
+                  case 'credit_transfer':
+                    if (!category.includes('transfer') && !paymentMethod.includes('transfer')) return false;
+                    break;
+                  case 'cheque':
+                    if (!category.includes('cheque') && !paymentMethod.includes('cheque')) return false;
+                    break;
+                  case 'other_debit':
+                    if (t.type !== 'debit') return false;
+                    break;
+                  case 'cash_withdrawal':
+                    if (!category.includes('cash') && !description.includes('withdrawal')) return false;
+                    break;
+                }
+              }
+              
+              return true;
             }).length === 0 && (
             <div className="px-4 py-12 text-center" style={{ color: styles.colors.textMuted }}>
-              <p>{filterText.trim() ? `No transactions matching "${filterText}"` : 'No transactions found'}</p>
+              <p>{activeFilters ? 'No transactions match your filter criteria' : 'No transactions found'}</p>
             </div>
           )}
         </div>
