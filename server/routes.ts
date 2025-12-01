@@ -892,33 +892,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const accountId = parseInt(req.params.accountId);
       const { balance } = req.body;
+      const sessionUser = (req as any).user;
       
       if (balance === undefined || balance === null) {
         return res.status(400).json({ message: "Balance is required" });
       }
       
-      // Get or load the account
-      let account = await storage.getAccountById(accountId);
-      
-      // If account not in memory, try to load from database
-      if (!account) {
-        const sessionUser = (req as any).user;
-        if (sessionUser) {
-          // Load accounts for this user
-          const accounts = await storage.getAccountsByUserId(sessionUser.id);
-          account = accounts.find(a => a.id === accountId);
-        }
+      if (!sessionUser) {
+        return res.status(401).json({ message: "Authentication required" });
       }
       
+      // Load accounts for this user from PostgreSQL (ensures fresh data)
+      const userAccounts = await storage.getAccountsByUserId(sessionUser.id);
+      const account = userAccounts.find(a => a.id === accountId);
+      
+      // Verify the account belongs to the authenticated user
       if (!account) {
-        return res.status(404).json({ message: "Account not found" });
+        return res.status(403).json({ message: "Account not found or access denied" });
       }
       
       // Update balance in memory and PostgreSQL
       const newBalance = parseFloat(balance).toFixed(2);
       await storage.updateAccountBalance(accountId, newBalance);
       
-      console.log(`💰 Balance updated via API: Account ID=${accountId}, New Balance=${newBalance}`);
+      console.log(`💰 Balance updated via API: Account ID=${accountId}, User ID=${sessionUser.id}, New Balance=${newBalance}`);
       
       res.json({ 
         success: true, 
