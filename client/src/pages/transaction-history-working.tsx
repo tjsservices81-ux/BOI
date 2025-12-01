@@ -604,7 +604,7 @@ export default function TransactionHistoryWorking() {
         backgroundColor: '#FFFFFF', 
         padding: '16px 16px 20px 16px', 
         display: 'flex', 
-        gap: '12px',
+        gap: '8px',
         justifyContent: 'flex-start',
         alignItems: 'center',
         width: '100%',
@@ -615,9 +615,9 @@ export default function TransactionHistoryWorking() {
           <button
             onClick={() => setActiveTab('transactions')}
             style={{
-              padding: '10px 20px',
+              padding: '9px 16px',
               borderRadius: '999px',
-              fontSize: '15px',
+              fontSize: '14px',
               fontWeight: 500,
               backgroundColor: activeTab === 'transactions' ? '#306785' : '#FFFFFF',
               color: activeTab === 'transactions' ? '#FFFFFF' : '#4A4A4A',
@@ -653,9 +653,9 @@ export default function TransactionHistoryWorking() {
               setShowStatementModal(true);
             }}
             style={{
-              padding: '10px 20px',
+              padding: '9px 16px',
               borderRadius: '999px',
-              fontSize: '15px',
+              fontSize: '14px',
               fontWeight: 500,
               backgroundColor: activeTab === 'statements' ? '#306785' : '#FFFFFF',
               color: activeTab === 'statements' ? '#FFFFFF' : '#4A4A4A',
@@ -688,9 +688,9 @@ export default function TransactionHistoryWorking() {
           <button
             onClick={() => setActiveTab('more')}
             style={{
-              padding: '10px 20px',
+              padding: '9px 16px',
               borderRadius: '999px',
-              fontSize: '15px',
+              fontSize: '14px',
               fontWeight: 500,
               backgroundColor: activeTab === 'more' ? '#306785' : '#FFFFFF',
               color: activeTab === 'more' ? '#FFFFFF' : '#4A4A4A',
