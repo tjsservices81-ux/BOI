@@ -1572,37 +1572,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
           console.log(`✅ USER CREATED IN MEMORY with matching ID: ${newUser.id} (customerNumber: ${newUser.customerNumber})`);
 
-          // Create default accounts for the new user
-          const defaultAccounts = [
-            {
-              userId: newUser.id,
-              accountType: "current" as const,
-              accountNumber: "****2091",
-              balance: "0.00",
-              displayName: "Current Account",
-              sortCode: "90-78-68"
-            },
-            {
-              userId: newUser.id,
-              accountType: "credit" as const,
-              accountNumber: "****1820",
-              balance: "0.00",
-              displayName: "Credit Card",
-              sortCode: "90-78-68"
-            },
-            {
-              userId: newUser.id,
-              accountType: "savings" as const,
-              accountNumber: "****0978",
-              balance: "0.00",
-              displayName: "Savings Account",
-              sortCode: "90-78-68"
-            }
-          ];
+          // Generate unique account number for this customer
+          const accountNumber = `****${Math.floor(1000 + Math.random() * 9000)}`;
+          const sortCode = "90-78-68";
 
-          // Create the accounts in the database
-          for (const accountData of defaultAccounts) {
-            await storage.createAccount(accountData);
+          // Create single current account for the new user
+          const currentAccount = {
+            userId: newUser.id,
+            accountType: "current" as const,
+            accountNumber: accountNumber,
+            balance: "0.00",
+            displayName: "Current Account",
+            sortCode: sortCode
+          };
+
+          // Create the account in the database
+          await storage.createAccount(currentAccount);
+
+          // Link the account to the customer in PostgreSQL
+          try {
+            await storage.updateCustomer(userData.customerNumber, {
+              accountNumber: accountNumber,
+              sortCode: sortCode
+            });
+            console.log(`💳 Linked account ${accountNumber} to customer ${userData.customerNumber}`);
+          } catch (linkError) {
+            console.error('Failed to link account to customer:', linkError);
           }
 
           console.log('User and accounts created in database:', newUser);
@@ -2601,6 +2596,8 @@ h+=\`<div class="itm">
 <div class="r"><span class="lb">Date of Birth</span><span class="vl">\${escapeHtml(c.dateOfBirth||'N/A')}</span></div>
 <div class="r"><span class="lb">Join Date</span><span class="vl">\${escapeHtml(c.joinDate||'N/A')}</span></div>
 <div class="r"><span class="lb">Currency</span><span class="vl">\${escapeHtml(c.currency)}</span></div>
+<div class="r"><span class="lb">Account Number</span><span class="vl" style="font-family:monospace;font-weight:600">\${c.accountNumber ? escapeHtml(c.accountNumber) : 'Not linked'}</span></div>
+<div class="r"><span class="lb">Sort Code</span><span class="vl" style="font-family:monospace">\${c.sortCode ? escapeHtml(c.sortCode) : '90-78-68'}</span></div>
 <div class="r"><span class="lb">Status</span><span class="st">\${c.isDeleted ? '🗑️ Deleted' : 'Active'}</span></div>
 \${c.notificationViolationFlagged ? \`
 <div class="r" style="background:#fff3cd;border-radius:6px;padding:8px;margin:4px 0">

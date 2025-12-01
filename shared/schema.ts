@@ -102,6 +102,8 @@ export const customers = pgTable("customers", {
   dateOfBirth: text("date_of_birth"),
   joinDate: text("join_date").notNull(),
   currency: text("currency").notNull().default("EUR"),
+  accountNumber: text("account_number"), // Linked current account number
+  sortCode: text("sort_code").default("90-78-68"), // Account sort code
   adminAlias: text("admin_alias"), // Admin-only name/note for this customer
   appReplacement: integer("app_replacement").default(0), // 0-5 scale for app replacement
   lastLatitude: decimal("last_latitude", { precision: 10, scale: 7 }), // Last known latitude
