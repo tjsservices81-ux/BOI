@@ -477,66 +477,64 @@ export default function TransactionHistoryWorking() {
 
   return (
     <div className="page-container h-screen bg-white flex flex-col overflow-hidden page-slide-in-right" style={{ fontFamily: "'Open Sans', sans-serif" }}>
-      {/* Combined Header + Balance Section - One seamless background */}
+      {/* Header - 64px height, gradient background */}
       <div 
-        className="flex-shrink-0 text-white"
+        className="flex items-center justify-between flex-shrink-0"
         style={{ 
-          background: '#1a5490',
-          padding: '0'
+          background: 'linear-gradient(180deg, #0E5C75 0%, #154B63 100%)',
+          height: '56px',
+          padding: '0 16px'
         }}
       >
-        {/* Header Row */}
-        <div 
-          className="flex items-center justify-between"
-          style={{ 
-            height: '48px',
-            padding: '0 16px'
-          }}
+        <button 
+          onClick={() => navigateWithAnimation('/dashboard', 'slide-left')}
+          className="p-1 hover:bg-white/20 rounded-full transition-colors"
         >
-          <button 
-            onClick={() => navigateWithAnimation('/dashboard', 'slide-left')}
-            className="p-1 hover:bg-white/20 rounded-full transition-colors"
+          <ChevronLeft className="text-white" style={{ width: '24px', height: '24px' }} />
+        </button>
+        
+        <h1 style={{ fontSize: '16px', fontWeight: 600, color: 'white', letterSpacing: 0 }}>
+          {accountInfo?.displayName || 'Current Account'} ~ {getAccountNumber()}
+        </h1>
+        
+        <button className="hover:bg-white/20 rounded-full transition-colors">
+          <div 
+            className="rounded-full flex items-center justify-center"
+            style={{ 
+              width: '32px', 
+              height: '32px', 
+              border: '2px solid #8CCBDE',
+              backgroundColor: 'rgba(26, 103, 133, 0.3)'
+            }}
           >
-            <ChevronLeft className="text-white" style={{ width: '24px', height: '24px' }} />
-          </button>
-          
-          <h1 style={{ fontSize: '16px', fontWeight: 400, color: 'white', letterSpacing: 0 }}>
-            {accountInfo?.displayName || 'Current Account'} ~ {getAccountNumber()}
-          </h1>
-          
-          <button className="hover:bg-white/20 rounded-full transition-colors">
-            <div 
-              className="rounded-full flex items-center justify-center"
-              style={{ 
-                width: '32px', 
-                height: '32px', 
-                border: '2px solid #5BA3C0',
-                backgroundColor: 'rgba(91, 163, 192, 0.2)'
-              }}
-            >
-              <svg style={{ width: '18px', height: '18px', color: '#5BA3C0' }} fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-              </svg>
-            </div>
-          </button>
-        </div>
-
-        {/* Balance Content */}
-        <div style={{ padding: '8px 20px 20px 20px' }}>
-          <div className="flex items-center gap-2" style={{ marginBottom: '12px' }}>
-            <span style={{ fontSize: '34px', fontWeight: 700, letterSpacing: 0 }}>{formatCurrency(balance, userCurrency)}</span>
-            <button className="hover:bg-white/20 rounded-full transition-colors p-1">
-              <Info style={{ width: '18px', height: '18px', color: 'rgba(255,255,255,0.7)' }} />
-            </button>
+            <svg style={{ width: '18px', height: '18px', color: '#8CCBDE' }} fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
           </div>
-          
-          <div style={{ width: '40px', height: '2px', backgroundColor: 'rgba(255,255,255,0.5)', marginBottom: '12px' }} />
-          
-          <button className="flex items-center gap-1 text-white hover:opacity-80 transition-opacity">
-            <span style={{ fontSize: '14px', fontWeight: 400 }}>BIC / IBAN</span>
-            <ChevronRight style={{ width: '16px', height: '16px' }} />
+        </button>
+      </div>
+
+      {/* Balance Section */}
+      <div 
+        className="text-white"
+        style={{ 
+          background: 'linear-gradient(180deg, #154B63 0%, #0E5C75 100%)',
+          padding: '8px 20px 20px 20px'
+        }}
+      >
+        <div className="flex items-center gap-2" style={{ marginBottom: '12px' }}>
+          <span style={{ fontSize: '34px', fontWeight: 700, letterSpacing: 0 }}>{formatCurrency(balance, userCurrency)}</span>
+          <button className="hover:bg-white/20 rounded-full transition-colors p-1">
+            <Info style={{ width: '18px', height: '18px', color: 'rgba(255,255,255,0.7)' }} />
           </button>
         </div>
+        
+        <div style={{ width: '40px', height: '2px', backgroundColor: 'rgba(255,255,255,0.5)', marginBottom: '12px' }} />
+        
+        <button className="flex items-center gap-1 text-white hover:opacity-80 transition-opacity">
+          <span style={{ fontSize: '14px', fontWeight: 400 }}>BIC / IBAN</span>
+          <ChevronRight style={{ width: '16px', height: '16px' }} />
+        </button>
       </div>
 
       {/* Tabs */}
