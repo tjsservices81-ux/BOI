@@ -1,4 +1,4 @@
-import { ChevronRight, ChevronDown, User, Loader2, ArrowRightLeft } from "lucide-react";
+import { ChevronRight, ChevronDown, ChevronUp, User, Loader2, ArrowRightLeft } from "lucide-react";
 import { useLocation } from "wouter";
 import { useState, useEffect, useRef } from "react";
 import SpendingVisualization from "../components/SpendingVisualization";
@@ -30,6 +30,13 @@ export default function Dashboard() {
   const [isTouchDevice, setIsTouchDevice] = useState(false);
   const lastTapTimeRef = useRef<number>(0);
   const touchStartRef = useRef<{ x: number; y: number; accountId: number } | null>(null);
+  
+  // Send money dropdown state
+  const [sendMoneyOpen, setSendMoneyOpen] = useState(false);
+  const [transferType, setTransferType] = useState<'uk' | 'iban'>('uk');
+  const [selectedFromAccount, setSelectedFromAccount] = useState<string>('');
+  const [selectedPayee, setSelectedPayee] = useState<string>('');
+  const [payees, setPayees] = useState<any[]>([]);
 
   // Enhanced navigation with smooth animations
   const navigateWithAnimation = (path: string, animationType: 'slide-right' | 'slide-left' | 'slide-up' = 'slide-right') => {
@@ -98,6 +105,10 @@ export default function Dashboard() {
     }
     
     setAccounts(storedAccounts);
+    
+    // Load saved payees
+    const savedPayees = UserDataManager.getUserData('savedPayees', []);
+    setPayees(savedPayees);
     
     // Load user's currency preference
     setUserCurrency(getUserCurrency());
@@ -382,15 +393,120 @@ export default function Dashboard() {
 
       {/* Send money section - fixed */}
       <div className="bg-white flex-shrink-0 -mt-8 relative z-10">
-        <div className="flex items-center justify-between px-4 py-2">
+        <button 
+          className="w-full flex items-center justify-between px-4 py-2"
+          onClick={() => setSendMoneyOpen(!sendMoneyOpen)}
+        >
           <div className="flex items-center">
             <div className="w-7 h-7 rounded-full border border-[#2d6a7a] flex items-center justify-center mr-3">
               <ArrowRightLeft className="h-3.5 w-3.5 text-[#2d6a7a]" />
             </div>
             <span className="text-base text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>Send money</span>
           </div>
-          <ChevronDown className="h-4 w-4 text-gray-400" />
-        </div>
+          {sendMoneyOpen ? (
+            <ChevronUp className="h-4 w-4 text-gray-400" />
+          ) : (
+            <ChevronDown className="h-4 w-4 text-gray-400" />
+          )}
+        </button>
+        
+        {/* Expanded send money form */}
+        {sendMoneyOpen && (
+          <div className="px-4 pb-4 bg-white">
+            {/* Transfer Type */}
+            <div className="mb-3">
+              <p className="text-sm text-gray-600 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>Transfer type</p>
+              <div className="flex gap-2">
+                <button
+                  className={`flex-1 py-2 px-3 rounded-lg border text-sm ${
+                    transferType === 'uk' 
+                      ? 'border-[#2d6a7a] bg-[#2d6a7a] text-white' 
+                      : 'border-gray-300 text-gray-700'
+                  }`}
+                  onClick={() => { setTransferType('uk'); setSelectedPayee(''); }}
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  UK Transfer
+                </button>
+                <button
+                  className={`flex-1 py-2 px-3 rounded-lg border text-sm ${
+                    transferType === 'iban' 
+                      ? 'border-[#2d6a7a] bg-[#2d6a7a] text-white' 
+                      : 'border-gray-300 text-gray-700'
+                  }`}
+                  onClick={() => { setTransferType('iban'); setSelectedPayee(''); }}
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  IBAN Transfer
+                </button>
+              </div>
+            </div>
+            
+            {/* From Account */}
+            <div className="mb-3">
+              <p className="text-sm text-gray-600 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>From</p>
+              <div className="relative">
+                <select
+                  value={selectedFromAccount}
+                  onChange={(e) => setSelectedFromAccount(e.target.value)}
+                  className="w-full py-3 px-4 border border-gray-300 rounded-lg appearance-none bg-white text-gray-700 text-sm"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  <option value="">Select account</option>
+                  {accounts.filter(acc => acc.accountType !== 'credit').map(account => (
+                    <option key={account.id} value={account.id.toString()}>
+                      {account.displayName} ({account.accountNumber}) - {formatCurrency(account.balance, userCurrency)}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+              </div>
+            </div>
+            
+            {/* To Payee */}
+            <div className="mb-4">
+              <p className="text-sm text-gray-600 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>To</p>
+              <div className="relative">
+                <select
+                  value={selectedPayee}
+                  onChange={(e) => setSelectedPayee(e.target.value)}
+                  className="w-full py-3 px-4 border border-gray-300 rounded-lg appearance-none bg-white text-gray-700 text-sm"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  <option value="">Select payee</option>
+                  {payees
+                    .filter(p => transferType === 'uk' ? p.type === 'uk' : p.type === 'iban')
+                    .map((payee, idx) => (
+                      <option key={idx} value={payee.name}>
+                        {payee.name}
+                      </option>
+                    ))
+                  }
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+              </div>
+            </div>
+            
+            {/* Continue Button */}
+            <button
+              className="w-full py-3 border border-gray-300 rounded-lg text-gray-500 text-sm"
+              style={{ fontFamily: 'OpenSans, sans-serif' }}
+              onClick={() => {
+                if (selectedFromAccount && selectedPayee) {
+                  const payee = payees.find(p => p.name === selectedPayee);
+                  if (transferType === 'uk') {
+                    navigateWithAnimation(`/uk-transfer?from=${selectedFromAccount}&payee=${encodeURIComponent(selectedPayee)}`);
+                  } else {
+                    navigateWithAnimation(`/iban-transfer?from=${selectedFromAccount}&payee=${encodeURIComponent(selectedPayee)}`);
+                  }
+                }
+              }}
+            >
+              Continue
+            </button>
+          </div>
+        )}
+        
         <div className="h-1 bg-gradient-to-r from-[#2d6a7a] to-[#4a9db0]"></div>
       </div>
 
