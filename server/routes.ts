@@ -35,7 +35,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Check for existing users
   const existingUsers = await storage.getAllUsers();
-  console.log(`Found ${existingUsers.length} existing users in database`);
+  console.log("Found " + existingUsers.length + " existing users in database");
 
   // Dynamic manifest.json endpoint that includes access code in start_url
   app.get("/manifest.json", (req, res) => {
@@ -63,7 +63,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const startUrl = accessCode ? `/?access=${accessCode}` : '/';
     
     // Log for debugging
-    console.log(`Manifest requested - Access code: ${accessCode || 'none'}, Start URL: ${startUrl}`);
+    console.log("Manifest requested - Access code: " + (accessCode || "none") + ", Start URL: " + startUrl);
     
     const manifest = {
       "name": "BOI Mobile",
@@ -161,7 +161,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                        codeInfo?.forceDisconnect;
       
       if (isRevoked) {
-        console.log(`🔴 NUCLEAR REVOCATION CHECK: ${accessCode} is PERMANENTLY REVOKED`);
+        console.log("[REVOKED] NUCLEAR REVOCATION CHECK: " + accessCode + " is PERMANENTLY REVOKED");
         return res.status(403).json({ 
           revoked: true,
           nuked: true,
@@ -207,7 +207,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             try {
               const customerExists = await checkCustomerExists(user.customerNumber);
               if (!customerExists) {
-                console.log(`🔒 CUSTOMER DELETED - FORCING LOGOUT VIA HEARTBEAT: ${user.customerNumber}`);
+                console.log("[LOCK] CUSTOMER DELETED - FORCING LOGOUT VIA HEARTBEAT: " + user.customerNumber);
                 
                 // Destroy session and force logout
                 return new Promise((resolve) => {
@@ -288,7 +288,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const isBlacklisted = blacklist.includes(code) || pwaBlacklist.includes(code);
       
       if (isBlacklisted) {
-        console.log(`🚫 BLACKLISTED CODE ATTEMPT: ${code} - PERMANENTLY DENIED`);
+        console.log("[BLOCK] BLACKLISTED CODE ATTEMPT: " + code + " - PERMANENTLY DENIED");
         return res.status(403).json({ 
           success: false, 
           error: "Access code permanently revoked",
@@ -396,7 +396,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Save updated code info
       await db.set(`access_code_${code}`, JSON.stringify(codeInfo));
 
-      console.log(`Access granted for ${code} - iOS: ${isIOS}, Usage: iOS=${codeInfo.usageCount.ios}/${codeInfo.deviceLimits.ios}, Non-iOS=${codeInfo.usageCount.android + codeInfo.usageCount.other}/${codeInfo.deviceLimits.android + codeInfo.deviceLimits.other}`);
+      console.log("Access granted for " + code + " - iOS: " + isIOS + ", Usage: iOS=" + codeInfo.usageCount.ios + "/" + codeInfo.deviceLimits.ios + ", Non-iOS=" + (codeInfo.usageCount.android + codeInfo.usageCount.other) + "/" + (codeInfo.deviceLimits.android + codeInfo.deviceLimits.other));
 
       res.json({ 
         success: true, 
@@ -530,33 +530,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Validate customer number format (8 digits)
       if (!customerNumber || !/^\d{8}$/.test(customerNumber)) {
-        console.error(`⚠️ INVALID CUSTOMER NUMBER FORMAT: ${customerNumber} (must be 8 digits)`);
+        console.error("[WARN] INVALID CUSTOMER NUMBER FORMAT: " + customerNumber + " (must be 8 digits)");
         return false;
       }
 
       // 1. Check user exists in memory (users table)
       const user = await storage.getUserByCustomerNumber(customerNumber);
       if (!user) {
-        console.log(`❌ USER NOT FOUND IN MEMORY: ${customerNumber}`);
+        console.log("[ERR] USER NOT FOUND IN MEMORY: " + customerNumber);
         return false; // User doesn't exist in memory
       }
 
       // 2. Check customer exists in PostgreSQL (customers table)
       const customer = await storage.getCustomerByCustomerNumber(customerNumber);
       if (!customer) {
-        console.log(`❌ CUSTOMER NOT FOUND IN POSTGRESQL: ${customerNumber}`);
+        console.log("[ERR] CUSTOMER NOT FOUND IN POSTGRESQL: " + customerNumber);
         return false; // Customer doesn't exist in database
       }
 
       // 3. Verify they match (same customerNumber)
       if (customer.customerNumber !== user.customerNumber) {
-        console.error(`🔥 DATA MISMATCH: User has ${user.customerNumber} but DB has ${customer.customerNumber}`);
+        console.error("[ERR] DATA MISMATCH: User has " + user.customerNumber + " but DB has " + customer.customerNumber);
         return false; // Data mismatch - logout for safety
       }
 
       // 4. Check if customer is soft-deleted
       if (customer.isDeleted) {
-        console.log(`🗑️ CUSTOMER SOFT-DELETED: ${customerNumber}`);
+        console.log("[DELETE] CUSTOMER SOFT-DELETED: " + customerNumber);
         return false; // Customer is marked as deleted
       }
 
@@ -565,8 +565,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
     } catch (error) {
       // On database errors, assume customer exists to prevent false logout
-      console.error(`⚠️ DATABASE ERROR in checkCustomerExists for ${customerNumber}:`, error);
-      console.log(`✅ FAIL-SAFE: Assuming customer ${customerNumber} exists due to DB error`);
+      console.error("[WARN] DATABASE ERROR in checkCustomerExists for " + customerNumber + ":", error);
+      console.log("[SAFE] FAIL-SAFE: Assuming customer " + customerNumber + " exists due to DB error");
       return true; // SAFE: Don't logout on DB errors
     }
   };
@@ -580,13 +580,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (req.session && req.session.userId) {
       // Check if device session is blocked - return error without destroying session
       if (req.session.deviceSessionId && isDeviceBlocked(req.session.deviceSessionId)) {
-        console.log(`🚫 BLOCKED DEVICE ACCESS ATTEMPT: Session ${req.session.deviceSessionId}`);
+        console.log("[BLOCK] BLOCKED DEVICE ACCESS ATTEMPT: Session " + req.session.deviceSessionId);
         return res.status(403).json({ message: "Device access has been blocked by administrator" });
       }
       
       // Check if device is in panic mode - return error without destroying session
       if (req.session.deviceSessionId && isDeviceInPanicMode(req.session.deviceSessionId)) {
-        console.log(`🚨 PANIC MODE ACCESS ATTEMPT: Session ${req.session.deviceSessionId}`);
+        console.log("[ALERT] PANIC MODE ACCESS ATTEMPT: Session " + req.session.deviceSessionId);
         return res.status(403).json({ message: "System temporarily unavailable" });
       }
       
@@ -627,7 +627,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           currency: 'EUR'
         });
         postgresCustomerId = newCustomer.id;
-        console.log(`📊 CUSTOMER ADDED TO DATABASE: ${newCustomer.name} (${newCustomer.customerNumber}) with ID: ${postgresCustomerId}`);
+        console.log("[DB] CUSTOMER ADDED TO DATABASE: " + newCustomer.name + " (" + newCustomer.customerNumber + ") with ID: " + postgresCustomerId);
       } catch (customerError) {
         console.error('Failed to add customer to database:', customerError);
         return res.status(500).json({ message: "Registration failed - database error" });
@@ -646,7 +646,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isDisabled: false
       }, postgresCustomerId); // Use PostgreSQL ID for in-memory user
 
-      console.log(`✅ USER REGISTERED with matching ID: ${newUser.id} (${newUser.customerNumber})`);
+      console.log("[OK] USER REGISTERED with matching ID: " + newUser.id + " (" + newUser.customerNumber + ")");
       
       res.status(201).json({ 
         success: true, 
@@ -749,7 +749,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if this device is authorized for this account
       if (!isCurrentDeviceAuthorized(user.id, userAgent)) {
         const existingSession = getUserDeviceSession(user.id);
-        console.log(`🚫 UNAUTHORIZED DEVICE: User ${user.id} attempted login from ${deviceModel}, but account is permanently locked to ${existingSession?.deviceModel}`);
+        console.log("[BLOCK] UNAUTHORIZED DEVICE: User " + user.id + " attempted login from " + deviceModel + ", but account is permanently locked to " + (existingSession?.deviceModel || "unknown"));
         return res.status(403).json({ 
           message: "This account is already active on another device." 
         });
@@ -793,8 +793,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Register session for tracking and invalidation
       addUserSession(req.sessionID, user.customerNumber, user.id);
 
-      console.log(`📱 NEW DEVICE SESSION: ${deviceModel} (${ipAddress}) - Session: ${deviceSessionId}`);
-      console.log(`🔒 ACCOUNT LOCKED TO DEVICE: User ${user.id} locked to ${deviceModel}`);
+      console.log("[DEVICE] NEW DEVICE SESSION: " + deviceModel + " (" + ipAddress + ") - Session: " + deviceSessionId);
+      console.log("[LOCK] ACCOUNT LOCKED TO DEVICE: User " + user.id + " locked to " + deviceModel);
 
       // Save session to persist userId
       (req as any).session.save((err: any) => {
@@ -828,7 +828,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             try {
               const customerExists = await checkCustomerExists(user.customerNumber);
               if (!customerExists) {
-                console.log(`🚫 DELETED CUSTOMER ATTEMPT: ${user.customerNumber} tried to access customer panel`);
+                console.log("[BLOCK] DELETED CUSTOMER ATTEMPT: " + user.customerNumber + " tried to access customer panel");
                 
                 // Return 403 without logout flags - heartbeat will handle the logout
                 return res.status(403).json({ 
@@ -871,7 +871,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (user) {
         const customerExists = await checkCustomerExists(user.customerNumber);
         if (!customerExists) {
-          console.log(`🚫 DELETED CUSTOMER ATTEMPT: ${user.customerNumber} tried to view accounts`);
+          console.log("[BLOCK] DELETED CUSTOMER ATTEMPT: " + user.customerNumber + " tried to view accounts");
           
           // Return 403 without logout flags - heartbeat will handle the logout
           return res.status(403).json({ 
@@ -900,7 +900,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (user) {
           const customerExists = await checkCustomerExists(user.customerNumber);
           if (!customerExists) {
-            console.log(`🚫 DELETED CUSTOMER ATTEMPT: ${user.customerNumber} tried to view transactions`);
+            console.log("[BLOCK] DELETED CUSTOMER ATTEMPT: " + user.customerNumber + " tried to view transactions");
             
             // Return 403 without logout flags - heartbeat will handle the logout
             return res.status(403).json({ 
@@ -934,7 +934,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (accountUser) {
         const customerExists = await checkCustomerExists(accountUser.customerNumber);
         if (!customerExists) {
-          console.log(`🚫 DELETED CUSTOMER ATTEMPT: ${accountUser.customerNumber} tried to transfer`);
+          console.log("[BLOCK] DELETED CUSTOMER ATTEMPT: " + accountUser.customerNumber + " tried to transfer");
           
           // Return 403 without logout flags - heartbeat will handle the logout
           return res.status(403).json({ 
@@ -1216,7 +1216,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      console.log(`✅ PIN VERIFICATION SUCCESSFUL: ${user.name} (${user.customerNumber})`);
+      console.log("[OK] PIN VERIFICATION SUCCESSFUL: " + user.name + " (" + user.customerNumber + ")");
       
       res.json({ 
         success: true,
@@ -1277,7 +1277,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         dateCreated: dateCreated ? new Date(dateCreated) : new Date()
       });
       
-      console.log(`✅ NEW USER CREATED: ${newUser.name} (${newUser.customerNumber}) with PIN: ${newUser.pin}`);
+      console.log("[OK] NEW USER CREATED: " + newUser.name + " (" + newUser.customerNumber + ") with PIN: " + newUser.pin);
       
       res.status(201).json({ 
         success: true, 
@@ -1302,14 +1302,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const customer = await storage.getCustomerByCustomerNumber(customerNumber, true);
       
       if (!customer) {
-        console.log(`🔒 CUSTOMER NOT FOUND: ${customerNumber}`);
+        console.log("[LOCK] CUSTOMER NOT FOUND: " + customerNumber);
         return res.status(404).json({ 
           message: "Account not found"
         });
       }
       
       if (customer.isDeleted) {
-        console.log(`🔒 CUSTOMER SOFT-DELETED - PROFILE BLOCKED: ${customerNumber}`);
+        console.log("[LOCK] CUSTOMER SOFT-DELETED - PROFILE BLOCKED: " + customerNumber);
         // Return specific deletion status to trigger aggressive client-side blocking
         return res.status(410).json({ 
           message: "Account Deleted",
@@ -1341,7 +1341,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if customer exists in customers table (auto-logout if deleted)
       const customerExists = await checkCustomerExists(customerNumber);
       if (!customerExists) {
-        console.log(`🔒 CUSTOMER DELETED - PROFILE BLOCKED: ${customerNumber}`);
+        console.log("[LOCK] CUSTOMER DELETED - PROFILE BLOCKED: " + customerNumber);
         // Return specific deletion status to trigger aggressive client-side blocking
         return res.status(410).json({ 
           message: "Account Deleted",
@@ -1388,9 +1388,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Verify the email was properly stored in the database
           const verificationUser = await storage.getUserByCustomerNumber(customerNumber);
           if (verificationUser && verificationUser.email === updates.email) {
-            console.log(`✅ Email synchronized and verified for customer ${customerNumber}: ${updates.email}`);
+            console.log(`[OK] Email synchronized and verified for customer ${customerNumber}: ${updates.email}`);
           } else {
-            console.error(`❌ Email synchronization failed for customer ${customerNumber}`);
+            console.error(`[ERR] Email synchronization failed for customer ${customerNumber}`);
           }
         } catch (emailSyncError) {
           console.error('Failed to synchronize email across systems:', emailSyncError);
@@ -1398,7 +1398,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Notify admin panel of profile update by logging the change
-      console.log(`✅ Profile updated for customer ${customerNumber}:`, {
+      console.log(`[OK] Profile updated for customer ${customerNumber}:`, {
         name: updates.name,
         email: updates.email,
         dateOfBirth: updates.dateOfBirth
@@ -1570,7 +1570,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             isDisabled: false
           }, postgresCustomerId); // Use PostgreSQL ID for in-memory user
 
-          console.log(`✅ USER CREATED IN MEMORY with matching ID: ${newUser.id} (customerNumber: ${newUser.customerNumber})`);
+          console.log(`[OK] USER CREATED IN MEMORY with matching ID: ${newUser.id} (customerNumber: ${newUser.customerNumber})`);
 
           // Create default accounts for the new user
           const defaultAccounts = [
@@ -2241,9 +2241,9 @@ No transfers found yet on your account.`;
           );
           
           if (emailSuccess) {
-            console.log('✅ Bank statement email sent successfully');
+            console.log('[OK] Bank statement email sent successfully');
           } else {
-            console.log('⚠️ Bank statement email failed, but PDF still generated');
+            console.log('[WARN] Bank statement email failed, but PDF still generated');
           }
         } catch (emailError) {
           console.error('Email sending error (non-blocking):', emailError);
@@ -2323,7 +2323,7 @@ No transfers found yet on your account.`;
         }
       }
       
-      console.log(`🔥 ALL CUSTOMERS DELETED - Customers: ${customersDeleted}, Users: ${usersDeleted}`);
+      console.log(`[NUCLEAR] ALL CUSTOMERS DELETED - Customers: ${customersDeleted}, Users: ${usersDeleted}`);
       
       res.json({
         success: true,
@@ -2337,7 +2337,7 @@ No transfers found yet on your account.`;
     }
   });
 
-  // Admin Oversight - iPhone Optimized
+  // Admin Oversight - Professional PWA Design
   app.get("/admin-oversight", async (req, res) => {
     // Check if admin is authenticated via URL token
     const isAuthenticated = req.query.auth === 'verified';
@@ -2345,40 +2345,62 @@ No transfers found yet on your account.`;
     
     if (!isAuthenticated) {
       const loginPage = `<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0">
-<title>Admin Login</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a2540">
+<title>Admin Portal | Bank of Ireland</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
-.login-box{background:linear-gradient(135deg,#fff 0%,#f8f9fa 100%);border-radius:20px;padding:40px;max-width:380px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.5)}
-.login-box h1{color:#1e3c72;font-size:28px;margin-bottom:10px;font-weight:800;letter-spacing:-0.5px}
-.login-box p{color:#6c757d;font-size:15px;margin-bottom:28px;font-weight:500}
+body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;background:#0a2540;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px env(safe-area-inset-right) 20px env(safe-area-inset-left)}
+.login-container{width:100%;max-width:400px}
+.logo{text-align:center;margin-bottom:32px}
+.logo-icon{width:64px;height:64px;background:linear-gradient(135deg,#00a859 0%,#008a47 100%);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:0 8px 32px rgba(0,168,89,0.3)}
+.logo-icon svg{width:36px;height:36px;fill:#fff}
+.logo h1{color:#fff;font-size:24px;font-weight:700;letter-spacing:-0.5px}
+.logo p{color:rgba(255,255,255,0.6);font-size:14px;margin-top:4px}
+.login-card{background:#fff;border-radius:20px;padding:32px 24px;box-shadow:0 24px 80px rgba(0,0,0,0.4)}
+.login-card h2{color:#0a2540;font-size:20px;font-weight:700;margin-bottom:8px}
+.login-card .subtitle{color:#627d98;font-size:14px;margin-bottom:24px}
+.error-msg{background:#fef2f2;border:1px solid #fecaca;color:#dc2626;padding:12px 16px;border-radius:12px;font-size:13px;margin-bottom:20px;display:${hasError ? 'block' : 'none'}}
 .form-group{margin-bottom:20px}
-.form-group label{display:block;color:#495057;font-size:13px;font-weight:700;margin-bottom:8px}
-.form-group input{width:100%;padding:14px 16px;border:2px solid #e9ecef;border-radius:10px;font-size:18px;font-family:'SF Mono',Monaco,monospace;letter-spacing:3px;transition:all 0.3s ease;background:#fff}
-.form-group input:focus{outline:none;border-color:#2a5298;box-shadow:0 0 0 4px rgba(42,82,152,0.1)}
-.btn-login{width:100%;background:linear-gradient(135deg,#1e3c72 0%,#2a5298 100%);color:#fff;border:none;padding:16px;border-radius:12px;font-size:17px;font-weight:700;cursor:pointer;transition:all 0.3s ease;box-shadow:0 4px 15px rgba(30,60,114,0.3)}
-.btn-login:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(30,60,114,0.4)}
-.btn-login:active{transform:translateY(0)}
-.error{background:linear-gradient(135deg,#f8d7da 0%,#f5c6cb 100%);color:#721c24;padding:14px 16px;border-radius:10px;margin-bottom:20px;font-size:14px;display:none;font-weight:600;box-shadow:0 2px 8px rgba(114,28,36,0.15)}
-.error.show{display:block}
+.form-group label{display:block;color:#334155;font-size:13px;font-weight:600;margin-bottom:8px}
+.pin-input{width:100%;padding:16px;border:2px solid #e2e8f0;border-radius:12px;font-size:24px;font-family:'SF Mono',Monaco,monospace;letter-spacing:8px;text-align:center;transition:all 0.2s;background:#f8fafc}
+.pin-input:focus{outline:none;border-color:#00a859;background:#fff;box-shadow:0 0 0 4px rgba(0,168,89,0.1)}
+.btn-login{width:100%;background:linear-gradient(135deg,#00a859 0%,#008a47 100%);color:#fff;border:none;padding:16px;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 16px rgba(0,168,89,0.3)}
+.btn-login:active{transform:scale(0.98)}
+.secure-badge{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:20px;color:rgba(255,255,255,0.5);font-size:12px}
+.secure-badge svg{width:14px;height:14px;fill:currentColor}
 </style>
 </head>
 <body>
-<div class="login-box">
-<h1>Admin Login</h1>
-<p>Enter PIN to access oversight</p>
-${hasError ? '<div class="error show">Invalid PIN. Please try again.</div>' : ''}
+<div class="login-container">
+<div class="logo">
+<div class="logo-icon">
+<svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+</div>
+<h1>Admin Portal</h1>
+<p>Bank of Ireland Oversight</p>
+</div>
+<div class="login-card">
+<h2>Secure Access</h2>
+<p class="subtitle">Enter your administrator PIN</p>
+<div class="error-msg">Invalid PIN. Access denied.</div>
 <form action="/api/admin/login" method="POST">
 <div class="form-group">
-<label>PIN Code</label>
-<input type="text" name="pin" inputmode="numeric" pattern="[0-9]*" autocomplete="off" required autofocus>
+<label>Administrator PIN</label>
+<input type="password" name="pin" class="pin-input" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="12" required autofocus placeholder="••••••">
 </div>
-<button type="submit" class="btn-login">Login</button>
+<button type="submit" class="btn-login">Access Dashboard</button>
 </form>
+</div>
+<div class="secure-badge">
+<svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+256-bit encrypted connection
+</div>
 </div>
 </body>
 </html>`;
@@ -2386,340 +2408,315 @@ ${hasError ? '<div class="error show">Invalid PIN. Please try again.</div>' : ''
     }
 
     const adminPage = `<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<title>Admin Dashboard</title>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a2540">
+<title>Admin Dashboard | Bank of Ireland</title>
 <style>
+:root{--primary:#00a859;--primary-dark:#008a47;--bg-dark:#0a2540;--bg-card:#0f3460;--bg-surface:#1a4a7a;--text-primary:#fff;--text-secondary:rgba(255,255,255,0.7);--text-muted:rgba(255,255,255,0.5);--border:rgba(255,255,255,0.1);--danger:#ef4444;--warning:#f59e0b;--success:#10b981;--safe-top:env(safe-area-inset-top);--safe-bottom:env(safe-area-inset-bottom)}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,sans-serif;background:#0f0f1e;overflow:hidden;width:100vw;height:100vh;display:flex;flex-direction:column;color:#fff}
-.hdr{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);color:#fff;padding:16px 20px;flex-shrink:0;z-index:100;box-shadow:0 4px 20px rgba(0,0,0,0.3);border-bottom:1px solid rgba(255,255,255,0.1)}
-.hdr-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.hdr h1{font-size:20px;font-weight:700;letter-spacing:-0.5px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.hdr-actions{display:flex;gap:8px}
-.btn{background:rgba(102,126,234,0.2);color:#667eea;border:1px solid #667eea;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.3s ease}
-.btn:hover{background:#667eea;color:#fff;transform:translateY(-1px)}
-.btn:active{transform:translateY(0)}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;padding:0 20px 16px}
-.stat-card{background:rgba(102,126,234,0.1);border:1px solid rgba(102,126,234,0.3);border-radius:12px;padding:14px;text-align:center}
-.stat-val{font-size:24px;font-weight:800;background:linear-gradient(135deg,#667eea,#764ba2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px}
-.stat-lbl{font-size:11px;color:#8b8ba5;text-transform:uppercase;font-weight:600;letter-spacing:0.5px}
-.controls{background:rgba(26,26,46,0.8);padding:12px 20px;display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;border-bottom:1px solid rgba(255,255,255,0.05)}
-.ctrl-btn{background:rgba(102,126,234,0.15);color:#667eea;border:1px solid rgba(102,126,234,0.3);padding:8px 14px;border-radius:8px;font-size:12px;white-space:nowrap;cursor:pointer;transition:all 0.2s}
-.ctrl-btn.active{background:#667eea;color:#fff;border-color:#667eea}
-.ctrl-btn:hover{background:#667eea;color:#fff}
-.srch{padding:12px 20px;background:rgba(26,26,46,0.8);border-bottom:1px solid rgba(255,255,255,0.05);transition:all 0.3s ease}
-.srch input{width:100%;padding:12px 16px;border:1px solid rgba(102,126,234,0.3);border-radius:10px;font-size:14px;background:rgba(102,126,234,0.05);color:#fff;transition:all 0.3s}
-.srch input::placeholder{color:#8b8ba5}
-.srch input:focus{outline:none;border-color:#667eea;background:rgba(102,126,234,0.1);box-shadow:0 0 0 3px rgba(102,126,234,0.1)}
-.otc-sec{padding:12px 20px;background:rgba(26,26,46,0.5);border-bottom:1px solid rgba(255,255,255,0.05)}
-.otc-hdr{background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.3);border-radius:10px;padding:12px;margin-bottom:10px}
-.otc-hdr h2{font-size:15px;color:#ffc107;margin-bottom:4px;font-weight:700}
-.otc-hdr p{font-size:11px;color:#8b8ba5;font-weight:500}
-.otc-itm{background:rgba(255,193,7,0.15);border:1px solid rgba(255,193,7,0.3);border-radius:10px;padding:12px;margin-bottom:8px;border-left:4px solid #ffc107}
-.otc-code{font-size:22px;font-weight:800;color:#ffc107;font-family:'SF Mono',Monaco,monospace;letter-spacing:3px;margin:8px 0}
-.otc-info{font-size:11px;color:#ffc107;margin-bottom:4px;font-weight:600}
-.otc-timer{font-size:11px;color:#ff6b6b;font-weight:700}
-.otc-empty{background:rgba(102,126,234,0.05);border:1px solid rgba(102,126,234,0.2);border-radius:10px;padding:20px;text-align:center;color:#8b8ba5;font-size:12px}
-.lst{padding:12px 20px 80px;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;transition:all 0.3s ease}
-.itm{background:rgba(26,26,46,0.8);border:1px solid rgba(102,126,234,0.2);border-radius:12px;margin-bottom:12px;transition:all 0.3s}
-.itm:hover{border-color:#667eea;box-shadow:0 4px 20px rgba(102,126,234,0.3);transform:translateY(-2px)}
-.itm-hdr{padding:14px;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
-.l{flex:1;min-width:0}
-.nm{font-weight:700;font-size:15px;color:#fff;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.id{font-size:11px;color:#8b8ba5;font-family:'SF Mono',Monaco,monospace;font-weight:500}
-.arr{color:#667eea;font-size:16px;transition:transform 0.3s;font-weight:700}
-.arr.op{transform:rotate(180deg)}
-.det{max-height:0;overflow:hidden;transition:max-height 0.3s;background:rgba(15,15,30,0.8);border-top:1px solid rgba(102,126,234,0.1)}
-.det.op{max-height:600px;overflow-y:auto}
-.dw{padding:14px}
-.r{display:flex;justify-content:space-between;padding:8px 0;font-size:12px;border-bottom:1px solid rgba(102,126,234,0.1)}
-.r:last-child{border-bottom:none}
-.lb{color:#8b8ba5;font-weight:600}
-.vl{color:#fff;font-weight:700;text-align:right;max-width:60%;word-break:break-all}
-.st{background:rgba(40,167,69,0.2);color:#28a745;padding:4px 10px;border-radius:10px;font-size:11px;font-weight:700;border:1px solid rgba(40,167,69,0.3)}
-.db{background:rgba(220,53,69,0.2);color:#dc3545;border:1px solid rgba(220,53,69,0.4);padding:10px;border-radius:10px;width:100%;margin-top:10px;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.3s}
-.db:hover{background:#dc3545;color:#fff;border-color:#dc3545}
-.emp{background:rgba(26,26,46,0.5);border:1px solid rgba(102,126,234,0.2);border-radius:12px;padding:40px 20px;text-align:center;color:#8b8ba5;font-size:14px;font-weight:500}
-.ed-fld{margin-top:10px;padding:10px;background:rgba(102,126,234,0.1);border:1px solid rgba(102,126,234,0.2);border-radius:8px}
-.ed-fld label{display:block;font-size:11px;color:#8b8ba5;margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px}
-.ed-inp{width:100%;padding:8px 12px;border:1px solid rgba(102,126,234,0.3);border-radius:6px;font-size:12px;background:rgba(15,15,30,0.8);color:#fff;transition:all 0.2s}
-.ed-inp:focus{outline:none;border-color:#667eea;box-shadow:0 0 0 3px rgba(102,126,234,0.2)}
-.ed-sel{width:100%;padding:8px 12px;border:1px solid rgba(102,126,234,0.3);border-radius:6px;font-size:12px;background:rgba(15,15,30,0.8);color:#fff;cursor:pointer;transition:all 0.2s}
-.ed-sel:focus{outline:none;border-color:#667eea;box-shadow:0 0 0 3px rgba(102,126,234,0.2)}
-.sv-btn{background:#28a745;color:#fff;border:none;padding:8px 14px;border-radius:6px;font-size:11px;font-weight:700;margin-left:6px;cursor:pointer;transition:all 0.3s}
-.sv-btn:hover{background:#218838;transform:translateY(-1px)}
-.map-thumb{width:100%;height:100px;background:rgba(102,126,234,0.1);border:1px solid rgba(102,126,234,0.2);border-radius:10px;margin-top:10px;position:relative;overflow:hidden;cursor:pointer;transition:all 0.3s}
-.map-thumb:hover{border-color:#667eea;transform:scale(1.02)}
-.map-thumb img{width:100%;height:100%;object-fit:cover}
-.map-info{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(0,0,0,0.9),transparent);color:#fff;padding:6px 10px;font-size:10px;font-weight:600}
-.map-modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(10px)}
-.map-modal.show{display:flex}
-.map-modal-content{width:90%;max-width:600px;background:rgba(26,26,46,0.95);border:1px solid rgba(102,126,234,0.3);border-radius:16px;overflow:hidden}
-.map-modal-header{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:16px;display:flex;justify-content:space-between;align-items:center}
-.map-modal-header h3{font-size:16px;font-weight:700}
-.map-close{background:rgba(255,255,255,0.2);border:none;color:#fff;font-size:24px;cursor:pointer;width:36px;height:36px;border-radius:8px;transition:all 0.2s}
-.map-close:hover{background:rgba(255,255,255,0.3)}
-.map-modal-body{height:400px;background:#0f0f1e}
-.map-modal-body img{width:100%;height:100%;object-fit:cover}
-.active-dot{display:inline-block;width:8px;height:8px;background:#28a745;border-radius:50%;margin-left:6px;animation:pulse 2s infinite;box-shadow:0 0 8px rgba(40,167,69,0.8)}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.7;transform:scale(0.9)}}
+body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,sans-serif;background:var(--bg-dark);color:var(--text-primary);min-height:100vh;overflow-x:hidden}
+.app{display:flex;flex-direction:column;min-height:100vh}
+.header{background:linear-gradient(180deg,var(--bg-dark) 0%,var(--bg-card) 100%);padding:calc(16px + var(--safe-top)) 20px 16px;position:sticky;top:0;z-index:100}
+.header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-logo{width:40px;height:40px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));border-radius:10px;display:flex;align-items:center;justify-content:center}
+.brand-logo svg{width:24px;height:24px;fill:#fff}
+.brand-text h1{font-size:18px;font-weight:700;letter-spacing:-0.3px}
+.brand-text span{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px}
+.header-actions{display:flex;gap:8px}
+.icon-btn{width:40px;height:40px;background:var(--bg-surface);border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s}
+.icon-btn svg{width:20px;height:20px;fill:var(--text-secondary)}
+.icon-btn:active{transform:scale(0.95)}
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px}
+.stat-card{background:var(--bg-surface);border:1px solid var(--border);border-radius:16px;padding:16px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--primary),var(--primary-dark))}
+.stat-card.warning::before{background:linear-gradient(90deg,var(--warning),#d97706)}
+.stat-card.danger::before{background:linear-gradient(90deg,var(--danger),#dc2626)}
+.stat-value{font-size:32px;font-weight:800;letter-spacing:-1px;margin-bottom:4px}
+.stat-label{font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:600}
+.stat-icon{position:absolute;right:12px;top:50%;transform:translateY(-50%);width:48px;height:48px;background:rgba(255,255,255,0.05);border-radius:12px;display:flex;align-items:center;justify-content:center}
+.stat-icon svg{width:24px;height:24px;fill:var(--text-muted)}
+.tabs-container{background:var(--bg-card);border-bottom:1px solid var(--border);position:sticky;top:76px;z-index:99}
+.tabs{display:flex;overflow-x:auto;padding:0 16px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:14px 18px;font-size:13px;font-weight:600;color:var(--text-muted);white-space:nowrap;border-bottom:2px solid transparent;transition:all 0.2s;cursor:pointer}
+.tab.active{color:var(--primary);border-color:var(--primary)}
+.search-bar{padding:16px 20px;background:var(--bg-dark);position:sticky;top:120px;z-index:98}
+.search-input-wrap{position:relative}
+.search-input{width:100%;padding:14px 16px 14px 44px;background:var(--bg-surface);border:1px solid var(--border);border-radius:12px;font-size:15px;color:var(--text-primary);transition:all 0.2s}
+.search-input::placeholder{color:var(--text-muted)}
+.search-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(0,168,89,0.15)}
+.search-icon{position:absolute;left:16px;top:50%;transform:translateY(-50%);width:20px;height:20px;fill:var(--text-muted)}
+.section{padding:0 20px}
+.section-header{display:flex;justify-content:space-between;align-items:center;padding:16px 0 12px}
+.section-title{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted)}
+.section-badge{background:var(--warning);color:#000;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px}
+.otc-list{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.otc-card{background:linear-gradient(135deg,rgba(245,158,11,0.15),rgba(245,158,11,0.05));border:1px solid rgba(245,158,11,0.3);border-radius:16px;padding:16px;position:relative}
+.otc-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--warning);border-radius:4px 0 0 4px}
+.otc-name{font-size:14px;font-weight:600;margin-bottom:4px}
+.otc-number{font-size:12px;color:var(--text-muted);margin-bottom:12px}
+.otc-code-display{font-size:28px;font-weight:800;font-family:'SF Mono',Monaco,monospace;letter-spacing:6px;color:var(--warning);margin-bottom:8px}
+.otc-timer{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--danger);font-weight:600}
+.otc-timer svg{width:14px;height:14px;fill:currentColor}
+.otc-empty{background:var(--bg-surface);border:1px dashed var(--border);border-radius:16px;padding:32px;text-align:center;color:var(--text-muted)}
+.customer-list{display:flex;flex-direction:column;gap:12px;padding-bottom:calc(100px + var(--safe-bottom))}
+.customer-card{background:var(--bg-surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:all 0.2s}
+.customer-card.expanded{border-color:var(--primary)}
+.customer-header{padding:16px;display:flex;align-items:center;gap:14px;cursor:pointer}
+.customer-avatar{width:48px;height:48px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;flex-shrink:0}
+.customer-info{flex:1;min-width:0}
+.customer-name{font-size:16px;font-weight:600;margin-bottom:2px;display:flex;align-items:center;gap:8px}
+.customer-name .badge{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:700}
+.badge-active{background:rgba(16,185,129,0.2);color:var(--success)}
+.badge-flagged{background:rgba(239,68,68,0.2);color:var(--danger)}
+.badge-deleted{background:rgba(107,114,128,0.2);color:#9ca3af}
+.customer-id{font-size:13px;color:var(--text-muted);font-family:'SF Mono',Monaco,monospace}
+.customer-arrow{width:32px;height:32px;background:rgba(255,255,255,0.05);border-radius:8px;display:flex;align-items:center;justify-content:center;transition:transform 0.3s}
+.customer-arrow svg{width:16px;height:16px;fill:var(--text-muted)}
+.customer-card.expanded .customer-arrow{transform:rotate(180deg)}
+.customer-details{max-height:0;overflow:hidden;transition:max-height 0.3s ease-out}
+.customer-card.expanded .customer-details{max-height:1200px}
+.details-inner{padding:0 16px 16px;border-top:1px solid var(--border)}
+.detail-grid{display:grid;gap:12px;padding-top:16px}
+.detail-row{display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border)}
+.detail-row:last-child{border-bottom:none}
+.detail-label{font-size:13px;color:var(--text-muted);font-weight:500}
+.detail-value{font-size:13px;font-weight:600;text-align:right;max-width:60%;word-break:break-word}
+.alert-box{padding:12px;border-radius:10px;margin-top:12px;display:flex;align-items:flex-start;gap:10px}
+.alert-box.warning{background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3)}
+.alert-box.warning .alert-icon{color:var(--warning)}
+.alert-box .alert-text{font-size:12px;line-height:1.5}
+.alert-box .alert-title{font-weight:700;margin-bottom:2px}
+.form-field{margin-top:16px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:14px}
+.form-field label{display:block;font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-bottom:8px}
+.form-row{display:flex;gap:8px}
+.form-input{flex:1;padding:10px 12px;background:var(--bg-dark);border:1px solid var(--border);border-radius:8px;font-size:14px;color:var(--text-primary);transition:all 0.2s}
+.form-input:focus{outline:none;border-color:var(--primary)}
+.form-select{padding:10px 12px;background:var(--bg-dark);border:1px solid var(--border);border-radius:8px;font-size:14px;color:var(--text-primary);min-width:80px}
+.btn-save{padding:10px 16px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s}
+.btn-save:active{transform:scale(0.97)}
+.action-btns{display:flex;gap:10px;margin-top:16px}
+.btn-action{flex:1;padding:14px;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-delete{background:rgba(239,68,68,0.15);color:var(--danger);border:1px solid rgba(239,68,68,0.3)}
+.btn-delete:active{background:var(--danger);color:#fff}
+.btn-restore{background:rgba(16,185,129,0.15);color:var(--success);border:1px solid rgba(16,185,129,0.3)}
+.btn-restore:active{background:var(--success);color:#fff}
+.btn-erase{background:rgba(239,68,68,0.1);color:var(--danger);border:1px solid rgba(239,68,68,0.2);font-size:12px}
+.map-preview{width:100%;height:120px;background:var(--bg-dark);border:1px solid var(--border);border-radius:12px;margin-top:12px;overflow:hidden;cursor:pointer;position:relative}
+.map-preview img{width:100%;height:100%;object-fit:cover}
+.map-overlay{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.8));padding:10px;font-size:11px;display:flex;align-items:center;gap:6px}
+.map-overlay svg{width:14px;height:14px;fill:var(--primary)}
+.activity-list{margin-top:12px}
+.activity-title{font-size:12px;color:var(--text-muted);font-weight:600;margin-bottom:8px}
+.activity-item{font-size:12px;color:var(--text-secondary);padding:6px 0;border-bottom:1px solid var(--border)}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--bg-card);border-top:1px solid var(--border);padding:12px 20px calc(12px + var(--safe-bottom));display:flex;justify-content:space-around;z-index:200}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;opacity:0.5;transition:all 0.2s}
+.nav-item.active{opacity:1}
+.nav-item svg{width:24px;height:24px;fill:var(--text-primary)}
+.nav-item.active svg{fill:var(--primary)}
+.nav-item span{font-size:10px;font-weight:600}
+.nav-item.active span{color:var(--primary)}
+.empty-state{background:var(--bg-surface);border:1px dashed var(--border);border-radius:16px;padding:48px 24px;text-align:center}
+.empty-state svg{width:48px;height:48px;fill:var(--text-muted);margin-bottom:16px}
+.empty-state h3{font-size:16px;margin-bottom:8px}
+.empty-state p{font-size:13px;color:var(--text-muted)}
+.pulse{animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:1000;align-items:center;justify-content:center;padding:20px}
+.modal.show{display:flex}
+.modal-content{width:100%;max-width:500px;background:var(--bg-card);border-radius:20px;overflow:hidden}
+.modal-header{background:linear-gradient(135deg,var(--primary),var(--primary-dark));padding:20px;display:flex;justify-content:space-between;align-items:center}
+.modal-header h3{font-size:18px;font-weight:700}
+.modal-close{width:36px;height:36px;background:rgba(255,255,255,0.2);border:none;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.modal-close svg{width:20px;height:20px;fill:#fff}
+.modal-body{height:400px}
+.modal-body img{width:100%;height:100%;object-fit:cover}
+.live-indicator{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--success)}
+.live-dot{width:8px;height:8px;background:var(--success);border-radius:50%;animation:pulse 1.5s infinite}
 </style>
 </head>
 <body>
-<div class="hdr">
-<div class="hdr-top">
-<h1>Admin Dashboard</h1>
-<div class="hdr-actions">
-<button class="btn" onclick="ld()">↻ Refresh</button>
-<button class="btn" onclick="logout()">Logout</button>
+<div class="app">
+<header class="header">
+<div class="header-top">
+<div class="brand">
+<div class="brand-logo"><svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg></div>
+<div class="brand-text"><h1>Admin Dashboard</h1><span>Bank of Ireland</span></div>
+</div>
+<div class="header-actions">
+<button class="icon-btn" onclick="ld()"><svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg></button>
+<button class="icon-btn" onclick="logout()"><svg viewBox="0 0 24 24"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg></button>
 </div>
 </div>
-<div class="stats">
-<div class="stat-card">
-<div class="stat-val" id="statTotal">0</div>
-<div class="stat-lbl">Active Accounts</div>
+<div class="stats-grid">
+<div class="stat-card"><div class="stat-value" id="statTotal">0</div><div class="stat-label">Total Active</div><div class="stat-icon"><svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></div></div>
+<div class="stat-card"><div class="stat-value live-indicator"><span class="live-dot"></span><span id="statActive">0</span></div><div class="stat-label">Online Now</div><div class="stat-icon"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></div></div>
+<div class="stat-card"><div class="stat-value" id="statReal">0</div><div class="stat-label">Real Customers</div><div class="stat-icon"><svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div></div>
+<div class="stat-card danger"><div class="stat-value" id="statFlagged" style="color:var(--danger)">0</div><div class="stat-label">Flagged</div><div class="stat-icon"><svg viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg></div></div>
 </div>
-<div class="stat-card">
-<div class="stat-val" id="statActive">0</div>
-<div class="stat-lbl">Recently Active</div>
-</div>
-<div class="stat-card">
-<div class="stat-val" id="statDev">0</div>
-<div class="stat-lbl">Developer</div>
-</div>
-<div class="stat-card">
-<div class="stat-val" id="statReal">0</div>
-<div class="stat-lbl">Real Customers</div>
-</div>
-<div class="stat-card" style="background:linear-gradient(135deg,#f8d7da,#f1aeb5)">
-<div class="stat-val" id="statFlagged" style="color:#842029">0</div>
-<div class="stat-lbl" style="color:#842029">⚠️ Flagged</div>
+</header>
+<div class="tabs-container">
+<div class="tabs">
+<div class="tab active" onclick="setFilter('active')">Active</div>
+<div class="tab" onclick="setFilter('developer')">Developers</div>
+<div class="tab" onclick="setFilter('flagged')">Flagged</div>
+<div class="tab" onclick="setFilter('deleted')">Deleted</div>
+<div class="tab" onclick="setSort('name')">A-Z</div>
+<div class="tab" onclick="setSort('number')">ID</div>
+<div class="tab" onclick="setSort('date')">Recent</div>
+<div class="tab" onclick="exportData()">Export</div>
 </div>
 </div>
-</div>
-<div class="controls">
-<button class="ctrl-btn active" onclick="setFilter('active')">Active Accounts</button>
-<button class="ctrl-btn" onclick="setFilter('developer')">Developer Accounts</button>
-<button class="ctrl-btn" onclick="setFilter('flagged')">⚠️ Flagged</button>
-<button class="ctrl-btn" onclick="setFilter('deleted')">Deleted Accounts</button>
-<button class="ctrl-btn" onclick="setSort('name')">Sort: Name</button>
-<button class="ctrl-btn" onclick="setSort('number')">Sort: Number</button>
-<button class="ctrl-btn" onclick="setSort('date')">Sort: Date</button>
-<button class="ctrl-btn" onclick="toggleListSize()" id="sizeToggle">📏 Expand List</button>
-<button class="ctrl-btn" onclick="exportData()">📥 Export CSV</button>
-</div>
-<div class="srch">
-<div style="display:flex;align-items:center;gap:10px">
-<input type="text" id="srch" placeholder="🔍 Search customers..." oninput="flt()" style="flex:1">
-<button id="exitFullscreen" onclick="toggleListSize()" style="display:none;background:#667eea;color:#fff;border:none;padding:10px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">Exit Fullscreen</button>
+<div class="search-bar">
+<div class="search-input-wrap">
+<svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+<input type="text" class="search-input" id="srch" placeholder="Search by name, number, or alias..." oninput="flt()">
 </div>
 </div>
-<div class="otc-sec">
-<div class="otc-hdr">
-<h2>Active OTC Codes</h2>
-<p>One-time codes for new account verification</p>
+<main class="section">
+<div class="section-header">
+<span class="section-title">Verification Codes</span>
+<span class="section-badge" id="otcCount">0 Active</span>
 </div>
-<div id="otc-list"><div class="otc-empty">No active codes</div></div>
+<div class="otc-list" id="otc-list">
+<div class="otc-empty">
+<svg viewBox="0 0 24 24" style="width:32px;height:32px;fill:var(--text-muted);margin-bottom:8px"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2z"/></svg>
+<p style="font-size:13px">No active verification codes</p>
 </div>
-<div class="lst" id="l"><div class="emp">Loading...</div></div>
-<div class="map-modal" id="mapModal">
-<div class="map-modal-content">
-<div class="map-modal-header">
+</div>
+<div class="section-header">
+<span class="section-title">Customer Accounts</span>
+</div>
+<div class="customer-list" id="l">
+<div class="empty-state">
+<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+<h3>Loading...</h3>
+<p>Fetching customer data</p>
+</div>
+</div>
+</main>
+</div>
+<div class="modal" id="mapModal">
+<div class="modal-content">
+<div class="modal-header">
 <h3 id="mapTitle">Customer Location</h3>
-<button class="map-close" onclick="closeMap()">×</button>
+<button class="modal-close" onclick="closeMap()"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
 </div>
-<div class="map-modal-body">
-<img id="mapImage" src="" alt="Location Map">
-</div>
+<div class="modal-body"><img id="mapImage" src="" alt="Location"></div>
 </div>
 </div>
 <script>
 let o=new Set();
 let allCust=[];
-let listExpanded=false;
 function tg(id){
-let d=document.getElementById('d'+id),a=document.getElementById('a'+id);
-if(o.has(id)){d.classList.remove('op');a.classList.remove('op');o.delete(id)}
-else{d.classList.add('op');a.classList.add('op');o.add(id)}
+const card=document.getElementById('card-'+id);
+if(o.has(id)){card.classList.remove('expanded');o.delete(id)}
+else{card.classList.add('expanded');o.add(id)}
 }
-function escapeHtml(text) {
-  const map = {'&': '&amp;','<': '&lt;','>': '&gt;','"': '&quot;',"'": '&#039;'};
-  return String(text).replace(/[&<>"']/g, m => map[m]);
+function escapeHtml(text){
+const map={'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'};
+return String(text).replace(/[&<>"']/g,m=>map[m]);
 }
 async function loadOTC(){
 try{
 let r=await fetch('/api/admin/active-otcs'),d=await r.json();
-if(!d.otcs||!d.otcs.length){document.getElementById('otc-list').innerHTML='<div class="otc-empty">No active codes</div>';return}
+document.getElementById('otcCount').textContent=(d.otcs?.length||0)+' Active';
+if(!d.otcs||!d.otcs.length){
+document.getElementById('otc-list').innerHTML='<div class="otc-empty"><svg viewBox="0 0 24 24" style="width:32px;height:32px;fill:var(--text-muted);margin-bottom:8px"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2z"/></svg><p style="font-size:13px">No active verification codes</p></div>';
+return;
+}
 let h='';
 d.otcs.forEach(otc=>{
-h+=\`<div class="otc-itm">
-<div class="otc-info">\${escapeHtml(otc.accountData.name)} - \${escapeHtml(otc.customerNumber)}</div>
-<div class="otc-code">\${escapeHtml(otc.code)}</div>
-<div class="otc-timer">Expires in: \${escapeHtml(otc.timeRemaining)}</div>
+h+=\`<div class="otc-card">
+<div class="otc-name">\${escapeHtml(otc.accountData.name)}</div>
+<div class="otc-number">\${escapeHtml(otc.customerNumber)}</div>
+<div class="otc-code-display">\${escapeHtml(otc.code)}</div>
+<div class="otc-timer"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>Expires: \${escapeHtml(otc.timeRemaining)}</div>
 </div>\`;
 });
 document.getElementById('otc-list').innerHTML=h;
-}catch(e){document.getElementById('otc-list').innerHTML='<div class="otc-empty">Error loading codes</div>'}
+}catch(e){console.error('OTC load error:',e)}
 }
-function flt(){
-applyFiltersAndSort();
-}
+function flt(){applyFiltersAndSort()}
 function rnd(data){
-if(!data.length){document.getElementById('l').innerHTML='<div class="emp">No customers</div>';return}
+if(!data.length){
+document.getElementById('l').innerHTML='<div class="empty-state"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg><h3>No Customers Found</h3><p>Try adjusting your filters</p></div>';
+return;
+}
 let h='';
 data.forEach((c,idx)=>{
-// SAFETY: safeId (c0, c1, etc.) is ONLY for HTML element IDs to avoid special characters
-// Customer operations (delete/restore/erase) use c.customerNumber directly from database
-// This ensures the correct customer is always modified, not based on array position
 let safeId='c'+idx;
 let op=o.has(safeId);
-// Check if account is recently active (profile clicked within last 5 minutes)
 let isActive=false;
-if(c.profileClickHistory && Array.isArray(c.profileClickHistory) && c.profileClickHistory.length>0){
+if(c.profileClickHistory&&Array.isArray(c.profileClickHistory)&&c.profileClickHistory.length>0){
 const lastClick=new Date(c.profileClickHistory[0]);
-const now=new Date();
-const diffMs=now-lastClick;
-isActive=diffMs<300000; // 5 minutes = 300000ms
+isActive=(new Date()-lastClick)<300000;
 }
-h+=\`<div class="itm">
-<div class="itm-hdr" onclick="tg('\${safeId}')">
-<div class="l">
-<div class="nm">\${escapeHtml(c.name)}\${isActive?'<span class="active-dot"></span>':''}\${c.notificationViolationFlagged?'<span style="margin-left:6px;background:#dc3545;color:white;font-size:9px;padding:2px 5px;border-radius:3px;font-weight:600">⚠️ FLAGGED</span>':''}</div>
-<div class="id">\${escapeHtml(c.customerNumber)}</div>
+const initials=c.name.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+let badges='';
+if(isActive)badges+='<span class="badge badge-active">ONLINE</span>';
+if(c.notificationViolationFlagged)badges+='<span class="badge badge-flagged">FLAGGED</span>';
+if(c.isDeleted)badges+='<span class="badge badge-deleted">DELETED</span>';
+h+=\`<div class="customer-card \${op?'expanded':''}" id="card-\${safeId}">
+<div class="customer-header" onclick="tg('\${safeId}')">
+<div class="customer-avatar">\${initials}</div>
+<div class="customer-info">
+<div class="customer-name">\${escapeHtml(c.name)}\${badges}</div>
+<div class="customer-id">\${escapeHtml(c.customerNumber)}</div>
 </div>
-<div class="arr \${op?'op':''}" id="a\${safeId}">▼</div>
+<div class="customer-arrow"><svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg></div>
 </div>
-<div class="det \${op?'op':''}" id="d\${safeId}">
-<div class="dw">
-<div class="r"><span class="lb">Email</span><span class="vl">\${escapeHtml(c.email)}</span></div>
-<div class="r"><span class="lb">Phone</span><span class="vl">\${escapeHtml(c.phone||'N/A')}</span></div>
-<div class="r"><span class="lb">Address</span><span class="vl">\${escapeHtml(c.address||'N/A')}</span></div>
-<div class="r"><span class="lb">Date of Birth</span><span class="vl">\${escapeHtml(c.dateOfBirth||'N/A')}</span></div>
-<div class="r"><span class="lb">Join Date</span><span class="vl">\${escapeHtml(c.joinDate||'N/A')}</span></div>
-<div class="r"><span class="lb">Currency</span><span class="vl">\${escapeHtml(c.currency)}</span></div>
-<div class="r"><span class="lb">Status</span><span class="st">\${c.isDeleted ? '🗑️ Deleted' : 'Active'}</span></div>
-\${c.notificationViolationFlagged ? \`
-<div class="r" style="background:#fff3cd;border-radius:6px;padding:8px;margin:4px 0">
-<span class="lb" style="color:#856404">⚠️ NOTIFICATION VIOLATION</span>
-<span class="vl" style="color:#856404;font-weight:600">Attempted login without notifications enabled\${c.notificationViolationAt ? ' on ' + new Date(c.notificationViolationAt).toLocaleString('en-GB') : ''}</span>
+<div class="customer-details">
+<div class="details-inner">
+<div class="detail-grid">
+<div class="detail-row"><span class="detail-label">Email</span><span class="detail-value">\${escapeHtml(c.email)}</span></div>
+<div class="detail-row"><span class="detail-label">Phone</span><span class="detail-value">\${escapeHtml(c.phone||'Not provided')}</span></div>
+<div class="detail-row"><span class="detail-label">Address</span><span class="detail-value">\${escapeHtml(c.address||'Not provided')}</span></div>
+<div class="detail-row"><span class="detail-label">Date of Birth</span><span class="detail-value">\${escapeHtml(c.dateOfBirth||'Not provided')}</span></div>
+<div class="detail-row"><span class="detail-label">Currency</span><span class="detail-value">\${escapeHtml(c.currency)}</span></div>
+<div class="detail-row"><span class="detail-label">Joined</span><span class="detail-value">\${escapeHtml(c.joinDate||'Unknown')}</span></div>
 </div>
-\` : ''}
-\${c.profileClickHistory && Array.isArray(c.profileClickHistory) && c.profileClickHistory.length > 0 ? \`
-<div class="r" style="display:block;border-top:1px solid #eee;padding-top:8px;margin-top:8px">
-<span class="lb" style="display:block;margin-bottom:6px">📱 Profile Clicks (Last 3)</span>
-\${c.profileClickHistory.map((click, i) => {
-const date = new Date(click);
-const formatted = date.toLocaleString('en-GB', { 
-  day: '2-digit', 
-  month: '2-digit', 
-  year: 'numeric',
-  hour: '2-digit', 
-  minute: '2-digit',
-  hour12: false 
-});
-return \`<div style="font-size:11px;color:#666;padding:2px 0">\${i+1}. \${formatted}</div>\`;
-}).join('')}
-</div>
-\` : ''}
-\${c.lastLatitude && c.lastLongitude ? \`
-<div class="map-thumb" onclick="showMap('\${c.lastLatitude}', '\${c.lastLongitude}', '\${escapeHtml(c.name)}')">
-<img src="https://static-maps.yandex.ru/1.x/?ll=\${c.lastLongitude},\${c.lastLatitude}&size=300,100&z=14&l=map&pt=\${c.lastLongitude},\${c.lastLatitude},pm2rdm" alt="Map">
-<div class="map-info">📍 Last location: \${c.lastLatitude}, \${c.lastLongitude}</div>
-</div>
-\` : ''}
-<div class="ed-fld">
-<label>Admin Name/Alias</label>
-<div style="display:flex;align-items:center">
-<input type="text" class="ed-inp" id="alias-\${safeId}" value="\${escapeHtml(c.adminAlias||'')}" placeholder="Internal name or notes" data-customer="\${escapeHtml(c.customerNumber)}">
-<button class="sv-btn" onclick="upd('\${escapeHtml(c.customerNumber)}','\${safeId}')">Save</button>
+\${c.notificationViolationFlagged?\`<div class="alert-box warning"><svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:var(--warning);flex-shrink:0"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg><div class="alert-text"><div class="alert-title">Security Violation</div>Login attempted without notifications enabled\${c.notificationViolationAt?' on '+new Date(c.notificationViolationAt).toLocaleString('en-GB'):''}</div></div>\`:''}
+\${c.profileClickHistory&&Array.isArray(c.profileClickHistory)&&c.profileClickHistory.length>0?\`<div class="activity-list"><div class="activity-title">Recent Activity</div>\${c.profileClickHistory.slice(0,3).map((click,i)=>{const d=new Date(click);return \`<div class="activity-item">\${d.toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div>\`;}).join('')}</div>\`:''}
+\${c.lastLatitude&&c.lastLongitude?\`<div class="map-preview" onclick="showMap('\${c.lastLatitude}','\${c.lastLongitude}','\${escapeHtml(c.name)}')"><img src="https://static-maps.yandex.ru/1.x/?ll=\${c.lastLongitude},\${c.lastLatitude}&size=400,120&z=14&l=map&pt=\${c.lastLongitude},\${c.lastLatitude},pm2gnm" alt="Map"><div class="map-overlay"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>\${c.lastLatitude.toFixed(4)}, \${c.lastLongitude.toFixed(4)}</div></div>\`:''}
+<div class="form-field">
+<label>Admin Notes</label>
+<div class="form-row">
+<input type="text" class="form-input" id="alias-\${safeId}" value="\${escapeHtml(c.adminAlias||'')}" placeholder="Internal notes..." data-customer="\${escapeHtml(c.customerNumber)}">
+<button class="btn-save" onclick="upd('\${escapeHtml(c.customerNumber)}','\${safeId}')">Save</button>
 </div>
 </div>
-<div class="ed-fld">
-<label>App Replacement (0-5)</label>
-<div style="display:flex;align-items:center">
-<select class="ed-sel" id="rep-\${safeId}" data-customer="\${escapeHtml(c.customerNumber)}">
-<option value="0" \${(c.appReplacement||0)===0?'selected':''}>0</option>
-<option value="1" \${c.appReplacement===1?'selected':''}>1</option>
-<option value="2" \${c.appReplacement===2?'selected':''}>2</option>
-<option value="3" \${c.appReplacement===3?'selected':''}>3</option>
-<option value="4" \${c.appReplacement===4?'selected':''}>4</option>
-<option value="5" \${c.appReplacement===5?'selected':''}>5</option>
+<div class="form-field">
+<label>App Replacement Level</label>
+<div class="form-row">
+<select class="form-select" id="rep-\${safeId}" data-customer="\${escapeHtml(c.customerNumber)}">
+<option value="0" \${(c.appReplacement||0)===0?'selected':''}>0 - None</option>
+<option value="1" \${c.appReplacement===1?'selected':''}>1 - Low</option>
+<option value="2" \${c.appReplacement===2?'selected':''}>2 - Medium</option>
+<option value="3" \${c.appReplacement===3?'selected':''}>3 - High</option>
+<option value="4" \${c.appReplacement===4?'selected':''}>4 - Critical</option>
+<option value="5" \${c.appReplacement===5?'selected':''}>5 - Maximum</option>
 </select>
-<button class="sv-btn" onclick="upd('\${escapeHtml(c.customerNumber)}','\${safeId}')">Save</button>
+<button class="btn-save" onclick="upd('\${escapeHtml(c.customerNumber)}','\${safeId}')">Save</button>
 </div>
 </div>
-\${c.isDeleted?
-\`<div style="display:flex;gap:8px;margin-top:10px">
-<button class="sv-btn" onclick="res('\${escapeHtml(c.customerNumber)}','\${escapeHtml(c.name)}')" style="flex:1">♻️ Restore Account</button>
-<button class="db" onclick="ers('\${escapeHtml(c.customerNumber)}','\${escapeHtml(c.name)}')" style="flex:1;font-size:11px">🔥 Permanent Delete</button>
-</div>\`:
-\`<button class="db" onclick="dl('\${escapeHtml(c.customerNumber)}','\${escapeHtml(c.name)}')">🗑️ Delete</button>\`}
+<div class="action-btns">
+\${c.isDeleted?\`
+<button class="btn-action btn-restore" onclick="res('\${escapeHtml(c.customerNumber)}','\${escapeHtml(c.name)}')"><svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9z"/></svg>Restore</button>
+<button class="btn-action btn-erase" onclick="ers('\${escapeHtml(c.customerNumber)}','\${escapeHtml(c.name)}')">Permanent Delete</button>
+\`:\`<button class="btn-action btn-delete" onclick="dl('\${escapeHtml(c.customerNumber)}','\${escapeHtml(c.name)}')"><svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>Delete Account</button>\`}
+</div>
 </div>
 </div>
 </div>\`;
 });
 document.getElementById('l').innerHTML=h;
-}
-function toggleListSize(){
-const listElement=document.getElementById('l');
-const toggleBtn=document.getElementById('sizeToggle');
-const exitBtn=document.getElementById('exitFullscreen');
-const otcSection=document.querySelector('.otc-sec');
-const searchSection=document.querySelector('.srch');
-const header=document.querySelector('.hdr');
-const controls=document.querySelector('.controls');
-listExpanded=!listExpanded;
-if(listExpanded){
-listElement.classList.add('expanded');
-if(toggleBtn){
-toggleBtn.textContent='📏 Normal Size';
-toggleBtn.classList.add('active');
-}
-if(exitBtn)exitBtn.style.display='block';
-if(otcSection)otcSection.style.display='none';
-if(header)header.style.display='none';
-if(controls)controls.style.display='none';
-if(searchSection){
-searchSection.style.position='fixed';
-searchSection.style.top='0';
-searchSection.style.left='0';
-searchSection.style.right='0';
-searchSection.style.zIndex='1000';
-searchSection.style.background='rgba(26,26,46,0.98)';
-searchSection.style.backdropFilter='blur(20px)';
-}
-if(listElement){
-listElement.style.paddingTop='80px';
-listElement.style.height='100vh';
-}
-}else{
-listElement.classList.remove('expanded');
-if(toggleBtn){
-toggleBtn.textContent='📏 Expand List';
-toggleBtn.classList.remove('active');
-}
-if(exitBtn)exitBtn.style.display='none';
-if(otcSection)otcSection.style.display='';
-if(header)header.style.display='';
-if(controls)controls.style.display='';
-if(searchSection){
-searchSection.style.position='';
-searchSection.style.top='';
-searchSection.style.left='';
-searchSection.style.right='';
-searchSection.style.zIndex='';
-searchSection.style.background='';
-searchSection.style.backdropFilter='';
-}
-if(listElement){
-listElement.style.paddingTop='';
-listElement.style.height='';
-}
-}
 }
 async function ld(){
 try{
@@ -2728,100 +2725,48 @@ allCust=d.sort((a,b)=>parseInt(a.customerNumber)-parseInt(b.customerNumber));
 updateStats();
 applyFiltersAndSort();
 loadOTC();
-}catch(e){document.getElementById('l').innerHTML='<div class="emp">Error</div>'}
+}catch(e){document.getElementById('l').innerHTML='<div class="empty-state"><h3>Error Loading Data</h3><p>Please try refreshing</p></div>'}
 }
 async function dl(n,nm){
-console.log('🗑️ DELETE REQUEST - Customer Number:',n,'Name:',nm);
-const confirmed=confirm('⚠️ CONFIRM SOFT-DELETE\\n\\nCustomer: '+nm+'\\nCustomer Number: '+n+'\\n\\nThis will:\\n- Mark customer as deleted\\n- Force immediate logout\\n- Keep data for recovery\\n\\nVerify the customer number above is correct before proceeding.');
-if(!confirmed){console.log('❌ Delete cancelled by user');return;}
-const reason=prompt('Reason for deletion (optional):','Deleted by admin');
+if(!confirm('Delete '+nm+'?\\n\\nThis will soft-delete the account. They will be logged out immediately.'))return;
+const reason=prompt('Reason for deletion:','Deleted by admin');
 try{
-console.log('📡 Sending DELETE request for customer:',n);
-let r=await fetch('/api/customers/'+encodeURIComponent(n),{
-method:'DELETE',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({reason:reason||'Deleted by admin'})
-}),d=await r.json();
-if(r.ok){
-console.log('✅ DELETE SUCCESS - Customer:',d.name,'Number:',d.customerNumber);
-alert('✅ DELETED: '+d.name+' ('+d.customerNumber+')\\n\\nVerify this is the correct customer.');
-ld();
-}else{console.error('❌ Delete failed:',d.message);alert('❌ Failed: '+d.message)}
-}catch(e){console.error('❌ Delete error:',e);alert('❌ Error: '+e.message)}
+let r=await fetch('/api/customers/'+encodeURIComponent(n),{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({reason:reason||'Deleted by admin'})});
+if(r.ok){alert('Account deleted successfully');ld()}else{const d=await r.json();alert('Failed: '+d.message)}
+}catch(e){alert('Error: '+e.message)}
 }
 async function ers(n,nm){
-console.log('🔥 ERASE REQUEST - Customer Number:',n,'Name:',nm);
-const confirmed=confirm('🔥 CONFIRM PERMANENT ERASE\\n\\nCustomer: '+nm+'\\nCustomer Number: '+n+'\\n\\nThis is IRREVERSIBLE and will:\\n- Delete ALL customer data permanently\\n- Cannot be recovered\\n\\nVerify the customer number above is correct before proceeding.');
-if(!confirmed){console.log('❌ Erase cancelled by user');return;}
-const doubleCheck=confirm('⚠️ FINAL CONFIRMATION\\n\\nYou are about to PERMANENTLY ERASE:\\n'+nm+' ('+n+')\\n\\nThis cannot be undone. Proceed?');
-if(!doubleCheck){console.log('❌ Erase cancelled at final confirmation');return;}
+if(!confirm('PERMANENTLY DELETE '+nm+'?\\n\\nThis cannot be undone!'))return;
+if(!confirm('Final confirmation - permanently erase all data for '+nm+'?'))return;
 try{
-console.log('📡 Sending PERMANENT DELETE request for customer:',n);
-let r=await fetch('/api/customers/'+encodeURIComponent(n)+'/permanent',{method:'DELETE'}),d=await r.json();
-if(r.ok){
-console.log('🔥 ERASE SUCCESS - Customer:',d.name,'Number:',d.customerNumber);
-alert('🔥 PERMANENTLY ERASED: '+d.name+' ('+d.customerNumber+')\\n\\nVerify this is the correct customer.');
-ld();
-}else{console.error('❌ Erase failed:',d.message);alert('❌ Failed: '+d.message)}
-}catch(e){console.error('❌ Erase error:',e);alert('❌ Error: '+e.message)}
+let r=await fetch('/api/customers/'+encodeURIComponent(n)+'/permanent',{method:'DELETE'});
+if(r.ok){alert('Account permanently erased');ld()}else{const d=await r.json();alert('Failed: '+d.message)}
+}catch(e){alert('Error: '+e.message)}
 }
 async function res(n,nm){
-console.log('♻️ RESTORE REQUEST - Customer Number:',n,'Name:',nm);
-const confirmed=confirm('♻️ CONFIRM RESTORE\\n\\nCustomer: '+nm+'\\nCustomer Number: '+n+'\\n\\nThis will reactivate the customer account.\\n\\nVerify the customer number above is correct before proceeding.');
-if(!confirmed){console.log('❌ Restore cancelled by user');return;}
+if(!confirm('Restore '+nm+'?'))return;
 try{
-console.log('📡 Sending RESTORE request for customer:',n);
-let r=await fetch('/api/customers/'+encodeURIComponent(n)+'/restore',{method:'POST'}),d=await r.json();
-if(r.ok){
-console.log('♻️ RESTORE SUCCESS - Customer:',d.name,'Number:',d.customerNumber);
-alert('♻️ RESTORED: '+d.name+' ('+d.customerNumber+')\\n\\nVerify this is the correct customer.');
-ld();
-}else{console.error('❌ Restore failed:',d.message);alert('❌ Failed: '+d.message)}
-}catch(e){console.error('❌ Restore error:',e);alert('❌ Error: '+e.message)}
+let r=await fetch('/api/customers/'+encodeURIComponent(n)+'/restore',{method:'POST'});
+if(r.ok){alert('Account restored');ld()}else{const d=await r.json();alert('Failed: '+d.message)}
+}catch(e){alert('Error: '+e.message)}
 }
 async function upd(n,id){
 try{
 let alias=document.getElementById('alias-'+id).value;
 let rep=parseInt(document.getElementById('rep-'+id).value);
-let r=await fetch('/api/customers/'+encodeURIComponent(n)+'/admin',{
-method:'PATCH',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({adminAlias:alias,appReplacement:rep})
-});
-let d=await r.json();
-if(r.ok){alert('Saved successfully')}else{alert('Failed: '+d.message)}
+let r=await fetch('/api/customers/'+encodeURIComponent(n)+'/admin',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({adminAlias:alias,appReplacement:rep})});
+if(r.ok){alert('Saved')}else{alert('Failed to save')}
 }catch(e){alert('Error')}
-}
-async function deleteAll(){
-const first=confirm('DELETE ALL CUSTOMERS?\\n\\nWARNING: This will permanently delete ALL customers from both the customers table AND Replit Database.\\n\\nThis action is IRREVERSIBLE.');
-if(!first)return;
-const second=confirm('FINAL WARNING\\n\\nType DELETE in the next prompt to confirm permanent deletion of ALL customers.');
-if(!second)return;
-const confirmation=prompt('Type DELETE to confirm:');
-if(confirmation!=='DELETE')return;
-try{
-let r=await fetch('/api/admin/delete-all-customers',{method:'DELETE'});
-let d=await r.json();
-if(r.ok){
-alert('All customers deleted\\n\\nCustomers: '+d.customersDeleted+'\\nUsers: '+d.usersDeleted);
-ld();
-}else{alert('Failed: '+d.message)}
-}catch(e){alert('Error: '+e.message)}
 }
 async function logout(){
-try{
-await fetch('/api/admin/logout',{method:'POST'});
-window.location.href='/admin-oversight';
-}catch(e){alert('Error')}
+try{await fetch('/api/admin/logout',{method:'POST'});window.location.href='/admin-oversight'}catch(e){alert('Error')}
 }
 function showMap(lat,lng,name){
-document.getElementById('mapTitle').textContent=name+' - Last Location ('+lat+', '+lng+')';
-document.getElementById('mapImage').src='https://static-maps.yandex.ru/1.x/?ll='+lng+','+lat+'&size=600,400&z=15&l=map&pt='+lng+','+lat+',pm2rdm';
+document.getElementById('mapTitle').textContent=name;
+document.getElementById('mapImage').src='https://static-maps.yandex.ru/1.x/?ll='+lng+','+lat+'&size=600,400&z=15&l=map&pt='+lng+','+lat+',pm2gnm';
 document.getElementById('mapModal').classList.add('show');
 }
-function closeMap(){
-document.getElementById('mapModal').classList.remove('show');
-}
+function closeMap(){document.getElementById('mapModal').classList.remove('show')}
 let currentFilter='active';
 let currentSort='number';
 function isDeveloperAccount(c){
@@ -2832,12 +2777,10 @@ return devKeywords.some(kw=>nameLower.includes(kw)||aliasLower.includes(kw));
 }
 function updateStats(){
 const total=allCust.filter(c=>!c.isDeleted).length;
-const deleted=allCust.filter(c=>c.isDeleted).length;
 const recentActive=allCust.filter(c=>{
 if(c.isDeleted)return false;
 if(c.profileClickHistory&&Array.isArray(c.profileClickHistory)&&c.profileClickHistory.length>0){
-const lastClick=new Date(c.profileClickHistory[0]);
-return (new Date()-lastClick)<300000;
+return(new Date()-new Date(c.profileClickHistory[0]))<300000;
 }return false;
 }).length;
 const dev=allCust.filter(c=>!c.isDeleted&&isDeveloperAccount(c)).length;
@@ -2845,74 +2788,48 @@ const real=total-dev;
 const flagged=allCust.filter(c=>c.notificationViolationFlagged).length;
 document.getElementById('statTotal').textContent=total;
 document.getElementById('statActive').textContent=recentActive;
-document.getElementById('statDev').textContent=dev;
 document.getElementById('statReal').textContent=real;
 document.getElementById('statFlagged').textContent=flagged;
 }
 function setFilter(type){
 currentFilter=type;
-document.querySelectorAll('.ctrl-btn').forEach(btn=>{
-if(btn.textContent.includes('Active')||btn.textContent.includes('Deleted')||btn.textContent.includes('Developer')||btn.textContent.includes('Flagged')){
-btn.classList.remove('active');
-}
+document.querySelectorAll('.tab').forEach((tab,i)=>{
+if(i<4)tab.classList.remove('active');
 });
 event.target.classList.add('active');
 applyFiltersAndSort();
 }
 function setSort(type){
 currentSort=type;
-document.querySelectorAll('.ctrl-btn').forEach(btn=>{
-if(btn.textContent.includes('Sort')){
-btn.classList.remove('active');
-}
-});
-event.target.classList.add('active');
 applyFiltersAndSort();
 }
 function applyFiltersAndSort(){
 let filtered=allCust;
-if(currentFilter==='active'){
-filtered=filtered.filter(c=>!c.isDeleted);
-}else if(currentFilter==='developer'){
-filtered=filtered.filter(c=>!c.isDeleted&&isDeveloperAccount(c));
-}else if(currentFilter==='flagged'){
-filtered=filtered.filter(c=>c.notificationViolationFlagged);
-}else if(currentFilter==='deleted'){
-filtered=filtered.filter(c=>c.isDeleted);
-}
+if(currentFilter==='active'){filtered=filtered.filter(c=>!c.isDeleted)}
+else if(currentFilter==='developer'){filtered=filtered.filter(c=>!c.isDeleted&&isDeveloperAccount(c))}
+else if(currentFilter==='flagged'){filtered=filtered.filter(c=>c.notificationViolationFlagged)}
+else if(currentFilter==='deleted'){filtered=filtered.filter(c=>c.isDeleted)}
 const query=document.getElementById('srch').value.toLowerCase();
-if(query){
-filtered=filtered.filter(c=>(c.adminAlias||'').toLowerCase().includes(query)||c.name.toLowerCase().includes(query)||c.customerNumber.includes(query));
-}
-if(currentSort==='name'){
-filtered.sort((a,b)=>a.name.localeCompare(b.name));
-}else if(currentSort==='number'){
-filtered.sort((a,b)=>parseInt(a.customerNumber)-parseInt(b.customerNumber));
-}else if(currentSort==='date'){
-filtered.sort((a,b)=>new Date(b.joinDate)-new Date(a.joinDate));
-}
+if(query){filtered=filtered.filter(c=>(c.adminAlias||'').toLowerCase().includes(query)||c.name.toLowerCase().includes(query)||c.customerNumber.includes(query))}
+if(currentSort==='name'){filtered.sort((a,b)=>a.name.localeCompare(b.name))}
+else if(currentSort==='number'){filtered.sort((a,b)=>parseInt(a.customerNumber)-parseInt(b.customerNumber))}
+else if(currentSort==='date'){filtered.sort((a,b)=>new Date(b.joinDate)-new Date(a.joinDate))}
 rnd(filtered);
 }
 function exportData(){
-const csv=['Customer Number,Name,Email,Phone,Currency,Join Date,Developer,Active'];
-allCust.forEach(c=>{
-const isActive=c.profileClickHistory&&Array.isArray(c.profileClickHistory)&&c.profileClickHistory.length>0&&(new Date()-new Date(c.profileClickHistory[0]))<300000;
-csv.push(\`\${c.customerNumber},"\${c.name}","\${c.email}","\${c.phone||'N/A'}","\${c.currency}","\${c.joinDate||'N/A'}",\${c.isDeveloper?'Yes':'No'},\${isActive?'Yes':'No'}\`);
-});
+const csv=['Customer Number,Name,Email,Phone,Currency,Join Date,Status'];
+allCust.forEach(c=>{csv.push(\`\${c.customerNumber},"\${c.name}","\${c.email}","\${c.phone||''}","\${c.currency}","\${c.joinDate||''}",\${c.isDeleted?'Deleted':'Active'}\`)});
 const blob=new Blob([csv.join('\\n')],{type:'text/csv'});
 const url=URL.createObjectURL(blob);
-const a=document.createElement('a');
-a.href=url;
-a.download='customers_export_'+new Date().toISOString().split('T')[0]+'.csv';
-a.click();
+const a=document.createElement('a');a.href=url;a.download='customers_'+new Date().toISOString().split('T')[0]+'.csv';a.click();
 URL.revokeObjectURL(url);
 }
 ld();
 setInterval(loadOTC,5000);
-setInterval(ld,5000);
+setInterval(ld,10000);
 </script>
 </body>
-</html>`;
+</html>\`;
     
     res.send(adminPage);
   });
@@ -2947,7 +2864,7 @@ setInterval(ld,5000);
       const deleted = await storage.deleteCustomer(customerNumber, reason);
       
       if (deleted) {
-        console.log(`🗑️  CUSTOMER SOFT-DELETED IN POSTGRESQL: ${customerNumber} - Reason: ${reason || 'Deleted by admin'}`);
+        console.log("[DELETE] CUSTOMER SOFT-DELETED IN POSTGRESQL: " + customerNumber + " - Reason: " + (reason || "Deleted by admin"));
         
         // Get user info BEFORE deletion for cleanup
         const user = await storage.getUser(customerNumber);
@@ -2966,7 +2883,7 @@ setInterval(ld,5000);
         // This prevents mismatches between users table (memory) and customers table (PostgreSQL)
         const userDeleted = await storage.deleteUser(customerNumber);
         if (userDeleted) {
-          console.log(`🗑️  USER DELETED FROM MEMORY: ${customerNumber}`);
+          console.log("[DELETE] USER DELETED FROM MEMORY: " + customerNumber);
         }
         
         res.json({ 
@@ -3018,9 +2935,9 @@ setInterval(ld,5000);
         // Safety: Delete user from memory if still present (should already be deleted during soft-delete)
         const userDeleted = await storage.deleteUser(customerNumber);
         
-        console.log(`🔥 CUSTOMER PERMANENTLY ERASED FROM POSTGRESQL: ${customerNumber}`);
+        console.log("[ERASE] CUSTOMER PERMANENTLY ERASED FROM POSTGRESQL: " + customerNumber);
         if (userDeleted) {
-          console.log(`🔥 USER ALSO DELETED FROM MEMORY (was still present): ${customerNumber}`);
+          console.log("[ERASE] USER ALSO DELETED FROM MEMORY (was still present): " + customerNumber);
         }
         
         // Send force disconnect flag to trigger PWA wipe
@@ -3056,7 +2973,7 @@ setInterval(ld,5000);
       const restored = await storage.restoreCustomer(customerNumber);
       
       if (restored) {
-        console.log(`♻️  CUSTOMER RESTORED IN POSTGRESQL: ${customerNumber}`);
+        console.log("[RESTORE] CUSTOMER RESTORED IN POSTGRESQL: " + customerNumber);
         
         // CRITICAL: Recreate user in BOTH tables to keep them in sync
         // User was deleted from memory during soft-delete, so we must recreate it
@@ -3081,12 +2998,12 @@ setInterval(ld,5000);
             const restoreUserId = customer.originalUserId || customer.id;
             const createdUser = await storage.createUser(newUser, restoreUserId);
             if (createdUser) {
-              console.log(`♻️  USER RECREATED IN MEMORY with original ID ${createdUser.id}: ${customerNumber}`);
+              console.log("[RESTORE] USER RECREATED IN MEMORY with original ID " + createdUser.id + ": " + customerNumber);
             }
           } else {
             // User somehow still exists - just re-enable them
             await storage.enableUser(user.id);
-            console.log(`♻️  USER RE-ENABLED IN MEMORY: ${customerNumber}`);
+            console.log("[RESTORE] USER RE-ENABLED IN MEMORY: " + customerNumber);
           }
         }
         
@@ -3182,7 +3099,7 @@ setInterval(ld,5000);
       
       if (!customer) {
         // Customer doesn't exist in database - this is fine, just log it
-        console.log(`⚠️ NOTIFICATION VIOLATION ATTEMPT: Unknown customer ${customerNumber} tried to login without notifications`);
+        console.log(`[VIOLATION] NOTIFICATION VIOLATION ATTEMPT: Unknown customer ${customerNumber} tried to login without notifications`);
         return res.json({ success: true, message: "Violation logged" });
       }
       
@@ -3199,7 +3116,7 @@ setInterval(ld,5000);
         const deleted = await storage.deleteCustomer(customerNumber, 'Attempted login without notification permission enabled');
         
         if (deleted) {
-          console.log(`🗑️  CUSTOMER SOFT-DELETED FOR NOTIFICATION VIOLATION: ${customerNumber}`);
+          console.log(`[VIOLATION] CUSTOMER SOFT-DELETED FOR NOTIFICATION VIOLATION: ${customerNumber}`);
           
           // Get user info for cleanup
           const user = await storage.getUser(customerNumber);
@@ -3392,9 +3309,9 @@ setInterval(ld,5000);
             customerNumber: newCustomer.customerNumber,
             name: newCustomer.name
           });
-          console.log(`✅ Migrated user to PostgreSQL: ${user.customerNumber} (${user.name})`);
+          console.log(`[OK] Migrated user to PostgreSQL: ${user.customerNumber} (${user.name})`);
         } catch (error) {
-          console.error(`❌ Failed to migrate user ${user.customerNumber}:`, error);
+          console.error(`[ERR] Failed to migrate user ${user.customerNumber}:`, error);
         }
       }
       
@@ -3429,7 +3346,7 @@ setInterval(ld,5000);
         const success = await storage.deleteUser(user.customerNumber);
         if (success) {
           deleted++;
-          console.log(`🗑️  Removed orphaned user: ${user.customerNumber} (${user.name})`);
+          console.log(`[CLEANUP] Removed orphaned user: ${user.customerNumber} (${user.name})`);
         }
       }
       
@@ -3461,11 +3378,11 @@ setInterval(ld,5000);
       const customersNotInUsers = customerNumbers.filter(c => !userCustomerNumbers.includes(c));
       
       if (usersNotInCustomers.length > 0 || customersNotInUsers.length > 0) {
-        console.log('\n⚠️  SYNC CHECK: Users and Customers tables are OUT OF SYNC');
+        console.log('\n[WARN] SYNC CHECK: Users and Customers tables are OUT OF SYNC');
         console.log(`   Total users: ${allUsers.length}, Total customers: ${allCustomers.length}`);
         
         if (usersNotInCustomers.length > 0) {
-          console.log(`   🔴 ${usersNotInCustomers.length} users WITHOUT matching customers:`);
+          console.log(`   [ERR] ${usersNotInCustomers.length} users WITHOUT matching customers:`);
           for (const cn of usersNotInCustomers) {
             const user = allUsers.find(u => u.customerNumber === cn);
             console.log(`      - ${cn} (${user?.name || 'Unknown'})`);
@@ -3473,16 +3390,16 @@ setInterval(ld,5000);
         }
         
         if (customersNotInUsers.length > 0) {
-          console.log(`   🔴 ${customersNotInUsers.length} customers WITHOUT matching users:`);
+          console.log(`   [ERR] ${customersNotInUsers.length} customers WITHOUT matching users:`);
           for (const cn of customersNotInUsers) {
             const customer = allCustomers.find(c => c.customerNumber === cn);
             console.log(`      - ${cn} (${customer?.name || 'Unknown'})`);
           }
         }
         
-        console.log('   💡 Run POST /api/admin/fix-sync to remove orphaned users\n');
+        console.log('   [TIP] Run POST /api/admin/fix-sync to remove orphaned users\n');
       } else {
-        console.log(`✅ SYNC CHECK: All ${allUsers.length} users match ${allCustomers.length} customers\n`);
+        console.log(`[OK] SYNC CHECK: All ${allUsers.length} users match ${allCustomers.length} customers\n`);
       }
     } catch (error) {
       console.error('Error checking sync:', error);
