@@ -59,6 +59,7 @@ export default function TransactionHistoryWorking() {
   const [transactionType, setTransactionType] = useState('all');
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
   const [activeFilters, setActiveFilters] = useState<{dateRangeType: string, transactionType: string, month?: string, dateFrom?: string, dateTo?: string} | null>(null);
+  const [showAccountDetailsModal, setShowAccountDetailsModal] = useState(false);
   
   const transactionTypes = [
     { value: 'all', label: 'All' },
@@ -612,7 +613,11 @@ export default function TransactionHistoryWorking() {
           marginBottom: '14px' 
         }} />
         
-        <button className="flex items-center" style={{ gap: '4px' }}>
+        <button 
+          onClick={() => setShowAccountDetailsModal(true)}
+          className="flex items-center" 
+          style={{ gap: '4px' }}
+        >
           <span style={{ fontSize: '15px', fontWeight: 400, color: styles.colors.textWhite }}>{userCurrency === 'GBP' ? 'Sort Code / Account Number' : 'BIC / IBAN'}</span>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="9 18 15 12 9 6"></polyline>
@@ -1298,6 +1303,117 @@ export default function TransactionHistoryWorking() {
           <span className="text-xs text-gray-500">Apply</span>
         </button>
       </div>
+
+      {/* BIC/IBAN or Sort Code Modal */}
+      <AnimatePresence>
+        {showAccountDetailsModal && (
+          <div 
+            onClick={() => setShowAccountDetailsModal(false)}
+            className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center"
+            style={{ zIndex: 1000 }}
+          >
+            <motion.div 
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-lg mx-4 w-full max-w-sm overflow-hidden"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.2 }}
+            >
+              {/* Header */}
+              <div 
+                className="flex items-center justify-between px-4 py-3"
+                style={{ backgroundColor: '#1a5490' }}
+              >
+                <span style={{ color: 'white', fontSize: '16px', fontWeight: 500 }}>
+                  {userCurrency === 'GBP' ? 'Sort Code and Account Number' : 'BIC and IBAN'}
+                </span>
+                <button 
+                  onClick={() => setShowAccountDetailsModal(false)}
+                  className="text-white"
+                >
+                  <X size={22} strokeWidth={2.5} />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="p-5">
+                {userCurrency === 'GBP' ? (
+                  <>
+                    <div style={{ marginBottom: '16px' }}>
+                      <p style={{ fontSize: '14px', color: '#1a5490', fontWeight: 500, marginBottom: '4px' }}>
+                        Sort Code
+                      </p>
+                      <p style={{ fontSize: '16px', color: '#333', fontWeight: 400 }}>
+                        {accountInfo?.sortCode || '90-38-16'}
+                      </p>
+                    </div>
+                    <div style={{ marginBottom: '24px' }}>
+                      <p style={{ fontSize: '14px', color: '#1a5490', fontWeight: 500, marginBottom: '4px' }}>
+                        Account Number
+                      </p>
+                      <p style={{ fontSize: '16px', color: '#333', fontWeight: 400 }}>
+                        {accountInfo?.accountNumber || '20163704'}
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ marginBottom: '16px' }}>
+                      <p style={{ fontSize: '14px', color: '#1a5490', fontWeight: 500, marginBottom: '4px' }}>
+                        BIC
+                      </p>
+                      <p style={{ fontSize: '16px', color: '#333', fontWeight: 400 }}>
+                        {accountInfo?.bic || 'BOFIIE2DXXX'}
+                      </p>
+                    </div>
+                    <div style={{ marginBottom: '24px' }}>
+                      <p style={{ fontSize: '14px', color: '#1a5490', fontWeight: 500, marginBottom: '4px' }}>
+                        IBAN
+                      </p>
+                      <p style={{ fontSize: '16px', color: '#333', fontWeight: 400 }}>
+                        {accountInfo?.iban || 'IE40BOFI 903816 20163704'}
+                      </p>
+                    </div>
+                  </>
+                )}
+
+                {/* Share Button */}
+                <button
+                  onClick={async () => {
+                    const shareText = userCurrency === 'GBP' 
+                      ? `Sort Code: ${accountInfo?.sortCode || '90-38-16'}\nAccount Number: ${accountInfo?.accountNumber || '20163704'}`
+                      : `BIC: ${accountInfo?.bic || 'BOFIIE2DXXX'}\nIBAN: ${accountInfo?.iban || 'IE40BOFI 903816 20163704'}`;
+                    
+                    if (navigator.share) {
+                      try {
+                        await navigator.share({ text: shareText });
+                      } catch (err) {
+                        navigator.clipboard.writeText(shareText);
+                      }
+                    } else {
+                      navigator.clipboard.writeText(shareText);
+                    }
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '14px',
+                    fontSize: '16px',
+                    fontWeight: 500,
+                    backgroundColor: '#1a5490',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Share
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Transaction Detail Modal */}
       <AnimatePresence>
