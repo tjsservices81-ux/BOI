@@ -117,9 +117,9 @@ export default function Dashboard() {
     
     setAccounts(storedAccounts);
     
-    // Load saved payees
-    const savedPayees = UserDataManager.getUserData('savedPayees', []);
-    setPayees(savedPayees);
+    // Load recent payees (saved after successful transfers)
+    const recentPayees = UserDataManager.getRecentPayees();
+    setPayees(recentPayees);
     
     // Load user's currency preference
     setUserCurrency(getUserCurrency());
@@ -584,7 +584,7 @@ export default function Dashboard() {
                 >
                   <option value="">Select payee</option>
                   {payees
-                    .filter(p => transferType === 'uk' ? p.type === 'uk' : p.type === 'iban')
+                    .filter(p => transferType === 'uk' ? p.transferType === 'UK Transfer' : p.transferType === 'SEPA Transfer')
                     .map((payee, idx) => (
                       <option key={idx} value={payee.name}>
                         {payee.name}
