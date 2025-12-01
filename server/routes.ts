@@ -861,7 +861,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(403).json({ message: "Logout disabled - users can only be logged out via admin deletion" });
   });
 
-  // Get user accounts
+  // Get current user's accounts (uses session)
+  app.get("/api/accounts", requireAuth, async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      
+      // Check if customer exists in database (deleted customer check)
+      const customerExists = await checkCustomerExists(sessionUser.customerNumber);
+      if (!customerExists) {
+        console.log(`🚫 DELETED CUSTOMER ATTEMPT: ${sessionUser.customerNumber} tried to view accounts`);
+        return res.status(403).json({ message: "Account access revoked" });
+      }
+      
+      const accounts = await storage.getAccountsByUserId(sessionUser.id);
+      console.log(`💳 Loaded ${accounts.length} account(s) for user ${sessionUser.customerNumber}`);
+      res.json(accounts);
+    } catch (error) {
+      console.error('Error fetching accounts:', error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Get user accounts by userId (legacy endpoint)
   app.get("/api/accounts/:userId", requireAuth, async (req, res) => {
     try {
       const userId = parseInt(req.params.userId);
