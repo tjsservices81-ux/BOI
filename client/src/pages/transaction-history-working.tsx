@@ -478,62 +478,69 @@ export default function TransactionHistoryWorking() {
   return (
     <div className="page-container h-screen bg-white flex flex-col overflow-hidden page-slide-in-right">
       {/* Header */}
-      <div className="bg-[#1a5276] px-4 py-4 flex items-center justify-between flex-shrink-0">
+      <div className="bg-[#1a5490] px-4 py-3 flex items-center justify-between flex-shrink-0">
         <button 
           onClick={() => navigateWithAnimation('/dashboard', 'slide-left')}
-          className="p-2 hover:bg-white/20 rounded-full transition-colors"
+          className="p-1 hover:bg-white/20 rounded-full transition-colors"
         >
           <ChevronLeft className="h-6 w-6 text-white" />
         </button>
         
-        <h1 className="text-lg font-medium text-white flex-1 text-center">
+        <h1 className="text-base font-normal text-white flex-1 text-center">
           {accountInfo?.displayName || 'Current Account'} ~ {getAccountNumber()}
         </h1>
         
-        <button className="p-2 hover:bg-white/20 rounded-full transition-colors">
-          <div className="w-7 h-7 rounded-full border-2 border-white/70 flex items-center justify-center">
-            <span className="text-white text-xs">👤</span>
+        <button className="p-1 hover:bg-white/20 rounded-full transition-colors">
+          <div className="w-8 h-8 rounded-full border-2 border-[#5ba3c0] bg-[#5ba3c0]/30 flex items-center justify-center">
+            <svg className="w-5 h-5 text-[#5ba3c0]" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
           </div>
         </button>
       </div>
 
       {/* Balance Section */}
-      <div className="bg-[#2980b9] px-6 py-6 text-white">
-        <div className="flex items-center gap-2 mb-4">
-          <span className="text-4xl font-bold">{formatCurrency(balance, userCurrency)}</span>
-          <button className="p-1 hover:bg-white/20 rounded-full transition-colors">
-            <Info className="h-5 w-5 text-white/80" />
+      <div className="bg-[#1a5490] px-5 pt-2 pb-5 text-white">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-3xl font-bold">{formatCurrency(balance, userCurrency)}</span>
+          <button className="p-0.5 hover:bg-white/20 rounded-full transition-colors">
+            <Info className="h-4 w-4 text-white/70" />
           </button>
         </div>
         
-        <div className="border-b border-white/30 w-12 mb-4" />
+        <div className="border-b-2 border-white/50 w-8 mb-3" />
         
         <button className="flex items-center gap-1 text-white hover:opacity-80 transition-opacity">
-          <span className="text-sm font-medium">BIC / IBAN</span>
+          <span className="text-sm">BIC / IBAN</span>
           <ChevronRight className="h-4 w-4" />
         </button>
       </div>
 
       {/* Tabs */}
-      <div className="bg-white px-4 py-4 flex gap-2 border-b border-gray-100">
-        <button
-          onClick={() => setActiveTab('transactions')}
-          className={`px-5 py-2.5 rounded-full font-medium text-sm transition-all ${
-            activeTab === 'transactions'
-              ? 'bg-[#1a5276] text-white'
-              : 'bg-white border border-gray-300 text-gray-700 hover:border-gray-400'
-          }`}
-        >
-          Transactions
-        </button>
+      <div className="bg-[#f5f5f5] px-3 py-4 flex gap-2">
+        <div className="relative">
+          <button
+            onClick={() => setActiveTab('transactions')}
+            className={`px-4 py-2 rounded-full font-medium text-sm transition-all ${
+              activeTab === 'transactions'
+                ? 'bg-[#1a5490] text-white'
+                : 'bg-white border border-gray-300 text-gray-700 hover:border-gray-400'
+            }`}
+          >
+            Transactions
+          </button>
+          {activeTab === 'transactions' && (
+            <div className="absolute left-1/2 -translate-x-1/2 -bottom-2 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-[#1a5490]" />
+          )}
+        </div>
         <button
           onClick={() => {
             setActiveTab('statements');
             setShowStatementModal(true);
           }}
-          className={`px-5 py-2.5 rounded-full font-medium text-sm transition-all ${
+          className={`px-4 py-2 rounded-full font-medium text-sm transition-all ${
             activeTab === 'statements'
-              ? 'bg-[#1a5276] text-white'
+              ? 'bg-[#1a5490] text-white'
               : 'bg-white border border-gray-300 text-gray-700 hover:border-gray-400'
           }`}
         >
@@ -541,9 +548,9 @@ export default function TransactionHistoryWorking() {
         </button>
         <button
           onClick={() => setActiveTab('more')}
-          className={`px-5 py-2.5 rounded-full font-medium text-sm transition-all ${
+          className={`px-4 py-2 rounded-full font-medium text-sm transition-all ${
             activeTab === 'more'
-              ? 'bg-[#1a5276] text-white'
+              ? 'bg-[#1a5490] text-white'
               : 'bg-white border border-gray-300 text-gray-700 hover:border-gray-400'
           }`}
         >
@@ -552,26 +559,22 @@ export default function TransactionHistoryWorking() {
       </div>
 
       {/* Filter Section */}
-      <div className="bg-white px-4 py-4 border-b border-gray-100">
-        <div className="flex items-center justify-center gap-2">
+      <div className="bg-white px-4 py-4">
+        <div className="flex items-center justify-end gap-2">
           <span className="text-gray-600 text-sm">Filter completed transactions</span>
-          <Search className="h-5 w-5 text-[#1a5276]" />
+          <Search className="h-5 w-5 text-[#1a5490]" />
         </div>
       </div>
 
-      {/* Status Heading */}
-      <div className="bg-white px-4 pt-4 pb-2">
+      {/* Status Heading and Amount Header */}
+      <div className="bg-white px-4 pt-2 pb-3 flex items-end justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-[#1a5276] text-base font-medium border-b-2 border-[#1a5276] pb-2">Completed</span>
-          <button className="pb-2">
-            <Info className="h-4 w-4 text-gray-500" />
+          <span className="text-[#1a5490] text-base font-medium border-b-2 border-[#1a5490] pb-1">Completed</span>
+          <button className="pb-1">
+            <Info className="h-4 w-4 text-[#8B4513]" />
           </button>
         </div>
-      </div>
-
-      {/* Amount Header */}
-      <div className="bg-white px-4 py-2 flex justify-end">
-        <span className="text-gray-600 text-sm">Amount in {userCurrency === 'EUR' ? '€' : '£'}</span>
+        <span className="text-gray-500 text-sm">Amount in {userCurrency === 'EUR' ? '€' : '£'}</span>
       </div>
 
       {/* Transaction List */}
@@ -581,7 +584,7 @@ export default function TransactionHistoryWorking() {
         data-scroll-container
         data-scroll-route={`/transactions/${accountId}`}
       >
-        <div className="divide-y divide-gray-100">
+        <div className="">
           {transactions.filter(t => !t.deleted).map((transaction, index) => {
             const isDebit = transaction.type === 'debit' || transaction.amount.startsWith('-');
             const amount = Math.abs(parseFloat(transaction.amount.replace('-', '')));
@@ -590,32 +593,32 @@ export default function TransactionHistoryWorking() {
               <div 
                 key={`${transaction.id}-${index}`}
                 onClick={() => setSelectedTransaction(transaction)}
-                className="px-4 py-4 hover:bg-gray-50 transition-colors cursor-pointer flex items-center justify-between"
+                className="px-4 py-4 hover:bg-gray-50 transition-colors cursor-pointer flex items-start justify-between border-b border-gray-100"
               >
                 {/* Left side */}
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900 mb-1">
-                    {transaction.reference || transaction.id}
+                  <p className="text-base font-semibold text-gray-900 mb-0.5">
+                    {transaction.description || transaction.reference || transaction.id}
                   </p>
-                  <p className="text-xs text-gray-600 mb-1">
+                  <p className="text-sm text-gray-700 mb-0.5">
                     {transaction.iban || transaction.recipientAccountNumber || `4319401827062009`}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-sm text-gray-500">
                     {formatDate(transaction.timestamp)}
                   </p>
                 </div>
 
                 {/* Right side */}
-                <div className="ml-4 flex items-center gap-3">
+                <div className="ml-4 flex items-center gap-2">
                   <div className="text-right">
-                    <p className={`text-sm font-semibold mb-1 ${
+                    <p className={`text-base font-medium mb-0.5 ${
                       isDebit ? 'text-gray-900' : 'text-green-600'
                     }`}>
-                      {isDebit ? '−' : '+'} {amount.toFixed(2)}
+                      {isDebit ? '' : '+ '}{amount.toFixed(2)}
                     </p>
-                    <p className="text-xs text-gray-500 italic">View details</p>
+                    <p className="text-xs text-gray-500">View details</p>
                   </div>
-                  <ChevronRight className="h-5 w-5 text-[#1a5276]" />
+                  <ChevronRight className="h-5 w-5 text-[#1a5490]" />
                 </div>
               </div>
             );
@@ -630,7 +633,7 @@ export default function TransactionHistoryWorking() {
       </div>
 
       {/* Bottom Banner */}
-      <div className="bg-[#1a5276] px-4 py-4 text-white flex items-center justify-between flex-shrink-0">
+      <div className="bg-[#1a5490] px-4 py-3 text-white flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-2">
           <Info className="h-4 w-4" />
           <span className="text-sm">See an unfamiliar transaction?</span>
