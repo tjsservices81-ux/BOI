@@ -657,8 +657,9 @@ export default function Dashboard() {
                     animationDelay: `${index * 0.1}s`,
                     WebkitTapHighlightColor: 'transparent',
                     outline: 'none',
-                    backgroundColor: '#FFFFFF',
-                    border: '1px solid #f0f0f0'
+                    backgroundColor: '#fff',
+                    border: 'none',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)'
                   }}
                   data-testid={`account-button-${account.id}`}
                 >
