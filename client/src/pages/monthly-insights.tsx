@@ -253,60 +253,39 @@ export default function MonthlyInsights() {
         </div>
 
         {/* Your Activity Section */}
-        <div className="mt-6 px-4">
-          <p className="text-center font-semibold mb-4" style={{ fontSize: '16px', color: '#333' }}>Your activity:</p>
+        <div className="mt-4">
+          <p className="text-center font-semibold mb-4 px-4" style={{ fontSize: '16px', color: '#333' }}>Your activity:</p>
           
-          {/* Month Selector */}
-          <div className="flex justify-center mb-4">
-            <div className="flex" style={{ width: '200px' }}>
-              <button 
-                onClick={() => setSelectedMonth('previous')}
-                className="flex-1 text-center pb-2"
-                style={{ 
-                  fontSize: '15px', 
-                  color: selectedMonth === 'previous' ? '#333' : '#999',
-                  borderBottom: selectedMonth === 'previous' ? '3px solid #0A6F85' : '1px solid #E0E0E0'
-                }}
-              >
-                {monthlyData.previousMonthShort}
-              </button>
-              <button 
-                onClick={() => setSelectedMonth('current')}
-                className="flex-1 text-center pb-2"
-                style={{ 
-                  fontSize: '15px', 
-                  color: selectedMonth === 'current' ? '#333' : '#999',
-                  borderBottom: selectedMonth === 'current' ? '3px solid #0A6F85' : '1px solid #E0E0E0'
-                }}
-              >
-                {monthlyData.currentMonthShort}
-              </button>
+          {/* Current Month Display */}
+          <div className="flex justify-center mb-4 px-4">
+            <div className="text-center pb-2" style={{ borderBottom: '3px solid #0A6F85' }}>
+              <span style={{ fontSize: '15px', color: '#333', fontWeight: '500' }}>{monthlyData.currentMonthShort}</span>
             </div>
           </div>
 
-          {/* Money Out / Money In Labels */}
-          <div className="flex justify-between px-8 mb-2">
+          {/* Money Out / Money In Bar - Same as Header */}
+          <div className="flex justify-between px-6 py-3" style={{ backgroundColor: '#126987' }}>
             <div className="text-center">
-              <p className="font-semibold" style={{ fontSize: '13px', color: '#0A6F85' }}>MONEY OUT</p>
-              <p style={{ fontSize: '16px', color: '#333' }}>
+              <p className="font-semibold text-white" style={{ fontSize: '13px' }}>MONEY OUT</p>
+              <p className="text-white" style={{ fontSize: '16px' }}>
                 {formatCurrency(monthlyData.moneyOut.toFixed(2), userCurrency)}
               </p>
             </div>
             <div className="text-center">
-              <p className="font-semibold" style={{ fontSize: '13px', color: '#00A651' }}>MONEY IN</p>
-              <p style={{ fontSize: '16px', color: '#333' }}>
+              <p className="font-semibold text-white" style={{ fontSize: '13px' }}>MONEY IN</p>
+              <p className="text-white" style={{ fontSize: '16px' }}>
                 {formatCurrency(monthlyData.moneyIn.toFixed(2), userCurrency)}
               </p>
             </div>
           </div>
 
           {/* Activity Text */}
-          <p className="text-center mb-3" style={{ fontSize: '12px', color: '#999' }}>
+          <p className="text-center my-3 px-4" style={{ fontSize: '12px', color: '#999' }}>
             ▸ Activity until the {monthlyData.currentDay}{getOrdinalSuffix(monthlyData.currentDay)}
           </p>
 
           {/* Bar Chart */}
-          <div className="flex justify-center items-end mb-4" style={{ height: '80px' }}>
+          <div className="flex justify-center items-end mb-4 px-4" style={{ height: '80px' }}>
             <div className="flex items-end space-x-6">
               <div 
                 className="w-6" 
