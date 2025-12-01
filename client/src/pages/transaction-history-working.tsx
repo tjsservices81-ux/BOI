@@ -509,16 +509,16 @@ export default function TransactionHistoryWorking() {
       className="page-container h-screen bg-white flex flex-col overflow-hidden page-slide-in-right" 
       style={{ fontFamily: styles.fonts.family, maxWidth: '430px', margin: '0 auto' }}
     >
-      {/* Header - extends into status bar area */}
+      {/* Header - transparent to blend with status bar */}
       <div 
         className="flex items-center justify-between flex-shrink-0"
         style={{ 
-          background: `linear-gradient(180deg, ${styles.colors.headerGradientStart} 0%, ${styles.colors.headerGradientEnd} 100%)`,
+          background: styles.colors.headerGradientStart,
           minHeight: '48px',
           paddingTop: 'env(safe-area-inset-top, 0px)',
           paddingLeft: '16px',
           paddingRight: '16px',
-          paddingBottom: '0'
+          paddingBottom: '8px'
         }}
       >
         <button 
