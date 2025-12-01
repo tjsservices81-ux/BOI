@@ -117,9 +117,13 @@ export default function Dashboard() {
     
     setAccounts(storedAccounts);
     
-    // Load saved payees
+    // Load saved and recent payees combined
     const savedPayees = UserDataManager.getUserData('savedPayees', []);
-    setPayees(savedPayees);
+    const recentPayees = UserDataManager.getUserData('recentPayees', []);
+    const allPayees = [...savedPayees, ...recentPayees];
+    // Remove duplicates by payee name and type
+    const uniquePayees = Array.from(new Map(allPayees.map(p => [`${p.name}-${p.type}`, p])).values());
+    setPayees(uniquePayees);
     
     // Load user's currency preference
     setUserCurrency(getUserCurrency());
