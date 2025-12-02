@@ -1888,23 +1888,6 @@
       }
     ],
     [
-      276,
-      {
-        "id": 276,
-        "customerNumber": "24898814",
-        "pin": "",
-        "name": "John Doe",
-        "email": "johndoe@gmail.com",
-        "phone": "07354981678",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "Member since 2018",
-        "currency": "EUR",
-        "dateCreated": "2025-11-13T13:50:10.661Z",
-        "isDisabled": false
-      }
-    ],
-    [
       289,
       {
         "id": 289,
@@ -2381,40 +2364,6 @@
       }
     ],
     [
-      320,
-      {
-        "id": 320,
-        "customerNumber": "29917687",
-        "pin": "",
-        "name": "Dev",
-        "email": "dev@fmail.com",
-        "phone": "418484",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "2025-12-01T00:11:39.731Z",
-        "currency": "GBP",
-        "dateCreated": "2025-12-01T00:11:39.690Z",
-        "isDisabled": false
-      }
-    ],
-    [
-      316,
-      {
-        "id": 316,
-        "customerNumber": "20417400",
-        "pin": "",
-        "name": "Device Test",
-        "email": "devicetest@test.com",
-        "phone": null,
-        "address": null,
-        "dateOfBirth": "1990-01-01",
-        "joinDate": "2025-11-30T19:56:20.226Z",
-        "currency": "EUR",
-        "dateCreated": "2025-11-30T19:56:20.402Z",
-        "isDisabled": false
-      }
-    ],
-    [
       321,
       {
         "id": 321,
@@ -2446,40 +2395,6 @@
         "currency": "EUR",
         "dateCreated": "2025-12-01T01:16:58.860Z",
         "isDisabled": false
-      }
-    ],
-    [
-      323,
-      {
-        "id": 323,
-        "customerNumber": "20305518",
-        "pin": "000000",
-        "name": "Dev",
-        "email": "dev@gmail.com",
-        "phone": "8784",
-        "address": "",
-        "dateOfBirth": "",
-        "joinDate": "Member since 2018",
-        "dateCreated": "2025-12-01T02:27:14.410Z",
-        "isDisabled": false,
-        "currency": "GBP"
-      }
-    ],
-    [
-      324,
-      {
-        "id": 324,
-        "customerNumber": "34162581",
-        "pin": "000000",
-        "name": "Dev1922",
-        "email": "dev1@gmail.com",
-        "phone": "774",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "Member since 2018",
-        "dateCreated": "2025-12-01T02:28:52.279Z",
-        "isDisabled": false,
-        "currency": "EUR"
       }
     ],
     [
@@ -2568,52 +2483,18 @@
       }
     ],
     [
-      330,
-      {
-        "id": 330,
-        "customerNumber": "14423893",
-        "pin": "000000",
-        "name": "Dev282",
-        "email": "dve@gmail.com",
-        "phone": "4546",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "Member since 2018",
-        "dateCreated": "2025-12-01T15:57:41.293Z",
-        "isDisabled": false,
-        "currency": "EUR"
-      }
-    ],
-    [
-      331,
-      {
-        "id": 331,
-        "customerNumber": "39225521",
-        "pin": "",
-        "name": "Dev",
-        "email": "devsjsu@gmail.com",
-        "phone": "488484",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "Member since 2018",
-        "currency": "EUR",
-        "dateCreated": "2025-12-01T16:02:50.153Z",
-        "isDisabled": false
-      }
-    ],
-    [
       332,
       {
         "id": 332,
         "customerNumber": "22064058",
         "pin": "",
-        "name": "Dev",
+        "name": "Patrick Clover",
         "email": "dev@gmail.com",
         "phone": "45454",
         "address": null,
         "dateOfBirth": null,
         "joinDate": "Member since 2018",
-        "currency": "GBP",
+        "currency": "EUR",
         "dateCreated": "2025-12-01T16:09:13.015Z",
         "isDisabled": false
       }
@@ -2650,23 +2531,6 @@
         "currency": "EUR",
         "dateCreated": "2025-12-01T18:48:02.290Z",
         "isDisabled": false
-      }
-    ],
-    [
-      335,
-      {
-        "id": 335,
-        "customerNumber": "20064914",
-        "pin": "000000",
-        "name": "Dev",
-        "email": "dev@gmail.com",
-        "phone": "45464",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "Member since 2018",
-        "dateCreated": "2025-12-01T20:20:38.369Z",
-        "isDisabled": false,
-        "currency": "EUR"
       }
     ],
     [
