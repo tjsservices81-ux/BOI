@@ -3586,7 +3586,7 @@
         "sortCode": "90-78-68",
         "bic": "BOFIIE2D",
         "iban": "IE28BOFI90786855304628",
-        "balance": "145.33",
+        "balance": "150.33",
         "displayName": "Deposit Account"
       }
     ],
@@ -14872,6 +14872,52 @@
         "convertedCurrency": null,
         "timestamp": "2025-12-02T01:18:41.984Z"
       }
+    ],
+    [
+      498,
+      {
+        "id": 498,
+        "accountId": 125,
+        "amount": "-12000.00",
+        "description": "Transfer to John",
+        "category": "transfer",
+        "type": "debit",
+        "paymentMethod": "UK Transfer",
+        "reference": "BOI38617361QOIOA84366",
+        "recipientName": "John",
+        "iban": null,
+        "bicCode": null,
+        "recipientAccountNumber": "55304628",
+        "recipientSortCode": "90-78-68",
+        "recipientIban": "IE28BOFI90786855304628",
+        "exchangeRate": null,
+        "convertedAmount": null,
+        "convertedCurrency": null,
+        "timestamp": "2025-12-02T01:23:44.698Z"
+      }
+    ],
+    [
+      499,
+      {
+        "id": 499,
+        "accountId": 128,
+        "amount": "12000.00",
+        "description": "Transfer from Dev",
+        "category": "transfer",
+        "type": "credit",
+        "paymentMethod": "UK Transfer",
+        "reference": "BOI38617361QOIOA84366",
+        "recipientName": "Dev",
+        "iban": null,
+        "bicCode": null,
+        "recipientAccountNumber": "10407917",
+        "recipientSortCode": "90-78-68",
+        "recipientIban": "IE75BOFI90786810407917",
+        "exchangeRate": null,
+        "convertedAmount": null,
+        "convertedCurrency": null,
+        "timestamp": "2025-12-02T01:23:44.794Z"
+      }
     ]
   ],
   "payees": [],
@@ -14883,7 +14929,7 @@
   "counters": {
     "currentUserId": 339,
     "currentAccountId": 129,
-    "currentTransactionId": 498,
+    "currentTransactionId": 500,
     "currentPayeeId": 1,
     "currentScheduledPaymentId": 1,
     "currentStatementId": 1,
