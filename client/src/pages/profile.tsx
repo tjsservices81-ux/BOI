@@ -2845,12 +2845,17 @@ export default function Profile() {
                     data-testid="select-account-to-delete"
                   >
                     <option value="">Choose an account...</option>
-                    {accounts && accounts.map((account) => (
+                    {accounts && accounts.filter(acc => acc.accountType !== 'current').map((account) => (
                       <option key={account.id} value={account.id}>
                         {account.displayName} - {formatCurrency(account.balance, userCurrency)}
                       </option>
                     ))}
                   </select>
+                  {accounts && accounts.filter(acc => acc.accountType !== 'current').length === 0 && (
+                    <p className="text-sm text-gray-500 mt-2 italic" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      No deletable accounts. Current accounts cannot be deleted.
+                    </p>
+                  )}
                 </div>
 
                 {deletingAccountId && (
