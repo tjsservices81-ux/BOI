@@ -1406,7 +1406,7 @@ export default function Profile() {
 
   // Load transactions for selected account - sorted by latest first
   const loadAccountTransactions = (accountId: string) => {
-    const allTransactions = UserDataManager.getUserData('bankTransactions', []);
+    const allTransactions = UserDataManager.getUserData('bankTransactions', []) || [];
     const accountSpecificTransactions = allTransactions
       .filter((tx: any) => tx.accountId === parseInt(accountId))
       .sort((a: any, b: any) => {
@@ -1428,8 +1428,8 @@ export default function Profile() {
     
     if (!selectedTransaction || !selectedAccountId) return;
 
-    // Get all transactions for current user
-    const storedTransactions = UserDataManager.getUserData('bankTransactions', []);
+    // Get all transactions for current user (with null safety)
+    const storedTransactions = UserDataManager.getUserData('bankTransactions', []) || [];
     
     // Filter out the selected transaction
     const updatedTransactions = storedTransactions.filter((tx: any) => tx.id !== selectedTransaction.id);
@@ -1437,8 +1437,8 @@ export default function Profile() {
     // Update transactions in storage
     UserDataManager.setUserData('bankTransactions', updatedTransactions);
     
-    // Get user accounts to update balance
-    const userAccounts = UserDataManager.getUserData('bankAccounts', []);
+    // Get user accounts to update balance (with null safety)
+    const userAccounts = UserDataManager.getUserData('bankAccounts', []) || [];
     const affectedAccount = userAccounts.find((acc: any) => acc.id === selectedTransaction.accountId);
     
     let updatedAccounts = userAccounts;
