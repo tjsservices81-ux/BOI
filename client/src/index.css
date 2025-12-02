@@ -1902,7 +1902,7 @@ html, body {
   -webkit-user-select: none;
   -webkit-touch-callout: none;
   -webkit-tap-highlight-color: transparent;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%) !important;
+  background: white !important;
 }
 
 #root {
@@ -1922,10 +1922,10 @@ body {
   position: fixed !important;
   width: 100% !important;
   height: 100% !important;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%) !important;
+  background: white !important;
   display: flex !important;
   justify-content: center !important;
-  align-items: center !important;
+  align-items: flex-start !important;
 }
 
 /* Mobile specific fixes */
@@ -2355,15 +2355,15 @@ body {
   height: 100vh;
   height: 100dvh;
   overflow: hidden;
-  /* Center the fixed-width app on all screens including iPads */
+  /* Center the app on all screens */
   display: flex;
   justify-content: center;
-  align-items: center;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  align-items: flex-start;
+  background: white;
 }
 
 #root {
-  /* Full width on phones, max 430px on larger screens */
+  /* Full width on ALL devices - same proportional layout everywhere */
   width: 100%;
   max-width: 430px;
   height: 100vh;
@@ -2372,37 +2372,36 @@ body {
   overflow: hidden;
   margin: 0 auto;
   background: white;
-  /* Nice shadow for iPad/tablet/desktop viewing */
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-  border-radius: 0;
 }
 
-/* iPad and larger screens - add phone frame effect */
+/* iPad and tablets - same layout, just fills the screen */
 @media (min-width: 768px) {
   body {
-    padding: 20px 0;
+    background: white !important;
   }
   
   #root {
-    height: calc(100vh - 40px);
-    height: calc(100dvh - 40px);
-    border-radius: 40px;
-    box-shadow: 
-      0 25px 50px -12px rgba(0, 0, 0, 0.5),
-      0 0 0 14px #1a1a1a,
-      0 0 0 16px #333;
+    /* Full width up to 430px, same as phones */
+    width: 100%;
+    max-width: 430px;
+    height: 100vh;
+    height: 100dvh;
+    border-radius: 0;
+    box-shadow: none;
   }
 }
 
-/* iPad Pro and larger tablets */
+/* iPad Pro and larger tablets - same layout */
 @media (min-width: 1024px) {
   body {
-    padding: 40px 0;
+    background: white !important;
   }
   
   #root {
-    height: calc(100vh - 80px);
-    height: calc(100dvh - 80px);
+    width: 100%;
+    max-width: 430px;
+    height: 100vh;
+    height: 100dvh;
   }
 }
 
@@ -2511,7 +2510,7 @@ input {
 
 /* Ensure no white gaps at top on iOS */
 html, body {
-  background-color: #1a1a2e;
+  background-color: white;
 }
 
 #root {
