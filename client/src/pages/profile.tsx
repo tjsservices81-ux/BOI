@@ -22,6 +22,9 @@ export default function Profile() {
   const [newAccountName, setNewAccountName] = useState('');
 
   const [showAddAccount, setShowAddAccount] = useState(false);
+  const [showDeleteAccount, setShowDeleteAccount] = useState(false);
+  const [deletingAccountId, setDeletingAccountId] = useState<number | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [showAddTransaction, setShowAddTransaction] = useState(false);
   const [showSampleTransactions, setShowSampleTransactions] = useState(false);
   const [newAccountData, setNewAccountData] = useState({
@@ -2159,6 +2162,35 @@ export default function Profile() {
                       </div>
                     </button>
 
+                    {/* Delete Account */}
+                    <button 
+                      onClick={() => {
+                        if (accountDeleted) {
+                          alert('Account Deleted');
+                          return;
+                        }
+                        if (accounts.length <= 1) {
+                          showDeveloperMessage('Cannot delete your only account. You must have at least one account.');
+                          return;
+                        }
+                        setShowDeleteAccount(true);
+                      }}
+                      data-testid="button-delete-account"
+                      className="w-full flex items-center space-x-3 p-4 bg-white/70 backdrop-blur-sm border-2 border-red-300 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md"
+                    >
+                      <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center shadow-md">
+                        <Trash2 className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <p className="font-bold text-red-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Delete Account
+                        </p>
+                        <p className="text-xs text-red-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Remove a bank account
+                        </p>
+                      </div>
+                    </button>
+
                     {/* Add Custom Transaction */}
                     <button 
                       onClick={() => {
@@ -2767,6 +2799,127 @@ export default function Profile() {
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                 >
                   Create Account
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Account Modal */}
+      {showDeleteAccount && (
+        <div className="modal-overlay bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-red-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Delete Account
+                </h2>
+                <button
+                  onClick={() => {
+                    setShowDeleteAccount(false);
+                    setDeletingAccountId(null);
+                  }}
+                  className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+                >
+                  <X className="w-4 h-4 text-gray-600" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                  <p className="text-sm text-red-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Warning: Deleting an account will permanently remove all transactions associated with it. This action cannot be undone.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Select Account to Delete
+                  </label>
+                  <select
+                    value={deletingAccountId || ''}
+                    onChange={(e) => setDeletingAccountId(e.target.value ? parseInt(e.target.value) : null)}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                    data-testid="select-account-to-delete"
+                  >
+                    <option value="">Choose an account...</option>
+                    {accounts && accounts.map((account) => (
+                      <option key={account.id} value={account.id}>
+                        {account.displayName} - {formatCurrency(account.balance, userCurrency)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {deletingAccountId && (
+                  <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                    <p className="text-sm text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Are you sure you want to delete <strong>{accounts.find(a => a.id === deletingAccountId)?.displayName}</strong>?
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex space-x-3 mt-6">
+                <button
+                  onClick={() => {
+                    setShowDeleteAccount(false);
+                    setDeletingAccountId(null);
+                  }}
+                  className="flex-1 py-3 bg-gray-200 text-gray-800 rounded-xl font-semibold hover:bg-gray-300 transition-colors"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    if (!deletingAccountId) {
+                      showDeveloperMessage('Please select an account to delete');
+                      return;
+                    }
+                    
+                    setIsDeleting(true);
+                    try {
+                      const response = await fetch(`/api/accounts/${deletingAccountId}`, {
+                        method: 'DELETE',
+                        credentials: 'include'
+                      });
+                      
+                      const data = await response.json();
+                      
+                      if (response.ok && data.success) {
+                        // Update local accounts state
+                        setAccounts(prev => prev.filter(a => a.id !== deletingAccountId));
+                        
+                        // Update localStorage
+                        const updatedAccounts = accounts.filter(a => a.id !== deletingAccountId);
+                        UserDataManager.setUserData('bankAccounts', updatedAccounts);
+                        
+                        showDeveloperMessage(data.message || 'Account deleted successfully');
+                        setShowDeleteAccount(false);
+                        setDeletingAccountId(null);
+                      } else {
+                        showDeveloperMessage(data.message || 'Failed to delete account');
+                      }
+                    } catch (error) {
+                      console.error('Error deleting account:', error);
+                      showDeveloperMessage('Failed to delete account');
+                    } finally {
+                      setIsDeleting(false);
+                    }
+                  }}
+                  disabled={!deletingAccountId || isDeleting}
+                  className={`flex-1 py-3 rounded-xl font-semibold transition-colors ${
+                    !deletingAccountId || isDeleting
+                      ? 'bg-red-300 text-white cursor-not-allowed'
+                      : 'bg-red-600 text-white hover:bg-red-700'
+                  }`}
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  data-testid="button-confirm-delete-account"
+                >
+                  {isDeleting ? 'Deleting...' : 'Delete Account'}
                 </button>
               </div>
             </div>

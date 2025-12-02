@@ -29,6 +29,7 @@ export interface IStorage {
   getAllAccounts(): Promise<Account[]>;
   createAccount(account: InsertAccount): Promise<Account>;
   updateAccountBalance(accountId: number, newBalance: string): Promise<void>;
+  deleteAccount(accountId: number): Promise<boolean>;
   deleteAccountsByUserId(userId: number): Promise<boolean>;
   
   // Transaction operations
@@ -713,6 +714,32 @@ class MemStorage implements IStorage {
       console.log(`💰 Balance updated in PostgreSQL: Account ID=${accountId}, New Balance=${newBalance}`);
     } catch (error) {
       console.error('Error updating balance in PostgreSQL:', error);
+    }
+  }
+
+  async deleteAccount(accountId: number): Promise<boolean> {
+    try {
+      const { db } = await import('./db');
+      const { eq } = await import('drizzle-orm');
+      
+      // First delete all transactions for this account from PostgreSQL
+      await db.delete(transactions).where(eq(transactions.accountId, accountId));
+      
+      // Delete the account from PostgreSQL
+      const result = await db.delete(accounts).where(eq(accounts.id, accountId));
+      
+      // Also remove from memory cache
+      this.accounts.delete(accountId);
+      
+      // Remove transactions from memory cache
+      const txToDelete = Array.from(this.transactions.values()).filter(tx => tx.accountId === accountId);
+      txToDelete.forEach(tx => this.transactions.delete(tx.id));
+      
+      console.log(`🗑️ Deleted account ${accountId} and its transactions from PostgreSQL and memory`);
+      return true;
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      return false;
     }
   }
 

@@ -1034,6 +1034,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete an account
+  app.delete("/api/accounts/:accountId", requireAuth, async (req, res) => {
+    try {
+      const accountId = parseInt(req.params.accountId);
+      const sessionUser = (req as any).user;
+      
+      if (!sessionUser) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      
+      // Load accounts for this user to verify ownership
+      const userAccounts = await storage.getAccountsByUserId(sessionUser.id);
+      const account = userAccounts.find(a => a.id === accountId);
+      
+      // Verify the account belongs to the authenticated user
+      if (!account) {
+        return res.status(403).json({ message: "Account not found or access denied" });
+      }
+      
+      // Prevent deleting the last account
+      if (userAccounts.length <= 1) {
+        return res.status(400).json({ message: "Cannot delete your only account. You must have at least one account." });
+      }
+      
+      // Delete the account and its transactions
+      const deleted = await storage.deleteAccount(accountId);
+      
+      if (deleted) {
+        console.log(`🗑️ Account ${accountId} (${account.displayName}) deleted by user ${sessionUser.customerNumber}`);
+        res.json({ 
+          success: true, 
+          message: `${account.displayName} has been deleted` 
+        });
+      } else {
+        res.status(500).json({ message: "Failed to delete account" });
+      }
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      res.status(500).json({ message: "Failed to delete account" });
+    }
+  });
+
   // Get account transactions
   app.get("/api/transactions/:accountId", requireAuth, async (req, res) => {
     try {
