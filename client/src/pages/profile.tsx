@@ -2584,7 +2584,7 @@ export default function Profile() {
                     onChange={(e) => setEditingBankDisplayData({ ...editingBankDisplayData, accountNumber: e.target.value })}
                     className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#126987] focus:border-transparent text-sm text-gray-800"
                     style={{ fontFamily: 'OpenSans, sans-serif' }}
-                    placeholder={editingBankDisplayAccount.accountNumber || "20163704"}
+                    placeholder={editingBankDisplayAccount.fullAccountNumber || editingBankDisplayAccount.accountNumber || "20163704"}
                   />
                 </div>
               </div>
@@ -2653,7 +2653,7 @@ export default function Profile() {
 
               <div className="mb-4">
                 <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  {editingAccount.accountNumber}
+                  {editingAccount.fullAccountNumber || editingAccount.accountNumber}
                 </p>
               </div>
 
