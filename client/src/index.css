@@ -2537,9 +2537,27 @@ html, body {
   transform: translateX(-50%) !important;
 }
 
-/* Ensure page containers respect max width */
-.page-container, .h-screen {
+/* Ensure ALL page containers respect max width */
+.page-container, 
+.h-screen, 
+.min-h-screen,
+.h-full,
+.full-height,
+[class*="h-screen"],
+[class*="min-h-screen"] {
   max-width: 430px !important;
   width: 100% !important;
-  margin: 0 auto !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* Page animation classes */
+.page-fade-in,
+.page-slide-up,
+.page-slide-in-right,
+.page-fade-slide-in {
+  max-width: 430px !important;
+  width: 100% !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
 }
