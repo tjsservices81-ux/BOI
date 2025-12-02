@@ -229,12 +229,20 @@ input[type="text"], input[type="email"], input[type="password"], textarea {
     width: 100%;
     height: 100%;
     overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
   
   #root {
+    /* Fixed iPhone 16 Pro width in PWA mode */
+    width: 430px !important;
+    max-width: 430px !important;
+    min-width: 430px !important;
     height: 100vh;
     overflow: hidden;
     -webkit-overflow-scrolling: touch;
+    margin: 0 auto;
   }
 }
 
@@ -1896,14 +1904,19 @@ html, body {
   -webkit-user-select: none;
   -webkit-touch-callout: none;
   -webkit-tap-highlight-color: transparent;
-  background: transparent !important;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%) !important;
 }
 
 #root {
+  /* Fixed iPhone 16 Pro width - DO NOT OVERRIDE */
+  width: 430px !important;
+  max-width: 430px !important;
+  min-width: 430px !important;
   height: 100%;
   overflow: hidden;
   -webkit-overflow-scrolling: touch;
-  background: transparent !important;
+  background: white !important;
+  margin: 0 auto;
 }
 
 /* Force enable scrolling on mobile */
@@ -1912,7 +1925,10 @@ body {
   position: fixed !important;
   width: 100% !important;
   height: 100% !important;
-  background: transparent !important;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%) !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
 }
 
 /* Mobile specific fixes */
@@ -2499,9 +2515,14 @@ input {
 
 /* Ensure no white gaps at top on iOS */
 html, body {
-  background-color: #126987;
+  background-color: #1a1a2e;
 }
 
 #root {
-  background-color: #126987;
+  /* Fixed iPhone 16 Pro width - FINAL OVERRIDE */
+  width: 430px !important;
+  max-width: 430px !important;
+  min-width: 430px !important;
+  background-color: white !important;
+  margin: 0 auto !important;
 }
