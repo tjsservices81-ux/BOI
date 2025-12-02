@@ -235,10 +235,9 @@ input[type="text"], input[type="email"], input[type="password"], textarea {
   }
   
   #root {
-    /* Fixed iPhone 16 Pro width in PWA mode */
-    width: 430px !important;
+    /* Full width on phones, max 430px on larger screens */
+    width: 100% !important;
     max-width: 430px !important;
-    min-width: 430px !important;
     height: 100vh;
     overflow: hidden;
     -webkit-overflow-scrolling: touch;
@@ -297,10 +296,9 @@ html, body {
   overflow: hidden;
   -webkit-overflow-scrolling: touch;
   touch-action: manipulation;
-  /* Fixed iPhone 16 Pro width (430px) for ALL devices */
-  width: 430px;
+  /* Full width on phones, max 430px on larger screens */
+  width: 100%;
   max-width: 430px;
-  min-width: 430px;
   position: relative;
   background: white;
   /* Center on all screens */
@@ -1908,10 +1906,9 @@ html, body {
 }
 
 #root {
-  /* Fixed iPhone 16 Pro width - DO NOT OVERRIDE */
-  width: 430px !important;
+  /* Full width on phones, max 430px on larger screens */
+  width: 100% !important;
   max-width: 430px !important;
-  min-width: 430px !important;
   height: 100%;
   overflow: hidden;
   -webkit-overflow-scrolling: touch;
@@ -2366,10 +2363,9 @@ body {
 }
 
 #root {
-  /* Fixed iPhone 16 Pro width (430px) for ALL devices including iPads */
-  width: 430px;
+  /* Full width on phones, max 430px on larger screens */
+  width: 100%;
   max-width: 430px;
-  min-width: 430px;
   height: 100vh;
   height: 100dvh;
   height: -webkit-fill-available;
@@ -2519,10 +2515,9 @@ html, body {
 }
 
 #root {
-  /* Fixed iPhone 16 Pro width - FINAL OVERRIDE */
-  width: 430px !important;
+  /* Full width on phones, max 430px - FINAL OVERRIDE */
+  width: 100% !important;
   max-width: 430px !important;
-  min-width: 430px !important;
   background-color: white !important;
   margin: 0 auto !important;
 }
