@@ -398,9 +398,38 @@ export default function TransactionHistoryWorking() {
   };
 
   useEffect(() => {
-    const loadData = () => {
+    const loadData = async () => {
       UserDataManager.clearCache('bankTransactions');
       UserDataManager.clearCache('bankAccounts');
+      
+      // Fetch transactions from server to get incoming transfers
+      try {
+        const response = await fetch(`/api/transactions/${accountId}`, {
+          credentials: 'include'
+        });
+        
+        if (response.ok) {
+          const serverTransactions = await response.json();
+          console.log('Fetched transactions from server for account', accountId, ':', serverTransactions.length);
+          
+          // Merge server transactions with local storage
+          const storedTransactions = UserDataManager.getUserData('bankTransactions', []) || [];
+          
+          // Create a map of existing transactions by ID
+          const existingIds = new Set(storedTransactions.map((tx: any) => tx.id));
+          
+          // Add server transactions that don't exist locally
+          const newTransactions = serverTransactions.filter((tx: any) => !existingIds.has(tx.id));
+          
+          if (newTransactions.length > 0) {
+            console.log('Adding', newTransactions.length, 'new transactions from server');
+            const mergedTransactions = [...storedTransactions, ...newTransactions];
+            UserDataManager.setUserData('bankTransactions', mergedTransactions);
+          }
+        }
+      } catch (error) {
+        console.log('Could not fetch server transactions, using local data:', error);
+      }
       
       const storedTransactions = UserDataManager.getUserData('bankTransactions', []) || [];
       
