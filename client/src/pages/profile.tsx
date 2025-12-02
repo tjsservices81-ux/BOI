@@ -339,39 +339,10 @@ export default function Profile() {
   useEffect(() => {
     if (showAdminPanel) {
       try {
-        // First load cached accounts
         const storedAccounts = UserDataManager.getUserAccounts();
         console.log('Loading accounts for admin panel:', storedAccounts);
         setAccounts(storedAccounts);
         loadChatResponses();
-        
-        // Then fetch fresh accounts from server to ensure fullAccountNumber is available
-        fetch('/api/accounts', { credentials: 'include' })
-          .then(res => res.ok ? res.json() : Promise.reject('Failed to fetch'))
-          .then(serverAccounts => {
-            if (serverAccounts && serverAccounts.length > 0) {
-              // Merge server data with local data, ensuring fullAccountNumber is set
-              const accountsWithFullNumber = serverAccounts.map((acc: any) => ({
-                ...acc,
-                displayName: acc.displayName || acc.display_name || 'Current Account',
-                accountNumber: acc.accountNumber?.startsWith('~') 
-                  ? acc.accountNumber 
-                  : `~ ${acc.accountNumber?.slice(-4) || '0000'}`,
-                fullAccountNumber: acc.accountNumber?.startsWith('~') 
-                  ? acc.fullAccountNumber 
-                  : acc.accountNumber,
-                balance: acc.balance || '0.00',
-                accountType: acc.accountType || acc.account_type || 'current',
-                sortCode: acc.sortCode || acc.sort_code || '90-78-68',
-                bic: acc.bic || 'BOFIIE2D',
-                iban: acc.iban || null
-              }));
-              UserDataManager.setUserData('bankAccounts', accountsWithFullNumber);
-              setAccounts(accountsWithFullNumber);
-              console.log('Updated accounts with full numbers:', accountsWithFullNumber);
-            }
-          })
-          .catch(err => console.log('Using cached accounts:', err));
         
         // Hide navigation bar on Android/iOS
         const bottomNav = document.querySelector('.bottom-navigation') as HTMLElement | null;
