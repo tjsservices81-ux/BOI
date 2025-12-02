@@ -61,7 +61,7 @@ export default function More() {
 
       {/* Main Content */}
       <div className="bg-white rounded-t-3xl mt-6 flex-1 overflow-hidden shadow-2xl page-slide-up">
-        <div className="h-full overflow-y-auto p-6 pb-48">
+        <div className="h-full overflow-y-auto p-6 pb-32">
           
           {/* Content Header */}
           <div className="text-center mb-8 pt-2">

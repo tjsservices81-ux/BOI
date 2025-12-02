@@ -229,19 +229,12 @@ input[type="text"], input[type="email"], input[type="password"], textarea {
     width: 100%;
     height: 100%;
     overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
   }
   
   #root {
-    /* Full width on phones, max 430px on larger screens */
-    width: 100% !important;
-    max-width: 430px !important;
     height: 100vh;
     overflow: hidden;
     -webkit-overflow-scrolling: touch;
-    margin: 0 auto;
   }
 }
 
@@ -296,13 +289,18 @@ html, body {
   overflow: hidden;
   -webkit-overflow-scrolling: touch;
   touch-action: manipulation;
-  /* Full width on phones, max 430px on larger screens */
+  /* Responsive for all iPhone sizes (13 Pro: 390px, 15 Pro Max: 430px) */
   width: 100%;
-  max-width: 430px;
+  max-width: 100vw;
   position: relative;
   background: white;
-  /* Center on all screens */
-  margin: 0 auto;
+}
+
+/* Desktop/tablet: constrain to phone width */
+@media (min-width: 431px) {
+  #root {
+    max-width: 430px;
+  }
 }
 
 /* Prevent double-tap zoom on interactive elements only */
@@ -1902,18 +1900,14 @@ html, body {
   -webkit-user-select: none;
   -webkit-touch-callout: none;
   -webkit-tap-highlight-color: transparent;
-  background: white !important;
+  background: transparent !important;
 }
 
 #root {
-  /* Full width on phones, max 430px on larger screens */
-  width: 100% !important;
-  max-width: 430px !important;
   height: 100%;
   overflow: hidden;
   -webkit-overflow-scrolling: touch;
-  background: white !important;
-  margin: 0 auto;
+  background: transparent !important;
 }
 
 /* Force enable scrolling on mobile */
@@ -1922,10 +1916,7 @@ body {
   position: fixed !important;
   width: 100% !important;
   height: 100% !important;
-  background: white !important;
-  display: flex !important;
-  justify-content: center !important;
-  align-items: flex-start !important;
+  background: transparent !important;
 }
 
 /* Mobile specific fixes */
@@ -2355,54 +2346,13 @@ body {
   height: 100vh;
   height: 100dvh;
   overflow: hidden;
-  /* Center the app on all screens */
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  background: white;
 }
 
 #root {
-  /* Full width on ALL devices - same proportional layout everywhere */
   width: 100%;
-  max-width: 430px;
   height: 100vh;
   height: 100dvh;
-  height: -webkit-fill-available;
   overflow: hidden;
-  margin: 0 auto;
-  background: white;
-}
-
-/* iPad and tablets - same layout, just fills the screen */
-@media (min-width: 768px) {
-  body {
-    background: white !important;
-  }
-  
-  #root {
-    /* Full width up to 430px, same as phones */
-    width: 100%;
-    max-width: 430px;
-    height: 100vh;
-    height: 100dvh;
-    border-radius: 0;
-    box-shadow: none;
-  }
-}
-
-/* iPad Pro and larger tablets - same layout */
-@media (min-width: 1024px) {
-  body {
-    background: white !important;
-  }
-  
-  #root {
-    width: 100%;
-    max-width: 430px;
-    height: 100vh;
-    height: 100dvh;
-  }
 }
 
 /* Native iOS button effects - Android optimized */
@@ -2510,54 +2460,9 @@ input {
 
 /* Ensure no white gaps at top on iOS */
 html, body {
-  background-color: white;
+  background-color: #126987;
 }
 
 #root {
-  /* Full width on phones, max 430px - FINAL OVERRIDE */
-  width: 100% !important;
-  max-width: 430px !important;
-  background-color: white !important;
-  margin: 0 auto !important;
-}
-
-/* Fix all fixed/absolute positioned elements to stay within app bounds */
-.fixed, [class*="fixed"] {
-  max-width: 430px !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-  right: auto !important;
-}
-
-/* Override for modals that need full overlay */
-.fixed.inset-0, [class*="fixed inset-0"] {
-  max-width: 430px !important;
-  width: 100% !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-}
-
-/* Ensure ALL page containers respect max width */
-.page-container, 
-.h-screen, 
-.min-h-screen,
-.h-full,
-.full-height,
-[class*="h-screen"],
-[class*="min-h-screen"] {
-  max-width: 430px !important;
-  width: 100% !important;
-  margin-left: auto !important;
-  margin-right: auto !important;
-}
-
-/* Page animation classes */
-.page-fade-in,
-.page-slide-up,
-.page-slide-in-right,
-.page-fade-slide-in {
-  max-width: 430px !important;
-  width: 100% !important;
-  margin-left: auto !important;
-  margin-right: auto !important;
+  background-color: #126987;
 }

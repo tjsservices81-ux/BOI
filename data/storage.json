@@ -382,7 +382,7 @@
         "pin": "",
         "name": "Seamus Harty",
         "email": "seamusharty2277@gmail.com",
-        "phone": "+447448023318",
+        "phone": "+447404933706",
         "address": null,
         "dateOfBirth": "1994-03-09",
         "joinDate": "Member since 2018",
@@ -1743,8 +1743,8 @@
         "name": "Ryan Bergin",
         "email": "ryanbergin47@gmail.com",
         "phone": "0851244725",
-        "address": "8 millwood park, Raheny, Dublin 5, Ireland",
-        "dateOfBirth": "1994-08-17",
+        "address": null,
+        "dateOfBirth": null,
         "joinDate": "2022-05-15T21:08:37.399Z",
         "currency": "EUR",
         "dateCreated": "2025-11-15T21:08:37.287Z",
@@ -2406,9 +2406,9 @@
         "name": "Joe dunn",
         "email": "joedunn2020@gmail.com",
         "phone": "07594790181",
-        "address": "9 hall land swords Dublin d1179",
+        "address": "4 hill road Dublin d142232",
         "dateOfBirth": "1990-08-20",
-        "joinDate": "2023-12-01T09:05:34.426Z",
+        "joinDate": "2024-12-01T09:05:34.426Z",
         "currency": "EUR",
         "dateCreated": "2025-12-01T09:05:34.384Z",
         "isDisabled": false
@@ -2426,7 +2426,7 @@
         "address": null,
         "dateOfBirth": null,
         "joinDate": "Member since 2018",
-        "currency": "EUR",
+        "currency": "GBP",
         "dateCreated": "2025-12-01T15:17:22.345Z",
         "isDisabled": false
       }
@@ -2595,43 +2595,9 @@
         "phone": "+25846166488488",
         "address": null,
         "dateOfBirth": null,
-        "joinDate": "2025-12-02T10:47:13.163Z",
-        "currency": "GBP",
-        "dateCreated": "2025-12-02T10:47:13.123Z",
-        "isDisabled": false
-      }
-    ],
-    [
-      340,
-      {
-        "id": 340,
-        "customerNumber": "31881359",
-        "pin": "",
-        "name": "Glen Murphy",
-        "email": "glenm090@gmail.com",
-        "phone": "0892039574",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "2025-12-02T14:07:46.807Z",
-        "currency": "EUR",
-        "dateCreated": "2025-12-02T14:07:46.765Z",
-        "isDisabled": false
-      }
-    ],
-    [
-      341,
-      {
-        "id": 341,
-        "customerNumber": "30902520",
-        "pin": "",
-        "name": "Harry Flowe",
-        "email": "harryflowe@gmail.com",
-        "phone": "07453786489",
-        "address": null,
-        "dateOfBirth": null,
         "joinDate": "Member since 2018",
         "currency": "EUR",
-        "dateCreated": "2025-12-02T19:35:39.769Z",
+        "dateCreated": "2025-12-02T10:47:13.123Z",
         "isDisabled": false
       }
     ]
@@ -14842,7 +14808,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 342,
+    "currentUserId": 340,
     "currentAccountId": 129,
     "currentTransactionId": 500,
     "currentPayeeId": 1,
