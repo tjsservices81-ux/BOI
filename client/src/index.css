@@ -2520,3 +2520,26 @@ html, body {
   background-color: white !important;
   margin: 0 auto !important;
 }
+
+/* Fix all fixed/absolute positioned elements to stay within app bounds */
+.fixed, [class*="fixed"] {
+  max-width: 430px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  right: auto !important;
+}
+
+/* Override for modals that need full overlay */
+.fixed.inset-0, [class*="fixed inset-0"] {
+  max-width: 430px !important;
+  width: 100% !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+}
+
+/* Ensure page containers respect max width */
+.page-container, .h-screen {
+  max-width: 430px !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+}
