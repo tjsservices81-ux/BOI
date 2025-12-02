@@ -398,9 +398,40 @@ export default function TransactionHistoryWorking() {
   };
 
   useEffect(() => {
-    const loadData = () => {
+    const loadData = async () => {
       UserDataManager.clearCache('bankTransactions');
       UserDataManager.clearCache('bankAccounts');
+      
+      // Fetch transactions from database to get any credit transactions from internal transfers
+      try {
+        const response = await fetch(`/api/transactions/${accountId}`, {
+          credentials: 'include'
+        });
+        
+        if (response.ok) {
+          const dbTransactions = await response.json();
+          
+          // Get local storage transactions
+          const storedTransactions = UserDataManager.getUserData('bankTransactions', []) || [];
+          
+          // Create a map of existing transaction IDs for quick lookup
+          const existingTxIds = new Set(storedTransactions.map((tx: any) => String(tx.id)));
+          
+          // Add database transactions that don't exist in local storage
+          // This includes credit transactions from internal transfers
+          const newTransactions = dbTransactions.filter((dbTx: any) => 
+            !existingTxIds.has(String(dbTx.id))
+          );
+          
+          if (newTransactions.length > 0) {
+            console.log(`📥 Synced ${newTransactions.length} new transactions from database (includes internal transfer credits)`);
+            const mergedTransactions = [...storedTransactions, ...newTransactions];
+            UserDataManager.setUserData('bankTransactions', mergedTransactions);
+          }
+        }
+      } catch (error) {
+        console.log('Could not sync transactions from database:', error);
+      }
       
       const storedTransactions = UserDataManager.getUserData('bankTransactions', []) || [];
       
