@@ -1273,6 +1273,217 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Lookup account by sort code and account number (for UK internal transfers)
+  app.post("/api/lookup-account/uk", requireAuth, async (req, res) => {
+    try {
+      const { sortCode, accountNumber } = req.body;
+      
+      if (!sortCode || !accountNumber) {
+        return res.status(400).json({ message: "Sort code and account number are required" });
+      }
+      
+      const account = await storage.getAccountBySortCodeAndNumber(sortCode, accountNumber);
+      
+      if (account) {
+        // Get account owner info
+        const owner = await storage.getUserById(account.userId);
+        
+        res.json({
+          found: true,
+          isInternal: true,
+          accountId: account.id,
+          accountType: account.accountType,
+          displayName: account.displayName,
+          ownerName: owner?.name || 'Unknown',
+          message: "Internal BOI account found"
+        });
+      } else {
+        res.json({
+          found: false,
+          isInternal: false,
+          message: "External account - standard transfer"
+        });
+      }
+    } catch (error) {
+      console.error('Error looking up UK account:', error);
+      res.status(500).json({ message: "Failed to lookup account" });
+    }
+  });
+
+  // Lookup account by BIC and IBAN (for SEPA internal transfers)
+  app.post("/api/lookup-account/sepa", requireAuth, async (req, res) => {
+    try {
+      const { bic, iban } = req.body;
+      
+      if (!bic || !iban) {
+        return res.status(400).json({ message: "BIC and IBAN are required" });
+      }
+      
+      const account = await storage.getAccountByBicAndIban(bic, iban);
+      
+      if (account) {
+        // Get account owner info
+        const owner = await storage.getUserById(account.userId);
+        
+        res.json({
+          found: true,
+          isInternal: true,
+          accountId: account.id,
+          accountType: account.accountType,
+          displayName: account.displayName,
+          ownerName: owner?.name || 'Unknown',
+          message: "Internal BOI account found"
+        });
+      } else {
+        res.json({
+          found: false,
+          isInternal: false,
+          message: "External account - standard SEPA transfer"
+        });
+      }
+    } catch (error) {
+      console.error('Error looking up SEPA account:', error);
+      res.status(500).json({ message: "Failed to lookup account" });
+    }
+  });
+
+  // Process internal transfer between BOI customers
+  app.post("/api/internal-transfer", requireAuth, async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      if (!sessionUser) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      
+      // Check if sender customer exists (deleted customer check)
+      const senderCustomerExists = await checkCustomerExists(sessionUser.customerNumber);
+      if (!senderCustomerExists) {
+        console.log(`🚫 DELETED CUSTOMER ATTEMPT: ${sessionUser.customerNumber} tried to make internal transfer`);
+        return res.status(403).json({ message: "Account access revoked" });
+      }
+      
+      const { 
+        fromAccountId, 
+        toAccountId, 
+        amount, 
+        reference, 
+        recipientName,
+        transferType // 'uk' or 'sepa'
+      } = req.body;
+      
+      // Validate required fields
+      if (!fromAccountId || !toAccountId || !amount) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+      
+      // Validate amount is a positive number
+      const numericAmount = parseFloat(amount);
+      if (isNaN(numericAmount) || numericAmount <= 0) {
+        return res.status(400).json({ message: "Invalid amount - must be a positive number" });
+      }
+      
+      // Prevent transfers to same account
+      if (fromAccountId === toAccountId) {
+        return res.status(400).json({ message: "Cannot transfer to the same account" });
+      }
+      
+      // Get sender's account
+      const senderAccount = await storage.getAccountById(parseInt(fromAccountId));
+      if (!senderAccount) {
+        return res.status(404).json({ message: "Sender account not found" });
+      }
+      
+      // Verify sender owns the account
+      if (senderAccount.userId !== sessionUser.id) {
+        return res.status(403).json({ message: "You don't own this account" });
+      }
+      
+      // Check sufficient funds
+      const senderBalance = parseFloat(senderAccount.balance);
+      if (numericAmount > senderBalance) {
+        return res.status(400).json({ message: "Insufficient funds" });
+      }
+      
+      // Get recipient's account
+      const recipientAccount = await storage.getAccountById(parseInt(toAccountId));
+      if (!recipientAccount) {
+        return res.status(404).json({ message: "Recipient account not found" });
+      }
+      
+      // Verify recipient customer exists (not soft-deleted)
+      const recipientUser = await storage.getUserById(recipientAccount.userId);
+      if (recipientUser) {
+        const recipientCustomerExists = await checkCustomerExists(recipientUser.customerNumber);
+        if (!recipientCustomerExists) {
+          return res.status(400).json({ message: "Recipient account is not active" });
+        }
+      }
+      
+      const recipientFullName = recipientName || recipientUser?.name || 'Unknown';
+      
+      // Generate transaction reference
+      const transactionRef = reference || `INT${Date.now()}_${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+      const paymentMethod = transferType === 'sepa' ? 'SEPA Transfer' : 'UK Transfer';
+      
+      // Create debit transaction for sender
+      const debitTransaction = await storage.createTransaction({
+        accountId: fromAccountId,
+        amount: `-${numericAmount.toFixed(2)}`,
+        description: `Transfer to ${recipientFullName}`,
+        category: "transfer",
+        type: "debit",
+        paymentMethod: paymentMethod,
+        reference: transactionRef,
+        recipientName: recipientFullName,
+        recipientAccountNumber: recipientAccount.accountNumber,
+        recipientSortCode: recipientAccount.sortCode,
+        recipientIban: recipientAccount.iban,
+        timestamp: new Date()
+      });
+      
+      // Create credit transaction for recipient
+      const senderUser = await storage.getUserById(senderAccount.userId);
+      const senderName = senderUser?.name || 'Unknown';
+      
+      const creditTransaction = await storage.createTransaction({
+        accountId: toAccountId,
+        amount: `+${numericAmount.toFixed(2)}`,
+        description: `Transfer from ${senderName}`,
+        category: "transfer",
+        type: "credit",
+        paymentMethod: paymentMethod,
+        reference: transactionRef,
+        recipientName: senderName,
+        recipientAccountNumber: senderAccount.accountNumber,
+        recipientSortCode: senderAccount.sortCode,
+        recipientIban: senderAccount.iban,
+        timestamp: new Date()
+      });
+      
+      // Update sender's balance
+      const newSenderBalance = (senderBalance - numericAmount).toFixed(2);
+      await storage.updateAccountBalance(fromAccountId, newSenderBalance);
+      
+      // Update recipient's balance
+      const recipientBalance = parseFloat(recipientAccount.balance);
+      const newRecipientBalance = (recipientBalance + numericAmount).toFixed(2);
+      await storage.updateAccountBalance(toAccountId, newRecipientBalance);
+      
+      console.log(`💸 Internal transfer completed: ${senderName} → ${recipientFullName}, Amount: ${numericAmount.toFixed(2)}`);
+      
+      res.json({
+        success: true,
+        message: "Internal transfer completed successfully",
+        transaction: debitTransaction,
+        reference: transactionRef,
+        newBalance: newSenderBalance
+      });
+    } catch (error) {
+      console.error('Error processing internal transfer:', error);
+      res.status(500).json({ message: "Failed to process internal transfer" });
+    }
+  });
+
   // Get payees
   app.get("/api/payees/:userId", async (req, res) => {
     try {

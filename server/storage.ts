@@ -26,6 +26,8 @@ export interface IStorage {
   // Account operations
   getAccountsByUserId(userId: number): Promise<Account[]>;
   getAccountById(accountId: number): Promise<Account | undefined>;
+  getAccountBySortCodeAndNumber(sortCode: string, accountNumber: string): Promise<Account | undefined>;
+  getAccountByBicAndIban(bic: string, iban: string): Promise<Account | undefined>;
   getAllAccounts(): Promise<Account[]>;
   createAccount(account: InsertAccount): Promise<Account>;
   updateAccountBalance(accountId: number, newBalance: string): Promise<void>;
@@ -654,6 +656,89 @@ class MemStorage implements IStorage {
 
   async getAccountById(accountId: number): Promise<Account | undefined> {
     return this.accounts.get(accountId);
+  }
+
+  async getAccountBySortCodeAndNumber(sortCode: string, accountNumber: string): Promise<Account | undefined> {
+    // Normalize sort code (remove dashes and spaces)
+    const normalizedSortCode = sortCode.replace(/[-\s]/g, '');
+    
+    // Search through all accounts
+    for (const account of this.accounts.values()) {
+      const accSortCode = account.sortCode?.replace(/[-\s]/g, '') || '';
+      if (accSortCode === normalizedSortCode && account.accountNumber === accountNumber) {
+        return account;
+      }
+    }
+    
+    // Also try to find in PostgreSQL if not in memory
+    try {
+      const { db } = await import('./db');
+      const allAccounts = await db.select().from(accounts);
+      
+      for (const acc of allAccounts) {
+        const accSortCode = acc.sortCode?.replace(/[-\s]/g, '') || '';
+        if (accSortCode === normalizedSortCode && acc.accountNumber === accountNumber) {
+          return {
+            id: acc.id,
+            userId: acc.userId,
+            accountType: acc.accountType,
+            accountNumber: acc.accountNumber,
+            sortCode: acc.sortCode,
+            bic: acc.bic || 'BOFIIE2D',
+            iban: acc.iban || null,
+            balance: acc.balance,
+            displayName: acc.displayName
+          };
+        }
+      }
+    } catch (error) {
+      console.error('Error searching accounts by sort code:', error);
+    }
+    
+    return undefined;
+  }
+
+  async getAccountByBicAndIban(bic: string, iban: string): Promise<Account | undefined> {
+    // Normalize IBAN (remove spaces)
+    const normalizedIban = iban.replace(/\s/g, '').toUpperCase();
+    const normalizedBic = bic.replace(/\s/g, '').toUpperCase();
+    
+    // Search through all accounts
+    for (const account of this.accounts.values()) {
+      const accIban = account.iban?.replace(/\s/g, '').toUpperCase() || '';
+      const accBic = account.bic?.replace(/\s/g, '').toUpperCase() || '';
+      if (accIban === normalizedIban && accBic === normalizedBic) {
+        return account;
+      }
+    }
+    
+    // Also try to find in PostgreSQL if not in memory
+    try {
+      const { db } = await import('./db');
+      const allAccounts = await db.select().from(accounts);
+      
+      for (const acc of allAccounts) {
+        const accIban = acc.iban?.replace(/\s/g, '').toUpperCase() || '';
+        const accBic = acc.bic?.replace(/\s/g, '').toUpperCase() || '';
+        if (accIban === normalizedIban && accBic === normalizedBic) {
+          return {
+            id: acc.id,
+            userId: acc.userId,
+            accountType: acc.accountType,
+            accountNumber: acc.accountNumber,
+            sortCode: acc.sortCode,
+            bic: acc.bic || 'BOFIIE2D',
+            iban: acc.iban || null,
+            balance: acc.balance,
+            displayName: acc.displayName
+          };
+        }
+      }
+    } catch (error) {
+      console.error('Error searching accounts by BIC/IBAN:', error);
+    }
+    
+    return undefined;
   }
 
   async getAllAccounts(): Promise<Account[]> {

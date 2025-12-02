@@ -380,37 +380,122 @@ export default function UkTransfer() {
           // Process the transfer asynchronously
           setTimeout(async () => {
             try {
-              const transferSuccess = await processConfirmedTransfer(
-                `UK_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-                formData.fromAccount,
-                parseFloat(formData.amount),
-                formData.recipientName,
-                'UK',
-                transferReference,
-                exchangeRate,
-                {
-                  accountNumber: formData.accountNumber,
-                  sortCode: formData.sortCode
-                },
-                formData.recipientEmail
-              );
+              // First check if this is an internal BOI transfer
+              const lookupResponse = await fetch('/api/lookup-account/uk', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                  sortCode: formData.sortCode,
+                  accountNumber: formData.accountNumber
+                })
+              });
               
-              if (transferSuccess) {
-                // Add successful payee to recent payees
-                const payee = {
-                  name: formData.recipientName,
-                  accountInfo: `${formatSortCode(formData.sortCode)} ${formData.accountNumber}`,
-                  transferType: 'UK Transfer',
-                  reference: formData.reference || '',
-                  timestamp: new Date().toISOString()
-                };
-                UserDataManager.addRecentPayee(payee);
+              const lookupResult = await lookupResponse.json();
+              
+              if (lookupResult.found && lookupResult.isInternal) {
+                // Internal BOI transfer - use internal transfer API
+                console.log('Internal BOI transfer detected:', lookupResult);
                 
-                // Dispatch events to update all components
-                window.dispatchEvent(new CustomEvent('transactionUpdate'));
-                window.dispatchEvent(new CustomEvent('balanceUpdate'));
+                const internalResponse = await fetch('/api/internal-transfer', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  credentials: 'include',
+                  body: JSON.stringify({
+                    fromAccountId: parseInt(formData.fromAccount),
+                    toAccountId: lookupResult.accountId,
+                    amount: formData.amount,
+                    reference: transferReference,
+                    recipientName: formData.recipientName,
+                    transferType: 'uk'
+                  })
+                });
                 
-                setShowReference(true);
+                const internalResult = await internalResponse.json();
+                
+                if (internalResult.success) {
+                  // Update local storage with new balance
+                  const currentAccounts = UserDataManager.getUserData('bankAccounts', []) || [];
+                  const updatedAccounts = currentAccounts.map((acc: any) => {
+                    if (acc.id.toString() === formData.fromAccount) {
+                      return { ...acc, balance: internalResult.newBalance };
+                    }
+                    return acc;
+                  });
+                  UserDataManager.setUserData('bankAccounts', updatedAccounts);
+                  
+                  // Add transaction to local storage
+                  const currentTransactions = UserDataManager.getUserData('bankTransactions', []) || [];
+                  const newTransaction = {
+                    id: internalResult.transaction?.id || Date.now(),
+                    accountId: parseInt(formData.fromAccount),
+                    amount: `-${formData.amount}`,
+                    description: `Transfer to ${formData.recipientName}`,
+                    category: 'transfer',
+                    type: 'debit',
+                    paymentMethod: 'UK Transfer',
+                    reference: internalResult.reference,
+                    recipientName: formData.recipientName,
+                    recipientAccountNumber: formData.accountNumber,
+                    recipientSortCode: formData.sortCode,
+                    timestamp: new Date().toISOString(),
+                    isInternalTransfer: true
+                  };
+                  UserDataManager.setUserData('bankTransactions', [...currentTransactions, newTransaction]);
+                  
+                  // Add successful payee to recent payees
+                  const payee = {
+                    name: formData.recipientName,
+                    accountInfo: `${formatSortCode(formData.sortCode)} ${formData.accountNumber}`,
+                    transferType: 'UK Transfer',
+                    reference: formData.reference || '',
+                    timestamp: new Date().toISOString()
+                  };
+                  UserDataManager.addRecentPayee(payee);
+                  
+                  // Dispatch events to update all components
+                  window.dispatchEvent(new CustomEvent('transactionUpdate'));
+                  window.dispatchEvent(new CustomEvent('balanceUpdate'));
+                  window.dispatchEvent(new CustomEvent('accountsUpdate', { detail: { accounts: updatedAccounts } }));
+                  
+                  setShowReference(true);
+                } else {
+                  console.error('Internal transfer failed:', internalResult.message);
+                }
+              } else {
+                // External transfer - use standard transfer processing
+                const transferSuccess = await processConfirmedTransfer(
+                  `UK_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                  formData.fromAccount,
+                  parseFloat(formData.amount),
+                  formData.recipientName,
+                  'UK',
+                  transferReference,
+                  exchangeRate,
+                  {
+                    accountNumber: formData.accountNumber,
+                    sortCode: formData.sortCode
+                  },
+                  formData.recipientEmail
+                );
+                
+                if (transferSuccess) {
+                  // Add successful payee to recent payees
+                  const payee = {
+                    name: formData.recipientName,
+                    accountInfo: `${formatSortCode(formData.sortCode)} ${formData.accountNumber}`,
+                    transferType: 'UK Transfer',
+                    reference: formData.reference || '',
+                    timestamp: new Date().toISOString()
+                  };
+                  UserDataManager.addRecentPayee(payee);
+                  
+                  // Dispatch events to update all components
+                  window.dispatchEvent(new CustomEvent('transactionUpdate'));
+                  window.dispatchEvent(new CustomEvent('balanceUpdate'));
+                  
+                  setShowReference(true);
+                }
               }
             } catch (error) {
               console.error('Transfer processing failed:', error);

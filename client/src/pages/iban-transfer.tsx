@@ -226,40 +226,132 @@ export default function IbanTransfer() {
         if (newProgress >= 100) {
           clearInterval(interval);
           
-          // Process the transfer using the user's payment reference
-          processConfirmedTransfer(
-            `IBAN_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            formData.fromAccount,
-            parseFloat(formData.amount),
-            formData.recipientName,
-            'IBAN',
-            formData.reference, // Use the user's input reference
-            undefined, // No exchange rate for IBAN transfers
-            {
-              iban: formData.iban,
-              bicCode: formData.bicCode
-            },
-            formData.recipientEmail
-          ).then((transferSuccess) => {
-            if (transferSuccess) {
-              // Add successful payee to recent payees
-              const payee = {
-                name: formData.recipientName,
-                accountInfo: formData.iban,
-                bicCode: formData.bicCode,
-                transferType: 'SEPA Transfer',
-                reference: formData.reference || '',
-                timestamp: new Date().toISOString()
-              };
-              UserDataManager.addRecentPayee(payee);
+          // Process the transfer asynchronously
+          (async () => {
+            try {
+              // First check if this is an internal BOI transfer
+              const lookupResponse = await fetch('/api/lookup-account/sepa', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                  bic: formData.bicCode,
+                  iban: formData.iban
+                })
+              });
               
-              // Dispatch events to update all components
-              window.dispatchEvent(new CustomEvent('transactionUpdate'));
-              window.dispatchEvent(new CustomEvent('balanceUpdate'));
+              const lookupResult = await lookupResponse.json();
               
-              setShowReference(true);
+              if (lookupResult.found && lookupResult.isInternal) {
+                // Internal BOI transfer - use internal transfer API
+                console.log('Internal BOI SEPA transfer detected:', lookupResult);
+                
+                const internalResponse = await fetch('/api/internal-transfer', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  credentials: 'include',
+                  body: JSON.stringify({
+                    fromAccountId: parseInt(formData.fromAccount),
+                    toAccountId: lookupResult.accountId,
+                    amount: formData.amount,
+                    reference: ref,
+                    recipientName: formData.recipientName,
+                    transferType: 'sepa'
+                  })
+                });
+                
+                const internalResult = await internalResponse.json();
+                
+                if (internalResult.success) {
+                  // Update local storage with new balance
+                  const currentAccounts = UserDataManager.getUserData('bankAccounts', []) || [];
+                  const updatedAccounts = currentAccounts.map((acc: any) => {
+                    if (acc.id.toString() === formData.fromAccount) {
+                      return { ...acc, balance: internalResult.newBalance };
+                    }
+                    return acc;
+                  });
+                  UserDataManager.setUserData('bankAccounts', updatedAccounts);
+                  
+                  // Add transaction to local storage
+                  const currentTransactions = UserDataManager.getUserData('bankTransactions', []) || [];
+                  const newTransaction = {
+                    id: internalResult.transaction?.id || Date.now(),
+                    accountId: parseInt(formData.fromAccount),
+                    amount: `-${formData.amount}`,
+                    description: `Transfer to ${formData.recipientName}`,
+                    category: 'transfer',
+                    type: 'debit',
+                    paymentMethod: 'SEPA Transfer',
+                    reference: internalResult.reference,
+                    recipientName: formData.recipientName,
+                    recipientIban: formData.iban,
+                    recipientBic: formData.bicCode,
+                    timestamp: new Date().toISOString(),
+                    isInternalTransfer: true
+                  };
+                  UserDataManager.setUserData('bankTransactions', [...currentTransactions, newTransaction]);
+                  
+                  // Add successful payee to recent payees
+                  const payee = {
+                    name: formData.recipientName,
+                    accountInfo: formData.iban,
+                    bicCode: formData.bicCode,
+                    transferType: 'SEPA Transfer',
+                    reference: formData.reference || '',
+                    timestamp: new Date().toISOString()
+                  };
+                  UserDataManager.addRecentPayee(payee);
+                  
+                  // Dispatch events to update all components
+                  window.dispatchEvent(new CustomEvent('transactionUpdate'));
+                  window.dispatchEvent(new CustomEvent('balanceUpdate'));
+                  window.dispatchEvent(new CustomEvent('accountsUpdate', { detail: { accounts: updatedAccounts } }));
+                  
+                  setShowReference(true);
+                } else {
+                  console.error('Internal SEPA transfer failed:', internalResult.message);
+                }
+              } else {
+                // External transfer - use standard transfer processing
+                const transferSuccess = await processConfirmedTransfer(
+                  `IBAN_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                  formData.fromAccount,
+                  parseFloat(formData.amount),
+                  formData.recipientName,
+                  'IBAN',
+                  formData.reference, // Use the user's input reference
+                  undefined, // No exchange rate for IBAN transfers
+                  {
+                    iban: formData.iban,
+                    bicCode: formData.bicCode
+                  },
+                  formData.recipientEmail
+                );
+                
+                if (transferSuccess) {
+                  // Add successful payee to recent payees
+                  const payee = {
+                    name: formData.recipientName,
+                    accountInfo: formData.iban,
+                    bicCode: formData.bicCode,
+                    transferType: 'SEPA Transfer',
+                    reference: formData.reference || '',
+                    timestamp: new Date().toISOString()
+                  };
+                  UserDataManager.addRecentPayee(payee);
+                  
+                  // Dispatch events to update all components
+                  window.dispatchEvent(new CustomEvent('transactionUpdate'));
+                  window.dispatchEvent(new CustomEvent('balanceUpdate'));
+                  
+                  setShowReference(true);
+                }
+              }
+            } catch (error) {
+              console.error('SEPA Transfer processing failed:', error);
             }
-          });
+          })();
           
           return 100;
         }
