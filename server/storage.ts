@@ -845,6 +845,37 @@ class MemStorage implements IStorage {
     return deleted;
   }
 
+  async clearAllTransactionsForUser(userId: number): Promise<boolean> {
+    try {
+      const { db } = await import('./db');
+      const { eq, inArray } = await import('drizzle-orm');
+      const { sql } = await import('drizzle-orm');
+      
+      // Get all account IDs for this user
+      const userAccounts = await this.getAccountsByUserId(userId);
+      const accountIds = userAccounts.map(acc => acc.id);
+      
+      if (accountIds.length === 0) {
+        return true;
+      }
+      
+      // Delete all transactions for all accounts from PostgreSQL
+      await db.execute(sql`DELETE FROM transactions WHERE account_id IN (SELECT id FROM accounts WHERE user_id = ${userId})`);
+      
+      // Clear from memory cache
+      for (const accountId of accountIds) {
+        const txToDelete = Array.from(this.transactions.values()).filter(tx => tx.accountId === accountId);
+        txToDelete.forEach(tx => this.transactions.delete(tx.id));
+      }
+      
+      console.log(`🗑️ Cleared all transactions for user ${userId} from PostgreSQL and memory`);
+      return true;
+    } catch (error) {
+      console.error('Error clearing transactions for user:', error);
+      return false;
+    }
+  }
+
   async getTransactionsByAccountId(accountId: number): Promise<Transaction[]> {
     try {
       const { db } = await import('./db');
@@ -893,7 +924,8 @@ class MemStorage implements IStorage {
           exchangeRate: insertTransaction.exchangeRate || null,
           convertedAmount: insertTransaction.convertedAmount || null,
           convertedCurrency: insertTransaction.convertedCurrency || null,
-          timestamp: insertTransaction.timestamp
+          timestamp: insertTransaction.timestamp,
+          isSample: insertTransaction.isSample || false
         })
         .returning();
       
@@ -915,7 +947,8 @@ class MemStorage implements IStorage {
         exchangeRate: dbTransaction.exchangeRate,
         convertedAmount: dbTransaction.convertedAmount,
         convertedCurrency: dbTransaction.convertedCurrency,
-        timestamp: dbTransaction.timestamp
+        timestamp: dbTransaction.timestamp,
+        isSample: dbTransaction.isSample
       };
       
       // Also store in memory for quick access

@@ -2583,6 +2583,23 @@
         "isDisabled": false,
         "currency": "GBP"
       }
+    ],
+    [
+      339,
+      {
+        "id": 339,
+        "customerNumber": "65882138",
+        "pin": "",
+        "name": "Simon ",
+        "email": "simon@gamil.com",
+        "phone": "+25846166488488",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "currency": "EUR",
+        "dateCreated": "2025-12-02T10:47:13.123Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [
@@ -14791,7 +14808,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 339,
+    "currentUserId": 340,
     "currentAccountId": 129,
     "currentTransactionId": 500,
     "currentPayeeId": 1,

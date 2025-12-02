@@ -1438,7 +1438,7 @@ export default function TransactionHistoryWorking() {
                     marginBottom: '4px', 
                     lineHeight: 1.25
                   }}>
-                    {transaction.iban || transaction.recipientAccountNumber || transaction.reference || `${transaction.id}`}
+                    {transaction.id}
                   </p>
                   <p style={{ 
                     fontSize: '14px', 
@@ -2029,7 +2029,14 @@ export default function TransactionHistoryWorking() {
                   </div>
                 )}
 
-                {selectedTransaction.paymentMethod && selectedTransaction.paymentMethod !== 'Manual Entry' && showTransferConfirmation && (
+                {selectedTransaction.paymentMethod && 
+                 selectedTransaction.paymentMethod !== 'Manual Entry' && 
+                 !selectedTransaction.isSample &&
+                 (selectedTransaction.confirmationPdfData || 
+                  selectedTransaction.paymentMethod === 'UK Transfer' || 
+                  selectedTransaction.paymentMethod === 'IBAN Transfer' || 
+                  selectedTransaction.paymentMethod === 'SEPA Transfer') &&
+                 showTransferConfirmation && (
                   <div className="border-t border-gray-200 pt-6 mt-6">
                     <button
                       onClick={handleOpenTransferConfirmation}

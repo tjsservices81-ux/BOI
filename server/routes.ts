@@ -1034,6 +1034,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Clear all transactions for the authenticated user (reset to defaults)
+  app.delete("/api/transactions/clear-all", requireAuth, async (req, res) => {
+    try {
+      const sessionUser = (req as any).user;
+      
+      if (!sessionUser) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      
+      // Clear all transactions for this user from database
+      const cleared = await storage.clearAllTransactionsForUser(sessionUser.id);
+      
+      if (cleared) {
+        console.log(`🗑️ All transactions cleared for user ${sessionUser.customerNumber} (ID: ${sessionUser.id})`);
+        res.json({ 
+          success: true, 
+          message: "All transactions cleared successfully" 
+        });
+      } else {
+        res.status(500).json({ message: "Failed to clear transactions" });
+      }
+    } catch (error) {
+      console.error('Error clearing transactions:', error);
+      res.status(500).json({ message: "Failed to clear transactions" });
+    }
+  });
+
   // Delete an account
   app.delete("/api/accounts/:accountId", requireAuth, async (req, res) => {
     try {

@@ -53,6 +53,7 @@ export const transactions = pgTable("transactions", {
   convertedAmount: decimal("converted_amount", { precision: 10, scale: 2 }),
   convertedCurrency: text("converted_currency"),
   timestamp: timestamp("timestamp").notNull(),
+  isSample: boolean("is_sample").default(false),
 });
 
 export const payees = pgTable("payees", {
