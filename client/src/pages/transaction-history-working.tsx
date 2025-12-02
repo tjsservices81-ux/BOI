@@ -402,9 +402,10 @@ export default function TransactionHistoryWorking() {
       UserDataManager.clearCache('bankTransactions');
       UserDataManager.clearCache('bankAccounts');
       
-      let allTransactionsForAccount: any[] = [];
+      // Start with local storage transactions
+      let storedTransactions = UserDataManager.getUserData('bankTransactions', []) || [];
       
-      // Fetch transactions from server to get incoming transfers (including from other customers)
+      // Fetch ONLY new incoming transfers from server (transactions we don't have locally)
       try {
         const response = await fetch(`/api/transactions/${accountId}`, {
           credentials: 'include'
@@ -412,34 +413,33 @@ export default function TransactionHistoryWorking() {
         
         if (response.ok) {
           const serverTransactions = await response.json();
-          console.log('📥 Fetched transactions from server for account', accountId, ':', serverTransactions.length);
           
-          // Server transactions are the source of truth for this account
-          allTransactionsForAccount = serverTransactions;
+          // Get existing transaction IDs for this account
+          const existingIds = new Set(storedTransactions.map((tx: any) => tx.id));
           
-          // Also update local storage with server data for this account
-          const storedTransactions = UserDataManager.getUserData('bankTransactions', []) || [];
-          
-          // Remove old transactions for this account and add fresh server data
-          const otherAccountTransactions = storedTransactions.filter((tx: any) => 
-            String(tx.accountId) !== String(accountId)
+          // Find only NEW transactions from server (incoming transfers from other customers)
+          const newIncomingTransfers = serverTransactions.filter((tx: any) => 
+            !existingIds.has(tx.id)
           );
           
-          const mergedTransactions = [...otherAccountTransactions, ...serverTransactions];
-          UserDataManager.setUserData('bankTransactions', mergedTransactions);
-          console.log('💾 Updated local storage with', serverTransactions.length, 'transactions for account', accountId);
+          if (newIncomingTransfers.length > 0) {
+            console.log('📥 Found', newIncomingTransfers.length, 'new incoming transfer(s) for account', accountId);
+            // Add only the new incoming transfers to local storage
+            storedTransactions = [...storedTransactions, ...newIncomingTransfers];
+            UserDataManager.setUserData('bankTransactions', storedTransactions);
+          }
         }
       } catch (error) {
-        console.log('Could not fetch server transactions, using local data:', error);
-        // Fallback to local storage if server fetch fails
-        const storedTransactions = UserDataManager.getUserData('bankTransactions', []) || [];
-        allTransactionsForAccount = storedTransactions.filter((tx: any) => 
-          String(tx.accountId) === String(accountId)
-        );
+        console.log('Could not check for incoming transfers:', error);
       }
       
+      // Filter transactions for this account
+      const accountTransactions = storedTransactions.filter((tx: any) => 
+        String(tx.accountId) === String(accountId)
+      );
+      
       // Apply UK Transfer exchange rate if missing
-      const updatedTransactions = allTransactionsForAccount.map((tx: any) => {
+      const updatedTransactions = accountTransactions.map((tx: any) => {
         if (tx.paymentMethod === 'UK Transfer' && !tx.exchangeRate) {
           const amount = parseFloat(String(tx.amount).replace('-', '').replace('+', ''));
           const sampleRate = 0.8456;
@@ -453,11 +453,9 @@ export default function TransactionHistoryWorking() {
         return tx;
       });
       
-      console.log('📊 Displaying transactions for account', accountId, ':', updatedTransactions.length);
-      
       setUserCurrency(getUserCurrency());
       
-      // Also fetch updated account balance from server
+      // Fetch updated account balance from server
       try {
         const accountsResponse = await fetch('/api/accounts', { credentials: 'include' });
         if (accountsResponse.ok) {
@@ -484,7 +482,6 @@ export default function TransactionHistoryWorking() {
           if (currentAccount) {
             setBalance(currentAccount.balance || '0.00');
             setAccountInfo(currentAccount);
-            console.log('💰 Updated balance from server:', currentAccount.balance);
           } else {
             console.log('Account not found, redirecting to dashboard');
             setLocation('/dashboard');
