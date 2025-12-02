@@ -313,8 +313,43 @@ export default function TransactionHistoryWorking() {
     
     try {
       const userData = UserDataManager.getUserProfile();
-      const allTransactions = UserDataManager.getUserData('bankTransactions', []);
-      const allAccounts = UserDataManager.getUserAccounts();
+      
+      // Fetch fresh transactions from database (same as transaction history does)
+      let allTransactions = UserDataManager.getUserData('bankTransactions', []);
+      try {
+        const txResponse = await fetch(`/api/transactions/${accountId}`, { credentials: 'include' });
+        if (txResponse.ok) {
+          const dbTransactions = await txResponse.json();
+          // Merge with local transactions
+          const existingTxIds = new Set(allTransactions.map((tx: any) => String(tx.id)));
+          const newTransactions = dbTransactions.filter((dbTx: any) => 
+            !existingTxIds.has(String(dbTx.id))
+          );
+          if (newTransactions.length > 0) {
+            allTransactions = [...allTransactions, ...newTransactions];
+            UserDataManager.setUserData('bankTransactions', allTransactions);
+          }
+          console.log(`📄 Statement: Synced ${dbTransactions.length} transactions from database`);
+        }
+      } catch (fetchError) {
+        console.log('Statement: Using cached transactions');
+      }
+      
+      // Fetch fresh accounts from database
+      let allAccounts = UserDataManager.getUserAccounts();
+      try {
+        const accResponse = await fetch('/api/accounts', { credentials: 'include' });
+        if (accResponse.ok) {
+          const dbAccounts = await accResponse.json();
+          if (dbAccounts && dbAccounts.length > 0) {
+            allAccounts = dbAccounts;
+            UserDataManager.setUserData('bankAccounts', dbAccounts);
+          }
+          console.log(`📄 Statement: Synced ${dbAccounts.length} accounts from database`);
+        }
+      } catch (fetchError) {
+        console.log('Statement: Using cached accounts');
+      }
       
       const emailsEnabled = localStorage.getItem('emailsEnabled');
       const sendEmail = emailsEnabled !== null ? JSON.parse(emailsEnabled) : true;
