@@ -402,7 +402,9 @@ export default function TransactionHistoryWorking() {
       UserDataManager.clearCache('bankTransactions');
       UserDataManager.clearCache('bankAccounts');
       
-      // Fetch transactions from server to get incoming transfers
+      let allTransactionsForAccount: any[] = [];
+      
+      // Fetch transactions from server to get incoming transfers (including from other customers)
       try {
         const response = await fetch(`/api/transactions/${accountId}`, {
           credentials: 'include'
@@ -410,32 +412,36 @@ export default function TransactionHistoryWorking() {
         
         if (response.ok) {
           const serverTransactions = await response.json();
-          console.log('Fetched transactions from server for account', accountId, ':', serverTransactions.length);
+          console.log('📥 Fetched transactions from server for account', accountId, ':', serverTransactions.length);
           
-          // Merge server transactions with local storage
+          // Server transactions are the source of truth for this account
+          allTransactionsForAccount = serverTransactions;
+          
+          // Also update local storage with server data for this account
           const storedTransactions = UserDataManager.getUserData('bankTransactions', []) || [];
           
-          // Create a map of existing transactions by ID
-          const existingIds = new Set(storedTransactions.map((tx: any) => tx.id));
+          // Remove old transactions for this account and add fresh server data
+          const otherAccountTransactions = storedTransactions.filter((tx: any) => 
+            String(tx.accountId) !== String(accountId)
+          );
           
-          // Add server transactions that don't exist locally
-          const newTransactions = serverTransactions.filter((tx: any) => !existingIds.has(tx.id));
-          
-          if (newTransactions.length > 0) {
-            console.log('Adding', newTransactions.length, 'new transactions from server');
-            const mergedTransactions = [...storedTransactions, ...newTransactions];
-            UserDataManager.setUserData('bankTransactions', mergedTransactions);
-          }
+          const mergedTransactions = [...otherAccountTransactions, ...serverTransactions];
+          UserDataManager.setUserData('bankTransactions', mergedTransactions);
+          console.log('💾 Updated local storage with', serverTransactions.length, 'transactions for account', accountId);
         }
       } catch (error) {
         console.log('Could not fetch server transactions, using local data:', error);
+        // Fallback to local storage if server fetch fails
+        const storedTransactions = UserDataManager.getUserData('bankTransactions', []) || [];
+        allTransactionsForAccount = storedTransactions.filter((tx: any) => 
+          String(tx.accountId) === String(accountId)
+        );
       }
       
-      const storedTransactions = UserDataManager.getUserData('bankTransactions', []) || [];
-      
-      const updatedTransactions = (storedTransactions || []).map((tx: any) => {
+      // Apply UK Transfer exchange rate if missing
+      const updatedTransactions = allTransactionsForAccount.map((tx: any) => {
         if (tx.paymentMethod === 'UK Transfer' && !tx.exchangeRate) {
-          const amount = parseFloat(tx.amount.replace('-', ''));
+          const amount = parseFloat(String(tx.amount).replace('-', '').replace('+', ''));
           const sampleRate = 0.8456;
           return {
             ...tx,
@@ -447,43 +453,69 @@ export default function TransactionHistoryWorking() {
         return tx;
       });
       
-      if (JSON.stringify(updatedTransactions) !== JSON.stringify(storedTransactions)) {
-        UserDataManager.setUserData('bankTransactions', updatedTransactions);
-      }
-      
-      // Filter transactions for this account (handle string/number ID mismatch)
-      const accountTransactions = updatedTransactions.filter((tx: any) => 
-        String(tx.accountId) === String(accountId)
-      );
-      console.log('Loaded transactions for account', accountId, ':', accountTransactions);
+      console.log('📊 Displaying transactions for account', accountId, ':', updatedTransactions.length);
       
       setUserCurrency(getUserCurrency());
       
-      const storedAccounts = UserDataManager.getUserData('bankAccounts', []) || [];
-      
-      if (Array.isArray(storedAccounts) && storedAccounts.length > 0) {
-        // Find current account (handle string/number ID mismatch)
-        const currentAccount = storedAccounts.find((acc: any) => 
-          String(acc.id) === String(accountId)
-        );
+      // Also fetch updated account balance from server
+      try {
+        const accountsResponse = await fetch('/api/accounts', { credentials: 'include' });
+        if (accountsResponse.ok) {
+          const serverAccounts = await accountsResponse.json();
+          const formattedAccounts = serverAccounts.map((acc: any) => ({
+            id: acc.id,
+            displayName: acc.displayName || acc.display_name || 'Current Account',
+            accountNumber: acc.accountNumber?.startsWith('****') 
+              ? acc.accountNumber 
+              : `~ ${acc.accountNumber?.slice(-4) || '0000'}`,
+            balance: acc.balance || '0.00',
+            accountType: acc.accountType || acc.account_type || 'current',
+            sortCode: acc.sortCode || acc.sort_code || '90-78-68',
+            bic: acc.bic || 'BOFIIE2D',
+            iban: acc.iban || null,
+            fullAccountNumber: acc.accountNumber || acc.account_number
+          }));
+          UserDataManager.setUserData('bankAccounts', formattedAccounts);
+          
+          const currentAccount = formattedAccounts.find((acc: any) => 
+            String(acc.id) === String(accountId)
+          );
+          
+          if (currentAccount) {
+            setBalance(currentAccount.balance || '0.00');
+            setAccountInfo(currentAccount);
+            console.log('💰 Updated balance from server:', currentAccount.balance);
+          } else {
+            console.log('Account not found, redirecting to dashboard');
+            setLocation('/dashboard');
+            return;
+          }
+        }
+      } catch (error) {
+        console.log('Could not fetch accounts from server, using local data');
+        const storedAccounts = UserDataManager.getUserData('bankAccounts', []) || [];
         
-        if (currentAccount) {
-          setBalance(currentAccount.balance || '0.00');
-          setAccountInfo(currentAccount);
+        if (Array.isArray(storedAccounts) && storedAccounts.length > 0) {
+          const currentAccount = storedAccounts.find((acc: any) => 
+            String(acc.id) === String(accountId)
+          );
+          
+          if (currentAccount) {
+            setBalance(currentAccount.balance || '0.00');
+            setAccountInfo(currentAccount);
+          } else {
+            console.log('Account not found, redirecting to dashboard');
+            setLocation('/dashboard');
+            return;
+          }
         } else {
-          // Account was deleted - redirect back to dashboard
-          console.log('Account not found, redirecting to dashboard');
+          console.log('No accounts found, redirecting to dashboard');
           setLocation('/dashboard');
           return;
         }
-      } else {
-        // No accounts - redirect to dashboard
-        console.log('No accounts found, redirecting to dashboard');
-        setLocation('/dashboard');
-        return;
       }
       
-      const formattedStored = accountTransactions.map((tx: any) => ({
+      const formattedStored = updatedTransactions.map((tx: any) => ({
         ...tx,
         id: tx.id,
         amount: tx.amount,
