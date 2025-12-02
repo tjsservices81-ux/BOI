@@ -398,50 +398,15 @@ export default function TransactionHistoryWorking() {
   };
 
   useEffect(() => {
-    const loadData = async () => {
+    const loadData = () => {
       UserDataManager.clearCache('bankTransactions');
       UserDataManager.clearCache('bankAccounts');
       
-      // Start with local storage transactions
-      let storedTransactions = UserDataManager.getUserData('bankTransactions', []) || [];
+      const storedTransactions = UserDataManager.getUserData('bankTransactions', []) || [];
       
-      // Fetch ONLY new incoming transfers from server (transactions we don't have locally)
-      try {
-        const response = await fetch(`/api/transactions/${accountId}`, {
-          credentials: 'include'
-        });
-        
-        if (response.ok) {
-          const serverTransactions = await response.json();
-          
-          // Get existing transaction IDs for this account
-          const existingIds = new Set(storedTransactions.map((tx: any) => tx.id));
-          
-          // Find only NEW transactions from server (incoming transfers from other customers)
-          const newIncomingTransfers = serverTransactions.filter((tx: any) => 
-            !existingIds.has(tx.id)
-          );
-          
-          if (newIncomingTransfers.length > 0) {
-            console.log('📥 Found', newIncomingTransfers.length, 'new incoming transfer(s) for account', accountId);
-            // Add only the new incoming transfers to local storage
-            storedTransactions = [...storedTransactions, ...newIncomingTransfers];
-            UserDataManager.setUserData('bankTransactions', storedTransactions);
-          }
-        }
-      } catch (error) {
-        console.log('Could not check for incoming transfers:', error);
-      }
-      
-      // Filter transactions for this account
-      const accountTransactions = storedTransactions.filter((tx: any) => 
-        String(tx.accountId) === String(accountId)
-      );
-      
-      // Apply UK Transfer exchange rate if missing
-      const updatedTransactions = accountTransactions.map((tx: any) => {
+      const updatedTransactions = (storedTransactions || []).map((tx: any) => {
         if (tx.paymentMethod === 'UK Transfer' && !tx.exchangeRate) {
-          const amount = parseFloat(String(tx.amount).replace('-', '').replace('+', ''));
+          const amount = parseFloat(tx.amount.replace('-', ''));
           const sampleRate = 0.8456;
           return {
             ...tx,
@@ -453,66 +418,43 @@ export default function TransactionHistoryWorking() {
         return tx;
       });
       
+      if (JSON.stringify(updatedTransactions) !== JSON.stringify(storedTransactions)) {
+        UserDataManager.setUserData('bankTransactions', updatedTransactions);
+      }
+      
+      // Filter transactions for this account (handle string/number ID mismatch)
+      const accountTransactions = updatedTransactions.filter((tx: any) => 
+        String(tx.accountId) === String(accountId)
+      );
+      console.log('Loaded transactions for account', accountId, ':', accountTransactions);
+      
       setUserCurrency(getUserCurrency());
       
-      // Fetch updated account balance from server
-      try {
-        const accountsResponse = await fetch('/api/accounts', { credentials: 'include' });
-        if (accountsResponse.ok) {
-          const serverAccounts = await accountsResponse.json();
-          const formattedAccounts = serverAccounts.map((acc: any) => ({
-            id: acc.id,
-            displayName: acc.displayName || acc.display_name || 'Current Account',
-            accountNumber: acc.accountNumber?.startsWith('****') 
-              ? acc.accountNumber 
-              : `~ ${acc.accountNumber?.slice(-4) || '0000'}`,
-            balance: acc.balance || '0.00',
-            accountType: acc.accountType || acc.account_type || 'current',
-            sortCode: acc.sortCode || acc.sort_code || '90-78-68',
-            bic: acc.bic || 'BOFIIE2D',
-            iban: acc.iban || null,
-            fullAccountNumber: acc.accountNumber || acc.account_number
-          }));
-          UserDataManager.setUserData('bankAccounts', formattedAccounts);
-          
-          const currentAccount = formattedAccounts.find((acc: any) => 
-            String(acc.id) === String(accountId)
-          );
-          
-          if (currentAccount) {
-            setBalance(currentAccount.balance || '0.00');
-            setAccountInfo(currentAccount);
-          } else {
-            console.log('Account not found, redirecting to dashboard');
-            setLocation('/dashboard');
-            return;
-          }
-        }
-      } catch (error) {
-        console.log('Could not fetch accounts from server, using local data');
-        const storedAccounts = UserDataManager.getUserData('bankAccounts', []) || [];
+      const storedAccounts = UserDataManager.getUserData('bankAccounts', []) || [];
+      
+      if (Array.isArray(storedAccounts) && storedAccounts.length > 0) {
+        // Find current account (handle string/number ID mismatch)
+        const currentAccount = storedAccounts.find((acc: any) => 
+          String(acc.id) === String(accountId)
+        );
         
-        if (Array.isArray(storedAccounts) && storedAccounts.length > 0) {
-          const currentAccount = storedAccounts.find((acc: any) => 
-            String(acc.id) === String(accountId)
-          );
-          
-          if (currentAccount) {
-            setBalance(currentAccount.balance || '0.00');
-            setAccountInfo(currentAccount);
-          } else {
-            console.log('Account not found, redirecting to dashboard');
-            setLocation('/dashboard');
-            return;
-          }
+        if (currentAccount) {
+          setBalance(currentAccount.balance || '0.00');
+          setAccountInfo(currentAccount);
         } else {
-          console.log('No accounts found, redirecting to dashboard');
+          // Account was deleted - redirect back to dashboard
+          console.log('Account not found, redirecting to dashboard');
           setLocation('/dashboard');
           return;
         }
+      } else {
+        // No accounts - redirect to dashboard
+        console.log('No accounts found, redirecting to dashboard');
+        setLocation('/dashboard');
+        return;
       }
       
-      const formattedStored = updatedTransactions.map((tx: any) => ({
+      const formattedStored = accountTransactions.map((tx: any) => ({
         ...tx,
         id: tx.id,
         amount: tx.amount,
