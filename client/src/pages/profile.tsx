@@ -2890,12 +2890,30 @@ export default function Profile() {
                       const data = await response.json();
                       
                       if (response.ok && data.success) {
-                        // Update local accounts state
-                        setAccounts(prev => prev.filter(a => a.id !== deletingAccountId));
-                        
-                        // Update localStorage
+                        // Get updated accounts first (before filtering state)
                         const updatedAccounts = accounts.filter(a => a.id !== deletingAccountId);
+                        
+                        // Update localStorage first for consistency
                         UserDataManager.setUserData('bankAccounts', updatedAccounts);
+                        UserDataManager.clearCache('bankAccounts');
+                        
+                        // Also delete transactions for this account
+                        const allTransactions = UserDataManager.getUserData('bankTransactions', []) || [];
+                        const remainingTransactions = allTransactions.filter((tx: any) => tx.accountId !== deletingAccountId);
+                        UserDataManager.setUserData('bankTransactions', remainingTransactions);
+                        UserDataManager.clearCache('bankTransactions');
+                        
+                        // Update local accounts state
+                        setAccounts(updatedAccounts);
+                        
+                        // Dispatch events to notify all components
+                        window.dispatchEvent(new CustomEvent('accountsUpdate', {
+                          detail: { accounts: updatedAccounts, source: 'accountDeleted' }
+                        }));
+                        window.dispatchEvent(new CustomEvent('balanceUpdate', {
+                          detail: { accounts: updatedAccounts }
+                        }));
+                        window.dispatchEvent(new CustomEvent('transactionUpdate'));
                         
                         showDeveloperMessage(data.message || 'Account deleted successfully');
                         setShowDeleteAccount(false);

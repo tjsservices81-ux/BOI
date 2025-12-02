@@ -70,7 +70,7 @@ export default function IbanTransfer() {
   useEffect(() => {
     const loadAccounts = () => {
       UserDataManager.clearCache('bankAccounts');
-      const userAccounts = UserDataManager.getUserData('bankAccounts', []);
+      const userAccounts = UserDataManager.getUserData('bankAccounts', []) || [];
       setAccounts(userAccounts);
       
       // Set default account selection if not already set

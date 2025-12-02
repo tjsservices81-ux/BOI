@@ -28,7 +28,7 @@ export default function BankStatements() {
 
   useEffect(() => {
     // Load user accounts
-    const userAccounts = UserDataManager.getUserData('bankAccounts', []);
+    const userAccounts = UserDataManager.getUserData('bankAccounts', []) || [];
     setAccounts(userAccounts);
     
     // Set default account if available

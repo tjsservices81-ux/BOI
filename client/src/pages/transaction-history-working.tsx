@@ -402,9 +402,9 @@ export default function TransactionHistoryWorking() {
       UserDataManager.clearCache('bankTransactions');
       UserDataManager.clearCache('bankAccounts');
       
-      const storedTransactions = UserDataManager.getUserData('bankTransactions', []);
+      const storedTransactions = UserDataManager.getUserData('bankTransactions', []) || [];
       
-      const updatedTransactions = storedTransactions.map((tx: any) => {
+      const updatedTransactions = (storedTransactions || []).map((tx: any) => {
         if (tx.paymentMethod === 'UK Transfer' && !tx.exchangeRate) {
           const amount = parseFloat(tx.amount.replace('-', ''));
           const sampleRate = 0.8456;
@@ -422,29 +422,36 @@ export default function TransactionHistoryWorking() {
         UserDataManager.setUserData('bankTransactions', updatedTransactions);
       }
       
-      const accountTransactions = updatedTransactions.filter((tx: any) => tx.accountId === accountId);
+      // Filter transactions for this account (handle string/number ID mismatch)
+      const accountTransactions = updatedTransactions.filter((tx: any) => 
+        String(tx.accountId) === String(accountId)
+      );
       console.log('Loaded transactions for account', accountId, ':', accountTransactions);
       
       setUserCurrency(getUserCurrency());
       
-      const storedAccounts = UserDataManager.getUserData('bankAccounts', []);
+      const storedAccounts = UserDataManager.getUserData('bankAccounts', []) || [];
       
       if (Array.isArray(storedAccounts) && storedAccounts.length > 0) {
-        const currentAccount = storedAccounts.find((acc: any) => acc.id === accountId);
+        // Find current account (handle string/number ID mismatch)
+        const currentAccount = storedAccounts.find((acc: any) => 
+          String(acc.id) === String(accountId)
+        );
         
         if (currentAccount) {
-          setBalance(currentAccount.balance);
+          setBalance(currentAccount.balance || '0.00');
           setAccountInfo(currentAccount);
+        } else {
+          // Account was deleted - redirect back to dashboard
+          console.log('Account not found, redirecting to dashboard');
+          setLocation('/dashboard');
+          return;
         }
       } else {
-        setBalance('0.00');
-        setAccountInfo({
-          id: accountId,
-          displayName: accountId === 1 ? "Current Account" : accountId === 2 ? "Credit Card" : "Savings Account",
-          accountNumber: accountId === 1 ? "****2091" : accountId === 2 ? "****1820" : "****0978",
-          balance: "0.00",
-          accountType: accountId === 1 ? "current" : accountId === 2 ? "credit" : "savings"
-        });
+        // No accounts - redirect to dashboard
+        console.log('No accounts found, redirecting to dashboard');
+        setLocation('/dashboard');
+        return;
       }
       
       const formattedStored = accountTransactions.map((tx: any) => ({
@@ -469,16 +476,34 @@ export default function TransactionHistoryWorking() {
       loadData();
     };
 
+    const handleAccountsUpdate = (event: CustomEvent) => {
+      const { accounts: updatedAccounts, source } = event.detail || {};
+      if (source === 'accountDeleted' && updatedAccounts) {
+        // Check if current account still exists (handle string/number ID mismatch)
+        const accountExists = updatedAccounts.find((acc: any) => 
+          String(acc.id) === String(accountId)
+        );
+        if (!accountExists) {
+          console.log('Current account deleted, redirecting to dashboard');
+          setLocation('/dashboard');
+          return;
+        }
+      }
+      loadData();
+    };
+
     window.addEventListener('transactionUpdate', handleTransactionUpdate);
     window.addEventListener('transactionDeleted', handleTransactionUpdate);
     window.addEventListener('transactionAdded', handleTransactionUpdate);
     window.addEventListener('balanceUpdate', handleTransactionUpdate);
+    window.addEventListener('accountsUpdate', handleAccountsUpdate as EventListener);
     
     return () => {
       window.removeEventListener('transactionUpdate', handleTransactionUpdate);
       window.removeEventListener('transactionDeleted', handleTransactionUpdate);
       window.removeEventListener('transactionAdded', handleTransactionUpdate);
       window.removeEventListener('balanceUpdate', handleTransactionUpdate);
+      window.removeEventListener('accountsUpdate', handleAccountsUpdate as EventListener);
     };
   }, []);
 

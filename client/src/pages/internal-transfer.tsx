@@ -49,7 +49,7 @@ export default function InternalTransfer() {
   });
 
   useEffect(() => {
-    const userAccounts = UserDataManager.getUserData('bankAccounts', []);
+    const userAccounts = UserDataManager.getUserData('bankAccounts', []) || [];
     setAccounts(userAccounts);
     setUserCurrency(getUserCurrency());
   }, []);
@@ -171,7 +171,7 @@ export default function InternalTransfer() {
     };
 
     // Update account balances
-    const currentAccounts = UserDataManager.getUserData('bankAccounts', []);
+    const currentAccounts = UserDataManager.getUserData('bankAccounts', []) || [];
     const updatedAccounts = currentAccounts.map((acc: any) => {
       if (acc.id.toString() === fromAccount.id.toString()) {
         const currentBalance = typeof acc.balance === 'string' ? parseFloat(acc.balance) : acc.balance;
@@ -186,7 +186,7 @@ export default function InternalTransfer() {
     UserDataManager.setUserData('bankAccounts', updatedAccounts);
 
     // Add transactions
-    const currentTransactions = UserDataManager.getUserData('bankTransactions', []);
+    const currentTransactions = UserDataManager.getUserData('bankTransactions', []) || [];
     const updatedTransactions = [...currentTransactions, debitTransaction, creditTransaction];
     UserDataManager.setUserData('bankTransactions', updatedTransactions);
 

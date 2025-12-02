@@ -236,7 +236,7 @@ export default function UkTransfer() {
     const loadAccounts = () => {
       // Use UserDataManager to get consistent account data
       UserDataManager.clearCache('bankAccounts');
-      const userAccounts = UserDataManager.getUserData('bankAccounts', []);
+      const userAccounts = UserDataManager.getUserData('bankAccounts', []) || [];
       setAccounts(userAccounts);
       
       // Set default account selection if not already set
