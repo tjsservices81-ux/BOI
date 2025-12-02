@@ -398,44 +398,9 @@ export default function TransactionHistoryWorking() {
   };
 
   useEffect(() => {
-    const loadData = async () => {
-      UserDataManager.clearCache('bankTransactions');
-      UserDataManager.clearCache('bankAccounts');
-      
-      // Fetch transactions from database to get any credit transactions from internal transfers
-      try {
-        const response = await fetch(`/api/transactions/${accountId}`, {
-          credentials: 'include'
-        });
-        
-        if (response.ok) {
-          const dbTransactions = await response.json();
-          
-          // Get local storage transactions
-          const storedTransactions = UserDataManager.getUserData('bankTransactions', []) || [];
-          
-          // Create a map of existing transaction IDs for quick lookup
-          const existingTxIds = new Set(storedTransactions.map((tx: any) => String(tx.id)));
-          
-          // Add database transactions that don't exist in local storage
-          // This includes credit transactions from internal transfers
-          const newTransactions = dbTransactions.filter((dbTx: any) => 
-            !existingTxIds.has(String(dbTx.id))
-          );
-          
-          if (newTransactions.length > 0) {
-            console.log(`📥 Synced ${newTransactions.length} new transactions from database (includes internal transfer credits)`);
-            const mergedTransactions = [...storedTransactions, ...newTransactions];
-            UserDataManager.setUserData('bankTransactions', mergedTransactions);
-          }
-        }
-      } catch (error) {
-        console.log('Could not sync transactions from database:', error);
-      }
-      
-      const storedTransactions = UserDataManager.getUserData('bankTransactions', []) || [];
-      
-      const updatedTransactions = (storedTransactions || []).map((tx: any) => {
+    // Helper function to process and display transactions
+    const displayTransactions = (allTransactions: any[]) => {
+      const updatedTransactions = (allTransactions || []).map((tx: any) => {
         if (tx.paymentMethod === 'UK Transfer' && !tx.exchangeRate) {
           const amount = parseFloat(tx.amount.replace('-', ''));
           const sampleRate = 0.8456;
@@ -449,41 +414,10 @@ export default function TransactionHistoryWorking() {
         return tx;
       });
       
-      if (JSON.stringify(updatedTransactions) !== JSON.stringify(storedTransactions)) {
-        UserDataManager.setUserData('bankTransactions', updatedTransactions);
-      }
-      
       // Filter transactions for this account (handle string/number ID mismatch)
       const accountTransactions = updatedTransactions.filter((tx: any) => 
         String(tx.accountId) === String(accountId)
       );
-      console.log('Loaded transactions for account', accountId, ':', accountTransactions);
-      
-      setUserCurrency(getUserCurrency());
-      
-      const storedAccounts = UserDataManager.getUserData('bankAccounts', []) || [];
-      
-      if (Array.isArray(storedAccounts) && storedAccounts.length > 0) {
-        // Find current account (handle string/number ID mismatch)
-        const currentAccount = storedAccounts.find((acc: any) => 
-          String(acc.id) === String(accountId)
-        );
-        
-        if (currentAccount) {
-          setBalance(currentAccount.balance || '0.00');
-          setAccountInfo(currentAccount);
-        } else {
-          // Account was deleted - redirect back to dashboard
-          console.log('Account not found, redirecting to dashboard');
-          setLocation('/dashboard');
-          return;
-        }
-      } else {
-        // No accounts - redirect to dashboard
-        console.log('No accounts found, redirecting to dashboard');
-        setLocation('/dashboard');
-        return;
-      }
       
       const formattedStored = accountTransactions.map((tx: any) => ({
         ...tx,
@@ -499,6 +433,73 @@ export default function TransactionHistoryWorking() {
       );
       
       setTransactions(sortedTransactions);
+      return updatedTransactions;
+    };
+    
+    const loadData = () => {
+      UserDataManager.clearCache('bankTransactions');
+      UserDataManager.clearCache('bankAccounts');
+      
+      // IMMEDIATELY load and display cached data first (no delay)
+      const storedTransactions = UserDataManager.getUserData('bankTransactions', []) || [];
+      const storedAccounts = UserDataManager.getUserData('bankAccounts', []) || [];
+      
+      setUserCurrency(getUserCurrency());
+      
+      // Set account info and balance immediately from cache
+      if (Array.isArray(storedAccounts) && storedAccounts.length > 0) {
+        const currentAccount = storedAccounts.find((acc: any) => 
+          String(acc.id) === String(accountId)
+        );
+        
+        if (currentAccount) {
+          setBalance(currentAccount.balance || '0.00');
+          setAccountInfo(currentAccount);
+        } else {
+          console.log('Account not found, redirecting to dashboard');
+          setLocation('/dashboard');
+          return;
+        }
+      } else {
+        console.log('No accounts found, redirecting to dashboard');
+        setLocation('/dashboard');
+        return;
+      }
+      
+      // Display cached transactions immediately
+      const processedTransactions = displayTransactions(storedTransactions);
+      UserDataManager.setUserData('bankTransactions', processedTransactions);
+      
+      console.log('Loaded transactions for account', accountId);
+      
+      // THEN sync from database in the background (non-blocking)
+      fetch(`/api/transactions/${accountId}`, { credentials: 'include' })
+        .then(response => {
+          if (response.ok) return response.json();
+          throw new Error('Failed to fetch');
+        })
+        .then(dbTransactions => {
+          // Get current local storage transactions
+          const currentStored = UserDataManager.getUserData('bankTransactions', []) || [];
+          const existingTxIds = new Set(currentStored.map((tx: any) => String(tx.id)));
+          
+          // Find new transactions from database (including internal transfer credits)
+          const newTransactions = dbTransactions.filter((dbTx: any) => 
+            !existingTxIds.has(String(dbTx.id))
+          );
+          
+          if (newTransactions.length > 0) {
+            console.log(`📥 Synced ${newTransactions.length} new transactions from database`);
+            const mergedTransactions = [...currentStored, ...newTransactions];
+            UserDataManager.setUserData('bankTransactions', mergedTransactions);
+            
+            // Update display with new transactions
+            displayTransactions(mergedTransactions);
+          }
+        })
+        .catch(error => {
+          console.log('Background sync skipped:', error.message);
+        });
     };
     
     loadData();
