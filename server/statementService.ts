@@ -34,6 +34,8 @@ interface StatementRequest {
     balance: string;
     accountType: string;
     sortCode?: string;
+    iban?: string;
+    bic?: string;
   }>;
 }
 
@@ -57,6 +59,8 @@ interface Account {
   sortCode: string;
   balance: string;
   accountType: string;
+  iban?: string;
+  bic?: string;
 }
 
 export class StatementService {
@@ -184,6 +188,7 @@ export class StatementService {
 
   private addAccountInfo(doc: PDFKit.PDFDocument, account: Account, request: StatementRequest) {
     const startY = 265; // Positioned higher for more transaction space
+    const isEuro = request.userCurrency === 'EUR';
     
     doc.fontSize(14)
        .fillColor('#0000FF')
@@ -206,19 +211,38 @@ export class StatementService {
         currentY += 20;
       }
       
-      doc.text(account.displayName, 50, currentY)
-         .text(`Account Number: ${account.accountNumber}`, 50, currentY + 20)
-         .text(`Sort Code: ${account.sortCode}`, 50, currentY + 40);
+      doc.text(account.displayName, 50, currentY);
+      currentY += 20;
       
-      // Removed Statement Date and Statement Period from top-right
-      // Removed Account Type line
+      // Show IBAN/BIC for EUR, Sort Code/Account Number for GBP
+      if (isEuro && account.iban) {
+        doc.text(`IBAN: ${account.iban}`, 50, currentY);
+        currentY += 20;
+        if (account.bic) {
+          doc.text(`BIC: ${account.bic}`, 50, currentY);
+        }
+      } else {
+        doc.text(`Account Number: ${account.accountNumber}`, 50, currentY);
+        currentY += 20;
+        doc.text(`Sort Code: ${account.sortCode}`, 50, currentY);
+      }
     } else {
-      doc.text(account.displayName, 50, startY + 25)
-         .text(`Account Number: ${account.accountNumber}`, 50, startY + 45)
-         .text(`Sort Code: ${account.sortCode}`, 50, startY + 65);
+      let currentY = startY + 25;
+      doc.text(account.displayName, 50, currentY);
+      currentY += 20;
       
-      // Removed Statement Date and Statement Period from top-right
-      // Removed Account Type line
+      // Show IBAN/BIC for EUR, Sort Code/Account Number for GBP
+      if (isEuro && account.iban) {
+        doc.text(`IBAN: ${account.iban}`, 50, currentY);
+        currentY += 20;
+        if (account.bic) {
+          doc.text(`BIC: ${account.bic}`, 50, currentY);
+        }
+      } else {
+        doc.text(`Account Number: ${account.accountNumber}`, 50, currentY);
+        currentY += 20;
+        doc.text(`Sort Code: ${account.sortCode}`, 50, currentY);
+      }
     }
   }
 
@@ -504,14 +528,16 @@ export class StatementService {
       throw new Error(`Account ${accountId} not found. Available accounts: ${availableIds}. App may need to be restored from backup.`);
     }
     
-    // Return real account data with safe defaults
+    // Return real account data with actual bank details from the account
     return {
       id: accountId,
       displayName: selectedAccount.displayName || 'Personal Account',
       accountNumber: selectedAccount.accountNumber || 'Not Available',
-      sortCode: "90-78-68", // Always use this sort code for statements
+      sortCode: selectedAccount.sortCode || '90-78-68', // Use account's sort code, fallback to default
       balance: selectedAccount.balance || '0.00',
-      accountType: selectedAccount.accountType || 'Current Account'
+      accountType: selectedAccount.accountType || 'Current Account',
+      iban: selectedAccount.iban || undefined,
+      bic: selectedAccount.bic || undefined
     };
   }
 
