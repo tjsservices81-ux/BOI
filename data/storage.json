@@ -414,15 +414,15 @@
         "id": 87,
         "customerNumber": "36530558",
         "pin": "",
-        "name": "Calvin Thornton",
-        "email": "thornyc1188@gmail.com",
-        "phone": "+447347133952",
-        "address": "5 Kenner's Close,Bedford,MK42 8HF",
-        "dateOfBirth": "1984-03-16",
+        "name": "Conor Gleeson",
+        "email": "Conorgleeson121@icloud.com",
+        "phone": "+353851177464",
+        "address": "75 Hawthorn Way, Esker Hills, Portlaoise, Co. Laoise R32 E0CX",
+        "dateOfBirth": "1999-04-02",
         "joinDate": "2020-10-08T19:17:26.603Z",
         "dateCreated": "2025-10-08T19:17:26.873Z",
         "isDisabled": false,
-        "currency": "GBP"
+        "currency": "EUR"
       }
     ],
     [
@@ -2613,7 +2613,7 @@
         "address": null,
         "dateOfBirth": "1994-03-18",
         "joinDate": "2025-12-02T14:07:46.807Z",
-        "currency": "GBP",
+        "currency": "EUR",
         "dateCreated": "2025-12-02T14:07:46.765Z",
         "isDisabled": false
       }
