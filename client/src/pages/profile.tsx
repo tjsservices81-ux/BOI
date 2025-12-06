@@ -76,6 +76,7 @@ export default function Profile() {
     accountNumber: ''
   });
   const [showEditProfile, setShowEditProfile] = useState(false);
+  const [showPersonalDetails, setShowPersonalDetails] = useState(false);
   const [editProfileData, setEditProfileData] = useState({
     name: '',
     email: '',
@@ -1607,7 +1608,7 @@ export default function Profile() {
               <div className="space-y-2 mt-6">
                 {/* Personal details */}
                 <button 
-                  onClick={() => navigate('/settings')}
+                  onClick={() => setShowPersonalDetails(true)}
                   className="w-full flex items-center justify-between px-4 py-5 bg-white rounded-lg active:bg-gray-50 transition-colors"
                   style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.08)', minHeight: '68px' }}
                   data-testid="button-personal-details"
@@ -3576,6 +3577,137 @@ export default function Profile() {
                 >
                   Delete Transaction
                 </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Personal Details Modal */}
+      {showPersonalDetails && (
+        <div 
+          className="admin-panel bg-black bg-opacity-50 flex items-center justify-center"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowPersonalDetails(false);
+            }
+          }}
+        >
+          <div 
+            className="bg-white w-full h-full overflow-y-auto modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="sticky top-0 z-10 bg-[#126987] text-white px-4 py-4 flex items-center">
+              <button
+                onClick={() => setShowPersonalDetails(false)}
+                className="p-1 -ml-1"
+                data-testid="button-close-personal-details"
+              >
+                <ChevronLeft className="w-6 h-6 text-white" />
+              </button>
+              <h1 className="flex-1 text-center text-lg font-semibold mr-6" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Personal details
+              </h1>
+            </div>
+
+            {/* Content */}
+            <div className="p-4 bg-gray-50 min-h-full">
+              <div className="space-y-3">
+                {/* Full Name */}
+                <div 
+                  className="bg-white rounded-lg px-4 py-4"
+                  style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}
+                >
+                  <p className="text-xs text-gray-500 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>Full name</p>
+                  <p className="text-base text-gray-900 font-normal" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {profileData.name || 'Not set'}
+                  </p>
+                </div>
+
+                {/* Email */}
+                <div 
+                  className="bg-white rounded-lg px-4 py-4"
+                  style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}
+                >
+                  <p className="text-xs text-gray-500 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>Email address</p>
+                  <p className="text-base text-gray-900 font-normal" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {profileData.email || 'Not set'}
+                  </p>
+                </div>
+
+                {/* Phone */}
+                <div 
+                  className="bg-white rounded-lg px-4 py-4"
+                  style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}
+                >
+                  <p className="text-xs text-gray-500 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>Phone number</p>
+                  <p className="text-base text-gray-900 font-normal" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {profileData.phone || 'Not set'}
+                  </p>
+                </div>
+
+                {/* Address */}
+                <div 
+                  className="bg-white rounded-lg px-4 py-4"
+                  style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}
+                >
+                  <p className="text-xs text-gray-500 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>Address</p>
+                  <p className="text-base text-gray-900 font-normal" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {profileData.address || 'Not set'}
+                  </p>
+                </div>
+
+                {/* Date of Birth */}
+                <div 
+                  className="bg-white rounded-lg px-4 py-4"
+                  style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}
+                >
+                  <p className="text-xs text-gray-500 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>Date of birth</p>
+                  <p className="text-base text-gray-900 font-normal" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {profileData.dateOfBirth || 'Not set'}
+                  </p>
+                </div>
+
+                {/* Customer Number */}
+                <div 
+                  className="bg-white rounded-lg px-4 py-4"
+                  style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}
+                >
+                  <p className="text-xs text-gray-500 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>Customer number</p>
+                  <p className="text-base text-gray-900 font-normal" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {profileData.customerNumber || 'Not set'}
+                  </p>
+                </div>
+
+                {/* Member Since */}
+                <div 
+                  className="bg-white rounded-lg px-4 py-4"
+                  style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}
+                >
+                  <p className="text-xs text-gray-500 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>Member since</p>
+                  <p className="text-base text-gray-900 font-normal" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {profileData.joinDate || 'Not set'}
+                  </p>
+                </div>
+
+                {/* Currency */}
+                <div 
+                  className="bg-white rounded-lg px-4 py-4"
+                  style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}
+                >
+                  <p className="text-xs text-gray-500 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>Currency</p>
+                  <p className="text-base text-gray-900 font-normal" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {profileData.currency === 'GBP' ? 'GBP (£)' : 'EUR (€)'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Info Note */}
+              <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-100">
+                <p className="text-sm text-blue-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  To update your personal details, please access the Customer Panel by tapping your profile picture 5 times on the Profile page.
+                </p>
               </div>
             </div>
           </div>
