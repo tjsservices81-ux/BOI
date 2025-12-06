@@ -4161,7 +4161,7 @@ export default function Profile() {
                 <ChevronLeft className="w-6 h-6 text-white" />
               </button>
               <h1 className="text-lg font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Security & Legal
+                Security and Legal
               </h1>
               <div className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center">
                 <User className="w-4 h-4 text-white" />
@@ -4174,29 +4174,47 @@ export default function Profile() {
                   <p className="text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Loading security settings...</p>
                 </div>
               ) : (
-                <div className="mx-4 mt-6 pb-6">
-                  <div className="border border-gray-200 rounded px-4 py-4 mb-3" style={{ minHeight: '70px', borderRadius: '4px' }}>
-                    <p className="text-gray-800 text-base font-normal" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Terms and conditions
-                    </p>
-                    <p className="text-gray-500 text-sm mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      View terms
-                    </p>
-                  </div>
-                  <div className="border border-gray-200 rounded px-4 py-4 mb-3" style={{ minHeight: '70px', borderRadius: '4px' }}>
-                    <p className="text-gray-800 text-base font-normal" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Privacy policy
-                    </p>
-                    <p className="text-gray-500 text-sm mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      View policy
-                    </p>
-                  </div>
-                  <div className="border border-gray-200 rounded px-4 py-4 mb-3" style={{ minHeight: '70px', borderRadius: '4px' }}>
-                    <p className="text-gray-800 text-base font-normal" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Security tips
-                    </p>
-                    <p className="text-gray-500 text-sm mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Stay safe online
+                <div className="pb-6">
+                  {/* Security button */}
+                  <button 
+                    className="mx-4 mt-6 w-[calc(100%-32px)] flex items-center justify-between px-4 py-4 bg-white border border-gray-200 active:bg-gray-50 transition-colors"
+                    style={{ borderRadius: '4px' }}
+                    data-testid="button-security"
+                  >
+                    <span className="text-gray-800 font-normal text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Security
+                    </span>
+                    <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />
+                  </button>
+
+                  {/* Terms & Conditions button */}
+                  <button 
+                    className="mx-4 mt-3 w-[calc(100%-32px)] flex items-center justify-between px-4 py-4 bg-white border border-gray-200 active:bg-gray-50 transition-colors"
+                    style={{ borderRadius: '4px' }}
+                    data-testid="button-terms"
+                  >
+                    <span className="text-gray-800 font-normal text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Terms & Conditions
+                    </span>
+                    <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />
+                  </button>
+
+                  {/* Regulatory information button */}
+                  <button 
+                    className="mx-4 mt-3 w-[calc(100%-32px)] flex items-center justify-between px-4 py-4 bg-white border border-gray-200 active:bg-gray-50 transition-colors"
+                    style={{ borderRadius: '4px' }}
+                    data-testid="button-regulatory"
+                  >
+                    <span className="text-gray-800 font-normal text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Regulatory information
+                    </span>
+                    <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />
+                  </button>
+
+                  {/* Regulatory text */}
+                  <div className="mx-4 mt-6">
+                    <p className="text-gray-700 text-sm text-center leading-relaxed" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Bank of Ireland is regulated by the Central Bank of Ireland. Bank of Ireland trading as The Mortgage Store - powered by Bank of Ireland is regulated by the Central Bank of Ireland. Bank of Ireland (UK) plc is authorised by the Prudential Regulation Authority and regulated by the Financial Conduct Authority and the Prudential Regulation Authority. Bank of Ireland Life is a trading name of New Ireland Assurance Company plc. New Ireland Assurance Company plc trading as Bank of Ireland Life is regulated by the Central Bank of Ireland. Life assurance and pension products are provided by New Ireland Assurance Company plc trading as Bank of Ireland Life. Bank of Ireland is a tied agent of New Ireland Assurance Company plc trading as Bank of Ireland Life for life assurance and pensions business. Bank of Ireland Mortgage Bank U.C. trading as Bank of Ireland Mortgages is regulated by the Central Bank of Ireland.
                     </p>
                   </div>
                 </div>
