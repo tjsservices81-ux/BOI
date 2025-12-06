@@ -1594,8 +1594,8 @@ export default function Profile() {
                     }
                     logout();
                   }}
-                  className="px-10 py-3 bg-white border border-[#126987] rounded-lg active:bg-gray-50 transition-colors"
-                  style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}
+                  className="px-16 py-2 bg-white border border-[#126987] active:bg-gray-50 transition-colors"
+                  style={{ borderRadius: '4px' }}
                   data-testid="button-logout"
                 >
                   <span className="text-[#126987] font-normal text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
