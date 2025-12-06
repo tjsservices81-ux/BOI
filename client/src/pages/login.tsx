@@ -2325,16 +2325,6 @@ export default function Login() {
                   >
                     Enable Notifications
                   </button>
-
-                  <button
-                    onClick={() => {
-                      setNotificationDenied(true);
-                    }}
-                    className="w-full p-4 bg-gray-100 text-gray-700 rounded-xl font-semibold active:scale-98 transition-transform text-base"
-                    style={{ fontFamily: 'OpenSans, sans-serif' }}
-                  >
-                    Not Now
-                  </button>
                 </>
               ) : (
                 <>
