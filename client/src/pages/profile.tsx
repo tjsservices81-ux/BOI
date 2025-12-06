@@ -3851,7 +3851,7 @@ export default function Profile() {
               ) : (
                 <div className="pb-6">
                   {/* Primary device info box */}
-                  <div className="mx-4 mt-6 flex items-start gap-3 p-4 bg-gray-100 rounded" style={{ borderRadius: '4px' }}>
+                  <div className="mx-4 mt-6 flex items-start gap-3 p-4 bg-gray-50 rounded" style={{ borderRadius: '4px' }}>
                     <div className="flex-shrink-0 mt-1">
                       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#126987" strokeWidth="1.5">
                         <rect x="5" y="2" width="14" height="20" rx="2" />
