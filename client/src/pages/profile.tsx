@@ -5,6 +5,7 @@ import { UserDataManager } from "@/utils/userDataManager";
 import { useAuth } from "@/lib/auth";
 import { motion, AnimatePresence } from "framer-motion";
 import { getUserCurrency, formatCurrency, getCurrencySymbol, type Currency } from "@/utils/currencyUtils";
+import faceIdIconPath from "@assets/IMG_1506_1759859583184.png";
 
 export default function Profile() {
   const locationHook = useLocation();
@@ -1763,12 +1764,12 @@ export default function Profile() {
                   data-testid="button-face-id"
                 >
                   <div className="flex items-center gap-4">
-                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#126987" strokeWidth="1.5">
-                      <path d="M7 3H5a2 2 0 00-2 2v2M17 3h2a2 2 0 012 2v2M7 21H5a2 2 0 01-2-2v-2M17 21h2a2 2 0 002-2v-2" />
-                      <circle cx="9" cy="10" r="1" fill="#126987" />
-                      <circle cx="15" cy="10" r="1" fill="#126987" />
-                      <path d="M9 15c1.5 1.5 4.5 1.5 6 0" />
-                    </svg>
+                    <img 
+                      src={faceIdIconPath} 
+                      alt="Face ID" 
+                      className="w-6 h-6"
+                      style={{ filter: 'invert(27%) sepia(85%) saturate(456%) hue-rotate(158deg) brightness(93%) contrast(91%)' }}
+                    />
                     <span className="text-gray-800 font-normal text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                       Face ID
                     </span>
