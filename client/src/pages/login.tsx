@@ -56,6 +56,7 @@ export default function Login() {
   });
   const [showDeviceLockModal, setShowDeviceLockModal] = useState(false);
   const [showNotificationPermissionModal, setShowNotificationPermissionModal] = useState(false);
+  const [notificationDenied, setNotificationDenied] = useState(false);
   
   // Input refs for proper focus management in PWA
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -2251,79 +2252,137 @@ export default function Login() {
           {/* Content */}
           <div className="flex-1 overflow-y-auto ios-scroll flex flex-col">
             <div className="w-full max-w-md mx-auto px-6 py-8 flex flex-col justify-center flex-1 space-y-6">
-              <div className="text-center space-y-4">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-                  <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                  </svg>
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Enable Notifications
-                </h3>
-                <p className="text-base text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Receive instant alerts for transactions, security updates, and important banking information.
-                </p>
-              </div>
+              {!notificationDenied ? (
+                <>
+                  <div className="text-center space-y-4">
+                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+                      <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                      </svg>
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Enable Notifications
+                    </h3>
+                    <p className="text-base text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Receive instant alerts for transactions, security updates, and important banking information.
+                    </p>
+                  </div>
 
-              <div className="bg-green-50 rounded-xl p-5 space-y-3 border border-green-200">
-                <div className="flex items-start space-x-3">
-                  <div className="w-5 h-5 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-white text-xs font-bold">✓</span>
+                  <div className="bg-green-50 rounded-xl p-5 space-y-3 border border-green-200">
+                    <div className="flex items-start space-x-3">
+                      <div className="w-5 h-5 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="text-white text-xs font-bold">✓</span>
+                      </div>
+                      <p className="text-sm text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Real-time transaction notifications
+                      </p>
+                    </div>
+                    <div className="flex items-start space-x-3">
+                      <div className="w-5 h-5 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="text-white text-xs font-bold">✓</span>
+                      </div>
+                      <p className="text-sm text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Security alerts and suspicious activity warnings
+                      </p>
+                    </div>
+                    <div className="flex items-start space-x-3">
+                      <div className="w-5 h-5 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="text-white text-xs font-bold">✓</span>
+                      </div>
+                      <p className="text-sm text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        Important account updates
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-sm text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Real-time transaction notifications
-                  </p>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <div className="w-5 h-5 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-white text-xs font-bold">✓</span>
-                  </div>
-                  <p className="text-sm text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Security alerts and suspicious activity warnings
-                  </p>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <div className="w-5 h-5 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-white text-xs font-bold">✓</span>
-                  </div>
-                  <p className="text-sm text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Important account updates
-                  </p>
-                </div>
-              </div>
 
-              <button
-                onClick={async () => {
-                  // Request notification permission
-                  if ('Notification' in window && Notification.permission !== 'granted') {
-                    try {
-                      const permission = await Notification.requestPermission();
-                      if (permission === 'granted') {
-                        console.log('Notification permission granted');
+                  <button
+                    onClick={async () => {
+                      // Request notification permission
+                      if ('Notification' in window && Notification.permission !== 'granted') {
+                        try {
+                          const permission = await Notification.requestPermission();
+                          if (permission === 'granted') {
+                            console.log('Notification permission granted');
+                            setShowNotificationPermissionModal(false);
+                            setPendingAccountData(null);
+                            setNotificationDenied(false);
+                          } else {
+                            // User denied, show the denial screen
+                            setNotificationDenied(true);
+                          }
+                        } catch (error) {
+                          console.log('Notification permission denied');
+                          setNotificationDenied(true);
+                        }
+                      } else if (Notification.permission === 'granted') {
+                        // Already granted
+                        setShowNotificationPermissionModal(false);
+                        setPendingAccountData(null);
+                        setNotificationDenied(false);
                       }
-                    } catch (error) {
-                      console.log('Notification permission denied');
-                    }
-                  }
-                  setShowNotificationPermissionModal(false);
-                  setPendingAccountData(null);
-                }}
-                className="w-full p-4 bg-green-600 text-white rounded-xl font-semibold active:scale-98 transition-transform text-base"
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
-              >
-                Enable Notifications
-              </button>
+                    }}
+                    className="w-full p-4 bg-green-600 text-white rounded-xl font-semibold active:scale-98 transition-transform text-base"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  >
+                    Enable Notifications
+                  </button>
 
-              <button
-                onClick={() => {
-                  setShowNotificationPermissionModal(false);
-                  setPendingAccountData(null);
-                }}
-                className="w-full p-4 bg-gray-100 text-gray-700 rounded-xl font-semibold active:scale-98 transition-transform text-base"
-                style={{ fontFamily: 'OpenSans, sans-serif' }}
-              >
-                Maybe Later
-              </button>
+                  <button
+                    onClick={() => {
+                      setNotificationDenied(true);
+                    }}
+                    className="w-full p-4 bg-gray-100 text-gray-700 rounded-xl font-semibold active:scale-98 transition-transform text-base"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  >
+                    Not Now
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div className="text-center space-y-4">
+                    <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto">
+                      <svg className="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4v2m0 4v2M7.08 6.06A9 9 0 100.02 12m0 0a9 9 0 1014.14-9" />
+                      </svg>
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Notifications Required
+                    </h3>
+                    <p className="text-base text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Notifications are required for your account security. Please enable them to continue.
+                    </p>
+                  </div>
+
+                  <div className="bg-yellow-50 rounded-xl p-5 border border-yellow-200">
+                    <p className="text-sm text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Notifications help protect your account by alerting you to suspicious activity and important security updates.
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={async () => {
+                      // Request notification permission again
+                      if ('Notification' in window && Notification.permission !== 'granted') {
+                        try {
+                          const permission = await Notification.requestPermission();
+                          if (permission === 'granted') {
+                            console.log('Notification permission granted');
+                            setShowNotificationPermissionModal(false);
+                            setPendingAccountData(null);
+                            setNotificationDenied(false);
+                          }
+                        } catch (error) {
+                          console.log('Notification permission denied');
+                        }
+                      }
+                    }}
+                    className="w-full p-4 bg-green-600 text-white rounded-xl font-semibold active:scale-98 transition-transform text-base"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  >
+                    Enable Notifications
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
