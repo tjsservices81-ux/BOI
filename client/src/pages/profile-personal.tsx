@@ -17,6 +17,32 @@ export default function ProfilePersonal() {
     joinDate: "",
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [tapCount, setTapCount] = useState(0);
+  const [lastTapTime, setLastTapTime] = useState(0);
+
+  const handleProfilePictureTap = () => {
+    const currentTime = Date.now();
+    const timeSinceLastTap = currentTime - lastTapTime;
+    
+    let newTapCount;
+    if (timeSinceLastTap > 2000) {
+      newTapCount = 1;
+    } else {
+      newTapCount = tapCount + 1;
+    }
+    
+    setTapCount(newTapCount);
+    setLastTapTime(currentTime);
+    
+    console.log(`Admin access tap: ${newTapCount}/5`);
+    
+    if (newTapCount >= 5) {
+      console.log('Opening admin panel...');
+      navigate("/admin-oversight");
+      setTapCount(0);
+      setLastTapTime(0);
+    }
+  };
 
   useEffect(() => {
     const loadProfileData = async () => {
@@ -82,7 +108,10 @@ export default function ProfilePersonal() {
         <h1 className="text-white text-lg font-semibold flex-1 text-center">
           Personal Details
         </h1>
-        <button className="flex items-center justify-center w-6 h-6 text-white">
+        <button 
+          onClick={handleProfilePictureTap}
+          className="flex items-center justify-center w-6 h-6 text-white active:scale-95 transition-transform"
+        >
           <User className="w-6 h-6" />
         </button>
       </div>
