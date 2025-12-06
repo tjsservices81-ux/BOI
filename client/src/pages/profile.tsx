@@ -1750,33 +1750,6 @@ export default function Profile() {
                   <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />
                 </button>
 
-                {/* Face ID */}
-                <button 
-                  onClick={() => {
-                    setShowFaceId(true);
-                    setIsLoadingFaceId(true);
-                    setTimeout(() => {
-                      setIsLoadingFaceId(false);
-                    }, 1500);
-                  }}
-                  className="w-full flex items-center justify-between px-4 py-5 bg-white border border-gray-200 active:bg-gray-50 transition-colors"
-                  style={{ minHeight: '68px', borderRadius: '4px' }}
-                  data-testid="button-face-id"
-                >
-                  <div className="flex items-center gap-4">
-                    <img 
-                      src={faceIdIconPath} 
-                      alt="Face ID" 
-                      className="w-6 h-6"
-                      style={{ filter: 'invert(27%) sepia(85%) saturate(456%) hue-rotate(158deg) brightness(93%) contrast(91%)' }}
-                    />
-                    <span className="text-gray-800 font-normal text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Face ID
-                    </span>
-                  </div>
-                  <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />
-                </button>
-
                 {/* Open banking connections */}
                 <button 
                   onClick={() => {
