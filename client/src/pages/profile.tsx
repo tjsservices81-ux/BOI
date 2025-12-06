@@ -3594,11 +3594,11 @@ export default function Profile() {
           }}
         >
           <div 
-            className="bg-white w-full h-full overflow-y-auto modal-content"
+            className="bg-white w-full h-full flex flex-col modal-content"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
-            <div className="sticky top-0 z-10 bg-[#126987] text-white px-4 py-4 flex items-center justify-between">
+            {/* Fixed Header */}
+            <div className="flex-shrink-0 bg-[#126987] text-white px-4 py-4 flex items-center justify-between">
               <button
                 onClick={() => setShowPersonalDetails(false)}
                 className="p-1 -ml-1"
@@ -3614,9 +3614,9 @@ export default function Profile() {
               </div>
             </div>
 
-            {/* Content */}
-            <div className="bg-white min-h-full">
-              <div className="mx-4 mt-6">
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto bg-white">
+              <div className="mx-4 mt-6 pb-6">
                 {/* Name */}
                 <div className="border border-gray-300 rounded-lg px-4 py-4 mb-3">
                   <p className="text-gray-800 text-base font-normal" style={{ fontFamily: 'OpenSans, sans-serif' }}>
