@@ -2212,14 +2212,13 @@ export default function Login() {
                     <span className="text-white text-xs font-bold">✓</span>
                   </div>
                   <p className="text-sm text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Location tracking enabled for security
+                    Your data is encrypted and protected
                   </p>
                 </div>
               </div>
 
               <button
                 onClick={() => {
-                  handleRequestLocationPermission();
                   setShowDeviceLockModal(false);
                   setShowNotificationPermissionModal(true);
                 }}
