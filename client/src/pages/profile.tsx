@@ -78,6 +78,16 @@ export default function Profile() {
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showPersonalDetails, setShowPersonalDetails] = useState(false);
   const [isLoadingPersonalDetails, setIsLoadingPersonalDetails] = useState(false);
+  const [showSecurityDevices, setShowSecurityDevices] = useState(false);
+  const [isLoadingSecurityDevices, setIsLoadingSecurityDevices] = useState(false);
+  const [showFaceId, setShowFaceId] = useState(false);
+  const [isLoadingFaceId, setIsLoadingFaceId] = useState(false);
+  const [showOpenBanking, setShowOpenBanking] = useState(false);
+  const [isLoadingOpenBanking, setIsLoadingOpenBanking] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
+  const [isLoadingPrivacy, setIsLoadingPrivacy] = useState(false);
+  const [showSecurityLegal, setShowSecurityLegal] = useState(false);
+  const [isLoadingSecurityLegal, setIsLoadingSecurityLegal] = useState(false);
   const [editProfileData, setEditProfileData] = useState({
     name: '',
     email: '',
@@ -1635,6 +1645,13 @@ export default function Profile() {
 
                 {/* My security devices */}
                 <button 
+                  onClick={() => {
+                    setShowSecurityDevices(true);
+                    setIsLoadingSecurityDevices(true);
+                    setTimeout(() => {
+                      setIsLoadingSecurityDevices(false);
+                    }, 1500);
+                  }}
                   className="w-full flex items-center justify-between px-4 py-5 bg-white border border-gray-200 active:bg-gray-50 transition-colors"
                   style={{ minHeight: '68px', borderRadius: '4px' }}
                   data-testid="button-security-devices"
@@ -1653,6 +1670,13 @@ export default function Profile() {
 
                 {/* Face ID */}
                 <button 
+                  onClick={() => {
+                    setShowFaceId(true);
+                    setIsLoadingFaceId(true);
+                    setTimeout(() => {
+                      setIsLoadingFaceId(false);
+                    }, 1500);
+                  }}
                   className="w-full flex items-center justify-between px-4 py-5 bg-white border border-gray-200 active:bg-gray-50 transition-colors"
                   style={{ minHeight: '68px', borderRadius: '4px' }}
                   data-testid="button-face-id"
@@ -1673,6 +1697,13 @@ export default function Profile() {
 
                 {/* Open banking connections */}
                 <button 
+                  onClick={() => {
+                    setShowOpenBanking(true);
+                    setIsLoadingOpenBanking(true);
+                    setTimeout(() => {
+                      setIsLoadingOpenBanking(false);
+                    }, 1500);
+                  }}
                   className="w-full flex items-center justify-between px-4 py-5 bg-white border border-gray-200 active:bg-gray-50 transition-colors"
                   style={{ minHeight: '68px', borderRadius: '4px' }}
                   data-testid="button-open-banking"
@@ -1691,6 +1722,13 @@ export default function Profile() {
 
                 {/* Privacy and preferences */}
                 <button 
+                  onClick={() => {
+                    setShowPrivacy(true);
+                    setIsLoadingPrivacy(true);
+                    setTimeout(() => {
+                      setIsLoadingPrivacy(false);
+                    }, 1500);
+                  }}
                   className="w-full flex items-center justify-between px-4 py-5 bg-white border border-gray-200 active:bg-gray-50 transition-colors"
                   style={{ minHeight: '68px', borderRadius: '4px' }}
                   data-testid="button-privacy"
@@ -1711,6 +1749,13 @@ export default function Profile() {
 
                 {/* Security and Legal */}
                 <button 
+                  onClick={() => {
+                    setShowSecurityLegal(true);
+                    setIsLoadingSecurityLegal(true);
+                    setTimeout(() => {
+                      setIsLoadingSecurityLegal(false);
+                    }, 1500);
+                  }}
                   className="w-full flex items-center justify-between px-4 py-5 bg-white border border-gray-200 active:bg-gray-50 transition-colors"
                   style={{ minHeight: '68px', borderRadius: '4px' }}
                   data-testid="button-security-legal"
@@ -3678,6 +3723,290 @@ export default function Profile() {
                     </p>
                     <p className="text-gray-500 text-sm mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                       {profileData.joinDate || '-'}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* My Security Devices Modal */}
+      {showSecurityDevices && (
+        <div 
+          className="admin-panel bg-black bg-opacity-50 flex items-center justify-center"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowSecurityDevices(false);
+            }
+          }}
+        >
+          <div 
+            className="bg-white w-full h-full flex flex-col modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex-shrink-0 bg-[#126987] text-white px-4 py-4 flex items-center justify-between">
+              <button
+                onClick={() => setShowSecurityDevices(false)}
+                className="p-1 -ml-1"
+                data-testid="button-close-security-devices"
+              >
+                <ChevronLeft className="w-6 h-6 text-white" />
+              </button>
+              <h1 className="text-lg font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                My Security Devices
+              </h1>
+              <div className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center">
+                <User className="w-4 h-4 text-white" />
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto bg-white">
+              {isLoadingSecurityDevices ? (
+                <div className="flex flex-col items-center justify-center h-64">
+                  <div className="w-16 h-16 border-4 border-gray-200 border-t-[#126987] rounded-full animate-spin mb-4"></div>
+                  <p className="text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Loading security devices...</p>
+                </div>
+              ) : (
+                <div className="mx-4 mt-6 pb-6">
+                  <div className="border border-gray-200 rounded px-4 py-4 mb-3" style={{ minHeight: '70px', borderRadius: '4px' }}>
+                    <p className="text-gray-800 text-base font-normal" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      This iPhone
+                    </p>
+                    <p className="text-gray-500 text-sm mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Active
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Face ID Modal */}
+      {showFaceId && (
+        <div 
+          className="admin-panel bg-black bg-opacity-50 flex items-center justify-center"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowFaceId(false);
+            }
+          }}
+        >
+          <div 
+            className="bg-white w-full h-full flex flex-col modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex-shrink-0 bg-[#126987] text-white px-4 py-4 flex items-center justify-between">
+              <button
+                onClick={() => setShowFaceId(false)}
+                className="p-1 -ml-1"
+                data-testid="button-close-face-id"
+              >
+                <ChevronLeft className="w-6 h-6 text-white" />
+              </button>
+              <h1 className="text-lg font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Face ID
+              </h1>
+              <div className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center">
+                <User className="w-4 h-4 text-white" />
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto bg-white">
+              {isLoadingFaceId ? (
+                <div className="flex flex-col items-center justify-center h-64">
+                  <div className="w-16 h-16 border-4 border-gray-200 border-t-[#126987] rounded-full animate-spin mb-4"></div>
+                  <p className="text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Loading Face ID settings...</p>
+                </div>
+              ) : (
+                <div className="mx-4 mt-6 pb-6">
+                  <div className="border border-gray-200 rounded px-4 py-4 mb-3" style={{ minHeight: '70px', borderRadius: '4px' }}>
+                    <p className="text-gray-800 text-base font-normal" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Face ID Status
+                    </p>
+                    <p className="text-gray-500 text-sm mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Enabled
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Open Banking Connections Modal */}
+      {showOpenBanking && (
+        <div 
+          className="admin-panel bg-black bg-opacity-50 flex items-center justify-center"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowOpenBanking(false);
+            }
+          }}
+        >
+          <div 
+            className="bg-white w-full h-full flex flex-col modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex-shrink-0 bg-[#126987] text-white px-4 py-4 flex items-center justify-between">
+              <button
+                onClick={() => setShowOpenBanking(false)}
+                className="p-1 -ml-1"
+                data-testid="button-close-open-banking"
+              >
+                <ChevronLeft className="w-6 h-6 text-white" />
+              </button>
+              <h1 className="text-lg font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Open Banking
+              </h1>
+              <div className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center">
+                <User className="w-4 h-4 text-white" />
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto bg-white">
+              {isLoadingOpenBanking ? (
+                <div className="flex flex-col items-center justify-center h-64">
+                  <div className="w-16 h-16 border-4 border-gray-200 border-t-[#126987] rounded-full animate-spin mb-4"></div>
+                  <p className="text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Loading open banking...</p>
+                </div>
+              ) : (
+                <div className="mx-4 mt-6 pb-6">
+                  <div className="border border-gray-200 rounded px-4 py-4 mb-3" style={{ minHeight: '70px', borderRadius: '4px' }}>
+                    <p className="text-gray-800 text-base font-normal" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Connected Accounts
+                    </p>
+                    <p className="text-gray-500 text-sm mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      No accounts connected
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Privacy and Preferences Modal */}
+      {showPrivacy && (
+        <div 
+          className="admin-panel bg-black bg-opacity-50 flex items-center justify-center"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowPrivacy(false);
+            }
+          }}
+        >
+          <div 
+            className="bg-white w-full h-full flex flex-col modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex-shrink-0 bg-[#126987] text-white px-4 py-4 flex items-center justify-between">
+              <button
+                onClick={() => setShowPrivacy(false)}
+                className="p-1 -ml-1"
+                data-testid="button-close-privacy"
+              >
+                <ChevronLeft className="w-6 h-6 text-white" />
+              </button>
+              <h1 className="text-lg font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Privacy & Preferences
+              </h1>
+              <div className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center">
+                <User className="w-4 h-4 text-white" />
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto bg-white">
+              {isLoadingPrivacy ? (
+                <div className="flex flex-col items-center justify-center h-64">
+                  <div className="w-16 h-16 border-4 border-gray-200 border-t-[#126987] rounded-full animate-spin mb-4"></div>
+                  <p className="text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Loading privacy settings...</p>
+                </div>
+              ) : (
+                <div className="mx-4 mt-6 pb-6">
+                  <div className="border border-gray-200 rounded px-4 py-4 mb-3" style={{ minHeight: '70px', borderRadius: '4px' }}>
+                    <p className="text-gray-800 text-base font-normal" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Marketing preferences
+                    </p>
+                    <p className="text-gray-500 text-sm mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Manage your preferences
+                    </p>
+                  </div>
+                  <div className="border border-gray-200 rounded px-4 py-4 mb-3" style={{ minHeight: '70px', borderRadius: '4px' }}>
+                    <p className="text-gray-800 text-base font-normal" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Cookie settings
+                    </p>
+                    <p className="text-gray-500 text-sm mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Manage cookies
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Security and Legal Modal */}
+      {showSecurityLegal && (
+        <div 
+          className="admin-panel bg-black bg-opacity-50 flex items-center justify-center"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowSecurityLegal(false);
+            }
+          }}
+        >
+          <div 
+            className="bg-white w-full h-full flex flex-col modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex-shrink-0 bg-[#126987] text-white px-4 py-4 flex items-center justify-between">
+              <button
+                onClick={() => setShowSecurityLegal(false)}
+                className="p-1 -ml-1"
+                data-testid="button-close-security-legal"
+              >
+                <ChevronLeft className="w-6 h-6 text-white" />
+              </button>
+              <h1 className="text-lg font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Security & Legal
+              </h1>
+              <div className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center">
+                <User className="w-4 h-4 text-white" />
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto bg-white">
+              {isLoadingSecurityLegal ? (
+                <div className="flex flex-col items-center justify-center h-64">
+                  <div className="w-16 h-16 border-4 border-gray-200 border-t-[#126987] rounded-full animate-spin mb-4"></div>
+                  <p className="text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Loading security settings...</p>
+                </div>
+              ) : (
+                <div className="mx-4 mt-6 pb-6">
+                  <div className="border border-gray-200 rounded px-4 py-4 mb-3" style={{ minHeight: '70px', borderRadius: '4px' }}>
+                    <p className="text-gray-800 text-base font-normal" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Terms and conditions
+                    </p>
+                    <p className="text-gray-500 text-sm mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      View terms
+                    </p>
+                  </div>
+                  <div className="border border-gray-200 rounded px-4 py-4 mb-3" style={{ minHeight: '70px', borderRadius: '4px' }}>
+                    <p className="text-gray-800 text-base font-normal" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Privacy policy
+                    </p>
+                    <p className="text-gray-500 text-sm mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      View policy
+                    </p>
+                  </div>
+                  <div className="border border-gray-200 rounded px-4 py-4 mb-3" style={{ minHeight: '70px', borderRadius: '4px' }}>
+                    <p className="text-gray-800 text-base font-normal" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Security tips
+                    </p>
+                    <p className="text-gray-500 text-sm mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Stay safe online
                     </p>
                   </div>
                 </div>
