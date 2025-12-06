@@ -305,7 +305,7 @@ export default function Apply() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-white" style={{ maxWidth: '100%', width: '100%', margin: '0 auto' }}>
+    <div className="h-screen flex flex-col bg-white page-slide-up" style={{ maxWidth: '100%', width: '100%', margin: '0 auto' }}>
       {/* Header */}
       <div 
         className="flex items-center px-4 py-3 flex-shrink-0"
