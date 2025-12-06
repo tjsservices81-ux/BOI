@@ -2729,12 +2729,12 @@
         "name": "Michael Murphy",
         "email": "michaelmurphy18@icloud.com",
         "phone": "7310658405",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "Member since 2018",
+        "address": "Shahshja",
+        "dateOfBirth": "2025-12-01",
+        "joinDate": "2018",
         "dateCreated": "2025-12-06T20:38:23.523Z",
         "isDisabled": false,
-        "currency": "EUR"
+        "currency": "GBP"
       }
     ]
   ],
@@ -4219,8 +4219,22 @@
         "sortCode": "90-78-68",
         "bic": "BOFIIE2D",
         "iban": "IE34BOFI90786868392927",
-        "balance": "-1463.44",
+        "balance": "-1469.64",
         "displayName": "Current Account"
+      }
+    ],
+    [
+      143,
+      {
+        "id": 143,
+        "userId": 353,
+        "accountType": "savings",
+        "accountNumber": "50230953",
+        "sortCode": "90-78-68",
+        "bic": "BOFIIE2D",
+        "iban": "IE79BOFI90786850230953",
+        "balance": "0.00",
+        "displayName": "Saving Account"
       }
     ]
   ],
@@ -16313,7 +16327,7 @@
   "chatSessions": [],
   "counters": {
     "currentUserId": 354,
-    "currentAccountId": 143,
+    "currentAccountId": 144,
     "currentTransactionId": 1514,
     "currentPayeeId": 1,
     "currentScheduledPaymentId": 1,
