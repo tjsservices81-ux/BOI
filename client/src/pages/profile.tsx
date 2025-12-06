@@ -1603,19 +1603,20 @@ export default function Profile() {
               </div>
 
               {/* Settings List */}
-              <div className="space-y-3 mt-4">
+              <div className="space-y-2 mt-6">
                 {/* Personal details */}
                 <button 
                   onClick={() => navigate('/settings')}
-                  className="w-full flex items-center justify-between p-5 bg-white rounded-2xl active:scale-[0.98] transition-transform shadow-sm"
+                  className="w-full flex items-center justify-between px-4 py-5 bg-white rounded-lg active:bg-gray-50 transition-colors"
+                  style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.08)', minHeight: '68px' }}
                   data-testid="button-personal-details"
                 >
                   <div className="flex items-center gap-4">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#126987" strokeWidth="1.5">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1a5a6e" strokeWidth="1.5">
                       <circle cx="12" cy="8" r="4" />
                       <path d="M4 20c0-4 4-6 8-6s8 2 8 6" />
                     </svg>
-                    <span className="text-gray-800 font-medium text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    <span className="text-gray-800 font-normal text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                       Personal details
                     </span>
                   </div>
@@ -1624,15 +1625,16 @@ export default function Profile() {
 
                 {/* My security devices */}
                 <button 
-                  className="w-full flex items-center justify-between p-5 bg-white rounded-2xl active:scale-[0.98] transition-transform shadow-sm"
+                  className="w-full flex items-center justify-between px-4 py-5 bg-white rounded-lg active:bg-gray-50 transition-colors"
+                  style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.08)', minHeight: '68px' }}
                   data-testid="button-security-devices"
                 >
                   <div className="flex items-center gap-4">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#126987" strokeWidth="1.5">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1a5a6e" strokeWidth="1.5">
                       <rect x="5" y="2" width="14" height="20" rx="2" />
-                      <line x1="12" y1="18" x2="12" y2="18" strokeLinecap="round" strokeWidth="2" />
+                      <circle cx="12" cy="18" r="1" fill="#1a5a6e" />
                     </svg>
-                    <span className="text-gray-800 font-medium text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    <span className="text-gray-800 font-normal text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                       My security devices
                     </span>
                   </div>
@@ -1641,17 +1643,18 @@ export default function Profile() {
 
                 {/* Face ID */}
                 <button 
-                  className="w-full flex items-center justify-between p-5 bg-white rounded-2xl active:scale-[0.98] transition-transform shadow-sm"
+                  className="w-full flex items-center justify-between px-4 py-5 bg-white rounded-lg active:bg-gray-50 transition-colors"
+                  style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.08)', minHeight: '68px' }}
                   data-testid="button-face-id"
                 >
                   <div className="flex items-center gap-4">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#126987" strokeWidth="1.5">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1a5a6e" strokeWidth="1.5">
                       <path d="M7 3H5a2 2 0 00-2 2v2M17 3h2a2 2 0 012 2v2M7 21H5a2 2 0 01-2-2v-2M17 21h2a2 2 0 002-2v-2" />
-                      <circle cx="9" cy="10" r="1" fill="#126987" />
-                      <circle cx="15" cy="10" r="1" fill="#126987" />
+                      <circle cx="9" cy="10" r="1" fill="#1a5a6e" />
+                      <circle cx="15" cy="10" r="1" fill="#1a5a6e" />
                       <path d="M9 15c1.5 1.5 4.5 1.5 6 0" />
                     </svg>
-                    <span className="text-gray-800 font-medium text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    <span className="text-gray-800 font-normal text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                       Face ID
                     </span>
                   </div>
@@ -1660,15 +1663,16 @@ export default function Profile() {
 
                 {/* Open banking connections */}
                 <button 
-                  className="w-full flex items-center justify-between p-5 bg-white rounded-2xl active:scale-[0.98] transition-transform shadow-sm"
+                  className="w-full flex items-center justify-between px-4 py-5 bg-white rounded-lg active:bg-gray-50 transition-colors"
+                  style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.08)', minHeight: '68px' }}
                   data-testid="button-open-banking"
                 >
                   <div className="flex items-center gap-4">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#126987" strokeWidth="1.5">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1a5a6e" strokeWidth="1.5">
                       <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
                       <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
                     </svg>
-                    <span className="text-gray-800 font-medium text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    <span className="text-gray-800 font-normal text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                       Open banking connections
                     </span>
                   </div>
@@ -1677,17 +1681,18 @@ export default function Profile() {
 
                 {/* Privacy and preferences */}
                 <button 
-                  className="w-full flex items-center justify-between p-5 bg-white rounded-2xl active:scale-[0.98] transition-transform shadow-sm"
+                  className="w-full flex items-center justify-between px-4 py-5 bg-white rounded-lg active:bg-gray-50 transition-colors"
+                  style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.08)', minHeight: '68px' }}
                   data-testid="button-privacy"
                 >
                   <div className="flex items-center gap-4">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#126987" strokeWidth="1.5">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1a5a6e" strokeWidth="1.5">
                       <rect x="3" y="4" width="18" height="16" rx="2" />
                       <line x1="7" y1="8" x2="17" y2="8" />
                       <line x1="7" y1="12" x2="17" y2="12" />
                       <line x1="7" y1="16" x2="13" y2="16" />
                     </svg>
-                    <span className="text-gray-800 font-medium text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    <span className="text-gray-800 font-normal text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                       Privacy and preferences
                     </span>
                   </div>
@@ -1696,15 +1701,16 @@ export default function Profile() {
 
                 {/* Security and Legal */}
                 <button 
-                  className="w-full flex items-center justify-between p-5 bg-white rounded-2xl active:scale-[0.98] transition-transform shadow-sm"
+                  className="w-full flex items-center justify-between px-4 py-5 bg-white rounded-lg active:bg-gray-50 transition-colors"
+                  style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.08)', minHeight: '68px' }}
                   data-testid="button-security-legal"
                 >
                   <div className="flex items-center gap-4">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#126987" strokeWidth="1.5">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1a5a6e" strokeWidth="1.5">
                       <rect x="5" y="11" width="14" height="10" rx="2" />
                       <path d="M7 11V7a5 5 0 0110 0v4" />
                     </svg>
-                    <span className="text-gray-800 font-medium text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    <span className="text-gray-800 font-normal text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                       Security and Legal
                     </span>
                   </div>
