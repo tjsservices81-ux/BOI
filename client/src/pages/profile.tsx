@@ -1536,7 +1536,7 @@ export default function Profile() {
   };
 
   return (
-    <div className="h-screen bg-[#F5F5F5] flex flex-col">
+    <div className="h-screen bg-white flex flex-col">
       {/* Header - Teal blue bar */}
       <div className="bg-[#126987] px-4 py-4 flex items-center" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 16px)' }}>
         <button 
@@ -3618,37 +3618,52 @@ export default function Profile() {
             <div className="flex-1 overflow-y-auto bg-white">
               <div className="mx-4 mt-6 pb-6">
                 {/* Name */}
-                <div className="border border-gray-300 rounded px-4 py-5 mb-3" style={{ minHeight: '60px', borderRadius: '4px' }}>
+                <div className="border border-gray-300 rounded px-4 py-4 mb-3" style={{ minHeight: '70px', borderRadius: '4px' }}>
                   <p className="text-gray-800 text-base font-normal" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {profileData.name || 'Name'}
+                    Name
+                  </p>
+                  <p className="text-gray-500 text-sm mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {profileData.name || '-'}
                   </p>
                 </div>
 
                 {/* Date of Birth */}
-                <div className="border border-gray-300 rounded px-4 py-5 mb-3" style={{ minHeight: '60px', borderRadius: '4px' }}>
+                <div className="border border-gray-300 rounded px-4 py-4 mb-3" style={{ minHeight: '70px', borderRadius: '4px' }}>
                   <p className="text-gray-800 text-base font-normal" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {profileData.dateOfBirth || 'Date of birth'}
+                    Date of birth
+                  </p>
+                  <p className="text-gray-500 text-sm mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {profileData.dateOfBirth || '-'}
                   </p>
                 </div>
 
                 {/* Address */}
-                <div className="border border-gray-300 rounded px-4 py-5 mb-3" style={{ minHeight: '60px', borderRadius: '4px' }}>
+                <div className="border border-gray-300 rounded px-4 py-4 mb-3" style={{ minHeight: '70px', borderRadius: '4px' }}>
                   <p className="text-gray-800 text-base font-normal" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {profileData.address || 'Address'}
+                    Address
+                  </p>
+                  <p className="text-gray-500 text-sm mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {profileData.address || '-'}
                   </p>
                 </div>
 
                 {/* Phone */}
-                <div className="border border-gray-300 rounded px-4 py-5 mb-3" style={{ minHeight: '60px', borderRadius: '4px' }}>
+                <div className="border border-gray-300 rounded px-4 py-4 mb-3" style={{ minHeight: '70px', borderRadius: '4px' }}>
                   <p className="text-gray-800 text-base font-normal" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {profileData.phone || 'Mobile number'}
+                    Mobile number
+                  </p>
+                  <p className="text-gray-500 text-sm mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {profileData.phone || '-'}
                   </p>
                 </div>
 
                 {/* Member Since */}
-                <div className="border border-gray-300 rounded px-4 py-5 mb-3" style={{ minHeight: '60px', borderRadius: '4px' }}>
+                <div className="border border-gray-300 rounded px-4 py-4 mb-3" style={{ minHeight: '70px', borderRadius: '4px' }}>
                   <p className="text-gray-800 text-base font-normal" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    {profileData.joinDate || 'Member since'}
+                    Member since
+                  </p>
+                  <p className="text-gray-500 text-sm mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {profileData.joinDate || '-'}
                   </p>
                 </div>
               </div>
