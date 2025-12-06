@@ -306,9 +306,9 @@ export default function Apply() {
 
   return (
     <div className="h-screen flex flex-col bg-white" style={{ maxWidth: '100%', width: '100%', margin: '0 auto' }}>
-      {/* Header - Fixed */}
+      {/* Header - Fixed on top */}
       <div 
-        className="flex items-center px-4 py-3 flex-shrink-0"
+        className="flex items-center px-4 py-3 flex-shrink-0 relative z-10"
         style={{ 
           backgroundColor: '#126987',
           paddingTop: 'env(safe-area-inset-top, 12px)'
@@ -324,8 +324,8 @@ export default function Apply() {
         <div className="w-6" />
       </div>
 
-      {/* Content - Slides Down */}
-      <div className="flex-1 overflow-y-auto bg-white px-5 py-6 pb-24 page-slide-down">
+      {/* Content - Slides down underneath header */}
+      <div className="flex-1 overflow-y-auto bg-white px-5 py-6 pb-24 content-slide-under">
         {/* Title */}
         <div style={{ marginBottom: '24px' }}>
           <div style={{ position: 'relative', display: 'inline-block' }}>

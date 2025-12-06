@@ -762,6 +762,22 @@ input, select, textarea {
   }
 }
 
+/* Content slides down underneath fixed header */
+.content-slide-under {
+  animation: contentSlideUnder 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+@keyframes contentSlideUnder {
+  0% {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .page-slide-up {
   animation: slideUpFromBottom 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
