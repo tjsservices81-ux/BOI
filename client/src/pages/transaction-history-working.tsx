@@ -103,24 +103,8 @@ export default function TransactionHistoryWorking() {
     };
   }, []);
 
-  const navigateWithAnimation = (path: string, animationType: 'slide-right' | 'slide-left' | 'slide-up' = 'slide-right') => {
-    setIsNavigating(true);
-    
-    const currentPage = document.querySelector('.page-container') || document.body;
-    document.body.classList.add('page-transitioning');
-    
-    if (animationType === 'slide-right') {
-      currentPage.classList.add('page-slide-out-left');
-    } else if (animationType === 'slide-left') {
-      currentPage.classList.add('page-slide-out-right');
-    }
-    
-    setTimeout(() => {
-      setLocation(path);
-      setIsNavigating(false);
-      document.body.classList.remove('page-transitioning');
-      currentPage.classList.remove('page-slide-out-left', 'page-slide-out-right');
-    }, 200);
+  const navigateWithAnimation = (path: string) => {
+    setLocation(path);
   };
 
   const handlePayBillsSubmit = (e: React.FormEvent) => {
@@ -634,7 +618,7 @@ export default function TransactionHistoryWorking() {
 
   return (
     <div 
-      className="page-container h-screen bg-white flex flex-col overflow-hidden page-slide-in-right" 
+      className="page-container h-screen bg-white flex flex-col overflow-hidden" 
       style={{ fontFamily: styles.fonts.family, maxWidth: '100%', width: '100%', margin: '0 auto' }}
     >
       {/* Header - matches status bar color */}
