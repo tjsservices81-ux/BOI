@@ -18,6 +18,7 @@ export default function Profile() {
   const [isLoading, setIsLoading] = useState(true);
   const [tapCount, setTapCount] = useState(0);
   const [lastTapTime, setLastTapTime] = useState(0);
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
 
   const handleProfilePictureTap = () => {
     const currentTime = Date.now();
@@ -36,8 +37,8 @@ export default function Profile() {
     console.log(`Admin access tap: ${newTapCount}/5`);
     
     if (newTapCount >= 5) {
-      console.log('Opening admin panel...');
-      navigate("/admin-oversight");
+      console.log('Opening customer panel...');
+      setShowAdminPanel(true);
       setTapCount(0);
       setLastTapTime(0);
     }
@@ -217,6 +218,51 @@ export default function Profile() {
           <p>BOI.UAPP27-2</p>
         </div>
       </div>
+
+      {/* Customer Panel Modal */}
+      {showAdminPanel && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end z-50">
+          <div className="w-full bg-white rounded-t-2xl shadow-lg max-h-[90vh] flex flex-col">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-4 py-4 border-b border-gray-100">
+              <h2 className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                Customer Panel
+              </h2>
+              <button
+                onClick={() => setShowAdminPanel(false)}
+                className="text-gray-500 hover:text-gray-700 active:scale-95 transition-transform"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="flex-1 overflow-y-auto px-4 py-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              <p className="text-gray-600 text-sm mb-4">Admin Panel Access Granted</p>
+              <p className="text-gray-900 font-medium">Welcome to the Customer Panel</p>
+              
+              <div className="mt-6 space-y-3">
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <p className="text-gray-600 text-sm">Customer Number</p>
+                  <p className="text-gray-900 font-medium mt-1">{profileData.customerNumber}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="border-t border-gray-100 px-4 py-4">
+              <button
+                onClick={() => setShowAdminPanel(false)}
+                className="w-full bg-[#126987] text-white py-3 rounded-lg font-semibold"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
