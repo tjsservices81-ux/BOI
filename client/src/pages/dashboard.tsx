@@ -471,7 +471,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className={`page-container h-screen bg-white overflow-hidden flex flex-col ios-safe-bottom relative page-fade-slide-in ${isNavigating ? 'dashboard-exit' : ''}`}>
+    <div className={`page-container h-screen bg-white overflow-hidden flex flex-col ios-safe-bottom relative ${isNavigating ? 'dashboard-exit' : ''}`}>
       {/* Ambient spending visualization background */}
       <SpendingVisualization />
       
