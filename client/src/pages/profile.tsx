@@ -4022,7 +4022,7 @@ export default function Profile() {
                 <ChevronLeft className="w-6 h-6 text-white" />
               </button>
               <h1 className="text-lg font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Open Banking
+                Open Banking Connections
               </h1>
               <div className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center">
                 <User className="w-4 h-4 text-white" />
@@ -4035,15 +4035,35 @@ export default function Profile() {
                   <p className="text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Loading open banking...</p>
                 </div>
               ) : (
-                <div className="mx-4 mt-6 pb-6">
-                  <div className="border border-gray-200 rounded px-4 py-4 mb-3" style={{ minHeight: '70px', borderRadius: '4px' }}>
-                    <p className="text-gray-800 text-base font-normal" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Connected Accounts
-                    </p>
-                    <p className="text-gray-500 text-sm mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      No accounts connected
-                    </p>
-                  </div>
+                <div className="pb-6">
+                  {/* Description text */}
+                  <p className="mx-4 mt-6 text-gray-700 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    From here you have control of any connections that you've made through open banking.
+                  </p>
+
+                  {/* Data sharing button */}
+                  <button 
+                    className="mx-4 mt-6 w-[calc(100%-32px)] flex items-center justify-between px-4 py-4 bg-white border border-gray-200 active:bg-gray-50 transition-colors"
+                    style={{ borderRadius: '4px' }}
+                    data-testid="button-data-sharing"
+                  >
+                    <span className="text-gray-800 font-normal text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Data sharing
+                    </span>
+                    <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />
+                  </button>
+
+                  {/* Confirmation of funds button */}
+                  <button 
+                    className="mx-4 mt-3 w-[calc(100%-32px)] flex items-center justify-between px-4 py-4 bg-white border border-gray-200 active:bg-gray-50 transition-colors"
+                    style={{ borderRadius: '4px' }}
+                    data-testid="button-confirmation-funds"
+                  >
+                    <span className="text-gray-800 font-normal text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Confirmation of funds
+                    </span>
+                    <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />
+                  </button>
                 </div>
               )}
             </div>
