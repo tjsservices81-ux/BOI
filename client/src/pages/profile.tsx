@@ -88,6 +88,10 @@ export default function Profile() {
   const [isLoadingPrivacy, setIsLoadingPrivacy] = useState(false);
   const [showSecurityLegal, setShowSecurityLegal] = useState(false);
   const [isLoadingSecurityLegal, setIsLoadingSecurityLegal] = useState(false);
+  const [faceIdEnabled, setFaceIdEnabled] = useState(() => {
+    const saved = localStorage.getItem('faceIdEnabled');
+    return saved ? JSON.parse(saved) : false;
+  });
   const [editProfileData, setEditProfileData] = useState({
     name: '',
     email: '',
@@ -3869,13 +3873,42 @@ export default function Profile() {
                   <p className="text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Loading Face ID settings...</p>
                 </div>
               ) : (
-                <div className="mx-4 mt-6 pb-6">
-                  <div className="border border-gray-200 rounded px-4 py-4 mb-3" style={{ minHeight: '70px', borderRadius: '4px' }}>
-                    <p className="text-gray-800 text-base font-normal" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Face ID Status
+                <div className="pb-6">
+                  {/* Info box */}
+                  <div className="mx-4 mt-6 flex items-start gap-3">
+                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-[#126987] flex items-center justify-center mt-0.5">
+                      <span className="text-white text-sm font-bold">i</span>
+                    </div>
+                    <p className="text-gray-700 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      When you enable Face ID, it will become the standard way to log in. Now and again, for security reasons, we may still ask you to log in using your PIN.
                     </p>
-                    <p className="text-gray-500 text-sm mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Enabled
+                  </div>
+
+                  {/* Enable Face ID toggle */}
+                  <div className="mx-4 mt-6 border border-gray-200 rounded p-4 flex items-center justify-between" style={{ borderRadius: '4px' }}>
+                    <span className="text-gray-900 font-semibold text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Enable Face ID
+                    </span>
+                    <button
+                      onClick={() => {
+                        const newValue = !faceIdEnabled;
+                        setFaceIdEnabled(newValue);
+                        localStorage.setItem('faceIdEnabled', JSON.stringify(newValue));
+                      }}
+                      className={`relative w-14 h-8 rounded-full transition-colors ${faceIdEnabled ? 'bg-[#126987]' : 'bg-gray-300'}`}
+                      data-testid="toggle-face-id"
+                    >
+                      <span className={`absolute top-1 w-6 h-6 bg-white rounded-full shadow transition-transform ${faceIdEnabled ? 'right-1' : 'left-1'}`}></span>
+                      {faceIdEnabled && (
+                        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-white text-xs font-medium">On</span>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Security warning */}
+                  <div className="mx-4 mt-6">
+                    <p className="text-gray-700 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Anyone whose biometrics have been added to this device could use that data to log in to your BoI profile. We recommend deleting any biometric data that is not your own from this device.
                     </p>
                   </div>
                 </div>
