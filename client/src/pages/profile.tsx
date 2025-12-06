@@ -3618,35 +3618,35 @@ export default function Profile() {
             <div className="flex-1 overflow-y-auto bg-white">
               <div className="mx-4 mt-6 pb-6">
                 {/* Name */}
-                <div className="border border-gray-300 rounded-lg px-4 py-5 mb-3" style={{ minHeight: '60px' }}>
+                <div className="border border-gray-300 rounded px-4 py-5 mb-3" style={{ minHeight: '60px', borderRadius: '4px' }}>
                   <p className="text-gray-800 text-base font-normal" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     {profileData.name || 'Name'}
                   </p>
                 </div>
 
                 {/* Date of Birth */}
-                <div className="border border-gray-300 rounded-lg px-4 py-5 mb-3" style={{ minHeight: '60px' }}>
+                <div className="border border-gray-300 rounded px-4 py-5 mb-3" style={{ minHeight: '60px', borderRadius: '4px' }}>
                   <p className="text-gray-800 text-base font-normal" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     {profileData.dateOfBirth || 'Date of birth'}
                   </p>
                 </div>
 
                 {/* Address */}
-                <div className="border border-gray-300 rounded-lg px-4 py-5 mb-3" style={{ minHeight: '60px' }}>
+                <div className="border border-gray-300 rounded px-4 py-5 mb-3" style={{ minHeight: '60px', borderRadius: '4px' }}>
                   <p className="text-gray-800 text-base font-normal" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     {profileData.address || 'Address'}
                   </p>
                 </div>
 
                 {/* Phone */}
-                <div className="border border-gray-300 rounded-lg px-4 py-5 mb-3" style={{ minHeight: '60px' }}>
+                <div className="border border-gray-300 rounded px-4 py-5 mb-3" style={{ minHeight: '60px', borderRadius: '4px' }}>
                   <p className="text-gray-800 text-base font-normal" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     {profileData.phone || 'Mobile number'}
                   </p>
                 </div>
 
                 {/* Member Since */}
-                <div className="border border-gray-300 rounded-lg px-4 py-5 mb-3" style={{ minHeight: '60px' }}>
+                <div className="border border-gray-300 rounded px-4 py-5 mb-3" style={{ minHeight: '60px', borderRadius: '4px' }}>
                   <p className="text-gray-800 text-base font-normal" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     {profileData.joinDate || 'Member since'}
                   </p>
