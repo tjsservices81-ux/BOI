@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, User } from "lucide-react";
 import { UserDataManager } from "@/utils/userDataManager";
 
 export default function ProfilePersonal() {
@@ -62,15 +62,15 @@ export default function ProfilePersonal() {
     }
   };
 
-  const DetailField = ({ label, value }: { label: string; value: string }) => (
-    <div className="border-b border-gray-100 py-4">
-      <p className="text-gray-500 text-sm mb-1">{label}</p>
-      <p className="text-gray-900 font-medium">{value || "Not provided"}</p>
+  const DetailCard = ({ label, value }: { label: string; value: string }) => (
+    <div className="bg-white border border-gray-200 rounded-lg px-4 py-3 mb-3">
+      <p className="text-gray-600 text-sm">{label}</p>
+      <p className="text-gray-900 font-medium mt-1">{value || "Not provided"}</p>
     </div>
   );
 
   return (
-    <div className="h-screen bg-white flex flex-col ios-safe-top ios-safe-bottom" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+    <div className="h-screen bg-gray-50 flex flex-col ios-safe-top ios-safe-bottom" style={{ fontFamily: 'OpenSans, sans-serif' }}>
       {/* Header */}
       <div className="bg-[#126987] flex items-center justify-between px-4 py-3 flex-shrink-0">
         <button
@@ -80,9 +80,11 @@ export default function ProfilePersonal() {
           <ChevronLeft className="w-6 h-6" />
         </button>
         <h1 className="text-white text-lg font-semibold flex-1 text-center">
-          Personal details
+          Personal Details
         </h1>
-        <div className="w-6" />
+        <button className="flex items-center justify-center w-6 h-6 text-white">
+          <User className="w-6 h-6" />
+        </button>
       </div>
 
       {/* Content */}
@@ -92,14 +94,13 @@ export default function ProfilePersonal() {
             <p className="text-gray-500">Loading...</p>
           </div>
         ) : (
-          <div className="px-4 py-6">
-            <DetailField label="Full Name" value={profileData.name} />
-            <DetailField label="Email Address" value={profileData.email} />
-            <DetailField label="Phone Number" value={profileData.phone} />
-            <DetailField label="Address" value={profileData.address} />
-            <DetailField label="Date of Birth" value={formatDate(profileData.dateOfBirth)} />
-            <DetailField label="Customer Number" value={profileData.customerNumber} />
-            <DetailField label="Account Created" value={formatDate(profileData.joinDate)} />
+          <div className="px-4 py-4">
+            <DetailCard label="Full Name" value={profileData.name} />
+            <DetailCard label="Date of Birth" value={formatDate(profileData.dateOfBirth)} />
+            <DetailCard label="Address" value={profileData.address} />
+            <DetailCard label="Phone Number" value={profileData.phone} />
+            <DetailCard label="Email" value={profileData.email} />
+            <DetailCard label="Account Created" value={formatDate(profileData.joinDate)} />
           </div>
         )}
       </div>
