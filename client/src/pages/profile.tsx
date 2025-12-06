@@ -1609,7 +1609,7 @@ export default function Profile() {
                 {/* Personal details */}
                 <button 
                   onClick={() => setShowPersonalDetails(true)}
-                  className="w-full flex items-center justify-between px-4 py-5 bg-white border border-gray-300 active:bg-gray-50 transition-colors"
+                  className="w-full flex items-center justify-between px-4 py-5 bg-white border border-gray-200 active:bg-gray-50 transition-colors"
                   style={{ minHeight: '68px', borderRadius: '4px' }}
                   data-testid="button-personal-details"
                 >
@@ -1627,7 +1627,7 @@ export default function Profile() {
 
                 {/* My security devices */}
                 <button 
-                  className="w-full flex items-center justify-between px-4 py-5 bg-white border border-gray-300 active:bg-gray-50 transition-colors"
+                  className="w-full flex items-center justify-between px-4 py-5 bg-white border border-gray-200 active:bg-gray-50 transition-colors"
                   style={{ minHeight: '68px', borderRadius: '4px' }}
                   data-testid="button-security-devices"
                 >
@@ -1645,7 +1645,7 @@ export default function Profile() {
 
                 {/* Face ID */}
                 <button 
-                  className="w-full flex items-center justify-between px-4 py-5 bg-white border border-gray-300 active:bg-gray-50 transition-colors"
+                  className="w-full flex items-center justify-between px-4 py-5 bg-white border border-gray-200 active:bg-gray-50 transition-colors"
                   style={{ minHeight: '68px', borderRadius: '4px' }}
                   data-testid="button-face-id"
                 >
@@ -1665,7 +1665,7 @@ export default function Profile() {
 
                 {/* Open banking connections */}
                 <button 
-                  className="w-full flex items-center justify-between px-4 py-5 bg-white border border-gray-300 active:bg-gray-50 transition-colors"
+                  className="w-full flex items-center justify-between px-4 py-5 bg-white border border-gray-200 active:bg-gray-50 transition-colors"
                   style={{ minHeight: '68px', borderRadius: '4px' }}
                   data-testid="button-open-banking"
                 >
@@ -1683,7 +1683,7 @@ export default function Profile() {
 
                 {/* Privacy and preferences */}
                 <button 
-                  className="w-full flex items-center justify-between px-4 py-5 bg-white border border-gray-300 active:bg-gray-50 transition-colors"
+                  className="w-full flex items-center justify-between px-4 py-5 bg-white border border-gray-200 active:bg-gray-50 transition-colors"
                   style={{ minHeight: '68px', borderRadius: '4px' }}
                   data-testid="button-privacy"
                 >
@@ -1703,7 +1703,7 @@ export default function Profile() {
 
                 {/* Security and Legal */}
                 <button 
-                  className="w-full flex items-center justify-between px-4 py-5 bg-white border border-gray-300 active:bg-gray-50 transition-colors"
+                  className="w-full flex items-center justify-between px-4 py-5 bg-white border border-gray-200 active:bg-gray-50 transition-colors"
                   style={{ minHeight: '68px', borderRadius: '4px' }}
                   data-testid="button-security-legal"
                 >
@@ -3618,7 +3618,7 @@ export default function Profile() {
             <div className="flex-1 overflow-y-auto bg-white">
               <div className="mx-4 mt-6 pb-6">
                 {/* Name */}
-                <div className="border border-gray-300 rounded px-4 py-4 mb-3" style={{ minHeight: '70px', borderRadius: '4px' }}>
+                <div className="border border-gray-200 rounded px-4 py-4 mb-3" style={{ minHeight: '70px', borderRadius: '4px' }}>
                   <p className="text-gray-800 text-base font-normal" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     Name
                   </p>
@@ -3628,7 +3628,7 @@ export default function Profile() {
                 </div>
 
                 {/* Date of Birth */}
-                <div className="border border-gray-300 rounded px-4 py-4 mb-3" style={{ minHeight: '70px', borderRadius: '4px' }}>
+                <div className="border border-gray-200 rounded px-4 py-4 mb-3" style={{ minHeight: '70px', borderRadius: '4px' }}>
                   <p className="text-gray-800 text-base font-normal" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     Date of birth
                   </p>
@@ -3638,7 +3638,7 @@ export default function Profile() {
                 </div>
 
                 {/* Address */}
-                <div className="border border-gray-300 rounded px-4 py-4 mb-3" style={{ minHeight: '70px', borderRadius: '4px' }}>
+                <div className="border border-gray-200 rounded px-4 py-4 mb-3" style={{ minHeight: '70px', borderRadius: '4px' }}>
                   <p className="text-gray-800 text-base font-normal" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     Address
                   </p>
@@ -3648,7 +3648,7 @@ export default function Profile() {
                 </div>
 
                 {/* Phone */}
-                <div className="border border-gray-300 rounded px-4 py-4 mb-3" style={{ minHeight: '70px', borderRadius: '4px' }}>
+                <div className="border border-gray-200 rounded px-4 py-4 mb-3" style={{ minHeight: '70px', borderRadius: '4px' }}>
                   <p className="text-gray-800 text-base font-normal" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     Mobile number
                   </p>
@@ -3658,7 +3658,7 @@ export default function Profile() {
                 </div>
 
                 {/* Member Since */}
-                <div className="border border-gray-300 rounded px-4 py-4 mb-3" style={{ minHeight: '70px', borderRadius: '4px' }}>
+                <div className="border border-gray-200 rounded px-4 py-4 mb-3" style={{ minHeight: '70px', borderRadius: '4px' }}>
                   <p className="text-gray-800 text-base font-normal" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     Member since
                   </p>
