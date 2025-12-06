@@ -1041,7 +1041,8 @@ export default function Profile() {
       description: randomTransaction.description,
       category: randomTransaction.type === 'credit' ? 'income' : 'expense',
       type: randomTransaction.type,
-      timestamp: transactionDate.toISOString()
+      timestamp: transactionDate.toISOString(),
+      isSample: true
     };
 
     try {
@@ -1257,7 +1258,8 @@ export default function Profile() {
           description: randomTransaction.description,
           category: randomTransaction.type === 'credit' ? 'income' : 'expense',
           type: randomTransaction.type,
-          timestamp: transactionDate.toISOString()
+          timestamp: transactionDate.toISOString(),
+          isSample: true
         };
 
         const response = await fetch('/api/transactions', {
@@ -1366,6 +1368,18 @@ export default function Profile() {
     
     // Clear cache again after setting new data
     UserDataManager.clearCache();
+    
+    // Clear all transactions from PostgreSQL database
+    try {
+      await fetch('/api/transactions/clear-all', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
+      });
+      console.log('🗑️ All transactions cleared from database');
+    } catch (error) {
+      console.error('Failed to clear transactions from database:', error);
+    }
     
     // Persist reset balances to PostgreSQL for each account
     for (const account of resetAccounts) {
@@ -2845,12 +2859,17 @@ export default function Profile() {
                     data-testid="select-account-to-delete"
                   >
                     <option value="">Choose an account...</option>
-                    {accounts && accounts.map((account) => (
+                    {accounts && accounts.filter(acc => acc.accountType !== 'current').map((account) => (
                       <option key={account.id} value={account.id}>
                         {account.displayName} - {formatCurrency(account.balance, userCurrency)}
                       </option>
                     ))}
                   </select>
+                  {accounts && accounts.filter(acc => acc.accountType !== 'current').length === 0 && (
+                    <p className="text-sm text-gray-500 mt-2 italic" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      No deletable accounts. Current accounts cannot be deleted.
+                    </p>
+                  )}
                 </div>
 
                 {deletingAccountId && (

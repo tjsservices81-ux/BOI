@@ -33,7 +33,6 @@ import TransactionHistoryWorking from "@/pages/transaction-history-working";
 
 import BankStatements from "@/pages/bank-statements";
 import Profile from "@/pages/profile";
-import ProfilePersonal from "@/pages/profile-personal";
 import Settings from "@/pages/settings";
 import Help from "@/pages/help";
 import CreditScore from "@/pages/credit-score";
@@ -524,11 +523,6 @@ function AppRoutes() {
           <Route path="/profile">
             <ProtectedRoute>
               <Profile />
-            </ProtectedRoute>
-          </Route>
-          <Route path="/profile/personal">
-            <ProtectedRoute>
-              <ProfilePersonal />
             </ProtectedRoute>
           </Route>
           <Route path="/settings">
