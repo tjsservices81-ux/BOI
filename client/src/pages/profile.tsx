@@ -1535,29 +1535,24 @@ export default function Profile() {
   };
 
   return (
-    <div className="h-screen bg-gradient-to-b from-[#126987] to-[#0d4e63] relative overflow-hidden">
-      {/* Header */}
-      {true && (
-        <div className="bg-[#126987] px-4 py-6 pt-12 relative z-10">
-          <div className="flex items-center justify-between">
-            <button 
-              onClick={() => navigate('/dashboard')}
-              className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center active:scale-95 transition-transform"
-            >
-              <ChevronLeft className="w-6 h-6 text-white" />
-            </button>
-            <h1 className="text-xl font-bold text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              Profile
-            </h1>
-            <div className="w-10 h-10" />
-          </div>
-        </div>
-      )}
+    <div className="h-screen bg-[#F5F5F5] flex flex-col">
+      {/* Header - Teal blue bar */}
+      <div className="bg-[#126987] px-4 py-4 flex items-center" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 16px)' }}>
+        <button 
+          onClick={() => navigate('/dashboard')}
+          className="w-10 h-10 flex items-center justify-center active:scale-95 transition-transform"
+          data-testid="button-back"
+        >
+          <ChevronLeft className="w-6 h-6 text-white" />
+        </button>
+        <h1 className="flex-1 text-center text-white font-semibold text-lg -ml-10" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+          Profile
+        </h1>
+      </div>
 
-      {/* Profile Content */}
-      <div className="bg-white rounded-t-3xl absolute inset-x-0 top-32 bottom-0 overflow-y-auto overscroll-behavior-y-contain page-slide-up" 
-           style={{ WebkitOverflowScrolling: 'touch' }}>
-        <div className="p-6 pb-48 min-h-full">
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+        <div className="px-4 pb-32">
           {isLoadingProfile ? (
             <div className="flex flex-col items-center justify-center h-64">
               <div className="w-16 h-16 border-4 border-gray-200 border-t-[#126987] rounded-full animate-spin mb-4"></div>
@@ -1565,101 +1560,167 @@ export default function Profile() {
             </div>
           ) : (
             <>
-              {/* Profile Header */}
-              <div className="flex flex-col items-center text-center mb-8">
+              {/* Profile Header Section */}
+              <div className="flex flex-col items-center text-center py-8">
+                {/* Profile Icon - Circular teal outline with silhouette */}
                 <button 
                   onClick={handleProfilePictureTap}
                   onTouchStart={(e) => e.preventDefault()}
-                  className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mb-4 active:scale-95 transition-all duration-200 touch-manipulation"
+                  className="w-20 h-20 bg-white rounded-full flex items-center justify-center mb-4 active:scale-95 transition-all duration-200 touch-manipulation border-2 border-[#126987]"
                   style={{
                     WebkitTapHighlightColor: 'transparent',
                     touchAction: 'manipulation'
                   }}
+                  data-testid="button-profile-picture"
                 >
-                  <User className="w-12 h-12 text-gray-600" />
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#126987" strokeWidth="1.5">
+                    <circle cx="12" cy="8" r="4" />
+                    <path d="M4 20c0-4 4-6 8-6s8 2 8 6" />
+                  </svg>
                 </button>
-                <h2 className="text-2xl font-bold text-gray-900 mb-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  {userDetails.name || "User"}
-                </h2>
-                <p className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  {userDetails.joinDate ? (() => {
-                    if (userDetails.joinDate.includes('Member since')) {
-                      return userDetails.joinDate;
+
+                {/* User ID */}
+                <p className="text-gray-700 text-base font-medium mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  User ID: {userDetails.customerNumber}
+                </p>
+
+                {/* Log Out Button */}
+                <button 
+                  onClick={() => {
+                    if (accountDeleted) {
+                      alert('Account Deleted');
+                      return;
                     }
-                    const match = userDetails.joinDate.match(/\d{4}/);
-                    const year = match ? match[0] : new Date(userDetails.joinDate).getFullYear();
-                    return `Member since ${year}`;
-                  })() : ""}
-                </p>
-                <p className="text-sm text-gray-500 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Customer #{userDetails.customerNumber}
-                </p>
+                    logout();
+                  }}
+                  className="px-12 py-3 bg-white border-2 border-[#126987] rounded-full active:scale-95 transition-transform"
+                  data-testid="button-logout"
+                >
+                  <span className="text-[#126987] font-medium text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Log out
+                  </span>
+                </button>
               </div>
 
-          {/* Profile Details */}
-          <div className="space-y-4 mb-8">
-            <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl">
-              <Mail className="w-5 h-5 text-gray-600" />
-              <div>
-                <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Email</p>
-                <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  {userDetails.email || "Not provided"}
+              {/* Settings List */}
+              <div className="space-y-3 mt-4">
+                {/* Personal details */}
+                <button 
+                  onClick={() => navigate('/settings')}
+                  className="w-full flex items-center justify-between p-5 bg-white rounded-2xl active:scale-[0.98] transition-transform shadow-sm"
+                  data-testid="button-personal-details"
+                >
+                  <div className="flex items-center gap-4">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#126987" strokeWidth="1.5">
+                      <circle cx="12" cy="8" r="4" />
+                      <path d="M4 20c0-4 4-6 8-6s8 2 8 6" />
+                    </svg>
+                    <span className="text-gray-800 font-medium text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Personal details
+                    </span>
+                  </div>
+                  <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />
+                </button>
+
+                {/* My security devices */}
+                <button 
+                  className="w-full flex items-center justify-between p-5 bg-white rounded-2xl active:scale-[0.98] transition-transform shadow-sm"
+                  data-testid="button-security-devices"
+                >
+                  <div className="flex items-center gap-4">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#126987" strokeWidth="1.5">
+                      <rect x="5" y="2" width="14" height="20" rx="2" />
+                      <line x1="12" y1="18" x2="12" y2="18" strokeLinecap="round" strokeWidth="2" />
+                    </svg>
+                    <span className="text-gray-800 font-medium text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      My security devices
+                    </span>
+                  </div>
+                  <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />
+                </button>
+
+                {/* Face ID */}
+                <button 
+                  className="w-full flex items-center justify-between p-5 bg-white rounded-2xl active:scale-[0.98] transition-transform shadow-sm"
+                  data-testid="button-face-id"
+                >
+                  <div className="flex items-center gap-4">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#126987" strokeWidth="1.5">
+                      <path d="M7 3H5a2 2 0 00-2 2v2M17 3h2a2 2 0 012 2v2M7 21H5a2 2 0 01-2-2v-2M17 21h2a2 2 0 002-2v-2" />
+                      <circle cx="9" cy="10" r="1" fill="#126987" />
+                      <circle cx="15" cy="10" r="1" fill="#126987" />
+                      <path d="M9 15c1.5 1.5 4.5 1.5 6 0" />
+                    </svg>
+                    <span className="text-gray-800 font-medium text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Face ID
+                    </span>
+                  </div>
+                  <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />
+                </button>
+
+                {/* Open banking connections */}
+                <button 
+                  className="w-full flex items-center justify-between p-5 bg-white rounded-2xl active:scale-[0.98] transition-transform shadow-sm"
+                  data-testid="button-open-banking"
+                >
+                  <div className="flex items-center gap-4">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#126987" strokeWidth="1.5">
+                      <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
+                      <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
+                    </svg>
+                    <span className="text-gray-800 font-medium text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Open banking connections
+                    </span>
+                  </div>
+                  <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />
+                </button>
+
+                {/* Privacy and preferences */}
+                <button 
+                  className="w-full flex items-center justify-between p-5 bg-white rounded-2xl active:scale-[0.98] transition-transform shadow-sm"
+                  data-testid="button-privacy"
+                >
+                  <div className="flex items-center gap-4">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#126987" strokeWidth="1.5">
+                      <rect x="3" y="4" width="18" height="16" rx="2" />
+                      <line x1="7" y1="8" x2="17" y2="8" />
+                      <line x1="7" y1="12" x2="17" y2="12" />
+                      <line x1="7" y1="16" x2="13" y2="16" />
+                    </svg>
+                    <span className="text-gray-800 font-medium text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Privacy and preferences
+                    </span>
+                  </div>
+                  <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />
+                </button>
+
+                {/* Security and Legal */}
+                <button 
+                  className="w-full flex items-center justify-between p-5 bg-white rounded-2xl active:scale-[0.98] transition-transform shadow-sm"
+                  data-testid="button-security-legal"
+                >
+                  <div className="flex items-center gap-4">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#126987" strokeWidth="1.5">
+                      <rect x="5" y="11" width="14" height="10" rx="2" />
+                      <path d="M7 11V7a5 5 0 0110 0v4" />
+                    </svg>
+                    <span className="text-gray-800 font-medium text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Security and Legal
+                    </span>
+                  </div>
+                  <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />
+                </button>
+              </div>
+
+              {/* Version Footer */}
+              <div className="text-center mt-8 mb-4">
+                <p className="text-gray-400 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  V 11.06
+                </p>
+                <p className="text-gray-400 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  BOI.UAPR27-2
                 </p>
               </div>
-            </div>
-
-            <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl">
-              <Phone className="w-5 h-5 text-gray-600" />
-              <div>
-                <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Phone</p>
-                <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  {userDetails.phone || "Not provided"}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl">
-              <MapPin className="w-5 h-5 text-gray-600" />
-              <div>
-                <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Address</p>
-                <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  {userDetails.address || "Not provided"}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl">
-              <Calendar className="w-5 h-5 text-gray-600" />
-              <div>
-                <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Date of Birth</p>
-                <p className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  {userDetails.dateOfBirth || "Not provided"}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="space-y-4">
-            <button 
-              onClick={() => navigate('/settings')}
-              className="w-full flex items-center space-x-4 p-4 bg-gray-100 border border-gray-200 rounded-xl active:scale-98 transition-transform hover:bg-gray-200"
-            >
-              <Settings className="w-5 h-5 text-gray-700" />
-              <span className="flex-1 text-left font-semibold text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Settings
-              </span>
-            </button>
-
-            <div className="w-full flex items-center space-x-4 p-4 bg-gray-100 border border-gray-200 rounded-xl opacity-50">
-              <Shield className="w-5 h-5 text-gray-400" />
-              <span className="flex-1 text-left font-semibold text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Security
-              </span>
-            </div>
-
-            {/* Sign Out removed - users can only be logged out via admin deletion */}
-          </div>
             </>
           )}
         </div>

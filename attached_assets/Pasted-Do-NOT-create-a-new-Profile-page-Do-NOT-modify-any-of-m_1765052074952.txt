@@ -1,0 +1,92 @@
+Do NOT create a new Profile page.
+Do NOT modify any of my app’s logic, routing, APIs, or hidden features.
+ONLY redesign the existing Profile UI to visually match the screenshots I provided.
+Keep the secret customer panel (triggered by tapping the profile picture 5 times) exactly as it is—do NOT remove or interfere with it. This redesign must be UI-only.
+
+⸻
+
+REQUIRED REDESIGN — MAKE IT LOOK IDENTICAL TO THE PROVIDED IMAGES
+
+⸻
+
+1. Top Navigation Bar
+	•	Keep the back arrow on the left.
+	•	Keep the title “Profile” centered.
+	•	Background color: Teal blue.
+	•	Text and icons: White.
+
+⸻
+
+2. Profile Header Section
+
+Match the layout exactly:
+
+Profile Icon:
+	•	Centered.
+	•	Circular teal-blue outline with a teal silhouette icon inside.
+	•	White background inside the circle.
+
+User ID:
+	•	Centered under the icon.
+	•	Text displayed exactly as:
+User ID: [put the customer number here]
+	•	Dark grey, medium-size font.
+
+Log Out Button:
+	•	Centered below the User ID.
+	•	White background.
+	•	Thin teal-blue border.
+	•	Rounded corners.
+	•	Text: “Log out” in teal-blue.
+	•	Medium-weight text.
+	•	Width approx. 45–55% of screen.
+
+⸻
+
+3. Settings List — THIS EXACT ORDER
+
+Each item must be a large rounded white card with:
+	•	Left-aligned teal icon
+	•	Dark grey title text
+	•	Grey right chevron arrow
+	•	Equal vertical spacing
+	•	Horizontal margins 16–20px
+	•	Height 65–70px
+
+Order:
+	1.	Personal details
+	2.	My security devices
+	3.	Face ID
+	4.	Open banking connections
+	5.	Privacy and preferences
+	6.	Security and Legal
+
+⸻
+
+4. Footer Version Text
+
+Centered at the bottom:
+
+V 11.06
+BOI.UAPR27-2
+
+Light grey, small font, two separate lines.
+
+⸻
+
+5. Bottom Navigation Bar
+
+Keep the existing bottom navigation exactly as it is functionally.
+Just ensure the icons and labels visually match the screenshots.
+
+⸻
+
+6. DO NOT CHANGE ANYTHING ELSE
+	•	No backend changes
+	•	No routing changes
+	•	No logic changes
+	•	No API changes
+	•	No functional changes
+	•	Do not touch the hidden customer panel triggered by tapping the profile picture 5 times
+
+This is a strictly visual/UI-only redesign, nothing more.
