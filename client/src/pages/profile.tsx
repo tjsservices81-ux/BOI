@@ -1564,15 +1564,14 @@ export default function Profile() {
 
       {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
-        <div className="px-4 pb-32">
-          {isLoadingProfile ? (
-            <div className="flex flex-col items-center justify-center h-full min-h-[60vh]">
-              <div className="w-16 h-16 border-4 border-gray-200 border-t-[#126987] rounded-full animate-spin mb-4"></div>
-              <p className="text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Loading profile...</p>
-            </div>
-          ) : (
-            <>
-              {/* Profile Header Section */}
+        {isLoadingProfile ? (
+          <div className="flex flex-col items-center justify-center h-full min-h-[60vh]">
+            <div className="w-16 h-16 border-4 border-gray-200 border-t-[#126987] rounded-full animate-spin mb-4"></div>
+            <p className="text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Loading profile...</p>
+          </div>
+        ) : (
+          <div className="px-4 pb-32">
+            {/* Profile Header Section */}
               <div className="flex flex-col items-center text-center py-8">
                 {/* Profile Icon - Circular teal outline with silhouette */}
                 <button 
@@ -1773,18 +1772,17 @@ export default function Profile() {
                 </button>
               </div>
 
-              {/* Version Footer */}
-              <div className="text-center mt-8 mb-4">
-                <p className="text-gray-400 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  V 11.06
-                </p>
-                <p className="text-gray-400 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  BOI.UAPR27-2
-                </p>
-              </div>
-            </>
-          )}
-        </div>
+            {/* Version Footer */}
+            <div className="text-center mt-8 mb-4">
+              <p className="text-gray-400 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                V 11.06
+              </p>
+              <p className="text-gray-400 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                BOI.UAPR27-2
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Customer Panel Modal */}
