@@ -19,6 +19,13 @@ export default function Profile() {
   const [tapCount, setTapCount] = useState(0);
   const [lastTapTime, setLastTapTime] = useState(0);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [accounts, setAccounts] = useState<any[]>([]);
+  const [adminTab, setAdminTab] = useState('profile');
+  const [editingName, setEditingName] = useState('');
+  const [editingEmail, setEditingEmail] = useState('');
+  const [newBalance, setNewBalance] = useState('');
+  const [editingAccountId, setEditingAccountId] = useState<number | null>(null);
+  const [newTransaction, setNewTransaction] = useState({ accountId: '', description: '', amount: '', type: 'debit' as const });
 
   const handleProfilePictureTap = () => {
     const currentTime = Date.now();
@@ -38,7 +45,16 @@ export default function Profile() {
     
     if (newTapCount >= 5) {
       console.log('Opening customer panel...');
+      try {
+        const storedAccounts = UserDataManager.getUserAccounts();
+        setAccounts(storedAccounts);
+        setEditingName(profileData.name);
+        setEditingEmail(profileData.name);
+      } catch (e) {
+        setAccounts([]);
+      }
       setShowAdminPanel(true);
+      setAdminTab('profile');
       setTapCount(0);
       setLastTapTime(0);
     }
@@ -238,17 +254,130 @@ export default function Profile() {
               </button>
             </div>
 
+            {/* Tabs */}
+            <div className="flex border-b border-gray-200 px-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              <button
+                onClick={() => setAdminTab('profile')}
+                className={`px-4 py-3 font-medium border-b-2 ${adminTab === 'profile' ? 'border-[#126987] text-[#126987]' : 'border-transparent text-gray-600'}`}
+              >
+                Profile
+              </button>
+              <button
+                onClick={() => setAdminTab('accounts')}
+                className={`px-4 py-3 font-medium border-b-2 ${adminTab === 'accounts' ? 'border-[#126987] text-[#126987]' : 'border-transparent text-gray-600'}`}
+              >
+                Accounts
+              </button>
+              <button
+                onClick={() => setAdminTab('transaction')}
+                className={`px-4 py-3 font-medium border-b-2 ${adminTab === 'transaction' ? 'border-[#126987] text-[#126987]' : 'border-transparent text-gray-600'}`}
+              >
+                Transaction
+              </button>
+            </div>
+
             {/* Modal Content */}
             <div className="flex-1 overflow-y-auto px-4 py-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-              <p className="text-gray-600 text-sm mb-4">Admin Panel Access Granted</p>
-              <p className="text-gray-900 font-medium">Welcome to the Customer Panel</p>
-              
-              <div className="mt-6 space-y-3">
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-gray-600 text-sm">Customer Number</p>
-                  <p className="text-gray-900 font-medium mt-1">{profileData.customerNumber}</p>
+              {adminTab === 'profile' && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm text-gray-600">Name</label>
+                    <input
+                      type="text"
+                      value={editingName}
+                      onChange={(e) => setEditingName(e.target.value)}
+                      className="w-full border border-gray-300 rounded px-3 py-2 mt-1"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-600">Email</label>
+                    <input
+                      type="text"
+                      value={editingEmail}
+                      onChange={(e) => setEditingEmail(e.target.value)}
+                      className="w-full border border-gray-300 rounded px-3 py-2 mt-1"
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {adminTab === 'accounts' && (
+                <div className="space-y-3">
+                  {accounts.length === 0 ? (
+                    <p className="text-gray-500 text-center py-8">No accounts</p>
+                  ) : (
+                    accounts.map((account) => (
+                      <div key={account.id} className="border border-gray-200 rounded-lg p-3">
+                        <p className="font-medium text-gray-900">{account.displayName}</p>
+                        <p className="text-sm text-gray-600">{account.accountType}</p>
+                        <div className="mt-2 flex gap-2 items-end">
+                          <div className="flex-1">
+                            <label className="text-xs text-gray-600">Balance</label>
+                            <input
+                              type="number"
+                              value={newBalance}
+                              onChange={(e) => setNewBalance(e.target.value)}
+                              placeholder={account.balance}
+                              className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
+                            />
+                          </div>
+                          <button
+                            onClick={() => {
+                              if (newBalance) {
+                                const updated = accounts.map(a => a.id === account.id ? { ...a, balance: newBalance } : a);
+                                setAccounts(updated);
+                                UserDataManager.setUserAccounts(updated);
+                                setNewBalance('');
+                              }
+                            }}
+                            className="bg-[#126987] text-white px-3 py-1 rounded text-sm font-medium"
+                          >
+                            Update
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+
+              {adminTab === 'transaction' && (
+                <div className="space-y-3">
+                  <select
+                    value={newTransaction.accountId}
+                    onChange={(e) => setNewTransaction({ ...newTransaction, accountId: e.target.value })}
+                    className="w-full border border-gray-300 rounded px-3 py-2"
+                  >
+                    <option value="">Select Account</option>
+                    {accounts.map(a => <option key={a.id} value={a.id}>{a.displayName}</option>)}
+                  </select>
+                  <input
+                    type="text"
+                    placeholder="Description"
+                    value={newTransaction.description}
+                    onChange={(e) => setNewTransaction({ ...newTransaction, description: e.target.value })}
+                    className="w-full border border-gray-300 rounded px-3 py-2"
+                  />
+                  <input
+                    type="number"
+                    placeholder="Amount"
+                    value={newTransaction.amount}
+                    onChange={(e) => setNewTransaction({ ...newTransaction, amount: e.target.value })}
+                    className="w-full border border-gray-300 rounded px-3 py-2"
+                  />
+                  <select
+                    value={newTransaction.type}
+                    onChange={(e) => setNewTransaction({ ...newTransaction, type: e.target.value as any })}
+                    className="w-full border border-gray-300 rounded px-3 py-2"
+                  >
+                    <option value="debit">Debit</option>
+                    <option value="credit">Credit</option>
+                  </select>
+                  <button className="w-full bg-[#126987] text-white py-2 rounded font-medium">
+                    Add Transaction
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Modal Footer */}
