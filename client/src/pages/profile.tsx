@@ -92,6 +92,7 @@ export default function Profile() {
     const saved = localStorage.getItem('faceIdEnabled');
     return saved ? JSON.parse(saved) : false;
   });
+  const [isRegisteringFaceId, setIsRegisteringFaceId] = useState(false);
   const [editProfileData, setEditProfileData] = useState({
     name: '',
     email: '',
@@ -348,6 +349,83 @@ export default function Profile() {
       setShowAdminPanel(true);
       setTapCount(0);
       setLastTapTime(0);
+    }
+  };
+
+  const handleFaceIdToggle = async (enabled: boolean) => {
+    if (!enabled) {
+      // Disabling Face ID - just clear the stored credential
+      localStorage.removeItem('faceIdCredentialId');
+      localStorage.setItem('faceIdEnabled', JSON.stringify(false));
+      setFaceIdEnabled(false);
+      return;
+    }
+
+    // Enabling Face ID - register passkey
+    const currentUser = UserDataManager.getCurrentUser();
+    if (!currentUser) {
+      console.error('Please log in first to enable Face ID');
+      return;
+    }
+
+    setIsRegisteringFaceId(true);
+
+    try {
+      // Check if Web Authentication API is available
+      if (!window.PublicKeyCredential) {
+        // Fallback for browsers without WebAuthn
+        localStorage.setItem('faceIdCredentialId', 'fallback-' + currentUser);
+        localStorage.setItem('faceIdEnabled', JSON.stringify(true));
+        setFaceIdEnabled(true);
+        setIsRegisteringFaceId(false);
+        return;
+      }
+
+      // Register passkey using WebAuthn
+      const challenge = new Uint8Array(32);
+      crypto.getRandomValues(challenge);
+
+      const userId = new Uint8Array(16);
+      crypto.getRandomValues(userId);
+
+      const publicKeyCredentialCreationOptions = {
+        challenge,
+        rp: {
+          name: "Bank of Ireland",
+          id: window.location.hostname,
+        },
+        user: {
+          id: userId,
+          name: "BOI Customer Login",
+          displayName: "BOI Customer Login",
+        },
+        pubKeyCredParams: [
+          { alg: -7, type: "public-key" as const },
+          { alg: -257, type: "public-key" as const }
+        ],
+        authenticatorSelection: {
+          authenticatorAttachment: "platform" as const,
+          userVerification: "required" as const,
+        },
+        timeout: 60000,
+      };
+
+      const credential = await navigator.credentials.create({
+        publicKey: publicKeyCredentialCreationOptions
+      }) as PublicKeyCredential;
+
+      if (credential && credential.id) {
+        // Store credential ID (base64 encoded) for future authentication
+        const rawIdArray = Array.from(new Uint8Array(credential.rawId));
+        const credentialIdBase64 = btoa(rawIdArray.map(byte => String.fromCharCode(byte)).join(''));
+        localStorage.setItem('faceIdCredentialId', credentialIdBase64);
+        localStorage.setItem('faceIdEnabled', JSON.stringify(true));
+        setFaceIdEnabled(true);
+      }
+    } catch (error) {
+      console.error('Face ID registration error:', error);
+    } finally {
+      setIsRegisteringFaceId(false);
     }
   };
 
@@ -3889,20 +3967,22 @@ export default function Profile() {
                     <span className="text-gray-900 font-semibold text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                       Enable Face ID
                     </span>
-                    <button
-                      onClick={() => {
-                        const newValue = !faceIdEnabled;
-                        setFaceIdEnabled(newValue);
-                        localStorage.setItem('faceIdEnabled', JSON.stringify(newValue));
-                      }}
-                      className={`relative w-14 h-8 rounded-full transition-colors ${faceIdEnabled ? 'bg-[#126987]' : 'bg-gray-300'}`}
-                      data-testid="toggle-face-id"
-                    >
-                      <span className={`absolute top-1 w-6 h-6 bg-white rounded-full shadow transition-transform ${faceIdEnabled ? 'right-1' : 'left-1'}`}></span>
-                      {faceIdEnabled && (
-                        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-white text-xs font-medium">On</span>
-                      )}
-                    </button>
+                    {isRegisteringFaceId ? (
+                      <div className="w-14 h-8 flex items-center justify-center">
+                        <div className="w-5 h-5 border-2 border-gray-300 border-t-[#126987] rounded-full animate-spin"></div>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => handleFaceIdToggle(!faceIdEnabled)}
+                        className={`relative w-14 h-8 rounded-full transition-colors ${faceIdEnabled ? 'bg-[#126987]' : 'bg-gray-300'}`}
+                        data-testid="toggle-face-id"
+                      >
+                        <span className={`absolute top-1 w-6 h-6 bg-white rounded-full shadow transition-transform ${faceIdEnabled ? 'right-1' : 'left-1'}`}></span>
+                        {faceIdEnabled && (
+                          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-white text-xs font-medium">On</span>
+                        )}
+                      </button>
+                    )}
                   </div>
 
                   {/* Security warning */}
