@@ -1593,12 +1593,13 @@ export default function Profile() {
                       return;
                     }
                     logout();
+                    navigate('/login');
                   }}
                   className="px-14 py-2 bg-white border border-[#126987] active:bg-gray-50 transition-colors"
                   style={{ borderRadius: '4px' }}
                   data-testid="button-logout"
                 >
-                  <span className="text-[#126987] font-normal text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  <span className="text-[#126987] font-bold text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     Log out
                   </span>
                 </button>
