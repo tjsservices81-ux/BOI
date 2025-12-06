@@ -5,7 +5,6 @@ import { UserDataManager } from "@/utils/userDataManager";
 import { useAuth } from "@/lib/auth";
 import { motion, AnimatePresence } from "framer-motion";
 import { getUserCurrency, formatCurrency, getCurrencySymbol, type Currency } from "@/utils/currencyUtils";
-import faceIdIconPath from "@assets/IMG_1506_1759859583184.png";
 
 export default function Profile() {
   const locationHook = useLocation();
@@ -3716,9 +3715,13 @@ export default function Profile() {
               <h1 className="text-lg font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                 Personal Details
               </h1>
-              <div className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center">
+              <button
+                onClick={() => setShowPersonalDetails(false)}
+                className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center hover:bg-white/20 transition-colors"
+                data-testid="button-profile-close-personal-details"
+              >
                 <User className="w-4 h-4 text-white" />
-              </div>
+              </button>
             </div>
 
             {/* Scrollable Content */}
@@ -3811,9 +3814,13 @@ export default function Profile() {
               <h1 className="text-lg font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                 My Security Devices
               </h1>
-              <div className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center">
+              <button
+                onClick={() => setShowSecurityDevices(false)}
+                className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center hover:bg-white/20 transition-colors"
+                data-testid="button-profile-close-security-devices"
+              >
                 <User className="w-4 h-4 text-white" />
-              </div>
+              </button>
             </div>
             <div className="flex-1 overflow-y-auto bg-white">
               {isLoadingSecurityDevices ? (
@@ -3914,9 +3921,13 @@ export default function Profile() {
               <h1 className="text-lg font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                 Face ID
               </h1>
-              <div className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center">
+              <button
+                onClick={() => setShowFaceId(false)}
+                className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center hover:bg-white/20 transition-colors"
+                data-testid="button-profile-close-face-id"
+              >
                 <User className="w-4 h-4 text-white" />
-              </div>
+              </button>
             </div>
             <div className="flex-1 overflow-y-auto bg-white">
               {isLoadingFaceId ? (
@@ -3997,9 +4008,13 @@ export default function Profile() {
               <h1 className="text-lg font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                 Open Banking Connections
               </h1>
-              <div className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center">
+              <button
+                onClick={() => setShowOpenBanking(false)}
+                className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center hover:bg-white/20 transition-colors"
+                data-testid="button-profile-close-open-banking"
+              >
                 <User className="w-4 h-4 text-white" />
-              </div>
+              </button>
             </div>
             <div className="flex-1 overflow-y-auto bg-white">
               {isLoadingOpenBanking ? (
@@ -4069,9 +4084,13 @@ export default function Profile() {
               <h1 className="text-lg font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                 Privacy and Preferences
               </h1>
-              <div className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center">
+              <button
+                onClick={() => setShowPrivacy(false)}
+                className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center hover:bg-white/20 transition-colors"
+                data-testid="button-profile-close-privacy"
+              >
                 <User className="w-4 h-4 text-white" />
-              </div>
+              </button>
             </div>
             <div className="flex-1 overflow-y-auto bg-white">
               {isLoadingPrivacy ? (
@@ -4136,9 +4155,13 @@ export default function Profile() {
               <h1 className="text-lg font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                 Security and Legal
               </h1>
-              <div className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center">
+              <button
+                onClick={() => setShowSecurityLegal(false)}
+                className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center hover:bg-white/20 transition-colors"
+                data-testid="button-profile-close-security-legal"
+              >
                 <User className="w-4 h-4 text-white" />
-              </div>
+              </button>
             </div>
             <div className="flex-1 overflow-y-auto bg-white">
               {isLoadingSecurityLegal ? (
