@@ -3717,7 +3717,7 @@ export default function Profile() {
               </h1>
               <button
                 onClick={() => setShowPersonalDetails(false)}
-                className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center hover:bg-white/20 transition-colors"
+                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors"
                 data-testid="button-profile-close-personal-details"
               >
                 <User className="w-4 h-4 text-white" />
@@ -3816,7 +3816,7 @@ export default function Profile() {
               </h1>
               <button
                 onClick={() => setShowSecurityDevices(false)}
-                className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center hover:bg-white/20 transition-colors"
+                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors"
                 data-testid="button-profile-close-security-devices"
               >
                 <User className="w-4 h-4 text-white" />
@@ -3923,7 +3923,7 @@ export default function Profile() {
               </h1>
               <button
                 onClick={() => setShowFaceId(false)}
-                className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center hover:bg-white/20 transition-colors"
+                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors"
                 data-testid="button-profile-close-face-id"
               >
                 <User className="w-4 h-4 text-white" />
@@ -4010,7 +4010,7 @@ export default function Profile() {
               </h1>
               <button
                 onClick={() => setShowOpenBanking(false)}
-                className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center hover:bg-white/20 transition-colors"
+                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors"
                 data-testid="button-profile-close-open-banking"
               >
                 <User className="w-4 h-4 text-white" />
@@ -4086,7 +4086,7 @@ export default function Profile() {
               </h1>
               <button
                 onClick={() => setShowPrivacy(false)}
-                className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center hover:bg-white/20 transition-colors"
+                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors"
                 data-testid="button-profile-close-privacy"
               >
                 <User className="w-4 h-4 text-white" />
@@ -4157,7 +4157,7 @@ export default function Profile() {
               </h1>
               <button
                 onClick={() => setShowSecurityLegal(false)}
-                className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center hover:bg-white/20 transition-colors"
+                className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors"
                 data-testid="button-profile-close-security-legal"
               >
                 <User className="w-4 h-4 text-white" />
