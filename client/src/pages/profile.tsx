@@ -3766,13 +3766,64 @@ export default function Profile() {
                   <p className="text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Loading security devices...</p>
                 </div>
               ) : (
-                <div className="mx-4 mt-6 pb-6">
-                  <div className="border border-gray-200 rounded px-4 py-4 mb-3" style={{ minHeight: '70px', borderRadius: '4px' }}>
-                    <p className="text-gray-800 text-base font-normal" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      This iPhone
+                <div className="pb-6">
+                  {/* Primary device info box */}
+                  <div className="mx-4 mt-6 flex items-start gap-3 p-4 bg-gray-50 border border-gray-200 rounded" style={{ borderRadius: '4px' }}>
+                    <div className="flex-shrink-0 mt-1">
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#126987" strokeWidth="1.5">
+                        <rect x="5" y="2" width="14" height="20" rx="2" />
+                        <circle cx="12" cy="18" r="1" fill="#126987" />
+                        <path d="M15 1C16.5 2 17.5 3.5 17.5 5" stroke="#126987" strokeWidth="1.5" strokeLinecap="round" />
+                        <path d="M18 0C20 1.5 21.5 4 21.5 6.5" stroke="#126987" strokeWidth="1.5" strokeLinecap="round" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-gray-800 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <span className="text-[#126987] font-semibold">Primary device:</span> Required whenever additional security is needed for card purchases online.{' '}
+                        <span className="text-[#126987] underline cursor-pointer">More about this</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Manage devices section */}
+                  <div className="mx-4 mt-6">
+                    <h2 className="text-gray-900 text-lg font-semibold mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Manage devices
+                    </h2>
+                    <p className="text-gray-600 text-sm mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Tap on any device listed here to block or unblock it, rename it or remove it from your profile.
                     </p>
-                    <p className="text-gray-500 text-sm mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Active
+
+                    {/* Device card */}
+                    <div className="border border-gray-200 rounded p-4 flex items-center justify-between" style={{ borderRadius: '4px' }}>
+                      <div className="flex items-center gap-3">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#126987" strokeWidth="1.5">
+                          <rect x="5" y="2" width="14" height="20" rx="2" />
+                          <circle cx="12" cy="18" r="1" fill="#126987" />
+                        </svg>
+                        <div>
+                          <p className="text-gray-900 font-semibold text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                            This Phone
+                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-[#126987] text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Active</span>
+                            <span className="bg-gray-800 text-white text-xs font-bold px-2 py-0.5 rounded" style={{ fontFamily: 'OpenSans, sans-serif' }}>PRIMARY</span>
+                            <span className="text-gray-500 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>(Now being used)</span>
+                          </div>
+                        </div>
+                      </div>
+                      <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />
+                    </div>
+                  </div>
+
+                  {/* Adding another device section */}
+                  <div className="mx-4 mt-6">
+                    <h2 className="text-gray-900 text-lg font-semibold mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Adding another device
+                    </h2>
+                    <p className="text-gray-600 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      You can also access your online banking profile through other smartphones or tablets.{' '}
+                      <span className="text-[#126987] underline cursor-pointer">More about this</span>
                     </p>
                   </div>
                 </div>
