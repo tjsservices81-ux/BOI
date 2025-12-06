@@ -49,31 +49,9 @@ export default function Dashboard() {
     currentDate: ''
   });
 
-  // Enhanced navigation with smooth animations
-  const navigateWithAnimation = (path: string, animationType: 'slide-right' | 'slide-left' | 'slide-up' = 'slide-right') => {
-    setIsNavigating(true);
-    
-    // Add page transition classes
-    const currentPage = document.querySelector('.page-container') || document.body;
-    document.body.classList.add('page-transitioning');
-    
-    // Add exit animation based on type
-    if (animationType === 'slide-right') {
-      currentPage.classList.add('page-slide-out-left');
-    } else if (animationType === 'slide-left') {
-      currentPage.classList.add('page-slide-out-right');
-    }
-    
-    // Navigate after animation starts with cleanup
-    const timeoutId = setTimeout(() => {
-      setLocation(path);
-      setIsNavigating(false);
-      document.body.classList.remove('page-transitioning');
-      currentPage.classList.remove('page-slide-out-left', 'page-slide-out-right');
-    }, 200);
-    
-    // Cleanup timeout on unmount
-    return () => clearTimeout(timeoutId);
+  // Navigation without animations for dashboard
+  const navigateWithAnimation = (path: string) => {
+    setLocation(path);
   };
 
   // Load accounts from server API on mount
@@ -471,7 +449,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className={`page-container h-screen bg-white overflow-hidden flex flex-col ios-safe-bottom relative ${isNavigating ? 'dashboard-exit' : ''}`}>
+    <div className="page-container h-screen bg-white overflow-hidden flex flex-col ios-safe-bottom relative">
       {/* Ambient spending visualization background */}
       <SpendingVisualization />
       
