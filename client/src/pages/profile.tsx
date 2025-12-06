@@ -1609,8 +1609,8 @@ export default function Profile() {
                 {/* Personal details */}
                 <button 
                   onClick={() => setShowPersonalDetails(true)}
-                  className="w-full flex items-center justify-between px-4 py-5 bg-white rounded-lg border border-gray-300 active:bg-gray-50 transition-colors"
-                  style={{ minHeight: '68px' }}
+                  className="w-full flex items-center justify-between px-4 py-5 bg-white border border-gray-300 active:bg-gray-50 transition-colors"
+                  style={{ minHeight: '68px', borderRadius: '4px' }}
                   data-testid="button-personal-details"
                 >
                   <div className="flex items-center gap-4">
@@ -1627,8 +1627,8 @@ export default function Profile() {
 
                 {/* My security devices */}
                 <button 
-                  className="w-full flex items-center justify-between px-4 py-5 bg-white rounded-lg border border-gray-300 active:bg-gray-50 transition-colors"
-                  style={{ minHeight: '68px' }}
+                  className="w-full flex items-center justify-between px-4 py-5 bg-white border border-gray-300 active:bg-gray-50 transition-colors"
+                  style={{ minHeight: '68px', borderRadius: '4px' }}
                   data-testid="button-security-devices"
                 >
                   <div className="flex items-center gap-4">
@@ -1645,8 +1645,8 @@ export default function Profile() {
 
                 {/* Face ID */}
                 <button 
-                  className="w-full flex items-center justify-between px-4 py-5 bg-white rounded-lg border border-gray-300 active:bg-gray-50 transition-colors"
-                  style={{ minHeight: '68px' }}
+                  className="w-full flex items-center justify-between px-4 py-5 bg-white border border-gray-300 active:bg-gray-50 transition-colors"
+                  style={{ minHeight: '68px', borderRadius: '4px' }}
                   data-testid="button-face-id"
                 >
                   <div className="flex items-center gap-4">
@@ -1665,8 +1665,8 @@ export default function Profile() {
 
                 {/* Open banking connections */}
                 <button 
-                  className="w-full flex items-center justify-between px-4 py-5 bg-white rounded-lg border border-gray-300 active:bg-gray-50 transition-colors"
-                  style={{ minHeight: '68px' }}
+                  className="w-full flex items-center justify-between px-4 py-5 bg-white border border-gray-300 active:bg-gray-50 transition-colors"
+                  style={{ minHeight: '68px', borderRadius: '4px' }}
                   data-testid="button-open-banking"
                 >
                   <div className="flex items-center gap-4">
@@ -1683,8 +1683,8 @@ export default function Profile() {
 
                 {/* Privacy and preferences */}
                 <button 
-                  className="w-full flex items-center justify-between px-4 py-5 bg-white rounded-lg border border-gray-300 active:bg-gray-50 transition-colors"
-                  style={{ minHeight: '68px' }}
+                  className="w-full flex items-center justify-between px-4 py-5 bg-white border border-gray-300 active:bg-gray-50 transition-colors"
+                  style={{ minHeight: '68px', borderRadius: '4px' }}
                   data-testid="button-privacy"
                 >
                   <div className="flex items-center gap-4">
@@ -1703,8 +1703,8 @@ export default function Profile() {
 
                 {/* Security and Legal */}
                 <button 
-                  className="w-full flex items-center justify-between px-4 py-5 bg-white rounded-lg border border-gray-300 active:bg-gray-50 transition-colors"
-                  style={{ minHeight: '68px' }}
+                  className="w-full flex items-center justify-between px-4 py-5 bg-white border border-gray-300 active:bg-gray-50 transition-colors"
+                  style={{ minHeight: '68px', borderRadius: '4px' }}
                   data-testid="button-security-legal"
                 >
                   <div className="flex items-center gap-4">
