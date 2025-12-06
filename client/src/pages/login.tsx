@@ -1806,75 +1806,68 @@ export default function Login() {
       {/* Sign Up Modal */}
       {showSignUp && (
         <div 
-          className="modal-overlay bg-black bg-opacity-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-white flex flex-col z-50"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setShowSignUp(false);
             }
           }}
         >
+          {/* Header */}
           <div 
-            className="bg-white rounded-2xl w-full max-w-md p-6 max-h-[80vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
+            className="flex items-center justify-between px-6 py-4 border-b border-gray-200 flex-shrink-0"
+            style={{ 
+              backgroundColor: '#126987',
+              paddingTop: 'env(safe-area-inset-top, 12px)'
+            }}
           >
-            {/* Initial Step - Create Account Button */}
-            {signUpStep === 'initial' && (
-              <div>
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Create Account
-                  </h2>
-                  <button 
-                    onClick={() => setShowSignUp(false)}
-                    className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center active:scale-95 transition-transform"
+            <h2 className="text-lg font-bold text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              {signUpStep === 'initial' ? 'Create Account' : 'Account Details'}
+            </h2>
+            <button 
+              onClick={() => setShowSignUp(false)}
+              className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center active:scale-95 transition-transform"
+            >
+              <span className="text-white text-lg">×</span>
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto ios-scroll flex flex-col">
+            <div className="w-full max-w-md mx-auto px-6 py-8 flex flex-col justify-center flex-1">
+              {/* Initial Step - Create Account Button */}
+              {signUpStep === 'initial' && (
+                <div>
+                  <div className="text-center space-y-6 py-12">
+                    <h3 className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Get Started
+                    </h3>
+                    <p className="text-lg text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Create a new account to access your banking services
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={() => setSignUpStep('form')}
+                    className="w-full p-4 bg-green-50 text-green-600 rounded-xl font-semibold active:scale-98 transition-transform border border-green-200 text-lg"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
                   >
-                    <span className="text-gray-600 text-lg">×</span>
+                    Create New Account
                   </button>
                 </div>
+              )}
 
-                <div className="text-center space-y-4 py-8">
-                  <h3 className="text-lg font-semibold text-gray-800" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Get Started with Bank of Ireland
-                  </h3>
-                  <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Create a new account to access your banking services
-                  </p>
-                </div>
-
-                <button
-                  onClick={() => setSignUpStep('form')}
-                  className="w-full p-4 bg-green-50 text-green-600 rounded-xl font-semibold active:scale-98 transition-transform border border-green-200"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                >
-                  Create New Account
-                </button>
-              </div>
-            )}
-
-            {/* Form Step */}
-            {signUpStep === 'form' && (
-              <div>
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    Account Details
-                  </h2>
-                  <button 
-                    onClick={() => setShowSignUp(false)}
-                    className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center active:scale-95 transition-transform"
-                  >
-                    <span className="text-gray-600 text-lg">×</span>
-                  </button>
-                </div>
-
+              {/* Form Step */}
+              {signUpStep === 'form' && (
                 <form 
                   onSubmit={(e) => {
                     e.preventDefault();
                     handleSignUp();
                   }}
-                  className="space-y-4"
+                  className="space-y-5"
                 >
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    <label className="block text-sm font-semibold text-gray-700 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                       Full Name
                     </label>
                     <input
@@ -1882,7 +1875,7 @@ export default function Login() {
                       type="text"
                       value={newUserData.name}
                       onChange={(e) => setNewUserData({...newUserData, name: e.target.value})}
-                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      className="w-full p-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-base"
                       style={{ fontFamily: 'OpenSans, sans-serif' }}
                       placeholder="Enter your full name"
                       autoComplete="name"
@@ -1891,7 +1884,7 @@ export default function Login() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    <label className="block text-sm font-semibold text-gray-700 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                       Email Address
                     </label>
                     <input
@@ -1899,7 +1892,7 @@ export default function Login() {
                       type="email"
                       value={newUserData.email}
                       onChange={(e) => setNewUserData({...newUserData, email: e.target.value})}
-                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      className="w-full p-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-base"
                       style={{ fontFamily: 'OpenSans, sans-serif' }}
                       placeholder="Enter your email address"
                       autoComplete="email"
@@ -1908,7 +1901,7 @@ export default function Login() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    <label className="block text-sm font-semibold text-gray-700 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                       Phone Number
                     </label>
                     <input
@@ -1916,7 +1909,7 @@ export default function Login() {
                       type="tel"
                       value={newUserData.phone}
                       onChange={(e) => setNewUserData({...newUserData, phone: e.target.value})}
-                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      className="w-full p-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-base"
                       style={{ fontFamily: 'OpenSans, sans-serif' }}
                       placeholder="+353 XX XXX XXXX"
                       autoComplete="tel"
@@ -1924,26 +1917,26 @@ export default function Login() {
                     />
                   </div>
 
-                  <div className="flex space-x-3 pt-4">
+                  <div className="flex space-x-3 pt-6">
                     <button
                       type="button"
                       onClick={() => setSignUpStep('initial')}
-                      className="flex-1 p-3 bg-gray-100 text-gray-700 rounded-xl font-semibold active:scale-98 transition-transform"
+                      className="flex-1 p-4 bg-gray-100 text-gray-700 rounded-xl font-semibold active:scale-98 transition-transform text-base"
                       style={{ fontFamily: 'OpenSans, sans-serif' }}
                     >
                       Back
                     </button>
                     <button
                       type="submit"
-                      className="flex-1 p-3 bg-green-600 text-white rounded-xl font-semibold active:scale-98 transition-transform"
+                      className="flex-1 p-4 bg-green-600 text-white rounded-xl font-semibold active:scale-98 transition-transform text-base"
                       style={{ fontFamily: 'OpenSans, sans-serif' }}
                     >
                       Continue
                     </button>
                   </div>
                 </form>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -2063,28 +2056,39 @@ export default function Login() {
 
       {/* OTC Verification Modal */}
       {showOtcVerification && (
-        <div className="modal-overlay bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Verification Code
-              </h2>
-              <button 
-                onClick={() => {
-                  setShowOtcVerification(false);
-                  setOtcCode('');
-                  setPendingAccountData(null);
-                }}
-                className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center active:scale-95 transition-transform"
-              >
-                <span className="text-gray-600 text-lg">×</span>
-              </button>
-            </div>
+        <div className="fixed inset-0 bg-white flex flex-col z-50">
+          {/* Header */}
+          <div 
+            className="flex items-center justify-between px-6 py-4 border-b border-gray-200 flex-shrink-0"
+            style={{ 
+              backgroundColor: '#126987',
+              paddingTop: 'env(safe-area-inset-top, 12px)'
+            }}
+          >
+            <h2 className="text-lg font-bold text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              Verification Code
+            </h2>
+            <button 
+              onClick={() => {
+                setShowOtcVerification(false);
+                setOtcCode('');
+                setPendingAccountData(null);
+              }}
+              className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center active:scale-95 transition-transform"
+            >
+              <span className="text-white text-lg">×</span>
+            </button>
+          </div>
 
-            <div className="space-y-4">
-              <div className="text-center py-4">
-                <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Enter the 6-digit verification code sent to the administrator
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto ios-scroll flex flex-col">
+            <div className="w-full max-w-md mx-auto px-6 py-8 flex flex-col justify-center flex-1 space-y-8">
+              <div className="text-center space-y-2">
+                <p className="text-base text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Enter the 6-digit verification code
+                </p>
+                <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  sent to the administrator
                 </p>
               </div>
 
@@ -2096,27 +2100,27 @@ export default function Login() {
                     const value = e.target.value.replace(/\D/g, '').slice(0, 6);
                     setOtcCode(value);
                   }}
-                  className="w-full p-4 border border-gray-300 rounded-xl text-center text-3xl font-mono tracking-wider font-semibold"
+                  className="w-full p-6 border-2 border-gray-300 rounded-xl text-center text-4xl font-mono tracking-[0.5rem] font-semibold focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   placeholder="000000"
                   maxLength={6}
                 />
               </div>
 
               {pendingAccountData && (
-                <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                  <p className="text-xs text-gray-600 uppercase font-semibold mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                <div className="bg-gray-50 rounded-xl p-5 border border-gray-200">
+                  <p className="text-xs text-gray-600 uppercase font-semibold mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     Creating Account For
                   </p>
-                  <p className="text-sm text-gray-900 font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  <p className="text-base text-gray-900 font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     {pendingAccountData.name}
                   </p>
-                  <p className="text-xs text-gray-500 mt-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  <p className="text-sm text-gray-500 mt-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     {pendingAccountData.email}
                   </p>
                 </div>
               )}
 
-              <div className="flex space-x-3 pt-2">
+              <div className="flex space-x-3 pt-4">
                 <button
                   type="button"
                   onClick={() => {
@@ -2124,7 +2128,7 @@ export default function Login() {
                     setOtcCode('');
                     setPendingAccountData(null);
                   }}
-                  className="flex-1 p-3 bg-gray-100 text-gray-700 rounded-xl font-semibold active:scale-98 transition-transform"
+                  className="flex-1 p-4 bg-gray-100 text-gray-700 rounded-xl font-semibold active:scale-98 transition-transform text-base"
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                 >
                   Cancel
@@ -2132,7 +2136,7 @@ export default function Login() {
                 <button
                   onClick={handleOtcVerification}
                   disabled={otcCode.length !== 6}
-                  className={`flex-1 p-3 rounded-xl font-semibold active:scale-98 transition-transform ${
+                  className={`flex-1 p-4 rounded-xl font-semibold active:scale-98 transition-transform text-base ${
                     otcCode.length === 6 
                       ? 'bg-green-600 text-white' 
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
