@@ -212,15 +212,8 @@ export default function Login() {
     setBiometricVerified(false);
     setPinVerified(false);
     setLogoTapCount(0);
-    setShowAdminLogin(false);
   }, []);
 
-  // Validate users when Admin Access dialog opens
-  useEffect(() => {
-    if (showAdminLogin) {
-      validateAndCleanUsers();
-    }
-  }, [showAdminLogin]);
 
   const handleNavigation = (path: string) => {
     setIsNavigating(true);
@@ -240,7 +233,10 @@ export default function Login() {
     setLogoTapCount(newTapCount);
     
     if (newTapCount === 5) {
-      setShowAdminLogin(true);
+      // Open the signup modal directly when 5 taps detected
+      resetSignUpForm();
+      setShowSignUp(true);
+      setSignUpStep('initial');
       setLogoTapCount(0);
       return;
     }
@@ -1941,118 +1937,6 @@ export default function Login() {
         </div>
       )}
 
-      {/* Admin Login Modal */}
-      {showAdminLogin && (
-        <div className="modal-overlay bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-sm p-6 relative" style={{ zIndex: 10000 }}>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Admin Access
-              </h2>
-              <button 
-                onClick={() => setShowAdminLogin(false)}
-                className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center active:scale-95 transition-transform"
-              >
-                <span className="text-gray-600 text-lg">×</span>
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <div className="text-center mb-4">
-                <h3 className="text-lg font-semibold text-gray-800 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Quick Account Access
-                </h3>
-                <p className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Sign in to any registered account
-                </p>
-              </div>
-              
-              {/* Account List */}
-              <div className="max-h-60 overflow-y-auto space-y-2">
-                {Object.entries(validatedUsers).map(([customerNumber, userData]: [string, any]) => (
-                  <div
-                    key={customerNumber}
-                    className="bg-gray-50 rounded-xl p-3 border"
-                  >
-                    <button
-                      onClick={async () => {
-                        // Check if account has been deleted from database
-                        try {
-                          const response = await fetch(`/api/profile/${customerNumber}`, {
-                            credentials: 'include'
-                          });
-                          
-                          if (response.status === 410) {
-                            // Account deleted
-                            alert('Account Deleted');
-                            UserDataManager.removeUser(customerNumber);
-                            setShowAdminLogin(false);
-                            return;
-                          }
-                          
-                          if (!response.ok) {
-                            alert('Account Not Found - This account no longer exists');
-                            UserDataManager.removeUser(customerNumber);
-                            setShowAdminLogin(false);
-                            return;
-                          }
-                        } catch (error) {
-                          alert('Connection Error - Unable to verify account status');
-                          return;
-                        }
-                        
-                        UserDataManager.initializeFreshAccount(customerNumber);
-                        UserDataManager.recordLoginTime(customerNumber);
-                        login({
-                          id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
-                          name: userData.name,
-                          email: userData.email,
-                          customerNumber: customerNumber
-                        });
-                        setShowAdminLogin(false);
-                        setCustomerNumber(customerNumber);
-                        setBiometricVerified(true);
-                        navigate('/dashboard');
-                      }}
-                      className="w-full text-left hover:bg-gray-100 rounded-lg p-3 active:scale-98 transition-all"
-                    >
-                      <div className="font-medium text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        {userData.name}
-                      </div>
-                      <div className="text-sm text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                        {customerNumber}
-                      </div>
-                    </button>
-                  </div>
-                ))}
-                
-                {Object.keys(validatedUsers).length === 0 && (
-                  <div className="text-center py-8 text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                    No accounts registered yet
-                  </div>
-                )}
-              </div>
-              
-              {/* Admin Actions */}
-              <div className="border-t pt-4 mt-4 space-y-3">
-                <button
-                  onClick={() => {
-                    setShowAdminLogin(false);
-                    resetSignUpForm();
-                    setShowSignUp(true);
-                  }}
-                  className="w-full p-3 bg-green-50 text-green-600 rounded-xl font-medium active:scale-98 transition-transform"
-                  style={{ fontFamily: 'OpenSans, sans-serif' }}
-                >
-                  Create New Account
-                </button>
-                
-
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* OTC Verification Modal */}
       {showOtcVerification && (
