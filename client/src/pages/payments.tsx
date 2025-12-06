@@ -224,7 +224,7 @@ export default function Payments() {
           className="flex items-center text-white active:scale-95 transition-transform"
         >
           <ChevronLeft className="w-6 h-6 mr-2" />
-          <span className="font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+          <span className="text-lg font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
             Payments
           </span>
         </button>

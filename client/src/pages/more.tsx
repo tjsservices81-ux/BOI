@@ -66,7 +66,7 @@ export default function More() {
           {/* Content Header */}
           <div className="text-center mb-8 pt-2">
             <div className="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-6"></div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+            <h2 className="text-lg font-semibold text-gray-900 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
               More Options
             </h2>
             <p className="text-gray-500 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
