@@ -635,7 +635,7 @@ export default function TransactionHistoryWorking() {
   return (
     <div 
       className="page-container h-screen bg-white flex flex-col overflow-hidden page-slide-in-right" 
-      style={{ fontFamily: styles.fonts.family, maxWidth: '430px', margin: '0 auto' }}
+      style={{ fontFamily: styles.fonts.family, maxWidth: '100%', width: '100%', margin: '0 auto' }}
     >
       {/* Header - matches status bar color */}
       <div 
