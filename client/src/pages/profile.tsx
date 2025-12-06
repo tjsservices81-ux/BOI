@@ -1566,7 +1566,7 @@ export default function Profile() {
       <div className="flex-1 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
         <div className="px-4 pb-32">
           {isLoadingProfile ? (
-            <div className="flex flex-col items-center justify-center h-64">
+            <div className="flex flex-col items-center justify-center h-full min-h-[60vh]">
               <div className="w-16 h-16 border-4 border-gray-200 border-t-[#126987] rounded-full animate-spin mb-4"></div>
               <p className="text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Loading profile...</p>
             </div>
@@ -3670,7 +3670,7 @@ export default function Profile() {
             {/* Scrollable Content */}
             <div className="flex-1 overflow-y-auto bg-white">
               {isLoadingPersonalDetails ? (
-                <div className="flex flex-col items-center justify-center h-64">
+                <div className="flex flex-col items-center justify-center h-full min-h-[60vh]">
                   <div className="w-16 h-16 border-4 border-gray-200 border-t-[#126987] rounded-full animate-spin mb-4"></div>
                   <p className="text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Loading personal details...</p>
                 </div>
@@ -3763,7 +3763,7 @@ export default function Profile() {
             </div>
             <div className="flex-1 overflow-y-auto bg-white">
               {isLoadingSecurityDevices ? (
-                <div className="flex flex-col items-center justify-center h-64">
+                <div className="flex flex-col items-center justify-center h-full min-h-[60vh]">
                   <div className="w-16 h-16 border-4 border-gray-200 border-t-[#126987] rounded-full animate-spin mb-4"></div>
                   <p className="text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Loading security devices...</p>
                 </div>
@@ -3815,7 +3815,7 @@ export default function Profile() {
             </div>
             <div className="flex-1 overflow-y-auto bg-white">
               {isLoadingFaceId ? (
-                <div className="flex flex-col items-center justify-center h-64">
+                <div className="flex flex-col items-center justify-center h-full min-h-[60vh]">
                   <div className="w-16 h-16 border-4 border-gray-200 border-t-[#126987] rounded-full animate-spin mb-4"></div>
                   <p className="text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Loading Face ID settings...</p>
                 </div>
@@ -3867,7 +3867,7 @@ export default function Profile() {
             </div>
             <div className="flex-1 overflow-y-auto bg-white">
               {isLoadingOpenBanking ? (
-                <div className="flex flex-col items-center justify-center h-64">
+                <div className="flex flex-col items-center justify-center h-full min-h-[60vh]">
                   <div className="w-16 h-16 border-4 border-gray-200 border-t-[#126987] rounded-full animate-spin mb-4"></div>
                   <p className="text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Loading open banking...</p>
                 </div>
@@ -3919,7 +3919,7 @@ export default function Profile() {
             </div>
             <div className="flex-1 overflow-y-auto bg-white">
               {isLoadingPrivacy ? (
-                <div className="flex flex-col items-center justify-center h-64">
+                <div className="flex flex-col items-center justify-center h-full min-h-[60vh]">
                   <div className="w-16 h-16 border-4 border-gray-200 border-t-[#126987] rounded-full animate-spin mb-4"></div>
                   <p className="text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Loading privacy settings...</p>
                 </div>
@@ -3979,7 +3979,7 @@ export default function Profile() {
             </div>
             <div className="flex-1 overflow-y-auto bg-white">
               {isLoadingSecurityLegal ? (
-                <div className="flex flex-col items-center justify-center h-64">
+                <div className="flex flex-col items-center justify-center h-full min-h-[60vh]">
                   <div className="w-16 h-16 border-4 border-gray-200 border-t-[#126987] rounded-full animate-spin mb-4"></div>
                   <p className="text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Loading security settings...</p>
                 </div>
