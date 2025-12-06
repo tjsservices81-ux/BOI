@@ -1594,7 +1594,7 @@ export default function Profile() {
                     }
                     logout();
                   }}
-                  className="px-16 py-2 bg-white border border-[#126987] active:bg-gray-50 transition-colors"
+                  className="px-12 py-2 bg-white border border-[#126987] active:bg-gray-50 transition-colors"
                   style={{ borderRadius: '4px' }}
                   data-testid="button-logout"
                 >
