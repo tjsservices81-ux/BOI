@@ -1563,9 +1563,9 @@ export default function Profile() {
       </div>
 
       {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+      <div className="flex-1 overflow-y-auto flex flex-col" style={{ WebkitOverflowScrolling: 'touch' }}>
         {isLoadingProfile ? (
-          <div className="flex flex-col items-center justify-center h-full min-h-[60vh]">
+          <div className="flex-1 flex flex-col items-center justify-center">
             <div className="w-16 h-16 border-4 border-gray-200 border-t-[#126987] rounded-full animate-spin mb-4"></div>
             <p className="text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>Loading profile...</p>
           </div>
