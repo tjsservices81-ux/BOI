@@ -21,6 +21,7 @@ export default function MonthlyInsights() {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [selectedAccountId, setSelectedAccountId] = useState<number | 'all'>(1);
   const [showAccountPicker, setShowAccountPicker] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [monthlyData, setMonthlyData] = useState({
     moneyIn: 0,
     moneyOut: 0,
@@ -40,6 +41,9 @@ export default function MonthlyInsights() {
     if (storedAccounts.length > 0) {
       setSelectedAccountId(storedAccounts[0].id);
     }
+    // Set loading for 2 seconds on mount
+    const timer = setTimeout(() => setIsLoading(false), 2000);
+    return () => clearTimeout(timer);
   }, []);
 
   // Calculate data when account changes
@@ -174,6 +178,14 @@ export default function MonthlyInsights() {
 
       {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+        {isLoading ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="flex flex-col items-center space-y-4">
+              <div className="w-12 h-12 border-4 border-gray-200 border-t-[#126987] rounded-full animate-spin"></div>
+            </div>
+          </div>
+        ) : (
+        <>
         {/* Intro Text Section */}
         <div className="bg-white px-6 py-5">
           <h2 className="font-semibold mb-3" style={{ fontSize: '22px', color: '#333', lineHeight: '1.3' }}>
@@ -451,6 +463,8 @@ export default function MonthlyInsights() {
             </button>
           </div>
         </div>
+        </>
+        )}
       </div>
     </div>
   );

@@ -305,8 +305,8 @@ export default function Apply() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-white page-slide-down" style={{ maxWidth: '100%', width: '100%', margin: '0 auto' }}>
-      {/* Header */}
+    <div className="h-screen flex flex-col bg-white" style={{ maxWidth: '100%', width: '100%', margin: '0 auto' }}>
+      {/* Header - Fixed */}
       <div 
         className="flex items-center px-4 py-3 flex-shrink-0"
         style={{ 
@@ -324,8 +324,8 @@ export default function Apply() {
         <div className="w-6" />
       </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto bg-white px-5 py-6 pb-24">
+      {/* Content - Slides Down */}
+      <div className="flex-1 overflow-y-auto bg-white px-5 py-6 pb-24 page-slide-down">
         {/* Title */}
         <div style={{ marginBottom: '24px' }}>
           <div style={{ position: 'relative', display: 'inline-block' }}>

@@ -1,15 +1,8 @@
 import { ChevronLeft } from "lucide-react";
 import { useLocation } from "wouter";
-import { useEffect, useState } from "react";
 
 export default function Insights() {
   const [, setLocation] = useLocation();
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 2000);
-    return () => clearTimeout(timer);
-  }, []);
 
   return (
     <div className="h-full bg-[#f5f5f5] overflow-hidden flex flex-col ios-safe-top ios-safe-bottom page-slide-up">
@@ -33,13 +26,6 @@ export default function Insights() {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto bg-white ios-scroll -mt-2">
-        {isLoading ? (
-          <div className="flex items-center justify-center h-full">
-            <div className="flex flex-col items-center space-y-4">
-              <div className="w-12 h-12 border-4 border-gray-200 border-t-[#126987] rounded-full animate-spin"></div>
-            </div>
-          </div>
-        ) : (
         <div className="bg-white rounded-t-2xl pt-6">
           {/* Filter Tabs */}
           <div className="px-4 mb-6">
@@ -179,7 +165,6 @@ export default function Insights() {
 
           <div className="h-20"></div>
         </div>
-        )}
       </div>
 
       {/* Bottom Navigation */}
