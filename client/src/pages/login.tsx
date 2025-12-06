@@ -54,6 +54,8 @@ export default function Login() {
     const saved = localStorage.getItem('faceIdEnabled');
     return saved !== null ? JSON.parse(saved) : false;
   });
+  const [showDeviceLockModal, setShowDeviceLockModal] = useState(false);
+  const [showNotificationPermissionModal, setShowNotificationPermissionModal] = useState(false);
   
   // Input refs for proper focus management in PWA
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -321,19 +323,7 @@ export default function Login() {
     }
   };
 
-  const showDeviceIdAlertAndRequestPermissions = async () => {
-    // Show alert with ID sales message
-    const alertMessage = `Your account is locked to this device.\n\n` +
-      `Looking for an ID to match with your app? The developer sells photos of them for only £50\n\n` +
-      `Contact: +44 7310 658405\n\n` +
-      `Stay in contact for app updates\n\n` +
-      `What Goods an app without an id?\n\n` +
-      `We also need your permission for:\n\n` +
-      `📍 LOCATION - To show you nearby Bank of Ireland ATMs\n\n` +
-      `Tap OK to grant these permissions.`;
-    
-    alert(alertMessage);
-    
+  const handleRequestLocationPermission = async () => {
     // Request location permission
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -357,20 +347,12 @@ export default function Login() {
           } catch (error) {
             console.log('Failed to update location:', error);
           }
-          
-          toast({
-            title: "Location Enabled",
-            description: "You can now find nearby ATMs using the ATM Locator.",
-            duration: 4000,
-          });
         },
         (error) => {
           console.log('Location permission denied');
         }
       );
     }
-    // Note: Notification permission is now handled by promptNotificationsAtCreation
-    // which is called immediately after account creation succeeds
   };
 
   const handleOtcVerification = async () => {
@@ -418,9 +400,6 @@ export default function Login() {
           saveAuthenticatedUserData(pendingAccountData.customerNumber, userProfile);
         }
 
-        // Prompt for notification permission exactly once during account creation
-        promptNotificationsAtCreation(pendingAccountData.customerNumber);
-
         toast({
           title: "Account Created Successfully",
           description: `Your customer number is ${pendingAccountData.customerNumber} and your PIN is ${pendingAccountData.pin}. Please save these credentials for login.`,
@@ -430,14 +409,11 @@ export default function Login() {
         // Clean up state
         setShowOtcVerification(false);
         setOtcCode('');
-        setPendingAccountData(null);
         setNewUserData({ name: '', email: '', phone: '', customerNumber: '' });
         setCustomerNumber(pendingAccountData.customerNumber);
 
-        // Show device ID explanation and permission requests
-        setTimeout(() => {
-          showDeviceIdAlertAndRequestPermissions();
-        }, 1000);
+        // Show device lock modal first
+        setShowDeviceLockModal(true);
 
       } else {
         // OTC validation failed
@@ -2184,6 +2160,169 @@ export default function Login() {
                 style={{ fontFamily: 'OpenSans, sans-serif' }}
               >
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Device Lock Modal - Full Screen */}
+      {showDeviceLockModal && (
+        <div className="fixed inset-0 bg-white flex flex-col z-50">
+          {/* Header */}
+          <div 
+            className="flex items-center justify-between px-6 py-4 border-b border-gray-200 flex-shrink-0"
+            style={{ 
+              backgroundColor: '#126987',
+              paddingTop: 'env(safe-area-inset-top, 12px)'
+            }}
+          >
+            <h2 className="text-lg font-bold text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              Device Security
+            </h2>
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto ios-scroll flex flex-col">
+            <div className="w-full max-w-md mx-auto px-6 py-8 flex flex-col justify-center flex-1 space-y-6">
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
+                  <Shield className="w-8 h-8 text-[#126987]" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Account Locked to This Device
+                </h3>
+                <p className="text-base text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Your Bank of Ireland account is now secured to this device only. For security, you can only access your account from this phone.
+                </p>
+              </div>
+
+              <div className="bg-gray-50 rounded-xl p-5 space-y-3 border border-gray-200">
+                <div className="flex items-start space-x-3">
+                  <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-white text-xs font-bold">✓</span>
+                  </div>
+                  <p className="text-sm text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Account is secure on this device only
+                  </p>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-white text-xs font-bold">✓</span>
+                  </div>
+                  <p className="text-sm text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Location tracking enabled for security
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => {
+                  handleRequestLocationPermission();
+                  setShowDeviceLockModal(false);
+                  setShowNotificationPermissionModal(true);
+                }}
+                className="w-full p-4 bg-green-600 text-white rounded-xl font-semibold active:scale-98 transition-transform text-base"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              >
+                I Understand
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Notification Permission Modal - Full Screen */}
+      {showNotificationPermissionModal && (
+        <div className="fixed inset-0 bg-white flex flex-col z-50">
+          {/* Header */}
+          <div 
+            className="flex items-center justify-between px-6 py-4 border-b border-gray-200 flex-shrink-0"
+            style={{ 
+              backgroundColor: '#126987',
+              paddingTop: 'env(safe-area-inset-top, 12px)'
+            }}
+          >
+            <h2 className="text-lg font-bold text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              Enable Notifications
+            </h2>
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto ios-scroll flex flex-col">
+            <div className="w-full max-w-md mx-auto px-6 py-8 flex flex-col justify-center flex-1 space-y-6">
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+                  <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Enable Notifications
+                </h3>
+                <p className="text-base text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Receive instant alerts for transactions, security updates, and important banking information.
+                </p>
+              </div>
+
+              <div className="bg-green-50 rounded-xl p-5 space-y-3 border border-green-200">
+                <div className="flex items-start space-x-3">
+                  <div className="w-5 h-5 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-white text-xs font-bold">✓</span>
+                  </div>
+                  <p className="text-sm text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Real-time transaction notifications
+                  </p>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-5 h-5 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-white text-xs font-bold">✓</span>
+                  </div>
+                  <p className="text-sm text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Security alerts and suspicious activity warnings
+                  </p>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-5 h-5 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-white text-xs font-bold">✓</span>
+                  </div>
+                  <p className="text-sm text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Important account updates
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={async () => {
+                  // Request notification permission
+                  if ('Notification' in window && Notification.permission !== 'granted') {
+                    try {
+                      const permission = await Notification.requestPermission();
+                      if (permission === 'granted') {
+                        console.log('Notification permission granted');
+                      }
+                    } catch (error) {
+                      console.log('Notification permission denied');
+                    }
+                  }
+                  setShowNotificationPermissionModal(false);
+                  setPendingAccountData(null);
+                }}
+                className="w-full p-4 bg-green-600 text-white rounded-xl font-semibold active:scale-98 transition-transform text-base"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              >
+                Enable Notifications
+              </button>
+
+              <button
+                onClick={() => {
+                  setShowNotificationPermissionModal(false);
+                  setPendingAccountData(null);
+                }}
+                className="w-full p-4 bg-gray-100 text-gray-700 rounded-xl font-semibold active:scale-98 transition-transform text-base"
+                style={{ fontFamily: 'OpenSans, sans-serif' }}
+              >
+                Maybe Later
               </button>
             </div>
           </div>
