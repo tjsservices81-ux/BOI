@@ -16,6 +16,32 @@ export default function Profile() {
     customerNumber: "",
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [tapCount, setTapCount] = useState(0);
+  const [lastTapTime, setLastTapTime] = useState(0);
+
+  const handleProfilePictureTap = () => {
+    const currentTime = Date.now();
+    const timeSinceLastTap = currentTime - lastTapTime;
+    
+    let newTapCount;
+    if (timeSinceLastTap > 2000) {
+      newTapCount = 1;
+    } else {
+      newTapCount = tapCount + 1;
+    }
+    
+    setTapCount(newTapCount);
+    setLastTapTime(currentTime);
+    
+    console.log(`Admin access tap: ${newTapCount}/5`);
+    
+    if (newTapCount >= 5) {
+      console.log('Opening admin panel...');
+      navigate("/admin-oversight");
+      setTapCount(0);
+      setLastTapTime(0);
+    }
+  };
 
   useEffect(() => {
     const loadProfileData = async () => {
@@ -73,11 +99,14 @@ export default function Profile() {
         {/* Profile Section */}
         <div className="pt-8 pb-6 flex flex-col items-center">
           {/* Avatar Circle */}
-          <div className="w-20 h-20 rounded-full border-2 border-[#126987] flex items-center justify-center bg-blue-50 mb-4">
+          <button
+            onClick={handleProfilePictureTap}
+            className="w-20 h-20 rounded-full border-2 border-[#126987] flex items-center justify-center bg-blue-50 mb-4 active:scale-95 transition-transform"
+          >
             <svg className="w-10 h-10 text-[#126987]" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
             </svg>
-          </div>
+          </button>
 
           {/* User ID */}
           <p className="text-gray-700 text-center text-sm">
