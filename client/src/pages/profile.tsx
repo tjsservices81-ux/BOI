@@ -3851,7 +3851,7 @@ export default function Profile() {
               ) : (
                 <div className="pb-6">
                   {/* Primary device info box */}
-                  <div className="mx-4 mt-6 flex items-start gap-3 p-4 bg-gray-50 border border-gray-200 rounded" style={{ borderRadius: '4px' }}>
+                  <div className="mx-4 mt-6 flex items-start gap-3 p-4 bg-gray-100 rounded" style={{ borderRadius: '4px' }}>
                     <div className="flex-shrink-0 mt-1">
                       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#126987" strokeWidth="1.5">
                         <rect x="5" y="2" width="14" height="20" rx="2" />
@@ -3889,8 +3889,8 @@ export default function Profile() {
                             This Phone
                           </p>
                           <div className="flex items-center gap-2 mt-1">
-                            <span className="text-[#126987] text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Active</span>
-                            <span className="bg-gray-800 text-white text-xs font-bold px-2 py-0.5 rounded" style={{ fontFamily: 'OpenSans, sans-serif' }}>PRIMARY</span>
+                            <span className="text-green-600 text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Active</span>
+                            <span className="bg-blue-100 text-[#0d4e63] text-xs font-bold px-2 py-0.5 rounded" style={{ fontFamily: 'OpenSans, sans-serif' }}>PRIMARY</span>
                             <span className="text-gray-500 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>(Now being used)</span>
                           </div>
                         </div>
