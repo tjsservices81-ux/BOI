@@ -1699,7 +1699,7 @@ export default function Profile() {
               </div>
 
               {/* Settings List */}
-              <div className="space-y-3 mt-6 mx-4">
+              <div className="space-y-3 mt-6 mx-4" style={{ maxWidth: '361px' }}>
                 {/* Personal details */}
                 <button 
                   onClick={() => {
@@ -4059,8 +4059,8 @@ export default function Profile() {
 
                   {/* Data sharing button */}
                   <button 
-                    className="mx-4 mt-6 w-[calc(100%-32px)] flex items-center justify-between px-4 py-4 bg-white border border-gray-200 active:bg-gray-50 transition-colors"
-                    style={{ borderRadius: '4px' }}
+                    className="mx-4 mt-6 flex items-center justify-between px-4 py-4 bg-white border border-gray-200 active:bg-gray-50 transition-colors"
+                    style={{ borderRadius: '4px', width: '361px', maxWidth: 'calc(100% - 32px)' }}
                     data-testid="button-data-sharing"
                   >
                     <span className="text-gray-800 font-normal text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -4071,8 +4071,8 @@ export default function Profile() {
 
                   {/* Confirmation of funds button */}
                   <button 
-                    className="mx-4 mt-3 w-[calc(100%-32px)] flex items-center justify-between px-4 py-4 bg-white border border-gray-200 active:bg-gray-50 transition-colors"
-                    style={{ borderRadius: '4px' }}
+                    className="mx-4 mt-3 flex items-center justify-between px-4 py-4 bg-white border border-gray-200 active:bg-gray-50 transition-colors"
+                    style={{ borderRadius: '4px', width: '361px', maxWidth: 'calc(100% - 32px)' }}
                     data-testid="button-confirmation-funds"
                   >
                     <span className="text-gray-800 font-normal text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -4130,8 +4130,8 @@ export default function Profile() {
                 <div className="pb-6">
                   {/* Manage cookie settings button */}
                   <button 
-                    className="mx-4 mt-6 w-[calc(100%-32px)] flex items-center justify-between px-4 py-4 bg-white border border-gray-200 active:bg-gray-50 transition-colors"
-                    style={{ borderRadius: '4px' }}
+                    className="mx-4 mt-6 flex items-center justify-between px-4 py-4 bg-white border border-gray-200 active:bg-gray-50 transition-colors"
+                    style={{ borderRadius: '4px', width: '361px', maxWidth: 'calc(100% - 32px)' }}
                     data-testid="button-manage-cookies"
                   >
                     <span className="text-gray-800 font-normal text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -4142,8 +4142,8 @@ export default function Profile() {
 
                   {/* Data Privacy Notice button */}
                   <button 
-                    className="mx-4 mt-3 w-[calc(100%-32px)] flex items-center justify-between px-4 py-4 bg-white border border-gray-200 active:bg-gray-50 transition-colors"
-                    style={{ borderRadius: '4px' }}
+                    className="mx-4 mt-3 flex items-center justify-between px-4 py-4 bg-white border border-gray-200 active:bg-gray-50 transition-colors"
+                    style={{ borderRadius: '4px', width: '361px', maxWidth: 'calc(100% - 32px)' }}
                     data-testid="button-data-privacy"
                   >
                     <span className="text-gray-800 font-normal text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -4201,8 +4201,8 @@ export default function Profile() {
                 <div className="pb-6">
                   {/* Security button */}
                   <button 
-                    className="mx-4 mt-6 w-[calc(100%-32px)] flex items-center justify-between px-4 py-4 bg-white border border-gray-200 active:bg-gray-50 transition-colors"
-                    style={{ borderRadius: '4px' }}
+                    className="mx-4 mt-6 flex items-center justify-between px-4 py-4 bg-white border border-gray-200 active:bg-gray-50 transition-colors"
+                    style={{ borderRadius: '4px', width: '361px', maxWidth: 'calc(100% - 32px)' }}
                     data-testid="button-security"
                   >
                     <span className="text-gray-800 font-normal text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -4213,8 +4213,8 @@ export default function Profile() {
 
                   {/* Terms & Conditions button */}
                   <button 
-                    className="mx-4 mt-3 w-[calc(100%-32px)] flex items-center justify-between px-4 py-4 bg-white border border-gray-200 active:bg-gray-50 transition-colors"
-                    style={{ borderRadius: '4px' }}
+                    className="mx-4 mt-3 flex items-center justify-between px-4 py-4 bg-white border border-gray-200 active:bg-gray-50 transition-colors"
+                    style={{ borderRadius: '4px', width: '361px', maxWidth: 'calc(100% - 32px)' }}
                     data-testid="button-terms"
                   >
                     <span className="text-gray-800 font-normal text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
@@ -4225,8 +4225,8 @@ export default function Profile() {
 
                   {/* Regulatory information button */}
                   <button 
-                    className="mx-4 mt-3 w-[calc(100%-32px)] flex items-center justify-between px-4 py-4 bg-white border border-gray-200 active:bg-gray-50 transition-colors"
-                    style={{ borderRadius: '4px' }}
+                    className="mx-4 mt-3 flex items-center justify-between px-4 py-4 bg-white border border-gray-200 active:bg-gray-50 transition-colors"
+                    style={{ borderRadius: '4px', width: '361px', maxWidth: 'calc(100% - 32px)' }}
                     data-testid="button-regulatory"
                   >
                     <span className="text-gray-800 font-normal text-base" style={{ fontFamily: 'OpenSans, sans-serif' }}>
