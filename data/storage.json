@@ -2736,6 +2736,23 @@
         "dateCreated": "2025-12-08T12:38:11.957Z",
         "isDisabled": false
       }
+    ],
+    [
+      359,
+      {
+        "id": 359,
+        "customerNumber": "95014385",
+        "pin": "",
+        "name": "Mark wall",
+        "email": "wallmark569@gmail.com",
+        "phone": "07309297466",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "currency": "EUR",
+        "dateCreated": "2025-12-08T13:32:02.501Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [
@@ -16326,7 +16343,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 359,
+    "currentUserId": 360,
     "currentAccountId": 144,
     "currentTransactionId": 1514,
     "currentPayeeId": 1,
