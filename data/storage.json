@@ -2651,6 +2651,23 @@
         "dateCreated": "2025-12-06T13:16:37.326Z",
         "isDisabled": false
       }
+    ],
+    [
+      354,
+      {
+        "id": 354,
+        "customerNumber": "78282557",
+        "pin": "",
+        "name": "liam carter",
+        "email": "carterliam11@gmail.com",
+        "phone": "07878494664",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "currency": "EUR",
+        "dateCreated": "2025-12-08T12:16:51.618Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [
@@ -16241,7 +16258,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 354,
+    "currentUserId": 355,
     "currentAccountId": 144,
     "currentTransactionId": 1514,
     "currentPayeeId": 1,
