@@ -1907,7 +1907,7 @@ export default function TransactionHistoryWorking() {
                 <div className="flex justify-between">
                   <span className="text-gray-600">Transaction ID:</span>
                   <span className="font-mono text-sm text-gray-900">
-                    TXN{selectedTransaction.id}
+                    {String(selectedTransaction.id).padStart(14, '0')}
                   </span>
                 </div>
 
@@ -1951,7 +1951,7 @@ export default function TransactionHistoryWorking() {
                       <div className="flex justify-between">
                         <span className="text-gray-600">Reference:</span>
                         <span className="font-semibold text-gray-900 font-mono text-sm">
-                          BOI{String(selectedTransaction.id).padStart(8, '0')}
+                          BOI{String(selectedTransaction.id).padStart(11, '0')}
                         </span>
                       </div>
                     )}
