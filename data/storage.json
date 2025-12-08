@@ -2821,6 +2821,23 @@
         "dateCreated": "2025-12-08T15:03:36.224Z",
         "isDisabled": false
       }
+    ],
+    [
+      365,
+      {
+        "id": 365,
+        "customerNumber": "65160475",
+        "pin": "",
+        "name": "John madgwick ",
+        "email": "Johnmadgwick086@icloud.com",
+        "phone": "+447383349848",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-12-08T15:24:39.482Z",
+        "currency": "GBP",
+        "dateCreated": "2025-12-08T15:24:39.437Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [
@@ -16411,7 +16428,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 365,
+    "currentUserId": 366,
     "currentAccountId": 144,
     "currentTransactionId": 1514,
     "currentPayeeId": 1,
