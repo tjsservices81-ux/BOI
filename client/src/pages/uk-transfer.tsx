@@ -316,7 +316,8 @@ export default function UkTransfer() {
   const onSubmit = async (data: UkTransferData) => {
     console.log('Form submitted with data:', data);
     setFormData(data);
-    const ref = generateReference();
+    // Use customer's custom reference if provided, otherwise generate one
+    const ref = data.reference || generateReference();
     setTransferReference(ref);
     
     // Fetch exchange rate

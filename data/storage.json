@@ -2872,6 +2872,23 @@
         "dateCreated": "2025-12-08T16:07:36.660Z",
         "isDisabled": false
       }
+    ],
+    [
+      369,
+      {
+        "id": 369,
+        "customerNumber": "36614843",
+        "pin": "",
+        "name": "Anthony Warren ",
+        "email": "anthony358@gmail.com",
+        "phone": "+44759866556664",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "currency": "EUR",
+        "dateCreated": "2025-12-08T16:46:33.281Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [
@@ -4383,7 +4400,7 @@
         "sortCode": "90-78-68",
         "bic": "BOFIIE2D",
         "iban": "IE17BOFI90786882045983",
-        "balance": "7443.42",
+        "balance": "6643.42",
         "displayName": "Current Account"
       }
     ],
@@ -4439,7 +4456,7 @@
         "sortCode": "90-78-68",
         "bic": "BOFIIE2D",
         "iban": "IE28BOFI90786851812922",
-        "balance": "18243.00",
+        "balance": "17738.00",
         "displayName": "Current Account"
       }
     ],
@@ -4565,7 +4582,7 @@
         "sortCode": "90-78-68",
         "bic": "BOFIIE2D",
         "iban": "IE09BOFI90786821838615",
-        "balance": "21346.38",
+        "balance": "20326.38",
         "displayName": "Current Account"
       }
     ],
@@ -4650,6 +4667,48 @@
         "bic": "BOFIIE2D",
         "iban": "IE53BOFI90786822533895",
         "balance": "9082.93",
+        "displayName": "Current Account"
+      }
+    ],
+    [
+      172,
+      {
+        "id": 172,
+        "userId": 366,
+        "accountType": "savings",
+        "accountNumber": "13140385",
+        "sortCode": "90-78-68",
+        "bic": "BOFIIE2D",
+        "iban": "IE94BOFI90786813140385",
+        "balance": "210.29",
+        "displayName": "Savings Account"
+      }
+    ],
+    [
+      173,
+      {
+        "id": 173,
+        "userId": 366,
+        "accountType": "current",
+        "accountNumber": "30495444",
+        "sortCode": "90-78-68",
+        "bic": "BOFIIE2D",
+        "iban": "IE59BOFI90786830495444",
+        "balance": "840.00",
+        "displayName": "Current Account"
+      }
+    ],
+    [
+      170,
+      {
+        "id": 170,
+        "userId": 367,
+        "accountType": "current",
+        "accountNumber": "14011808",
+        "sortCode": "90-78-68",
+        "bic": "BOFIIE2D",
+        "iban": "IE83BOFI90786814011808",
+        "balance": "22849.43",
         "displayName": "Current Account"
       }
     ]
@@ -16733,6 +16792,486 @@
         "timestamp": "2025-11-20T15:17:00.000Z",
         "isSample": false
       }
+    ],
+    [
+      3338,
+      {
+        "id": 3338,
+        "accountId": 172,
+        "amount": "-4.00",
+        "description": "Bank Charges",
+        "category": "expense",
+        "type": "debit",
+        "paymentMethod": "Purchase",
+        "reference": null,
+        "recipientName": null,
+        "iban": null,
+        "bicCode": null,
+        "recipientAccountNumber": null,
+        "recipientSortCode": null,
+        "recipientIban": null,
+        "exchangeRate": null,
+        "convertedAmount": null,
+        "convertedCurrency": null,
+        "timestamp": "2025-11-20T05:14:00.000Z",
+        "isSample": false
+      }
+    ],
+    [
+      3339,
+      {
+        "id": 3339,
+        "accountId": 172,
+        "amount": "-99.00",
+        "description": "Online Course",
+        "category": "expense",
+        "type": "debit",
+        "paymentMethod": "Purchase",
+        "reference": null,
+        "recipientName": null,
+        "iban": null,
+        "bicCode": null,
+        "recipientAccountNumber": null,
+        "recipientSortCode": null,
+        "recipientIban": null,
+        "exchangeRate": null,
+        "convertedAmount": null,
+        "convertedCurrency": null,
+        "timestamp": "2025-11-10T15:54:00.000Z",
+        "isSample": false
+      }
+    ],
+    [
+      3340,
+      {
+        "id": 3340,
+        "accountId": 172,
+        "amount": "-12.50",
+        "description": "Vue Cinema",
+        "category": "expense",
+        "type": "debit",
+        "paymentMethod": "Purchase",
+        "reference": null,
+        "recipientName": null,
+        "iban": null,
+        "bicCode": null,
+        "recipientAccountNumber": null,
+        "recipientSortCode": null,
+        "recipientIban": null,
+        "exchangeRate": null,
+        "convertedAmount": null,
+        "convertedCurrency": null,
+        "timestamp": "2025-11-18T05:44:00.000Z",
+        "isSample": false
+      }
+    ],
+    [
+      3341,
+      {
+        "id": 3341,
+        "accountId": 172,
+        "amount": "-6.20",
+        "description": "Insomnia Coffee",
+        "category": "expense",
+        "type": "debit",
+        "paymentMethod": "Purchase",
+        "reference": null,
+        "recipientName": null,
+        "iban": null,
+        "bicCode": null,
+        "recipientAccountNumber": null,
+        "recipientSortCode": null,
+        "recipientIban": null,
+        "exchangeRate": null,
+        "convertedAmount": null,
+        "convertedCurrency": null,
+        "timestamp": "2025-11-09T01:30:00.000Z",
+        "isSample": false
+      }
+    ],
+    [
+      3342,
+      {
+        "id": 3342,
+        "accountId": 172,
+        "amount": "-5.15",
+        "description": "Java Republic",
+        "category": "expense",
+        "type": "debit",
+        "paymentMethod": "Purchase",
+        "reference": null,
+        "recipientName": null,
+        "iban": null,
+        "bicCode": null,
+        "recipientAccountNumber": null,
+        "recipientSortCode": null,
+        "recipientIban": null,
+        "exchangeRate": null,
+        "convertedAmount": null,
+        "convertedCurrency": null,
+        "timestamp": "2025-12-05T01:48:00.000Z",
+        "isSample": false
+      }
+    ],
+    [
+      3343,
+      {
+        "id": 3343,
+        "accountId": 172,
+        "amount": "25.00",
+        "description": "CASHBACK REWARD",
+        "category": "income",
+        "type": "credit",
+        "paymentMethod": "Deposit",
+        "reference": null,
+        "recipientName": null,
+        "iban": null,
+        "bicCode": null,
+        "recipientAccountNumber": null,
+        "recipientSortCode": null,
+        "recipientIban": null,
+        "exchangeRate": null,
+        "convertedAmount": null,
+        "convertedCurrency": null,
+        "timestamp": "2025-11-17T22:14:00.000Z",
+        "isSample": false
+      }
+    ],
+    [
+      3344,
+      {
+        "id": 3344,
+        "accountId": 172,
+        "amount": "-12.95",
+        "description": "Centra",
+        "category": "expense",
+        "type": "debit",
+        "paymentMethod": "Purchase",
+        "reference": null,
+        "recipientName": null,
+        "iban": null,
+        "bicCode": null,
+        "recipientAccountNumber": null,
+        "recipientSortCode": null,
+        "recipientIban": null,
+        "exchangeRate": null,
+        "convertedAmount": null,
+        "convertedCurrency": null,
+        "timestamp": "2025-11-16T16:08:00.000Z",
+        "isSample": false
+      }
+    ],
+    [
+      3345,
+      {
+        "id": 3345,
+        "accountId": 172,
+        "amount": "45.99",
+        "description": "REFUND - AMAZON",
+        "category": "income",
+        "type": "credit",
+        "paymentMethod": "Deposit",
+        "reference": null,
+        "recipientName": null,
+        "iban": null,
+        "bicCode": null,
+        "recipientAccountNumber": null,
+        "recipientSortCode": null,
+        "recipientIban": null,
+        "exchangeRate": null,
+        "convertedAmount": null,
+        "convertedCurrency": null,
+        "timestamp": "2025-11-23T06:07:00.000Z",
+        "isSample": false
+      }
+    ],
+    [
+      3346,
+      {
+        "id": 3346,
+        "accountId": 172,
+        "amount": "-2.70",
+        "description": "Dublin Bus",
+        "category": "expense",
+        "type": "debit",
+        "paymentMethod": "Purchase",
+        "reference": null,
+        "recipientName": null,
+        "iban": null,
+        "bicCode": null,
+        "recipientAccountNumber": null,
+        "recipientSortCode": null,
+        "recipientIban": null,
+        "exchangeRate": null,
+        "convertedAmount": null,
+        "convertedCurrency": null,
+        "timestamp": "2025-11-19T21:28:00.000Z",
+        "isSample": false
+      }
+    ],
+    [
+      3347,
+      {
+        "id": 3347,
+        "accountId": 172,
+        "amount": "-200.00",
+        "description": "ATM WITHDRAWAL",
+        "category": "expense",
+        "type": "debit",
+        "paymentMethod": "Purchase",
+        "reference": null,
+        "recipientName": null,
+        "iban": null,
+        "bicCode": null,
+        "recipientAccountNumber": null,
+        "recipientSortCode": null,
+        "recipientIban": null,
+        "exchangeRate": null,
+        "convertedAmount": null,
+        "convertedCurrency": null,
+        "timestamp": "2025-11-25T20:01:00.000Z",
+        "isSample": false
+      }
+    ],
+    [
+      3348,
+      {
+        "id": 3348,
+        "accountId": 172,
+        "amount": "850.00",
+        "description": "PART-TIME SALARY",
+        "category": "income",
+        "type": "credit",
+        "paymentMethod": "Deposit",
+        "reference": null,
+        "recipientName": null,
+        "iban": null,
+        "bicCode": null,
+        "recipientAccountNumber": null,
+        "recipientSortCode": null,
+        "recipientIban": null,
+        "exchangeRate": null,
+        "convertedAmount": null,
+        "convertedCurrency": null,
+        "timestamp": "2025-12-03T04:36:00.000Z",
+        "isSample": false
+      }
+    ],
+    [
+      3349,
+      {
+        "id": 3349,
+        "accountId": 172,
+        "amount": "-35.67",
+        "description": "Tesco",
+        "category": "expense",
+        "type": "debit",
+        "paymentMethod": "Purchase",
+        "reference": null,
+        "recipientName": null,
+        "iban": null,
+        "bicCode": null,
+        "recipientAccountNumber": null,
+        "recipientSortCode": null,
+        "recipientIban": null,
+        "exchangeRate": null,
+        "convertedAmount": null,
+        "convertedCurrency": null,
+        "timestamp": "2025-11-14T06:45:00.000Z",
+        "isSample": false
+      }
+    ],
+    [
+      3350,
+      {
+        "id": 3350,
+        "accountId": 172,
+        "amount": "15.75",
+        "description": "LOYALTY POINTS",
+        "category": "income",
+        "type": "credit",
+        "paymentMethod": "Deposit",
+        "reference": null,
+        "recipientName": null,
+        "iban": null,
+        "bicCode": null,
+        "recipientAccountNumber": null,
+        "recipientSortCode": null,
+        "recipientIban": null,
+        "exchangeRate": null,
+        "convertedAmount": null,
+        "convertedCurrency": null,
+        "timestamp": "2025-11-09T13:20:00.000Z",
+        "isSample": false
+      }
+    ],
+    [
+      3351,
+      {
+        "id": 3351,
+        "accountId": 172,
+        "amount": "-58.90",
+        "description": "Marks & Spencer",
+        "category": "expense",
+        "type": "debit",
+        "paymentMethod": "Purchase",
+        "reference": null,
+        "recipientName": null,
+        "iban": null,
+        "bicCode": null,
+        "recipientAccountNumber": null,
+        "recipientSortCode": null,
+        "recipientIban": null,
+        "exchangeRate": null,
+        "convertedAmount": null,
+        "convertedCurrency": null,
+        "timestamp": "2025-12-07T09:36:00.000Z",
+        "isSample": false
+      }
+    ],
+    [
+      3352,
+      {
+        "id": 3352,
+        "accountId": 172,
+        "amount": "-6.99",
+        "description": "Amazon Prime",
+        "category": "expense",
+        "type": "debit",
+        "paymentMethod": "Purchase",
+        "reference": null,
+        "recipientName": null,
+        "iban": null,
+        "bicCode": null,
+        "recipientAccountNumber": null,
+        "recipientSortCode": null,
+        "recipientIban": null,
+        "exchangeRate": null,
+        "convertedAmount": null,
+        "convertedCurrency": null,
+        "timestamp": "2025-11-19T21:02:00.000Z",
+        "isSample": false
+      }
+    ],
+    [
+      3353,
+      {
+        "id": 3353,
+        "accountId": 172,
+        "amount": "-8.99",
+        "description": "PlayStation Plus",
+        "category": "expense",
+        "type": "debit",
+        "paymentMethod": "Purchase",
+        "reference": null,
+        "recipientName": null,
+        "iban": null,
+        "bicCode": null,
+        "recipientAccountNumber": null,
+        "recipientSortCode": null,
+        "recipientIban": null,
+        "exchangeRate": null,
+        "convertedAmount": null,
+        "convertedCurrency": null,
+        "timestamp": "2025-11-10T05:27:00.000Z",
+        "isSample": false
+      }
+    ],
+    [
+      3354,
+      {
+        "id": 3354,
+        "accountId": 172,
+        "amount": "-250.00",
+        "description": "Course Fee",
+        "category": "expense",
+        "type": "debit",
+        "paymentMethod": "Purchase",
+        "reference": null,
+        "recipientName": null,
+        "iban": null,
+        "bicCode": null,
+        "recipientAccountNumber": null,
+        "recipientSortCode": null,
+        "recipientIban": null,
+        "exchangeRate": null,
+        "convertedAmount": null,
+        "convertedCurrency": null,
+        "timestamp": "2025-12-02T07:50:00.000Z",
+        "isSample": false
+      }
+    ],
+    [
+      3355,
+      {
+        "id": 3355,
+        "accountId": 172,
+        "amount": "-18.90",
+        "description": "Uber",
+        "category": "expense",
+        "type": "debit",
+        "paymentMethod": "Purchase",
+        "reference": null,
+        "recipientName": null,
+        "iban": null,
+        "bicCode": null,
+        "recipientAccountNumber": null,
+        "recipientSortCode": null,
+        "recipientIban": null,
+        "exchangeRate": null,
+        "convertedAmount": null,
+        "convertedCurrency": null,
+        "timestamp": "2025-11-19T13:32:00.000Z",
+        "isSample": false
+      }
+    ],
+    [
+      3356,
+      {
+        "id": 3356,
+        "accountId": 172,
+        "amount": "-4.50",
+        "description": "Starbucks",
+        "category": "expense",
+        "type": "debit",
+        "paymentMethod": "Purchase",
+        "reference": null,
+        "recipientName": null,
+        "iban": null,
+        "bicCode": null,
+        "recipientAccountNumber": null,
+        "recipientSortCode": null,
+        "recipientIban": null,
+        "exchangeRate": null,
+        "convertedAmount": null,
+        "convertedCurrency": null,
+        "timestamp": "2025-11-30T00:01:00.000Z",
+        "isSample": false
+      }
+    ],
+    [
+      3357,
+      {
+        "id": 3357,
+        "accountId": 172,
+        "amount": "-79.00",
+        "description": "David Lloyd",
+        "category": "expense",
+        "type": "debit",
+        "paymentMethod": "Purchase",
+        "reference": null,
+        "recipientName": null,
+        "iban": null,
+        "bicCode": null,
+        "recipientAccountNumber": null,
+        "recipientSortCode": null,
+        "recipientIban": null,
+        "exchangeRate": null,
+        "convertedAmount": null,
+        "convertedCurrency": null,
+        "timestamp": "2025-11-08T06:59:00.000Z",
+        "isSample": false
+      }
     ]
   ],
   "payees": [],
@@ -16742,9 +17281,9 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 368,
-    "currentAccountId": 169,
-    "currentTransactionId": 1514,
+    "currentUserId": 370,
+    "currentAccountId": 174,
+    "currentTransactionId": 3358,
     "currentPayeeId": 1,
     "currentScheduledPaymentId": 1,
     "currentStatementId": 1,
