@@ -46,7 +46,7 @@ async function withRetry<T>(
 
 // Idempotency key tracking to prevent duplicate transfers
 const processedTransferKeys = new Map<string, { result: any; timestamp: number }>();
-const IDEMPOTENCY_TTL = 5 * 60 * 1000; // 5 minutes
+const IDEMPOTENCY_TTL = 30 * 1000; // 30 seconds - short to prevent stuck transfers
 
 // Generate idempotency key from STABLE request values only
 // If client provides an idempotencyToken, use it; otherwise hash stable request values
@@ -1357,14 +1357,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(409).json({ message: "Transfer already being processed. Please wait." });
       }
 
-      // Generate reference AFTER idempotency check
-      const transactionReference = transferData.reference || `TXN${Date.now()}_${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
-      const newBalance = (currentBalance - amount).toFixed(2);
-
-      // Execute transfer - NO retries on non-idempotent createTransaction
+      // Use try/finally to GUARANTEE in-progress marker is always cleared
+      let transferSucceeded = false;
       let createdTransaction: any = null;
+      let successResult: any = null;
       
       try {
+        // Generate reference AFTER idempotency check
+        const transactionReference = transferData.reference || `TXN${Date.now()}_${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+        const newBalance = (currentBalance - amount).toFixed(2);
+
         // Step 1: Create transaction (no retry - not idempotent)
         console.log('💳 Creating debit transaction...');
         createdTransaction = await storage.createTransaction({
@@ -1388,10 +1390,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
           { maxAttempts: 3, operationName: 'Update balance' }
         );
         
+        // Prepare success result
+        successResult = { 
+          message: "Transfer completed successfully", 
+          transaction: createdTransaction,
+          newBalance 
+        };
+        
+        // Record successful transfer for idempotency
+        recordTransfer(idempotencyKey, successResult);
+        
+        // ONLY set transferSucceeded AFTER recordTransfer completes - ensures cleanup on any error
+        transferSucceeded = true;
+
+        // Send email notification (non-critical, don't block response)
+        const user = accountUser;
+        if (user && user.email) {
+          // Fire and forget - don't await
+          sendTransferConfirmation(user.email, {
+            recipientName: transferData.toAccount,
+            amount: amount.toFixed(2),
+            currency: (user.currency === 'GBP' ? '£' : '€'),
+            dateTime: new Date().toLocaleString('en-GB', {
+              dateStyle: 'short',
+              timeStyle: 'short',
+              timeZone: 'Europe/Dublin'
+            }),
+            transactionReference: transactionReference,
+            senderName: user.name,
+            accountInfo: `${account.displayName} (${account.accountNumber.slice(-4)})`
+          }).catch(err => console.error('📧 Email notification failed (non-critical):', err));
+        }
+
+        console.log(`✅ Transfer completed: ${amount} to ${transferData.toAccount}`);
+        
       } catch (error) {
         console.error('❌ Transfer failed:', error);
-        // Clear in-progress marker so user can retry
-        clearTransferInProgress(idempotencyKey);
         // If transaction was created but balance update failed, attempt to restore
         if (createdTransaction) {
           console.log('🔄 Attempting to restore original balance...');
@@ -1401,38 +1435,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
             console.error('⚠️ Failed to restore balance:', restoreError);
           }
         }
+      } finally {
+        // ALWAYS clear in-progress marker - this guarantees transfer never gets stuck
+        if (!transferSucceeded) {
+          clearTransferInProgress(idempotencyKey);
+        }
+      }
+      
+      // Return response outside try/finally
+      if (transferSucceeded) {
+        return res.json(successResult);
+      } else {
         return res.status(500).json({ message: "Transfer failed. Please try again." });
       }
-
-      // Transfer succeeded - send email notification (non-critical, don't block)
-      const user = accountUser;
-      if (user && user.email) {
-        // Fire and forget - don't await
-        sendTransferConfirmation(user.email, {
-          recipientName: transferData.toAccount,
-          amount: amount.toFixed(2),
-          currency: (user.currency === 'GBP' ? '£' : '€'),
-          dateTime: new Date().toLocaleString('en-GB', {
-            dateStyle: 'short',
-            timeStyle: 'short',
-            timeZone: 'Europe/Dublin'
-          }),
-          transactionReference: transactionReference,
-          senderName: user.name,
-          accountInfo: `${account.displayName} (${account.accountNumber.slice(-4)})`
-        }).catch(err => console.error('📧 Email notification failed (non-critical):', err));
-      }
-
-      // Record successful transfer for idempotency
-      const successResult = { 
-        message: "Transfer completed successfully", 
-        transaction: createdTransaction,
-        newBalance 
-      };
-      recordTransfer(idempotencyKey, successResult);
-
-      console.log(`✅ Transfer completed: ${amount} to ${transferData.toAccount}`);
-      res.json(successResult);
       
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -1614,24 +1629,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(409).json({ message: "Transfer already being processed. Please wait." });
       }
       
-      // Generate reference AFTER idempotency check
-      const transactionRef = reference || `INT${Date.now()}_${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
-      const paymentMethod = transferType === 'sepa' ? 'SEPA Transfer' : 'UK Transfer';
-      
-      // Get sender info for transactions
-      const senderUser = await storage.getUserById(senderAccount.userId);
-      const senderName = senderUser?.name || 'Unknown';
-      
-      // Calculate new balances
-      const newSenderBalance = (senderBalance - numericAmount).toFixed(2);
-      const recipientBalance = parseFloat(recipientAccount.balance);
-      const newRecipientBalance = (recipientBalance + numericAmount).toFixed(2);
-      
-      // Execute transfer step by step - NO retries on non-idempotent createTransaction
+      // Use try/finally to GUARANTEE in-progress marker is always cleared
+      let transferSucceeded = false;
       let debitTransaction: any = null;
       let creditTransaction: any = null;
+      let successResult: any = null;
+      
+      // Calculate values needed for restoration
+      const recipientBalance = parseFloat(recipientAccount.balance);
       
       try {
+        // Generate reference AFTER idempotency check
+        const transactionRef = reference || `INT${Date.now()}_${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+        const paymentMethod = transferType === 'sepa' ? 'SEPA Transfer' : 'UK Transfer';
+        
+        // Get sender info for transactions
+        const senderUser = await storage.getUserById(senderAccount.userId);
+        const senderName = senderUser?.name || 'Unknown';
+        
+        // Calculate new balances
+        const newSenderBalance = (senderBalance - numericAmount).toFixed(2);
+        const newRecipientBalance = (recipientBalance + numericAmount).toFixed(2);
+
         // Step 1: Create debit transaction (no retry - not idempotent)
         console.log('💳 Creating debit transaction (sender)...');
         debitTransaction = await storage.createTransaction({
@@ -1680,10 +1699,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
           { maxAttempts: 3, operationName: 'Update recipient balance' }
         );
         
+        // Prepare success result
+        successResult = {
+          success: true,
+          message: "Internal transfer completed successfully",
+          transaction: debitTransaction,
+          reference: transactionRef,
+          newBalance: newSenderBalance
+        };
+        
+        // Record successful transfer for idempotency
+        recordTransfer(idempotencyKey, successResult);
+        
+        // ONLY set transferSucceeded AFTER recordTransfer completes - ensures cleanup on any error
+        transferSucceeded = true;
+        
+        console.log(`✅ Internal transfer completed: ${senderName} → ${recipientFullName}, Amount: ${numericAmount.toFixed(2)}`);
+        
       } catch (error) {
         console.error('❌ Internal transfer failed:', error);
-        // Clear in-progress marker so user can retry
-        clearTransferInProgress(idempotencyKey);
         // Attempt to restore balances if transactions were created
         if (debitTransaction || creditTransaction) {
           console.log('🔄 Attempting to restore balances...');
@@ -1694,22 +1728,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
             console.error('⚠️ Failed to restore balances:', restoreError);
           }
         }
-        return res.status(500).json({ message: "Transfer failed. Please try again." });
+      } finally {
+        // ALWAYS clear in-progress marker - this guarantees transfer never gets stuck
+        if (!transferSucceeded) {
+          clearTransferInProgress(idempotencyKey);
+        }
       }
       
-      console.log(`✅ Internal transfer completed: ${senderName} → ${recipientFullName}, Amount: ${numericAmount.toFixed(2)}`);
-      
-      // Record successful transfer for idempotency
-      const successResult = {
-        success: true,
-        message: "Internal transfer completed successfully",
-        transaction: debitTransaction,
-        reference: transactionRef,
-        newBalance: newSenderBalance
-      };
-      recordTransfer(idempotencyKey, successResult);
-      
-      res.json(successResult);
+      // Return response outside try/finally
+      if (transferSucceeded) {
+        return res.json(successResult);
+      } else {
+        return res.status(500).json({ message: "Transfer failed. Please try again." });
+      }
     } catch (error) {
       console.error('❌ Error processing internal transfer:', error);
       res.status(500).json({ message: "Transfer failed. Please try again." });

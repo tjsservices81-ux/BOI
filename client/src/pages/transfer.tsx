@@ -21,7 +21,6 @@ export default function Transfer() {
   const locationHook = useLocation();
   const [, navigate] = locationHook || [null, () => {}];
   
-  const toast = () => {}; // No-op function to replace all toast notifications
   const queryClient = useQueryClient();
 
   const [selectedAccountId, setSelectedAccountId] = useState<string>("");
@@ -30,6 +29,7 @@ export default function Transfer() {
   const [amount, setAmount] = useState("");
   const [reference, setReference] = useState("");
   const [recipientEmail, setRecipientEmail] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
   const [ibanEmailEnabled, setIbanEmailEnabled] = useState(() => {
     const saved = localStorage.getItem('ibanEmailEnabled');
@@ -56,24 +56,42 @@ export default function Transfer() {
 
   const transferMutation = useMutation({
     mutationFn: async (transferData: TransferRequest) => {
-      const response = await apiRequest("POST", "/api/transfer", transferData);
-      return response.json();
+      // Create abort controller with 10 second timeout - prevents UI from getting stuck
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      
+      try {
+        const response = await fetch("/api/transfer", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(transferData),
+          credentials: "include",
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || "Transfer failed");
+        }
+        return response.json();
+      } catch (error: any) {
+        clearTimeout(timeoutId);
+        if (error.name === "AbortError") {
+          throw new Error("Transfer timed out. Please check your connection and try again.");
+        }
+        throw error;
+      }
     },
     onSuccess: () => {
-      toast({
-        title: "Transfer Successful",
-        description: "Your transfer has been completed successfully.",
-      });
+      setErrorMessage(null);
       queryClient.invalidateQueries({ queryKey: ["/api/accounts"] });
       queryClient.invalidateQueries({ queryKey: ["/api/transactions"] });
       navigate("/dashboard");
     },
     onError: (error: any) => {
-      toast({
-        title: "Transfer Failed",
-        description: error.message || "An error occurred while processing your transfer.",
-        variant: "destructive",
-      });
+      console.error("Transfer error:", error.message);
+      setErrorMessage(error.message || "Transfer failed. Please try again.");
     },
   });
 
@@ -82,13 +100,10 @@ export default function Transfer() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedAccountId || !recipient || !iban || !amount) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill in all required fields.",
-        variant: "destructive",
-      });
+      setErrorMessage("Please fill in all required fields.");
       return;
     }
+    setErrorMessage(null);
 
     // Generate unique token for each submission - allows making same transfer multiple times
     const idempotencyToken = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
@@ -235,10 +250,18 @@ export default function Transfer() {
           </CardContent>
         </Card>
 
+        {/* Error message display */}
+        {errorMessage && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertDescription>{errorMessage}</AlertDescription>
+          </Alert>
+        )}
+
         <Button
           type="submit"
           className="w-full bg-[var(--boi-green)] hover:bg-[var(--boi-dark-green)] text-white font-medium py-3 px-4 transition-colors duration-200 mb-4"
           disabled={transferMutation.isPending}
+          onClick={() => setErrorMessage(null)}
         >
           {transferMutation.isPending ? (
             <div className="flex items-center justify-center">
