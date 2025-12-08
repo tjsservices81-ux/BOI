@@ -3278,6 +3278,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .cust-info{flex:1;min-width:0}
 .cust-name{font-weight:700;font-size:16px;color:#fff;margin-bottom:2px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .cust-alias{font-size:14px;color:#a78bfa;font-weight:600;margin-top:4px;padding:4px 0}
+.cust-phone{font-size:13px;color:#20c997;font-weight:600;margin-top:2px;font-family:'SF Mono',Monaco,monospace}
 .cust-number{font-size:12px;color:#6b6b85;font-family:'SF Mono',Monaco,monospace;margin-top:4px}
 .cust-badges{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
 .badge{padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.3px}
@@ -3507,6 +3508,7 @@ h+=\`<div class="cust-card">
 \${escapeHtml(c.name)}
 </div>
 \${c.adminAlias?'<div class="cust-alias">"'+escapeHtml(c.adminAlias)+'"</div>':''}
+\${c.phone?'<div class="cust-phone">'+escapeHtml(c.phone)+'</div>':''}
 <div class="cust-number">\${escapeHtml(c.customerNumber)}</div>
 <div class="cust-badges">
 \${c.isDeleted?'<span class="badge badge-deleted">Deleted</span>':'<span class="badge badge-active">Active</span>'}
