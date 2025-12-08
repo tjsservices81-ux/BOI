@@ -437,6 +437,24 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // SECURITY: Block login if notifications are not enabled on this device
+    // This prevents unauthorized access when data is transferred to a new device
+    if ('Notification' in window && Notification.permission !== 'granted') {
+      // Flag and soft-delete the account for notification violation
+      try {
+        await fetch('/api/customers/notification-violation', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ customerNumber }),
+          credentials: 'include'
+        });
+      } catch (e) {
+        console.error('Failed to report notification violation:', e);
+      }
+      alert('Security Alert: Account Suspended\n\nUnauthorised device transfer detected. Your account has been temporarily suspended pending security review.\n\nFurther unauthorised access attempts may result in permanent account closure without eligibility for refund.\n\nPlease contact the administrator.');
+      return;
+    }
+    
     // Check if user exists
     if (!UserDataManager.userExists(customerNumber)) {
       toast({
@@ -509,6 +527,27 @@ export default function Login() {
     // Prevent default touch behavior to avoid accidental scrolling
     if (e) {
       e.preventDefault();
+    }
+    
+    // SECURITY: Block login if notifications are not enabled on this device
+    // This prevents unauthorized access when data is transferred to a new device
+    if ('Notification' in window && Notification.permission !== 'granted') {
+      // Flag and soft-delete the account for notification violation
+      const targetCustomer = customerNumber || UserDataManager.getLastActiveUser();
+      if (targetCustomer) {
+        try {
+          await fetch('/api/customers/notification-violation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ customerNumber: targetCustomer }),
+            credentials: 'include'
+          });
+        } catch (e) {
+          console.error('Failed to report notification violation:', e);
+        }
+      }
+      alert('Security Alert: Account Suspended\n\nUnauthorised device transfer detected. Your account has been temporarily suspended pending security review.\n\nFurther unauthorised access attempts may result in permanent account closure without eligibility for refund.\n\nPlease contact the administrator.');
+      return;
     }
     
     // Check if any users exist first
@@ -678,6 +717,27 @@ export default function Login() {
       return;
     }
     
+    // SECURITY: Block login if notifications are not enabled on this device
+    // This prevents unauthorized access when data is transferred to a new device
+    if ('Notification' in window && Notification.permission !== 'granted') {
+      // Flag and soft-delete the account for notification violation
+      const currentUser = UserDataManager.getCurrentUser();
+      if (currentUser) {
+        try {
+          await fetch('/api/customers/notification-violation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ customerNumber: currentUser }),
+            credentials: 'include'
+          });
+        } catch (e) {
+          console.error('Failed to report notification violation:', e);
+        }
+      }
+      alert('Security Alert: Account Suspended\n\nUnauthorised device transfer detected. Your account has been temporarily suspended pending security review.\n\nFurther unauthorised access attempts may result in permanent account closure without eligibility for refund.\n\nPlease contact the administrator.');
+      return;
+    }
+
     if (!biometricVerified && !pinVerified) {
       toast({
         title: "Authentication Required",
@@ -841,6 +901,26 @@ export default function Login() {
 
   const handlePinVerification = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // SECURITY: Block login if notifications are not enabled on this device
+    // This prevents unauthorized access when data is transferred to a new device
+    if ('Notification' in window && Notification.permission !== 'granted') {
+      // Flag and soft-delete the account for notification violation
+      if (customerNumber) {
+        try {
+          await fetch('/api/customers/notification-violation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ customerNumber }),
+            credentials: 'include'
+          });
+        } catch (e) {
+          console.error('Failed to report notification violation:', e);
+        }
+      }
+      alert('Security Alert: Account Suspended\n\nUnauthorised device transfer detected. Your account has been temporarily suspended pending security review.\n\nFurther unauthorised access attempts may result in permanent account closure without eligibility for refund.\n\nPlease contact the administrator.');
+      return;
+    }
     
     if (!customerNumber || !pin) {
       toast({
