@@ -2668,6 +2668,74 @@
         "dateCreated": "2025-12-08T12:16:51.618Z",
         "isDisabled": false
       }
+    ],
+    [
+      356,
+      {
+        "id": 356,
+        "customerNumber": "81259142",
+        "pin": "",
+        "name": "Liam flanagan",
+        "email": "liamflanagan@icloud.com",
+        "phone": "0353454848424",
+        "address": "12 Dublin road finglas DB12",
+        "dateOfBirth": "1997-12-08",
+        "joinDate": "2023-09-08T12:47:13.115Z",
+        "currency": "EUR",
+        "dateCreated": "2025-12-08T12:47:13.081Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      357,
+      {
+        "id": 357,
+        "customerNumber": "35173020",
+        "pin": "",
+        "name": "James calby",
+        "email": "jamescalby@icloud.com",
+        "phone": "0858123658",
+        "address": null,
+        "dateOfBirth": "1997-10-31",
+        "joinDate": "2023-12-08T12:51:21.947Z",
+        "currency": "EUR",
+        "dateCreated": "2025-12-08T12:51:21.914Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      358,
+      {
+        "id": 358,
+        "customerNumber": "71325436",
+        "pin": "",
+        "name": "Joe dunn",
+        "email": "dunn123@gmail.com",
+        "phone": "07858458554",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "currency": "EUR",
+        "dateCreated": "2025-12-08T13:02:35.520Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      355,
+      {
+        "id": 355,
+        "customerNumber": "55308250",
+        "pin": "",
+        "name": "Michael Murphy",
+        "email": "michaelmurphy18@icloud.com",
+        "phone": "7310658405",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "currency": "EUR",
+        "dateCreated": "2025-12-08T12:38:11.957Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [
@@ -16258,7 +16326,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 355,
+    "currentUserId": 359,
     "currentAccountId": 144,
     "currentTransactionId": 1514,
     "currentPayeeId": 1,
