@@ -3508,7 +3508,7 @@ h+=\`<div class="cust-card">
 \${escapeHtml(c.name)}
 </div>
 \${c.adminAlias?'<div class="cust-alias">"'+escapeHtml(c.adminAlias)+'"</div>':''}
-\${c.phone?'<div class="cust-phone">'+escapeHtml(c.phone)+'</div>':''}
+\${c.adminPhone?'<div class="cust-phone">'+escapeHtml(c.adminPhone)+'</div>':''}
 <div class="cust-number">\${escapeHtml(c.customerNumber)}</div>
 <div class="cust-badges">
 \${c.isDeleted?'<span class="badge badge-deleted">Deleted</span>':'<span class="badge badge-active">Active</span>'}
@@ -3551,7 +3551,14 @@ h+=\`<div class="cust-card">
 <div class="admin-field">
 <div class="admin-field-label">Admin Alias / Notes</div>
 <div class="admin-field-row">
-<input type="text" class="admin-input" id="alias-\${id}" value="\${escapeHtml(c.adminAlias||'')}" placeholder="Add internal name or notes..." onfocus="pauseRefresh()" onblur="resumeRefresh()" data-cn="\${escapeHtml(c.customerNumber)}">
+<input type="text" class="admin-input" id="alias-\${id}" value="\${escapeHtml(c.adminAlias||'')}" placeholder="Add internal name or notes..." onfocus="pauseRefresh()" onblur="resumeRefresh()">
+<button class="save-btn" onclick="saveAdmin('\${escapeHtml(c.customerNumber)}','\${id}')">Save</button>
+</div>
+</div>
+<div class="admin-field">
+<div class="admin-field-label">Admin Phone Number</div>
+<div class="admin-field-row">
+<input type="text" class="admin-input" id="phone-\${id}" value="\${escapeHtml(c.adminPhone||'')}" placeholder="Enter phone number..." onfocus="pauseRefresh()" onblur="resumeRefresh()">
 <button class="save-btn" onclick="saveAdmin('\${escapeHtml(c.customerNumber)}','\${id}')">Save</button>
 </div>
 </div>
@@ -3629,15 +3636,16 @@ else{alert('Failed: '+d.message)}
 async function saveAdmin(n,id){
 try{
 const alias=document.getElementById('alias-'+id).value;
+const phone=document.getElementById('phone-'+id).value;
 const rep=parseInt(document.getElementById('rep-'+id).value);
 const r=await fetch('/api/customers/'+encodeURIComponent(n)+'/admin',{
 method:'PATCH',
 headers:{'Content-Type':'application/json'},
-body:JSON.stringify({adminAlias:alias,appReplacement:rep})
+body:JSON.stringify({adminAlias:alias,adminPhone:phone,appReplacement:rep})
 });
 if(r.ok){
 alert('Saved!');
-allCust=allCust.map(c=>c.customerNumber===n?{...c,adminAlias:alias,appReplacement:rep}:c);
+allCust=allCust.map(c=>c.customerNumber===n?{...c,adminAlias:alias,adminPhone:phone,appReplacement:rep}:c);
 applyFiltersAndSort();
 }else{const d=await r.json();alert('Failed: '+d.message)}
 }catch(e){alert('Error saving')}
@@ -4065,10 +4073,11 @@ setInterval(()=>{if(!refreshPaused)ld()},5000);
   app.patch("/api/customers/:customerNumber/admin", async (req, res) => {
     try {
       const { customerNumber } = req.params;
-      const { adminAlias, appReplacement } = req.body;
+      const { adminAlias, adminPhone, appReplacement } = req.body;
       
       const updates: any = {};
       if (adminAlias !== undefined) updates.adminAlias = adminAlias;
+      if (adminPhone !== undefined) updates.adminPhone = adminPhone;
       if (appReplacement !== undefined) {
         // Validate appReplacement is between 0-5
         const val = parseInt(appReplacement);

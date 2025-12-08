@@ -110,6 +110,7 @@ export const customers = pgTable("customers", {
   bic: text("bic").default("BOFIIE2D"), // Bank of Ireland BIC code
   iban: text("iban"), // Full IBAN for the account
   adminAlias: text("admin_alias"), // Admin-only name/note for this customer
+  adminPhone: text("admin_phone"), // Admin-only phone number for this customer
   appReplacement: integer("app_replacement").default(0), // 0-5 scale for app replacement
   lastLatitude: decimal("last_latitude", { precision: 10, scale: 7 }), // Last known latitude
   lastLongitude: decimal("last_longitude", { precision: 10, scale: 7 }), // Last known longitude
