@@ -4680,7 +4680,7 @@
         "sortCode": "90-78-68",
         "bic": "BOFIIE2D",
         "iban": "IE94BOFI90786813140385",
-        "balance": "210.29",
+        "balance": "101.29",
         "displayName": "Savings Account"
       }
     ],
@@ -4709,6 +4709,20 @@
         "bic": "BOFIIE2D",
         "iban": "IE83BOFI90786814011808",
         "balance": "22849.43",
+        "displayName": "Current Account"
+      }
+    ],
+    [
+      175,
+      {
+        "id": 175,
+        "userId": 369,
+        "accountType": "current",
+        "accountNumber": "33598764",
+        "sortCode": "90-78-68",
+        "bic": "BOFIIE2D",
+        "iban": "IE54BOFI90786833598764",
+        "balance": "7362.92",
         "displayName": "Current Account"
       }
     ]
@@ -17272,6 +17286,54 @@
         "timestamp": "2025-11-08T06:59:00.000Z",
         "isSample": false
       }
+    ],
+    [
+      3438,
+      {
+        "id": 3438,
+        "accountId": 173,
+        "amount": "-500.00",
+        "description": "Transfer to John",
+        "category": "transfer",
+        "type": "debit",
+        "paymentMethod": "SEPA Transfer",
+        "reference": "BOI12949000CPUS274910",
+        "recipientName": "John",
+        "iban": null,
+        "bicCode": null,
+        "recipientAccountNumber": "13140385",
+        "recipientSortCode": "90-78-68",
+        "recipientIban": "IE94BOFI90786813140385",
+        "exchangeRate": null,
+        "convertedAmount": null,
+        "convertedCurrency": null,
+        "timestamp": "2025-12-08T16:55:55.495Z",
+        "isSample": false
+      }
+    ],
+    [
+      3439,
+      {
+        "id": 3439,
+        "accountId": 172,
+        "amount": "500.00",
+        "description": "Transfer from Michael Murphy",
+        "category": "transfer",
+        "type": "credit",
+        "paymentMethod": "SEPA Transfer",
+        "reference": "BOI12949000CPUS274910",
+        "recipientName": "Michael Murphy",
+        "iban": null,
+        "bicCode": null,
+        "recipientAccountNumber": "30495444",
+        "recipientSortCode": "90-78-68",
+        "recipientIban": "IE59BOFI90786830495444",
+        "exchangeRate": null,
+        "convertedAmount": null,
+        "convertedCurrency": null,
+        "timestamp": "2025-12-08T16:55:55.521Z",
+        "isSample": false
+      }
     ]
   ],
   "payees": [],
@@ -17282,8 +17344,8 @@
   "chatSessions": [],
   "counters": {
     "currentUserId": 370,
-    "currentAccountId": 174,
-    "currentTransactionId": 3358,
+    "currentAccountId": 176,
+    "currentTransactionId": 3440,
     "currentPayeeId": 1,
     "currentScheduledPaymentId": 1,
     "currentStatementId": 1,
