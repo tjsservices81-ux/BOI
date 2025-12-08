@@ -28,6 +28,8 @@ export default function Profile() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showAddTransaction, setShowAddTransaction] = useState(false);
   const [showSampleTransactions, setShowSampleTransactions] = useState(false);
+  const [isAddingSampleTransactions, setIsAddingSampleTransactions] = useState(false);
+  const [sampleTransactionProgress, setSampleTransactionProgress] = useState({ current: 0, total: 0 });
   const [newAccountData, setNewAccountData] = useState({
     displayName: '',
     accountType: 'current',
@@ -1309,6 +1311,15 @@ export default function Profile() {
       return;
     }
     
+    // Block if already adding
+    if (isAddingSampleTransactions) {
+      return;
+    }
+    
+    // Set loading state
+    setIsAddingSampleTransactions(true);
+    setSampleTransactionProgress({ current: 0, total: count });
+    
     // Clear all caches first to ensure we get the most current data
     UserDataManager.clearCache();
 
@@ -1317,12 +1328,14 @@ export default function Profile() {
     
     if (!Array.isArray(currentAccounts) || currentAccounts.length === 0) {
       alert('Error: No accounts found. Please refresh the page.');
+      setIsAddingSampleTransactions(false);
       return;
     }
 
     const targetAccount = currentAccounts.find((acc: any) => acc.id === accountId);
     if (!targetAccount) {
       alert('Error: Account not found. Please refresh the page.');
+      setIsAddingSampleTransactions(false);
       return;
     }
 
@@ -1333,6 +1346,8 @@ export default function Profile() {
 
       // Create all transactions via API
       for (let i = 0; i < count; i++) {
+        // Update progress
+        setSampleTransactionProgress({ current: i + 1, total: count });
         // Randomly select a transaction template
         const randomTransaction = sampleTransactions[Math.floor(Math.random() * sampleTransactions.length)];
         
@@ -1421,6 +1436,9 @@ export default function Profile() {
     } catch (error) {
       console.error('Failed to create sample transactions:', error);
       alert('Failed to add transactions. Please try again.');
+    } finally {
+      setIsAddingSampleTransactions(false);
+      setSampleTransactionProgress({ current: 0, total: 0 });
     }
   };
 
@@ -3431,15 +3449,36 @@ export default function Profile() {
       {/* Sample Transactions Modal */}
       {showSampleTransactions && (
         <div className="modal-overlay bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto relative">
+            {/* Loading Overlay */}
+            {isAddingSampleTransactions && (
+              <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center z-50 rounded-2xl">
+                <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
+                <p className="text-lg font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Adding Sample Transactions...
+                </p>
+                <p className="text-sm text-gray-600 mt-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  {sampleTransactionProgress.current} of {sampleTransactionProgress.total} complete
+                </p>
+                <div className="w-48 h-2 bg-gray-200 rounded-full mt-3 overflow-hidden">
+                  <div 
+                    className="h-full bg-blue-600 rounded-full transition-all duration-300"
+                    style={{ width: `${(sampleTransactionProgress.current / sampleTransactionProgress.total) * 100}%` }}
+                  ></div>
+                </div>
+              </div>
+            )}
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                   Add Sample Transactions
                 </h2>
                 <button
-                  onClick={() => setShowSampleTransactions(false)}
-                  className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+                  onClick={() => !isAddingSampleTransactions && setShowSampleTransactions(false)}
+                  disabled={isAddingSampleTransactions}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
+                    isAddingSampleTransactions ? 'bg-gray-100 cursor-not-allowed' : 'bg-gray-100 hover:bg-gray-200'
+                  }`}
                 >
                   <X className="w-4 h-4 text-gray-600" />
                 </button>
@@ -3558,11 +3597,16 @@ export default function Profile() {
 
               <div className="mt-6">
                 <button
-                  onClick={() => setShowSampleTransactions(false)}
-                  className="w-full py-3 bg-gray-200 text-gray-800 rounded-xl font-semibold hover:bg-gray-300 transition-colors"
+                  onClick={() => !isAddingSampleTransactions && setShowSampleTransactions(false)}
+                  disabled={isAddingSampleTransactions}
+                  className={`w-full py-3 rounded-xl font-semibold transition-colors ${
+                    isAddingSampleTransactions 
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                      : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                  }`}
                   style={{ fontFamily: 'OpenSans, sans-serif' }}
                 >
-                  Cancel
+                  {isAddingSampleTransactions ? 'Please wait...' : 'Cancel'}
                 </button>
               </div>
             </div>
