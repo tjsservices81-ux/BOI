@@ -3475,7 +3475,7 @@ h+=\`<div class="cust-card">
 \${online?'<span class="online-dot"></span>':''}
 \${escapeHtml(c.name)}
 </div>
-\${c.adminAlias?'<div class="cust-alias">"\${escapeHtml(c.adminAlias)}"</div>':''}
+\${c.adminAlias?'<div class="cust-alias">"'+escapeHtml(c.adminAlias)+'"</div>':''}
 <div class="cust-number">\${escapeHtml(c.customerNumber)}</div>
 <div class="cust-badges">
 \${c.isDeleted?'<span class="badge badge-deleted">Deleted</span>':'<span class="badge badge-active">Active</span>'}
