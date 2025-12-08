@@ -1253,16 +1253,20 @@ export default function Profile() {
     const currencySymbol = currentCurrency === 'EUR' ? '€' : '£';
     showDeveloperMessage(`Account updated successfully!\n\nNew Balance: ${currencySymbol}${numericBalance.toFixed(2)}`);
     
-    // Update balance in database (background)
+    // Update balance and displayName in database (background)
+    const updatedName = newAccountName.trim() || editingAccount.displayName;
     fetch(`/api/accounts/${editingAccount.id}/balance`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ balance: numericBalance.toFixed(2) })
+      body: JSON.stringify({ 
+        balance: numericBalance.toFixed(2),
+        displayName: updatedName
+      })
     }).then(() => {
-      console.log('💰 Balance updated in database');
+      console.log('💰 Balance and display name updated in database');
     }).catch((error) => {
-      console.error('Failed to update balance in database:', error);
+      console.error('Failed to update account in database:', error);
     });
     
     // Dispatch multiple comprehensive events for instant app-wide updates
@@ -3062,17 +3066,12 @@ export default function Profile() {
                     data-testid="select-account-to-delete"
                   >
                     <option value="">Choose an account...</option>
-                    {accounts && accounts.filter(acc => acc.accountType !== 'current').map((account) => (
+                    {accounts && accounts.map((account) => (
                       <option key={account.id} value={account.id}>
                         {account.displayName} - {formatCurrency(account.balance, userCurrency)}
                       </option>
                     ))}
                   </select>
-                  {accounts && accounts.filter(acc => acc.accountType !== 'current').length === 0 && (
-                    <p className="text-sm text-gray-500 mt-2 italic" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      No deletable accounts. Current accounts cannot be deleted.
-                    </p>
-                  )}
                 </div>
 
                 {deletingAccountId && (

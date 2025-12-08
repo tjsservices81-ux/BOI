@@ -1089,15 +1089,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update account balance (for Customer Panel and transfers)
+  // Update account balance and/or displayName (for Customer Panel and transfers)
   app.put("/api/accounts/:accountId/balance", requireAuth, async (req, res) => {
     try {
       const accountId = parseInt(req.params.accountId);
-      const { balance } = req.body;
+      const { balance, displayName } = req.body;
       const sessionUser = (req as any).user;
       
-      if (balance === undefined || balance === null) {
-        return res.status(400).json({ message: "Balance is required" });
+      if ((balance === undefined || balance === null) && !displayName) {
+        return res.status(400).json({ message: "Balance or displayName is required" });
       }
       
       if (!sessionUser) {
@@ -1113,21 +1113,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Account not found or access denied" });
       }
       
-      // Update balance in memory and PostgreSQL
-      const newBalance = parseFloat(balance).toFixed(2);
-      await storage.updateAccountBalance(accountId, newBalance);
+      // Update balance if provided
+      let newBalance = account.balance;
+      if (balance !== undefined && balance !== null) {
+        newBalance = parseFloat(balance).toFixed(2);
+        await storage.updateAccountBalance(accountId, newBalance);
+        console.log(`💰 Balance updated via API: Account ID=${accountId}, New Balance=${newBalance}`);
+      }
       
-      console.log(`💰 Balance updated via API: Account ID=${accountId}, User ID=${sessionUser.id}, New Balance=${newBalance}`);
+      // Update displayName if provided
+      let newDisplayName = account.displayName;
+      if (displayName && displayName.trim()) {
+        newDisplayName = displayName.trim();
+        await storage.updateAccountDisplayName(accountId, newDisplayName);
+        console.log(`📝 Display name updated via API: Account ID=${accountId}, New Name=${newDisplayName}`);
+      }
       
       res.json({ 
         success: true, 
         accountId, 
         newBalance,
-        message: "Balance updated successfully" 
+        displayName: newDisplayName,
+        message: "Account updated successfully" 
       });
     } catch (error) {
-      console.error('Error updating balance:', error);
-      res.status(500).json({ message: "Failed to update balance" });
+      console.error('Error updating account:', error);
+      res.status(500).json({ message: "Failed to update account" });
     }
   });
 

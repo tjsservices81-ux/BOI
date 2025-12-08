@@ -2838,6 +2838,23 @@
         "dateCreated": "2025-12-08T15:24:39.437Z",
         "isDisabled": false
       }
+    ],
+    [
+      366,
+      {
+        "id": 366,
+        "customerNumber": "34546377",
+        "pin": "000000",
+        "name": "Michael Murphy",
+        "email": "michaelmurphy18@icloud.com",
+        "phone": "7310658405",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "dateCreated": "2025-12-08T16:02:24.124Z",
+        "isDisabled": false,
+        "currency": "EUR"
+      }
     ]
   ],
   "accounts": [
@@ -4337,6 +4354,286 @@
         "iban": "IE79BOFI90786850230953",
         "balance": "0.00",
         "displayName": "Saving Account"
+      }
+    ],
+    [
+      153,
+      {
+        "id": 153,
+        "userId": 358,
+        "accountType": "current",
+        "accountNumber": "82045983",
+        "sortCode": "90-78-68",
+        "bic": "BOFIIE2D",
+        "iban": "IE17BOFI90786882045983",
+        "balance": "7443.42",
+        "displayName": "Current Account"
+      }
+    ],
+    [
+      160,
+      {
+        "id": 160,
+        "userId": 364,
+        "accountType": "current",
+        "accountNumber": "32948541",
+        "sortCode": "90-78-68",
+        "bic": "BOFIIE2D",
+        "iban": "IE45BOFI90786832948541",
+        "balance": "0.00",
+        "displayName": "Current Account"
+      }
+    ],
+    [
+      162,
+      {
+        "id": 162,
+        "userId": 365,
+        "accountType": "current",
+        "accountNumber": "23893032",
+        "sortCode": "90-78-68",
+        "bic": "BOFIIE2D",
+        "iban": "IE06BOFI90786823893032",
+        "balance": "0.00",
+        "displayName": "Current Account"
+      }
+    ],
+    [
+      168,
+      {
+        "id": 168,
+        "userId": 365,
+        "accountType": "current",
+        "accountNumber": "35484646",
+        "sortCode": "90-78-68",
+        "bic": "BOFIIE2D",
+        "iban": "IE42BOFI90786835484646",
+        "balance": "0.00",
+        "displayName": "Current Account"
+      }
+    ],
+    [
+      147,
+      {
+        "id": 147,
+        "userId": 356,
+        "accountType": "current",
+        "accountNumber": "51812922",
+        "sortCode": "90-78-68",
+        "bic": "BOFIIE2D",
+        "iban": "IE28BOFI90786851812922",
+        "balance": "18243.00",
+        "displayName": "Current Account"
+      }
+    ],
+    [
+      151,
+      {
+        "id": 151,
+        "userId": 357,
+        "accountType": "savings",
+        "accountNumber": "42254168",
+        "sortCode": "90-78-68",
+        "bic": "BOFIIE2D",
+        "iban": "IE99BOFI90786842254168",
+        "balance": "47502.00",
+        "displayName": "Savings Account"
+      }
+    ],
+    [
+      152,
+      {
+        "id": 152,
+        "userId": 357,
+        "accountType": "credit",
+        "accountNumber": "37033458",
+        "sortCode": "90-78-68",
+        "bic": "BOFIIE2D",
+        "iban": "IE86BOFI90786837033458",
+        "balance": "5000.00",
+        "displayName": "Credit Card"
+      }
+    ],
+    [
+      145,
+      {
+        "id": 145,
+        "userId": 354,
+        "accountType": "savings",
+        "accountNumber": "47263108",
+        "sortCode": "90-78-68",
+        "bic": "BOFIIE2D",
+        "iban": "IE65BOFI90786847263108",
+        "balance": "19371.23",
+        "displayName": "Savings Account"
+      }
+    ],
+    [
+      146,
+      {
+        "id": 146,
+        "userId": 355,
+        "accountType": "current",
+        "accountNumber": "85379066",
+        "sortCode": "90-78-68",
+        "bic": "BOFIIE2D",
+        "iban": "IE78BOFI90786885379066",
+        "balance": "4500.00",
+        "displayName": "Current Account"
+      }
+    ],
+    [
+      149,
+      {
+        "id": 149,
+        "userId": 356,
+        "accountType": "savings",
+        "accountNumber": "42352407",
+        "sortCode": "90-78-68",
+        "bic": "BOFIIE2D",
+        "iban": "IE49BOFI90786842352407",
+        "balance": "43200.00",
+        "displayName": "Savings Account"
+      }
+    ],
+    [
+      150,
+      {
+        "id": 150,
+        "userId": 356,
+        "accountType": "credit",
+        "accountNumber": "91124353",
+        "sortCode": "90-78-68",
+        "bic": "BOFIIE2D",
+        "iban": "IE83BOFI90786891124353",
+        "balance": "2328.00",
+        "displayName": "Credit Card"
+      }
+    ],
+    [
+      161,
+      {
+        "id": 161,
+        "userId": 364,
+        "accountType": "savings",
+        "accountNumber": "49842632",
+        "sortCode": "90-78-68",
+        "bic": "BOFIIE2D",
+        "iban": "IE49BOFI90786849842632",
+        "balance": "0.00",
+        "displayName": "Savings Account"
+      }
+    ],
+    [
+      158,
+      {
+        "id": 158,
+        "userId": 362,
+        "accountType": "current",
+        "accountNumber": "20442699",
+        "sortCode": "90-78-68",
+        "bic": "BOFIIE2D",
+        "iban": "IE03BOFI90786820442699",
+        "balance": "11174.63",
+        "displayName": "Current Account"
+      }
+    ],
+    [
+      144,
+      {
+        "id": 144,
+        "userId": 354,
+        "accountType": "current",
+        "accountNumber": "21838615",
+        "sortCode": "90-78-68",
+        "bic": "BOFIIE2D",
+        "iban": "IE09BOFI90786821838615",
+        "balance": "21346.38",
+        "displayName": "Current Account"
+      }
+    ],
+    [
+      159,
+      {
+        "id": 159,
+        "userId": 363,
+        "accountType": "current",
+        "accountNumber": "96094775",
+        "sortCode": "90-78-68",
+        "bic": "BOFIIE2D",
+        "iban": "IE66BOFI90786896094775",
+        "balance": "3526.00",
+        "displayName": "Current Account"
+      }
+    ],
+    [
+      155,
+      {
+        "id": 155,
+        "userId": 359,
+        "accountType": "savings",
+        "accountNumber": "82201020",
+        "sortCode": "90-78-68",
+        "bic": "BOFIIE2D",
+        "iban": "IE40BOFI90786882201020",
+        "balance": "17873.30",
+        "displayName": "Savings"
+      }
+    ],
+    [
+      154,
+      {
+        "id": 154,
+        "userId": 359,
+        "accountType": "current",
+        "accountNumber": "98263277",
+        "sortCode": "90-78-68",
+        "bic": "BOFIIE2D",
+        "iban": "IE03BOFI90786898263277",
+        "balance": "6473.87",
+        "displayName": "Current Account"
+      }
+    ],
+    [
+      156,
+      {
+        "id": 156,
+        "userId": 360,
+        "accountType": "current",
+        "accountNumber": "84148560",
+        "sortCode": "90-78-68",
+        "bic": "BOFIIE2D",
+        "iban": "IE76BOFI90786884148560",
+        "balance": "8996.00",
+        "displayName": "Current Account"
+      }
+    ],
+    [
+      157,
+      {
+        "id": 157,
+        "userId": 361,
+        "accountType": "current",
+        "accountNumber": "43847953",
+        "sortCode": "90-78-68",
+        "bic": "BOFIIE2D",
+        "iban": "IE50BOFI90786843847953",
+        "balance": "0.00",
+        "displayName": "Current Account"
+      }
+    ],
+    [
+      148,
+      {
+        "id": 148,
+        "userId": 357,
+        "accountType": "current",
+        "accountNumber": "22533895",
+        "sortCode": "90-78-68",
+        "bic": "BOFIIE2D",
+        "iban": "IE53BOFI90786822533895",
+        "balance": "9082.93",
+        "displayName": "Current Account"
       }
     ]
   ],
@@ -16428,8 +16725,8 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 366,
-    "currentAccountId": 144,
+    "currentUserId": 367,
+    "currentAccountId": 169,
     "currentTransactionId": 1514,
     "currentPayeeId": 1,
     "currentScheduledPaymentId": 1,

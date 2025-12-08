@@ -31,6 +31,7 @@ export interface IStorage {
   getAllAccounts(): Promise<Account[]>;
   createAccount(account: InsertAccount): Promise<Account>;
   updateAccountBalance(accountId: number, newBalance: string): Promise<void>;
+  updateAccountDisplayName(accountId: number, displayName: string): Promise<void>;
   deleteAccount(accountId: number): Promise<boolean>;
   deleteAccountsByUserId(userId: number): Promise<boolean>;
   
@@ -799,6 +800,29 @@ class MemStorage implements IStorage {
       console.log(`💰 Balance updated in PostgreSQL: Account ID=${accountId}, New Balance=${newBalance}`);
     } catch (error) {
       console.error('Error updating balance in PostgreSQL:', error);
+    }
+  }
+
+  async updateAccountDisplayName(accountId: number, displayName: string): Promise<void> {
+    // Update in memory cache
+    const account = this.accounts.get(accountId);
+    if (account) {
+      account.displayName = displayName;
+      this.accounts.set(accountId, account);
+    }
+    
+    // Update in PostgreSQL database
+    try {
+      const { db } = await import('./db');
+      const { eq } = await import('drizzle-orm');
+      
+      await db.update(accounts)
+        .set({ displayName: displayName })
+        .where(eq(accounts.id, accountId));
+      
+      console.log(`📝 Display name updated in PostgreSQL: Account ID=${accountId}, New Name=${displayName}`);
+    } catch (error) {
+      console.error('Error updating display name in PostgreSQL:', error);
     }
   }
 
