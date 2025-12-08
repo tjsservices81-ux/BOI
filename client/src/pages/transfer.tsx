@@ -90,13 +90,19 @@ export default function Transfer() {
       return;
     }
 
+    // Generate unique token for each submission - allows making same transfer multiple times
+    const idempotencyToken = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+
     transferMutation.mutate({
       fromAccountId: parseInt(selectedAccountId),
       toAccount: recipient,
-      iban,
       amount,
       reference: reference || undefined,
-      recipientEmail: recipientEmail || undefined,
+      transferType: 'IBAN',
+      recipientDetails: {
+        iban,
+      },
+      idempotencyToken,
     });
   };
 
