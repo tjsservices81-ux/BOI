@@ -3243,234 +3243,289 @@ ${hasError ? '<div class="error show">Invalid PIN. Please try again.</div>' : ''
 <title>Admin Dashboard</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,sans-serif;background:#0f0f1e;overflow:hidden;width:100vw;height:100vh;display:flex;flex-direction:column;color:#fff}
-.hdr{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);color:#fff;padding:16px 20px;flex-shrink:0;z-index:100;box-shadow:0 4px 20px rgba(0,0,0,0.3);border-bottom:1px solid rgba(255,255,255,0.1)}
-.hdr-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.hdr h1{font-size:20px;font-weight:700;letter-spacing:-0.5px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0a0a14;overflow:hidden;width:100vw;height:100vh;display:flex;flex-direction:column;color:#fff}
+.hdr{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);padding:16px 20px;flex-shrink:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,0.4)}
+.hdr-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.hdr h1{font-size:22px;font-weight:700;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .hdr-actions{display:flex;gap:8px}
-.btn{background:rgba(102,126,234,0.2);color:#667eea;border:1px solid #667eea;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.3s ease}
-.btn:hover{background:#667eea;color:#fff;transform:translateY(-1px)}
-.btn:active{transform:translateY(0)}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;padding:0 20px 16px}
-.stat-card{background:rgba(102,126,234,0.1);border:1px solid rgba(102,126,234,0.3);border-radius:12px;padding:14px;text-align:center}
-.stat-val{font-size:24px;font-weight:800;background:linear-gradient(135deg,#667eea,#764ba2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px}
-.stat-lbl{font-size:11px;color:#8b8ba5;text-transform:uppercase;font-weight:600;letter-spacing:0.5px}
-.controls{background:rgba(26,26,46,0.8);padding:12px 20px;display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;border-bottom:1px solid rgba(255,255,255,0.05)}
-.ctrl-btn{background:rgba(102,126,234,0.15);color:#667eea;border:1px solid rgba(102,126,234,0.3);padding:8px 14px;border-radius:8px;font-size:12px;white-space:nowrap;cursor:pointer;transition:all 0.2s}
+.btn{background:rgba(102,126,234,0.15);color:#667eea;border:1px solid rgba(102,126,234,0.4);padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s}
+.btn:hover{background:#667eea;color:#fff}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;padding:0 20px 16px}
+.stat-card{background:rgba(102,126,234,0.08);border:1px solid rgba(102,126,234,0.2);border-radius:12px;padding:12px 8px;text-align:center}
+.stat-val{font-size:22px;font-weight:800;background:linear-gradient(135deg,#667eea,#764ba2);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stat-lbl{font-size:10px;color:#8b8ba5;text-transform:uppercase;font-weight:600;letter-spacing:0.3px;margin-top:2px}
+.controls{background:rgba(20,20,35,0.9);padding:10px 20px;display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;border-bottom:1px solid rgba(255,255,255,0.05)}
+.ctrl-btn{background:rgba(102,126,234,0.1);color:#8b8ba5;border:1px solid rgba(102,126,234,0.2);padding:8px 12px;border-radius:6px;font-size:11px;white-space:nowrap;cursor:pointer;transition:all 0.2s;font-weight:600}
 .ctrl-btn.active{background:#667eea;color:#fff;border-color:#667eea}
-.ctrl-btn:hover{background:#667eea;color:#fff}
-.srch{padding:12px 20px;background:rgba(26,26,46,0.8);border-bottom:1px solid rgba(255,255,255,0.05);transition:all 0.3s ease}
-.srch input{width:100%;padding:12px 16px;border:1px solid rgba(102,126,234,0.3);border-radius:10px;font-size:14px;background:rgba(102,126,234,0.05);color:#fff;transition:all 0.3s}
-.srch input::placeholder{color:#8b8ba5}
-.srch input:focus{outline:none;border-color:#667eea;background:rgba(102,126,234,0.1);box-shadow:0 0 0 3px rgba(102,126,234,0.1)}
-.otc-sec{padding:12px 20px;background:rgba(26,26,46,0.5);border-bottom:1px solid rgba(255,255,255,0.05)}
-.otc-hdr{background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.3);border-radius:10px;padding:12px;margin-bottom:10px}
-.otc-hdr h2{font-size:15px;color:#ffc107;margin-bottom:4px;font-weight:700}
-.otc-hdr p{font-size:11px;color:#8b8ba5;font-weight:500}
-.otc-itm{background:rgba(255,193,7,0.15);border:1px solid rgba(255,193,7,0.3);border-radius:10px;padding:12px;margin-bottom:8px;border-left:4px solid #ffc107}
-.otc-code{font-size:22px;font-weight:800;color:#ffc107;font-family:'SF Mono',Monaco,monospace;letter-spacing:3px;margin:8px 0}
-.otc-info{font-size:11px;color:#ffc107;margin-bottom:4px;font-weight:600}
-.otc-timer{font-size:11px;color:#ff6b6b;font-weight:700}
-.otc-empty{background:rgba(102,126,234,0.05);border:1px solid rgba(102,126,234,0.2);border-radius:10px;padding:20px;text-align:center;color:#8b8ba5;font-size:12px}
-.lst{padding:12px 20px 80px;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;transition:all 0.3s ease}
-.itm{background:rgba(26,26,46,0.8);border:1px solid rgba(102,126,234,0.2);border-radius:12px;margin-bottom:12px;transition:all 0.3s}
-.itm:hover{border-color:#667eea;box-shadow:0 4px 20px rgba(102,126,234,0.3);transform:translateY(-2px)}
-.itm-hdr{padding:14px;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
-.l{flex:1;min-width:0}
-.nm{font-weight:700;font-size:15px;color:#fff;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.id{font-size:11px;color:#8b8ba5;font-family:'SF Mono',Monaco,monospace;font-weight:500}
-.arr{color:#667eea;font-size:16px;transition:transform 0.3s;font-weight:700}
-.arr.op{transform:rotate(180deg)}
-.det{max-height:0;overflow:hidden;transition:max-height 0.3s;background:rgba(15,15,30,0.8);border-top:1px solid rgba(102,126,234,0.1)}
-.det.op{max-height:600px;overflow-y:auto}
-.dw{padding:14px}
-.r{display:flex;justify-content:space-between;padding:8px 0;font-size:12px;border-bottom:1px solid rgba(102,126,234,0.1)}
-.r:last-child{border-bottom:none}
-.lb{color:#8b8ba5;font-weight:600}
-.vl{color:#fff;font-weight:700;text-align:right;max-width:60%;word-break:break-all}
-.st{background:rgba(40,167,69,0.2);color:#28a745;padding:4px 10px;border-radius:10px;font-size:11px;font-weight:700;border:1px solid rgba(40,167,69,0.3)}
-.db{background:rgba(220,53,69,0.2);color:#dc3545;border:1px solid rgba(220,53,69,0.4);padding:10px;border-radius:10px;width:100%;margin-top:10px;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.3s}
-.db:hover{background:#dc3545;color:#fff;border-color:#dc3545}
-.emp{background:rgba(26,26,46,0.5);border:1px solid rgba(102,126,234,0.2);border-radius:12px;padding:40px 20px;text-align:center;color:#8b8ba5;font-size:14px;font-weight:500}
-.ed-fld{margin-top:10px;padding:10px;background:rgba(102,126,234,0.1);border:1px solid rgba(102,126,234,0.2);border-radius:8px}
-.ed-fld label{display:block;font-size:11px;color:#8b8ba5;margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px}
-.ed-inp{width:100%;padding:8px 12px;border:1px solid rgba(102,126,234,0.3);border-radius:6px;font-size:14px;background:rgba(15,15,30,0.8);color:#fff;transition:border-color 0.2s,box-shadow 0.2s;-webkit-appearance:none;-moz-appearance:none;appearance:none;font-family:inherit;line-height:1.4}
-.ed-inp:focus{outline:none;border-color:#667eea;box-shadow:0 0 0 3px rgba(102,126,234,0.2)}
-.ed-inp::placeholder{color:#8b8ba5;opacity:1}
-.ed-sel{width:100%;padding:8px 12px;border:1px solid rgba(102,126,234,0.3);border-radius:6px;font-size:12px;background:rgba(15,15,30,0.8);color:#fff;cursor:pointer;transition:all 0.2s}
-.ed-sel:focus{outline:none;border-color:#667eea;box-shadow:0 0 0 3px rgba(102,126,234,0.2)}
-.sv-btn{background:#28a745;color:#fff;border:none;padding:8px 14px;border-radius:6px;font-size:11px;font-weight:700;margin-left:6px;cursor:pointer;transition:all 0.3s}
-.sv-btn:hover{background:#218838;transform:translateY(-1px)}
-.active-dot{display:inline-block;width:8px;height:8px;background:#28a745;border-radius:50%;margin-left:6px;animation:pulse 2s infinite;box-shadow:0 0 8px rgba(40,167,69,0.8)}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.7;transform:scale(0.9)}}
+.ctrl-btn:hover{background:rgba(102,126,234,0.3);color:#fff}
+.srch{padding:12px 20px;background:rgba(20,20,35,0.9);border-bottom:1px solid rgba(255,255,255,0.05)}
+.srch input{width:100%;padding:12px 16px;border:1px solid rgba(102,126,234,0.25);border-radius:10px;font-size:14px;background:rgba(102,126,234,0.05);color:#fff;transition:all 0.2s}
+.srch input::placeholder{color:#6b6b85}
+.srch input:focus{outline:none;border-color:#667eea;box-shadow:0 0 0 3px rgba(102,126,234,0.15)}
+.otc-sec{padding:12px 20px;background:rgba(20,20,35,0.6);border-bottom:1px solid rgba(255,255,255,0.05)}
+.otc-hdr{background:rgba(255,193,7,0.08);border:1px solid rgba(255,193,7,0.25);border-radius:10px;padding:12px;margin-bottom:10px}
+.otc-hdr h2{font-size:14px;color:#ffc107;margin-bottom:2px;font-weight:700}
+.otc-hdr p{font-size:11px;color:#8b8ba5}
+.otc-itm{background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.25);border-radius:10px;padding:12px;margin-bottom:8px;border-left:3px solid #ffc107}
+.otc-code{font-size:20px;font-weight:800;color:#ffc107;font-family:'SF Mono',Monaco,monospace;letter-spacing:2px;margin:6px 0}
+.otc-info{font-size:11px;color:#ffc107;font-weight:600}
+.otc-timer{font-size:11px;color:#ff6b6b;font-weight:600;margin-top:4px}
+.otc-empty{background:rgba(102,126,234,0.05);border:1px dashed rgba(102,126,234,0.2);border-radius:10px;padding:16px;text-align:center;color:#6b6b85;font-size:12px}
+.lst{padding:12px 20px 100px;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.cust-card{background:linear-gradient(135deg,rgba(26,26,46,0.95) 0%,rgba(22,33,62,0.95) 100%);border:1px solid rgba(102,126,234,0.15);border-radius:14px;margin-bottom:12px;overflow:hidden;transition:all 0.2s}
+.cust-card:hover{border-color:rgba(102,126,234,0.4);box-shadow:0 4px 24px rgba(102,126,234,0.15)}
+.cust-header{padding:16px;cursor:pointer;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.cust-info{flex:1;min-width:0}
+.cust-name{font-weight:700;font-size:16px;color:#fff;margin-bottom:2px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.cust-alias{font-size:14px;color:#a78bfa;font-weight:600;margin-top:4px;padding:4px 0}
+.cust-number{font-size:12px;color:#6b6b85;font-family:'SF Mono',Monaco,monospace;margin-top:4px}
+.cust-badges{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.badge{padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.3px}
+.badge-active{background:rgba(40,167,69,0.15);color:#28a745;border:1px solid rgba(40,167,69,0.3)}
+.badge-deleted{background:rgba(220,53,69,0.15);color:#dc3545;border:1px solid rgba(220,53,69,0.3)}
+.badge-flagged{background:rgba(220,53,69,0.2);color:#ff6b6b;border:1px solid rgba(220,53,69,0.4)}
+.badge-dev{background:rgba(102,126,234,0.15);color:#667eea;border:1px solid rgba(102,126,234,0.3)}
+.online-dot{width:10px;height:10px;background:#28a745;border-radius:50%;animation:pulse 2s infinite;box-shadow:0 0 8px rgba(40,167,69,0.6)}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.6;transform:scale(0.85)}}
+.expand-icon{color:#667eea;font-size:14px;transition:transform 0.3s;padding:8px;background:rgba(102,126,234,0.1);border-radius:8px}
+.expand-icon.open{transform:rotate(180deg)}
+.cust-details{max-height:0;overflow:hidden;transition:max-height 0.3s ease-out;background:rgba(10,10,20,0.6)}
+.cust-details.open{max-height:1200px;overflow-y:auto}
+.details-inner{padding:16px;border-top:1px solid rgba(102,126,234,0.1)}
+.detail-section{margin-bottom:16px}
+.detail-section:last-child{margin-bottom:0}
+.section-title{font-size:11px;color:#667eea;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.detail-row{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:rgba(102,126,234,0.05);border-radius:8px;margin-bottom:6px}
+.detail-row:last-child{margin-bottom:0}
+.detail-label{font-size:12px;color:#8b8ba5;font-weight:500}
+.detail-value{font-size:12px;color:#fff;font-weight:600;text-align:right;max-width:55%;word-break:break-all}
+.account-card{background:rgba(102,126,234,0.08);border:1px solid rgba(102,126,234,0.2);border-radius:10px;padding:14px;margin-top:10px}
+.account-title{font-size:13px;font-weight:700;color:#667eea;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.account-balance{font-size:18px;font-weight:800;color:#28a745;margin-bottom:8px}
+.admin-field{background:rgba(102,126,234,0.08);border:1px solid rgba(102,126,234,0.2);border-radius:10px;padding:14px;margin-top:12px}
+.admin-field-label{font-size:11px;color:#8b8ba5;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px}
+.admin-field-row{display:flex;gap:8px;align-items:center}
+.admin-input{flex:1;padding:10px 14px;border:1px solid rgba(102,126,234,0.3);border-radius:8px;font-size:14px;background:rgba(15,15,25,0.8);color:#fff;transition:all 0.2s;font-family:inherit}
+.admin-input:focus{outline:none;border-color:#667eea;box-shadow:0 0 0 3px rgba(102,126,234,0.15)}
+.admin-input::placeholder{color:#6b6b85}
+.admin-select{padding:10px 14px;border:1px solid rgba(102,126,234,0.3);border-radius:8px;font-size:13px;background:rgba(15,15,25,0.8);color:#fff;cursor:pointer;min-width:70px}
+.admin-select:focus{outline:none;border-color:#667eea}
+.save-btn{background:linear-gradient(135deg,#28a745,#20c997);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.2s}
+.save-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(40,167,69,0.3)}
+.action-btns{display:flex;gap:8px;margin-top:14px}
+.delete-btn{flex:1;background:rgba(220,53,69,0.15);color:#dc3545;border:1px solid rgba(220,53,69,0.3);padding:12px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.2s}
+.delete-btn:hover{background:#dc3545;color:#fff}
+.restore-btn{flex:1;background:rgba(40,167,69,0.15);color:#28a745;border:1px solid rgba(40,167,69,0.3);padding:12px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;transition:all 0.2s}
+.restore-btn:hover{background:#28a745;color:#fff}
+.no-accounts{background:rgba(220,53,69,0.08);border:1px dashed rgba(220,53,69,0.3);border-radius:10px;padding:16px;text-align:center;color:#dc3545;font-size:12px;margin-top:10px}
+.emp{background:rgba(26,26,46,0.5);border:1px dashed rgba(102,126,234,0.2);border-radius:12px;padding:40px 20px;text-align:center;color:#6b6b85;font-size:14px}
+.pause-indicator{position:fixed;top:10px;right:10px;background:rgba(255,193,7,0.9);color:#000;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:700;z-index:9999;display:none}
 </style>
 </head>
 <body>
+<div class="pause-indicator" id="pauseInd">⏸ Auto-refresh paused</div>
 <div class="hdr">
 <div class="hdr-top">
 <h1>Admin Dashboard</h1>
 <div class="hdr-actions">
-<button class="btn" onclick="ld()">↻ Refresh</button>
+<button class="btn" onclick="manualRefresh()">↻ Refresh</button>
 <button class="btn" onclick="logout()">Logout</button>
 </div>
 </div>
 <div class="stats">
 <div class="stat-card">
 <div class="stat-val" id="statTotal">0</div>
-<div class="stat-lbl">Active Accounts</div>
+<div class="stat-lbl">Total</div>
 </div>
 <div class="stat-card">
 <div class="stat-val" id="statActive">0</div>
-<div class="stat-lbl">Recently Active</div>
+<div class="stat-lbl">Online</div>
 </div>
 <div class="stat-card">
 <div class="stat-val" id="statDev">0</div>
-<div class="stat-lbl">Developer</div>
+<div class="stat-lbl">Dev</div>
 </div>
 <div class="stat-card">
 <div class="stat-val" id="statReal">0</div>
-<div class="stat-lbl">Real Customers</div>
+<div class="stat-lbl">Real</div>
 </div>
-<div class="stat-card" style="background:linear-gradient(135deg,#f8d7da,#f1aeb5)">
-<div class="stat-val" id="statFlagged" style="color:#842029">0</div>
-<div class="stat-lbl" style="color:#842029">⚠️ Flagged</div>
+<div class="stat-card" style="background:rgba(220,53,69,0.1);border-color:rgba(220,53,69,0.3)">
+<div class="stat-val" id="statFlagged" style="color:#dc3545">0</div>
+<div class="stat-lbl" style="color:#dc3545">Flagged</div>
 </div>
 </div>
 </div>
 <div class="controls">
-<button class="ctrl-btn active" onclick="setFilter('active')">Active Accounts</button>
-<button class="ctrl-btn" onclick="setFilter('developer')">Developer Accounts</button>
-<button class="ctrl-btn" onclick="setFilter('flagged')">⚠️ Flagged</button>
-<button class="ctrl-btn" onclick="setFilter('deleted')">Deleted Accounts</button>
-<button class="ctrl-btn" onclick="setSort('name')">Sort: Name</button>
-<button class="ctrl-btn" onclick="setSort('number')">Sort: Number</button>
-<button class="ctrl-btn" onclick="setSort('date')">Sort: Date</button>
-<button class="ctrl-btn" onclick="toggleListSize()" id="sizeToggle">📏 Expand List</button>
-<button class="ctrl-btn" onclick="exportData()">📥 Export CSV</button>
+<button class="ctrl-btn active" onclick="setFilter('active',this)">Active</button>
+<button class="ctrl-btn" onclick="setFilter('developer',this)">Developer</button>
+<button class="ctrl-btn" onclick="setFilter('flagged',this)">Flagged</button>
+<button class="ctrl-btn" onclick="setFilter('deleted',this)">Deleted</button>
+<button class="ctrl-btn" onclick="setSort('name',this)">Name</button>
+<button class="ctrl-btn" onclick="setSort('number',this)">Number</button>
+<button class="ctrl-btn" onclick="setSort('date',this)">Date</button>
+<button class="ctrl-btn" onclick="exportData()">Export</button>
 </div>
 <div class="srch">
-<div style="display:flex;align-items:center;gap:10px">
-<input type="text" id="srch" placeholder="🔍 Search customers..." oninput="flt()" style="flex:1">
-<button id="exitFullscreen" onclick="toggleListSize()" style="display:none;background:#667eea;color:#fff;border:none;padding:10px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">Exit Fullscreen</button>
-</div>
+<input type="text" id="srch" placeholder="Search by name, alias, or customer number..." oninput="flt()" onfocus="pauseRefresh()" onblur="resumeRefresh()">
 </div>
 <div class="otc-sec">
 <div class="otc-hdr">
 <h2>Active OTC Codes</h2>
-<p>One-time codes for new account verification</p>
+<p>One-time codes for account verification</p>
 </div>
 <div id="otc-list"><div class="otc-empty">No active codes</div></div>
 </div>
-<div class="lst" id="l"><div class="emp">Loading...</div></div>
+<div class="lst" id="l"><div class="emp">Loading customers...</div></div>
 <script>
-let o=new Set();
+let openCards=new Set();
 let allCust=[];
-let listExpanded=false;
-function tg(id){
-let d=document.getElementById('d'+id),a=document.getElementById('a'+id);
-if(o.has(id)){d.classList.remove('op');a.classList.remove('op');o.delete(id)}
-else{d.classList.add('op');a.classList.add('op');o.add(id)}
-}
-function escapeHtml(text) {
-  const map = {'&': '&amp;','<': '&lt;','>': '&gt;','"': '&quot;',"'": '&#039;'};
-  return String(text).replace(/[&<>"']/g, m => map[m]);
+let refreshPaused=false;
+let currentFilter='active';
+let currentSort='number';
+function escapeHtml(t){const m={'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'};return String(t).replace(/[&<>"']/g,c=>m[c])}
+function pauseRefresh(){refreshPaused=true;document.getElementById('pauseInd').style.display='block'}
+function resumeRefresh(){setTimeout(()=>{refreshPaused=false;document.getElementById('pauseInd').style.display='none'},500)}
+function manualRefresh(){ld();loadOTC()}
+function toggleCard(id){
+const det=document.getElementById('det-'+id);
+const icon=document.getElementById('icon-'+id);
+if(openCards.has(id)){det.classList.remove('open');icon.classList.remove('open');openCards.delete(id)}
+else{det.classList.add('open');icon.classList.add('open');openCards.add(id)}
 }
 async function loadOTC(){
 try{
-let r=await fetch('/api/admin/active-otcs'),d=await r.json();
+const r=await fetch('/api/admin/active-otcs');
+const d=await r.json();
 if(!d.otcs||!d.otcs.length){document.getElementById('otc-list').innerHTML='<div class="otc-empty">No active codes</div>';return}
 let h='';
 d.otcs.forEach(otc=>{
 h+=\`<div class="otc-itm">
 <div class="otc-info">\${escapeHtml(otc.accountData.name)} - \${escapeHtml(otc.customerNumber)}</div>
 <div class="otc-code">\${escapeHtml(otc.code)}</div>
-<div class="otc-timer">Expires in: \${escapeHtml(otc.timeRemaining)}</div>
+<div class="otc-timer">Expires: \${escapeHtml(otc.timeRemaining)}</div>
 </div>\`;
 });
 document.getElementById('otc-list').innerHTML=h;
 }catch(e){document.getElementById('otc-list').innerHTML='<div class="otc-empty">Error loading codes</div>'}
 }
-function flt(){
+function isDeveloper(c){
+const kw=['test','developer','demo','dev','sample'];
+const nm=(c.name||'').toLowerCase();
+const al=(c.adminAlias||'').toLowerCase();
+return kw.some(k=>nm.includes(k)||al.includes(k));
+}
+function isOnline(c){
+if(!c.profileClickHistory||!Array.isArray(c.profileClickHistory)||!c.profileClickHistory.length)return false;
+return(new Date()-new Date(c.profileClickHistory[0]))<300000;
+}
+function updateStats(){
+const total=allCust.filter(c=>!c.isDeleted).length;
+const online=allCust.filter(c=>!c.isDeleted&&isOnline(c)).length;
+const dev=allCust.filter(c=>!c.isDeleted&&isDeveloper(c)).length;
+const real=total-dev;
+const flagged=allCust.filter(c=>c.notificationViolationFlagged).length;
+document.getElementById('statTotal').textContent=total;
+document.getElementById('statActive').textContent=online;
+document.getElementById('statDev').textContent=dev;
+document.getElementById('statReal').textContent=real;
+document.getElementById('statFlagged').textContent=flagged;
+}
+function setFilter(type,btn){
+currentFilter=type;
+document.querySelectorAll('.ctrl-btn').forEach(b=>{
+if(['Active','Developer','Flagged','Deleted'].some(t=>b.textContent===t))b.classList.remove('active');
+});
+if(btn)btn.classList.add('active');
 applyFiltersAndSort();
 }
-function rnd(data){
-if(!data.length){document.getElementById('l').innerHTML='<div class="emp">No customers</div>';return}
-let h='';
-data.forEach((c,idx)=>{
-// SAFETY: safeId (c0, c1, etc.) is ONLY for HTML element IDs to avoid special characters
-// Customer operations (delete/restore/erase) use c.customerNumber directly from database
-// This ensures the correct customer is always modified, not based on array position
-let safeId='c'+idx;
-let op=o.has(safeId);
-// Check if account is recently active (profile clicked within last 5 minutes)
-let isActive=false;
-if(c.profileClickHistory && Array.isArray(c.profileClickHistory) && c.profileClickHistory.length>0){
-const lastClick=new Date(c.profileClickHistory[0]);
-const now=new Date();
-const diffMs=now-lastClick;
-isActive=diffMs<300000; // 5 minutes = 300000ms
-}
-h+=\`<div class="itm">
-<div class="itm-hdr" onclick="tg('\${safeId}')">
-<div class="l">
-<div class="nm">\${escapeHtml(c.name)}\${isActive?'<span class="active-dot"></span>':''}\${c.notificationViolationFlagged?'<span style="margin-left:6px;background:#dc3545;color:white;font-size:9px;padding:2px 5px;border-radius:3px;font-weight:600">⚠️ FLAGGED</span>':''}</div>
-<div class="id">\${escapeHtml(c.customerNumber)}</div>
-</div>
-<div class="arr \${op?'op':''}" id="a\${safeId}">▼</div>
-</div>
-<div class="det \${op?'op':''}" id="d\${safeId}">
-<div class="dw">
-<div class="r"><span class="lb">Email</span><span class="vl">\${escapeHtml(c.email)}</span></div>
-<div class="r"><span class="lb">Phone</span><span class="vl">\${escapeHtml(c.phone||'N/A')}</span></div>
-<div class="r"><span class="lb">Address</span><span class="vl">\${escapeHtml(c.address||'N/A')}</span></div>
-<div class="r"><span class="lb">Date of Birth</span><span class="vl">\${escapeHtml(c.dateOfBirth||'N/A')}</span></div>
-<div class="r"><span class="lb">Join Date</span><span class="vl">\${escapeHtml(c.joinDate||'N/A')}</span></div>
-<div class="r"><span class="lb">Currency</span><span class="vl">\${escapeHtml(c.currency)}</span></div>
-<div class="r"><span class="lb">Status</span><span class="st">\${c.isDeleted ? '🗑️ Deleted' : 'Active'}</span></div>
-\${c.accounts && c.accounts.length > 0 ? c.accounts.map(acc => \`
-<div style="background:rgba(102,126,234,0.15);border:1px solid rgba(102,126,234,0.3);border-radius:10px;padding:12px;margin-top:10px">
-<div style="font-size:13px;font-weight:700;color:#667eea;margin-bottom:8px">💳 \${escapeHtml(acc.displayName || 'Current Account')}</div>
-<div class="r"><span class="lb">Balance</span><span class="vl" style="color:#28a745;font-size:14px;font-weight:800">\${c.currency === 'GBP' ? '£' : '€'}\${escapeHtml(acc.balance || '0.00')}</span></div>
-<div class="r"><span class="lb">Account Number</span><span class="vl" style="font-family:monospace">\${escapeHtml(acc.accountNumber || 'N/A')}</span></div>
-<div class="r"><span class="lb">Sort Code</span><span class="vl" style="font-family:monospace">\${escapeHtml(acc.sortCode || 'N/A')}</span></div>
-<div class="r"><span class="lb">BIC</span><span class="vl" style="font-family:monospace">\${escapeHtml(acc.bic || 'N/A')}</span></div>
-<div class="r"><span class="lb">IBAN</span><span class="vl" style="font-family:monospace;font-size:10px">\${escapeHtml(acc.iban || 'N/A')}</span></div>
-</div>
-\`).join('') : '<div style="background:rgba(220,53,69,0.1);border:1px solid rgba(220,53,69,0.3);border-radius:10px;padding:12px;margin-top:10px;text-align:center;color:#dc3545;font-size:12px">No account created yet</div>'}
-\${c.notificationViolationFlagged ? \`
-<div class="r" style="background:#fff3cd;border-radius:6px;padding:8px;margin:4px 0">
-<span class="lb" style="color:#856404">⚠️ NOTIFICATION VIOLATION</span>
-<span class="vl" style="color:#856404;font-weight:600">Attempted login without notifications enabled\${c.notificationViolationAt ? ' on ' + new Date(c.notificationViolationAt).toLocaleString('en-GB') : ''}</span>
-</div>
-\` : ''}
-\${c.profileClickHistory && Array.isArray(c.profileClickHistory) && c.profileClickHistory.length > 0 ? \`
-<div class="r" style="display:block;border-top:1px solid #eee;padding-top:8px;margin-top:8px">
-<span class="lb" style="display:block;margin-bottom:6px">📱 Profile Clicks (Last 3)</span>
-\${c.profileClickHistory.map((click, i) => {
-const date = new Date(click);
-const formatted = date.toLocaleString('en-GB', { 
-  day: '2-digit', 
-  month: '2-digit', 
-  year: 'numeric',
-  hour: '2-digit', 
-  minute: '2-digit',
-  hour12: false 
+function setSort(type,btn){
+currentSort=type;
+document.querySelectorAll('.ctrl-btn').forEach(b=>{
+if(['Name','Number','Date'].some(t=>b.textContent===t))b.classList.remove('active');
 });
-return \`<div style="font-size:11px;color:#666;padding:2px 0">\${i+1}. \${formatted}</div>\`;
-}).join('')}
+if(btn)btn.classList.add('active');
+applyFiltersAndSort();
+}
+function flt(){applyFiltersAndSort()}
+function applyFiltersAndSort(){
+let filtered=allCust;
+if(currentFilter==='active')filtered=filtered.filter(c=>!c.isDeleted);
+else if(currentFilter==='developer')filtered=filtered.filter(c=>!c.isDeleted&&isDeveloper(c));
+else if(currentFilter==='flagged')filtered=filtered.filter(c=>c.notificationViolationFlagged);
+else if(currentFilter==='deleted')filtered=filtered.filter(c=>c.isDeleted);
+const q=document.getElementById('srch').value.toLowerCase();
+if(q)filtered=filtered.filter(c=>(c.adminAlias||'').toLowerCase().includes(q)||c.name.toLowerCase().includes(q)||c.customerNumber.includes(q));
+if(currentSort==='name')filtered.sort((a,b)=>a.name.localeCompare(b.name));
+else if(currentSort==='number')filtered.sort((a,b)=>parseInt(a.customerNumber)-parseInt(b.customerNumber));
+else if(currentSort==='date')filtered.sort((a,b)=>new Date(b.joinDate||0)-new Date(a.joinDate||0));
+render(filtered);
+}
+function render(data){
+if(!data.length){document.getElementById('l').innerHTML='<div class="emp">No customers found</div>';return}
+let h='';
+data.forEach((c,i)=>{
+const id='c'+i;
+const isOpen=openCards.has(id);
+const online=isOnline(c);
+const dev=isDeveloper(c);
+h+=\`<div class="cust-card">
+<div class="cust-header" onclick="toggleCard('\${id}')">
+<div class="cust-info">
+<div class="cust-name">
+\${online?'<span class="online-dot"></span>':''}
+\${escapeHtml(c.name)}
 </div>
-\` : ''}
-<div class="ed-fld">
-<label>Admin Name/Alias</label>
-<div style="display:flex;align-items:center">
-<input type="text" class="ed-inp" id="alias-\${safeId}" value="\${escapeHtml(c.adminAlias||'')}" placeholder="Internal name or notes" data-customer="\${escapeHtml(c.customerNumber)}">
-<button class="sv-btn" onclick="upd('\${escapeHtml(c.customerNumber)}','\${safeId}')">Save</button>
+\${c.adminAlias?'<div class="cust-alias">"\${escapeHtml(c.adminAlias)}"</div>':''}
+<div class="cust-number">\${escapeHtml(c.customerNumber)}</div>
+<div class="cust-badges">
+\${c.isDeleted?'<span class="badge badge-deleted">Deleted</span>':'<span class="badge badge-active">Active</span>'}
+\${dev?'<span class="badge badge-dev">Developer</span>':''}
+\${c.notificationViolationFlagged?'<span class="badge badge-flagged">Flagged</span>':''}
 </div>
 </div>
-<div class="ed-fld">
-<label>App Replacement (0-5)</label>
-<div style="display:flex;align-items:center">
-<select class="ed-sel" id="rep-\${safeId}" data-customer="\${escapeHtml(c.customerNumber)}">
+<span class="expand-icon \${isOpen?'open':''}" id="icon-\${id}">▼</span>
+</div>
+<div class="cust-details \${isOpen?'open':''}" id="det-\${id}">
+<div class="details-inner">
+<div class="detail-section">
+<div class="section-title">👤 Customer Details</div>
+<div class="detail-row"><span class="detail-label">Email</span><span class="detail-value">\${escapeHtml(c.email)}</span></div>
+<div class="detail-row"><span class="detail-label">Phone</span><span class="detail-value">\${escapeHtml(c.phone||'N/A')}</span></div>
+<div class="detail-row"><span class="detail-label">Address</span><span class="detail-value">\${escapeHtml(c.address||'N/A')}</span></div>
+<div class="detail-row"><span class="detail-label">Date of Birth</span><span class="detail-value">\${escapeHtml(c.dateOfBirth||'N/A')}</span></div>
+<div class="detail-row"><span class="detail-label">Joined</span><span class="detail-value">\${escapeHtml(c.joinDate||'N/A')}</span></div>
+<div class="detail-row"><span class="detail-label">Currency</span><span class="detail-value">\${escapeHtml(c.currency)}</span></div>
+</div>
+\${c.accounts&&c.accounts.length>0?c.accounts.map(acc=>\`
+<div class="account-card">
+<div class="account-title">💳 \${escapeHtml(acc.displayName||'Current Account')}</div>
+<div class="account-balance">\${c.currency==='GBP'?'£':'€'}\${escapeHtml(acc.balance||'0.00')}</div>
+<div class="detail-row"><span class="detail-label">Account</span><span class="detail-value" style="font-family:monospace">\${escapeHtml(acc.accountNumber||'N/A')}</span></div>
+<div class="detail-row"><span class="detail-label">Sort Code</span><span class="detail-value" style="font-family:monospace">\${escapeHtml(acc.sortCode||'N/A')}</span></div>
+<div class="detail-row"><span class="detail-label">BIC</span><span class="detail-value" style="font-family:monospace">\${escapeHtml(acc.bic||'N/A')}</span></div>
+<div class="detail-row"><span class="detail-label">IBAN</span><span class="detail-value" style="font-family:monospace;font-size:10px">\${escapeHtml(acc.iban||'N/A')}</span></div>
+</div>
+\`).join(''):'<div class="no-accounts">No bank account created yet</div>'}
+\${c.notificationViolationFlagged?\`
+<div class="detail-section" style="margin-top:14px">
+<div class="section-title" style="color:#dc3545">⚠️ Notification Violation</div>
+<div class="detail-row" style="background:rgba(220,53,69,0.1);border:1px solid rgba(220,53,69,0.2)">
+<span class="detail-label" style="color:#dc3545">Attempted login without notifications</span>
+<span class="detail-value" style="color:#dc3545">\${c.notificationViolationAt?new Date(c.notificationViolationAt).toLocaleString('en-GB'):''}</span>
+</div>
+</div>
+\`:''}
+<div class="admin-field">
+<div class="admin-field-label">Admin Alias / Notes</div>
+<div class="admin-field-row">
+<input type="text" class="admin-input" id="alias-\${id}" value="\${escapeHtml(c.adminAlias||'')}" placeholder="Add internal name or notes..." onfocus="pauseRefresh()" onblur="resumeRefresh()" data-cn="\${escapeHtml(c.customerNumber)}">
+<button class="save-btn" onclick="saveAdmin('\${escapeHtml(c.customerNumber)}','\${id}')">Save</button>
+</div>
+</div>
+<div class="admin-field">
+<div class="admin-field-label">App Replacement Level (0-5)</div>
+<div class="admin-field-row">
+<select class="admin-select" id="rep-\${id}" onfocus="pauseRefresh()" onblur="resumeRefresh()">
 <option value="0" \${(c.appReplacement||0)===0?'selected':''}>0</option>
 <option value="1" \${c.appReplacement===1?'selected':''}>1</option>
 <option value="2" \${c.appReplacement===2?'selected':''}>2</option>
@@ -3478,259 +3533,102 @@ return \`<div style="font-size:11px;color:#666;padding:2px 0">\${i+1}. \${format
 <option value="4" \${c.appReplacement===4?'selected':''}>4</option>
 <option value="5" \${c.appReplacement===5?'selected':''}>5</option>
 </select>
-<button class="sv-btn" onclick="upd('\${escapeHtml(c.customerNumber)}','\${safeId}')">Save</button>
+<button class="save-btn" onclick="saveAdmin('\${escapeHtml(c.customerNumber)}','\${id}')">Save</button>
 </div>
 </div>
-\${c.isDeleted?
-\`<div style="display:flex;gap:8px;margin-top:10px">
-<button class="sv-btn" onclick="res('\${escapeHtml(c.customerNumber)}','\${escapeHtml(c.name)}')" style="flex:1">♻️ Restore Account</button>
-<button class="db" onclick="ers('\${escapeHtml(c.customerNumber)}','\${escapeHtml(c.name)}')" style="flex:1;font-size:11px">🔥 Permanent Delete</button>
-</div>\`:
-\`<button class="db" onclick="dl('\${escapeHtml(c.customerNumber)}','\${escapeHtml(c.name)}')">🗑️ Delete</button>\`}
+<div class="action-btns">
+\${c.isDeleted?\`
+<button class="restore-btn" onclick="restoreCustomer('\${escapeHtml(c.customerNumber)}','\${escapeHtml(c.name)}')">♻️ Restore</button>
+<button class="delete-btn" onclick="eraseCustomer('\${escapeHtml(c.customerNumber)}','\${escapeHtml(c.name)}')">🔥 Permanent Delete</button>
+\`:\`
+<button class="delete-btn" onclick="deleteCustomer('\${escapeHtml(c.customerNumber)}','\${escapeHtml(c.name)}')">🗑️ Delete Customer</button>
+\`}
+</div>
 </div>
 </div>
 </div>\`;
 });
 document.getElementById('l').innerHTML=h;
 }
-function toggleListSize(){
-const listElement=document.getElementById('l');
-const toggleBtn=document.getElementById('sizeToggle');
-const exitBtn=document.getElementById('exitFullscreen');
-const otcSection=document.querySelector('.otc-sec');
-const searchSection=document.querySelector('.srch');
-const header=document.querySelector('.hdr');
-const controls=document.querySelector('.controls');
-listExpanded=!listExpanded;
-if(listExpanded){
-listElement.classList.add('expanded');
-if(toggleBtn){
-toggleBtn.textContent='📏 Normal Size';
-toggleBtn.classList.add('active');
-}
-if(exitBtn)exitBtn.style.display='block';
-if(otcSection)otcSection.style.display='none';
-if(header)header.style.display='none';
-if(controls)controls.style.display='none';
-if(searchSection){
-searchSection.style.position='fixed';
-searchSection.style.top='0';
-searchSection.style.left='0';
-searchSection.style.right='0';
-searchSection.style.zIndex='1000';
-searchSection.style.background='rgba(26,26,46,0.98)';
-searchSection.style.backdropFilter='blur(20px)';
-}
-if(listElement){
-listElement.style.paddingTop='80px';
-listElement.style.height='100vh';
-}
-}else{
-listElement.classList.remove('expanded');
-if(toggleBtn){
-toggleBtn.textContent='📏 Expand List';
-toggleBtn.classList.remove('active');
-}
-if(exitBtn)exitBtn.style.display='none';
-if(otcSection)otcSection.style.display='';
-if(header)header.style.display='';
-if(controls)controls.style.display='';
-if(searchSection){
-searchSection.style.position='';
-searchSection.style.top='';
-searchSection.style.left='';
-searchSection.style.right='';
-searchSection.style.zIndex='';
-searchSection.style.background='';
-searchSection.style.backdropFilter='';
-}
-if(listElement){
-listElement.style.paddingTop='';
-listElement.style.height='';
-}
-}
-}
 async function ld(){
+if(refreshPaused)return;
 try{
-let r=await fetch('/api/customers'),d=await r.json();
+const r=await fetch('/api/customers');
+const d=await r.json();
 allCust=d.sort((a,b)=>parseInt(a.customerNumber)-parseInt(b.customerNumber));
 updateStats();
 applyFiltersAndSort();
-loadOTC();
-}catch(e){document.getElementById('l').innerHTML='<div class="emp">Error</div>'}
+}catch(e){console.error('Load error:',e)}
 }
-async function dl(n,nm){
-console.log('🗑️ DELETE REQUEST - Customer Number:',n,'Name:',nm);
-const confirmed=confirm('⚠️ CONFIRM SOFT-DELETE\\n\\nCustomer: '+nm+'\\nCustomer Number: '+n+'\\n\\nThis will:\\n- Mark customer as deleted\\n- Force immediate logout\\n- Keep data for recovery\\n\\nVerify the customer number above is correct before proceeding.');
-if(!confirmed){console.log('❌ Delete cancelled by user');return;}
-const reason=prompt('Reason for deletion (optional):','Deleted by admin');
+async function deleteCustomer(n,nm){
+if(!confirm('Delete '+nm+'?\\n\\nCustomer: '+n+'\\n\\nThis will log them out immediately.'))return;
+const reason=prompt('Reason (optional):','Deleted by admin');
 try{
-console.log('📡 Sending DELETE request for customer:',n);
-let r=await fetch('/api/customers/'+encodeURIComponent(n),{
+const r=await fetch('/api/customers/'+encodeURIComponent(n),{
 method:'DELETE',
 headers:{'Content-Type':'application/json'},
 body:JSON.stringify({reason:reason||'Deleted by admin'})
-}),d=await r.json();
-if(r.ok){
-console.log('✅ DELETE SUCCESS - Customer:',d.name,'Number:',d.customerNumber);
-alert('✅ DELETED: '+d.name+' ('+d.customerNumber+')\\n\\nVerify this is the correct customer.');
-ld();
-}else{console.error('❌ Delete failed:',d.message);alert('❌ Failed: '+d.message)}
-}catch(e){console.error('❌ Delete error:',e);alert('❌ Error: '+e.message)}
+});
+const d=await r.json();
+if(r.ok){alert('Deleted: '+nm);ld()}
+else{alert('Failed: '+d.message)}
+}catch(e){alert('Error: '+e.message)}
 }
-async function ers(n,nm){
-console.log('🔥 ERASE REQUEST - Customer Number:',n,'Name:',nm);
-const confirmed=confirm('🔥 CONFIRM PERMANENT ERASE\\n\\nCustomer: '+nm+'\\nCustomer Number: '+n+'\\n\\nThis is IRREVERSIBLE and will:\\n- Delete ALL customer data permanently\\n- Cannot be recovered\\n\\nVerify the customer number above is correct before proceeding.');
-if(!confirmed){console.log('❌ Erase cancelled by user');return;}
-const doubleCheck=confirm('⚠️ FINAL CONFIRMATION\\n\\nYou are about to PERMANENTLY ERASE:\\n'+nm+' ('+n+')\\n\\nThis cannot be undone. Proceed?');
-if(!doubleCheck){console.log('❌ Erase cancelled at final confirmation');return;}
+async function eraseCustomer(n,nm){
+if(!confirm('PERMANENTLY DELETE '+nm+'?\\n\\nThis cannot be undone!'))return;
+if(!confirm('Final confirmation - erase all data for '+nm+'?'))return;
 try{
-console.log('📡 Sending PERMANENT DELETE request for customer:',n);
-let r=await fetch('/api/customers/'+encodeURIComponent(n)+'/permanent',{method:'DELETE'}),d=await r.json();
-if(r.ok){
-console.log('🔥 ERASE SUCCESS - Customer:',d.name,'Number:',d.customerNumber);
-alert('🔥 PERMANENTLY ERASED: '+d.name+' ('+d.customerNumber+')\\n\\nVerify this is the correct customer.');
-ld();
-}else{console.error('❌ Erase failed:',d.message);alert('❌ Failed: '+d.message)}
-}catch(e){console.error('❌ Erase error:',e);alert('❌ Error: '+e.message)}
+const r=await fetch('/api/customers/'+encodeURIComponent(n)+'/permanent',{method:'DELETE'});
+const d=await r.json();
+if(r.ok){alert('Permanently deleted: '+nm);ld()}
+else{alert('Failed: '+d.message)}
+}catch(e){alert('Error: '+e.message)}
 }
-async function res(n,nm){
-console.log('♻️ RESTORE REQUEST - Customer Number:',n,'Name:',nm);
-const confirmed=confirm('♻️ CONFIRM RESTORE\\n\\nCustomer: '+nm+'\\nCustomer Number: '+n+'\\n\\nThis will reactivate the customer account.\\n\\nVerify the customer number above is correct before proceeding.');
-if(!confirmed){console.log('❌ Restore cancelled by user');return;}
+async function restoreCustomer(n,nm){
+if(!confirm('Restore '+nm+'?'))return;
 try{
-console.log('📡 Sending RESTORE request for customer:',n);
-let r=await fetch('/api/customers/'+encodeURIComponent(n)+'/restore',{method:'POST'}),d=await r.json();
-if(r.ok){
-console.log('♻️ RESTORE SUCCESS - Customer:',d.name,'Number:',d.customerNumber);
-alert('♻️ RESTORED: '+d.name+' ('+d.customerNumber+')\\n\\nVerify this is the correct customer.');
-ld();
-}else{console.error('❌ Restore failed:',d.message);alert('❌ Failed: '+d.message)}
-}catch(e){console.error('❌ Restore error:',e);alert('❌ Error: '+e.message)}
+const r=await fetch('/api/customers/'+encodeURIComponent(n)+'/restore',{method:'POST'});
+const d=await r.json();
+if(r.ok){alert('Restored: '+nm);ld()}
+else{alert('Failed: '+d.message)}
+}catch(e){alert('Error: '+e.message)}
 }
-async function upd(n,id){
+async function saveAdmin(n,id){
 try{
-let alias=document.getElementById('alias-'+id).value;
-let rep=parseInt(document.getElementById('rep-'+id).value);
-let r=await fetch('/api/customers/'+encodeURIComponent(n)+'/admin',{
+const alias=document.getElementById('alias-'+id).value;
+const rep=parseInt(document.getElementById('rep-'+id).value);
+const r=await fetch('/api/customers/'+encodeURIComponent(n)+'/admin',{
 method:'PATCH',
 headers:{'Content-Type':'application/json'},
 body:JSON.stringify({adminAlias:alias,appReplacement:rep})
 });
-let d=await r.json();
-if(r.ok){alert('Saved successfully')}else{alert('Failed: '+d.message)}
-}catch(e){alert('Error')}
-}
-async function deleteAll(){
-const first=confirm('DELETE ALL CUSTOMERS?\\n\\nWARNING: This will permanently delete ALL customers from both the customers table AND Replit Database.\\n\\nThis action is IRREVERSIBLE.');
-if(!first)return;
-const second=confirm('FINAL WARNING\\n\\nType DELETE in the next prompt to confirm permanent deletion of ALL customers.');
-if(!second)return;
-const confirmation=prompt('Type DELETE to confirm:');
-if(confirmation!=='DELETE')return;
-try{
-let r=await fetch('/api/admin/delete-all-customers',{method:'DELETE'});
-let d=await r.json();
 if(r.ok){
-alert('All customers deleted\\n\\nCustomers: '+d.customersDeleted+'\\nUsers: '+d.usersDeleted);
-ld();
-}else{alert('Failed: '+d.message)}
-}catch(e){alert('Error: '+e.message)}
-}
-async function logout(){
-try{
-await fetch('/api/admin/logout',{method:'POST'});
-window.location.href='/admin-oversight';
-}catch(e){alert('Error')}
-}
-let currentFilter='active';
-let currentSort='number';
-function isDeveloperAccount(c){
-const devKeywords=['test','developer','demo','dev','sample','example'];
-const nameLower=(c.name||'').toLowerCase();
-const aliasLower=(c.adminAlias||'').toLowerCase();
-return devKeywords.some(kw=>nameLower.includes(kw)||aliasLower.includes(kw));
-}
-function updateStats(){
-const total=allCust.filter(c=>!c.isDeleted).length;
-const deleted=allCust.filter(c=>c.isDeleted).length;
-const recentActive=allCust.filter(c=>{
-if(c.isDeleted)return false;
-if(c.profileClickHistory&&Array.isArray(c.profileClickHistory)&&c.profileClickHistory.length>0){
-const lastClick=new Date(c.profileClickHistory[0]);
-return (new Date()-lastClick)<300000;
-}return false;
-}).length;
-const dev=allCust.filter(c=>!c.isDeleted&&isDeveloperAccount(c)).length;
-const real=total-dev;
-const flagged=allCust.filter(c=>c.notificationViolationFlagged).length;
-document.getElementById('statTotal').textContent=total;
-document.getElementById('statActive').textContent=recentActive;
-document.getElementById('statDev').textContent=dev;
-document.getElementById('statReal').textContent=real;
-document.getElementById('statFlagged').textContent=flagged;
-}
-function setFilter(type){
-currentFilter=type;
-document.querySelectorAll('.ctrl-btn').forEach(btn=>{
-if(btn.textContent.includes('Active')||btn.textContent.includes('Deleted')||btn.textContent.includes('Developer')||btn.textContent.includes('Flagged')){
-btn.classList.remove('active');
-}
-});
-event.target.classList.add('active');
+alert('Saved!');
+allCust=allCust.map(c=>c.customerNumber===n?{...c,adminAlias:alias,appReplacement:rep}:c);
 applyFiltersAndSort();
-}
-function setSort(type){
-currentSort=type;
-document.querySelectorAll('.ctrl-btn').forEach(btn=>{
-if(btn.textContent.includes('Sort')){
-btn.classList.remove('active');
-}
-});
-event.target.classList.add('active');
-applyFiltersAndSort();
-}
-function applyFiltersAndSort(){
-let filtered=allCust;
-if(currentFilter==='active'){
-filtered=filtered.filter(c=>!c.isDeleted);
-}else if(currentFilter==='developer'){
-filtered=filtered.filter(c=>!c.isDeleted&&isDeveloperAccount(c));
-}else if(currentFilter==='flagged'){
-filtered=filtered.filter(c=>c.notificationViolationFlagged);
-}else if(currentFilter==='deleted'){
-filtered=filtered.filter(c=>c.isDeleted);
-}
-const query=document.getElementById('srch').value.toLowerCase();
-if(query){
-filtered=filtered.filter(c=>(c.adminAlias||'').toLowerCase().includes(query)||c.name.toLowerCase().includes(query)||c.customerNumber.includes(query));
-}
-if(currentSort==='name'){
-filtered.sort((a,b)=>a.name.localeCompare(b.name));
-}else if(currentSort==='number'){
-filtered.sort((a,b)=>parseInt(a.customerNumber)-parseInt(b.customerNumber));
-}else if(currentSort==='date'){
-filtered.sort((a,b)=>new Date(b.joinDate)-new Date(a.joinDate));
-}
-rnd(filtered);
+}else{const d=await r.json();alert('Failed: '+d.message)}
+}catch(e){alert('Error saving')}
 }
 function exportData(){
-const csv=['Customer Number,Name,Email,Phone,Currency,Join Date,Developer,Active'];
+const csv=['Customer Number,Name,Alias,Email,Phone,Currency,Join Date,Developer,Online'];
 allCust.forEach(c=>{
-const isActive=c.profileClickHistory&&Array.isArray(c.profileClickHistory)&&c.profileClickHistory.length>0&&(new Date()-new Date(c.profileClickHistory[0]))<300000;
-csv.push(\`\${c.customerNumber},"\${c.name}","\${c.email}","\${c.phone||'N/A'}","\${c.currency}","\${c.joinDate||'N/A'}",\${c.isDeveloper?'Yes':'No'},\${isActive?'Yes':'No'}\`);
+const online=isOnline(c);
+csv.push(\`\${c.customerNumber},"\${escapeHtml(c.name)}","\${escapeHtml(c.adminAlias||'')}","\${escapeHtml(c.email)}","\${escapeHtml(c.phone||'')}","\${c.currency}","\${c.joinDate||''}",\${isDeveloper(c)?'Yes':'No'},\${online?'Yes':'No'}\`);
 });
 const blob=new Blob([csv.join('\\n')],{type:'text/csv'});
 const url=URL.createObjectURL(blob);
 const a=document.createElement('a');
 a.href=url;
-a.download='customers_export_'+new Date().toISOString().split('T')[0]+'.csv';
+a.download='customers_'+new Date().toISOString().split('T')[0]+'.csv';
 a.click();
 URL.revokeObjectURL(url);
 }
+async function logout(){
+try{await fetch('/api/admin/logout',{method:'POST'});window.location.href='/admin-oversight'}catch(e){alert('Error')}
+}
 ld();
-setInterval(loadOTC,5000);
-setInterval(ld,5000);
+setInterval(()=>{if(!refreshPaused)loadOTC()},5000);
+setInterval(()=>{if(!refreshPaused)ld()},5000);
 </script>
 </body>
 </html>`;
