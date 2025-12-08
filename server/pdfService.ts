@@ -232,16 +232,20 @@ export async function generateTransferConfirmationPDF(
       
       yPos += 30;
 
-      // Transaction ID (use the actual transaction reference)
+      // Transaction ID (use the actual transaction ID padded to 14 digits)
       doc.font('Helvetica-Bold')
          .fontSize(12)
          .fillColor('#000000')
          .text('Transaction ID:', leftCol, yPos);
       
+      const transactionId = transferData?.id 
+        ? String(transferData.id).padStart(14, '0')
+        : transactionReference;
+      
       doc.font('Helvetica')
          .fontSize(12)
          .fillColor('#000000')
-         .text(transferData?.id?.toString() || transactionReference, rightCol, yPos);
+         .text(transactionId, rightCol, yPos);
       
       yPos += 50;
 
@@ -261,10 +265,11 @@ export async function generateTransferConfirmationPDF(
          .text('Thank you for banking with Bank of Ireland', 180, 765);
 
       // Bottom timestamp and reference
+      const footerRef = transferData?.id ? String(transferData.id).padStart(14, '0') : 'N/A';
       doc.font('Helvetica')
          .fontSize(8)
          .fillColor('#999999')
-         .text(`Generated: ${new Date().toISOString().slice(0, 19).replace('T', ' ')} | Ref: ${transferData?.id || 'N/A'}`, 50, 810);
+         .text(`Generated: ${new Date().toISOString().slice(0, 19).replace('T', ' ')} | Ref: ${footerRef}`, 50, 810);
 
       console.log('✅ OVERLAY: Transfer confirmation content added');
 

@@ -1947,11 +1947,11 @@ export default function TransactionHistoryWorking() {
                       </div>
                     )}
 
-                    {selectedTransaction.paymentMethod === 'SEPA Transfer' && (
+                    {selectedTransaction.paymentMethod === 'SEPA Transfer' && selectedTransaction.reference && (
                       <div className="flex justify-between">
                         <span className="text-gray-600">Reference:</span>
-                        <span className="font-semibold text-gray-900 font-mono text-sm">
-                          BOI{String(selectedTransaction.id).padStart(11, '0')}
+                        <span className="font-semibold text-gray-900">
+                          {selectedTransaction.reference}
                         </span>
                       </div>
                     )}
