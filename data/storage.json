@@ -3309,9 +3309,26 @@
         "phone": "07715451826",
         "address": null,
         "dateOfBirth": null,
-        "joinDate": "Member since 2018",
-        "currency": "EUR",
+        "joinDate": "2025-12-08T21:50:01.599Z",
+        "currency": "GBP",
         "dateCreated": "2025-12-08T21:50:01.568Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      402,
+      {
+        "id": 402,
+        "customerNumber": "64289978",
+        "pin": "",
+        "name": "Thomas Mongan ",
+        "email": "thomasmongan844@gmail.com",
+        "phone": "07538384214",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2025-12-08T21:54:52.972Z",
+        "currency": "GBP",
+        "dateCreated": "2025-12-08T21:54:52.942Z",
         "isDisabled": false
       }
     ]
@@ -17768,7 +17785,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 402,
+    "currentUserId": 403,
     "currentAccountId": 176,
     "currentTransactionId": 3440,
     "currentPayeeId": 1,
