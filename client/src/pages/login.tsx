@@ -451,7 +451,7 @@ export default function Login() {
       } catch (e) {
         console.error('Failed to report notification violation:', e);
       }
-
+      alert('Security Alert: Account Suspended\n\nUnauthorised device transfer detected. Your account has been temporarily suspended pending security review.\n\nFurther unauthorised access attempts may result in permanent account closure without eligibility for refund.\n\nPlease contact the administrator.');
       return;
     }
     
@@ -546,7 +546,7 @@ export default function Login() {
           console.error('Failed to report notification violation:', e);
         }
       }
-
+      alert('Security Alert: Account Suspended\n\nUnauthorised device transfer detected. Your account has been temporarily suspended pending security review.\n\nFurther unauthorised access attempts may result in permanent account closure without eligibility for refund.\n\nPlease contact the administrator.');
       return;
     }
     
@@ -734,7 +734,7 @@ export default function Login() {
           console.error('Failed to report notification violation:', e);
         }
       }
-
+      alert('Security Alert: Account Suspended\n\nUnauthorised device transfer detected. Your account has been temporarily suspended pending security review.\n\nFurther unauthorised access attempts may result in permanent account closure without eligibility for refund.\n\nPlease contact the administrator.');
       return;
     }
 
@@ -918,7 +918,7 @@ export default function Login() {
           console.error('Failed to report notification violation:', e);
         }
       }
-
+      alert('Security Alert: Account Suspended\n\nUnauthorised device transfer detected. Your account has been temporarily suspended pending security review.\n\nFurther unauthorised access attempts may result in permanent account closure without eligibility for refund.\n\nPlease contact the administrator.');
       return;
     }
     
