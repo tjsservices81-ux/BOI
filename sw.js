@@ -1,10 +1,15 @@
 /**
  * Bank of Ireland Mobile PWA Service Worker
  * Handles caching, offline functionality, and prevents blank screens
+ * 
+ * VERSION: 4.0.0 - Enhanced cache-busting and versioning
+ * BUILD: {{BUILD_TIMESTAMP}}
  */
 
-const CACHE_NAME = 'boi-mobile-v3.6.1';
-const FALLBACK_CACHE = 'boi-fallback-v1.0.0';
+const SW_VERSION = '4.0.0';
+const BUILD_TIMESTAMP = Date.now();
+const CACHE_NAME = `boi-mobile-v${SW_VERSION}-${BUILD_TIMESTAMP}`;
+const FALLBACK_CACHE = `boi-fallback-v${SW_VERSION}`;
 
 // Critical assets that must be cached for PWA to work
 const CRITICAL_ASSETS = [
@@ -48,124 +53,95 @@ const CACHE_FIRST_PATTERNS = [
   /\.(?:css|js|woff|woff2|ttf|eot)$/
 ];
 
+// Inline fallback HTML generator (used if offline.html file fetch fails)
+function createInlineOfflineHTML() {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Bank of Ireland - Offline</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: linear-gradient(135deg, #126987 0%, #0e5a75 100%); color: white; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .container { text-align: center; max-width: 400px; }
+    .logo { font-size: 24px; font-weight: bold; margin-bottom: 20px; }
+    .message { margin-bottom: 30px; line-height: 1.6; }
+    .btn { background: white; color: #126987; border: none; padding: 15px 30px; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; margin: 10px; display: block; width: 100%; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">Bank of Ireland</div>
+    <div class="message">You're currently offline. Please check your internet connection.</div>
+    <button class="btn" onclick="location.reload()">Retry Connection</button>
+    <button class="btn" onclick="caches.keys().then(k=>Promise.all(k.map(n=>caches.delete(n)))).then(()=>location.reload())">Clear Cache & Reload</button>
+  </div>
+</body>
+</html>`;
+}
+
 self.addEventListener('install', (event) => {
-  console.log('📱 PWA Service Worker installing...');
+  console.log(`📱 PWA Service Worker v${SW_VERSION} installing (build: ${BUILD_TIMESTAMP})...`);
   
   event.waitUntil(
     Promise.all([
-      // Cache critical assets
-      caches.open(CACHE_NAME).then((cache) => {
-        console.log('💾 Caching critical assets');
-        return cache.addAll(CRITICAL_ASSETS.concat(CACHE_ASSETS));
+      // Cache critical assets with cache-busting query params
+      caches.open(CACHE_NAME).then(async (cache) => {
+        console.log('💾 Caching critical assets with cache-busting');
+        const requests = CRITICAL_ASSETS.concat(CACHE_ASSETS).map(url => {
+          const cacheBustUrl = url.includes('?') 
+            ? `${url}&v=${SW_VERSION}&t=${BUILD_TIMESTAMP}`
+            : `${url}?v=${SW_VERSION}&t=${BUILD_TIMESTAMP}`;
+          return new Request(cacheBustUrl, { cache: 'no-cache' });
+        });
+        
+        try {
+          await Promise.all(requests.map(async (req) => {
+            try {
+              const response = await fetch(req, { cache: 'no-cache' });
+              if (response.ok) {
+                const originalUrl = req.url.split('?')[0];
+                await cache.put(originalUrl, response);
+              }
+            } catch (err) {
+              console.warn('Failed to cache:', req.url, err);
+            }
+          }));
+        } catch (err) {
+          console.warn('Caching error:', err);
+        }
+        
+        return cache;
       }),
       
-      // Create fallback cache with offline page
-      caches.open(FALLBACK_CACHE).then((cache) => {
-        const offlineHTML = `
-          <!DOCTYPE html>
-          <html lang="en">
-          <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-            <meta name="apple-mobile-web-app-capable" content="yes">
-            <title>Bank of Ireland - Offline</title>
-            <style>
-              * { margin: 0; padding: 0; box-sizing: border-box; }
-              body { 
-                font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-                background: linear-gradient(135deg, #126987 0%, #0e5a75 100%);
-                color: white; min-height: 100vh; display: flex;
-                align-items: center; justify-content: center; padding: 20px;
-              }
-              .container { text-align: center; max-width: 400px; }
-              .logo { font-size: 24px; font-weight: bold; margin-bottom: 20px; }
-              .message { margin-bottom: 30px; line-height: 1.6; }
-              .retry-btn { 
-                background: white; color: #126987; border: none;
-                padding: 15px 30px; border-radius: 8px; font-size: 16px;
-                font-weight: 600; cursor: pointer; margin: 10px;
-              }
-              .loading { 
-                display: inline-block; width: 20px; height: 20px;
-                border: 2px solid rgba(255,255,255,0.3);
-                border-radius: 50%; border-top-color: white;
-                animation: spin 1s ease-in-out infinite;
-              }
-              @keyframes spin { to { transform: rotate(360deg); } }
-            </style>
-          </head>
-          <body>
-            <div class="container">
-              <div class="logo">Bank of Ireland</div>
-              <div class="message">
-                <div id="statusMessage">Connecting to your banking app...</div>
-                <div class="loading" id="loader"></div>
-              </div>
-              <button class="retry-btn" onclick="retryConnection()">Retry Connection</button>
-              <button class="retry-btn" onclick="clearCache()">Clear Cache & Reload</button>
-            </div>
-            <script>
-              let retryCount = 0;
-              const maxRetries = 3;
-              
-              function updateStatus(message, showLoader = true) {
-                document.getElementById('statusMessage').textContent = message;
-                document.getElementById('loader').style.display = showLoader ? 'inline-block' : 'none';
-              }
-              
-              async function retryConnection() {
-                retryCount++;
-                updateStatus('Attempting to reconnect...');
-                
-                try {
-                  const response = await fetch('/', { cache: 'no-cache' });
-                  if (response.ok) {
-                    updateStatus('Connection restored! Redirecting...', false);
-                    setTimeout(() => window.location.reload(), 1000);
-                    return;
-                  }
-                } catch (error) {
-                  console.log('Retry failed:', error);
-                }
-                
-                if (retryCount >= maxRetries) {
-                  updateStatus('Unable to connect. Please check your internet connection.', false);
-                } else {
-                  updateStatus('Retrying connection...', true);
-                  setTimeout(retryConnection, 2000);
-                }
-              }
-              
-              async function clearCache() {
-                updateStatus('Clearing cache...');
-                try {
-                  if ('caches' in window) {
-                    const cacheNames = await caches.keys();
-                    await Promise.all(cacheNames.map(name => caches.delete(name)));
-                  }
-                  updateStatus('Cache cleared. Reloading...', false);
-                  setTimeout(() => window.location.reload(true), 1000);
-                } catch (error) {
-                  updateStatus('Cache clear failed. Please try manually.', false);
-                }
-              }
-              
-              // Auto-retry on load
-              setTimeout(retryConnection, 2000);
-              
-              // Check for connection restore
-              window.addEventListener('online', () => {
-                updateStatus('Connection detected! Reloading...', false);
-                setTimeout(() => window.location.reload(), 1000);
-              });
-            </script>
-          </body>
-          </html>
-        `;
-        
-        return cache.put('/offline.html', new Response(offlineHTML, {
-          headers: { 'Content-Type': 'text/html' }
-        }));
+      // Cache the actual offline.html file for fallback
+      caches.open(FALLBACK_CACHE).then(async (cache) => {
+        console.log('💾 Caching offline.html fallback page');
+        try {
+          // Fetch the actual offline.html file with cache-busting
+          const response = await fetch(`/offline.html?v=${SW_VERSION}&t=${BUILD_TIMESTAMP}`, { 
+            cache: 'no-cache' 
+          });
+          if (response.ok) {
+            await cache.put('/offline.html', response);
+            console.log('✅ offline.html cached successfully');
+          } else {
+            console.warn('⚠️ Could not fetch offline.html, creating inline fallback');
+            // Fallback to inline HTML if file fetch fails
+            await cache.put('/offline.html', new Response(createInlineOfflineHTML(), {
+              headers: { 'Content-Type': 'text/html' }
+            }));
+          }
+        } catch (err) {
+          console.warn('⚠️ Error caching offline.html:', err);
+          // Fallback to inline HTML on error
+          await cache.put('/offline.html', new Response(createInlineOfflineHTML(), {
+            headers: { 'Content-Type': 'text/html' }
+          }));
+        }
+        return cache;
       })
     ]).then(() => {
       console.log('✅ PWA Service Worker installed successfully');
@@ -176,31 +152,49 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('activate', (event) => {
-  console.log('🚀 PWA Service Worker activating...');
+  console.log(`🚀 PWA Service Worker v${SW_VERSION} activating (build: ${BUILD_TIMESTAMP})...`);
   
   event.waitUntil(
     Promise.all([
-      // Clean up old caches
+      // Clean up old caches but preserve fallback cache
       caches.keys().then((cacheNames) => {
         return Promise.all(
           cacheNames.map((cacheName) => {
-            if (cacheName !== CACHE_NAME && cacheName !== FALLBACK_CACHE) {
+            // Always preserve the current fallback cache
+            if (cacheName === FALLBACK_CACHE) {
+              console.log('✅ Preserving fallback cache:', cacheName);
+              return Promise.resolve();
+            }
+            // Delete old main caches that don't match current version
+            if (cacheName.startsWith('boi-mobile-') && 
+                (!cacheName.includes(SW_VERSION) || !cacheName.includes(String(BUILD_TIMESTAMP)))) {
               console.log('🗑️ Deleting old cache:', cacheName);
               return caches.delete(cacheName);
             }
+            // Delete old fallback caches that don't match current version
+            if (cacheName.startsWith('boi-fallback-') && cacheName !== FALLBACK_CACHE) {
+              console.log('🗑️ Deleting old fallback cache:', cacheName);
+              return caches.delete(cacheName);
+            }
+            return Promise.resolve();
           })
         );
       }),
       
-      // Take control immediately
+      // Take control of all clients immediately
       self.clients.claim()
     ]).then(() => {
-      console.log('✅ PWA Service Worker activated');
+      console.log(`✅ PWA Service Worker v${SW_VERSION} activated`);
       
-      // Notify clients that SW is ready
-      self.clients.matchAll().then((clients) => {
+      // Notify ALL clients about the new version with full details
+      self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
         clients.forEach((client) => {
-          client.postMessage({ type: 'SW_ACTIVATED' });
+          client.postMessage({ 
+            type: 'SW_ACTIVATED',
+            version: SW_VERSION,
+            buildTimestamp: BUILD_TIMESTAMP,
+            message: `App updated to v${SW_VERSION}`
+          });
         });
       });
     })

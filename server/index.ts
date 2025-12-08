@@ -55,7 +55,7 @@ app.use((req, res, next) => {
   res.setHeader('X-XSS-Protection', '1; mode=block');
   res.setHeader('Referrer-Policy', 'no-referrer');
   
-  // Content Security Policy to prevent sharing and inspection
+  // Content Security Policy to prevent sharing and inspection (allow service worker)
   res.setHeader('Content-Security-Policy', 
     "default-src 'self'; " +
     "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
@@ -66,7 +66,7 @@ app.use((req, res, next) => {
     "frame-ancestors 'none'; " +
     "object-src 'none'; " +
     "media-src 'none'; " +
-    "worker-src 'none'; " +
+    "worker-src 'self'; " +
     "child-src 'none'; " +
     "form-action 'self';"
   );
@@ -119,6 +119,23 @@ app.use((req, res, next) => {
 (async () => {
   // Register API routes first
   const server = await registerRoutes(app);
+
+  // Serve service worker with no-cache headers for immediate updates
+  app.get('/sw.js', (req, res) => {
+    res.setHeader('Content-Type', 'application/javascript');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    res.setHeader('Service-Worker-Allowed', '/');
+    res.sendFile(path.resolve(process.cwd(), 'sw.js'));
+  });
+
+  // Serve offline.html with no-cache headers
+  app.get('/offline.html', (req, res) => {
+    res.setHeader('Content-Type', 'text/html');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.sendFile(path.resolve(process.cwd(), 'offline.html'));
+  });
 
   // Serve static assets last to avoid conflicts with API routes
   app.use(express.static('.'));
