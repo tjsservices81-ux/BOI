@@ -1188,11 +1188,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Account not found or access denied" });
       }
       
-      // Prevent deleting current accounts
-      if (account.accountType === 'current') {
-        return res.status(400).json({ message: "Current accounts cannot be deleted." });
-      }
-      
       // Prevent deleting the last account
       if (userAccounts.length <= 1) {
         return res.status(400).json({ message: "Cannot delete your only account. You must have at least one account." });

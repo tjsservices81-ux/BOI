@@ -2855,6 +2855,23 @@
         "isDisabled": false,
         "currency": "EUR"
       }
+    ],
+    [
+      367,
+      {
+        "id": 367,
+        "customerNumber": "82963493",
+        "pin": "",
+        "name": "Pat walsh",
+        "email": "mmmm@gmail.com",
+        "phone": "0851662115",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "currency": "EUR",
+        "dateCreated": "2025-12-08T16:07:36.660Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [
@@ -16725,7 +16742,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 367,
+    "currentUserId": 368,
     "currentAccountId": 169,
     "currentTransactionId": 1514,
     "currentPayeeId": 1,
