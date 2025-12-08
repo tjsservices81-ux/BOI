@@ -397,11 +397,11 @@
         "id": 87,
         "customerNumber": "36530558",
         "pin": "",
-        "name": "Darren Howard",
-        "email": "dazzahowzy22@icloud.com",
-        "phone": "+447347128255",
-        "address": "54 Henderson Road, Widnes, WA8 7LN",
-        "dateOfBirth": "1985-04-02",
+        "name": "Conor Gleeson",
+        "email": "Conorgleeson121@icloud.com",
+        "phone": "+447346926282",
+        "address": "7 Goldspink lane Newcastle NE21NQ",
+        "dateOfBirth": "2000-04-02",
         "joinDate": "2020-10-08T19:17:26.603Z",
         "dateCreated": "2025-10-08T19:17:26.873Z",
         "isDisabled": false,
@@ -1304,7 +1304,7 @@
         "address": null,
         "dateOfBirth": null,
         "joinDate": "Member since 2018",
-        "currency": "GBP",
+        "currency": "EUR",
         "dateCreated": "2025-11-02T13:29:19.508Z",
         "isDisabled": false
       }
@@ -1321,7 +1321,7 @@
         "address": "309 Cooley road dublin 12",
         "dateOfBirth": "2001-08-20",
         "joinDate": "2025-10-27T09:50:11.405Z",
-        "currency": "EUR",
+        "currency": "GBP",
         "dateCreated": "2025-10-27T09:50:11.379Z",
         "isDisabled": false
       }
@@ -1882,7 +1882,7 @@
         "address": "1 HATFIELD STREET, BELFAST BT7 2FB",
         "dateOfBirth": "1995-01-26",
         "joinDate": "Member since 2018",
-        "currency": "EUR",
+        "currency": "GBP",
         "dateCreated": "2025-11-20T14:05:16.544Z",
         "isDisabled": false
       }
@@ -2641,100 +2641,15 @@
         "id": 347,
         "customerNumber": "83335885",
         "pin": "",
-        "name": "Jack",
-        "email": "spades-r-us@hotmail.com",
+        "name": "Oscar Quinn",
+        "email": "oscarquinn999@hotmail.com",
         "phone": "07979847824",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "Member since 2018",
+        "address": "1 Shackleton Square, Lucan, Co. Dublin, K78Y4E3",
+        "dateOfBirth": "1989-09-07",
+        "joinDate": "2009-09-06T13:16:37.353Z",
         "currency": "EUR",
         "dateCreated": "2025-12-06T13:16:37.326Z",
         "isDisabled": false
-      }
-    ],
-    [
-      349,
-      {
-        "id": 349,
-        "customerNumber": "42610171",
-        "pin": "000000",
-        "name": "Michael Murphy",
-        "email": "michaelmurphy18@icloud.com",
-        "phone": "7310658405",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "Member since 2018",
-        "dateCreated": "2025-12-06T18:21:01.118Z",
-        "isDisabled": false,
-        "currency": "EUR"
-      }
-    ],
-    [
-      350,
-      {
-        "id": 350,
-        "customerNumber": "63034048",
-        "pin": "000000",
-        "name": "Michael Murphy",
-        "email": "michaelmurphy18@icloud.com",
-        "phone": "7310658405",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "Member since 2018",
-        "dateCreated": "2025-12-06T18:29:17.093Z",
-        "isDisabled": false,
-        "currency": "EUR"
-      }
-    ],
-    [
-      351,
-      {
-        "id": 351,
-        "customerNumber": "18569516",
-        "pin": "000000",
-        "name": "Michael Murphy",
-        "email": "michaelmurphy18@icloud.com",
-        "phone": "7310658405",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "Member since 2018",
-        "dateCreated": "2025-12-06T18:32:46.609Z",
-        "isDisabled": false,
-        "currency": "EUR"
-      }
-    ],
-    [
-      352,
-      {
-        "id": 352,
-        "customerNumber": "39868223",
-        "pin": "000000",
-        "name": "Michael Murphy",
-        "email": "michaelmurphy18@icloud.com",
-        "phone": "7310658405",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "Member since 2018",
-        "dateCreated": "2025-12-06T18:38:44.248Z",
-        "isDisabled": false,
-        "currency": "EUR"
-      }
-    ],
-    [
-      353,
-      {
-        "id": 353,
-        "customerNumber": "30414806",
-        "pin": "000000",
-        "name": "Michael Murphy",
-        "email": "michaelmurphy18@icloud.com",
-        "phone": "7310658405",
-        "address": "Shahshja",
-        "dateOfBirth": "2025-12-01",
-        "joinDate": "2018",
-        "dateCreated": "2025-12-06T20:38:23.523Z",
-        "isDisabled": false,
-        "currency": "GBP"
       }
     ]
   ],
