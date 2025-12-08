@@ -1,17 +1,14 @@
 import { useLocation } from "wouter";
-import { ChevronLeft, Bell, Mail, ScanFace, Shield, ChevronRight, MapPin, FileText, Download, Globe, Clock, HelpCircle, Phone, Info } from "lucide-react";
+import { ChevronLeft, Bell, Mail, Shield, ChevronRight, MapPin, FileText, Download, Globe, Clock, HelpCircle, Phone, Info } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Switch } from "@/components/ui/switch";
 import { getUserCurrency } from "../utils/currencyUtils";
-import { UserDataManager } from "../utils/userDataManager";
 import ukLogoPath from "@assets/IMG_1505_1759859367310.png";
-import faceIdIconPath from "@assets/IMG_1506_1759859583184.png";
 
 export default function Settings() {
   const [, setLocation] = useLocation();
   const [isNavigating, setIsNavigating] = useState(false);
   const [userCurrency] = useState(() => getUserCurrency());
-  const [isRegisteringFaceId, setIsRegisteringFaceId] = useState(false);
   
   // Load settings from localStorage
   const [notificationsEnabled, setNotificationsEnabled] = useState(() => {
@@ -23,11 +20,6 @@ export default function Settings() {
     const saved = localStorage.getItem('emailsEnabled');
     return saved !== null ? JSON.parse(saved) : true;
   });
-  
-  const [faceIdEnabled, setFaceIdEnabled] = useState(() => {
-    const saved = localStorage.getItem('faceIdEnabled');
-    return saved !== null ? JSON.parse(saved) : false;
-  });
 
   // Save settings to localStorage when they change
   useEffect(() => {
@@ -37,10 +29,6 @@ export default function Settings() {
   useEffect(() => {
     localStorage.setItem('emailsEnabled', JSON.stringify(emailsEnabled));
   }, [emailsEnabled]);
-
-  useEffect(() => {
-    localStorage.setItem('faceIdEnabled', JSON.stringify(faceIdEnabled));
-  }, [faceIdEnabled]);
 
   const handleNavigation = (path: string) => {
     setIsNavigating(true);
@@ -83,80 +71,6 @@ export default function Settings() {
     } else {
       // Notifications not supported
       console.log('Notifications are not supported in this browser');
-    }
-  };
-
-  const handleFaceIdToggle = async (enabled: boolean) => {
-    if (!enabled) {
-      // Disabling Face ID - just clear the stored credential
-      localStorage.removeItem('faceIdCredentialId');
-      setFaceIdEnabled(false);
-      return;
-    }
-
-    // Enabling Face ID - register passkey
-    const currentUser = UserDataManager.getCurrentUser();
-    if (!currentUser) {
-      console.error('Please log in first to enable Face ID');
-      return;
-    }
-
-    setIsRegisteringFaceId(true);
-
-    try {
-      // Check if Web Authentication API is available
-      if (!window.PublicKeyCredential) {
-        // Fallback for browsers without WebAuthn
-        localStorage.setItem('faceIdCredentialId', 'fallback-' + currentUser);
-        setFaceIdEnabled(true);
-        setIsRegisteringFaceId(false);
-        return;
-      }
-
-      // Register passkey using WebAuthn
-      const challenge = new Uint8Array(32);
-      crypto.getRandomValues(challenge);
-
-      const userId = new Uint8Array(16);
-      crypto.getRandomValues(userId);
-
-      const publicKeyCredentialCreationOptions = {
-        challenge,
-        rp: {
-          name: "Bank of Ireland",
-          id: window.location.hostname,
-        },
-        user: {
-          id: userId,
-          name: "BOI Customer Login",
-          displayName: "BOI Customer Login",
-        },
-        pubKeyCredParams: [
-          { alg: -7, type: "public-key" as const },
-          { alg: -257, type: "public-key" as const }
-        ],
-        authenticatorSelection: {
-          authenticatorAttachment: "platform" as const,
-          userVerification: "required" as const,
-        },
-        timeout: 60000,
-      };
-
-      const credential = await navigator.credentials.create({
-        publicKey: publicKeyCredentialCreationOptions
-      }) as PublicKeyCredential;
-
-      if (credential && credential.id) {
-        // Store credential ID (base64 encoded) for future authentication
-        const rawIdArray = Array.from(new Uint8Array(credential.rawId));
-        const credentialIdBase64 = btoa(rawIdArray.map(byte => String.fromCharCode(byte)).join(''));
-        localStorage.setItem('faceIdCredentialId', credentialIdBase64);
-        setFaceIdEnabled(true);
-      }
-    } catch (error) {
-      console.error('Face ID registration error:', error);
-    } finally {
-      setIsRegisteringFaceId(false);
     }
   };
 
@@ -208,46 +122,6 @@ export default function Settings() {
           {/* Settings Sections */}
           <div className="px-6 space-y-8">
             
-            {/* Security Section */}
-            <div>
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                Security
-              </h3>
-              <div className="bg-gray-50 rounded-2xl p-1">
-                <div className="bg-white rounded-xl p-4 shadow-sm">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-[#126987] to-[#0d4e63] rounded-xl flex items-center justify-center">
-                        {isRegisteringFaceId ? (
-                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        ) : (
-                          <img 
-                            src={faceIdIconPath} 
-                            alt="Face ID" 
-                            className="w-6 h-6 filter brightness-0 invert"
-                          />
-                        )}
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          Face ID
-                        </h4>
-                        <p className="text-xs text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          {isRegisteringFaceId ? 'Registering passkey...' : 'Use biometric login'}
-                        </p>
-                      </div>
-                    </div>
-                    <Switch
-                      checked={faceIdEnabled}
-                      onCheckedChange={handleFaceIdToggle}
-                      disabled={isRegisteringFaceId}
-                      data-testid="toggle-faceid"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
             {/* Notifications Section */}
             <div>
               <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-1" style={{ fontFamily: 'OpenSans, sans-serif' }}>
