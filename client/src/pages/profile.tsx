@@ -827,7 +827,7 @@ export default function Profile() {
 
     } catch (error) {
       console.error('Error creating account:', error);
-      alert(error instanceof Error ? error.message : 'Failed to create account. Please try again.');
+      showDeveloperMessage(error instanceof Error ? error.message : 'Failed to create account. Please try again.');
     }
   };
 
@@ -2451,20 +2451,33 @@ export default function Profile() {
                           alert('Account Deleted');
                           return;
                         }
+                        if (accounts.length >= 5) {
+                          showDeveloperMessage('Maximum of 5 accounts allowed. Please delete an existing account first.');
+                          return;
+                        }
                         setShowAddAccount(true);
                       }}
+                      disabled={accounts.length >= 5}
                       data-testid="button-add-account"
-                      className="w-full flex items-center space-x-3 p-4 bg-white/70 backdrop-blur-sm border-2 border-green-300 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md"
+                      className={`w-full flex items-center space-x-3 p-4 bg-white/70 backdrop-blur-sm border-2 rounded-xl transition-all shadow-sm ${
+                        accounts.length >= 5 
+                          ? 'border-gray-300 opacity-60 cursor-not-allowed' 
+                          : 'border-green-300 active:scale-95 hover:shadow-md'
+                      }`}
                     >
-                      <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center shadow-md">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center shadow-md ${
+                        accounts.length >= 5 
+                          ? 'bg-gradient-to-br from-gray-400 to-gray-500' 
+                          : 'bg-gradient-to-br from-green-500 to-green-600'
+                      }`}>
                         <Plus className="w-5 h-5 text-white" />
                       </div>
                       <div className="flex-1 text-left">
-                        <p className="font-bold text-green-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <p className={`font-bold text-sm ${accounts.length >= 5 ? 'text-gray-600' : 'text-green-900'}`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
                           Add Account
                         </p>
-                        <p className="text-xs text-green-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          Create new bank account
+                        <p className={`text-xs ${accounts.length >= 5 ? 'text-gray-500' : 'text-green-700'}`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          {accounts.length >= 5 ? 'Maximum 5 accounts reached' : `${accounts.length}/5 accounts used`}
                         </p>
                       </div>
                     </button>

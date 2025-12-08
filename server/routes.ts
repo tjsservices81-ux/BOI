@@ -1047,6 +1047,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Account type is required" });
       }
 
+      // Check maximum account limit (5 accounts per customer)
+      const MAX_ACCOUNTS = 5;
+      const existingAccounts = await storage.getAccountsByUserId(sessionUser.id);
+      if (existingAccounts.length >= MAX_ACCOUNTS) {
+        return res.status(400).json({ 
+          message: `Maximum of ${MAX_ACCOUNTS} accounts allowed. Please delete an existing account first.`,
+          code: 'MAX_ACCOUNTS_REACHED'
+        });
+      }
+
       // Generate proper banking details - exactly like registration
       const accountNumber = Math.floor(10000000 + Math.random() * 90000000).toString();
       const sortCode = '90-78-68';
