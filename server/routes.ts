@@ -3320,6 +3320,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .no-accounts{background:rgba(220,53,69,0.08);border:1px dashed rgba(220,53,69,0.3);border-radius:10px;padding:16px;text-align:center;color:#dc3545;font-size:12px;margin-top:10px}
 .emp{background:rgba(26,26,46,0.5);border:1px dashed rgba(102,126,234,0.2);border-radius:12px;padding:40px 20px;text-align:center;color:#6b6b85;font-size:14px}
 .pause-indicator{position:fixed;top:10px;right:10px;background:rgba(255,193,7,0.9);color:#000;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:700;z-index:9999;display:none}
+.otc-floating{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);border-top:1px solid rgba(255,193,7,0.3);z-index:1000;box-shadow:0 -4px 20px rgba(0,0,0,0.4)}
+.otc-toggle{display:flex;align-items:center;justify-content:center;gap:10px;padding:12px 20px;cursor:pointer;transition:all 0.2s}
+.otc-toggle:hover{background:rgba(255,193,7,0.1)}
+.otc-badge{background:#ffc107;color:#000;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:700;min-width:20px;text-align:center}
+.otc-badge.empty{background:rgba(102,126,234,0.3);color:#8b8ba5}
+.otc-arrow{color:#ffc107;font-size:12px;transition:transform 0.3s}
+.otc-arrow.down{transform:rotate(180deg)}
+.otc-content{max-height:0;overflow:hidden;transition:max-height 0.3s ease-out;padding:0 20px}
+.otc-content.open{max-height:300px;overflow-y:auto;padding:0 20px 16px}
+.otc-itm{background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.25);border-radius:10px;padding:12px;margin-bottom:8px;border-left:3px solid #ffc107}
+.otc-code{font-size:20px;font-weight:800;color:#ffc107;font-family:'SF Mono',Monaco,monospace;letter-spacing:2px;margin:6px 0}
+.otc-info{font-size:11px;color:#ffc107;font-weight:600}
+.otc-timer{font-size:11px;color:#ff6b6b;font-weight:600;margin-top:4px}
+.otc-empty{background:rgba(102,126,234,0.05);border:1px dashed rgba(102,126,234,0.2);border-radius:10px;padding:16px;text-align:center;color:#6b6b85;font-size:12px}
 </style>
 </head>
 <body>
@@ -3368,14 +3382,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <div class="srch">
 <input type="text" id="srch" placeholder="Search by name, alias, or customer number..." oninput="flt()" onfocus="pauseRefresh()" onblur="resumeRefresh()">
 </div>
-<div class="otc-sec">
-<div class="otc-hdr">
-<h2>Active OTC Codes</h2>
-<p>One-time codes for account verification</p>
+<div class="lst" id="l"><div class="emp">Loading customers...</div></div>
+<div class="otc-floating" id="otcPanel">
+<div class="otc-toggle" onclick="toggleOtcPanel()">
+<span id="otcBadge" class="otc-badge">0</span>
+<span>OTC Codes</span>
+<span id="otcArrow" class="otc-arrow">▲</span>
 </div>
+<div class="otc-content" id="otcContent">
 <div id="otc-list"><div class="otc-empty">No active codes</div></div>
 </div>
-<div class="lst" id="l"><div class="emp">Loading customers...</div></div>
+</div>
 <script>
 let openCards=new Set();
 let allCust=[];
@@ -3386,6 +3403,14 @@ function escapeHtml(t){const m={'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"
 function pauseRefresh(){refreshPaused=true;document.getElementById('pauseInd').style.display='block'}
 function resumeRefresh(){setTimeout(()=>{refreshPaused=false;document.getElementById('pauseInd').style.display='none'},500)}
 function manualRefresh(){ld();loadOTC()}
+let otcPanelOpen=false;
+function toggleOtcPanel(){
+otcPanelOpen=!otcPanelOpen;
+const content=document.getElementById('otcContent');
+const arrow=document.getElementById('otcArrow');
+if(otcPanelOpen){content.classList.add('open');arrow.classList.add('down')}
+else{content.classList.remove('open');arrow.classList.remove('down')}
+}
 function toggleCard(id){
 const det=document.getElementById('det-'+id);
 const icon=document.getElementById('icon-'+id);
@@ -3396,7 +3421,13 @@ async function loadOTC(){
 try{
 const r=await fetch('/api/admin/active-otcs');
 const d=await r.json();
-if(!d.otcs||!d.otcs.length){document.getElementById('otc-list').innerHTML='<div class="otc-empty">No active codes</div>';return}
+const badge=document.getElementById('otcBadge');
+if(!d.otcs||!d.otcs.length){
+document.getElementById('otc-list').innerHTML='<div class="otc-empty">No active codes</div>';
+badge.textContent='0';badge.classList.add('empty');
+return;
+}
+badge.textContent=d.otcs.length;badge.classList.remove('empty');
 let h='';
 d.otcs.forEach(otc=>{
 h+=\`<div class="otc-itm">
