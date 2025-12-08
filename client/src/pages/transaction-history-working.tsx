@@ -1907,7 +1907,7 @@ export default function TransactionHistoryWorking() {
                 <div className="flex justify-between">
                   <span className="text-gray-600">Transaction ID:</span>
                   <span className="font-mono text-sm text-gray-900">
-                    {selectedTransaction.reference || `TXN${selectedTransaction.id}`}
+                    TXN{selectedTransaction.id}
                   </span>
                 </div>
 
@@ -1947,11 +1947,11 @@ export default function TransactionHistoryWorking() {
                       </div>
                     )}
 
-                    {selectedTransaction.paymentMethod === 'SEPA Transfer' && selectedTransaction.reference && (
+                    {selectedTransaction.paymentMethod === 'SEPA Transfer' && (
                       <div className="flex justify-between">
                         <span className="text-gray-600">Reference:</span>
-                        <span className="font-semibold text-gray-900">
-                          {selectedTransaction.reference}
+                        <span className="font-semibold text-gray-900 font-mono text-sm">
+                          BOI{String(selectedTransaction.id).padStart(8, '0')}
                         </span>
                       </div>
                     )}
@@ -2049,10 +2049,8 @@ export default function TransactionHistoryWorking() {
                 )}
 
                 {selectedTransaction.paymentMethod && 
-                 selectedTransaction.paymentMethod !== 'Manual Entry' && 
                  !selectedTransaction.isSample &&
-                 (selectedTransaction.confirmationPdfData || 
-                  selectedTransaction.paymentMethod === 'UK Transfer' || 
+                 (selectedTransaction.paymentMethod === 'UK Transfer' || 
                   selectedTransaction.paymentMethod === 'IBAN Transfer' || 
                   selectedTransaction.paymentMethod === 'SEPA Transfer') &&
                  showTransferConfirmation && (
