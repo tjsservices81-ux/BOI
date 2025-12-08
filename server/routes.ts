@@ -14,6 +14,103 @@ import { generateTransferConfirmationPDF } from "./pdfService";
 import { StatementService } from "./statementService";
 import Database from "@replit/database";
 
+// ============================================================================
+// TRANSFER RELIABILITY SYSTEM - Ensures transfers always complete
+// ============================================================================
+
+// Retry helper with exponential backoff for database operations
+async function withRetry<T>(
+  operation: () => Promise<T>,
+  options: { maxAttempts?: number; baseDelay?: number; operationName?: string } = {}
+): Promise<T> {
+  const { maxAttempts = 3, baseDelay = 100, operationName = 'operation' } = options;
+  let lastError: Error | null = null;
+  
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error as Error;
+      console.warn(`⚠️ ${operationName} attempt ${attempt}/${maxAttempts} failed:`, error);
+      
+      if (attempt < maxAttempts) {
+        // Exponential backoff with jitter: 100ms, 200ms, 400ms, etc.
+        const delay = baseDelay * Math.pow(2, attempt - 1) + Math.random() * 50;
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+  
+  throw lastError;
+}
+
+// Idempotency key tracking to prevent duplicate transfers
+const processedTransferKeys = new Map<string, { result: any; timestamp: number }>();
+const IDEMPOTENCY_TTL = 5 * 60 * 1000; // 5 minutes
+
+// Generate idempotency key from STABLE request values only
+// If client provides an idempotencyToken, use it; otherwise hash stable request values
+// No time bucket - the same request values will always get the same key
+function generateIdempotencyKey(userId: number, accountId: number, amount: string, toAccount: string, clientToken?: string): string {
+  if (clientToken) {
+    // Client-supplied token (most reliable)
+    return `transfer:client:${clientToken}`;
+  }
+  // Fallback: hash of stable values (catches accidental double-submits)
+  return `transfer:${userId}:${accountId}:${amount}:${toAccount}`;
+}
+
+function checkIdempotency(key: string): { isDuplicate: boolean; previousResult?: any } {
+  const existing = processedTransferKeys.get(key);
+  if (existing && Date.now() - existing.timestamp < IDEMPOTENCY_TTL) {
+    console.log(`🔒 Duplicate transfer detected, returning cached result for key: ${key}`);
+    return { isDuplicate: true, previousResult: existing.result };
+  }
+  return { isDuplicate: false };
+}
+
+// Mark transfer as in-progress (prevents concurrent duplicate processing)
+function markTransferInProgress(key: string): boolean {
+  const existing = processedTransferKeys.get(key);
+  if (existing) {
+    // Check if entry is still valid (not expired)
+    if (Date.now() - existing.timestamp < IDEMPOTENCY_TTL) {
+      // Still valid - block as duplicate or in-progress
+      return false;
+    }
+    // Entry expired - delete it and allow new transfer
+    processedTransferKeys.delete(key);
+  }
+  // Mark as in-progress with null result
+  processedTransferKeys.set(key, { result: null, timestamp: Date.now() });
+  return true;
+}
+
+function recordTransfer(key: string, result: any): void {
+  processedTransferKeys.set(key, { result, timestamp: Date.now() });
+  
+  // Cleanup old entries every 100 recordings
+  if (processedTransferKeys.size % 100 === 0) {
+    const now = Date.now();
+    const keysToDelete: string[] = [];
+    processedTransferKeys.forEach((v, k) => {
+      if (now - v.timestamp > IDEMPOTENCY_TTL) {
+        keysToDelete.push(k);
+      }
+    });
+    keysToDelete.forEach(k => processedTransferKeys.delete(k));
+  }
+}
+
+function clearTransferInProgress(key: string): void {
+  const existing = processedTransferKeys.get(key);
+  if (existing && existing.result === null) {
+    processedTransferKeys.delete(key);
+  }
+}
+
+// ============================================================================
+
 // Extend express-session types
 declare module 'express-session' {
   interface SessionData {
@@ -1209,8 +1306,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create transfer
+  // Create transfer - ROBUST VERSION with retry, idempotency, and rollback
   app.post("/api/transfer", async (req, res) => {
+    console.log('💸 Transfer request received');
+    
     try {
       const transferData = transferSchema.parse(req.body);
       const account = await storage.getAccountById(transferData.fromAccountId);
@@ -1225,11 +1324,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const customerExists = await checkCustomerExists(accountUser.customerNumber);
         if (!customerExists) {
           console.log(`🚫 DELETED CUSTOMER ATTEMPT: ${accountUser.customerNumber} tried to transfer`);
-          
-          // Return 403 without logout flags - heartbeat will handle the logout
-          return res.status(403).json({ 
-            message: "Account access revoked"
-          });
+          return res.status(403).json({ message: "Account access revoked" });
         }
       }
 
@@ -1240,63 +1335,111 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Insufficient funds" });
       }
 
-      // Create debit transaction
-      const transactionReference = transferData.reference || `TXN${Date.now()}_${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
-      const transaction = await storage.createTransaction({
-        accountId: transferData.fromAccountId,
-        amount: `-${amount}`,
-        description: `Transfer to ${transferData.toAccount}`,
-        category: "transfer",
-        type: "debit",
-        paymentMethod: "Online Transfer",
-        reference: transactionReference,
-        recipientName: transferData.toAccount,
-        recipientAccountNumber: transferData.recipientDetails?.accountNumber,
-        recipientSortCode: transferData.recipientDetails?.sortCode,
-        timestamp: new Date()
-      });
+      // Check for duplicate request FIRST using stable values only
+      const idempotencyKey = generateIdempotencyKey(
+        account.userId, 
+        transferData.fromAccountId, 
+        transferData.amount, 
+        transferData.toAccount, // Use recipient name, not generated reference
+        transferData.idempotencyToken // Client-supplied token if available
+      );
 
-      // Update account balance
-      const newBalance = (currentBalance - amount).toFixed(2);
-      await storage.updateAccountBalance(transferData.fromAccountId, newBalance);
-
-      // Get user details for email notification
-      const allUsers = await storage.getAllUsers();
-      const user = allUsers.find(u => {
-        // Find user who owns this account by matching userId
-        return u.id === account.userId;
-      });
-      
-      if (user && user.email) {
-        try {
-          // Send transfer confirmation email using the exact format requested by user
-          const confirmationDetails: TransferConfirmationDetails = {
-            recipientName: transferData.toAccount,
-            amount: amount.toFixed(2),
-            currency: (user.currency === 'GBP' ? '£' : '€'),
-            dateTime: new Date().toLocaleString('en-GB', {
-              dateStyle: 'short',
-              timeStyle: 'short',
-              timeZone: 'Europe/Dublin'
-            }),
-            transactionReference: transactionReference,
-            senderName: user.name,
-            accountInfo: `${account.displayName} (${account.accountNumber.slice(-4)})`
-          };
-
-          await sendTransferConfirmation(user.email, confirmationDetails);
-        } catch (emailError) {
-          console.error('Failed to send transfer confirmation email:', emailError);
-          // Don't fail the transfer if email fails
-        }
+      // Check if already processed
+      const { isDuplicate, previousResult } = checkIdempotency(idempotencyKey);
+      if (isDuplicate && previousResult) {
+        console.log('🔒 Returning cached transfer result (duplicate prevention)');
+        return res.json(previousResult);
       }
 
-      res.json({ message: "Transfer completed successfully", transaction });
+      // Mark as in-progress to prevent concurrent processing
+      if (!markTransferInProgress(idempotencyKey)) {
+        console.log('🔒 Transfer already in progress, blocking concurrent request');
+        return res.status(409).json({ message: "Transfer already being processed. Please wait." });
+      }
+
+      // Generate reference AFTER idempotency check
+      const transactionReference = transferData.reference || `TXN${Date.now()}_${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+      const newBalance = (currentBalance - amount).toFixed(2);
+
+      // Execute transfer - NO retries on non-idempotent createTransaction
+      let createdTransaction: any = null;
+      
+      try {
+        // Step 1: Create transaction (no retry - not idempotent)
+        console.log('💳 Creating debit transaction...');
+        createdTransaction = await storage.createTransaction({
+          accountId: transferData.fromAccountId,
+          amount: `-${amount}`,
+          description: `Transfer to ${transferData.toAccount}`,
+          category: "transfer",
+          type: "debit",
+          paymentMethod: "Online Transfer",
+          reference: transactionReference,
+          recipientName: transferData.toAccount,
+          recipientAccountNumber: transferData.recipientDetails?.accountNumber,
+          recipientSortCode: transferData.recipientDetails?.sortCode,
+          timestamp: new Date()
+        });
+        
+        // Step 2: Update balance (with retry - this IS idempotent, sets specific value)
+        console.log('💳 Updating account balance...');
+        await withRetry(
+          () => storage.updateAccountBalance(transferData.fromAccountId, newBalance),
+          { maxAttempts: 3, operationName: 'Update balance' }
+        );
+        
+      } catch (error) {
+        console.error('❌ Transfer failed:', error);
+        // Clear in-progress marker so user can retry
+        clearTransferInProgress(idempotencyKey);
+        // If transaction was created but balance update failed, attempt to restore
+        if (createdTransaction) {
+          console.log('🔄 Attempting to restore original balance...');
+          try {
+            await storage.updateAccountBalance(transferData.fromAccountId, currentBalance.toFixed(2));
+          } catch (restoreError) {
+            console.error('⚠️ Failed to restore balance:', restoreError);
+          }
+        }
+        return res.status(500).json({ message: "Transfer failed. Please try again." });
+      }
+
+      // Transfer succeeded - send email notification (non-critical, don't block)
+      const user = accountUser;
+      if (user && user.email) {
+        // Fire and forget - don't await
+        sendTransferConfirmation(user.email, {
+          recipientName: transferData.toAccount,
+          amount: amount.toFixed(2),
+          currency: (user.currency === 'GBP' ? '£' : '€'),
+          dateTime: new Date().toLocaleString('en-GB', {
+            dateStyle: 'short',
+            timeStyle: 'short',
+            timeZone: 'Europe/Dublin'
+          }),
+          transactionReference: transactionReference,
+          senderName: user.name,
+          accountInfo: `${account.displayName} (${account.accountNumber.slice(-4)})`
+        }).catch(err => console.error('📧 Email notification failed (non-critical):', err));
+      }
+
+      // Record successful transfer for idempotency
+      const successResult = { 
+        message: "Transfer completed successfully", 
+        transaction: createdTransaction,
+        newBalance 
+      };
+      recordTransfer(idempotencyKey, successResult);
+
+      console.log(`✅ Transfer completed: ${amount} to ${transferData.toAccount}`);
+      res.json(successResult);
+      
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: error.errors[0].message });
       }
-      res.status(500).json({ message: "Internal server error" });
+      console.error('❌ Transfer error:', error);
+      res.status(500).json({ message: "Transfer failed. Please try again." });
     }
   });
 
@@ -1374,8 +1517,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Process internal transfer between BOI customers
+  // Process internal transfer between BOI customers - ROBUST VERSION
   app.post("/api/internal-transfer", requireAuth, async (req, res) => {
+    console.log('💸 Internal transfer request received');
+    
     try {
       const sessionUser = (req as any).user;
       if (!sessionUser) {
@@ -1448,66 +1593,126 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const recipientFullName = recipientName || recipientUser?.name || 'Unknown';
       
-      // Generate transaction reference
+      // Check for duplicate request FIRST using stable values only
+      const idempotencyKey = generateIdempotencyKey(
+        sessionUser.id, 
+        fromAccountId, 
+        amount, 
+        String(toAccountId) // Use recipient account ID, not generated reference
+      );
+      
+      // Check if already processed
+      const { isDuplicate, previousResult } = checkIdempotency(idempotencyKey);
+      if (isDuplicate && previousResult) {
+        console.log('🔒 Returning cached internal transfer result (duplicate prevention)');
+        return res.json(previousResult);
+      }
+      
+      // Mark as in-progress to prevent concurrent processing
+      if (!markTransferInProgress(idempotencyKey)) {
+        console.log('🔒 Internal transfer already in progress, blocking concurrent request');
+        return res.status(409).json({ message: "Transfer already being processed. Please wait." });
+      }
+      
+      // Generate reference AFTER idempotency check
       const transactionRef = reference || `INT${Date.now()}_${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
       const paymentMethod = transferType === 'sepa' ? 'SEPA Transfer' : 'UK Transfer';
       
-      // Create debit transaction for sender
-      const debitTransaction = await storage.createTransaction({
-        accountId: fromAccountId,
-        amount: `-${numericAmount.toFixed(2)}`,
-        description: `Transfer to ${recipientFullName}`,
-        category: "transfer",
-        type: "debit",
-        paymentMethod: paymentMethod,
-        reference: transactionRef,
-        recipientName: recipientFullName,
-        recipientAccountNumber: recipientAccount.accountNumber,
-        recipientSortCode: recipientAccount.sortCode,
-        recipientIban: recipientAccount.iban,
-        timestamp: new Date()
-      });
-      
-      // Create credit transaction for recipient
+      // Get sender info for transactions
       const senderUser = await storage.getUserById(senderAccount.userId);
       const senderName = senderUser?.name || 'Unknown';
       
-      const creditTransaction = await storage.createTransaction({
-        accountId: toAccountId,
-        amount: `+${numericAmount.toFixed(2)}`,
-        description: `Transfer from ${senderName}`,
-        category: "transfer",
-        type: "credit",
-        paymentMethod: paymentMethod,
-        reference: transactionRef,
-        recipientName: senderName,
-        recipientAccountNumber: senderAccount.accountNumber,
-        recipientSortCode: senderAccount.sortCode,
-        recipientIban: senderAccount.iban,
-        timestamp: new Date()
-      });
-      
-      // Update sender's balance
+      // Calculate new balances
       const newSenderBalance = (senderBalance - numericAmount).toFixed(2);
-      await storage.updateAccountBalance(fromAccountId, newSenderBalance);
-      
-      // Update recipient's balance
       const recipientBalance = parseFloat(recipientAccount.balance);
       const newRecipientBalance = (recipientBalance + numericAmount).toFixed(2);
-      await storage.updateAccountBalance(toAccountId, newRecipientBalance);
       
-      console.log(`💸 Internal transfer completed: ${senderName} → ${recipientFullName}, Amount: ${numericAmount.toFixed(2)}`);
+      // Execute transfer step by step - NO retries on non-idempotent createTransaction
+      let debitTransaction: any = null;
+      let creditTransaction: any = null;
       
-      res.json({
+      try {
+        // Step 1: Create debit transaction (no retry - not idempotent)
+        console.log('💳 Creating debit transaction (sender)...');
+        debitTransaction = await storage.createTransaction({
+          accountId: fromAccountId,
+          amount: `-${numericAmount.toFixed(2)}`,
+          description: `Transfer to ${recipientFullName}`,
+          category: "transfer",
+          type: "debit",
+          paymentMethod: paymentMethod,
+          reference: transactionRef,
+          recipientName: recipientFullName,
+          recipientAccountNumber: recipientAccount.accountNumber,
+          recipientSortCode: recipientAccount.sortCode,
+          recipientIban: recipientAccount.iban,
+          timestamp: new Date()
+        });
+        
+        // Step 2: Create credit transaction (no retry - not idempotent)
+        console.log('💳 Creating credit transaction (recipient)...');
+        creditTransaction = await storage.createTransaction({
+          accountId: toAccountId,
+          amount: `+${numericAmount.toFixed(2)}`,
+          description: `Transfer from ${senderName}`,
+          category: "transfer",
+          type: "credit",
+          paymentMethod: paymentMethod,
+          reference: transactionRef,
+          recipientName: senderName,
+          recipientAccountNumber: senderAccount.accountNumber,
+          recipientSortCode: senderAccount.sortCode,
+          recipientIban: senderAccount.iban,
+          timestamp: new Date()
+        });
+        
+        // Step 3: Update sender balance (with retry - idempotent)
+        console.log('💳 Updating sender balance...');
+        await withRetry(
+          () => storage.updateAccountBalance(fromAccountId, newSenderBalance),
+          { maxAttempts: 3, operationName: 'Update sender balance' }
+        );
+        
+        // Step 4: Update recipient balance (with retry - idempotent)
+        console.log('💳 Updating recipient balance...');
+        await withRetry(
+          () => storage.updateAccountBalance(toAccountId, newRecipientBalance),
+          { maxAttempts: 3, operationName: 'Update recipient balance' }
+        );
+        
+      } catch (error) {
+        console.error('❌ Internal transfer failed:', error);
+        // Clear in-progress marker so user can retry
+        clearTransferInProgress(idempotencyKey);
+        // Attempt to restore balances if transactions were created
+        if (debitTransaction || creditTransaction) {
+          console.log('🔄 Attempting to restore balances...');
+          try {
+            await storage.updateAccountBalance(fromAccountId, senderBalance.toFixed(2));
+            await storage.updateAccountBalance(toAccountId, recipientBalance.toFixed(2));
+          } catch (restoreError) {
+            console.error('⚠️ Failed to restore balances:', restoreError);
+          }
+        }
+        return res.status(500).json({ message: "Transfer failed. Please try again." });
+      }
+      
+      console.log(`✅ Internal transfer completed: ${senderName} → ${recipientFullName}, Amount: ${numericAmount.toFixed(2)}`);
+      
+      // Record successful transfer for idempotency
+      const successResult = {
         success: true,
         message: "Internal transfer completed successfully",
         transaction: debitTransaction,
         reference: transactionRef,
         newBalance: newSenderBalance
-      });
+      };
+      recordTransfer(idempotencyKey, successResult);
+      
+      res.json(successResult);
     } catch (error) {
-      console.error('Error processing internal transfer:', error);
-      res.status(500).json({ message: "Failed to process internal transfer" });
+      console.error('❌ Error processing internal transfer:', error);
+      res.status(500).json({ message: "Transfer failed. Please try again." });
     }
   });
 

@@ -208,6 +208,7 @@ export const transferSchema = z.object({
     iban: z.string().optional(),
     bicCode: z.string().optional(),
   }).optional(),
+  idempotencyToken: z.string().optional(),
 });
 
 export type Account = typeof accounts.$inferSelect;
