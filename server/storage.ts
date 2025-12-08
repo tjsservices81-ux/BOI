@@ -37,7 +37,9 @@ export interface IStorage {
   
   // Transaction operations
   getTransactionsByAccountId(accountId: number): Promise<Transaction[]>;
+  getTransactionById(transactionId: number): Promise<Transaction | undefined>;
   createTransaction(transaction: InsertTransaction): Promise<Transaction>;
+  deleteTransaction(transactionId: number): Promise<boolean>;
   
   // Payee operations
   getPayeesByUserId(userId: number): Promise<Payee[]>;
@@ -1002,6 +1004,45 @@ class MemStorage implements IStorage {
       
       console.log(`💳 Transaction created in memory (fallback): ID=${transaction.id}`);
       return transaction;
+    }
+  }
+
+  async getTransactionById(transactionId: number): Promise<Transaction | undefined> {
+    try {
+      const { db } = await import('./db');
+      const { eq } = await import('drizzle-orm');
+      
+      const [dbTransaction] = await db.select()
+        .from(transactions)
+        .where(eq(transactions.id, transactionId));
+      
+      if (dbTransaction) {
+        this.transactions.set(dbTransaction.id, dbTransaction);
+        return dbTransaction;
+      }
+      return undefined;
+    } catch (error) {
+      console.error('Error getting transaction by ID from PostgreSQL:', error);
+      return this.transactions.get(transactionId);
+    }
+  }
+
+  async deleteTransaction(transactionId: number): Promise<boolean> {
+    try {
+      const { db } = await import('./db');
+      const { eq } = await import('drizzle-orm');
+      
+      // Delete from PostgreSQL
+      await db.delete(transactions).where(eq(transactions.id, transactionId));
+      
+      // Also remove from memory cache
+      this.transactions.delete(transactionId);
+      
+      console.log(`🗑️ Transaction ${transactionId} deleted from PostgreSQL and memory`);
+      return true;
+    } catch (error) {
+      console.error('Error deleting transaction:', error);
+      return false;
     }
   }
 

@@ -1312,6 +1312,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete a single transaction by ID
+  app.delete("/api/transactions/:transactionId", requireAuth, async (req, res) => {
+    try {
+      const transactionId = parseInt(req.params.transactionId);
+      const sessionUser = (req as any).user;
+      
+      if (!sessionUser) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      
+      // Get the transaction to verify ownership and get amount for balance adjustment
+      const transaction = await storage.getTransactionById(transactionId);
+      if (!transaction) {
+        return res.status(404).json({ message: "Transaction not found" });
+      }
+      
+      // Get the account to verify ownership
+      const account = await storage.getAccountById(transaction.accountId);
+      if (!account || account.userId !== sessionUser.id) {
+        return res.status(403).json({ message: "Not authorized to delete this transaction" });
+      }
+      
+      // Calculate balance adjustment (reverse the transaction effect)
+      const transactionAmount = parseFloat(transaction.amount.replace('+', '').replace('-', ''));
+      const currentBalance = parseFloat(account.balance);
+      let newBalance: number;
+      
+      if (transaction.type === 'credit') {
+        // If it was a credit, subtract from balance
+        newBalance = currentBalance - transactionAmount;
+      } else {
+        // If it was a debit, add back to balance
+        newBalance = currentBalance + transactionAmount;
+      }
+      
+      // Delete the transaction
+      const deleted = await storage.deleteTransaction(transactionId);
+      
+      if (deleted) {
+        // Update account balance
+        await storage.updateAccountBalance(account.id, newBalance.toFixed(2));
+        
+        console.log(`🗑️ Transaction ${transactionId} deleted by user ${sessionUser.customerNumber}, balance adjusted to ${newBalance.toFixed(2)}`);
+        res.json({ 
+          success: true, 
+          message: "Transaction deleted successfully",
+          newBalance: newBalance.toFixed(2)
+        });
+      } else {
+        res.status(500).json({ message: "Failed to delete transaction" });
+      }
+    } catch (error) {
+      console.error('Error deleting transaction:', error);
+      res.status(500).json({ message: "Failed to delete transaction" });
+    }
+  });
+
   // Create transfer - ROBUST VERSION with retry, idempotency, and rollback
   app.post("/api/transfer", async (req, res) => {
     console.log('💸 Transfer request received');

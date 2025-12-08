@@ -1517,22 +1517,48 @@ export default function Profile() {
     showDeveloperMessage(`Data reset to defaults successfully - all balances set to ${currencySymbol}0.00, transactions cleared`);
   };
 
-  // Load transactions for selected account - sorted by latest first
-  const loadAccountTransactions = (accountId: string) => {
-    const allTransactions = UserDataManager.getUserData('bankTransactions', []) || [];
-    const accountSpecificTransactions = allTransactions
+  // Load transactions for selected account - sorted by latest first (from both DB and localStorage)
+  const loadAccountTransactions = async (accountId: string) => {
+    // First, load from localStorage for immediate display
+    const localTransactions = UserDataManager.getUserData('bankTransactions', []) || [];
+    const localFiltered = localTransactions
       .filter((tx: any) => tx.accountId === parseInt(accountId))
       .sort((a: any, b: any) => {
-        // Sort by timestamp descending (latest first)
         const dateA = new Date(a.timestamp).getTime();
         const dateB = new Date(b.timestamp).getTime();
         return dateB - dateA;
       });
-    setAccountTransactions(accountSpecificTransactions);
+    
+    // Then try to load from database API
+    try {
+      const response = await fetch(`/api/transactions/${accountId}`, {
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const dbTransactions = await response.json();
+        // Merge database transactions with local transactions (DB takes priority by ID)
+        const dbIds = new Set(dbTransactions.map((tx: any) => tx.id));
+        const combinedTransactions = [
+          ...dbTransactions,
+          ...localFiltered.filter((tx: any) => !dbIds.has(tx.id))
+        ].sort((a: any, b: any) => {
+          const dateA = new Date(a.timestamp).getTime();
+          const dateB = new Date(b.timestamp).getTime();
+          return dateB - dateA;
+        });
+        setAccountTransactions(combinedTransactions);
+        return;
+      }
+    } catch (error) {
+      console.error('Error loading transactions from API:', error);
+    }
+    
+    // Fallback to local only
+    setAccountTransactions(localFiltered);
   };
 
   // Handle transaction deletion - Single action with instant updates
-  const handleDeleteTransaction = () => {
+  const handleDeleteTransaction = async () => {
     // Block if account deleted
     if (accountDeleted) {
       alert('Account Deleted');
@@ -1541,7 +1567,67 @@ export default function Profile() {
     
     if (!selectedTransaction || !selectedAccountId) return;
 
-    // Get all transactions for current user (with null safety)
+    // Check if this is a database transaction (has numeric ID from PostgreSQL)
+    const isDbTransaction = typeof selectedTransaction.id === 'number' && selectedTransaction.id > 0;
+    
+    if (isDbTransaction) {
+      // Try to delete from database API first
+      try {
+        const response = await fetch(`/api/transactions/${selectedTransaction.id}`, {
+          method: 'DELETE',
+          credentials: 'include'
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          console.log('💳 Database transaction deleted:', result);
+          
+          // Update local account balance from API response
+          if (result.newBalance) {
+            const userAccounts = UserDataManager.getUserData('bankAccounts', []) || [];
+            const updatedAccounts = userAccounts.map((acc: any) => 
+              acc.id === selectedTransaction.accountId 
+                ? { ...acc, balance: result.newBalance }
+                : acc
+            );
+            UserDataManager.setUserData('bankAccounts', updatedAccounts);
+            setAccounts(updatedAccounts);
+            
+            window.dispatchEvent(new CustomEvent('balanceUpdate', {
+              detail: { 
+                accountId: selectedTransaction.accountId, 
+                newBalance: result.newBalance,
+                accounts: updatedAccounts
+              }
+            }));
+          }
+          
+          // Reload transactions from API
+          const txResponse = await fetch(`/api/transactions/${selectedAccountId}`, {
+            credentials: 'include'
+          });
+          if (txResponse.ok) {
+            const dbTransactions = await txResponse.json();
+            setAccountTransactions(dbTransactions);
+          }
+          
+          // Reset modal state
+          setSelectedTransaction(null);
+          setShowDeleteConfirm(false);
+          setShowDeleteTransaction(false);
+          
+          window.dispatchEvent(new CustomEvent('forceRefresh'));
+          showDeveloperMessage('Transaction deleted successfully.');
+          return;
+        } else {
+          console.log('Database delete failed, trying local storage...');
+        }
+      } catch (error) {
+        console.error('Error deleting from database:', error);
+      }
+    }
+    
+    // Fall back to local storage deletion (for non-database transactions)
     const storedTransactions = UserDataManager.getUserData('bankTransactions', []) || [];
     
     // Filter out the selected transaction
