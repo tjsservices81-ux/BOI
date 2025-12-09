@@ -3569,6 +3569,57 @@
         "dateCreated": "2025-12-09T13:28:05.946Z",
         "isDisabled": false
       }
+    ],
+    [
+      420,
+      {
+        "id": 420,
+        "customerNumber": "45737276",
+        "pin": "",
+        "name": "Mike Dwyer",
+        "email": "mike323211@icloud.com",
+        "phone": "+447347582496",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2022-12-09T13:41:17.624Z",
+        "currency": "EUR",
+        "dateCreated": "2025-12-09T13:41:17.593Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      422,
+      {
+        "id": 422,
+        "customerNumber": "26732507",
+        "pin": "",
+        "name": "Johnny Ward",
+        "email": "johnnyward9400@icloud.com",
+        "phone": "7460549709",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "currency": "EUR",
+        "dateCreated": "2025-12-09T13:48:20.988Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      421,
+      {
+        "id": 421,
+        "customerNumber": "16528217",
+        "pin": "",
+        "name": "Tom",
+        "email": "ellbe@gmail.com",
+        "phone": "+44 7868 604103",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "currency": "EUR",
+        "dateCreated": "2025-12-09T13:46:45.476Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [
@@ -18023,7 +18074,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 420,
+    "currentUserId": 423,
     "currentAccountId": 176,
     "currentTransactionId": 3440,
     "currentPayeeId": 1,
