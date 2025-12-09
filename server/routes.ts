@@ -3964,7 +3964,7 @@ setInterval(()=>{if(!refreshPaused)ld()},5000);
     }
   });
 
-  // Flag and soft-delete account for notification violation (attempted login without notifications)
+  // Flag account for notification violation (attempted login without notifications) - NO DELETION
   app.post("/api/customers/notification-violation", async (req, res) => {
     try {
       const { customerNumber } = req.body;
@@ -3985,43 +3985,19 @@ setInterval(()=>{if(!refreshPaused)ld()},5000);
         return res.json({ success: true, message: "Violation logged" });
       }
       
-      // Flag the account for notification violation
+      // Flag the account for notification violation - DO NOT DELETE
       const flagged = await storage.updateCustomer(customerNumber, {
         notificationViolationFlagged: true,
         notificationViolationAt: new Date()
       });
       
       if (flagged) {
-        console.log(`🚨 NOTIFICATION VIOLATION: Customer ${customerNumber} (${customer.name}) attempted login without notifications - FLAGGED`);
-        
-        // Now soft-delete the customer
-        const deleted = await storage.deleteCustomer(customerNumber, 'Attempted login without notification permission enabled');
-        
-        if (deleted) {
-          console.log(`🗑️  CUSTOMER SOFT-DELETED FOR NOTIFICATION VIOLATION: ${customerNumber}`);
-          
-          // Get user info for cleanup
-          const user = await storage.getUser(customerNumber);
-          
-          // Remove device sessions
-          if (user) {
-            const { removeDeviceSession } = await import('./deviceSessions');
-            removeDeviceSession(user.id.toString());
-          }
-          
-          // Invalidate all sessions for this customer
-          const { invalidateAllUserSessions } = await import('./sessionManager');
-          invalidateAllUserSessions(customerNumber);
-          
-          // Delete user from memory to keep tables in sync
-          await storage.deleteUser(customerNumber);
-        }
+        console.log(`🚨 NOTIFICATION VIOLATION: Customer ${customerNumber} (${customer.name}) attempted login without notifications - FLAGGED FOR REVIEW (account NOT deleted)`);
         
         res.json({ 
           success: true, 
-          message: "Account flagged and soft-deleted for notification violation",
-          flagged: true,
-          deleted: deleted
+          message: "Account flagged for review - notification violation",
+          flagged: true
         });
       } else {
         res.status(500).json({ success: false, message: "Failed to flag account" });
