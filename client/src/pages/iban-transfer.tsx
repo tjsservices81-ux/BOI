@@ -35,7 +35,7 @@ export default function IbanTransfer() {
   const [detectedCountry, setDetectedCountry] = useState<string | null>(null);
   const [isAccountDeleted, setIsAccountDeleted] = useState<boolean>(false);
   
-  // Check if account is deleted on mount
+  // Check if account is deleted (soft or permanent) on mount
   useEffect(() => {
     const checkAccountStatus = async () => {
       const customerNumber = UserDataManager.getCurrentUser();
@@ -48,12 +48,11 @@ export default function IbanTransfer() {
         
         if (response.status === 404 || response.status === 410) {
           setIsAccountDeleted(true);
-          alert('Account Deleted');
         } else {
           const data = await response.json();
+          // Block access if account doesn't exist OR is soft-deleted
           if (data.exists === false || data.isDeleted === true) {
             setIsAccountDeleted(true);
-            alert('Account Deleted');
           }
         }
       } catch (error) {

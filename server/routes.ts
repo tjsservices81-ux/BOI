@@ -3737,6 +3737,51 @@ setInterval(()=>{if(!refreshPaused)ld()},5000);
     }
   });
 
+  // API endpoint to check if a customer exists (and their deletion status)
+  app.get("/api/customers/:customerNumber/exists", async (req, res) => {
+    try {
+      const { customerNumber } = req.params;
+      
+      // Check for permanently deleted (customer record doesn't exist at all)
+      const customerIncludingDeleted = await storage.getCustomerByCustomerNumber(customerNumber, true);
+      
+      if (!customerIncludingDeleted) {
+        // Permanently deleted - no record exists
+        return res.status(410).json({
+          exists: false,
+          isDeleted: true,
+          permanentlyDeleted: true,
+          customerNumber
+        });
+      }
+      
+      // Check if soft-deleted
+      if (customerIncludingDeleted.isDeleted) {
+        return res.json({
+          exists: false,
+          isDeleted: true,
+          permanentlyDeleted: false,
+          customerNumber
+        });
+      }
+      
+      // Customer exists and is active
+      res.json({
+        exists: true,
+        isDeleted: false,
+        permanentlyDeleted: false,
+        customerNumber
+      });
+    } catch (error) {
+      console.error('Error checking customer existence:', error);
+      res.status(500).json({ 
+        exists: true, // Fail-safe: assume exists on error
+        isDeleted: false,
+        error: "Failed to check customer status" 
+      });
+    }
+  });
+
   // API endpoint to SOFT-DELETE a customer (safe, reversible)
   app.delete("/api/customers/:customerNumber", async (req, res) => {
     try {
