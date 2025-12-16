@@ -4028,23 +4028,6 @@
         "dateCreated": "2025-12-15T17:25:17.031Z",
         "isDisabled": false
       }
-    ],
-    [
-      451,
-      {
-        "id": 451,
-        "customerNumber": "97310252",
-        "pin": "",
-        "name": "Thomas Horton",
-        "email": "thomashorton2700@gmail.com",
-        "phone": "+447424923158",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "Member since 2018",
-        "currency": "EUR",
-        "dateCreated": "2025-12-16T13:02:22.555Z",
-        "isDisabled": false
-      }
     ]
   ],
   "accounts": [
