@@ -382,77 +382,28 @@ export default function TransactionHistoryWorking() {
   const handleDeleteTransaction = async () => {
     if (!selectedTransaction) return;
     
-    let newBalanceValue: string;
-    
     try {
-      // Get CURRENT balance from localStorage (not stale state)
-      const currentAccounts = UserDataManager.getUserAccounts();
-      const currentAccount = currentAccounts.find((acc: Account) => acc.id === accountId);
-      const freshBalance = parseFloat(currentAccount?.balance || balance || '0');
-      
-      console.log(`🗑️ Deleting transaction ${selectedTransaction.id}, current account balance: ${freshBalance}`);
-      
-      // Try to delete from server first
+      // Call backend API to delete transaction and update balance on server
       const response = await fetch(`/api/transactions/${selectedTransaction.id}`, {
         method: 'DELETE',
         credentials: 'include'
       });
       
-      if (response.ok) {
-        // Server deleted successfully - use server's calculated balance
-        const result = await response.json();
-        newBalanceValue = result.newBalance;
-        console.log(`🗑️ Server deleted transaction ${selectedTransaction.id}, new balance: ${newBalanceValue}`);
-      } else {
-        // Server couldn't find transaction (likely frontend-only with timestamp ID)
-        // Calculate balance adjustment locally
-        console.log(`⚠️ Transaction ${selectedTransaction.id} not in database, calculating balance locally`);
-        
-        // Parse the amount - strip all non-numeric characters except decimal and minus
-        const cleanAmount = selectedTransaction.amount.replace(/[^0-9.-]/g, '').replace(/^-/, '');
-        const transactionAmount = parseFloat(cleanAmount) || 0;
-        
-        // Determine if it was a debit (money out) or credit (money in)
-        const isDebit = selectedTransaction.amount.includes('-') || selectedTransaction.type === 'debit';
-        
-        if (isDebit) {
-          // Deleting a debit (money out) - add back to balance
-          newBalanceValue = (freshBalance + transactionAmount).toFixed(2);
-        } else {
-          // Deleting a credit (money in) - subtract from balance
-          newBalanceValue = (freshBalance - transactionAmount).toFixed(2);
-        }
-        
-        console.log(`💰 Local balance calc: amount="${selectedTransaction.amount}", parsed=${transactionAmount}, isDebit=${isDebit}, old=${freshBalance}, new=${newBalanceValue}`);
-        
-        // Update balance in database - MUST await and handle errors
-        console.log(`💾 Syncing new balance ${newBalanceValue} to database for account ${accountId}...`);
-        try {
-          const balanceResponse = await fetch(`/api/accounts/${accountId}/balance`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ balance: newBalanceValue })
-          });
-          
-          if (balanceResponse.ok) {
-            console.log(`✅ Database balance updated successfully to ${newBalanceValue}`);
-          } else {
-            const errorData = await balanceResponse.json().catch(() => ({}));
-            console.error(`❌ Failed to update database balance: ${balanceResponse.status}`, errorData);
-          }
-        } catch (dbError) {
-          console.error('❌ Database balance update failed:', dbError);
-        }
+      if (!response.ok) {
+        console.error('Failed to delete transaction on server');
+        return;
       }
       
-      // Update local state with new balance
-      setBalance(newBalanceValue);
+      const result = await response.json();
+      const serverNewBalance = result.newBalance;
       
-      // Update accounts in localStorage with the new balance
+      // Update local state with server-confirmed balance
+      setBalance(serverNewBalance);
+      
+      // Update accounts in localStorage with the server-confirmed balance
       const accounts = UserDataManager.getUserAccounts();
       const updatedAccounts = accounts.map((acc: Account) => 
-        acc.id === accountId ? { ...acc, balance: newBalanceValue } : acc
+        acc.id === accountId ? { ...acc, balance: serverNewBalance } : acc
       );
       UserDataManager.setUserData('bankAccounts', updatedAccounts);
       
@@ -473,16 +424,16 @@ export default function TransactionHistoryWorking() {
       setSelectedTransaction(null);
       setShowDeleteConfirm(false);
       
-      // Dispatch events to update other components with new balance
+      // Dispatch events to update other components with server-confirmed balance
       window.dispatchEvent(new CustomEvent('transactionDeleted', {
-        detail: { transactionId: selectedTransaction?.id, newBalance: newBalanceValue }
+        detail: { transactionId: selectedTransaction?.id, newBalance: serverNewBalance }
       }));
       window.dispatchEvent(new CustomEvent('balanceUpdate', {
-        detail: { accountId, newBalance: newBalanceValue, accounts: updatedAccounts }
+        detail: { accountId, newBalance: serverNewBalance, accounts: updatedAccounts }
       }));
       window.dispatchEvent(new CustomEvent('transactionUpdate'));
       
-      console.log(`🗑️ Transaction ${selectedTransaction.id} deleted, balance updated to ${newBalanceValue}`);
+      console.log(`🗑️ Transaction ${selectedTransaction.id} deleted, balance updated to ${serverNewBalance}`);
     } catch (error) {
       console.error('Error deleting transaction:', error);
     }

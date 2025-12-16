@@ -1355,24 +1355,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Calculate balance adjustment (reverse the transaction effect)
-      // Handle amounts that may contain currency symbols (e.g., "€ -250.00", "£100.50", "-50.00")
-      const cleanAmount = transaction.amount.replace(/[^0-9.-]/g, '').replace(/^-/, '');
-      const transactionAmount = parseFloat(cleanAmount) || 0;
+      const transactionAmount = parseFloat(transaction.amount.replace('+', '').replace('-', ''));
       const currentBalance = parseFloat(account.balance);
       let newBalance: number;
       
-      // Determine if the original transaction was negative (debit) or positive (credit)
-      const isDebit = transaction.amount.includes('-') || transaction.type === 'debit';
-      
-      if (isDebit) {
-        // If it was a debit (money out), add back to balance
-        newBalance = currentBalance + transactionAmount;
-      } else {
-        // If it was a credit (money in), subtract from balance
+      if (transaction.type === 'credit') {
+        // If it was a credit, subtract from balance
         newBalance = currentBalance - transactionAmount;
+      } else {
+        // If it was a debit, add back to balance
+        newBalance = currentBalance + transactionAmount;
       }
-      
-      console.log(`💰 Deleting transaction: amount="${transaction.amount}", parsed=${transactionAmount}, type=${transaction.type}, isDebit=${isDebit}, currentBalance=${currentBalance}, newBalance=${newBalance}`);
       
       // Delete the transaction
       const deleted = await storage.deleteTransaction(transactionId);
@@ -1645,8 +1638,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         amount, 
         reference, 
         recipientName,
-        transferType, // 'uk' or 'sepa'
-        alreadyDeducted // If true, sender already deducted - only credit recipient
+        transferType // 'uk' or 'sepa'
       } = req.body;
       
       // Validate required fields
@@ -1676,9 +1668,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "You don't own this account" });
       }
       
-      // Check sufficient funds (skip if already deducted by frontend)
+      // Check sufficient funds
       const senderBalance = parseFloat(senderAccount.balance);
-      if (!alreadyDeducted && numericAmount > senderBalance) {
+      if (numericAmount > senderBalance) {
         return res.status(400).json({ message: "Insufficient funds" });
       }
       
@@ -1739,31 +1731,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const senderName = senderUser?.name || 'Unknown';
         
         // Calculate new balances
-        const newSenderBalance = alreadyDeducted ? senderBalance.toFixed(2) : (senderBalance - numericAmount).toFixed(2);
+        const newSenderBalance = (senderBalance - numericAmount).toFixed(2);
         const newRecipientBalance = (recipientBalance + numericAmount).toFixed(2);
 
-        // Step 1: Create debit transaction (skip if already deducted by frontend)
-        if (!alreadyDeducted) {
-          console.log('💳 Creating debit transaction (sender)...');
-          debitTransaction = await storage.createTransaction({
-            accountId: fromAccountId,
-            amount: `-${numericAmount.toFixed(2)}`,
-            description: `Transfer to ${recipientFullName}`,
-            category: "transfer",
-            type: "debit",
-            paymentMethod: paymentMethod,
-            reference: transactionRef,
-            recipientName: recipientFullName,
-            recipientAccountNumber: recipientAccount.accountNumber,
-            recipientSortCode: recipientAccount.sortCode,
-            recipientIban: recipientAccount.iban,
-            timestamp: new Date()
-          });
-        } else {
-          console.log('⏭️ Skipping debit transaction (already deducted by frontend)');
-        }
+        // Step 1: Create debit transaction (no retry - not idempotent)
+        console.log('💳 Creating debit transaction (sender)...');
+        debitTransaction = await storage.createTransaction({
+          accountId: fromAccountId,
+          amount: `-${numericAmount.toFixed(2)}`,
+          description: `Transfer to ${recipientFullName}`,
+          category: "transfer",
+          type: "debit",
+          paymentMethod: paymentMethod,
+          reference: transactionRef,
+          recipientName: recipientFullName,
+          recipientAccountNumber: recipientAccount.accountNumber,
+          recipientSortCode: recipientAccount.sortCode,
+          recipientIban: recipientAccount.iban,
+          timestamp: new Date()
+        });
         
-        // Step 2: Create credit transaction (always do this - recipient needs funds)
+        // Step 2: Create credit transaction (no retry - not idempotent)
         console.log('💳 Creating credit transaction (recipient)...');
         creditTransaction = await storage.createTransaction({
           accountId: toAccountId,
@@ -1780,18 +1768,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           timestamp: new Date()
         });
         
-        // Step 3: Update sender balance (skip if already deducted by frontend)
-        if (!alreadyDeducted) {
-          console.log('💳 Updating sender balance...');
-          await withRetry(
-            () => storage.updateAccountBalance(fromAccountId, newSenderBalance),
-            { maxAttempts: 3, operationName: 'Update sender balance' }
-          );
-        } else {
-          console.log('⏭️ Skipping sender balance update (already updated by frontend)');
-        }
+        // Step 3: Update sender balance (with retry - idempotent)
+        console.log('💳 Updating sender balance...');
+        await withRetry(
+          () => storage.updateAccountBalance(fromAccountId, newSenderBalance),
+          { maxAttempts: 3, operationName: 'Update sender balance' }
+        );
         
-        // Step 4: Update recipient balance (always do this - recipient needs funds)
+        // Step 4: Update recipient balance (with retry - idempotent)
         console.log('💳 Updating recipient balance...');
         await withRetry(
           () => storage.updateAccountBalance(toAccountId, newRecipientBalance),

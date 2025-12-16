@@ -2993,6 +2993,23 @@
       }
     ],
     [
+      383,
+      {
+        "id": 383,
+        "customerNumber": "68095417",
+        "pin": "",
+        "name": "patrick murphey",
+        "email": "pmurphey678@gmail.com",
+        "phone": "0035387928463039",
+        "address": "11 swords Road dwords Dublin",
+        "dateOfBirth": null,
+        "joinDate": "2017-12-08T20:37:48.634Z",
+        "currency": "EUR",
+        "dateCreated": "2025-12-08T20:37:48.600Z",
+        "isDisabled": false
+      }
+    ],
+    [
       381,
       {
         "id": 381,
@@ -4052,32 +4069,15 @@
         "id": 456,
         "customerNumber": "25430048",
         "pin": "",
-        "name": "patrick murphey",
+        "name": "patrick murphey ",
         "email": "pmurphy572@gmail.com",
         "phone": "003538602847632",
-        "address": "25 ballymone Road ballymone Dublin Co Dublin",
-        "dateOfBirth": null,
-        "joinDate": "2016-12-16T14:08:58.519Z",
-        "currency": "EUR",
-        "dateCreated": "2025-12-16T14:08:58.489Z",
-        "isDisabled": false
-      }
-    ],
-    [
-      457,
-      {
-        "id": 457,
-        "customerNumber": "47316804",
-        "pin": "000000",
-        "name": "Dev",
-        "email": "dev@gmail.com",
-        "phone": "454545",
         "address": null,
         "dateOfBirth": null,
         "joinDate": "Member since 2018",
-        "dateCreated": "2025-12-16T14:10:22.155Z",
-        "isDisabled": false,
-        "currency": "EUR"
+        "currency": "EUR",
+        "dateCreated": "2025-12-16T14:08:58.489Z",
+        "isDisabled": false
       }
     ]
   ],
@@ -5912,7 +5912,7 @@
         "sortCode": "90-78-68",
         "bic": "BOFIIE2D",
         "iban": "IE54BOFI90786833598764",
-        "balance": "11850.00",
+        "balance": "12340.00",
         "displayName": "Current Account"
       }
     ],
@@ -6948,7 +6948,7 @@
         "sortCode": "90-78-68",
         "bic": "BOFIIE2D",
         "iban": "IE35BOFI90786898390838",
-        "balance": "1987.00",
+        "balance": "1994.00",
         "displayName": "Current Account"
       }
     ],
@@ -7747,62 +7747,6 @@
         "bic": "BOFIIE2D",
         "iban": "IE53BOFI90786897661881",
         "balance": "5000.00",
-        "displayName": "Credit Card"
-      }
-    ],
-    [
-      363,
-      {
-        "id": 363,
-        "userId": 456,
-        "accountType": "current",
-        "accountNumber": "47802678",
-        "sortCode": "90-78-68",
-        "bic": "BOFIIE2D",
-        "iban": "IE75BOFI90786847802678",
-        "balance": "0.00",
-        "displayName": "Current Account"
-      }
-    ],
-    [
-      364,
-      {
-        "id": 364,
-        "userId": 457,
-        "accountType": "current",
-        "accountNumber": "93317908",
-        "sortCode": "90-78-68",
-        "bic": "BOFIIE2D",
-        "iban": "IE04BOFI90786893317908",
-        "balance": "42.30",
-        "displayName": "Current Account"
-      }
-    ],
-    [
-      365,
-      {
-        "id": 365,
-        "userId": 457,
-        "accountType": "savings",
-        "accountNumber": "71968438",
-        "sortCode": "90-78-68",
-        "bic": "BOFIIE2D",
-        "iban": "IE24BOFI90786871968438",
-        "balance": "0.00",
-        "displayName": "Savings Account"
-      }
-    ],
-    [
-      366,
-      {
-        "id": 366,
-        "userId": 457,
-        "accountType": "credit",
-        "accountNumber": "70906317",
-        "sortCode": "90-78-68",
-        "bic": "BOFIIE2D",
-        "iban": "IE10BOFI90786870906317",
-        "balance": "0.00",
         "displayName": "Credit Card"
       }
     ]
@@ -20414,126 +20358,6 @@
         "timestamp": "2025-12-08T16:55:55.521Z",
         "isSample": false
       }
-    ],
-    [
-      10018,
-      {
-        "id": 10018,
-        "accountId": 364,
-        "amount": "-9.50",
-        "description": "Subway",
-        "category": "expense",
-        "type": "debit",
-        "paymentMethod": "Purchase",
-        "reference": null,
-        "recipientName": null,
-        "iban": null,
-        "bicCode": null,
-        "recipientAccountNumber": null,
-        "recipientSortCode": null,
-        "recipientIban": null,
-        "exchangeRate": null,
-        "convertedAmount": null,
-        "convertedCurrency": null,
-        "timestamp": "2025-11-21T05:15:00.000Z",
-        "isSample": false
-      }
-    ],
-    [
-      10019,
-      {
-        "id": 10019,
-        "accountId": 364,
-        "amount": "89.75",
-        "description": "DIVIDEND PAYMENT",
-        "category": "income",
-        "type": "credit",
-        "paymentMethod": "Deposit",
-        "reference": null,
-        "recipientName": null,
-        "iban": null,
-        "bicCode": null,
-        "recipientAccountNumber": null,
-        "recipientSortCode": null,
-        "recipientIban": null,
-        "exchangeRate": null,
-        "convertedAmount": null,
-        "convertedCurrency": null,
-        "timestamp": "2025-12-02T22:13:00.000Z",
-        "isSample": false
-      }
-    ],
-    [
-      10020,
-      {
-        "id": 10020,
-        "accountId": 364,
-        "amount": "-25.00",
-        "description": "Overdraft Fee",
-        "category": "expense",
-        "type": "debit",
-        "paymentMethod": "Purchase",
-        "reference": null,
-        "recipientName": null,
-        "iban": null,
-        "bicCode": null,
-        "recipientAccountNumber": null,
-        "recipientSortCode": null,
-        "recipientIban": null,
-        "exchangeRate": null,
-        "convertedAmount": null,
-        "convertedCurrency": null,
-        "timestamp": "2025-11-19T02:42:00.000Z",
-        "isSample": false
-      }
-    ],
-    [
-      10021,
-      {
-        "id": 10021,
-        "accountId": 364,
-        "amount": "-12.95",
-        "description": "Centra",
-        "category": "expense",
-        "type": "debit",
-        "paymentMethod": "Purchase",
-        "reference": null,
-        "recipientName": null,
-        "iban": null,
-        "bicCode": null,
-        "recipientAccountNumber": null,
-        "recipientSortCode": null,
-        "recipientIban": null,
-        "exchangeRate": null,
-        "convertedAmount": null,
-        "convertedCurrency": null,
-        "timestamp": "2025-12-01T22:45:00.000Z",
-        "isSample": false
-      }
-    ],
-    [
-      10022,
-      {
-        "id": 10022,
-        "accountId": 364,
-        "amount": "900.00",
-        "description": "RENTAL INCOME",
-        "category": "income",
-        "type": "credit",
-        "paymentMethod": "Deposit",
-        "reference": null,
-        "recipientName": null,
-        "iban": null,
-        "bicCode": null,
-        "recipientAccountNumber": null,
-        "recipientSortCode": null,
-        "recipientIban": null,
-        "exchangeRate": null,
-        "convertedAmount": null,
-        "convertedCurrency": null,
-        "timestamp": "2025-11-22T19:07:00.000Z",
-        "isSample": false
-      }
     ]
   ],
   "payees": [],
@@ -20543,9 +20367,9 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 458,
-    "currentAccountId": 367,
-    "currentTransactionId": 10023,
+    "currentUserId": 457,
+    "currentAccountId": 363,
+    "currentTransactionId": 3440,
     "currentPayeeId": 1,
     "currentScheduledPaymentId": 1,
     "currentStatementId": 1,
