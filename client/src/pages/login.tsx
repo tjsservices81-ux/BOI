@@ -511,6 +511,8 @@ export default function Login() {
         });
       }
       
+      // Clear cold start flag - user has successfully logged in
+      localStorage.removeItem('cold_start_active');
       navigate("/dashboard");
     } catch (error) {
       toast({
@@ -877,6 +879,9 @@ export default function Login() {
       // Wait a moment at 100% before navigating
       await new Promise(resolve => setTimeout(resolve, 300));
 
+      // Clear cold start flag - user has successfully logged in
+      localStorage.removeItem('cold_start_active');
+      
       // Authentication successful
       navigate("/dashboard");
     } catch (error) {

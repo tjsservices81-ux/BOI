@@ -184,22 +184,12 @@ function AppRoutes() {
           localStorage.removeItem('splash_completed');
           localStorage.removeItem('app_background_time');
           localStorage.setItem('app_session_active', 'true');
+          // Mark this as a cold start - user must go through login screen
+          localStorage.setItem('cold_start_active', 'true');
           
-          // Restore user session silently in background (permanent login)
-          // Let auth context handle user initialization to prevent race conditions
-          try {
-            const savedState = StateManager.restoreAppState(true);
-            if (savedState && savedState.user && !user && !isLoading) {
-              // Delay to let auth context complete initialization first
-              setTimeout(() => {
-                if (!user) {
-                  login(savedState.user);
-                }
-              }, 200);
-            }
-          } catch (error) {
-            console.error('Failed to restore user session:', error);
-          }
+          // DO NOT restore user session on cold start
+          // User will be authenticated through login screen
+          // This prevents the dashboard bounce-back issue
           
         } else if (startType === 'warm') {
           // WARM START: App was backgrounded - restore exactly where user left off
@@ -433,13 +423,19 @@ function AppRoutes() {
                 // Proper cold/warm start detection for root route
                 const appSessionActive = localStorage.getItem('app_session_active');
                 const splashCompleted = localStorage.getItem('splash_completed');
+                const coldStartActive = localStorage.getItem('cold_start_active');
                 
                 // Force splash for cold starts (no active session or incomplete splash)
                 if (!appSessionActive || (!splashShown && !splashCompleted)) {
                   return <Splash />;
                 }
                 
-                // For warm starts with user authenticated, go directly to dashboard
+                // COLD START: Always go to login screen after splash (no dashboard redirect)
+                if (coldStartActive) {
+                  return <Login />;
+                }
+                
+                // WARM START ONLY: Go directly to dashboard if user is authenticated
                 if (user && splashCompleted) {
                   return <Redirect to="/dashboard" />;
                 }
