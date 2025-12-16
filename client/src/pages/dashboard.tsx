@@ -16,6 +16,27 @@ interface Account {
   accountType: string;
 }
 
+// Account type priority for sorting (current account always at top)
+const getAccountTypePriority = (type: string): number => {
+  const lowerType = (type || '').toLowerCase();
+  if (lowerType === 'current' || lowerType.includes('current')) return 0;
+  if (lowerType === 'savings' || lowerType.includes('savings')) return 1;
+  if (lowerType === 'credit' || lowerType.includes('credit')) return 2;
+  return 3; // Other accounts
+};
+
+// Sort accounts: current first, then savings, then credit, then others
+const sortAccountsForDisplay = (accountsList: any[]): any[] => {
+  if (!Array.isArray(accountsList)) return [];
+  return [...accountsList].sort((a, b) => {
+    const priorityA = getAccountTypePriority(a.accountType);
+    const priorityB = getAccountTypePriority(b.accountType);
+    if (priorityA !== priorityB) return priorityA - priorityB;
+    // If same type, sort by display name
+    return (a.displayName || '').localeCompare(b.displayName || '');
+  });
+};
+
 export default function Dashboard() {
   const [, setLocation] = useLocation();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -93,13 +114,14 @@ export default function Dashboard() {
       return;
     }
     
-    // First try to load cached accounts from localStorage
+    // First try to load cached accounts from localStorage (already sorted if saved properly)
     let storedAccounts = UserDataManager.getUserData('bankAccounts', []);
     if (storedAccounts && storedAccounts.length > 0) {
-      setAccounts(storedAccounts);
+      // Always sort when loading from cache to ensure correct order
+      setAccounts(sortAccountsForDisplay(storedAccounts));
     }
-    
-    // Fetch real accounts from server API
+
+    // Fetch real accounts from server API (server is source of truth for balance)
     fetch('/api/accounts', { credentials: 'include' })
       .then(res => {
         if (res.ok) return res.json();
@@ -114,7 +136,7 @@ export default function Dashboard() {
             accountNumber: acc.accountNumber?.startsWith('****') 
               ? acc.accountNumber 
               : `~ ${acc.accountNumber?.slice(-4) || '0000'}`,
-            balance: acc.balance || '0.00',
+            balance: acc.balance || '0.00', // Server balance is source of truth
             accountType: acc.accountType || acc.account_type || 'current',
             sortCode: acc.sortCode || acc.sort_code || '90-78-68',
             bic: acc.bic || 'BOFIIE2D',
@@ -122,15 +144,21 @@ export default function Dashboard() {
             fullAccountNumber: acc.accountNumber || acc.account_number
           }));
           
-          // Store formatted accounts locally for offline access
-          UserDataManager.setUserData('bankAccounts', formattedAccounts);
-          setAccounts(formattedAccounts);
-          console.log('💳 Loaded accounts from server:', formattedAccounts.length, formattedAccounts);
+          // Sort accounts with current account at top
+          const sortedAccounts = sortAccountsForDisplay(formattedAccounts);
+          
+          // Store sorted accounts locally for offline access (server is source of truth)
+          UserDataManager.setUserData('bankAccounts', sortedAccounts);
+          setAccounts(sortedAccounts);
+          console.log('💳 Loaded accounts from server (sorted):', sortedAccounts.length, sortedAccounts);
         }
       })
       .catch(err => {
         console.log('Using cached accounts:', err.message);
-        // Keep using cached accounts if server fetch fails
+        // Keep using cached accounts if server fetch fails, but ensure they're sorted
+        if (storedAccounts && storedAccounts.length > 0) {
+          setAccounts(sortAccountsForDisplay(storedAccounts));
+        }
       });
     
     // Initialize empty transactions array if needed
@@ -261,20 +289,20 @@ export default function Dashboard() {
     const handleBalanceUpdate = (event: CustomEvent) => {
       const { accountId, newBalance, accounts: updatedAccounts } = event.detail || {};
       
-      // If updated accounts are provided in the event, use them
+      // If updated accounts are provided in the event, use them (already sorted from source)
       if (updatedAccounts) {
-        setAccounts(updatedAccounts);
+        setAccounts(sortAccountsForDisplay(updatedAccounts));
       } else {
         // Otherwise, refresh from UserDataManager to get latest data
         UserDataManager.clearCache('bankAccounts');
         const freshAccounts = UserDataManager.getUserData('bankAccounts', []);
         if (Array.isArray(freshAccounts) && freshAccounts.length > 0) {
-          setAccounts(freshAccounts);
+          setAccounts(sortAccountsForDisplay(freshAccounts));
         } else {
-          // Fallback to updating individual account
-          setAccounts(prev => prev.map(acc => 
+          // Fallback to updating individual account (preserve current sort order)
+          setAccounts(prev => sortAccountsForDisplay(prev.map(acc => 
             acc.id === accountId ? { ...acc, balance: newBalance } : acc
-          ));
+          )));
         }
       }
     };
@@ -300,7 +328,7 @@ export default function Dashboard() {
             
             // Refresh accounts if they may have changed
             const updatedAccounts = UserDataManager.getUserData('bankAccounts', accounts);
-            setAccounts(updatedAccounts);
+            setAccounts(sortAccountsForDisplay(updatedAccounts));
           }
         } catch (error) {
           console.error('Failed to refresh profile data:', error);
@@ -310,7 +338,7 @@ export default function Dashboard() {
 
     const handleAccountsReset = (event: any) => {
       if (event.detail?.accounts) {
-        setAccounts(event.detail.accounts);
+        setAccounts(sortAccountsForDisplay(event.detail.accounts));
         UserDataManager.clearCache();
       }
     };
@@ -323,10 +351,11 @@ export default function Dashboard() {
       if (updatedAccounts) {
         // Clear cache and force fresh data
         UserDataManager.clearCache('bankAccounts');
-        setAccounts(updatedAccounts);
+        const sortedAccounts = sortAccountsForDisplay(updatedAccounts);
+        setAccounts(sortedAccounts);
         
         // Also update localStorage for immediate access by other components
-        localStorage.setItem('bankAccounts', JSON.stringify(updatedAccounts));
+        localStorage.setItem('bankAccounts', JSON.stringify(sortedAccounts));
       }
     };
 
@@ -339,12 +368,12 @@ export default function Dashboard() {
       
       // Update accounts if provided
       if (updatedAccounts) {
-        setAccounts(updatedAccounts);
+        setAccounts(sortAccountsForDisplay(updatedAccounts));
       } else {
         // Refresh accounts from storage
         const freshAccounts = UserDataManager.getUserData('bankAccounts', []);
         if (Array.isArray(freshAccounts) && freshAccounts.length > 0) {
-          setAccounts(freshAccounts);
+          setAccounts(sortAccountsForDisplay(freshAccounts));
         }
       }
     };
@@ -354,7 +383,7 @@ export default function Dashboard() {
       UserDataManager.clearCache();
       const freshAccounts = UserDataManager.getUserData('bankAccounts', []);
       if (Array.isArray(freshAccounts) && freshAccounts.length > 0) {
-        setAccounts(freshAccounts);
+        setAccounts(sortAccountsForDisplay(freshAccounts));
       }
     };
 

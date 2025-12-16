@@ -6483,7 +6483,7 @@
         "sortCode": "90-78-68",
         "bic": "BOFIIE2D",
         "iban": "IE18BOFI90786882134599",
-        "balance": "11150.00",
+        "balance": "10150.00",
         "displayName": "Funds"
       }
     ],
@@ -20350,8 +20350,8 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 455,
-    "currentAccountId": 362,
+    "currentUserId": 456,
+    "currentAccountId": 363,
     "currentTransactionId": 3440,
     "currentPayeeId": 1,
     "currentScheduledPaymentId": 1,
