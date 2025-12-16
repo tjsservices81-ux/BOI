@@ -433,14 +433,24 @@ function AppRoutes() {
                 // Proper cold/warm start detection for root route
                 const appSessionActive = localStorage.getItem('app_session_active');
                 const splashCompleted = localStorage.getItem('splash_completed');
+                const isColdStartRoute = localStorage.getItem('cold_start_login_required');
                 
                 // Force splash for cold starts (no active session or incomplete splash)
                 if (!appSessionActive || (!splashShown && !splashCompleted)) {
+                  // Mark that cold start requires login check
+                  localStorage.setItem('cold_start_login_required', 'true');
                   return <Splash />;
                 }
                 
-                // For warm starts with user authenticated, go directly to dashboard
-                if (user && splashCompleted) {
+                // COLD START: After splash, always go to login first (never dashboard)
+                // This prevents the "dashboard bounce" effect
+                if (isColdStartRoute) {
+                  localStorage.removeItem('cold_start_login_required');
+                  return <Login />;
+                }
+                
+                // WARM START ONLY: If user authenticated and splash completed, go to dashboard
+                if (user && splashCompleted && !isColdStartRoute) {
                   return <Redirect to="/dashboard" />;
                 }
                 

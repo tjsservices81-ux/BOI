@@ -66,12 +66,22 @@ export default function Login() {
   const authHook = useAuth();
   const login = authHook?.login || (() => {});
   const isLoading = authHook?.isLoading || false;
+  const user = authHook?.user || null;
   
   const locationHook = useLocation();
   const [, navigate] = locationHook || [null, () => {}];
   const [validatedUsers, setValidatedUsers] = useState<any>({});
   
   const toast = (_options?: any) => {}; // No-op function to replace all toast notifications
+
+  // Auto-redirect authenticated users to dashboard
+  // This handles the case where user is already logged in after cold start
+  useEffect(() => {
+    if (!isLoading && user) {
+      // User is authenticated - redirect to dashboard
+      navigate('/dashboard');
+    }
+  }, [isLoading, user, navigate]);
 
   // Listen for Face ID setting changes
   useEffect(() => {
