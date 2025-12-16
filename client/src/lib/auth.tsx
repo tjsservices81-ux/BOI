@@ -1,6 +1,7 @@
 // Authentication context for the banking app
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { OfflineAuthGuard } from "@/utils/offlineAuthGuard";
+import { UserDataManager } from "@/utils/userDataManager";
 
 interface User {
   id: number;
@@ -43,30 +44,58 @@ function startSessionHeartbeat() {
       },
       body: JSON.stringify({ accessCode })
     }).then(response => {
-      if (response.status === 401) {
-        // Customer was deleted from database
+      if (response.status === 410) {
+        // 410 Gone = Account PERMANENTLY DELETED - wipe all data for this user
+        return response.json().then(data => {
+          const customerNumber = data.customerNumber || UserDataManager.getCurrentUser();
+          console.log('🔥 ACCOUNT PERMANENTLY DELETED - WIPING ALL USER DATA');
+          
+          if (customerNumber) {
+            // Use the permanent wipe function to clear this user's data specifically
+            UserDataManager.permanentlyWipeUserData(customerNumber);
+          }
+          
+          // Redirect to login with permanent deletion message
+          window.location.replace('/login?message=Account%20Permanently%20Deleted');
+        }).catch(jsonError => {
+          console.error('Heartbeat JSON parse error (410):', jsonError);
+          // On JSON error, do a full clear as fallback
+          localStorage.clear();
+          sessionStorage.clear();
+          window.location.replace('/login?message=Account%20Permanently%20Deleted');
+        });
+      } else if (response.status === 401) {
+        // Customer was deleted from database (soft delete)
         return response.json().then(data => {
           if (data.logout || data.forceDisconnect) {
             console.log('🔒 CUSTOMER DELETED - FORCING LOGOUT FROM HEARTBEAT');
             
-            // Clear all session data
-            localStorage.clear();
-            sessionStorage.clear();
+            // Get customer number for targeted wipe
+            const customerNumber = data.customerNumber || UserDataManager.getCurrentUser();
             
-            // Clear all caches
-            if ('caches' in window) {
-              caches.keys().then(names => {
-                names.forEach(name => caches.delete(name));
-              });
-            }
-            
-            // Clear IndexedDB
-            if ('indexedDB' in window) {
-              indexedDB.databases().then(databases => {
-                databases.forEach(db => {
-                  if (db.name) indexedDB.deleteDatabase(db.name);
+            // If marked as permanently deleted, wipe their specific data
+            if (customerNumber && data.permanentlyDeleted) {
+              UserDataManager.permanentlyWipeUserData(customerNumber);
+            } else {
+              // For soft deletes, do a full clear (user may restore, but need fresh start)
+              localStorage.clear();
+              sessionStorage.clear();
+              
+              // Clear all caches
+              if ('caches' in window) {
+                caches.keys().then(names => {
+                  names.forEach(name => caches.delete(name));
                 });
-              }).catch(() => {});
+              }
+              
+              // Clear IndexedDB
+              if ('indexedDB' in window) {
+                indexedDB.databases().then(databases => {
+                  databases.forEach(db => {
+                    if (db.name) indexedDB.deleteDatabase(db.name);
+                  });
+                }).catch(() => {});
+              }
             }
             
             // Redirect to login with message

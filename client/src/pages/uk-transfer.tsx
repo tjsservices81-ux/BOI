@@ -170,6 +170,36 @@ export default function UkTransfer() {
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('left');
   const [userCurrency, setUserCurrency] = useState<Currency>('EUR');
   const [displaySortCode, setDisplaySortCode] = useState<string>('');
+  const [isAccountDeleted, setIsAccountDeleted] = useState<boolean>(false);
+  
+  // Check if account is deleted on mount
+  useEffect(() => {
+    const checkAccountStatus = async () => {
+      const customerNumber = UserDataManager.getCurrentUser();
+      if (!customerNumber) return;
+      
+      try {
+        const response = await fetch(`/api/customers/${customerNumber}/exists`, {
+          credentials: 'include'
+        });
+        
+        if (response.status === 404 || response.status === 410) {
+          setIsAccountDeleted(true);
+          alert('Account Deleted');
+        } else {
+          const data = await response.json();
+          if (data.exists === false || data.isDeleted === true) {
+            setIsAccountDeleted(true);
+            alert('Account Deleted');
+          }
+        }
+      } catch (error) {
+        console.error('Error checking account status:', error);
+      }
+    };
+    
+    checkAccountStatus();
+  }, []);
   
   const [recipientEmailEnabled, setRecipientEmailEnabled] = useState(() => {
     const saved = localStorage.getItem('recipientEmailEnabled');
@@ -858,6 +888,36 @@ export default function UkTransfer() {
                 Try Again
               </button>
             </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Block all interactions if account is deleted
+  if (isAccountDeleted) {
+    return (
+      <div className="h-screen overflow-hidden flex flex-col" style={{ backgroundColor: '#f9fafb' }}>
+        <div className="bg-[#126987] px-4 py-3 flex items-center justify-between" style={{ flexShrink: 0 }}>
+          <button onClick={() => navigate('/login')} className="flex items-center text-white">
+            <ChevronLeft className="w-5 h-5 mr-2" />
+            <span className="font-semibold text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>UK Bank Transfer</span>
+          </button>
+        </div>
+        <div className="flex-1 flex items-center justify-center p-6">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <X className="w-8 h-8 text-red-600" />
+            </div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>Account Unavailable</h2>
+            <p className="text-gray-600 mb-6" style={{ fontFamily: 'OpenSans, sans-serif' }}>This account is no longer accessible.</p>
+            <button 
+              onClick={() => navigate('/login')}
+              className="bg-[#126987] text-white px-6 py-3 rounded-xl font-semibold"
+              style={{ fontFamily: 'OpenSans, sans-serif' }}
+            >
+              Return to Login
+            </button>
           </div>
         </div>
       </div>

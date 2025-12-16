@@ -304,18 +304,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
             try {
               const customerExists = await checkCustomerExists(user.customerNumber);
               if (!customerExists) {
-                console.log(`🔒 CUSTOMER DELETED - FORCING LOGOUT VIA HEARTBEAT: ${user.customerNumber}`);
+                // Check if customer was permanently deleted (not just soft-deleted)
+                const customerInDb = await storage.getCustomerByCustomerNumber(user.customerNumber, true);
+                const isPermanentlyDeleted = !customerInDb;
+                
+                console.log(`🔒 CUSTOMER DELETED - FORCING LOGOUT VIA HEARTBEAT: ${user.customerNumber} (permanent: ${isPermanentlyDeleted})`);
                 
                 // Destroy session and force logout
                 return new Promise((resolve) => {
                   req.session.destroy((err) => {
                     if (err) console.error('Session destruction error:', err);
-                    res.status(401).json({ 
-                      status: "customer_deleted",
-                      message: "Account access has been revoked",
+                    
+                    // Use 410 Gone for permanent deletion, 401 for soft deletion
+                    const statusCode = isPermanentlyDeleted ? 410 : 401;
+                    
+                    res.status(statusCode).json({ 
+                      status: isPermanentlyDeleted ? "customer_permanently_deleted" : "customer_deleted",
+                      message: isPermanentlyDeleted ? "Account has been permanently deleted" : "Account access has been revoked",
+                      customerNumber: user.customerNumber,
                       logout: true,
                       forceDisconnect: true,
-                      clearStorage: true
+                      clearStorage: true,
+                      permanentlyDeleted: isPermanentlyDeleted
                     });
                     resolve(undefined);
                   });

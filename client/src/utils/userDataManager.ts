@@ -411,6 +411,80 @@ export class UserDataManager {
     console.log(`Admin authorized: User ${customerNumber} removed`);
   }
 
+  // Completely wipe all data for a permanently deleted user
+  static permanentlyWipeUserData(customerNumber: string) {
+    // Guard for browser environment
+    if (typeof window === 'undefined') return;
+    
+    console.log(`🔥 PERMANENTLY WIPING DATA FOR USER: ${customerNumber}`);
+    
+    try {
+      // Remove from users list
+      const allUsers = this.getAllUsers();
+      delete allUsers[customerNumber];
+      localStorage.setItem('bankUsers', JSON.stringify(allUsers));
+      
+      // Clear ALL localStorage keys related to this user
+      const keys = Object.keys(localStorage);
+      keys.forEach(key => {
+        if (
+          key.startsWith(`user_${customerNumber}_`) ||
+          key.includes(customerNumber) ||
+          key.startsWith(`lastLogin_${customerNumber}`)
+        ) {
+          localStorage.removeItem(key);
+        }
+      });
+      
+      // Clear current user if it's the deleted one
+      if (this.currentUser === customerNumber || localStorage.getItem('currentUser') === customerNumber) {
+        this.currentUser = null;
+        localStorage.removeItem('currentUser');
+        localStorage.removeItem('lastActiveUser');
+      }
+      
+      // Clear session storage
+      if (typeof sessionStorage !== 'undefined') {
+        const sessionKeys = Object.keys(sessionStorage);
+        sessionKeys.forEach(key => {
+          if (key.includes(customerNumber)) {
+            sessionStorage.removeItem(key);
+          }
+        });
+      }
+      
+      // Clear IndexedDB data for this user
+      if (typeof indexedDB !== 'undefined' && 'databases' in indexedDB) {
+        indexedDB.databases().then(databases => {
+          databases.forEach(db => {
+            if (db.name && (db.name.includes(customerNumber) || db.name.includes('bankingApp'))) {
+              indexedDB.deleteDatabase(db.name);
+            }
+          });
+        }).catch(() => {});
+      }
+      
+      // Clear caches
+      if (typeof caches !== 'undefined') {
+        caches.keys().then(names => {
+          names.forEach(name => {
+            if (name.includes(customerNumber) || name.includes('boi-mobile')) {
+              caches.delete(name);
+            }
+          });
+        }).catch(() => {});
+      }
+      
+      // Clear in-memory cache
+      this.dataCache.clear();
+      this.cacheTimestamps.clear();
+      
+      console.log(`🔥 User ${customerNumber} data completely wiped`);
+    } catch (e) {
+      console.error('Error during permanent wipe:', e);
+    }
+  }
+
   // Clear temporary state for cold launch - PROTECTED
   static clearTemporaryState() {
     // Preserve cache in localStorage before clearing in-memory
