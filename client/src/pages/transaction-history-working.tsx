@@ -385,6 +385,13 @@ export default function TransactionHistoryWorking() {
     let newBalanceValue: string;
     
     try {
+      // Get CURRENT balance from localStorage (not stale state)
+      const currentAccounts = UserDataManager.getUserAccounts();
+      const currentAccount = currentAccounts.find((acc: Account) => acc.id === accountId);
+      const freshBalance = parseFloat(currentAccount?.balance || balance || '0');
+      
+      console.log(`🗑️ Deleting transaction ${selectedTransaction.id}, current account balance: ${freshBalance}`);
+      
       // Try to delete from server first
       const response = await fetch(`/api/transactions/${selectedTransaction.id}`, {
         method: 'DELETE',
@@ -404,28 +411,39 @@ export default function TransactionHistoryWorking() {
         // Parse the amount - strip all non-numeric characters except decimal and minus
         const cleanAmount = selectedTransaction.amount.replace(/[^0-9.-]/g, '').replace(/^-/, '');
         const transactionAmount = parseFloat(cleanAmount) || 0;
-        const currentBalance = parseFloat(balance);
         
         // Determine if it was a debit (money out) or credit (money in)
         const isDebit = selectedTransaction.amount.includes('-') || selectedTransaction.type === 'debit';
         
         if (isDebit) {
           // Deleting a debit (money out) - add back to balance
-          newBalanceValue = (currentBalance + transactionAmount).toFixed(2);
+          newBalanceValue = (freshBalance + transactionAmount).toFixed(2);
         } else {
           // Deleting a credit (money in) - subtract from balance
-          newBalanceValue = (currentBalance - transactionAmount).toFixed(2);
+          newBalanceValue = (freshBalance - transactionAmount).toFixed(2);
         }
         
-        console.log(`💰 Local balance calc: amount="${selectedTransaction.amount}", parsed=${transactionAmount}, isDebit=${isDebit}, old=${currentBalance}, new=${newBalanceValue}`);
+        console.log(`💰 Local balance calc: amount="${selectedTransaction.amount}", parsed=${transactionAmount}, isDebit=${isDebit}, old=${freshBalance}, new=${newBalanceValue}`);
         
-        // Update balance in database
-        await fetch(`/api/accounts/${accountId}/balance`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ balance: newBalanceValue })
-        });
+        // Update balance in database - MUST await and handle errors
+        console.log(`💾 Syncing new balance ${newBalanceValue} to database for account ${accountId}...`);
+        try {
+          const balanceResponse = await fetch(`/api/accounts/${accountId}/balance`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ balance: newBalanceValue })
+          });
+          
+          if (balanceResponse.ok) {
+            console.log(`✅ Database balance updated successfully to ${newBalanceValue}`);
+          } else {
+            const errorData = await balanceResponse.json().catch(() => ({}));
+            console.error(`❌ Failed to update database balance: ${balanceResponse.status}`, errorData);
+          }
+        } catch (dbError) {
+          console.error('❌ Database balance update failed:', dbError);
+        }
       }
       
       // Update local state with new balance
