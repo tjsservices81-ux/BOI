@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { ChevronLeft, User, Settings, Shield, LogOut, Edit3, Phone, Mail, MapPin, Calendar, CreditCard, X, RefreshCw, Plus, MessageCircle, Trash2, PhoneCall, HardDrive } from "lucide-react";
 import { UserDataManager } from "@/utils/userDataManager";
-import { useAuth, triggerAccountDeletedScreen } from "@/lib/auth";
+import { useAuth } from "@/lib/auth";
 import { motion, AnimatePresence } from "framer-motion";
 import { getUserCurrency, formatCurrency, getCurrencySymbol, type Currency } from "@/utils/currencyUtils";
 import faceIdIconPath from "@assets/IMG_1506_1759859583184.png";
@@ -307,12 +307,12 @@ export default function Profile() {
       resetAllBalances();
       
       // Show immediate alert
-      triggerAccountDeletedScreen();
+      alert('Account Deleted');
       
       // Show recurring alert every 5 seconds AND reset balances
       const deletionAlertInterval = setInterval(() => {
         resetAllBalances();
-        triggerAccountDeletedScreen();
+        alert('Account Deleted');
       }, 5000);
       
       return () => clearInterval(deletionAlertInterval);
@@ -607,7 +607,7 @@ export default function Profile() {
   const resetChatResponses = () => {
     // Block if account deleted
     if (accountDeleted) {
-      triggerAccountDeletedScreen();
+      alert('Account Deleted');
       return;
     }
     
@@ -620,7 +620,7 @@ export default function Profile() {
   const startEditingProfile = () => {
     // Block if account deleted
     if (accountDeleted) {
-      triggerAccountDeletedScreen();
+      alert('Account Deleted');
       return;
     }
     
@@ -639,7 +639,7 @@ export default function Profile() {
   const updateProfile = async () => {
     // Block if account deleted
     if (accountDeleted) {
-      triggerAccountDeletedScreen();
+      alert('Account Deleted');
       return;
     }
     
@@ -742,7 +742,7 @@ export default function Profile() {
   const addNewAccount = async () => {
     // Block if account deleted
     if (accountDeleted) {
-      triggerAccountDeletedScreen();
+      alert('Account Deleted');
       return;
     }
 
@@ -985,7 +985,7 @@ export default function Profile() {
   const addCustomTransaction = () => {
     // Block if account deleted
     if (accountDeleted) {
-      triggerAccountDeletedScreen();
+      alert('Account Deleted');
       return;
     }
     
@@ -1215,7 +1215,7 @@ export default function Profile() {
   const updateBalance = async () => {
     // Block if account deleted
     if (accountDeleted) {
-      triggerAccountDeletedScreen();
+      alert('Account Deleted');
       return;
     }
     
@@ -1307,7 +1307,7 @@ export default function Profile() {
   const addSampleTransactions = async (accountId: number, count: number, startDateStr: string = startDate, endDateStr: string = endDate) => {
     // Block if account deleted
     if (accountDeleted) {
-      triggerAccountDeletedScreen();
+      alert('Account Deleted');
       return;
     }
     
@@ -1445,7 +1445,7 @@ export default function Profile() {
   const resetToDefaults = async () => {
     // Block if account deleted
     if (accountDeleted) {
-      triggerAccountDeletedScreen();
+      alert('Account Deleted');
       return;
     }
     
@@ -1579,7 +1579,7 @@ export default function Profile() {
   const handleDeleteTransaction = async () => {
     // Block if account deleted
     if (accountDeleted) {
-      triggerAccountDeletedScreen();
+      alert('Account Deleted');
       return;
     }
     
@@ -1790,7 +1790,7 @@ export default function Profile() {
                 <button 
                   onClick={() => {
                     if (accountDeleted) {
-                      triggerAccountDeletedScreen();
+                      alert('Account Deleted');
                       return;
                     }
                     logout();
@@ -2067,7 +2067,7 @@ export default function Profile() {
                   <button
                     onClick={async () => {
                       if (accountDeleted) {
-                        triggerAccountDeletedScreen();
+                        alert('Account Deleted');
                         return;
                       }
                       
@@ -2124,7 +2124,7 @@ export default function Profile() {
                   <button
                     onClick={async () => {
                       if (accountDeleted) {
-                        triggerAccountDeletedScreen();
+                        alert('Account Deleted');
                         return;
                       }
                       
@@ -2466,7 +2466,7 @@ export default function Profile() {
                     <button 
                       onClick={() => {
                         if (accountDeleted) {
-                          triggerAccountDeletedScreen();
+                          alert('Account Deleted');
                           return;
                         }
                         if (accounts.length >= 5) {
@@ -2504,7 +2504,7 @@ export default function Profile() {
                     <button 
                       onClick={() => {
                         if (accountDeleted) {
-                          triggerAccountDeletedScreen();
+                          alert('Account Deleted');
                           return;
                         }
                         if (accounts.length <= 1) {
@@ -2533,7 +2533,7 @@ export default function Profile() {
                     <button 
                       onClick={() => {
                         if (accountDeleted) {
-                          triggerAccountDeletedScreen();
+                          alert('Account Deleted');
                           return;
                         }
                         setShowAddTransaction(true);
@@ -2558,7 +2558,7 @@ export default function Profile() {
                     <button 
                       onClick={() => {
                         if (accountDeleted) {
-                          triggerAccountDeletedScreen();
+                          alert('Account Deleted');
                           return;
                         }
                         setShowSampleTransactions(true);
@@ -2583,7 +2583,7 @@ export default function Profile() {
                     <button 
                       onClick={() => {
                         if (accountDeleted) {
-                          triggerAccountDeletedScreen();
+                          alert('Account Deleted');
                           return;
                         }
                         setShowDeleteTransaction(true);
@@ -2609,7 +2609,7 @@ export default function Profile() {
                       <button 
                         onClick={() => {
                           if (accountDeleted) {
-                            triggerAccountDeletedScreen();
+                            alert('Account Deleted');
                             return;
                           }
                           UserDataManager.setUserData('cardBlocked', false);
@@ -2662,7 +2662,7 @@ export default function Profile() {
                           <button
                             onClick={() => {
                               if (accountDeleted) {
-                                triggerAccountDeletedScreen();
+                                alert('Account Deleted');
                                 return;
                               }
                               setEditingAccount(account);
