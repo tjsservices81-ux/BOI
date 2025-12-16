@@ -17,6 +17,7 @@ export default function Login() {
   const [customerNumber, setCustomerNumber] = useState("");
   const [pin, setPin] = useState("");
   const [isNavigating, setIsNavigating] = useState(false);
+  const [isTransitioningOut, setIsTransitioningOut] = useState(false);
   const [showPinLogin, setShowPinLogin] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [biometricVerified, setBiometricVerified] = useState(false);
@@ -72,6 +73,14 @@ export default function Login() {
   const [validatedUsers, setValidatedUsers] = useState<any>({});
   
   const toast = (_options?: any) => {}; // No-op function to replace all toast notifications
+
+  // Animated navigation to dashboard with slide transition
+  const navigateToDashboard = () => {
+    setIsTransitioningOut(true);
+    setTimeout(() => {
+      navigate('/dashboard');
+    }, 300);
+  };
 
   // Listen for Face ID setting changes
   useEffect(() => {
@@ -511,7 +520,7 @@ export default function Login() {
         });
       }
       
-      navigate("/dashboard");
+      navigateToDashboard();
     } catch (error) {
       toast({
         title: "Login Failed",
@@ -877,8 +886,8 @@ export default function Login() {
       // Wait a moment at 100% before navigating
       await new Promise(resolve => setTimeout(resolve, 300));
 
-      // Authentication successful
-      navigate("/dashboard");
+      // Authentication successful - navigate with animation
+      navigateToDashboard();
     } catch (error) {
       // Reset animation state immediately
       setIsLoginAnimating(false);
@@ -993,8 +1002,8 @@ export default function Login() {
           description: "Welcome back to Bank of Ireland",
         });
         
-        // Navigate to dashboard after verification
-        navigate('/dashboard');
+        // Navigate to dashboard after verification with animation
+        navigateToDashboard();
       } else {
         // PIN verification failed
         toast({
@@ -1279,7 +1288,7 @@ export default function Login() {
   };
 
   return (
-    <div className="full-height relative ios-safe-top ios-safe-bottom ios-safe-left ios-safe-right page-fade-in">
+    <div className={`full-height relative ios-safe-top ios-safe-bottom ios-safe-left ios-safe-right page-fade-in transition-all duration-300 ${isTransitioningOut ? 'opacity-0 -translate-x-full' : 'opacity-100 translate-x-0'}`}>
       {/* Loading overlay */}
       {(isNavigating || isLoginAnimating) && (
         <div className="fixed inset-0 bg-gradient-to-br from-[#126987] to-[#2d5a6b] z-50 flex flex-col items-center justify-center">
