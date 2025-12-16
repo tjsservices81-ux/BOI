@@ -22,6 +22,18 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // Callback to set account deleted state from heartbeat
 let setAccountDeletedCallback: ((deleted: boolean) => void) | null = null;
 
+// Global function to trigger account deleted screen from anywhere
+export function triggerAccountDeletedScreen() {
+  if (setAccountDeletedCallback) {
+    setAccountDeletedCallback(true);
+  }
+}
+
+// Make it available globally for non-React code
+if (typeof window !== 'undefined') {
+  (window as any).triggerAccountDeletedScreen = triggerAccountDeletedScreen;
+}
+
 // Session heartbeat to maintain activity
 let heartbeatInterval: NodeJS.Timeout | null = null;
 
@@ -141,7 +153,7 @@ function startSessionHeartbeat() {
         console.log('💾 User data backed up - staying logged in offline');
       }
     });
-  }, 15000); // Every 15 seconds for faster PWA revocation detection
+  }, 5000); // Every 5 seconds for instant account deletion detection
 }
 
 function stopSessionHeartbeat() {
