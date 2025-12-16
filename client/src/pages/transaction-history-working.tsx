@@ -379,41 +379,64 @@ export default function TransactionHistoryWorking() {
     }
   };
 
-  const handleDeleteTransaction = () => {
+  const handleDeleteTransaction = async () => {
     if (!selectedTransaction) return;
     
-    const allTransactions = UserDataManager.getUserData('bankTransactions', []);
-    
-    const enhancedTransactions = allTransactions.map((tx: any) => {
-      if (tx.id === selectedTransaction.id) {
-        const amount = parseFloat(tx.amount.replace('-', ''));
-        const currentBal = parseFloat(balance);
-        const newBal = tx.type === 'debit' ? currentBal + amount : currentBal - amount;
-        setBalance(newBal.toFixed(2));
-        
-        const accounts = UserDataManager.getUserAccounts();
-        const updatedAccounts = accounts.map((acc: Account) => 
-          acc.id === accountId ? { ...acc, balance: newBal.toFixed(2) } : acc
-        );
-        UserDataManager.setUserData('bankAccounts', updatedAccounts);
-        
-        return { ...tx, deleted: true };
+    try {
+      // Call backend API to delete transaction and update balance on server
+      const response = await fetch(`/api/transactions/${selectedTransaction.id}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        console.error('Failed to delete transaction on server');
+        return;
       }
-      return tx;
-    });
-    
-    UserDataManager.setUserData('bankTransactions', enhancedTransactions);
-    
-    const accountTransactions = enhancedTransactions.filter((tx: any) => tx.accountId === accountId);
-    setTransactions(accountTransactions);
-    
-    setSelectedTransaction(null);
-    setShowDeleteConfirm(false);
-    
-    window.dispatchEvent(new CustomEvent('transactionDeleted', {
-      detail: { transactionId: selectedTransaction?.id }
-    }));
-    window.dispatchEvent(new CustomEvent('transactionUpdate'));
+      
+      const result = await response.json();
+      const serverNewBalance = result.newBalance;
+      
+      // Update local state with server-confirmed balance
+      setBalance(serverNewBalance);
+      
+      // Update accounts in localStorage with the server-confirmed balance
+      const accounts = UserDataManager.getUserAccounts();
+      const updatedAccounts = accounts.map((acc: Account) => 
+        acc.id === accountId ? { ...acc, balance: serverNewBalance } : acc
+      );
+      UserDataManager.setUserData('bankAccounts', updatedAccounts);
+      
+      // Mark transaction as deleted in local transactions cache
+      const allTransactions = UserDataManager.getUserData('bankTransactions', []);
+      const enhancedTransactions = allTransactions.map((tx: any) => {
+        if (tx.id === selectedTransaction.id) {
+          return { ...tx, deleted: true };
+        }
+        return tx;
+      });
+      UserDataManager.setUserData('bankTransactions', enhancedTransactions);
+      
+      // Update displayed transactions
+      const accountTransactions = enhancedTransactions.filter((tx: any) => tx.accountId === accountId);
+      setTransactions(accountTransactions);
+      
+      setSelectedTransaction(null);
+      setShowDeleteConfirm(false);
+      
+      // Dispatch events to update other components with server-confirmed balance
+      window.dispatchEvent(new CustomEvent('transactionDeleted', {
+        detail: { transactionId: selectedTransaction?.id, newBalance: serverNewBalance }
+      }));
+      window.dispatchEvent(new CustomEvent('balanceUpdate', {
+        detail: { accountId, newBalance: serverNewBalance, accounts: updatedAccounts }
+      }));
+      window.dispatchEvent(new CustomEvent('transactionUpdate'));
+      
+      console.log(`🗑️ Transaction ${selectedTransaction.id} deleted, balance updated to ${serverNewBalance}`);
+    } catch (error) {
+      console.error('Error deleting transaction:', error);
+    }
   };
 
   useEffect(() => {
