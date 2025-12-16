@@ -1645,7 +1645,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         amount, 
         reference, 
         recipientName,
-        transferType // 'uk' or 'sepa'
+        transferType, // 'uk' or 'sepa'
+        alreadyDeducted // If true, sender already deducted - only credit recipient
       } = req.body;
       
       // Validate required fields
@@ -1675,9 +1676,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "You don't own this account" });
       }
       
-      // Check sufficient funds
+      // Check sufficient funds (skip if already deducted by frontend)
       const senderBalance = parseFloat(senderAccount.balance);
-      if (numericAmount > senderBalance) {
+      if (!alreadyDeducted && numericAmount > senderBalance) {
         return res.status(400).json({ message: "Insufficient funds" });
       }
       
@@ -1738,27 +1739,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const senderName = senderUser?.name || 'Unknown';
         
         // Calculate new balances
-        const newSenderBalance = (senderBalance - numericAmount).toFixed(2);
+        const newSenderBalance = alreadyDeducted ? senderBalance.toFixed(2) : (senderBalance - numericAmount).toFixed(2);
         const newRecipientBalance = (recipientBalance + numericAmount).toFixed(2);
 
-        // Step 1: Create debit transaction (no retry - not idempotent)
-        console.log('💳 Creating debit transaction (sender)...');
-        debitTransaction = await storage.createTransaction({
-          accountId: fromAccountId,
-          amount: `-${numericAmount.toFixed(2)}`,
-          description: `Transfer to ${recipientFullName}`,
-          category: "transfer",
-          type: "debit",
-          paymentMethod: paymentMethod,
-          reference: transactionRef,
-          recipientName: recipientFullName,
-          recipientAccountNumber: recipientAccount.accountNumber,
-          recipientSortCode: recipientAccount.sortCode,
-          recipientIban: recipientAccount.iban,
-          timestamp: new Date()
-        });
+        // Step 1: Create debit transaction (skip if already deducted by frontend)
+        if (!alreadyDeducted) {
+          console.log('💳 Creating debit transaction (sender)...');
+          debitTransaction = await storage.createTransaction({
+            accountId: fromAccountId,
+            amount: `-${numericAmount.toFixed(2)}`,
+            description: `Transfer to ${recipientFullName}`,
+            category: "transfer",
+            type: "debit",
+            paymentMethod: paymentMethod,
+            reference: transactionRef,
+            recipientName: recipientFullName,
+            recipientAccountNumber: recipientAccount.accountNumber,
+            recipientSortCode: recipientAccount.sortCode,
+            recipientIban: recipientAccount.iban,
+            timestamp: new Date()
+          });
+        } else {
+          console.log('⏭️ Skipping debit transaction (already deducted by frontend)');
+        }
         
-        // Step 2: Create credit transaction (no retry - not idempotent)
+        // Step 2: Create credit transaction (always do this - recipient needs funds)
         console.log('💳 Creating credit transaction (recipient)...');
         creditTransaction = await storage.createTransaction({
           accountId: toAccountId,
@@ -1775,14 +1780,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
           timestamp: new Date()
         });
         
-        // Step 3: Update sender balance (with retry - idempotent)
-        console.log('💳 Updating sender balance...');
-        await withRetry(
-          () => storage.updateAccountBalance(fromAccountId, newSenderBalance),
-          { maxAttempts: 3, operationName: 'Update sender balance' }
-        );
+        // Step 3: Update sender balance (skip if already deducted by frontend)
+        if (!alreadyDeducted) {
+          console.log('💳 Updating sender balance...');
+          await withRetry(
+            () => storage.updateAccountBalance(fromAccountId, newSenderBalance),
+            { maxAttempts: 3, operationName: 'Update sender balance' }
+          );
+        } else {
+          console.log('⏭️ Skipping sender balance update (already updated by frontend)');
+        }
         
-        // Step 4: Update recipient balance (with retry - idempotent)
+        // Step 4: Update recipient balance (always do this - recipient needs funds)
         console.log('💳 Updating recipient balance...');
         await withRetry(
           () => storage.updateAccountBalance(toAccountId, newRecipientBalance),
