@@ -14,9 +14,13 @@ interface AuthContextType {
   login: (user: User) => void;
   logout: () => void;
   isLoading: boolean;
+  isAccountDeleted: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// Callback to set account deleted state from heartbeat
+let setAccountDeletedCallback: ((deleted: boolean) => void) | null = null;
 
 // Session heartbeat to maintain activity
 let heartbeatInterval: NodeJS.Timeout | null = null;
@@ -47,7 +51,12 @@ function startSessionHeartbeat() {
         // Customer was deleted from database
         return response.json().then(data => {
           if (data.logout || data.forceDisconnect) {
-            console.log('🔒 CUSTOMER DELETED - FORCING LOGOUT FROM HEARTBEAT');
+            console.log('🔒 CUSTOMER DELETED - SHOWING ACCOUNT DELETED SCREEN');
+            
+            // Set account deleted state to show full-screen overlay
+            if (setAccountDeletedCallback) {
+              setAccountDeletedCallback(true);
+            }
             
             // Clear all session data
             localStorage.clear();
@@ -69,8 +78,7 @@ function startSessionHeartbeat() {
               }).catch(() => {});
             }
             
-            // Redirect to login with message
-            window.location.href = '/login?message=Account%20Access%20Revoked';
+            // Don't redirect - show full-screen deleted overlay instead
           }
         }).catch(jsonError => {
           // If JSON parsing fails, log error but don't logout (only explicit flags trigger logout)
@@ -104,8 +112,10 @@ function startSessionHeartbeat() {
               }).catch(() => {});
             }
             
-            // Force complete reload to destroy any cached state
-            window.location.replace('/?nuked=true');
+            // Set account deleted state to show full-screen overlay
+            if (setAccountDeletedCallback) {
+              setAccountDeletedCallback(true);
+            }
           } else {
             // 403 without explicit logout flags - ignore and stay logged in
             console.log('⚠️ 403 response without logout flags - staying logged in');
@@ -120,9 +130,11 @@ function startSessionHeartbeat() {
       const action = OfflineAuthGuard.handleNetworkFailure(error);
       
       if (action === 'logout') {
-        // Admin deletion - clear everything
+        // Admin deletion - clear everything and show deleted screen
         OfflineAuthGuard.clearAllUserData();
-        window.location.href = '/login?message=Account%20Access%20Revoked';
+        if (setAccountDeletedCallback) {
+          setAccountDeletedCallback(true);
+        }
       } else {
         // Network error - backup user data and stay logged in
         OfflineAuthGuard.backupUserData();
@@ -139,10 +151,78 @@ function stopSessionHeartbeat() {
   }
 }
 
+// Full-screen Account Deleted Overlay Component
+function AccountDeletedOverlay() {
+  return (
+    <div 
+      className="fixed inset-0 z-[9999] flex items-center justify-center"
+      style={{ 
+        background: 'linear-gradient(135deg, #1a5490 0%, #0d3a6a 100%)',
+        fontFamily: 'OpenSans, sans-serif'
+      }}
+    >
+      <div className="text-center px-8 max-w-md">
+        {/* Bank Logo */}
+        <div className="mb-8">
+          <img 
+            src="/boi_logo.svg" 
+            alt="Bank of Ireland" 
+            className="h-16 mx-auto mb-4"
+            style={{ filter: 'brightness(0) invert(1)' }}
+          />
+        </div>
+        
+        {/* Deleted Icon */}
+        <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-white/10 flex items-center justify-center">
+          <svg className="w-12 h-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        
+        {/* Message */}
+        <h1 className="text-3xl font-bold text-white mb-4">
+          Account Deleted
+        </h1>
+        <p className="text-white/80 text-lg mb-8">
+          Your account has been removed by an administrator. If you believe this was done in error, please contact customer support.
+        </p>
+        
+        {/* Contact Info */}
+        <div className="bg-white/10 rounded-xl p-4 mb-6">
+          <p className="text-white/60 text-sm mb-1">Customer Support</p>
+          <p className="text-white font-semibold">1800 946 764</p>
+        </div>
+        
+        {/* Reload Button */}
+        <button
+          onClick={() => {
+            // Clear everything and reload
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.href = '/';
+          }}
+          className="w-full py-4 bg-white text-[#1a5490] rounded-xl font-semibold text-lg hover:bg-gray-100 transition-colors"
+        >
+          Return to Login
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isAccountDeleted, setIsAccountDeleted] = useState(false);
+  
+  // Register the callback for heartbeat to use
+  useEffect(() => {
+    setAccountDeletedCallback = setIsAccountDeleted;
+    return () => {
+      setAccountDeletedCallback = null;
+    };
+  }, []);
 
   // Initialize auth state on mount - check for valid session
   useEffect(() => {
@@ -336,8 +416,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         logout,
         isLoading,
+        isAccountDeleted,
       }}
     >
+      {isAccountDeleted && <AccountDeletedOverlay />}
       {children}
     </AuthContext.Provider>
   );
