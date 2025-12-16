@@ -49,8 +49,37 @@ export default function Dashboard() {
     currentDate: ''
   });
 
-  // Navigation without animations for dashboard
+  // Account deletion state - blocks navigation
+  const [accountDeleted, setAccountDeleted] = useState(false);
+
+  // Check account status on mount
+  useEffect(() => {
+    const checkAccountStatus = async () => {
+      const currentUser = UserDataManager.getCurrentUser();
+      if (!currentUser) return;
+      
+      try {
+        const response = await fetch(`/api/profile/${currentUser}`);
+        if (response.status === 410 || response.status === 401) {
+          const data = await response.json().catch(() => ({}));
+          if (data.accountDeleted || data.blockAllFunctions) {
+            setAccountDeleted(true);
+          }
+        }
+      } catch (error) {
+        // Ignore errors
+      }
+    };
+    
+    checkAccountStatus();
+  }, []);
+
+  // Navigation with account deleted check
   const navigateWithAnimation = (path: string) => {
+    if (accountDeleted) {
+      alert('Account Deleted');
+      return;
+    }
     setLocation(path);
   };
 
@@ -388,6 +417,12 @@ export default function Dashboard() {
 
   // Touch-safe navigation with tap guard and loading state
   const handleAccountTap = (accountId: number) => {
+    // Block if account deleted
+    if (accountDeleted) {
+      alert('Account Deleted');
+      return;
+    }
+    
     const now = Date.now();
     const TAP_GUARD_MS = 400;
     
@@ -407,7 +442,7 @@ export default function Dashboard() {
     
     // Navigate after showing loading state
     setTimeout(() => {
-      navigateWithAnimation(`/transactions/${accountId}`, 'slide-right');
+      navigateWithAnimation(`/transactions/${accountId}`);
       // Reset loading state after navigation
       setTimeout(() => setLoadingAccountId(null), 300);
     }, 50);
@@ -465,7 +500,7 @@ export default function Dashboard() {
         <div className="flex items-center">
           <button 
             className="text-white hover:bg-white/20 h-8 w-8 rounded-full flex items-center justify-center touch-manipulation transform-gpu transition-all duration-150 ease-out active:scale-95 android-no-highlight"
-            onClick={() => navigateWithAnimation('/profile', 'slide-up')}
+            onClick={() => navigateWithAnimation('/profile')}
             style={{
               WebkitTapHighlightColor: 'transparent',
               outline: 'none'

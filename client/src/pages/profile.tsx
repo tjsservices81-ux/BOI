@@ -329,6 +329,12 @@ export default function Profile() {
   };
 
   const handleProfilePictureTap = () => {
+    // Block if account deleted
+    if (accountDeleted) {
+      alert('Account Deleted');
+      return;
+    }
+    
     const currentTime = Date.now();
     const timeSinceLastTap = currentTime - lastTapTime;
     
