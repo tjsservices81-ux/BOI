@@ -1355,17 +1355,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Calculate balance adjustment (reverse the transaction effect)
-      const transactionAmount = parseFloat(transaction.amount.replace('+', '').replace('-', ''));
+      // Handle amounts that may contain currency symbols (e.g., "€ -250.00", "£100.50", "-50.00")
+      const cleanAmount = transaction.amount.replace(/[^0-9.-]/g, '').replace(/^-/, '');
+      const transactionAmount = parseFloat(cleanAmount) || 0;
       const currentBalance = parseFloat(account.balance);
       let newBalance: number;
       
-      if (transaction.type === 'credit') {
-        // If it was a credit, subtract from balance
-        newBalance = currentBalance - transactionAmount;
-      } else {
-        // If it was a debit, add back to balance
+      // Determine if the original transaction was negative (debit) or positive (credit)
+      const isDebit = transaction.amount.includes('-') || transaction.type === 'debit';
+      
+      if (isDebit) {
+        // If it was a debit (money out), add back to balance
         newBalance = currentBalance + transactionAmount;
+      } else {
+        // If it was a credit (money in), subtract from balance
+        newBalance = currentBalance - transactionAmount;
       }
+      
+      console.log(`💰 Deleting transaction: amount="${transaction.amount}", parsed=${transactionAmount}, type=${transaction.type}, isDebit=${isDebit}, currentBalance=${currentBalance}, newBalance=${newBalance}`);
       
       // Delete the transaction
       const deleted = await storage.deleteTransaction(transactionId);
