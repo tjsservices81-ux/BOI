@@ -3102,9 +3102,9 @@
         "pin": "",
         "name": "Wilson moore",
         "email": "cben66587@gmail.com",
-        "phone": "07412076173",
+        "phone": "07869340393",
         "address": null,
-        "dateOfBirth": null,
+        "dateOfBirth": "2000-01-21",
         "joinDate": "Member since 2018",
         "currency": "EUR",
         "dateCreated": "2025-12-08T21:30:17.342Z",
@@ -3219,11 +3219,11 @@
         "id": 403,
         "customerNumber": "36762132",
         "pin": "",
-        "name": "James ward",
-        "email": "ward923@gmail.com",
+        "name": "Tommy Odonnell",
+        "email": "Tommyod754@gmail.com",
         "phone": "085412734",
-        "address": null,
-        "dateOfBirth": null,
+        "address": "27 Melrose avenue Clondalkin",
+        "dateOfBirth": "2003-11-11",
         "joinDate": "2025-12-08T22:13:54.722Z",
         "currency": "EUR",
         "dateCreated": "2025-12-08T22:13:54.681Z",
@@ -3423,8 +3423,8 @@
         "id": 417,
         "customerNumber": "36835301",
         "pin": "",
-        "name": "Patrick Cawley",
-        "email": "patrickcawley584@gmail.com",
+        "name": "Kenneth Fletcher",
+        "email": "kennethfletcher584@gmail.com",
         "phone": "+353985418953",
         "address": "41 Clonmel Road Ballygall Dublin 11 D11 K6XP Ireland",
         "dateOfBirth": "1998-09-09",
@@ -3871,7 +3871,7 @@
         "address": null,
         "dateOfBirth": null,
         "joinDate": "2025-12-15T20:58:06.311Z",
-        "currency": "GBP",
+        "currency": "EUR",
         "dateCreated": "2025-12-15T20:58:06.266Z",
         "isDisabled": false
       }
@@ -4193,7 +4193,7 @@
         "phone": "+35307525653",
         "address": null,
         "dateOfBirth": null,
-        "joinDate": "Member since 2018",
+        "joinDate": "2025-12-21T16:11:37.080Z",
         "currency": "EUR",
         "dateCreated": "2025-12-21T16:11:37.039Z",
         "isDisabled": false
@@ -4315,6 +4315,23 @@
         "joinDate": "2025-12-16T20:21:22.140Z",
         "currency": "EUR",
         "dateCreated": "2025-12-16T20:21:22.101Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      487,
+      {
+        "id": 487,
+        "customerNumber": "68526049",
+        "pin": "",
+        "name": "Cris nolan",
+        "email": "blackterry99@outlook.com",
+        "phone": "07939432840",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "currency": "EUR",
+        "dateCreated": "2025-12-21T21:31:55.658Z",
         "isDisabled": false
       }
     ]
@@ -20605,7 +20622,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 487,
+    "currentUserId": 488,
     "currentAccountId": 363,
     "currentTransactionId": 3440,
     "currentPayeeId": 1,
