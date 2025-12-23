@@ -48,7 +48,7 @@ export default function Profile() {
       showSepaTransfer: true,
       showUkTransfer: true,
       showInternalTransfer: true,
-      showEmailTransfer: true
+      showEmailTransfer: false
     };
   });
   const [showTransferConfirmation, setShowTransferConfirmation] = useState(() => {

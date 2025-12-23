@@ -26,7 +26,7 @@ export default function Payments() {
       showSepaTransfer: true,
       showUkTransfer: true,
       showInternalTransfer: true,
-      showEmailTransfer: true
+      showEmailTransfer: false
     }
   );
 
@@ -94,7 +94,7 @@ export default function Payments() {
         showSepaTransfer: true,
         showUkTransfer: true,
         showInternalTransfer: true,
-        showEmailTransfer: true
+        showEmailTransfer: false
       };
       setTransferSettings(settings);
     };

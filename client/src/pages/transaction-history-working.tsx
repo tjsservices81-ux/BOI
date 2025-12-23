@@ -1941,13 +1941,22 @@ export default function TransactionHistoryWorking() {
                   </span>
                 </div>
 
-                {(selectedTransaction.paymentMethod === 'UK Transfer' || selectedTransaction.paymentMethod === 'IBAN Transfer' || selectedTransaction.iban || selectedTransaction.recipientAccountNumber) && (
+                {(selectedTransaction.paymentMethod === 'UK Transfer' || selectedTransaction.paymentMethod === 'IBAN Transfer' || selectedTransaction.paymentMethod === 'EMAIL Transfer' || selectedTransaction.iban || selectedTransaction.recipientAccountNumber || selectedTransaction.recipientEmail) && (
                   <>
                     {selectedTransaction.recipientName && (
                       <div className="flex justify-between">
                         <span className="text-gray-600">Recipient:</span>
                         <span className="font-semibold text-gray-900">
                           {selectedTransaction.recipientName}
+                        </span>
+                      </div>
+                    )}
+
+                    {selectedTransaction.recipientEmail && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Recipient Email:</span>
+                        <span className="font-semibold text-gray-900 text-sm">
+                          {selectedTransaction.recipientEmail}
                         </span>
                       </div>
                     )}
