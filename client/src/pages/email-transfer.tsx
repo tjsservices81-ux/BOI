@@ -199,8 +199,8 @@ export default function EmailTransfer() {
 
   if (step === 'success') {
     return (
-      <div className="min-h-screen flex flex-col page-fade-in" style={{ backgroundColor: '#f9fafb' }}>
-        <div className="bg-[#126987] px-4 py-3 flex items-center justify-between sticky top-0 z-10">
+      <div className="h-screen overflow-hidden flex flex-col page-fade-in" style={{ backgroundColor: '#f9fafb' }}>
+        <div className="bg-[#126987] px-4 py-3 flex items-center justify-between" style={{ flexShrink: 0 }}>
           <button onClick={() => navigate('/dashboard')} className="text-white" data-testid="button-back">
             <ChevronLeft className="w-6 h-6" />
           </button>
@@ -210,7 +210,13 @@ export default function EmailTransfer() {
           <div className="w-6"></div>
         </div>
         
-        <div className="flex-1 p-4 pb-24 overflow-y-auto">
+        <div style={{ 
+          flex: 1, 
+          overflowY: 'auto', 
+          WebkitOverflowScrolling: 'touch',
+          padding: '1rem',
+          paddingBottom: '6rem'
+        }}>
           <div className="bg-white rounded-xl p-6 shadow-sm text-center">
             {showReference && (
               <>
@@ -356,8 +362,8 @@ export default function EmailTransfer() {
 
   if (step === 'cancelled') {
     return (
-      <div className="min-h-screen flex flex-col page-fade-in" style={{ backgroundColor: '#f9fafb' }}>
-        <div className="bg-[#126987] px-4 py-3 flex items-center justify-between sticky top-0 z-10">
+      <div className="h-screen overflow-hidden flex flex-col page-fade-in" style={{ backgroundColor: '#f9fafb' }}>
+        <div className="bg-[#126987] px-4 py-3 flex items-center justify-between" style={{ flexShrink: 0 }}>
           <button onClick={() => navigate('/dashboard')} className="text-white" data-testid="button-back">
             <ChevronLeft className="w-6 h-6" />
           </button>
@@ -367,7 +373,15 @@ export default function EmailTransfer() {
           <div className="w-6"></div>
         </div>
         
-        <div className="flex-1 p-4 pb-24 flex items-center justify-center">
+        <div style={{ 
+          flex: 1, 
+          overflowY: 'auto', 
+          WebkitOverflowScrolling: 'touch',
+          padding: '1rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
           <div className="bg-white rounded-xl p-6 shadow-sm text-center max-w-sm w-full">
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-red-600 text-2xl">✕</span>
@@ -409,8 +423,8 @@ export default function EmailTransfer() {
     const selectedAccount = accounts.find(acc => acc.id.toString() === formData?.fromAccount);
     
     return (
-      <div className="min-h-screen flex flex-col page-fade-in" style={{ backgroundColor: '#f9fafb' }}>
-        <div className="bg-[#126987] px-4 py-3 flex items-center justify-between sticky top-0 z-10">
+      <div className="h-screen overflow-hidden flex flex-col page-fade-in" style={{ backgroundColor: '#f9fafb' }}>
+        <div className="bg-[#126987] px-4 py-3 flex items-center justify-between" style={{ flexShrink: 0 }}>
           <button onClick={() => setStep('form')} className="text-white" data-testid="button-back">
             <ChevronLeft className="w-6 h-6" />
           </button>
@@ -420,7 +434,13 @@ export default function EmailTransfer() {
           <div className="w-6"></div>
         </div>
         
-        <div className="flex-1 p-4 pb-24 overflow-y-auto">
+        <div style={{ 
+          flex: 1, 
+          overflowY: 'auto', 
+          WebkitOverflowScrolling: 'touch',
+          padding: '1rem',
+          paddingBottom: '6rem'
+        }}>
           <div className="bg-white rounded-xl p-6 shadow-sm">
             <h2 className="text-lg font-semibold text-gray-900 mb-4" style={{ fontFamily: 'OpenSans, sans-serif' }}>
               Review Transfer Details
@@ -490,8 +510,8 @@ export default function EmailTransfer() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col page-fade-in" style={{ backgroundColor: '#f9fafb' }}>
-      <div className="bg-[#126987] px-4 py-3 flex items-center justify-between sticky top-0 z-10">
+    <div className="h-screen overflow-hidden flex flex-col page-fade-in" style={{ backgroundColor: '#f9fafb' }}>
+      <div className="bg-[#126987] px-4 py-3 flex items-center justify-between" style={{ flexShrink: 0 }}>
         <button onClick={() => navigate('/payments')} className="text-white" data-testid="button-back">
           <ChevronLeft className="w-6 h-6" />
         </button>
@@ -501,7 +521,13 @@ export default function EmailTransfer() {
         <div className="w-6"></div>
       </div>
       
-      <div className="flex-1 p-4 pb-24 overflow-y-auto">
+      <div style={{ 
+        flex: 1, 
+        overflowY: 'auto', 
+        WebkitOverflowScrolling: 'touch',
+        padding: '1rem',
+        paddingBottom: '6rem'
+      }}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="bg-white rounded-xl p-4 shadow-sm">
             <div className="bg-gray-50 rounded-lg p-4 mb-4">
