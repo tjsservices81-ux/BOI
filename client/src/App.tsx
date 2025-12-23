@@ -24,6 +24,7 @@ import Apply from "@/pages/apply";
 import IbanTransfer from "@/pages/iban-transfer";
 import UkTransfer from "@/pages/uk-transfer";
 import InternalTransfer from "@/pages/internal-transfer";
+import EmailTransfer from "@/pages/email-transfer";
 import Transactions from "@/pages/transactions";
 import Cards from "@/pages/cards";
 import Insights from "@/pages/insights";
@@ -472,6 +473,11 @@ function AppRoutes() {
           <Route path="/internal-transfer">
             <ProtectedRoute>
               <InternalTransfer />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/email-transfer">
+            <ProtectedRoute>
+              <EmailTransfer />
             </ProtectedRoute>
           </Route>
           <Route path="/transfer">

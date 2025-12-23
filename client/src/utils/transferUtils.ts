@@ -62,10 +62,10 @@ export const processSecureTransfer = async (
   fromAccountId: string,
   amount: number,
   recipientName: string,
-  transferType: 'UK' | 'IBAN',
+  transferType: 'UK' | 'IBAN' | 'EMAIL',
   reference: string,
   exchangeRate?: number,
-  recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string }
+  recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string; email?: string }
 ): Promise<{ success: boolean; transferId?: string; error?: string; requiresConfirmation?: boolean }> => {
   console.log('Initiating secure transfer:', { fromAccountId, amount, recipientName, transferType, reference });
 
@@ -117,10 +117,10 @@ export const processTransfer = (
   fromAccountId: string,
   amount: number,
   recipientName: string,
-  transferType: 'UK' | 'IBAN',
+  transferType: 'UK' | 'IBAN' | 'EMAIL',
   reference: string,
   exchangeRate?: number,
-  recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string; bicCode?: string },
+  recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string; bicCode?: string; email?: string },
   recipientEmail?: string
 ): boolean => {
   console.log('Processing transfer:', { fromAccountId, amount, recipientName, transferType, reference, recipientEmail });
@@ -402,10 +402,10 @@ export const processConfirmedTransfer = async (
   fromAccountId: string,
   amount: number,
   recipientName: string,
-  transferType: 'UK' | 'IBAN',
+  transferType: 'UK' | 'IBAN' | 'EMAIL',
   reference: string,
   exchangeRate?: number,
-  recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string; bicCode?: string },
+  recipientDetails?: { accountNumber?: string; sortCode?: string; iban?: string; bicCode?: string; email?: string },
   recipientEmail?: string
 ): Promise<boolean> => {
   console.log('Processing confirmed transfer:', { transferId, fromAccountId, amount, recipientName, transferType, reference, recipientEmail });

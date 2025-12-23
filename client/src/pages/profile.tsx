@@ -47,7 +47,8 @@ export default function Profile() {
     return saved || {
       showSepaTransfer: true,
       showUkTransfer: true,
-      showInternalTransfer: true
+      showInternalTransfer: true,
+      showEmailTransfer: true
     };
   });
   const [showTransferConfirmation, setShowTransferConfirmation] = useState(() => {
@@ -2268,6 +2269,32 @@ export default function Profile() {
                       </div>
                       <div className={`w-11 h-6 rounded-full transition-colors ${transferSettings.showInternalTransfer ? 'bg-green-500' : 'bg-gray-300'}`}>
                         <div className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform mt-1 ${transferSettings.showInternalTransfer ? 'translate-x-6' : 'translate-x-1'}`} />
+                      </div>
+                    </button>
+
+                    {/* Email Transfer */}
+                    <button 
+                      onClick={() => {
+                        const newSettings = { ...transferSettings, showEmailTransfer: !transferSettings.showEmailTransfer };
+                        setTransferSettings(newSettings);
+                        UserDataManager.setUserData('transferSettings', newSettings);
+                        UserDataManager.clearCache('transferSettings');
+                        window.dispatchEvent(new CustomEvent('transferSettingsUpdate'));
+                        showDeveloperMessage(`Email Transfer ${newSettings.showEmailTransfer ? 'enabled' : 'disabled'} successfully`);
+                      }}
+                      data-testid="toggle-email-transfer"
+                      className="w-full flex items-center justify-between p-3 bg-white/70 backdrop-blur-sm border-2 border-purple-200 rounded-xl active:scale-95 transition-all shadow-sm hover:shadow-md"
+                    >
+                      <div className="flex-1 text-left">
+                        <p className="font-semibold text-purple-900 text-sm" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Email Transfer
+                        </p>
+                        <p className="text-xs text-purple-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          Send by name and email
+                        </p>
+                      </div>
+                      <div className={`w-11 h-6 rounded-full transition-colors ${transferSettings.showEmailTransfer ? 'bg-green-500' : 'bg-gray-300'}`}>
+                        <div className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform mt-1 ${transferSettings.showEmailTransfer ? 'translate-x-6' : 'translate-x-1'}`} />
                       </div>
                     </button>
                   </div>

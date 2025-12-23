@@ -25,7 +25,8 @@ export default function Payments() {
     UserDataManager.getUserData('transferSettings', null) || {
       showSepaTransfer: true,
       showUkTransfer: true,
-      showInternalTransfer: true
+      showInternalTransfer: true,
+      showEmailTransfer: true
     }
   );
 
@@ -56,6 +57,15 @@ export default function Payments() {
       description: 'Instant transfer between your BOI accounts',
       popular: false,
       visible: transferSettings.showInternalTransfer
+    },
+    {
+      id: 'email',
+      title: 'Email Transfer',
+      subtitle: 'Send by name and email',
+      icon: <Users className="w-6 h-6 text-[#126987]" />,
+      description: 'Transfer using recipient name and email address',
+      popular: false,
+      visible: transferSettings.showEmailTransfer
     }
   ];
 
@@ -83,7 +93,8 @@ export default function Payments() {
       const settings = UserDataManager.getUserData('transferSettings', null) || {
         showSepaTransfer: true,
         showUkTransfer: true,
-        showInternalTransfer: true
+        showInternalTransfer: true,
+        showEmailTransfer: true
       };
       setTransferSettings(settings);
     };
@@ -257,6 +268,7 @@ export default function Payments() {
                 if (option.id === 'iban') navigate('/iban-transfer');
                 else if (option.id === 'domestic') navigate('/uk-transfer');
                 else if (option.id === 'internal') navigate('/internal-transfer');
+                else if (option.id === 'email') navigate('/email-transfer');
                 else setSelectedPaymentType(option.id);
               }}
               className="w-full bg-white rounded-2xl p-5 shadow-sm active:scale-98 transition-all duration-200 border-2 border-transparent hover:border-[#126987]/20 stagger-item card-interactive"
