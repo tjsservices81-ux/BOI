@@ -315,7 +315,7 @@ export default function EmailTransfer() {
                   <div className="flex justify-between">
                     <span className="text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>Reference:</span>
                     <span className="font-mono text-sm text-[#126987]" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      {transferReference}
+                      {formData?.reference || transferReference}
                     </span>
                   </div>
                   <div className="flex justify-between">
