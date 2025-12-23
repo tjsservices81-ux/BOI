@@ -1,8 +1,8 @@
 /**
  * Email service for sending transfer confirmations and notifications
- * Uses the same SMTP configuration as the OTC service
+ * Uses SendGrid integration via Replit connector
  */
-import nodemailer from 'nodemailer';
+import sgMail from '@sendgrid/mail';
 import fs from 'fs';
 import path from 'path';
 import { generateTransferConfirmationPDF } from './pdfService';
@@ -18,36 +18,67 @@ export interface TransferConfirmationDetails {
 }
 
 /**
- * Create email transporter using the same SMTP configuration as OTC service
+ * Get SendGrid credentials from Replit connector
+ * WARNING: Never cache this client - access tokens expire
  */
-const createTransporter = () => {
+async function getCredentials(): Promise<{apiKey: string, email: string} | null> {
   try {
-    const emailConfig = {
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: process.env.SMTP_PORT === '465', // Use secure for port 465
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS
-      },
-      tls: {
-        rejectUnauthorized: false
-      }
-    };
+    const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
+    const xReplitToken = process.env.REPL_IDENTITY 
+      ? 'repl ' + process.env.REPL_IDENTITY 
+      : process.env.WEB_REPL_RENEWAL 
+      ? 'depl ' + process.env.WEB_REPL_RENEWAL 
+      : null;
 
-    // Only initialize if SMTP credentials are provided
-    if (emailConfig.host && emailConfig.auth.user && emailConfig.auth.pass) {
-      return nodemailer.createTransport(emailConfig);
+    if (!xReplitToken || !hostname) {
+      console.log('⚠️ Replit connector not available');
+      return null;
     }
-    return null;
+
+    const response = await fetch(
+      'https://' + hostname + '/api/v2/connection?include_secrets=true&connector_names=sendgrid',
+      {
+        headers: {
+          'Accept': 'application/json',
+          'X_REPLIT_TOKEN': xReplitToken
+        }
+      }
+    );
+    
+    const data = await response.json();
+    const connectionSettings = data.items?.[0];
+
+    if (!connectionSettings || (!connectionSettings.settings.api_key || !connectionSettings.settings.from_email)) {
+      console.log('⚠️ SendGrid not connected or missing credentials');
+      return null;
+    }
+    
+    return {
+      apiKey: connectionSettings.settings.api_key, 
+      email: connectionSettings.settings.from_email
+    };
   } catch (error) {
-    console.error('Failed to create email transporter:', error);
+    console.error('Failed to get SendGrid credentials:', error);
     return null;
   }
-};
+}
 
 /**
- * Send email with PDF attachment
+ * Get a fresh SendGrid client (never cached due to token expiration)
+ */
+async function getUncachableSendGridClient() {
+  const credentials = await getCredentials();
+  if (!credentials) return null;
+  
+  sgMail.setApiKey(credentials.apiKey);
+  return {
+    client: sgMail,
+    fromEmail: credentials.email
+  };
+}
+
+/**
+ * Send email with PDF attachment via SendGrid
  */
 export async function sendEmailWithPDF(
   to: string, 
@@ -57,62 +88,49 @@ export async function sendEmailWithPDF(
   pdfFilename: string
 ): Promise<boolean> {
   console.log('🔵 EMAIL WITH PDF FUNCTION CALLED');
-  console.log('📧 SENDING EMAIL WITH PDF ATTACHMENT');
+  console.log('📧 SENDING EMAIL WITH PDF ATTACHMENT VIA SENDGRID');
   console.log(`To: ${to}`);
   console.log(`Subject: ${subject}`);
   console.log(`PDF Filename: ${pdfFilename}`);
   
-  const transporter = createTransporter();
+  const sendgrid = await getUncachableSendGridClient();
   
-  if (!transporter) {
-    console.log('SMTP not configured. Email with PDF would be sent to:', { to, subject, pdfFilename });
+  if (!sendgrid) {
+    console.log('⚠️ SendGrid not configured. Email with PDF would be sent to:', { to, subject, pdfFilename });
     return false;
   }
 
   try {
-    const mailOptions = {
+    const msg = {
+      to: to,
       from: {
         name: 'Bank of Ireland',
-        address: process.env.SENDER_EMAIL || 'info@bankofirelands.com'
+        email: sendgrid.fromEmail
       },
-      to: to,
       subject: subject,
       html: body,
       text: body.replace(/<[^>]*>/g, ''), // Strip HTML tags for text version
       attachments: [
         {
           filename: pdfFilename,
-          content: pdfBuffer,
-          contentType: 'application/pdf'
+          content: pdfBuffer.toString('base64'),
+          type: 'application/pdf',
+          disposition: 'attachment'
         }
-      ],
-      headers: {
-        'X-Priority': '1',
-        'X-MSMail-Priority': 'High',
-        'Importance': 'high'
-      }
+      ]
     };
 
-    console.log('📤 Attempting to send email via Mailjet SMTP...');
-    console.log('SMTP Config:', {
-      host: process.env.SMTP_HOST,
-      port: process.env.SMTP_PORT,
-      user: process.env.SMTP_USER ? '***' + process.env.SMTP_USER.slice(-4) : 'not set',
-      secure: process.env.SMTP_PORT === '465'
-    });
+    console.log('📤 Attempting to send email via SendGrid...');
+    console.log('From:', sendgrid.fromEmail);
     
-    const info = await transporter.sendMail(mailOptions);
+    await sendgrid.client.send(msg);
     console.log(`✅ Email with PDF attachment sent successfully to: ${to}`);
-    console.log('📬 Email response:', info.messageId, info.response);
     return true;
   } catch (error) {
     console.error('❌ FAILED to send email with PDF:', error);
     console.error('Error details:', {
       message: error instanceof Error ? error.message : String(error),
-      code: (error as any)?.code,
-      command: (error as any)?.command,
-      response: (error as any)?.response,
-      responseCode: (error as any)?.responseCode
+      response: (error as any)?.response?.body
     });
     return false;
   }
