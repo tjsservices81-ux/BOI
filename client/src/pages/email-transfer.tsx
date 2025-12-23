@@ -329,6 +329,11 @@ export default function EmailTransfer() {
                       <strong>Email Transfer:</strong> Recipient will receive payment notification at their email address.
                     </p>
                   </div>
+                  <div className="bg-red-50 border border-red-300 rounded-lg p-3 mt-3">
+                    <p className="text-sm text-red-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      <strong>Important:</strong> This payment cannot be cancelled once sent.
+                    </p>
+                  </div>
                 </div>
 
                 <div className="flex space-x-3 mt-4">

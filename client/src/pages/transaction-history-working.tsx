@@ -2080,6 +2080,22 @@ export default function TransactionHistoryWorking() {
                   </div>
                 )}
 
+                {selectedTransaction.paymentMethod === 'EMAIL Transfer' && (
+                  <div className="border-t border-gray-200 pt-4 mt-4">
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                      <p className="text-sm text-blue-800">
+                        <strong>Email Transfer:</strong> Recipient will receive payment notification at their email address.
+                      </p>
+                    </div>
+
+                    <div className="bg-red-50 border border-red-300 rounded-lg p-3 mt-3">
+                      <p className="text-sm text-red-700">
+                        This payment cannot be cancelled
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 {selectedTransaction.paymentMethod && 
                  !selectedTransaction.isSample &&
                  (selectedTransaction.paymentMethod === 'UK Transfer' || 
