@@ -187,7 +187,23 @@ export async function generateTransferConfirmationPDF(
         yPos += 30;
       }
 
-      // Reference (use actual transfer reference)
+      // Account details for Email transfers
+      if (transferData && transferData.recipientEmail) {
+        // Recipient Email
+        doc.font('Helvetica-Bold')
+           .fontSize(12)
+           .fillColor('#000000')
+           .text('Recipient Email:', leftCol, yPos);
+        
+        doc.font('Helvetica')
+           .fontSize(12)
+           .fillColor('#000000')
+           .text(transferData.recipientEmail, rightCol, yPos);
+        
+        yPos += 30;
+      }
+
+      // Reference (use actual transfer reference - user's typed reference only)
       doc.font('Helvetica-Bold')
          .fontSize(12)
          .fillColor('#000000')

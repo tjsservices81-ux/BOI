@@ -190,8 +190,10 @@ export const processTransfer = (
       recipientSortCode: recipientDetails.sortCode,
       iban: recipientDetails.iban,
       bicCode: recipientDetails.bicCode,
-      recipientIban: recipientDetails.iban
-    })
+      recipientIban: recipientDetails.iban,
+      recipientEmail: recipientDetails.email
+    }),
+    ...(recipientEmail && { recipientEmail })
   };
   
   transactions.push(newTransaction);
