@@ -62,10 +62,6 @@ export default function Profile() {
     const saved = localStorage.getItem('ibanEmailEnabled');
     return saved !== null ? JSON.parse(saved) : false;
   });
-  const [senderInfoEnabled, setSenderInfoEnabled] = useState(() => {
-    const saved = localStorage.getItem('senderInfoEnabled');
-    return saved !== null ? JSON.parse(saved) : false;
-  });
   const [showBankDetailsButton, setShowBankDetailsButton] = useState(() => {
     const saved = localStorage.getItem('showBankDetailsButton');
     return saved !== null ? JSON.parse(saved) : true;
