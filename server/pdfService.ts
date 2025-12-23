@@ -263,6 +263,24 @@ export async function generateTransferConfirmationPDF(
          .fillColor('#000000')
          .text(transactionId, rightCol, yPos);
       
+      yPos += 40;
+
+      // Important notice - Payment cannot be cancelled
+      doc.rect(50, yPos, 495, 35)
+         .fill('#FEF2F2')
+         .stroke('#DC2626')
+         .lineWidth(1);
+      
+      doc.font('Helvetica-Bold')
+         .fontSize(10)
+         .fillColor('#DC2626')
+         .text('Important:', 60, yPos + 12);
+      
+      doc.font('Helvetica')
+         .fontSize(10)
+         .fillColor('#991B1B')
+         .text('This payment cannot be cancelled once processed.', 115, yPos + 12);
+
       yPos += 50;
 
       // Automated message
