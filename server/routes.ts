@@ -2731,14 +2731,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Find the most recent external transfer transaction (exclude internal BOI transfers)
         const transferTransactions = requestedTransactionData
           .filter((tx: any) => {
-            // Only include external transfers (UK Transfer or SEPA Transfer)
-            return tx.paymentMethod === 'UK Transfer' || tx.paymentMethod === 'SEPA Transfer';
+            // Only include external transfers (UK Transfer, SEPA Transfer, or EMAIL Transfer)
+            return tx.paymentMethod === 'UK Transfer' || tx.paymentMethod === 'SEPA Transfer' || tx.paymentMethod === 'EMAIL Transfer';
           })
           .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
         
         if (transferTransactions.length > 0) {
           const lastTransfer = transferTransactions[0];
           const transferDate = new Date(lastTransfer.timestamp).toLocaleDateString('en-GB');
+          const transferTime = new Date(lastTransfer.timestamp).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
           const transferAmount = parseFloat(lastTransfer.amount.replace('-', ''));
           
           // Extract recipient name from description
@@ -2766,13 +2767,22 @@ CURRENCY: Do NOT mention currency conversion - SEPA transfers are EUR to EUR`;
 IBAN: ${lastTransfer.iban || 'Not available'}
 BIC Code: ${lastTransfer.bicCode || 'Not available'}
 Unique Reference: ${lastTransfer.reference || 'Not specified'}`;
+          } else if (lastTransfer.paymentMethod === 'EMAIL Transfer') {
+            transferTypeContext = `
+TRANSFER TYPE: Email Transfer (sent via email notification)
+DELIVERY TIME: Recipient receives notification immediately, funds available within 24 hours
+CURRENCY: Standard currency transfer`;
+            accountDetails = `
+Recipient Name: ${lastTransfer.recipientName || recipientName}
+Recipient Email: ${lastTransfer.recipientEmail || 'Not available'}
+Reference: ${lastTransfer.reference || 'Not specified'}`;
           }
           
           // Use user currency for proper display
           const currencySymbol = userCurrency === 'GBP' ? '£' : '€';
           
           transferContext = `\n\nCUSTOMER'S RECENT TRANSFER CONTEXT:
-Last transfer: ${currencySymbol}${transferAmount.toFixed(2)} to ${recipientName} on ${transferDate}
+Last transfer: ${currencySymbol}${transferAmount.toFixed(2)} to ${recipientName} on ${transferDate} at ${transferTime}
 Reference: ${lastTransfer.reference || 'Not specified'}
 Transaction ID: ${lastTransfer.id}
 Status: Confirmed and processed${transferTypeContext}${accountDetails}
@@ -2780,6 +2790,7 @@ Status: Confirmed and processed${transferTypeContext}${accountDetails}
 RESPONSE GUIDELINES:
 - For UK Transfers: Mention it was sent to a UK account, include sort code/account number, mention up to 24 hours delivery, can mention currency conversion if relevant
 - For SEPA Transfers: Say it was a SEPA transfer, mention IBAN/BIC/unique reference, say 1 business day delivery, DO NOT mention currency conversion or UK accounts
+- For Email Transfers: Confirm recipient name and email address, mention amount sent, include transaction ID and date/time, mention the recipient will receive email notification
 
 IMPORTANT: When customer asks for payment confirmation or transfer details, follow the response guidelines above and include the relevant account details.`;
         } else {
