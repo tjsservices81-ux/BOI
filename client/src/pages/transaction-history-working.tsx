@@ -1883,65 +1883,8 @@ export default function TransactionHistoryWorking() {
               </div>
 
               <div className="space-y-4">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Description:</span>
-                  <span className="font-semibold text-gray-900 text-right">
-                    {selectedTransaction.description}
-                  </span>
-                </div>
-
-                {selectedTransaction.paymentMethod && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">
-                      {selectedTransaction.paymentMethod === 'Manual Entry' ? 'Payment Method:' : 'Transfer Type:'}
-                    </span>
-                    <div className="flex items-center space-x-2">
-                      {selectedTransaction.paymentMethod === 'UK Transfer' ? (
-                        <MapPin className="w-4 h-4 text-[#126987]" />
-                      ) : (
-                        <Globe className="w-4 h-4 text-[#126987]" />
-                      )}
-                      <span className="font-semibold text-gray-900">
-                        {selectedTransaction.paymentMethod === 'Manual Entry' ? 'Direct Transaction' : selectedTransaction.paymentMethod}
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Date & Time:</span>
-                  <div className="text-right">
-                    <p className="font-semibold text-gray-900">
-                      {new Date(selectedTransaction.timestamp).toLocaleDateString('en-IE', { 
-                        day: 'numeric', 
-                        month: 'long', 
-                        year: 'numeric' 
-                      })}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {new Date(selectedTransaction.timestamp).toLocaleTimeString('en-IE', { 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
-                      })}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Transaction ID:</span>
-                  <span className="font-mono text-sm text-gray-900">
-                    {String(selectedTransaction.id).padStart(14, '0')}
-                  </span>
-                </div>
-
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Category:</span>
-                  <span className="font-semibold text-gray-900 capitalize">
-                    {selectedTransaction.category}
-                  </span>
-                </div>
-
-                {(selectedTransaction.paymentMethod === 'UK Transfer' || selectedTransaction.paymentMethod === 'IBAN Transfer' || selectedTransaction.paymentMethod === 'EMAIL Transfer' || selectedTransaction.iban || selectedTransaction.recipientAccountNumber || selectedTransaction.recipientEmail) && (
+                {/* Email Transfer has special ordering: Recipient → Email → Transfer Type → Transaction ID → Date */}
+                {selectedTransaction.paymentMethod === 'EMAIL Transfer' ? (
                   <>
                     {selectedTransaction.recipientName && (
                       <div className="flex justify-between">
@@ -1957,6 +1900,115 @@ export default function TransactionHistoryWorking() {
                         <span className="text-gray-600">Recipient Email:</span>
                         <span className="font-semibold text-gray-900 text-sm">
                           {selectedTransaction.recipientEmail}
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Transfer Type:</span>
+                      <div className="flex items-center space-x-2">
+                        <Globe className="w-4 h-4 text-[#126987]" />
+                        <span className="font-semibold text-gray-900">
+                          {selectedTransaction.paymentMethod}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Transaction ID:</span>
+                      <span className="font-mono text-sm text-gray-900">
+                        {String(selectedTransaction.id).padStart(14, '0')}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Date & Time:</span>
+                      <div className="text-right">
+                        <p className="font-semibold text-gray-900">
+                          {new Date(selectedTransaction.timestamp).toLocaleDateString('en-IE', { 
+                            day: 'numeric', 
+                            month: 'long', 
+                            year: 'numeric' 
+                          })}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          {new Date(selectedTransaction.timestamp).toLocaleTimeString('en-IE', { 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Description:</span>
+                      <span className="font-semibold text-gray-900 text-right">
+                        {selectedTransaction.description}
+                      </span>
+                    </div>
+
+                    {selectedTransaction.paymentMethod && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">
+                          {selectedTransaction.paymentMethod === 'Manual Entry' ? 'Payment Method:' : 'Transfer Type:'}
+                        </span>
+                        <div className="flex items-center space-x-2">
+                          {selectedTransaction.paymentMethod === 'UK Transfer' ? (
+                            <MapPin className="w-4 h-4 text-[#126987]" />
+                          ) : (
+                            <Globe className="w-4 h-4 text-[#126987]" />
+                          )}
+                          <span className="font-semibold text-gray-900">
+                            {selectedTransaction.paymentMethod === 'Manual Entry' ? 'Direct Transaction' : selectedTransaction.paymentMethod}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Date & Time:</span>
+                      <div className="text-right">
+                        <p className="font-semibold text-gray-900">
+                          {new Date(selectedTransaction.timestamp).toLocaleDateString('en-IE', { 
+                            day: 'numeric', 
+                            month: 'long', 
+                            year: 'numeric' 
+                          })}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          {new Date(selectedTransaction.timestamp).toLocaleTimeString('en-IE', { 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                          })}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Transaction ID:</span>
+                      <span className="font-mono text-sm text-gray-900">
+                        {String(selectedTransaction.id).padStart(14, '0')}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Category:</span>
+                      <span className="font-semibold text-gray-900 capitalize">
+                        {selectedTransaction.category}
+                      </span>
+                    </div>
+                  </>
+                )}
+
+                {(selectedTransaction.paymentMethod === 'UK Transfer' || selectedTransaction.paymentMethod === 'IBAN Transfer' || selectedTransaction.iban || selectedTransaction.recipientAccountNumber) && (
+                  <>
+                    {selectedTransaction.recipientName && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Recipient:</span>
+                        <span className="font-semibold text-gray-900">
+                          {selectedTransaction.recipientName}
                         </span>
                       </div>
                     )}
@@ -2100,7 +2152,8 @@ export default function TransactionHistoryWorking() {
                  !selectedTransaction.isSample &&
                  (selectedTransaction.paymentMethod === 'UK Transfer' || 
                   selectedTransaction.paymentMethod === 'IBAN Transfer' || 
-                  selectedTransaction.paymentMethod === 'SEPA Transfer') &&
+                  selectedTransaction.paymentMethod === 'SEPA Transfer' ||
+                  selectedTransaction.paymentMethod === 'EMAIL Transfer') &&
                  showTransferConfirmation && (
                   <div className="border-t border-gray-200 pt-6 mt-6">
                     <button
