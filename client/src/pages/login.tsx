@@ -2228,6 +2228,22 @@ export default function Login() {
                           if (permission === 'granted') {
                             console.log('Notification permission granted');
                             setShowNotificationPermissionModal(false);
+                            
+                            // Complete login after registration
+                            if (customerNumber) {
+                              const userProfile = UserDataManager.getUserProfile();
+                              if (userProfile) {
+                                login({
+                                  id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
+                                  name: userProfile.name,
+                                  email: userProfile.email,
+                                  customerNumber: customerNumber
+                                });
+                                localStorage.removeItem('cold_start_active');
+                                navigate("/dashboard");
+                              }
+                            }
+                            
                             setPendingAccountData(null);
                             setNotificationDenied(false);
                           } else {
@@ -2241,6 +2257,22 @@ export default function Login() {
                       } else if (Notification.permission === 'granted') {
                         // Already granted
                         setShowNotificationPermissionModal(false);
+                        
+                        // Complete login after registration
+                        if (customerNumber) {
+                          const userProfile = UserDataManager.getUserProfile();
+                          if (userProfile) {
+                            login({
+                              id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
+                              name: userProfile.name,
+                              email: userProfile.email,
+                              customerNumber: customerNumber
+                            });
+                            localStorage.removeItem('cold_start_active');
+                            navigate("/dashboard");
+                          }
+                        }
+                        
                         setPendingAccountData(null);
                         setNotificationDenied(false);
                       }
@@ -2282,6 +2314,22 @@ export default function Login() {
                           if (permission === 'granted') {
                             console.log('Notification permission granted');
                             setShowNotificationPermissionModal(false);
+                            
+                            // Complete login after registration
+                            if (customerNumber) {
+                              const userProfile = UserDataManager.getUserProfile();
+                              if (userProfile) {
+                                login({
+                                  id: parseInt(customerNumber.replace(/\D/g, '')) || 1,
+                                  name: userProfile.name,
+                                  email: userProfile.email,
+                                  customerNumber: customerNumber
+                                });
+                                localStorage.removeItem('cold_start_active');
+                                navigate("/dashboard");
+                              }
+                            }
+                            
                             setPendingAccountData(null);
                             setNotificationDenied(false);
                           }
