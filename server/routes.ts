@@ -2358,10 +2358,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Create the user in the database with their actual data
         const userData = validation.accountData;
         try {
-          // STEP 1: Try to create customer in PostgreSQL FIRST to get the ID
-          // If PostgreSQL is unavailable, generate a fallback ID
+          // STEP 1: Create customer in PostgreSQL FIRST to get the ID
           let postgresCustomerId: number;
-          let postgresAvailable = true;
           try {
             const newCustomer = await storage.createCustomer({
               customerNumber: userData.customerNumber,
@@ -2375,12 +2373,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             postgresCustomerId = newCustomer.id;
             console.log(`📊 CUSTOMER ADDED TO DATABASE (Admin OTC): ${newCustomer.name} (${newCustomer.customerNumber}) with ID: ${postgresCustomerId}`);
           } catch (customerError) {
-            console.error('Failed to add customer to database (may be temporarily unavailable):', customerError);
-            // Generate a fallback ID based on customer number for consistency
-            // This allows registration to proceed when database is temporarily down
-            postgresCustomerId = parseInt(userData.customerNumber) || Date.now();
-            postgresAvailable = false;
-            console.log(`⚠️ Using fallback ID ${postgresCustomerId} for customer ${userData.customerNumber} (PostgreSQL unavailable)`);
+            console.error('Failed to add customer to database:', customerError);
+            throw new Error('Failed to create customer in database');
           }
 
           // STEP 2: Create user in memory using PostgreSQL ID
