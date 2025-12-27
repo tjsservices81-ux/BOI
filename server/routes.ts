@@ -3093,7 +3093,7 @@ No transfers found yet on your account.`;
       const statementService = new StatementService();
       
       // Generate PDF statement with real transaction data
-      const pdfBuffer = await statementService.generateStatement(statementRequest);
+      const pdfBuffer = await statementService.generateStatement(statementRequest as any);
       
       // If user email provided and emails enabled, automatically send email
       const shouldSendEmail = statementRequest.userEmail && 
@@ -4225,7 +4225,6 @@ setInterval(()=>{if(!refreshPaused)ld()},5000);
             email: user.email,
             joinDate: new Date().toISOString().split('T')[0], // Set to today's date
             currency: 'EUR',
-            isDeveloper: user.name.toLowerCase().includes('dev test') || user.name.toLowerCase().includes('test'),
             adminAlias: null,
             appReplacement: 0
           });
