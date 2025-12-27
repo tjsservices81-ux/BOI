@@ -28,9 +28,10 @@
         "phone": "7310658405",
         "address": null,
         "dateOfBirth": null,
-        "joinDate": "2025-12-27T17:18:01.309Z",
+        "joinDate": "Member since 2018",
         "dateCreated": "2025-12-27T17:18:01.309Z",
-        "isDisabled": false
+        "isDisabled": false,
+        "currency": "EUR"
       }
     ]
   ],

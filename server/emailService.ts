@@ -333,17 +333,90 @@ export async function sendTransferConfirmation(
     let body: string;
 
     if (isRecipient) {
-      // Simple message for recipients - just the PDF
+      // Professional payment received email for recipients
       subject = "Payment Received - Bank of Ireland";
       body = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #126987;">Payment Received</h2>
-          <p>Please find attached your payment confirmation.</p>
-          <p style="color: #666; font-size: 12px; margin-top: 30px;">
-            This is an automated message from Bank of Ireland.
-          </p>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Received - Bank of Ireland</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; background-color: #f5f5f5;">
+    <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e0e0e0;">
+        
+        <!-- Header with Bank of Ireland branding -->
+        <div style="background: linear-gradient(135deg, #0052cc 0%, #003d99 100%); padding: 30px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: bold;">Bank of Ireland</h1>
+            <p style="color: rgba(255,255,255,0.9); margin: 5px 0 0 0; font-size: 14px;">Mobile Banking</p>
         </div>
-      `;
+        
+        <!-- Main content -->
+        <div style="padding: 30px;">
+            
+            <!-- Success message -->
+            <div style="text-align: center; margin-bottom: 30px;">
+                <div style="width: 60px; height: 60px; background-color: #10b981; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+                    <span style="color: #ffffff; font-size: 36px; font-weight: bold;">✓</span>
+                </div>
+                <h2 style="color: #10b981; margin: 0 0 10px 0; font-size: 24px; font-weight: bold;">Payment Received</h2>
+                <p style="color: #666666; margin: 0; font-size: 16px;">Your payment has been successfully processed</p>
+            </div>
+            
+            <!-- Payment details card -->
+            <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid #0052cc;">
+                
+                <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #e0e0e0;">
+                    <p style="color: #999999; margin: 0 0 5px 0; font-size: 12px; text-transform: uppercase; font-weight: 600;">Amount</p>
+                    <p style="color: #0052cc; margin: 0; font-size: 28px; font-weight: bold;">${details.currency}${details.amount}</p>
+                </div>
+                
+                <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #e0e0e0;">
+                    <p style="color: #999999; margin: 0 0 5px 0; font-size: 12px; text-transform: uppercase; font-weight: 600;">From</p>
+                    <p style="color: #333333; margin: 0; font-size: 16px; font-weight: 500;">${details.senderName}</p>
+                </div>
+                
+                <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #e0e0e0;">
+                    <p style="color: #999999; margin: 0 0 5px 0; font-size: 12px; text-transform: uppercase; font-weight: 600;">Reference</p>
+                    <p style="color: #333333; margin: 0; font-size: 14px; font-family: 'Courier New', monospace;">${details.transactionReference}</p>
+                </div>
+                
+                <div>
+                    <p style="color: #999999; margin: 0 0 5px 0; font-size: 12px; text-transform: uppercase; font-weight: 600;">Date & Time</p>
+                    <p style="color: #333333; margin: 0; font-size: 14px;">${details.dateTime}</p>
+                </div>
+                
+            </div>
+            
+            <!-- Next steps -->
+            <div style="background-color: #f0f4ff; padding: 15px; border-radius: 6px; margin-bottom: 25px;">
+                <p style="color: #0052cc; margin: 0; font-size: 13px; line-height: 1.6;">
+                    <strong>What's next?</strong><br>
+                    The funds have been added to your account. A detailed confirmation PDF is attached to this email for your records.
+                </p>
+            </div>
+            
+            <!-- Supporting text -->
+            <p style="color: #666666; margin: 0 0 20px 0; line-height: 1.6; font-size: 14px;">
+                If you have any questions about this payment or need assistance, please contact our customer service team at your earliest convenience.
+            </p>
+            
+            <!-- Footer -->
+            <div style="padding-top: 20px; border-top: 1px solid #e0e0e0; text-align: center;">
+                <p style="color: #999999; margin: 0 0 10px 0; font-size: 12px;">
+                    Bank of Ireland • Customer Service: 1800 123 456
+                </p>
+                <p style="color: #999999; margin: 0; font-size: 11px;">
+                    This is a secure automated message. Please do not reply to this email.
+                </p>
+            </div>
+            
+        </div>
+        
+    </div>
+</body>
+</html>`;
     } else {
       // Full email content for the sender
       const emailContent = generateTransferConfirmationEmail(details);
