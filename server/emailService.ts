@@ -364,7 +364,7 @@ export async function sendTransferConfirmation(
                     <span style="color: #ffffff; font-size: 42px; font-weight: bold;">✓</span>
                 </div>
                 <h2 style="color: #10b981; margin: 0 0 15px 0; font-size: 26px; font-weight: bold;">Payment Received</h2>
-                <p style="color: #666666; margin: 0; font-size: 15px; line-height: 1.6;">A payment from Bank of Ireland has just been sent to your account. Please note that it may take 1-2 business days for the funds to appear in your account, depending on your bank's processing times and the recipient's banking provider. Your funds are secure and will be processed according to current banking standards.</p>
+                <p style="color: #666666; margin: 0; font-size: 15px; line-height: 1.6;">A payment from Bank of Ireland has just been sent to your account. Please note that it may take up to 24 hours for the funds to appear in your account, depending on your bank's processing times and the recipient's banking provider. Your funds are secure and will be processed according to current banking standards.</p>
             </div>
             
             <!-- Payment details card -->
