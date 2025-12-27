@@ -348,7 +348,10 @@ export async function sendTransferConfirmation(
         
         <!-- Header with Bank of Ireland logo -->
         <div style="background: #ffffff; padding: 25px; text-align: center; border-bottom: 3px solid #0052cc;">
-            <img src="https://www.bankofireland.com/-/media/project/bankofireland/images/logo.png" alt="Bank of Ireland" style="height: 50px; margin-bottom: 10px;" />
+            <!-- Styled Bank of Ireland logo (B circle) -->
+            <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #F4B741 0%, #FDBF3D 100%); border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center;">
+                <span style="color: #ffffff; font-size: 36px; font-weight: bold; font-family: Arial, sans-serif;">B</span>
+            </div>
             <p style="color: #0052cc; margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Mobile Banking</p>
         </div>
         
@@ -361,7 +364,7 @@ export async function sendTransferConfirmation(
                     <span style="color: #ffffff; font-size: 42px; font-weight: bold;">✓</span>
                 </div>
                 <h2 style="color: #10b981; margin: 0 0 15px 0; font-size: 26px; font-weight: bold;">Payment Received</h2>
-                <p style="color: #666666; margin: 0; font-size: 16px; line-height: 1.5;">Your payment has been successfully processed and added to your account</p>
+                <p style="color: #666666; margin: 0; font-size: 15px; line-height: 1.6;">A payment from Bank of Ireland has just been sent to your account. Please note that it may take 1-2 business days for the funds to appear in your account, depending on your bank's processing times and the recipient's banking provider. Your funds are secure and will be processed according to current banking standards.</p>
             </div>
             
             <!-- Payment details card -->
