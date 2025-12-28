@@ -1500,6 +1500,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               timeZone: 'Europe/Dublin'
             }),
             transactionReference: transactionReference,
+            transactionId: createdTransaction.id.toString(),
             senderName: user.name,
             accountInfo: `${account.displayName} (${account.accountNumber.slice(-4)})`
           }).catch(err => console.error('📧 Email notification failed (non-critical):', err));
@@ -1892,6 +1893,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           timeZone: 'Europe/Dublin'
         }),
         transactionReference: emailData.transactionReference,
+        transactionId: emailData.transferData?.id?.toString() || emailData.transactionReference,
         accountInfo: emailData.accountInfo || "Current Account"
       };
       
@@ -1950,6 +1952,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           timeZone: 'Europe/Dublin'
         }),
         transactionReference: transaction.reference || transaction.id.toString(),
+        transactionId: transaction.id.toString(),
         accountInfo: accountInfo || "Account"
       };
       
@@ -1989,6 +1992,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           timeZone: 'Europe/Dublin'
         }),
         transactionReference: `TXN${Date.now()}_TEST123`,
+        transactionId: `TEST${Date.now()}`,
         accountInfo: "Current Account (1234)"
       };
       

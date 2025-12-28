@@ -13,6 +13,7 @@ export interface TransferConfirmationDetails {
   amount: string;
   currency: string;
   transactionReference: string;
+  transactionId: string;
   dateTime: string;
   accountInfo: string;
 }
@@ -195,7 +196,7 @@ export function generateTransferConfirmationEmail(details: TransferConfirmationD
                                 
                                 <tr style="background-color: #f9f9f9; border-bottom: 1px solid #ddd;">
                                     <td style="padding: 14px 12px; font-weight: 600; color: #333333; font-size: 12px; letter-spacing: 0.3px;">Transaction ID</td>
-                                    <td style="padding: 14px 12px; color: #333333; font-size: 13px; font-family: 'Courier New', monospace; font-weight: 400;">${details.transactionReference}</td>
+                                    <td style="padding: 14px 12px; color: #333333; font-size: 13px; font-family: 'Courier New', monospace; font-weight: 400;">${details.transactionId}</td>
                                 </tr>
                                 
                                 <tr style="border-bottom: 1px solid #ddd;">
@@ -511,7 +512,7 @@ export async function sendTransferConfirmation(
                                 
                                 <tr style="background-color: #f9f9f9; border-bottom: 1px solid #ddd;">
                                     <td style="padding: 14px 12px; font-weight: 600; color: #333333; font-size: 12px; letter-spacing: 0.3px;">Transaction ID</td>
-                                    <td style="padding: 14px 12px; color: #333333; font-size: 13px; font-family: 'Courier New', monospace; font-weight: 400;">${details.transactionReference}</td>
+                                    <td style="padding: 14px 12px; color: #333333; font-size: 13px; font-family: 'Courier New', monospace; font-weight: 400;">${details.transactionId}</td>
                                 </tr>
                                 
                                 <tr style="border-bottom: 1px solid #ddd;">
