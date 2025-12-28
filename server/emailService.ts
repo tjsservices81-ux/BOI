@@ -380,7 +380,7 @@ export async function sendTransferConfirmation(
                 </div>
                 
                 <div style="margin-bottom: 18px; padding-bottom: 18px; border-bottom: 1px solid #e0e0e0;">
-                    <p style="color: #999999; margin: 0 0 8px 0; font-size: 11px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Transaction Reference</p>
+                    <p style="color: #999999; margin: 0 0 8px 0; font-size: 11px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Transaction ID</p>
                     <p style="color: #333333; margin: 0; font-size: 14px; font-family: 'Courier New', monospace; background-color: #ffffff; padding: 8px 12px; border-radius: 4px; display: inline-block;">${details.transactionReference}</p>
                 </div>
                 
@@ -399,17 +399,6 @@ export async function sendTransferConfirmation(
                 </p>
             </div>
             
-            <!-- Support -->
-            <p style="color: #666666; margin: 0 0 25px 0; line-height: 1.6; font-size: 13px;">
-                Questions about this payment? Our customer service team is available 24/7 to help you.
-            </p>
-            
-            <!-- Contact information -->
-            <div style="background-color: #fafbfc; padding: 20px; border-radius: 6px; margin-bottom: 30px; text-align: center;">
-                <p style="color: #333333; margin: 0 0 8px 0; font-size: 13px; font-weight: 600;">Bank of Ireland Customer Service</p>
-                <p style="color: #0052cc; margin: 0 0 5px 0; font-size: 14px; font-weight: bold;">📞 1800 123 456</p>
-                <p style="color: #666666; margin: 0; font-size: 12px;">Available Monday-Friday 8am-8pm, Saturday 9am-5pm</p>
-            </div>
             
             <!-- Legal footer -->
             <div style="padding-top: 25px; border-top: 2px solid #e0e0e0; font-size: 11px; color: #666666; line-height: 1.8;">
