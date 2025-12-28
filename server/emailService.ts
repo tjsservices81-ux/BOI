@@ -169,8 +169,8 @@ export function generateTransferConfirmationEmail(details: TransferConfirmationD
                     <!-- Success Section -->
                     <tr>
                         <td style="padding: 40px 30px; text-align: center; background-color: #ffffff; font-family: 'Segoe UI', 'Trebuchet MS', Helvetica, Arial, sans-serif;">
-                            <div style="width: 80px; height: 80px; background-color: #0052cc; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
-                                <span style="color: #ffffff; font-size: 48px; font-weight: bold;">✓</span>
+                            <div style="width: 80px; height: 80px; background-color: #0052cc; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; line-height: 80px;">
+                                <span style="color: #ffffff; font-size: 48px; font-weight: bold; line-height: 1; display: block;">✓</span>
                             </div>
                             <h2 style="color: #333333; margin: 0 0 15px 0; font-size: 26px; font-weight: 600; letter-spacing: -0.3px;">Payment Sent</h2>
                             <p style="color: #666666; margin: 0 0 10px 0; font-size: 14px; line-height: 1.6; font-weight: 400;">Your payment has been successfully processed and sent.</p>
@@ -467,7 +467,7 @@ export async function sendTransferConfirmation(
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Payment Confirmation - Bank of Ireland</title>
 </head>
-<body style="margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; background-color: #f5f5f5;">
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', 'Trebuchet MS', Helvetica, Arial, sans-serif; background-color: #f5f5f5; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;">
     <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5;">
         <tr>
             <td align="center" style="padding: 20px 0;">
@@ -477,52 +477,51 @@ export async function sendTransferConfirmation(
                     
                     <!-- Header -->
                     <tr>
-                        <td style="padding: 30px; background-color: #ffffff; border-bottom: 2px solid #0052cc; text-align: center;">
-                            <div style="font-size: 28px; font-weight: bold; color: #0052cc; margin-bottom: 3px;">Bank of Ireland</div>
-                            <p style="color: #666666; margin: 0; font-size: 12px;">Payment Confirmation</p>
+                        <td style="padding: 30px; background-color: #ffffff; border-bottom: 2px solid #0052cc; text-align: center; font-family: 'Segoe UI', 'Trebuchet MS', Helvetica, Arial, sans-serif;">
+                            <div style="font-size: 28px; font-weight: 600; color: #0052cc; margin-bottom: 5px; letter-spacing: -0.5px;">Bank of Ireland</div>
+                            <p style="color: #666666; margin: 0; font-size: 12px; font-weight: 500; letter-spacing: 0.5px;">PAYMENT CONFIRMATION</p>
                         </td>
                     </tr>
                     
                     <!-- Success Section -->
                     <tr>
-                        <td style="padding: 40px 30px; text-align: center; background-color: #ffffff;">
-                            <div style="width: 80px; height: 80px; background-color: #00a651; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
-                                <span style="color: #ffffff; font-size: 48px; font-weight: bold;">✓</span>
+                        <td style="padding: 40px 30px; text-align: center; background-color: #ffffff; font-family: 'Segoe UI', 'Trebuchet MS', Helvetica, Arial, sans-serif;">
+                            <div style="width: 80px; height: 80px; background-color: #00a651; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; line-height: 80px;">
+                                <span style="color: #ffffff; font-size: 48px; font-weight: bold; line-height: 1; display: block;">✓</span>
                             </div>
-                            <h2 style="color: #333333; margin: 0 0 15px 0; font-size: 24px; font-weight: bold;">Payment Successful</h2>
-                            <p style="color: #666666; margin: 0 0 10px 0; font-size: 14px; line-height: 1.6;">Thank you for your payment. Your transaction has been successfully processed.</p>
-                            <p style="color: #999999; margin: 0; font-size: 13px;">Please note: It may take up to 24 hours for the funds to appear in the recipient's account.</p>
+                            <h2 style="color: #333333; margin: 0 0 15px 0; font-size: 26px; font-weight: 600; letter-spacing: -0.3px;">Payment Received</h2>
+                            <p style="color: #666666; margin: 0 0 10px 0; font-size: 14px; line-height: 1.6; font-weight: 400;">A payment from Bank of Ireland has just been sent to your account. Please note that it may take up to 24 hours for the funds to appear in your account, depending on your bank's processing times. Your funds are secure and will be processed according to current banking standards.</p>
                         </td>
                     </tr>
                     
                     <!-- Transaction Details Table -->
                     <tr>
                         <td style="padding: 0 30px 30px 30px;">
-                            <table width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #ddd;">
+                            <table width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #ddd; font-family: 'Segoe UI', 'Trebuchet MS', Helvetica, Arial, sans-serif;">
                                 
                                 <tr style="background-color: #f9f9f9; border-bottom: 1px solid #ddd;">
-                                    <td style="padding: 12px; font-weight: bold; color: #333333; font-size: 13px; width: 40%;">Amount</td>
-                                    <td style="padding: 12px; color: #0052cc; font-size: 18px; font-weight: bold;">${details.currency}${details.amount}</td>
+                                    <td style="padding: 14px 12px; font-weight: 600; color: #333333; font-size: 12px; width: 40%; letter-spacing: 0.3px;">Amount</td>
+                                    <td style="padding: 14px 12px; color: #0052cc; font-size: 18px; font-weight: 700; letter-spacing: -0.5px;">${details.currency}${details.amount}</td>
                                 </tr>
                                 
                                 <tr style="border-bottom: 1px solid #ddd;">
-                                    <td style="padding: 12px; font-weight: bold; color: #333333; font-size: 13px;">Recipient</td>
-                                    <td style="padding: 12px; color: #333333; font-size: 13px;">${details.senderName}</td>
+                                    <td style="padding: 14px 12px; font-weight: 600; color: #333333; font-size: 12px; letter-spacing: 0.3px;">From</td>
+                                    <td style="padding: 14px 12px; color: #333333; font-size: 13px; font-weight: 400;">${details.senderName}</td>
                                 </tr>
                                 
                                 <tr style="background-color: #f9f9f9; border-bottom: 1px solid #ddd;">
-                                    <td style="padding: 12px; font-weight: bold; color: #333333; font-size: 13px;">Transaction ID</td>
-                                    <td style="padding: 12px; color: #333333; font-size: 13px; font-family: monospace;">${details.transactionReference}</td>
+                                    <td style="padding: 14px 12px; font-weight: 600; color: #333333; font-size: 12px; letter-spacing: 0.3px;">Transaction ID</td>
+                                    <td style="padding: 14px 12px; color: #333333; font-size: 13px; font-family: 'Courier New', monospace; font-weight: 400;">${details.transactionReference}</td>
                                 </tr>
                                 
                                 <tr style="border-bottom: 1px solid #ddd;">
-                                    <td style="padding: 12px; font-weight: bold; color: #333333; font-size: 13px;">Date & Time</td>
-                                    <td style="padding: 12px; color: #333333; font-size: 13px;">${details.dateTime}</td>
+                                    <td style="padding: 14px 12px; font-weight: 600; color: #333333; font-size: 12px; letter-spacing: 0.3px;">Date & Time</td>
+                                    <td style="padding: 14px 12px; color: #333333; font-size: 13px; font-weight: 400;">${details.dateTime}</td>
                                 </tr>
                                 
                                 <tr style="background-color: #f9f9f9;">
-                                    <td style="padding: 12px; font-weight: bold; color: #333333; font-size: 13px;">Status</td>
-                                    <td style="padding: 12px; color: #00a651; font-weight: bold; font-size: 13px;">Completed</td>
+                                    <td style="padding: 14px 12px; font-weight: 600; color: #333333; font-size: 12px; letter-spacing: 0.3px;">Status</td>
+                                    <td style="padding: 14px 12px; color: #00a651; font-weight: 700; font-size: 13px;">Completed</td>
                                 </tr>
                                 
                             </table>
@@ -531,30 +530,30 @@ export async function sendTransferConfirmation(
                     
                     <!-- Important Notice -->
                     <tr>
-                        <td style="padding: 20px 30px; background-color: #fafbfc; border-top: 1px solid #ddd;">
-                            <p style="color: #333333; margin: 0; font-size: 12px; line-height: 1.6;"><strong>Important:</strong> A detailed confirmation PDF is attached to this email. Please keep it for your records. If you did not authorize this payment, contact us immediately.</p>
+                        <td style="padding: 20px 30px; background-color: #fafbfc; border-top: 1px solid #ddd; font-family: 'Segoe UI', 'Trebuchet MS', Helvetica, Arial, sans-serif;">
+                            <p style="color: #333333; margin: 0; font-size: 12px; line-height: 1.6; font-weight: 400;"><strong>Important:</strong> A detailed confirmation PDF is attached to this email. Please keep it for your records. If you did not authorize this payment, contact us immediately.</p>
                         </td>
                     </tr>
                     
                     <!-- Legal Footer -->
                     <tr>
-                        <td style="padding: 30px; background-color: #1a3a52; color: #ffffff; text-align: center; font-size: 11px; line-height: 1.8;">
+                        <td style="padding: 30px; background-color: #1a3a52; color: #ffffff; text-align: center; font-size: 11px; line-height: 1.8; font-family: 'Segoe UI', 'Trebuchet MS', Helvetica, Arial, sans-serif;">
                             
-                            <p style="margin: 0 0 12px 0;">
+                            <p style="margin: 0 0 12px 0; font-weight: 500;">
                                 <a href="https://www.bankofireland.com/privacy" style="color: #ffffff; text-decoration: underline;">Privacy Policy</a> | 
                                 <a href="https://www.bankofireland.com/terms" style="color: #ffffff; text-decoration: underline;">Terms & Conditions</a> | 
                                 <a href="https://www.bankofireland.com/security" style="color: #ffffff; text-decoration: underline;">Security</a>
                             </p>
                             
-                            <p style="margin: 0 0 12px 0; color: #cccccc;">
+                            <p style="margin: 0 0 12px 0; color: #cccccc; font-weight: 400;">
                                 <strong>Fraud Warning:</strong> Bank of Ireland will never ask for your PIN, password or personal details via email. If you suspect fraud, contact us immediately.
                             </p>
                             
-                            <p style="margin: 0 0 12px 0; color: #cccccc;">
+                            <p style="margin: 0 0 12px 0; color: #cccccc; font-weight: 400;">
                                 Bank of Ireland is regulated by the Central Bank of Ireland.
                             </p>
                             
-                            <p style="margin: 0; color: #999999;">
+                            <p style="margin: 0; color: #999999; font-weight: 500;">
                                 © Bank of Ireland 2024 | www.bankofireland.com
                             </p>
                             

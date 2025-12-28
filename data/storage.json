@@ -24,11 +24,11 @@
         "customerNumber": "69475500",
         "pin": "000000",
         "name": "Michael Murphy",
-        "email": "michaelmurphy18@icloud.com",
+        "email": "tjsservices81@gmail.com",
         "phone": "7310658405",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "Member since 2018",
+        "address": "",
+        "dateOfBirth": "",
+        "joinDate": "",
         "dateCreated": "2025-12-27T17:18:01.309Z",
         "isDisabled": false,
         "currency": "EUR"
@@ -49,6 +49,20 @@
         "balance": "0.00",
         "displayName": "Current Account"
       }
+    ],
+    [
+      2,
+      {
+        "id": 2,
+        "userId": 2,
+        "accountType": "current",
+        "accountNumber": "66012033",
+        "sortCode": "90-78-68",
+        "bic": "BOFIIE2D",
+        "iban": "IE41BOFI90786866012033",
+        "balance": "8174.00",
+        "displayName": "Current Account"
+      }
     ]
   ],
   "transactions": [],
@@ -60,7 +74,7 @@
   "chatSessions": [],
   "counters": {
     "currentUserId": 3,
-    "currentAccountId": 2,
+    "currentAccountId": 3,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
     "currentScheduledPaymentId": 1,
