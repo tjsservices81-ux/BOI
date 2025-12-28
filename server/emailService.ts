@@ -346,9 +346,12 @@ export async function sendTransferConfirmation(
 <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; background-color: #f5f5f5;">
     <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e0e0e0;">
         
-        <!-- Header with Bank of Ireland logo -->
-        <div style="background: #ffffff; padding: 20px; text-align: center; border-bottom: 3px solid #0052cc;">
-            <img src="https://bankofireland.com/assets/logo.webp" alt="Bank of Ireland" style="height: 80px; margin-bottom: 5px; max-width: 100%;" />
+        <!-- Header with Bank of Ireland branding -->
+        <div style="background: #ffffff; padding: 20px 30px; text-align: center; border-bottom: 3px solid #0052cc;">
+            <div style="font-size: 32px; font-weight: bold; color: #0052cc; letter-spacing: -1px; margin-bottom: 5px;">
+                Bank of Ireland
+            </div>
+            <p style="color: #0052cc; margin: 0; font-size: 12px; font-weight: 600; letter-spacing: 0.5px;">MOBILE BANKING</p>
         </div>
         
         <!-- Main content -->
