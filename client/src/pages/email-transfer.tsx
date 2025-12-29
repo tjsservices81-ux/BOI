@@ -145,7 +145,7 @@ export default function EmailTransfer() {
     
     const interval = setInterval(() => {
       setAnimationProgress(prev => {
-        const newProgress = prev + 2;
+        const newProgress = prev + 5;
         
         const newStageIndex = Math.floor(newProgress / 20);
         if (newStageIndex !== stageIndex && newStageIndex < stages.length) {
@@ -194,7 +194,7 @@ export default function EmailTransfer() {
         }
         return newProgress;
       });
-    }, 100);
+    }, 200);
   };
 
   if (step === 'success') {
