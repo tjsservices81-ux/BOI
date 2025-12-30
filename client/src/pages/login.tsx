@@ -771,7 +771,7 @@ export default function Login() {
 
       // Use fresh profile data from database instead of localStorage cache
       login({
-        id: parseInt(currentUser.replace(/\D/g, '')) || 1,
+        id: freshUserProfile.id,
         name: freshUserProfile.name,
         email: freshUserProfile.email,
         customerNumber: currentUser
