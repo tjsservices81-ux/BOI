@@ -2230,6 +2230,7 @@ export default function Login() {
                             setShowNotificationPermissionModal(false);
                             setPendingAccountData(null);
                             setNotificationDenied(false);
+                            navigate("/dashboard");
                           } else {
                             // User denied, show the denial screen
                             setNotificationDenied(true);
@@ -2243,6 +2244,7 @@ export default function Login() {
                         setShowNotificationPermissionModal(false);
                         setPendingAccountData(null);
                         setNotificationDenied(false);
+                        navigate("/dashboard");
                       }
                     }}
                     className="w-full p-4 bg-green-600 text-white rounded-xl font-semibold active:scale-98 transition-transform text-base"
@@ -2284,6 +2286,7 @@ export default function Login() {
                             setShowNotificationPermissionModal(false);
                             setPendingAccountData(null);
                             setNotificationDenied(false);
+                            navigate("/dashboard");
                           }
                         } catch (error) {
                           console.log('Notification permission denied');
