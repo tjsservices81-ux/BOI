@@ -33,22 +33,6 @@
         "dateCreated": "2025-12-30T01:51:28.342Z",
         "isDisabled": false
       }
-    ],
-    [
-      3,
-      {
-        "id": 3,
-        "customerNumber": "37432050",
-        "pin": "000000",
-        "name": "Michael Murphy",
-        "email": "michaelmurphy18@icloud.com",
-        "phone": "7310658405",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "2025-12-30T01:54:21.959Z",
-        "dateCreated": "2025-12-30T01:54:21.959Z",
-        "isDisabled": false
-      }
     ]
   ],
   "accounts": [
@@ -89,7 +73,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 4,
+    "currentUserId": 3,
     "currentAccountId": 3,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
