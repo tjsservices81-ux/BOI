@@ -1,5 +1,23 @@
 {
-  "users": [],
+  "users": [
+    [
+      1,
+      {
+        "id": 1,
+        "customerNumber": "44745644",
+        "pin": "",
+        "name": "Michael Murphy",
+        "email": "michaelmurphy18@icloud.com",
+        "phone": "7310658405",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "currency": "EUR",
+        "dateCreated": "2025-12-30T11:47:16.459Z",
+        "isDisabled": false
+      }
+    ]
+  ],
   "accounts": [],
   "transactions": [],
   "payees": [],
