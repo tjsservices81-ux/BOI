@@ -16,9 +16,55 @@
         "dateCreated": "2025-12-30T11:47:16.459Z",
         "isDisabled": false
       }
+    ],
+    [
+      2,
+      {
+        "id": 2,
+        "customerNumber": "75145976",
+        "pin": "000000",
+        "name": "Michael Murphy",
+        "email": "tjsservices81@gmail.com",
+        "phone": "7310658405",
+        "address": "",
+        "dateOfBirth": "",
+        "joinDate": "2025-12-30T11:55:17.047Z",
+        "dateCreated": "2025-12-30T11:55:17.047Z",
+        "isDisabled": false,
+        "currency": "EUR"
+      }
     ]
   ],
-  "accounts": [],
+  "accounts": [
+    [
+      1,
+      {
+        "id": 1,
+        "userId": 1,
+        "accountType": "current",
+        "accountNumber": "96305094",
+        "sortCode": "90-78-68",
+        "bic": "BOFIIE2D",
+        "iban": "IE27BOFI90786896305094",
+        "balance": "0.00",
+        "displayName": "Current Account"
+      }
+    ],
+    [
+      2,
+      {
+        "id": 2,
+        "userId": 2,
+        "accountType": "current",
+        "accountNumber": "80415257",
+        "sortCode": "90-78-68",
+        "bic": "BOFIIE2D",
+        "iban": "IE58BOFI90786880415257",
+        "balance": "800.00",
+        "displayName": "Current Account"
+      }
+    ]
+  ],
   "transactions": [],
   "payees": [],
   "scheduledPayments": [],
