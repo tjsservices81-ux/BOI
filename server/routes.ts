@@ -387,6 +387,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // FIRST: Try OTC verification for registration/admin codes
+      const otcValidation = otcService.validateOTC('', code); // Empty customerNumber for new registrations
+      if (otcValidation.isValid) {
+        console.log(`✅ OTC VERIFIED: ${code} - attempting to find associated user`);
+        // Get the customer number from OTC
+        const activeOTCs = otcService.getAllActiveOTCs();
+        const otcEntry = activeOTCs.find((o: any) => o.code === code);
+        
+        if (otcEntry && otcEntry.customerNumber) {
+          const user = await storage.getUserByCustomerNumber(otcEntry.customerNumber);
+          if (user) {
+            console.log(`🎉 USER FOUND FROM OTC: ${user.customerNumber}`);
+            
+            // Create session for user
+            const userAgent = req.headers['user-agent'] || 'Unknown Device';
+            const ipAddress = req.ip || req.connection.remoteAddress || 'Unknown IP';
+            
+            // Create device session
+            const deviceSessionId = addDeviceSession({
+              deviceModel: userAgent.includes('iPhone') ? 'iPhone' : 'Other Device',
+              ipAddress,
+              userAgent,
+              customerNumber: user.customerNumber
+            });
+            
+            // Create persistent session
+            (req.session as any).userId = user.id;
+            (req.session as any).user = user;
+            (req.session as any).deviceSessionId = deviceSessionId;
+            (req.session as any).customerNumber = user.customerNumber;
+            
+            req.session.save((err) => {
+              if (err) {
+                console.error('Session save error:', err);
+                return res.status(500).json({ success: false, error: 'Failed to create session' });
+              }
+              
+              return res.json({
+                success: true,
+                message: "OTC verified - user logged in",
+                user: user,
+                sessionCreated: true
+              });
+            });
+            return;
+          }
+        }
+      }
+
       // Check permanent blacklist - codes that can never be used again
       const blacklistData = await db.get('permanent_blacklist');
       const pwaBlacklistData = await db.get('pwa_blacklist');
@@ -729,8 +778,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           email: userData.email,
           phone: '',
           dateOfBirth: userData.dateOfBirth || '',
-          joinDate: new Date().toISOString(),
-          currency: 'EUR'
+          joinDate: new Date().toISOString()
         });
         postgresCustomerId = newCustomer.id;
         console.log(`📊 CUSTOMER ADDED TO DATABASE: ${newCustomer.name} (${newCustomer.customerNumber}) with ID: ${postgresCustomerId}`);
@@ -754,10 +802,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`✅ USER REGISTERED with matching ID: ${newUser.id} (${newUser.customerNumber})`);
       
+      // Generate OTC for registration verification
+      const otc = await otcService.processNewAccount({
+        customerNumber: newUser.customerNumber,
+        name: fullName,
+        email: userData.email,
+        phone: ''
+      });
+      
+      console.log(`📱 OTC Generated for registration: ${otc}`);
+      
       res.status(201).json({ 
         success: true, 
         customerNumber: newUser.customerNumber,
-        message: "Registration successful" 
+        userId: newUser.id,
+        message: "Registration successful - please verify with OTC"
       });
     } catch (error) {
       console.error('Registration error:', error);
