@@ -2434,13 +2434,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
               currency: userData.currency || 'EUR'
             });
             postgresCustomerId = newCustomer.id;
-            console.log(`📊 CUSTOMER ADDED TO DATABASE (Admin OTC): ${newCustomer.name} (${newCustomer.customerNumber}) with ID: ${postgresCustomerId}`);
+            console.log(`📊 CUSTOMER ADDED TO DATABASE: ${newCustomer.name} (${newCustomer.customerNumber}) with ID: ${postgresCustomerId}`);
           } catch (customerError) {
             console.error('Failed to add customer to database:', customerError);
             throw new Error('Failed to create customer in database');
           }
 
-          // STEP 2: Create user in memory using PostgreSQL ID
+          // STEP 2: Create user in memory using PostgreSQL customer ID (keeps IDs in sync)
           const newUser = await storage.createUser({
             customerNumber: userData.customerNumber,
             name: userData.name,
@@ -2451,9 +2451,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             pin: "000000", // Default PIN
             joinDate: userData.joinDate || new Date().toISOString(),
             isDisabled: false
-          }, postgresCustomerId); // Use PostgreSQL ID for in-memory user
+          }, postgresCustomerId);
 
-          console.log(`✅ USER CREATED IN MEMORY with matching ID: ${newUser.id} (customerNumber: ${newUser.customerNumber})`);
+          console.log(`✅ USER CREATED: ${newUser.name} (ID: ${newUser.id}, customerNumber: ${newUser.customerNumber})`);
 
           // Generate unique 8-digit account number (check database for uniqueness)
           const generateUniqueAccountNumber = async (): Promise<string> => {

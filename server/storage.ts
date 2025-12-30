@@ -332,23 +332,24 @@ class MemStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser, customId?: number): Promise<User> {
-    // Use custom ID if provided (for PostgreSQL sync), otherwise auto-increment
-    const userId = customId !== undefined ? customId : this.currentUserId++;
-    
-    // CRITICAL: Detect ID collision (should never happen after sequence fix)
-    const existingUser = this.users.get(userId);
-    if (existingUser) {
-      console.error(`🚨 CRITICAL: ID COLLISION DETECTED!`);
-      console.error(`   - Existing user: ${existingUser.name} (${existingUser.customerNumber})`);
-      console.error(`   - New user attempt: ${insertUser.name} (${insertUser.customerNumber})`);
-      console.error(`   - Colliding ID: ${userId}`);
-      console.error(`   - This indicates the PostgreSQL customers_id_seq needs to be reset!`);
-      throw new Error(`ID collision detected: User ID ${userId} already in use. PostgreSQL sequence out of sync.`);
+    // CRITICAL: customId must be provided - it should be the PostgreSQL customer ID
+    // This ensures memory user ID matches database customer ID
+    if (customId === undefined) {
+      throw new Error('createUser requires customId (PostgreSQL customer ID) to maintain sync');
     }
     
-    // Update currentUserId if custom ID is higher (keeps counter in sync)
-    if (customId !== undefined && customId >= this.currentUserId) {
-      this.currentUserId = customId + 1;
+    const userId = customId;
+    
+    // Check if user already exists with this ID
+    const existingUser = this.users.get(userId);
+    if (existingUser) {
+      console.log(`User with ID ${userId} already exists in memory, returning existing user`);
+      return existingUser;
+    }
+    
+    // Update counter to prevent future collisions
+    if (userId >= this.currentUserId) {
+      this.currentUserId = userId + 1;
     }
     
     const user: User = {
@@ -365,6 +366,7 @@ class MemStorage implements IStorage {
       isDisabled: false
     };
     this.users.set(user.id, user);
+    console.log(`✅ User created with ID=${userId} (customerNumber: ${insertUser.customerNumber})`);
     await this.saveData(); // Persist data immediately
     return user;
   }
