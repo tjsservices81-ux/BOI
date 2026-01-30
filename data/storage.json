@@ -511,23 +511,6 @@
       }
     ],
     [
-      44,
-      {
-        "id": 44,
-        "customerNumber": "84764531",
-        "pin": "",
-        "name": "William smith ",
-        "email": "w.smithlaw@icloud.com",
-        "phone": "0784548",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "Member since 2018",
-        "currency": "GBP",
-        "dateCreated": "2026-01-01T18:45:25.715Z",
-        "isDisabled": false
-      }
-    ],
-    [
       53,
       {
         "id": 53,
@@ -1072,23 +1055,6 @@
       }
     ],
     [
-      98,
-      {
-        "id": 98,
-        "customerNumber": "45090697",
-        "pin": "",
-        "name": "William Murphy",
-        "email": "williammurphy2016@icloud.com",
-        "phone": "+447402612456",
-        "address": null,
-        "dateOfBirth": "2006-02-09",
-        "joinDate": "2019-01-11T10:21:20.354Z",
-        "currency": "GBP",
-        "dateCreated": "2026-01-11T10:21:20.312Z",
-        "isDisabled": false
-      }
-    ],
-    [
       102,
       {
         "id": 102,
@@ -1238,23 +1204,6 @@
         "joinDate": "2026-01-06T23:14:12.301Z",
         "currency": "GBP",
         "dateCreated": "2026-01-06T23:14:12.272Z",
-        "isDisabled": false
-      }
-    ],
-    [
-      105,
-      {
-        "id": 105,
-        "customerNumber": "78568476",
-        "pin": "",
-        "name": "Oisin Ganesh",
-        "email": "ganesh154@gmail.com",
-        "phone": "0852194382",
-        "address": "71 Riverside Dr, Clonshaugh, Dublin 17",
-        "dateOfBirth": "2002-03-03",
-        "joinDate": "2021-01-15T21:21:05.086Z",
-        "currency": "EUR",
-        "dateCreated": "2026-01-15T21:21:05.055Z",
         "isDisabled": false
       }
     ],
@@ -1627,7 +1576,7 @@
         "address": null,
         "dateOfBirth": null,
         "joinDate": "2026-01-23T19:48:07.381Z",
-        "currency": "GBP",
+        "currency": "EUR",
         "dateCreated": "2026-01-23T19:48:07.336Z",
         "isDisabled": false
       }
@@ -1741,13 +1690,81 @@
         "customerNumber": "32674620",
         "pin": "",
         "name": "Martin O’Toole",
-        "email": "martinotoole290@outlook.com",
-        "phone": "+353847419853",
-        "address": "16 Raheen Park Cherry Orchard, Dublin 10, D10 HR12, Ireland",
-        "dateOfBirth": "1997-05-10",
-        "joinDate": "Member since 09/10/2022",
+        "email": "martinotoole32@gmail.com",
+        "phone": "+353847417083",
+        "address": "34 The Green Lanesborough County Longford N39 EK73 Ireland",
+        "dateOfBirth": "1997-04-09",
+        "joinDate": "Member since 09/10/2021",
         "currency": "EUR",
         "dateCreated": "2025-12-30T18:13:40.752Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      136,
+      {
+        "id": 136,
+        "customerNumber": "56487825",
+        "pin": "",
+        "name": "Tony O’Neil ",
+        "email": "Tonyoneil238@gmail.com",
+        "phone": "0852194311",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "currency": "EUR",
+        "dateCreated": "2026-01-30T21:47:33.178Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      134,
+      {
+        "id": 134,
+        "customerNumber": "28419401",
+        "pin": "",
+        "name": "Kevin doyle ",
+        "email": "kdoyle777@gmail.com",
+        "phone": "07482806402",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2026-01-30T21:25:47.708Z",
+        "currency": "GBP",
+        "dateCreated": "2026-01-30T21:25:47.678Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      132,
+      {
+        "id": 132,
+        "customerNumber": "82146180",
+        "pin": "",
+        "name": "Adam ",
+        "email": "wilkid92@gmail.com",
+        "phone": "892425841",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "currency": "EUR",
+        "dateCreated": "2026-01-30T21:18:06.405Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      131,
+      {
+        "id": 131,
+        "customerNumber": "88609765",
+        "pin": "",
+        "name": "Oisin ganesh",
+        "email": "oisinganesh313@gmail.com",
+        "phone": "0858198870",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "currency": "EUR",
+        "dateCreated": "2026-01-30T15:59:54.335Z",
         "isDisabled": false
       }
     ]
@@ -1776,7 +1793,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 131,
+    "currentUserId": 137,
     "currentAccountId": 3,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
