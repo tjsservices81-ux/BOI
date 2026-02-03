@@ -46,6 +46,32 @@ export default function Dashboard() {
   const [isNavigating, setIsNavigating] = useState(false);
   const [userCurrency, setUserCurrency] = useState<Currency>(() => getUserCurrency());
   
+  useEffect(() => {
+    // Force immediate status bar and background color reset for dashboard
+    const resetTheme = () => {
+      const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+      if (themeColorMeta) {
+        themeColorMeta.setAttribute('content', '#126987');
+      }
+      const iosStatusMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+      if (iosStatusMeta) {
+        iosStatusMeta.setAttribute('content', 'black-translucent');
+      }
+      document.body.style.backgroundColor = '#126987';
+      document.documentElement.style.backgroundColor = '#126987';
+    };
+
+    resetTheme();
+    // Multiple attempts to ensure iOS 26+ captures the change
+    setTimeout(resetTheme, 100);
+    setTimeout(resetTheme, 500);
+    
+    return () => {
+      document.body.style.backgroundColor = '';
+      document.documentElement.style.backgroundColor = '';
+    };
+  }, []);
+
   // Touch-safe interaction state
   const [loadingAccountId, setLoadingAccountId] = useState<number | null>(null);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
