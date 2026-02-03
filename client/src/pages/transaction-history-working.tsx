@@ -2471,10 +2471,10 @@ export default function TransactionHistoryWorking() {
                   </svg>
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Popup Blocked
+                  Allow Access
                 </h3>
                 <p className="text-sm text-gray-600 mb-6" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                  Your browser blocked the transfer confirmation. Tap "Allow" to try again, or "Download" to save the PDF.
+                  Tap "Allow" to view the transfer confirmation, or "Download" to save the PDF.
                 </p>
 
                 <div className="space-y-3">
