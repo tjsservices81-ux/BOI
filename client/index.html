@@ -21,7 +21,14 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="theme-color" content="#306785" />
+    <meta name="theme-color" content="#126987" />
+    
+    <!-- iOS 18+ Status Bar Color Fix - Set body background immediately -->
+    <style>
+      html, body {
+        background-color: #126987 !important;
+      }
+    </style>
     
     <!-- Critical font preloading for instant rendering -->
     <link rel="preload" href="/OpenSans-Regular-webfont.woff2" as="font" type="font/woff2" crossorigin>
@@ -130,19 +137,20 @@
     
     <title>Bank of Ireland</title>
   </head>
-  <body style="background: transparent !important;">
+  <body style="background-color: #126987 !important;">
     <div id="loading-screen" style="
       position:fixed;
       top:0;
       left:0;
       width:100vw;
       height:100vh;
-      background:white;
+      background:#126987;
       display:flex;
       align-items:center;
       justify-content:center;
       font-size:18px;
       font-family:sans-serif;
+      color:white;
       z-index:9999;
     ">
       Loading... please wait
@@ -203,8 +211,11 @@
       // Set theme color to match header for seamless status bar blend
       const themeColorMeta = document.querySelector('meta[name="theme-color"]');
       if (themeColorMeta) {
-        themeColorMeta.setAttribute('content', '#306785');
+        themeColorMeta.setAttribute('content', '#126987');
       }
+      // Ensure body background is blue for iOS 18+ status bar
+      document.body.style.backgroundColor = '#126987';
+      document.documentElement.style.backgroundColor = '#126987';
 
       // Security measures to prevent sharing and copying
       document.addEventListener('DOMContentLoaded', function() {
