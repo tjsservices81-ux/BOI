@@ -52,12 +52,19 @@ export default function Splash() {
       setIsVisible(false);
       // Mark splash as completed in localStorage for proper state tracking
       localStorage.setItem('splash_completed', 'true');
+      
+      // Force status bar transition BEFORE navigation
+      const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+      if (themeColorMeta) {
+        themeColorMeta.setAttribute('content', '#126987');
+      }
+      
       // Dispatch event to notify App.tsx that splash is complete
       window.dispatchEvent(new CustomEvent('splashComplete'));
       setTimeout(() => {
         // Always navigate to login after splash for cold starts
         navigate('/login');
-      }, 300); // Brief fade out before navigation
+      }, 400); // Slightly longer fade for smoother color shift
     }, 8000); // 8 seconds total
 
     // Cleanup timer and remove splash class

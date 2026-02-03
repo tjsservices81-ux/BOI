@@ -430,6 +430,8 @@ function AppRoutes() {
   useEffect(() => {
     const handleFocusRestore = () => {
       restoreThemeForCurrentScreen();
+      // Ensure layout is correctly calculated after focus
+      window.dispatchEvent(new Event('resize'));
     };
 
     window.addEventListener('focus', handleFocusRestore);

@@ -8,7 +8,7 @@ Preferred communication style: Simple, everyday language.
 
 **Deployment Protocol:**
 - **ALWAYS** increment the PWA version number in `sw.js` (line 12: `SW_VERSION`) before every deployment/republishing
-- Current version: `boi-mobile-v4.4.0`
+- Current version: `boi-mobile-v4.5.1`
 - Increment the minor or patch version number (e.g., v4.4.0 → v4.5.0 or v4.4.1) for each deployment
 - This ensures all users with the PWA installed automatically receive updates when they next open the app
 - Also update the version in `client/src/main.tsx` (lines 53 and 74) to match so the update banner shows the correct version

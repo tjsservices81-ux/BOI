@@ -2,11 +2,11 @@
  * Bank of Ireland Mobile PWA Service Worker
  * Handles caching, offline functionality, and prevents blank screens
  * 
- * VERSION: 4.5.0 - Email Transfer AI chat confirmation support
+ * VERSION: 4.5.1 - Fix status bar and background glitches
  * BUILD: {{BUILD_TIMESTAMP}}
  */
 
-const SW_VERSION = '4.5.0';
+const SW_VERSION = '4.5.1';
 const BUILD_TIMESTAMP = Date.now();
 const CACHE_NAME = `boi-mobile-v${SW_VERSION}-${BUILD_TIMESTAMP}`;
 const FALLBACK_CACHE = `boi-fallback-v${SW_VERSION}`;
