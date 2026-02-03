@@ -3344,7 +3344,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .hdr-actions{display:flex;gap:8px}
 .btn{background:rgba(102,126,234,0.15);color:#667eea;border:1px solid rgba(102,126,234,0.4);padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s}
 .btn:hover{background:#667eea;color:#fff}
-.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;padding:0 20px 16px}
+.stats{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;padding:0 20px 16px}
 .stat-card{background:rgba(102,126,234,0.08);border:1px solid rgba(102,126,234,0.2);border-radius:12px;padding:12px 8px;text-align:center}
 .stat-val{font-size:22px;font-weight:800;background:linear-gradient(135deg,#667eea,#764ba2);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .stat-lbl{font-size:10px;color:#8b8ba5;text-transform:uppercase;font-weight:600;letter-spacing:0.3px;margin-top:2px}
@@ -3462,16 +3462,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <div class="stat-val" id="statFlagged" style="color:#dc3545">0</div>
 <div class="stat-lbl" style="color:#dc3545">Flagged</div>
 </div>
+<div class="stat-card" style="background:rgba(40,167,69,0.1);border-color:rgba(40,167,69,0.3)">
+<div class="stat-val" id="statToday" style="color:#28a745">0</div>
+<div class="stat-lbl" style="color:#28a745">Today</div>
+</div>
 </div>
 </div>
 <div class="controls">
 <button class="ctrl-btn active" onclick="setFilter('active',this)">Active</button>
+<button class="ctrl-btn" onclick="setFilter('today',this)">Today</button>
 <button class="ctrl-btn" onclick="setFilter('developer',this)">Developer</button>
 <button class="ctrl-btn" onclick="setFilter('flagged',this)">Flagged</button>
 <button class="ctrl-btn" onclick="setFilter('deleted',this)">Deleted</button>
 <button class="ctrl-btn" onclick="setSort('name',this)">Name</button>
 <button class="ctrl-btn" onclick="setSort('number',this)">Number</button>
 <button class="ctrl-btn" onclick="setSort('date',this)">Date</button>
+<button class="ctrl-btn" onclick="setSort('activity',this)">Most Active</button>
 <button class="ctrl-btn" onclick="exportData()">Export</button>
 </div>
 <div class="srch">
@@ -3544,22 +3550,41 @@ function isOnline(c){
 if(!c.profileClickHistory||!Array.isArray(c.profileClickHistory)||!c.profileClickHistory.length)return false;
 return(new Date()-new Date(c.profileClickHistory[0]))<300000;
 }
+function isActiveToday(c){
+if(!c.profileClickHistory||!Array.isArray(c.profileClickHistory)||!c.profileClickHistory.length)return false;
+const today=new Date();today.setHours(0,0,0,0);
+return c.profileClickHistory.some(ts=>new Date(ts)>=today);
+}
+function getActivityCount(c){
+return(c.profileClickHistory&&Array.isArray(c.profileClickHistory))?c.profileClickHistory.length:0;
+}
+function formatClickTime(ts){
+const d=new Date(ts);
+const now=new Date();
+const diff=now-d;
+if(diff<60000)return'Just now';
+if(diff<3600000)return Math.floor(diff/60000)+'m ago';
+if(diff<86400000)return Math.floor(diff/3600000)+'h ago';
+return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+}
 function updateStats(){
 const total=allCust.filter(c=>!c.isDeleted).length;
 const online=allCust.filter(c=>!c.isDeleted&&isOnline(c)).length;
 const dev=allCust.filter(c=>!c.isDeleted&&isDeveloper(c)).length;
 const real=total-dev;
 const flagged=allCust.filter(c=>c.notificationViolationFlagged).length;
+const today=allCust.filter(c=>!c.isDeleted&&isActiveToday(c)).length;
 document.getElementById('statTotal').textContent=total;
 document.getElementById('statActive').textContent=online;
 document.getElementById('statDev').textContent=dev;
 document.getElementById('statReal').textContent=real;
 document.getElementById('statFlagged').textContent=flagged;
+document.getElementById('statToday').textContent=today;
 }
 function setFilter(type,btn){
 currentFilter=type;
 document.querySelectorAll('.ctrl-btn').forEach(b=>{
-if(['Active','Developer','Flagged','Deleted'].some(t=>b.textContent===t))b.classList.remove('active');
+if(['Active','Today','Developer','Flagged','Deleted'].some(t=>b.textContent===t))b.classList.remove('active');
 });
 if(btn)btn.classList.add('active');
 applyFiltersAndSort();
@@ -3567,7 +3592,7 @@ applyFiltersAndSort();
 function setSort(type,btn){
 currentSort=type;
 document.querySelectorAll('.ctrl-btn').forEach(b=>{
-if(['Name','Number','Date'].some(t=>b.textContent===t))b.classList.remove('active');
+if(['Name','Number','Date','Most Active'].some(t=>b.textContent===t))b.classList.remove('active');
 });
 if(btn)btn.classList.add('active');
 applyFiltersAndSort();
@@ -3576,6 +3601,7 @@ function flt(){applyFiltersAndSort()}
 function applyFiltersAndSort(){
 let filtered=allCust;
 if(currentFilter==='active')filtered=filtered.filter(c=>!c.isDeleted);
+else if(currentFilter==='today')filtered=filtered.filter(c=>!c.isDeleted&&isActiveToday(c));
 else if(currentFilter==='developer')filtered=filtered.filter(c=>!c.isDeleted&&isDeveloper(c));
 else if(currentFilter==='flagged')filtered=filtered.filter(c=>c.notificationViolationFlagged);
 else if(currentFilter==='deleted')filtered=filtered.filter(c=>c.isDeleted);
@@ -3584,6 +3610,7 @@ if(q)filtered=filtered.filter(c=>(c.adminAlias||'').toLowerCase().includes(q)||c
 if(currentSort==='name')filtered.sort((a,b)=>a.name.localeCompare(b.name));
 else if(currentSort==='number')filtered.sort((a,b)=>parseInt(a.customerNumber)-parseInt(b.customerNumber));
 else if(currentSort==='date')filtered.sort((a,b)=>new Date(b.joinDate||0)-new Date(a.joinDate||0));
+else if(currentSort==='activity')filtered.sort((a,b)=>getActivityCount(b)-getActivityCount(a));
 render(filtered);
 }
 function render(data){
@@ -3642,6 +3669,21 @@ h+=\`<div class="cust-card">
 </div>
 </div>
 \`:''}
+<div class="detail-section" style="margin-top:14px">
+<div class="section-title">📊 Activity (Last 3 Profile Views)</div>
+\${c.profileClickHistory&&c.profileClickHistory.length>0?c.profileClickHistory.slice(0,3).map((ts,idx)=>\`
+<div class="detail-row" style="background:rgba(40,167,69,0.08);border:1px solid rgba(40,167,69,0.2)">
+<span class="detail-label" style="color:#28a745">\${idx===0?'Most Recent':idx===1?'2nd Visit':'3rd Visit'}</span>
+<span class="detail-value" style="color:#28a745">\${formatClickTime(ts)}</span>
+</div>
+\`).join(''):\`
+<div class="detail-row" style="background:rgba(102,126,234,0.05);border:1px dashed rgba(102,126,234,0.2)">
+<span class="detail-label" style="color:#6b6b85">No activity recorded</span>
+<span class="detail-value" style="color:#6b6b85">-</span>
+</div>
+\`}
+<div class="detail-row"><span class="detail-label">Total Profile Views</span><span class="detail-value" style="font-weight:700;color:#667eea">\${getActivityCount(c)}</span></div>
+</div>
 <div class="admin-field">
 <div class="admin-field-label">Admin Alias / Notes</div>
 <div class="admin-field-row">
