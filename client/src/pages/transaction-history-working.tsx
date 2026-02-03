@@ -105,7 +105,7 @@ export default function TransactionHistoryWorking() {
     };
   }, []);
 
-  const navigateWithAnimation = (path: string) => {
+  const navigateWithAnimation = (path: string, _direction?: string) => {
     setLocation(path);
   };
 

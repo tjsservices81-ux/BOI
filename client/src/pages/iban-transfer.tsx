@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { ChevronLeft, Info, Check, CreditCard, Globe, X } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -8,6 +8,24 @@ import { getAccounts, processTransfer, processSecureTransfer, checkTransferConfi
 import { UserDataManager } from "../utils/userDataManager";
 import { formatCurrency, getUserCurrency, type Currency } from "../utils/currencyUtils";
 import { validateIBAN, formatIBAN } from "../utils/bankValidation";
+
+// Timeout-protected fetch helper to prevent stuck animations
+const fetchWithTimeout = async (url: string, options: RequestInit, timeoutMs: number = 15000): Promise<Response> => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  
+  try {
+    const response = await fetch(url, { ...options, signal: controller.signal });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error: any) {
+    clearTimeout(timeoutId);
+    if (error.name === 'AbortError') {
+      throw new Error('Request timed out. Please try again.');
+    }
+    throw error;
+  }
+};
 
 const ibanTransferSchema = z.object({
   recipientName: z.string().min(2, "Recipient name is required"),
@@ -258,8 +276,8 @@ export default function IbanTransfer() {
           // Process the transfer asynchronously
           (async () => {
             try {
-              // First check if this is an internal BOI transfer
-              const lookupResponse = await fetch('/api/lookup-account/sepa', {
+              // First check if this is an internal BOI transfer (with timeout protection)
+              const lookupResponse = await fetchWithTimeout('/api/lookup-account/sepa', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
@@ -267,7 +285,7 @@ export default function IbanTransfer() {
                   bic: formData.bicCode,
                   iban: formData.iban
                 })
-              });
+              }, 10000);
               
               const lookupResult = await lookupResponse.json();
               
@@ -275,7 +293,7 @@ export default function IbanTransfer() {
                 // Internal BOI transfer - use internal transfer API
                 console.log('Internal BOI SEPA transfer detected:', lookupResult);
                 
-                const internalResponse = await fetch('/api/internal-transfer', {
+                const internalResponse = await fetchWithTimeout('/api/internal-transfer', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   credentials: 'include',
@@ -287,7 +305,7 @@ export default function IbanTransfer() {
                     recipientName: formData.recipientName,
                     transferType: 'sepa'
                   })
-                });
+                }, 15000);
                 
                 const internalResult = await internalResponse.json();
                 
@@ -379,6 +397,8 @@ export default function IbanTransfer() {
               }
             } catch (error) {
               console.error('SEPA Transfer processing failed:', error);
+              // Still show reference to prevent UI from getting stuck
+              setShowReference(true);
             }
           })();
           

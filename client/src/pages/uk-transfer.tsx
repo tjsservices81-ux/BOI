@@ -1,6 +1,24 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { ChevronLeft, Info, Check, CreditCard, Building2, Building, Plus, X } from "lucide-react";
+
+// Timeout-protected fetch helper to prevent stuck animations
+const fetchWithTimeout = async (url: string, options: RequestInit, timeoutMs: number = 15000): Promise<Response> => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  
+  try {
+    const response = await fetch(url, { ...options, signal: controller.signal });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error: any) {
+    clearTimeout(timeoutId);
+    if (error.name === 'AbortError') {
+      throw new Error('Request timed out. Please try again.');
+    }
+    throw error;
+  }
+};
 import barclaysIcon from "@assets/IMG_1985_1751646296833.png";
 import lloydsIcon from "@assets/IMG_1986_1751646563662.png";
 import tsbIcon from "@assets/IMG_1987_1751646758072.png";
@@ -410,8 +428,8 @@ export default function UkTransfer() {
           // Process the transfer asynchronously
           setTimeout(async () => {
             try {
-              // First check if this is an internal BOI transfer
-              const lookupResponse = await fetch('/api/lookup-account/uk', {
+              // First check if this is an internal BOI transfer (with timeout protection)
+              const lookupResponse = await fetchWithTimeout('/api/lookup-account/uk', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
@@ -419,7 +437,7 @@ export default function UkTransfer() {
                   sortCode: formData.sortCode,
                   accountNumber: formData.accountNumber
                 })
-              });
+              }, 10000);
               
               const lookupResult = await lookupResponse.json();
               
@@ -427,7 +445,7 @@ export default function UkTransfer() {
                 // Internal BOI transfer - use internal transfer API
                 console.log('Internal BOI transfer detected:', lookupResult);
                 
-                const internalResponse = await fetch('/api/internal-transfer', {
+                const internalResponse = await fetchWithTimeout('/api/internal-transfer', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   credentials: 'include',
@@ -439,7 +457,7 @@ export default function UkTransfer() {
                     recipientName: formData.recipientName,
                     transferType: 'uk'
                   })
-                });
+                }, 15000);
                 
                 const internalResult = await internalResponse.json();
                 
@@ -529,6 +547,8 @@ export default function UkTransfer() {
               }
             } catch (error) {
               console.error('Transfer processing failed:', error);
+              // Still show reference to prevent UI from getting stuck
+              setShowReference(true);
             }
           }, 0);
           
