@@ -47,7 +47,7 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'SW_ACTIVATED') {
       // Show update notification
-      console.log('🎉 App updated to v4.5.5!');
+      console.log('🎉 App updated to v4.5.6!');
       
       // Create a temporary notification banner
       const banner = document.createElement('div');
@@ -68,7 +68,7 @@ if ('serviceWorker' in navigator) {
         text-align: center;
         animation: slideDown 0.3s ease-out;
       `;
-      banner.innerHTML = '✅ App Updated to v4.5.5 - Latest Features Active!';
+      banner.innerHTML = '✅ App Updated to v4.5.6 - Latest Features Active!';
       
       // Add animation
       const style = document.createElement('style');
