@@ -38,6 +38,8 @@ interface ChatMessage {
   timestamp: Date;
   agentName?: string;
   isAutomated?: boolean;
+  pdfData?: string;
+  pdfFileName?: string;
 }
 
 interface ChatResponse {
@@ -974,7 +976,7 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
     return responses[Math.floor(Math.random() * responses.length)];
   };
 
-  const generateAIResponse = async (userMessage: string, messages: ChatMessage[]): Promise<{ text: string; category: string }> => {
+  const generateAIResponse = async (userMessage: string, messages: ChatMessage[]): Promise<{ text: string; category: string; pdfData?: string; pdfFileName?: string }> => {
     try {
       // Check if user is asking about transactions/transfers/payments
       const transferKeywords = [
@@ -1096,7 +1098,9 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
       const data = await response.json();
       return {
         text: data.response,
-        category: 'ai-generated'
+        category: 'ai-generated',
+        pdfData: data.pdfData,
+        pdfFileName: data.pdfFileName
       };
     } catch (error) {
       console.error('Error getting AI response:', error);
@@ -1167,7 +1171,9 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
             isUser: false,
             timestamp: new Date(),
             agentName: chatState.agentName,
-            isAutomated: false
+            isAutomated: false,
+            pdfData: (responseData as any).pdfData,
+            pdfFileName: (responseData as any).pdfFileName
           };
 
           setChatState(prev => ({
@@ -1404,6 +1410,28 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
                   <p className="text-base leading-relaxed" style={{ fontFamily: 'OpenSans, sans-serif' }}>
                     {message.text}
                   </p>
+                  {message.pdfData && (
+                    <div className={`mt-3 pt-3 border-t ${message.isUser ? 'border-white/20' : 'border-gray-100'}`}>
+                      <button
+                        onClick={() => {
+                          const link = document.createElement('a');
+                          link.href = message.pdfData!;
+                          link.download = message.pdfFileName || 'Transfer_Confirmation.pdf';
+                          link.click();
+                        }}
+                        className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors w-full ${
+                          message.isUser 
+                            ? 'bg-white/10 hover:bg-white/20 text-white' 
+                            : 'bg-gray-50 hover:bg-gray-100 text-[#126987]'
+                        }`}
+                      >
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span className="text-sm font-medium">Download Confirmation</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <p className={`text-sm text-gray-500 mt-2 ${message.isUser ? 'text-right' : 'text-left'}`}>
                   {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

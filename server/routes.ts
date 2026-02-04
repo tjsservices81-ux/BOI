@@ -2876,9 +2876,29 @@ No transfers found yet on your account.`;
 
       const aiResponse = await generateChatResponse(messages, agentName, transferContext, userCurrency);
       
+      // Check if AI response mentions sending a confirmation or PDF
+      let pdfData = null;
+      let pdfFileName = null;
+      const lowerResponse = aiResponse.toLowerCase();
+      if (lowerResponse.includes('confirmation') || lowerResponse.includes('pdf') || lowerResponse.includes('sent') || lowerResponse.includes('here is')) {
+        // If we have transfer context, we can potentially attach the PDF data
+        if (requestedTransactionData && requestedTransactionData.length > 0) {
+          const transferTransactions = requestedTransactionData
+            .filter((tx: any) => tx.paymentMethod === 'UK Transfer' || tx.paymentMethod === 'SEPA Transfer' || tx.paymentMethod === 'EMAIL Transfer')
+            .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+          
+          if (transferTransactions.length > 0 && transferTransactions[0].confirmationPdfData) {
+            pdfData = transferTransactions[0].confirmationPdfData;
+            pdfFileName = `BOI_Confirmation_${transferTransactions[0].id}.pdf`;
+          }
+        }
+      }
+
       res.json({ 
         response: aiResponse,
-        agentName: agentName
+        agentName: agentName,
+        pdfData: pdfData,
+        pdfFileName: pdfFileName
       });
     } catch (error) {
       console.error('Failed to generate AI response:', error);
