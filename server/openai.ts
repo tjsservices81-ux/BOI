@@ -105,9 +105,28 @@ const FALLBACK_RESPONSES: { triggers: string[]; responses: string[] }[] = [
 ];
 
 // Get a fallback response based on user message
-function getFallbackResponse(userMessage: string): string {
+function getFallbackResponse(userMessage: string, transferContext?: string, userCurrency: 'EUR' | 'GBP' = 'EUR'): string {
   const lowerMessage = userMessage.toLowerCase();
   
+  // High priority: Last transfer/payment confirmation
+  if (lowerMessage.includes('last') && (lowerMessage.includes('transfer') || lowerMessage.includes('payment') || lowerMessage.includes('transaction'))) {
+    if (transferContext) {
+      // Transfer context is already formatted by the caller (routes.ts)
+      return `I can certainly help with that. ${transferContext} Rest assured, it's been processed securely and is guaranteed to arrive within the normal timeframe.`;
+    } else {
+      return `I'm sorry, I wasn't able to bring up your most recent transfer details just now. Would you like me to try again or I can connect you with another agent who might have better access?`;
+    }
+  }
+
+  // Account details: IBAN, BIC, Account Number, Sort Code
+  if (lowerMessage.includes('iban') || lowerMessage.includes('bic') || lowerMessage.includes('account number') || lowerMessage.includes('sort code')) {
+    if (userCurrency === 'GBP') {
+      return "For your UK account, you can find your Account Number and Sort Code by tapping on the 'Current Account' card on your home screen. They are displayed right at the top for easy access.";
+    } else {
+      return "Your IBAN and BIC details are available within your account view. Just tap on your 'Current Account' from the dashboard, and you'll see them listed clearly at the top of the screen.";
+    }
+  }
+
   for (const category of FALLBACK_RESPONSES) {
     for (const trigger of category.triggers) {
       if (lowerMessage.includes(trigger)) {
@@ -348,8 +367,8 @@ Always sound like an incredibly intelligent, real human agent with exceptional r
     
     // Use intelligent fallback based on user's last message
     const lastUserMessage = messages.filter(m => m.role === 'user').pop()?.content || '';
-    const fallbackResponse = getFallbackResponse(lastUserMessage);
-    console.log(`🔄 Using fallback response for: "${lastUserMessage.substring(0, 50)}..."`);
+    const fallbackResponse = getFallbackResponse(lastUserMessage, transferContext, userCurrency);
+    console.log(`🔄 Using enhanced fallback response for: "${lastUserMessage.substring(0, 50)}..."`);
     return fallbackResponse;
   }
 }
