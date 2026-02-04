@@ -2,11 +2,11 @@
  * Bank of Ireland Mobile PWA Service Worker
  * Handles caching, offline functionality, and prevents blank screens
  * 
- * VERSION: 4.5.3 - Updated popup text and iOS status bar fix
+ * VERSION: 4.5.4 - Live chat fallback system for offline AI support
  * BUILD: {{BUILD_TIMESTAMP}}
  */
 
-const SW_VERSION = '4.5.3';
+const SW_VERSION = '4.5.4';
 const BUILD_TIMESTAMP = Date.now();
 const CACHE_NAME = `boi-mobile-v${SW_VERSION}-${BUILD_TIMESTAMP}`;
 const FALLBACK_CACHE = `boi-fallback-v${SW_VERSION}`;

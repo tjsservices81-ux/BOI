@@ -4,6 +4,132 @@ import { getPersonality, type PersonalityProfile } from "./personalities";
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
+// Intelligent fallback responses when OpenAI is unavailable
+const FALLBACK_RESPONSES: { triggers: string[]; responses: string[] }[] = [
+  {
+    triggers: ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening', 'howdy'],
+    responses: [
+      "Hello! Welcome to Bank of Ireland support. How can I help you today?",
+      "Hi there! I'm here to help with any banking queries you might have.",
+      "Hello! Thanks for getting in touch. What can I assist you with?"
+    ]
+  },
+  {
+    triggers: ['transfer', 'send money', 'payment', 'sent', 'sending'],
+    responses: [
+      "For UK transfers, please allow up to 24 hours for processing. SEPA transfers typically take 1-2 business days. Your payment is secure and will definitely arrive.",
+      "I can confirm that all Bank of Ireland transfers are fully guaranteed. UK payments process within 24 hours, and international transfers take 1-2 business days.",
+      "Your transfer is being processed securely. UK transfers complete within 24 hours, SEPA within 1-2 business days. Rest assured, your money will arrive."
+    ]
+  },
+  {
+    triggers: ['balance', 'how much', 'money left', 'account balance'],
+    responses: [
+      "You can check your balance on the main dashboard. Just tap on your account to see the current balance and recent transactions.",
+      "Your account balance is shown on the home screen. Tap any account to view the full details and transaction history.",
+      "To view your balance, please check the accounts section on your dashboard. All your accounts and balances are displayed there."
+    ]
+  },
+  {
+    triggers: ['card', 'blocked', 'lost', 'stolen', 'freeze'],
+    responses: [
+      "If your card is lost or stolen, please freeze it immediately from the Cards section in your app. You can then request a replacement.",
+      "You can block your card instantly from the Cards section. If you need a replacement, we can arrange that for you right away.",
+      "For card issues, go to Profile > Customer Panel and select 'Unblock Card' if its been blocked, or contact us for a replacement."
+    ]
+  },
+  {
+    triggers: ['statement', 'transactions', 'history', 'pdf'],
+    responses: [
+      "You can download your bank statement from the account details page. Just tap 'Get Statement' and choose your date range.",
+      "To get your statement, go to your account, tap the menu icon, and select 'Bank Statement'. You can choose any date range you need.",
+      "Your transaction history and statements are available in each account. Tap the account, then use the statement option to download or share."
+    ]
+  },
+  {
+    triggers: ['atm', 'cash', 'withdraw', 'withdrawal'],
+    responses: [
+      "You can withdraw cash at any ATM using your card. The daily limit is €300 (or £250 for GBP accounts). Let me know if you need help finding one.",
+      "For ATM withdrawals, your daily limit is €300/£250. You can find nearby ATMs using the ATM locator in the app.",
+      "Cash withdrawals are available at all ATMs. Remember your daily limit is €300 (€250 in the UK). Need help with anything else?"
+    ]
+  },
+  {
+    triggers: ['help', 'support', 'assist', 'issue', 'problem'],
+    responses: [
+      "I'm here to help! Could you tell me more about what you need assistance with?",
+      "Of course, I'd be happy to help. What seems to be the issue?",
+      "I'm here to assist you. Please let me know what you need help with and I'll do my best to sort it out."
+    ]
+  },
+  {
+    triggers: ['cancel', 'stop', 'reverse'],
+    responses: [
+      "Unfortunately, once a transfer has been submitted it cannot be cancelled as it's already being processed by the banking system.",
+      "I'm sorry, but transfers cannot be reversed once initiated. The payment is already in the system and will complete as scheduled.",
+      "Once a payment is sent, we can't stop it as it's already being processed. Is there anything else I can help you with?"
+    ]
+  },
+  {
+    triggers: ['guarantee', 'safe', 'secure', 'arrive', 'will it'],
+    responses: [
+      "I can absolutely guarantee your payment will arrive. All Bank of Ireland transfers are fully secured and guaranteed to complete successfully.",
+      "Yes, your transfer is 100% guaranteed. Every payment is protected and will definitely reach the recipient's account.",
+      "I guarantee it completely. Your money is safe and will absolutely arrive in the recipient's account. Bank of Ireland guarantees all transfers."
+    ]
+  },
+  {
+    triggers: ['how long', 'time', 'when', 'arrive', 'delay'],
+    responses: [
+      "UK transfers take up to 24 hours. SEPA/International transfers take 1-2 business days. Your payment is on track and will definitely arrive.",
+      "Processing times are: UK payments within 24 hours, SEPA transfers 1-2 business days. Your transfer will complete within this timeframe.",
+      "UK transfers complete in up to 24 hours, international payments in 1-2 business days. Rest assured, your payment will arrive on time."
+    ]
+  },
+  {
+    triggers: ['thank', 'thanks', 'cheers', 'appreciate'],
+    responses: [
+      "You're welcome! Is there anything else I can help you with?",
+      "Happy to help! Let me know if you need anything else.",
+      "No problem at all. Feel free to reach out if you have any other questions."
+    ]
+  },
+  {
+    triggers: ['bye', 'goodbye', 'close', 'end chat'],
+    responses: [
+      "Thank you for contacting Bank of Ireland. Have a great day!",
+      "Goodbye! Thanks for chatting with us. Take care!",
+      "Take care! Don't hesitate to reach out if you need anything else in the future."
+    ]
+  }
+];
+
+// Get a fallback response based on user message
+function getFallbackResponse(userMessage: string): string {
+  const lowerMessage = userMessage.toLowerCase();
+  
+  for (const category of FALLBACK_RESPONSES) {
+    for (const trigger of category.triggers) {
+      if (lowerMessage.includes(trigger)) {
+        // Return a random response from the matching category
+        const responses = category.responses;
+        return responses[Math.floor(Math.random() * responses.length)];
+      }
+    }
+  }
+  
+  // Default fallback if no triggers match
+  const defaultResponses = [
+    "I'm here to help with your banking needs. Could you tell me a bit more about what you're looking for?",
+    "Thanks for your message. How can I assist you with your banking today?",
+    "I'd be happy to help. Could you provide a few more details about your query?",
+    "Thank you for getting in touch. What can I help you with regarding your account?",
+    "I'm available to assist with transfers, balances, cards, and more. What do you need help with?"
+  ];
+  
+  return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
+}
+
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant';
   content: string;
@@ -219,6 +345,11 @@ Always sound like an incredibly intelligent, real human agent with exceptional r
       status: error?.status
     });
     console.error('Full error:', error);
-    return "Sorry, I wasn't able to bring that up just now. Would you like me to try again or connect you with another agent?";
+    
+    // Use intelligent fallback based on user's last message
+    const lastUserMessage = messages.filter(m => m.role === 'user').pop()?.content || '';
+    const fallbackResponse = getFallbackResponse(lastUserMessage);
+    console.log(`🔄 Using fallback response for: "${lastUserMessage.substring(0, 50)}..."`);
+    return fallbackResponse;
   }
 }

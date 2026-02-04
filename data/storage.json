@@ -1801,6 +1801,23 @@
         "dateCreated": "2026-02-03T10:46:32.731Z",
         "isDisabled": false
       }
+    ],
+    [
+      143,
+      {
+        "id": 143,
+        "customerNumber": "58466508",
+        "pin": "",
+        "name": "Callum Johnson ",
+        "email": "callum171@icloud.com",
+        "phone": "+3538245123",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "currency": "EUR",
+        "dateCreated": "2026-02-03T23:58:27.821Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [
@@ -1827,7 +1844,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 142,
+    "currentUserId": 144,
     "currentAccountId": 3,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
