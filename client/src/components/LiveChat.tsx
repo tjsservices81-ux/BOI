@@ -983,7 +983,12 @@ export default function LiveChat({ isOpen, onClose }: LiveChatProps) {
         'transaction', 'payment', 'transfer', 'recent activity', 'account activity', 'movement',
         'last transfer', 'last payment', 'most recent', 'recent transfer', 'recent payment',
         'confirm my transfer', 'confirm transfer', 'show my transfer', 'my transfer',
-        'did my transfer', 'has my transfer', 'transfer go through', 'payment go through'
+        'did my transfer', 'has my transfer', 'transfer go through', 'payment go through',
+        'proof', 'document', 'receipt', 'confirmation', 'pdf', 'evidence',
+        'show me', 'send me', 'give me', 'can i get', 'can i have', 'i need',
+        'proof of transfer', 'proof of payment', 'transfer proof', 'payment proof',
+        'transfer confirmation', 'payment confirmation', 'payment receipt',
+        'download', 'record', 'details of my', 'statement'
       ];
       const isTransferQuery = transferKeywords.some(keyword => 
         userMessage.toLowerCase().includes(keyword)

@@ -108,13 +108,34 @@ const FALLBACK_RESPONSES: { triggers: string[]; responses: string[] }[] = [
 function getFallbackResponse(userMessage: string, transferContext?: string, userCurrency: 'EUR' | 'GBP' = 'EUR'): string {
   const lowerMessage = userMessage.toLowerCase();
   
+  // High priority: Proof/document/receipt/confirmation requests
+  const wantsProof = lowerMessage.includes('proof') || lowerMessage.includes('document') || 
+    lowerMessage.includes('receipt') || lowerMessage.includes('confirmation') || 
+    lowerMessage.includes('pdf') || lowerMessage.includes('evidence') || lowerMessage.includes('record');
+  
+  if (wantsProof && (lowerMessage.includes('transfer') || lowerMessage.includes('payment') || lowerMessage.includes('transaction') || lowerMessage.includes('sent') || lowerMessage.includes('money'))) {
+    if (transferContext) {
+      return `Of course! I've attached the PDF confirmation for your recent transfer below. You can download or view it directly. ${transferContext}`;
+    } else {
+      return `I'd be happy to help with that. Unfortunately, I wasn't able to locate a recent transfer on your account to generate the confirmation document. Could you check you've made a transfer recently?`;
+    }
+  }
+  
   // High priority: Last transfer/payment confirmation
   if (lowerMessage.includes('last') && (lowerMessage.includes('transfer') || lowerMessage.includes('payment') || lowerMessage.includes('transaction'))) {
     if (transferContext) {
-      // Transfer context is already formatted by the caller (routes.ts)
       return `I can certainly help with that. ${transferContext} Rest assured, it's been processed securely and is guaranteed to arrive within the normal timeframe.`;
     } else {
       return `I'm sorry, I wasn't able to bring up your most recent transfer details just now. Would you like me to try again or I can connect you with another agent who might have better access?`;
+    }
+  }
+  
+  // Generic proof/document request without specific transfer mention
+  if (wantsProof) {
+    if (transferContext) {
+      return `I've pulled up the proof of your most recent transfer. The PDF confirmation is attached below - just tap the download button to save it.`;
+    } else {
+      return `I'd be happy to provide documentation for you. Could you let me know which specific transfer or payment you'd like the confirmation for?`;
     }
   }
 
@@ -167,9 +188,10 @@ CRITICAL RULES:
 - Be warm but ALWAYS professional - you work for a bank, not a lifestyle blog
 
 PDF CONFIRMATIONS - CRITICAL:
-- If a customer asks for a "confirmation", "receipt", "PDF", "last payment details", or "transaction record", you MUST explicitly mention that you are sending the PDF confirmation.
-- Say things like: "I've attached the PDF confirmation for that transfer below. You can download or view it directly." or "Here is the payment confirmation you requested. Just tap the download button below."
-- When you mention "confirmation", "PDF", or "sent" in your response, the system will automatically attach the correct document.
+- If a customer asks for a "confirmation", "receipt", "PDF", "proof", "document", "proof of transfer", "proof of payment", "evidence", "record", or anything suggesting they want documentation of a transfer, you MUST explicitly mention that you are sending the PDF confirmation.
+- Say things like: "I've attached the PDF confirmation for that transfer below. You can download or view it directly." or "Here is the payment confirmation you requested. Just tap the download button below." or "I've pulled up the proof of your transfer. You'll find the PDF document attached below."
+- The system will automatically detect when you mention "confirmation", "PDF", "proof", "document", "receipt", "attached", or "sent" and attach the correct document.
+- ALWAYS use one of these trigger words in your response when the customer asks for any kind of transfer documentation.
 
 UNDERSTANDING ANY CUSTOMER QUESTION:
 You must understand ANYTHING a customer asks, no matter how they phrase it:

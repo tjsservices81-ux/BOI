@@ -2876,11 +2876,23 @@ No transfers found yet on your account.`;
 
       const aiResponse = await generateChatResponse(messages, agentName, transferContext, userCurrency);
       
-      // Check if AI response mentions sending a confirmation or PDF
+      // Check if user asked for or AI response mentions a confirmation/PDF/proof/document
       let pdfData = null;
       let pdfFileName = null;
       const lowerResponse = aiResponse.toLowerCase();
-      if (lowerResponse.includes('confirmation') || lowerResponse.includes('pdf') || lowerResponse.includes('sent') || lowerResponse.includes('here is')) {
+      const lowerMessage = message.toLowerCase();
+      
+      // Check both the user's request AND the AI's response for PDF-triggering keywords
+      const userWantsPdf = lowerMessage.includes('confirmation') || lowerMessage.includes('pdf') || 
+        lowerMessage.includes('proof') || lowerMessage.includes('document') || 
+        lowerMessage.includes('receipt') || lowerMessage.includes('evidence') ||
+        lowerMessage.includes('download') || lowerMessage.includes('record');
+      const aiMentionsPdf = lowerResponse.includes('confirmation') || lowerResponse.includes('pdf') || 
+        lowerResponse.includes('sent') || lowerResponse.includes('here is') ||
+        lowerResponse.includes('attached') || lowerResponse.includes('proof') ||
+        lowerResponse.includes('document') || lowerResponse.includes('receipt');
+      
+      if (userWantsPdf || aiMentionsPdf) {
         // If we have transfer context, we can potentially attach the PDF data
         if (requestedTransactionData && requestedTransactionData.length > 0) {
           const transferTransactions = requestedTransactionData
