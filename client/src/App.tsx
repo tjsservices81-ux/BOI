@@ -177,20 +177,13 @@ function AppRoutes() {
         const isColdStart = startType === 'cold' || startType === 'uncertain';
         
         if (isColdStart) {
-          // COLD START: App was fully closed/terminated - always show splash sequence
-          console.log('Cold start detected - showing splash sequence');
+          console.log('Cold start detected - going straight to login');
           
-          // Reset all splash-related flags for fresh start
-          setSplashShown(false);
-          localStorage.removeItem('splash_completed');
+          setSplashShown(true);
+          localStorage.setItem('splash_completed', 'true');
           localStorage.removeItem('app_background_time');
           localStorage.setItem('app_session_active', 'true');
-          // Mark this as a cold start - user must go through login screen
           localStorage.setItem('cold_start_active', 'true');
-          
-          // DO NOT restore user session on cold start
-          // User will be authenticated through login screen
-          // This prevents the dashboard bounce-back issue
           
         } else if (startType === 'warm') {
           // WARM START: App was backgrounded - restore exactly where user left off
@@ -230,10 +223,9 @@ function AppRoutes() {
           }
           
         } else {
-          // UNCERTAIN STATE: Default to cold start behavior for safety
-          console.log('Uncertain state - defaulting to cold start behavior');
-          setSplashShown(false);
-          localStorage.removeItem('splash_completed');
+          console.log('Uncertain state - going straight to login');
+          setSplashShown(true);
+          localStorage.setItem('splash_completed', 'true');
           localStorage.setItem('app_session_active', 'true');
           
           // Try to restore user session
@@ -476,27 +468,16 @@ function AppRoutes() {
             <Route path="/more" component={More} />
             <Route path="/">
               {(() => {
-                // Proper cold/warm start detection for root route
-                const appSessionActive = localStorage.getItem('app_session_active');
-                const splashCompleted = localStorage.getItem('splash_completed');
                 const coldStartActive = localStorage.getItem('cold_start_active');
                 
-                // Force splash for cold starts (no active session or incomplete splash)
-                if (!appSessionActive || (!splashShown && !splashCompleted)) {
-                  return <Splash />;
-                }
-                
-                // COLD START: Always go to login screen after splash (no dashboard redirect)
                 if (coldStartActive) {
                   return <Login />;
                 }
                 
-                // WARM START ONLY: Go directly to dashboard if user is authenticated
-                if (user && splashCompleted) {
+                if (user && splashShown) {
                   return <Redirect to="/dashboard" />;
                 }
                 
-                // Default: show login after splash completion
                 return <Login />;
               })()}
             </Route>
