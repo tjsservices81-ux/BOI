@@ -179,9 +179,17 @@ function AppRoutes() {
         if (isColdStart) {
           const hasAccess = localStorage.getItem('accessGranted') === 'true';
           const existingUser = StateManager.restoreAppState(true);
+          const offlineUser = (() => {
+            try {
+              const raw = localStorage.getItem('bankingUser') || localStorage.getItem('bankingUserBackup') || localStorage.getItem('bankingUser_sessionBackup');
+              return raw ? JSON.parse(raw) : null;
+            } catch { return null; }
+          })();
+          const restoredUser = existingUser?.user || offlineUser;
+          const restoredRoute = existingUser?.currentRoute || '/dashboard';
           
-          if (hasAccess && existingUser && existingUser.user) {
-            console.log('Cold start with existing session - restoring state');
+          if (hasAccess && restoredUser) {
+            console.log('Cold start with existing session - restoring state, skipping splash');
             setSplashShown(true);
             localStorage.setItem('splash_completed', 'true');
             localStorage.setItem('app_session_active', 'true');
@@ -190,9 +198,9 @@ function AppRoutes() {
             
             setTimeout(() => {
               if (!user) {
-                login(existingUser.user);
-                if (existingUser.currentRoute && existingUser.currentRoute !== '/login' && existingUser.currentRoute !== '/splash') {
-                  navigate(existingUser.currentRoute);
+                login(restoredUser);
+                if (restoredRoute && restoredRoute !== '/login' && restoredRoute !== '/splash') {
+                  navigate(restoredRoute);
                 }
               }
             }, 200);
@@ -245,8 +253,16 @@ function AppRoutes() {
         } else {
           const hasAccessUncertain = localStorage.getItem('accessGranted') === 'true';
           const existingUserUncertain = StateManager.restoreAppState(true);
+          const offlineUserUncertain = (() => {
+            try {
+              const raw = localStorage.getItem('bankingUser') || localStorage.getItem('bankingUserBackup') || localStorage.getItem('bankingUser_sessionBackup');
+              return raw ? JSON.parse(raw) : null;
+            } catch { return null; }
+          })();
+          const restoredUserUncertain = existingUserUncertain?.user || offlineUserUncertain;
+          const restoredRouteUncertain = existingUserUncertain?.currentRoute || '/dashboard';
           
-          if (hasAccessUncertain && existingUserUncertain && existingUserUncertain.user) {
+          if (hasAccessUncertain && restoredUserUncertain) {
             console.log('Uncertain state with existing session - restoring state');
             setSplashShown(true);
             localStorage.setItem('splash_completed', 'true');
@@ -255,9 +271,9 @@ function AppRoutes() {
             
             setTimeout(() => {
               if (!user) {
-                login(existingUserUncertain.user);
-                if (existingUserUncertain.currentRoute && existingUserUncertain.currentRoute !== '/login' && existingUserUncertain.currentRoute !== '/splash') {
-                  navigate(existingUserUncertain.currentRoute);
+                login(restoredUserUncertain);
+                if (restoredRouteUncertain && restoredRouteUncertain !== '/login' && restoredRouteUncertain !== '/splash') {
+                  navigate(restoredRouteUncertain);
                 }
               }
             }, 200);
@@ -266,20 +282,19 @@ function AppRoutes() {
             setSplashShown(false);
             localStorage.removeItem('splash_completed');
             localStorage.setItem('app_session_active', 'true');
-          }
           
-          // Try to restore user session
-          try {
-            const savedState = StateManager.restoreAppState(true);
-            if (savedState && savedState.user && !user) {
-              setTimeout(() => {
-                if (!user) {
-                  login(savedState.user);
-                }
-              }, 200);
+            try {
+              const savedState = StateManager.restoreAppState(true);
+              if (savedState && savedState.user && !user) {
+                setTimeout(() => {
+                  if (!user) {
+                    login(savedState.user);
+                  }
+                }, 200);
+              }
+            } catch (error) {
+              console.error('Failed to restore user session:', error);
             }
-          } catch (error) {
-            console.error('Failed to restore user session:', error);
           }
         }
         
