@@ -177,41 +177,13 @@ function AppRoutes() {
         const isColdStart = startType === 'cold' || startType === 'uncertain';
         
         if (isColdStart) {
-          const hasAccess = localStorage.getItem('accessGranted') === 'true';
-          const existingUser = StateManager.restoreAppState(true);
-          const offlineUser = (() => {
-            try {
-              const raw = localStorage.getItem('bankingUser') || localStorage.getItem('bankingUserBackup') || localStorage.getItem('bankingUser_sessionBackup');
-              return raw ? JSON.parse(raw) : null;
-            } catch { return null; }
-          })();
-          const restoredUser = existingUser?.user || offlineUser;
-          const restoredRoute = existingUser?.currentRoute || '/dashboard';
+          console.log('Cold start detected - showing splash sequence');
           
-          if (hasAccess && restoredUser) {
-            console.log('Cold start with existing session - restoring state, skipping splash');
-            setSplashShown(true);
-            localStorage.setItem('splash_completed', 'true');
-            localStorage.setItem('app_session_active', 'true');
-            localStorage.removeItem('cold_start_active');
-            localStorage.removeItem('app_background_time');
-            
-            setTimeout(() => {
-              if (!user) {
-                login(restoredUser);
-                if (restoredRoute && restoredRoute !== '/login' && restoredRoute !== '/splash') {
-                  navigate(restoredRoute);
-                }
-              }
-            }, 200);
-          } else {
-            console.log('Cold start detected - showing splash sequence');
-            setSplashShown(false);
-            localStorage.removeItem('splash_completed');
-            localStorage.removeItem('app_background_time');
-            localStorage.setItem('app_session_active', 'true');
-            localStorage.setItem('cold_start_active', 'true');
-          }
+          setSplashShown(false);
+          localStorage.removeItem('splash_completed');
+          localStorage.removeItem('app_background_time');
+          localStorage.setItem('app_session_active', 'true');
+          localStorage.setItem('cold_start_active', 'true');
           
         } else if (startType === 'warm') {
           // WARM START: App was backgrounded - restore exactly where user left off
@@ -251,50 +223,23 @@ function AppRoutes() {
           }
           
         } else {
-          const hasAccessUncertain = localStorage.getItem('accessGranted') === 'true';
-          const existingUserUncertain = StateManager.restoreAppState(true);
-          const offlineUserUncertain = (() => {
-            try {
-              const raw = localStorage.getItem('bankingUser') || localStorage.getItem('bankingUserBackup') || localStorage.getItem('bankingUser_sessionBackup');
-              return raw ? JSON.parse(raw) : null;
-            } catch { return null; }
-          })();
-          const restoredUserUncertain = existingUserUncertain?.user || offlineUserUncertain;
-          const restoredRouteUncertain = existingUserUncertain?.currentRoute || '/dashboard';
+          console.log('Uncertain state - defaulting to cold start behavior');
+          setSplashShown(false);
+          localStorage.removeItem('splash_completed');
+          localStorage.setItem('app_session_active', 'true');
           
-          if (hasAccessUncertain && restoredUserUncertain) {
-            console.log('Uncertain state with existing session - restoring state');
-            setSplashShown(true);
-            localStorage.setItem('splash_completed', 'true');
-            localStorage.setItem('app_session_active', 'true');
-            localStorage.removeItem('cold_start_active');
-            
-            setTimeout(() => {
-              if (!user) {
-                login(restoredUserUncertain);
-                if (restoredRouteUncertain && restoredRouteUncertain !== '/login' && restoredRouteUncertain !== '/splash') {
-                  navigate(restoredRouteUncertain);
+          // Try to restore user session
+          try {
+            const savedState = StateManager.restoreAppState(true);
+            if (savedState && savedState.user && !user) {
+              setTimeout(() => {
+                if (!user) {
+                  login(savedState.user);
                 }
-              }
-            }, 200);
-          } else {
-            console.log('Uncertain state - defaulting to cold start behavior');
-            setSplashShown(false);
-            localStorage.removeItem('splash_completed');
-            localStorage.setItem('app_session_active', 'true');
-          
-            try {
-              const savedState = StateManager.restoreAppState(true);
-              if (savedState && savedState.user && !user) {
-                setTimeout(() => {
-                  if (!user) {
-                    login(savedState.user);
-                  }
-                }, 200);
-              }
-            } catch (error) {
-              console.error('Failed to restore user session:', error);
+              }, 200);
             }
+          } catch (error) {
+            console.error('Failed to restore user session:', error);
           }
         }
         
