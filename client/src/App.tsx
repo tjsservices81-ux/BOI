@@ -177,10 +177,10 @@ function AppRoutes() {
         const isColdStart = startType === 'cold' || startType === 'uncertain';
         
         if (isColdStart) {
-          console.log('Cold start detected - going straight to login');
+          console.log('Cold start detected - showing splash sequence');
           
-          setSplashShown(true);
-          localStorage.setItem('splash_completed', 'true');
+          setSplashShown(false);
+          localStorage.removeItem('splash_completed');
           localStorage.removeItem('app_background_time');
           localStorage.setItem('app_session_active', 'true');
           localStorage.setItem('cold_start_active', 'true');
@@ -223,9 +223,9 @@ function AppRoutes() {
           }
           
         } else {
-          console.log('Uncertain state - going straight to login');
-          setSplashShown(true);
-          localStorage.setItem('splash_completed', 'true');
+          console.log('Uncertain state - defaulting to cold start behavior');
+          setSplashShown(false);
+          localStorage.removeItem('splash_completed');
           localStorage.setItem('app_session_active', 'true');
           
           // Try to restore user session
@@ -468,13 +468,19 @@ function AppRoutes() {
             <Route path="/more" component={More} />
             <Route path="/">
               {(() => {
+                const appSessionActive = localStorage.getItem('app_session_active');
+                const splashCompleted = localStorage.getItem('splash_completed');
                 const coldStartActive = localStorage.getItem('cold_start_active');
+                
+                if (!appSessionActive || (!splashShown && !splashCompleted)) {
+                  return <Splash />;
+                }
                 
                 if (coldStartActive) {
                   return <Login />;
                 }
                 
-                if (user && splashShown) {
+                if (user && splashCompleted) {
                   return <Redirect to="/dashboard" />;
                 }
                 
