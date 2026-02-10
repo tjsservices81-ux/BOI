@@ -169,8 +169,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       "start_url": startUrl,
       "display": "standalone",
       "orientation": "portrait-primary",
-      "theme_color": "#0047ab",
-      "background_color": "#ffffff",
+      "theme_color": "#126987",
+      "background_color": "#126987",
       "scope": "/",
       "lang": "en-IE",
       "icons": [

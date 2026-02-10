@@ -259,11 +259,6 @@ function AppRoutes() {
           }
         });
         
-        const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-        if (themeColorMeta) {
-          themeColorMeta.setAttribute('content', '#000DFF');
-        }
-        
         setIsRestoringState(false);
         // Mark as initialized after a brief delay
         setTimeout(() => setIsInitialized(true), 100);

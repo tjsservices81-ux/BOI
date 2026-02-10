@@ -2,11 +2,11 @@
  * Bank of Ireland Mobile PWA Service Worker
  * Handles caching, offline functionality, and prevents blank screens
  * 
- * VERSION: 4.5.7 - PDF download fix, profile account loading, stability improvements
+ * VERSION: 4.5.8 - iOS Liquid Glass status bar fix, manifest theme correction
  * BUILD: {{BUILD_TIMESTAMP}}
  */
 
-const SW_VERSION = '4.5.7';
+const SW_VERSION = '4.5.8';
 const BUILD_TIMESTAMP = Date.now();
 const CACHE_NAME = `boi-mobile-v${SW_VERSION}-${BUILD_TIMESTAMP}`;
 const FALLBACK_CACHE = `boi-fallback-v${SW_VERSION}`;
