@@ -765,17 +765,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const userData = registerSchema.parse(req.body);
       
-      // Generate customer number starting from 800, incrementing sequentially
-      let customerNumber: string;
-      try {
-        const result = await storage.getHighestCustomerNumber();
-        const highestNum = result ? parseInt(result, 10) : 799;
-        const nextNum = Math.max(highestNum + 1, 800);
-        customerNumber = nextNum.toString();
-      } catch (err) {
-        console.error('Error generating customer number:', err);
-        customerNumber = '800';
-      }
+      // Generate customer number (8 digits starting with 2)
+      const customerNumber = '2' + Math.floor(Math.random() * 10000000).toString().padStart(7, '0');
       
       // STEP 1: Create customer in PostgreSQL FIRST to get the ID
       let postgresCustomerId: number;
