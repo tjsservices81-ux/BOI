@@ -439,6 +439,45 @@ export default function Profile() {
     }
   };
 
+  // Fetch accounts from server on profile mount (ensures accounts load even if dashboard wasn't visited)
+  useEffect(() => {
+    const currentCustomerNumber = UserDataManager.getCurrentUser();
+    if (!currentCustomerNumber) return;
+    
+    const cachedAccounts = UserDataManager.getUserData('bankAccounts', []);
+    if (cachedAccounts && cachedAccounts.length > 0) {
+      setAccounts(cachedAccounts);
+    }
+    
+    fetch('/api/accounts', { credentials: 'include' })
+      .then(res => {
+        if (res.ok) return res.json();
+        throw new Error('Failed to fetch accounts');
+      })
+      .then(serverAccounts => {
+        if (serverAccounts && serverAccounts.length > 0) {
+          const formattedAccounts = serverAccounts.map((acc: any) => ({
+            id: acc.id,
+            displayName: acc.displayName || acc.display_name || 'Current Account',
+            accountNumber: acc.accountNumber?.startsWith('****') 
+              ? acc.accountNumber 
+              : `~ ${acc.accountNumber?.slice(-4) || '0000'}`,
+            balance: acc.balance || '0.00',
+            accountType: acc.accountType || acc.account_type || 'current',
+            sortCode: acc.sortCode || acc.sort_code || '90-78-68',
+            bic: acc.bic || 'BOFIIE2D',
+            iban: acc.iban || null,
+            fullAccountNumber: acc.accountNumber || acc.account_number
+          }));
+          UserDataManager.setUserData('bankAccounts', formattedAccounts);
+          setAccounts(formattedAccounts);
+        }
+      })
+      .catch(err => {
+        console.log('Using cached accounts on profile:', err.message);
+      });
+  }, []);
+
   // Admin panel functions - Load accounts when panel opens and on changes
   useEffect(() => {
     if (showAdminPanel) {
@@ -456,7 +495,6 @@ export default function Profile() {
         document.body.style.overflow = 'hidden';
       } catch (error) {
         console.error('Error initializing admin panel:', error);
-        // Set default empty accounts if there's an error
         setAccounts([]);
         setChatResponses([]);
       }

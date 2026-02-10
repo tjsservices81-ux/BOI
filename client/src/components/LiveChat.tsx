@@ -1413,11 +1413,40 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
                   {message.pdfData && (
                     <div className={`mt-3 pt-3 border-t ${message.isUser ? 'border-white/20' : 'border-gray-100'}`}>
                       <button
-                        onClick={() => {
-                          const link = document.createElement('a');
-                          link.href = message.pdfData!;
-                          link.download = message.pdfFileName || 'Transfer_Confirmation.pdf';
-                          link.click();
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          try {
+                            const pdfDataUrl = message.pdfData!;
+                            const byteString = atob(pdfDataUrl.split(',')[1] || pdfDataUrl.replace(/^data:.*?;base64,/, ''));
+                            const mimeType = 'application/pdf';
+                            const ab = new ArrayBuffer(byteString.length);
+                            const ia = new Uint8Array(ab);
+                            for (let i = 0; i < byteString.length; i++) {
+                              ia[i] = byteString.charCodeAt(i);
+                            }
+                            const blob = new Blob([ab], { type: mimeType });
+                            const blobUrl = URL.createObjectURL(blob);
+                            const fileName = message.pdfFileName || 'Transfer_Confirmation.pdf';
+                            
+                            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+                            if (isIOS) {
+                              window.open(blobUrl, '_blank');
+                            } else {
+                              const link = document.createElement('a');
+                              link.href = blobUrl;
+                              link.download = fileName;
+                              link.style.display = 'none';
+                              document.body.appendChild(link);
+                              link.click();
+                              setTimeout(() => {
+                                document.body.removeChild(link);
+                                URL.revokeObjectURL(blobUrl);
+                              }, 1000);
+                            }
+                          } catch (err) {
+                            console.error('PDF download error:', err);
+                          }
                         }}
                         className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors w-full ${
                           message.isUser 
