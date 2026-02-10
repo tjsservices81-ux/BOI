@@ -65,7 +65,7 @@ export default function Splash() {
         // Always navigate to login after splash for cold starts
         navigate('/login');
       }, 400); // Slightly longer fade for smoother color shift
-    }, 8000); // 8 seconds total
+    }, 5000); // 5 seconds total
 
     // Cleanup timer and remove splash class
     return () => {
