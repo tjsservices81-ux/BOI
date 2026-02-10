@@ -174,15 +174,23 @@ export default function TransactionHistoryWorking() {
 
   const handleOpenTransferConfirmation = async () => {
     if (!selectedTransaction) {
-      console.log('No selected transaction');
       return;
     }
 
-    console.log('Opening transfer confirmation for:', selectedTransaction);
+    const openPdfBlob = (blob: Blob) => {
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Transfer-Document-${selectedTransaction?.reference || Date.now()}.pdf`;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => window.URL.revokeObjectURL(url), 500);
+    };
 
     try {
       if (selectedTransaction.confirmationPdfData) {
-        console.log('Using saved PDF data');
         const byteCharacters = atob(selectedTransaction.confirmationPdfData.split(',')[1]);
         const byteNumbers = new Array(byteCharacters.length);
         for (let i = 0; i < byteCharacters.length; i++) {
@@ -190,18 +198,10 @@ export default function TransactionHistoryWorking() {
         }
         const byteArray = new Uint8Array(byteNumbers);
         const blob = new Blob([byteArray], { type: 'application/pdf' });
-        const url = window.URL.createObjectURL(blob);
-        const newWindow = window.open(url, '_blank');
-        if (!newWindow) {
-          setPendingPdfUrl(url);
-          setShowPopupBlockedModal(true);
-        } else {
-          setTimeout(() => window.URL.revokeObjectURL(url), 100);
-        }
+        openPdfBlob(blob);
         return;
       }
 
-      console.log('Generating new PDF');
       const userProfile = UserDataManager.getUserProfile();
       const accounts = UserDataManager.getUserAccounts();
       const accountInfoData = accounts.find((acc: any) => acc.id === selectedTransaction.accountId);
@@ -220,23 +220,14 @@ export default function TransactionHistoryWorking() {
       });
 
       if (response.ok) {
-        console.log('PDF generated successfully');
         const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const newWindow = window.open(url, '_blank');
-        if (!newWindow) {
-          setPendingPdfUrl(url);
-          setShowPopupBlockedModal(true);
-        } else {
-          setTimeout(() => window.URL.revokeObjectURL(url), 100);
-        }
+        openPdfBlob(blob);
       } else {
-        console.error('Failed to generate PDF:', response.status);
-        alert('Failed to generate transfer confirmation');
+        alert('Failed to generate transfer document');
       }
     } catch (error) {
-      console.error('Failed to open transfer confirmation:', error);
-      alert('Error opening transfer confirmation: ' + error);
+      console.error('Failed to open transfer document:', error);
+      alert('Error opening transfer document');
     }
   };
 
@@ -2211,10 +2202,9 @@ export default function TransactionHistoryWorking() {
                       data-testid="button-open-transfer-confirmation"
                     >
                       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
-                      <span>Open Transfer Confirmation</span>
+                      <span>View Transfer Document</span>
                     </button>
                   </div>
                 )}
