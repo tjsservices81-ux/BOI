@@ -1869,6 +1869,23 @@
         "isDisabled": false,
         "currency": "EUR"
       }
+    ],
+    [
+      153,
+      {
+        "id": 153,
+        "customerNumber": "40961954",
+        "pin": "",
+        "name": "Sjjs",
+        "email": "ahahsh@gmail.com",
+        "phone": "454646",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "currency": "EUR",
+        "dateCreated": "2026-02-10T22:37:59.633Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [
@@ -5717,7 +5734,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 153,
+    "currentUserId": 154,
     "currentAccountId": 320,
     "currentTransactionId": 1,
     "currentPayeeId": 1,

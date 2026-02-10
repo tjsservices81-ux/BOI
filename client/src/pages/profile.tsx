@@ -1276,7 +1276,7 @@ export default function Profile() {
     }
 
     // Update the account balance and name in local state
-    const updatedAccounts = accounts.map(account => 
+    const updatedAccounts = (accounts || []).map(account => 
       account.id === editingAccount.id 
         ? { 
             ...account, 
@@ -2540,33 +2540,33 @@ export default function Profile() {
                           alert('Account Deleted');
                           return;
                         }
-                        if (accounts.length >= 5) {
+                        if ((accounts?.length || 0) >= 5) {
                           showDeveloperMessage('Maximum of 5 accounts allowed. Please delete an existing account first.');
                           return;
                         }
                         setShowAddAccount(true);
                       }}
-                      disabled={accounts.length >= 5}
+                      disabled={(accounts?.length || 0) >= 5}
                       data-testid="button-add-account"
                       className={`w-full flex items-center space-x-3 p-4 bg-white/70 backdrop-blur-sm border-2 rounded-xl transition-all shadow-sm ${
-                        accounts.length >= 5 
+                        (accounts?.length || 0) >= 5 
                           ? 'border-gray-300 opacity-60 cursor-not-allowed' 
                           : 'border-green-300 active:scale-95 hover:shadow-md'
                       }`}
                     >
                       <div className={`w-10 h-10 rounded-full flex items-center justify-center shadow-md ${
-                        accounts.length >= 5 
+                        (accounts?.length || 0) >= 5 
                           ? 'bg-gradient-to-br from-gray-400 to-gray-500' 
                           : 'bg-gradient-to-br from-green-500 to-green-600'
                       }`}>
                         <Plus className="w-5 h-5 text-white" />
                       </div>
                       <div className="flex-1 text-left">
-                        <p className={`font-bold text-sm ${accounts.length >= 5 ? 'text-gray-600' : 'text-green-900'}`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                        <p className={`font-bold text-sm ${(accounts?.length || 0) >= 5 ? 'text-gray-600' : 'text-green-900'}`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
                           Add Account
                         </p>
-                        <p className={`text-xs ${accounts.length >= 5 ? 'text-gray-500' : 'text-green-700'}`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                          {accounts.length >= 5 ? 'Maximum 5 accounts reached' : `${accounts.length}/5 accounts used`}
+                        <p className={`text-xs ${(accounts?.length || 0) >= 5 ? 'text-gray-500' : 'text-green-700'}`} style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                          {(accounts?.length || 0) >= 5 ? 'Maximum 5 accounts reached' : `${accounts?.length || 0}/5 accounts used`}
                         </p>
                       </div>
                     </button>
@@ -2578,7 +2578,7 @@ export default function Profile() {
                           alert('Account Deleted');
                           return;
                         }
-                        if (accounts.length <= 1) {
+                        if ((accounts?.length || 0) <= 1) {
                           showDeveloperMessage('Cannot delete your only account. You must have at least one account.');
                           return;
                         }
@@ -3265,7 +3265,7 @@ export default function Profile() {
                 {deletingAccountId && (
                   <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
                     <p className="text-sm text-gray-700" style={{ fontFamily: 'OpenSans, sans-serif' }}>
-                      Are you sure you want to delete <strong>{accounts.find(a => a.id === deletingAccountId)?.displayName}</strong>?
+                      Are you sure you want to delete <strong>{accounts?.find(a => a.id === deletingAccountId)?.displayName}</strong>?
                     </p>
                   </div>
                 )}
@@ -3300,7 +3300,7 @@ export default function Profile() {
                       
                       if (response.ok && data.success) {
                         // Get updated accounts first (before filtering state)
-                        const updatedAccounts = accounts.filter(a => a.id !== deletingAccountId);
+                        const updatedAccounts = (accounts || []).filter(a => a.id !== deletingAccountId);
                         
                         // Update localStorage first for consistency
                         UserDataManager.setUserData('bankAccounts', updatedAccounts);
