@@ -3,7 +3,6 @@ import App from "./App";
 import "./index.css";
 import { detectAndHandleDeviceChange } from "./utils/deviceDetection";
 
-// Preload critical assets immediately
 const preloadCriticalAssets = () => {
   const criticalAssets = [
     '/boi_logo.svg',
@@ -21,35 +20,47 @@ const preloadCriticalAssets = () => {
   });
 };
 
-// Ensure fonts are immediately available
 const ensureFontsLoaded = () => {
   document.fonts.ready.then(() => {
     document.body.classList.add('fonts-loaded');
   });
 };
 
-// Initialize app with device detection
 async function initializeApp() {
-  // CRITICAL: Check for device change FIRST before anything else
-  // If running on a new device (after iPhone restore/transfer), this clears all data
   await detectAndHandleDeviceChange();
   
-  // Then initialize normal optimizations
   preloadCriticalAssets();
   ensureFontsLoaded();
   
-  // Finally render the app
   createRoot(document.getElementById("root")!).render(<App />);
 }
 
-// Listen for service worker updates
 if ('serviceWorker' in navigator) {
+  let reloadScheduled = false;
+  
+  const scheduleGracefulReload = (reason: string) => {
+    if (reloadScheduled) return;
+    reloadScheduled = true;
+    console.log(`🔄 Scheduling graceful reload: ${reason}`);
+    
+    if (document.hidden) {
+      const reloadOnVisible = () => {
+        document.removeEventListener('visibilitychange', reloadOnVisible);
+        console.log('🔄 App visible again - reloading for update');
+        window.location.reload();
+      };
+      document.addEventListener('visibilitychange', reloadOnVisible);
+    } else {
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+    }
+  };
+
   navigator.serviceWorker.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'SW_ACTIVATED') {
-      // Show update notification
-      console.log('🎉 App updated to v4.5.8!');
+      console.log(`🎉 App updated to v${event.data.version || '4.5.8'}!`);
       
-      // Create a temporary notification banner
       const banner = document.createElement('div');
       banner.style.cssText = `
         position: fixed;
@@ -68,9 +79,8 @@ if ('serviceWorker' in navigator) {
         text-align: center;
         animation: slideDown 0.3s ease-out;
       `;
-      banner.innerHTML = '✅ App Updated to v4.5.8 - Latest Features Active!';
+      banner.innerHTML = `✅ App Updated to v${event.data.version || '4.5.8'} - Latest Features Active!`;
       
-      // Add animation
       const style = document.createElement('style');
       style.textContent = `
         @keyframes slideDown {
@@ -81,14 +91,47 @@ if ('serviceWorker' in navigator) {
       document.head.appendChild(style);
       document.body.appendChild(banner);
       
-      // Remove banner after 4 seconds
       setTimeout(() => {
         banner.style.animation = 'slideDown 0.3s ease-in reverse';
         setTimeout(() => banner.remove(), 300);
       }, 4000);
     }
+    
+    if (event.data && event.data.type === 'SW_STALE_BUNDLE') {
+      console.warn('⚠️ Stale bundle detected after update:', event.data.url);
+      scheduleGracefulReload('stale bundle after update');
+    }
+  });
+
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    console.log('🔄 Service worker controller changed - new version active');
+    if (document.hidden) {
+      const reloadOnVisible = () => {
+        document.removeEventListener('visibilitychange', reloadOnVisible);
+        window.location.reload();
+      };
+      document.addEventListener('visibilitychange', reloadOnVisible);
+    }
   });
 }
 
-// Start the app with device detection
+window.addEventListener('unhandledrejection', (event) => {
+  if (event.reason && typeof event.reason === 'object' && 'message' in event.reason) {
+    const msg = (event.reason as Error).message || '';
+    if (msg.includes('Failed to fetch dynamically imported module') || 
+        msg.includes('Loading chunk') || 
+        msg.includes('Loading CSS chunk')) {
+      console.warn('⚠️ Module load failed (likely after update) - reloading...');
+      event.preventDefault();
+      const hasReloaded = sessionStorage.getItem('sw_update_reload');
+      if (!hasReloaded) {
+        sessionStorage.setItem('sw_update_reload', 'true');
+        window.location.reload();
+      } else {
+        sessionStorage.removeItem('sw_update_reload');
+      }
+    }
+  }
+});
+
 initializeApp();

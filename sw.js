@@ -87,7 +87,6 @@ self.addEventListener('install', (event) => {
   
   event.waitUntil(
     Promise.all([
-      // Cache critical assets with cache-busting query params
       caches.open(CACHE_NAME).then(async (cache) => {
         console.log('💾 Caching critical assets with cache-busting');
         const requests = CRITICAL_ASSETS.concat(CACHE_ASSETS).map(url => {
@@ -116,11 +115,9 @@ self.addEventListener('install', (event) => {
         return cache;
       }),
       
-      // Cache the actual offline.html file for fallback
       caches.open(FALLBACK_CACHE).then(async (cache) => {
         console.log('💾 Caching offline.html fallback page');
         try {
-          // Fetch the actual offline.html file with cache-busting
           const response = await fetch(`/offline.html?v=${SW_VERSION}&t=${BUILD_TIMESTAMP}`, { 
             cache: 'no-cache' 
           });
@@ -129,14 +126,12 @@ self.addEventListener('install', (event) => {
             console.log('✅ offline.html cached successfully');
           } else {
             console.warn('⚠️ Could not fetch offline.html, creating inline fallback');
-            // Fallback to inline HTML if file fetch fails
             await cache.put('/offline.html', new Response(createInlineOfflineHTML(), {
               headers: { 'Content-Type': 'text/html' }
             }));
           }
         } catch (err) {
           console.warn('⚠️ Error caching offline.html:', err);
-          // Fallback to inline HTML on error
           await cache.put('/offline.html', new Response(createInlineOfflineHTML(), {
             headers: { 'Content-Type': 'text/html' }
           }));
@@ -145,7 +140,6 @@ self.addEventListener('install', (event) => {
       })
     ]).then(() => {
       console.log('✅ PWA Service Worker installed successfully');
-      // Skip waiting to activate immediately
       return self.skipWaiting();
     })
   );
@@ -156,37 +150,10 @@ self.addEventListener('activate', (event) => {
   
   event.waitUntil(
     Promise.all([
-      // Clean up old caches but preserve fallback cache
-      caches.keys().then((cacheNames) => {
-        return Promise.all(
-          cacheNames.map((cacheName) => {
-            // Always preserve the current fallback cache
-            if (cacheName === FALLBACK_CACHE) {
-              console.log('✅ Preserving fallback cache:', cacheName);
-              return Promise.resolve();
-            }
-            // Delete old main caches that don't match current version
-            if (cacheName.startsWith('boi-mobile-') && 
-                (!cacheName.includes(SW_VERSION) || !cacheName.includes(String(BUILD_TIMESTAMP)))) {
-              console.log('🗑️ Deleting old cache:', cacheName);
-              return caches.delete(cacheName);
-            }
-            // Delete old fallback caches that don't match current version
-            if (cacheName.startsWith('boi-fallback-') && cacheName !== FALLBACK_CACHE) {
-              console.log('🗑️ Deleting old fallback cache:', cacheName);
-              return caches.delete(cacheName);
-            }
-            return Promise.resolve();
-          })
-        );
-      }),
-      
-      // Take control of all clients immediately
       self.clients.claim()
     ]).then(() => {
       console.log(`✅ PWA Service Worker v${SW_VERSION} activated`);
       
-      // Notify ALL clients about the new version with full details
       self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
         clients.forEach((client) => {
           client.postMessage({ 
@@ -197,6 +164,30 @@ self.addEventListener('activate', (event) => {
           });
         });
       });
+      
+      // Delay old cache cleanup by 30 seconds so any running app can finish loading
+      // This prevents crashes when users have the app open during an update
+      setTimeout(() => {
+        caches.keys().then((cacheNames) => {
+          return Promise.all(
+            cacheNames.map((cacheName) => {
+              if (cacheName === FALLBACK_CACHE) {
+                return Promise.resolve();
+              }
+              if (cacheName.startsWith('boi-mobile-') && 
+                  (!cacheName.includes(SW_VERSION) || !cacheName.includes(String(BUILD_TIMESTAMP)))) {
+                console.log('🗑️ Cleaning old cache:', cacheName);
+                return caches.delete(cacheName);
+              }
+              if (cacheName.startsWith('boi-fallback-') && cacheName !== FALLBACK_CACHE) {
+                console.log('🗑️ Cleaning old fallback cache:', cacheName);
+                return caches.delete(cacheName);
+              }
+              return Promise.resolve();
+            })
+          );
+        });
+      }, 30000);
     })
   );
 });
@@ -241,19 +232,35 @@ async function handleFetch(request) {
   }
 }
 
+function isHashedAsset(pathname) {
+  return /\.(js|css)$/.test(pathname) && /[.-][a-f0-9]{8,}\./.test(pathname);
+}
+
+function handleStaleBundleResponse(request) {
+  const url = new URL(request.url);
+  console.warn('⚠️ Stale hashed asset detected:', url.pathname);
+  self.clients.matchAll({ type: 'window' }).then((clients) => {
+    clients.forEach((client) => {
+      client.postMessage({ type: 'SW_STALE_BUNDLE', url: url.pathname });
+    });
+  });
+  return new Response('', { status: 204, statusText: 'Refreshing' });
+}
+
 async function networkFirstStrategy(request) {
+  const url = new URL(request.url);
   try {
     const networkResponse = await fetch(request);
     
     if (networkResponse.ok) {
-      // Cache successful responses
       const cache = await caches.open(CACHE_NAME);
       cache.put(request, networkResponse.clone());
+    } else if (!networkResponse.ok && isHashedAsset(url.pathname)) {
+      return handleStaleBundleResponse(request);
     }
     
     return networkResponse;
   } catch (error) {
-    // Network failed, try cache
     const cachedResponse = await caches.match(request);
     if (cachedResponse) {
       return cachedResponse;
@@ -270,16 +277,25 @@ async function cacheFirstStrategy(request) {
     return cachedResponse;
   }
   
+  const url = new URL(request.url);
   try {
     const networkResponse = await fetch(request);
     
     if (networkResponse.ok) {
       const cache = await caches.open(CACHE_NAME);
       cache.put(request, networkResponse.clone());
+      return networkResponse;
+    }
+    
+    if (isHashedAsset(url.pathname)) {
+      return handleStaleBundleResponse(request);
     }
     
     return networkResponse;
   } catch (error) {
+    if (isHashedAsset(url.pathname)) {
+      return handleStaleBundleResponse(request);
+    }
     throw error;
   }
 }
@@ -287,27 +303,31 @@ async function cacheFirstStrategy(request) {
 async function staleWhileRevalidateStrategy(request) {
   const cache = await caches.open(CACHE_NAME);
   const cachedResponse = await cache.match(request);
+  const url = new URL(request.url);
   
-  // Always try to fetch fresh content in background
   const fetchPromise = fetch(request).then((networkResponse) => {
     if (networkResponse.ok) {
       cache.put(request, networkResponse.clone());
     }
     return networkResponse;
   }).catch(() => {
-    // Network failed, but we might have cache
     return null;
   });
   
-  // Return cached version immediately if available
   if (cachedResponse) {
     return cachedResponse;
   }
   
-  // Wait for network if no cache
   const networkResponse = await fetchPromise;
   if (networkResponse) {
+    if (!networkResponse.ok && isHashedAsset(url.pathname)) {
+      return handleStaleBundleResponse(request);
+    }
     return networkResponse;
+  }
+  
+  if (isHashedAsset(url.pathname)) {
+    return handleStaleBundleResponse(request);
   }
   
   throw new Error('No cache and network failed');
@@ -330,6 +350,10 @@ async function getFallbackResponse(request) {
         return indexResponse;
       }
     }
+  }
+  
+  if (isHashedAsset(url.pathname)) {
+    return handleStaleBundleResponse(request);
   }
   
   // For other requests, return a basic error response
