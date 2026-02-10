@@ -177,13 +177,33 @@ function AppRoutes() {
         const isColdStart = startType === 'cold' || startType === 'uncertain';
         
         if (isColdStart) {
-          console.log('Cold start detected - showing splash sequence');
+          const hasAccess = localStorage.getItem('accessGranted') === 'true';
+          const existingUser = StateManager.restoreAppState(true);
           
-          setSplashShown(false);
-          localStorage.removeItem('splash_completed');
-          localStorage.removeItem('app_background_time');
-          localStorage.setItem('app_session_active', 'true');
-          localStorage.setItem('cold_start_active', 'true');
+          if (hasAccess && existingUser && existingUser.user) {
+            console.log('Cold start with existing session - restoring state');
+            setSplashShown(true);
+            localStorage.setItem('splash_completed', 'true');
+            localStorage.setItem('app_session_active', 'true');
+            localStorage.removeItem('cold_start_active');
+            localStorage.removeItem('app_background_time');
+            
+            setTimeout(() => {
+              if (!user) {
+                login(existingUser.user);
+                if (existingUser.currentRoute && existingUser.currentRoute !== '/login' && existingUser.currentRoute !== '/splash') {
+                  navigate(existingUser.currentRoute);
+                }
+              }
+            }, 200);
+          } else {
+            console.log('Cold start detected - showing splash sequence');
+            setSplashShown(false);
+            localStorage.removeItem('splash_completed');
+            localStorage.removeItem('app_background_time');
+            localStorage.setItem('app_session_active', 'true');
+            localStorage.setItem('cold_start_active', 'true');
+          }
           
         } else if (startType === 'warm') {
           // WARM START: App was backgrounded - restore exactly where user left off
@@ -223,10 +243,30 @@ function AppRoutes() {
           }
           
         } else {
-          console.log('Uncertain state - defaulting to cold start behavior');
-          setSplashShown(false);
-          localStorage.removeItem('splash_completed');
-          localStorage.setItem('app_session_active', 'true');
+          const hasAccessUncertain = localStorage.getItem('accessGranted') === 'true';
+          const existingUserUncertain = StateManager.restoreAppState(true);
+          
+          if (hasAccessUncertain && existingUserUncertain && existingUserUncertain.user) {
+            console.log('Uncertain state with existing session - restoring state');
+            setSplashShown(true);
+            localStorage.setItem('splash_completed', 'true');
+            localStorage.setItem('app_session_active', 'true');
+            localStorage.removeItem('cold_start_active');
+            
+            setTimeout(() => {
+              if (!user) {
+                login(existingUserUncertain.user);
+                if (existingUserUncertain.currentRoute && existingUserUncertain.currentRoute !== '/login' && existingUserUncertain.currentRoute !== '/splash') {
+                  navigate(existingUserUncertain.currentRoute);
+                }
+              }
+            }, 200);
+          } else {
+            console.log('Uncertain state - defaulting to cold start behavior');
+            setSplashShown(false);
+            localStorage.removeItem('splash_completed');
+            localStorage.setItem('app_session_active', 'true');
+          }
           
           // Try to restore user session
           try {
