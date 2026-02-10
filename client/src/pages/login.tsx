@@ -1233,7 +1233,16 @@ export default function Login() {
     <div className="full-height relative ios-safe-top ios-safe-bottom ios-safe-left ios-safe-right page-fade-in">
       {/* Loading overlay */}
       {(isNavigating || isLoginAnimating) && (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center" style={{ backgroundColor: '#126987' }}>
+        <div className="fixed inset-0 bg-gradient-to-br from-[#126987] to-[#2d5a6b] z-50 flex flex-col items-center justify-center">
+          {/* Background overlay pattern */}
+          <div 
+            className="absolute inset-0 opacity-10"
+            style={{
+              backgroundImage: `url('/background.jpg')`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center'
+            }}
+          />
           
           <div className="relative z-10">
             {/* Bank of Ireland Logo with authentic styling - always visible */}
@@ -1333,11 +1342,11 @@ export default function Login() {
         </div>
       )}
       
-      {/* Background with solid Bank of Ireland colour */}
+      {/* Background with scenic image */}
       <div 
-        className="fixed inset-0"
+        className="fixed inset-0 bg-cover bg-center"
         style={{
-          backgroundColor: '#126987'
+          backgroundImage: `url('/background.jpg')`
         }}
       />
       
