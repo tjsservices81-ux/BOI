@@ -24,10 +24,12 @@ export interface TransferConfirmationDetails {
  */
 async function getCredentials(): Promise<{apiKey: string, email: string} | null> {
   try {
-    if (process.env.SENDGRID_API_KEY && process.env.SENDGRID_FROM_EMAIL) {
+    const envApiKey = process.env.SG_API_KEY || process.env.SENDGRID_API_KEY;
+    const envFromEmail = process.env.SENDGRID_FROM_EMAIL;
+    if (envApiKey && envFromEmail) {
       return {
-        apiKey: process.env.SENDGRID_API_KEY,
-        email: process.env.SENDGRID_FROM_EMAIL
+        apiKey: envApiKey,
+        email: envFromEmail
       };
     }
 
