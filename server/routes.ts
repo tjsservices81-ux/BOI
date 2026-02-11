@@ -1,5 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import fs from "fs";
+import path from "path";
 import { storage } from "./storage";
 import { loginSchema, transferSchema, type InsertUser } from "@shared/schema";
 import { z } from "zod";
@@ -2015,16 +2017,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
         accountInfo: accountInfo || "Account"
       };
       
-      const pdfBuffer = await generateTransferConfirmationPDF(
-        confirmationDetails.senderName,
-        confirmationDetails.recipientName,
-        confirmationDetails.amount,
-        confirmationDetails.currency,
-        confirmationDetails.transactionReference,
-        confirmationDetails.accountInfo,
-        transaction,
-        userCurrency
-      );
+      const { PDFDocument: PDFDoc, rgb: pdfRgb, StandardFonts: PdfFonts } = await import('pdf-lib');
+      const templatePath = path.join(process.cwd(), 'server', 'assets', 'transfer-confirmation-template.pdf');
+      const templateBytes = fs.readFileSync(templatePath);
+      const pdfDoc = await PDFDoc.load(templateBytes);
+      const page = pdfDoc.getPage(0);
+      const pageWidth = page.getWidth();
+      const pdfFont = await pdfDoc.embedFont(PdfFonts.Helvetica);
+      const pdfFontBold = await pdfDoc.embedFont(PdfFonts.HelveticaBold);
+
+      const dateTimeStr = new Date().toLocaleString('en-GB', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', hour12: false
+      });
+
+      page.drawRectangle({ x: 440, y: 686, width: 155, height: 20, color: pdfRgb(1, 1, 1) });
+      const dtW = pdfFont.widthOfTextAtSize(dateTimeStr, 9.6);
+      page.drawText(dateTimeStr, { x: 595 - 25 - dtW, y: 693.76, size: 9.6, font: pdfFont, color: pdfRgb(0, 0, 0) });
+
+      const rName = confirmationDetails.recipientName;
+      page.drawRectangle({ x: 140, y: 440, width: 420, height: 35, color: pdfRgb(1, 1, 1) });
+      const rW = pdfFontBold.widthOfTextAtSize(rName, 24);
+      page.drawText(rName, { x: (pageWidth - rW) / 2, y: 449, size: 24, font: pdfFontBold, color: pdfRgb(0, 0, 0) });
+
+      const amtStr = `${confirmationDetails.currency}${confirmationDetails.amount}`;
+      page.drawRectangle({ x: 140, y: 416, width: 420, height: 25, color: pdfRgb(1, 1, 1) });
+      const aW = pdfFontBold.widthOfTextAtSize(amtStr, 24);
+      page.drawText(amtStr, { x: (pageWidth - aW) / 2, y: 420, size: 24, font: pdfFontBold, color: pdfRgb(0, 0, 0) });
+
+      const pdfBuffer = Buffer.from(await pdfDoc.save());
       
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `inline; filename="TransferConfirmation-${transaction.id}.pdf"`);

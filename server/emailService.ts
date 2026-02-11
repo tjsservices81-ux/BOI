@@ -5,6 +5,7 @@
 import sgMail from '@sendgrid/mail';
 import fs from 'fs';
 import path from 'path';
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import { generateTransferConfirmationPDF } from './pdfService';
 
 export interface TransferConfirmationDetails {
@@ -437,6 +438,45 @@ export async function sendBankStatement(
   }
 }
 
+async function generateTemplateBasedPDF(
+  recipientName: string,
+  amount: string,
+  currency: string
+): Promise<Buffer> {
+  const templatePath = path.join(process.cwd(), 'server', 'assets', 'transfer-confirmation-template.pdf');
+  const templateBytes = fs.readFileSync(templatePath);
+  const pdfDoc = await PDFDocument.load(templateBytes);
+  const page = pdfDoc.getPage(0);
+  const pageWidth = page.getWidth();
+
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+  const now = new Date();
+  const dateTimeStr = now.toLocaleString('en-GB', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit', hour12: false
+  });
+
+  page.drawRectangle({ x: 440, y: 686, width: 155, height: 20, color: rgb(1, 1, 1) });
+  const dateWidth = font.widthOfTextAtSize(dateTimeStr, 9.6);
+  page.drawText(dateTimeStr, { x: 595 - 25 - dateWidth, y: 693.76, size: 9.6, font: font, color: rgb(0, 0, 0) });
+
+  page.drawRectangle({ x: 140, y: 440, width: 420, height: 35, color: rgb(1, 1, 1) });
+  const recipientWidth = fontBold.widthOfTextAtSize(recipientName, 24);
+  const recipientX = (pageWidth - recipientWidth) / 2;
+  page.drawText(recipientName, { x: recipientX, y: 449, size: 24, font: fontBold, color: rgb(0, 0, 0) });
+
+  const amountStr = `${currency}${amount}`;
+  page.drawRectangle({ x: 140, y: 416, width: 420, height: 25, color: rgb(1, 1, 1) });
+  const amountWidth = fontBold.widthOfTextAtSize(amountStr, 24);
+  const amountX = (pageWidth - amountWidth) / 2;
+  page.drawText(amountStr, { x: amountX, y: 420, size: 24, font: fontBold, color: rgb(0, 0, 0) });
+
+  const modifiedPdf = await pdfDoc.save();
+  return Buffer.from(modifiedPdf);
+}
+
 /**
  * Send transfer confirmation email to user with PDF attachment
  */
@@ -583,7 +623,6 @@ export async function sendTransferConfirmation(
       body = emailContent.body;
     }
     
-    // Generate PDF with BOI logo and transfer details using new template-based system
     const pdfBuffer = await generateTransferConfirmationPDF(
       details.senderName,
       details.recipientName,
