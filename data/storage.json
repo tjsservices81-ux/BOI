@@ -397,13 +397,13 @@
         "id": 45,
         "customerNumber": "93283559",
         "pin": "",
-        "name": "Jamie haw",
-        "email": "morriscarsltd@gmail.com",
-        "phone": "07824922592",
-        "address": "2 sanders drive Colchester co33se",
+        "name": "Noah Matthews",
+        "email": "noahmattews202@gmail.com",
+        "phone": "07900901408",
+        "address": "37 Calton ave Hertford SG142ER",
         "dateOfBirth": "2003-02-10",
         "joinDate": "2023-01-02T18:16:50.098Z",
-        "currency": "EUR",
+        "currency": "GBP",
         "dateCreated": "2026-01-02T18:16:50.051Z",
         "isDisabled": false
       }
@@ -1151,7 +1151,7 @@
         "address": "8 Graydon Glen,Newcastle,Dublin 22",
         "dateOfBirth": "1999-05-16",
         "joinDate": "23-08-2018",
-        "currency": "GBP",
+        "currency": "EUR",
         "dateCreated": "2026-01-08T21:49:59.793Z",
         "isDisabled": false
       }
@@ -1884,6 +1884,23 @@
         "joinDate": "Member since 2018",
         "currency": "EUR",
         "dateCreated": "2026-02-10T22:37:59.633Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      154,
+      {
+        "id": 154,
+        "customerNumber": "14502477",
+        "pin": "",
+        "name": "John burgerson",
+        "email": "john161@icloud.com",
+        "phone": "+3537464284",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2026-02-11T15:40:32.340Z",
+        "currency": "EUR",
+        "dateCreated": "2026-02-11T15:40:32.291Z",
         "isDisabled": false
       }
     ]
@@ -5734,7 +5751,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 154,
+    "currentUserId": 155,
     "currentAccountId": 320,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
