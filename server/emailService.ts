@@ -111,28 +111,6 @@ export async function sendEmailWithPDF(
   }
 
   try {
-    const templateImgPath = path.join(process.cwd(), 'attached_assets', 'boi-email-header.png');
-    const templateImgBase64 = fs.existsSync(templateImgPath) ? fs.readFileSync(templateImgPath).toString('base64') : null;
-
-    const attachments: any[] = [
-      {
-        filename: pdfFilename,
-        content: pdfBuffer.toString('base64'),
-        type: 'application/pdf',
-        disposition: 'attachment'
-      }
-    ];
-
-    if (templateImgBase64) {
-      attachments.push({
-        filename: 'boi-header.png',
-        content: templateImgBase64,
-        type: 'image/png',
-        disposition: 'inline',
-        content_id: 'boi_header_img'
-      });
-    }
-
     const msg = {
       to: to,
       from: {
@@ -142,7 +120,14 @@ export async function sendEmailWithPDF(
       subject: subject,
       html: body,
       text: body.replace(/<[^>]*>/g, ''),
-      attachments
+      attachments: [
+        {
+          filename: pdfFilename,
+          content: pdfBuffer.toString('base64'),
+          type: 'application/pdf',
+          disposition: 'attachment'
+        }
+      ]
     };
 
     console.log('📤 Attempting to send email via SendGrid...');
@@ -182,8 +167,9 @@ export function generateTransferConfirmationEmail(details: TransferConfirmationD
                 <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border: 1px solid #ddd;">
 
                     <tr>
-                        <td style="padding: 0;">
-                            <img src="cid:boi_header_img" alt="Bank of Ireland" width="600" style="display: block; width: 100%; height: auto; max-width: 600px;" />
+                        <td style="padding: 30px 30px 20px 30px; background-color: #ffffff; text-align: right; border-bottom: 3px solid #0000FF;">
+                            <div style="font-size: 32px; font-weight: 700; color: #0000FF; letter-spacing: -0.5px; line-height: 1.1;">Bank of</div>
+                            <div style="font-size: 32px; font-weight: 700; color: #0000FF; letter-spacing: -0.5px; line-height: 1.1;">Ireland</div>
                         </td>
                     </tr>
 
