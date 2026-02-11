@@ -24,6 +24,13 @@ export interface TransferConfirmationDetails {
  */
 async function getCredentials(): Promise<{apiKey: string, email: string} | null> {
   try {
+    if (process.env.SENDGRID_API_KEY && process.env.SENDGRID_FROM_EMAIL) {
+      return {
+        apiKey: process.env.SENDGRID_API_KEY,
+        email: process.env.SENDGRID_FROM_EMAIL
+      };
+    }
+
     const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
     const xReplitToken = process.env.REPL_IDENTITY 
       ? 'repl ' + process.env.REPL_IDENTITY 
@@ -32,7 +39,7 @@ async function getCredentials(): Promise<{apiKey: string, email: string} | null>
       : null;
 
     if (!xReplitToken || !hostname) {
-      console.log('⚠️ Replit connector not available');
+      console.log('⚠️ SendGrid credentials not available');
       return null;
     }
 
