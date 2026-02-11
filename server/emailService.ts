@@ -111,7 +111,7 @@ export async function sendEmailWithPDF(
   }
 
   try {
-    const templateImgPath = path.join(process.cwd(), 'attached_assets', 'IMG_1972_1751639044089.png');
+    const templateImgPath = path.join(process.cwd(), 'attached_assets', 'boi-email-header.png');
     const templateImgBase64 = fs.existsSync(templateImgPath) ? fs.readFileSync(templateImgPath).toString('base64') : null;
 
     const attachments: any[] = [
