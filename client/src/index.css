@@ -364,22 +364,11 @@ button img, a img, [role="button"] img {
     --safe-area-inset-top: env(safe-area-inset-top);
     --safe-area-inset-bottom: env(safe-area-inset-bottom);
   }
-  
-  body {
-    /* Remove padding-top for splash screen - handled by splash-specific rules */
-  }
-  
-  #root {
-    /* iPhone 15 Pro Max safe areas */
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
-  }
 }
 
 /* Ensure safe area insets on all platforms */
 #root {
   padding-top: max(env(safe-area-inset-top), 0px);
-  padding-bottom: max(env(safe-area-inset-bottom), 0px);
 }
 
 input, textarea {
@@ -2448,7 +2437,7 @@ input {
   }
   
   .ios-safe-bottom {
-    padding-bottom: max(env(safe-area-inset-bottom), 20px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
   
   .ios-safe-left {
@@ -2462,10 +2451,6 @@ input {
 
 /* PWA viewport adjustments for iOS */
 @media (display-mode: standalone) {
-  body {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  
   .page-container {
     height: 100vh;
     height: -webkit-fill-available;
