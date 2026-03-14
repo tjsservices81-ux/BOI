@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, ArrowUpRight, CreditCard, Building2, Zap, Ch
 import { motion, AnimatePresence } from "framer-motion";
 import { UserDataManager } from "../utils/userDataManager.ts";
 import { StateManager } from "../utils/stateManager";
+import { getPendingBalanceSyncs } from "../utils/transferUtils";
 import { formatCurrency, getUserCurrency, getCurrencySymbol, type Currency } from "../utils/currencyUtils";
 
 interface Account {
@@ -366,8 +367,14 @@ export default function TransactionHistoryWorking() {
         if (accResponse.ok) {
           const dbAccounts = await accResponse.json();
           if (dbAccounts && dbAccounts.length > 0) {
-            allAccounts = dbAccounts;
-            UserDataManager.setUserData('bankAccounts', dbAccounts);
+            // Protect any accounts with pending local balance syncs
+            const pendingSyncs = getPendingBalanceSyncs();
+            const protectedAccounts = dbAccounts.map((acc: any) => {
+              const id = String(acc.id);
+              return pendingSyncs[id] ? { ...acc, balance: pendingSyncs[id] } : acc;
+            });
+            allAccounts = protectedAccounts;
+            UserDataManager.setUserData('bankAccounts', protectedAccounts);
           }
           console.log(`📄 Statement: Synced ${dbAccounts.length} accounts from database`);
         }

@@ -10,6 +10,7 @@ import { SecurityWrapper } from "@/components/SecurityWrapper";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { StateManager } from "@/utils/stateManager";
 import { AppLifecycle } from "@/utils/appLifecycle";
+import { flushPendingBalanceSyncs } from "@/utils/transferUtils";
 import { PlatformDetection } from "@/utils/platformDetection";
 import LiveChat from "@/components/LiveChat";
 
@@ -424,6 +425,18 @@ function AppRoutes() {
     window.addEventListener('focus', handleFocusRestore);
     return () => window.removeEventListener('focus', handleFocusRestore);
   }, [location]);
+
+  // Flush any pending balance syncs when connectivity is restored
+  useEffect(() => {
+    const handleOnline = () => {
+      console.log('🌐 Connectivity restored - syncing pending balances...');
+      flushPendingBalanceSyncs();
+    };
+    window.addEventListener('online', handleOnline);
+    // Also try on mount in case we're back online after a reconnect
+    if (navigator.onLine) flushPendingBalanceSyncs();
+    return () => window.removeEventListener('online', handleOnline);
+  }, []);
 
   // Route-based theme color restoration for iOS 26+ status bar
   useEffect(() => {

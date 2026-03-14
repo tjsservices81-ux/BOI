@@ -2,11 +2,11 @@
  * Bank of Ireland Mobile PWA Service Worker
  * Handles caching, offline functionality, and prevents blank screens
  * 
- * VERSION: 4.6.0 - Fix iOS bottom nav raised position and white space
+ * VERSION: 4.6.1 - Balance sync resilience and offline transfer protection
  * BUILD: {{BUILD_TIMESTAMP}}
  */
 
-const SW_VERSION = '4.6.0';
+const SW_VERSION = '4.6.1';
 const BUILD_TIMESTAMP = Date.now();
 const CACHE_NAME = `boi-mobile-v${SW_VERSION}-${BUILD_TIMESTAMP}`;
 const FALLBACK_CACHE = `boi-fallback-v${SW_VERSION}`;

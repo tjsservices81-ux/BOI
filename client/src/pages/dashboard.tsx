@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import SpendingVisualization from "../components/SpendingVisualization";
 import SpendingInsights from "../components/SpendingInsights";
 import { UserDataManager } from "../utils/userDataManager";
+import { getPendingBalanceSyncs } from "../utils/transferUtils";
 import { StateManager } from "../utils/stateManager";
 import { formatCurrency, getUserCurrency, type Currency } from "../utils/currencyUtils";
 import ukLogoPath from "@assets/IMG_1505_1759859367310.png";
@@ -155,25 +156,37 @@ export default function Dashboard() {
       })
       .then(serverAccounts => {
         if (serverAccounts && serverAccounts.length > 0) {
+          // Check for locally-processed transfers not yet synced to server
+          const pendingSyncs = getPendingBalanceSyncs();
+
           // Format accounts for display (mask account numbers, ensure proper structure)
-          const formattedAccounts = serverAccounts.map((acc: any) => ({
-            id: acc.id,
-            displayName: acc.displayName || acc.display_name || 'Current Account',
-            accountNumber: acc.accountNumber?.startsWith('****') 
-              ? acc.accountNumber 
-              : `~ ${acc.accountNumber?.slice(-4) || '0000'}`,
-            balance: acc.balance || '0.00', // Server balance is source of truth
-            accountType: acc.accountType || acc.account_type || 'current',
-            sortCode: acc.sortCode || acc.sort_code || '90-78-68',
-            bic: acc.bic || 'BOFIIE2D',
-            iban: acc.iban || null,
-            fullAccountNumber: acc.accountNumber || acc.account_number
-          }));
+          const formattedAccounts = serverAccounts.map((acc: any) => {
+            const accountId = String(acc.id);
+            // If there's a pending local balance sync for this account, use the local balance
+            // so the server doesn't overwrite a transfer the user just made while offline
+            const protectedBalance = pendingSyncs[accountId] ?? (acc.balance || '0.00');
+            if (pendingSyncs[accountId]) {
+              console.log(`🔒 Protecting local balance for account ${accountId}: ${protectedBalance} (server had ${acc.balance})`);
+            }
+            return {
+              id: acc.id,
+              displayName: acc.displayName || acc.display_name || 'Current Account',
+              accountNumber: acc.accountNumber?.startsWith('****') 
+                ? acc.accountNumber 
+                : `~ ${acc.accountNumber?.slice(-4) || '0000'}`,
+              balance: protectedBalance,
+              accountType: acc.accountType || acc.account_type || 'current',
+              sortCode: acc.sortCode || acc.sort_code || '90-78-68',
+              bic: acc.bic || 'BOFIIE2D',
+              iban: acc.iban || null,
+              fullAccountNumber: acc.accountNumber || acc.account_number
+            };
+          });
           
           // Sort accounts with current account at top
           const sortedAccounts = sortAccountsForDisplay(formattedAccounts);
           
-          // Store sorted accounts locally for offline access (server is source of truth)
+          // Store sorted accounts locally for offline access
           UserDataManager.setUserData('bankAccounts', sortedAccounts);
           setAccounts(sortedAccounts);
           console.log('💳 Loaded accounts from server (sorted):', sortedAccounts.length, sortedAccounts);

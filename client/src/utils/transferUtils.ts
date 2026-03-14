@@ -113,6 +113,57 @@ export const processSecureTransfer = async (
   }
 };
 
+const PENDING_BALANCE_SYNCS_KEY = 'pendingBalanceSyncs';
+
+interface PendingBalanceSync {
+  accountId: string;
+  balance: string;
+  timestamp: number;
+}
+
+export const syncBalanceToServer = (accountId: string, balance: string): void => {
+  const doSync = () =>
+    fetch(`/api/accounts/${accountId}/balance`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ balance }),
+    });
+
+  doSync()
+    .then(res => {
+      if (res.ok) {
+        console.log('💰 Balance synced to server for account', accountId);
+        const pending: PendingBalanceSync[] = JSON.parse(localStorage.getItem(PENDING_BALANCE_SYNCS_KEY) || '[]');
+        const remaining = pending.filter(p => p.accountId !== accountId);
+        localStorage.setItem(PENDING_BALANCE_SYNCS_KEY, JSON.stringify(remaining));
+      } else {
+        throw new Error(`Server returned ${res.status}`);
+      }
+    })
+    .catch(() => {
+      console.warn('⚠️ Balance sync failed - queuing for when online');
+      const pending: PendingBalanceSync[] = JSON.parse(localStorage.getItem(PENDING_BALANCE_SYNCS_KEY) || '[]');
+      const withoutThis = pending.filter(p => p.accountId !== accountId);
+      withoutThis.push({ accountId, balance, timestamp: Date.now() });
+      localStorage.setItem(PENDING_BALANCE_SYNCS_KEY, JSON.stringify(withoutThis));
+    });
+};
+
+export const flushPendingBalanceSyncs = (): void => {
+  const pending: PendingBalanceSync[] = JSON.parse(localStorage.getItem(PENDING_BALANCE_SYNCS_KEY) || '[]');
+  if (pending.length === 0) return;
+  console.log(`🔄 Flushing ${pending.length} pending balance sync(s)...`);
+  pending.forEach(({ accountId, balance }) => syncBalanceToServer(accountId, balance));
+};
+
+export const getPendingBalanceSyncs = (): Record<string, string> => {
+  const pending: PendingBalanceSync[] = JSON.parse(localStorage.getItem(PENDING_BALANCE_SYNCS_KEY) || '[]');
+  const map: Record<string, string> = {};
+  pending.forEach(p => { map[String(p.accountId)] = p.balance; });
+  return map;
+};
+
 export const processTransfer = (
   fromAccountId: string,
   amount: number,
@@ -250,17 +301,8 @@ export const processTransfer = (
   
   console.log('Balance update and transaction events dispatched');
   
-  // Update balance in database (background)
-  fetch(`/api/accounts/${fromAccountId}/balance`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify({ balance: newBalance })
-  }).then(() => {
-    console.log('💰 Transfer balance updated in database');
-  }).catch((error) => {
-    console.error('Failed to update transfer balance in database:', error);
-  });
+  // Update balance in database (background) - queue if offline
+  syncBalanceToServer(fromAccountId, newBalance);
 
   // ✅ TRANSFER COMPLETED SUCCESSFULLY - NOW SEND EMAIL CONFIRMATION
   console.log('🔵 TRANSFER COMPLETED - Starting email confirmation process');
