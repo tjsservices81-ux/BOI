@@ -346,28 +346,12 @@ function AppRoutes() {
 
 
 
-  // Theme restoration helper for app foreground events - Enhanced for iOS 26+
+  // Theme restoration helper - keeps theme-color in sync with current screen
   const restoreThemeForCurrentScreen = () => {
     const isSplash = location === '/splash';
     const targetColor = isSplash ? '#000DFF' : '#126987';
-    
-    // Update theme-color meta tag
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-    if (themeColorMeta) {
-      themeColorMeta.setAttribute('content', targetColor);
-    }
-    
-    // Update iOS status bar style for proper tinting on iOS 26+
-    const iosStatusMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
-    if (iosStatusMeta) {
-      iosStatusMeta.setAttribute('content', isSplash ? 'default' : 'black-translucent');
-    }
-    
-    // Force iOS to recognize the color change by temporarily setting body background
-    document.body.style.backgroundColor = targetColor;
-    requestAnimationFrame(() => {
-      document.body.style.backgroundColor = '';
-    });
+    if (themeColorMeta) themeColorMeta.setAttribute('content', targetColor);
   };
 
 
@@ -385,29 +369,9 @@ function AppRoutes() {
         setSplashTransitioning(false);
       }, 100);
       
-      // Enhanced theme restoration for iOS 26+ with multiple attempts
-      const forceNonSplashTheme = () => {
-        const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-        if (themeColorMeta) {
-          themeColorMeta.setAttribute('content', '#126987');
-        }
-        const iosStatusMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
-        if (iosStatusMeta) {
-          iosStatusMeta.setAttribute('content', 'black-translucent');
-        }
-        document.body.style.backgroundColor = '#126987';
-        requestAnimationFrame(() => {
-          document.body.style.backgroundColor = '';
-        });
-      };
-      
-      // Apply multiple times to ensure iOS recognizes the change
-      forceNonSplashTheme();
-      setTimeout(forceNonSplashTheme, 50);
-      setTimeout(forceNonSplashTheme, 150);
-      setTimeout(forceNonSplashTheme, 300);
-      setTimeout(forceNonSplashTheme, 500);
-      setTimeout(forceNonSplashTheme, 1000);
+      // Restore theme-color after splash
+      const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+      if (themeColorMeta) themeColorMeta.setAttribute('content', '#126987');
     };
 
     window.addEventListener('splashComplete', handleSplashComplete);
@@ -438,29 +402,10 @@ function AppRoutes() {
     return () => window.removeEventListener('online', handleOnline);
   }, []);
 
-  // Route-based theme color restoration for iOS 26+ status bar
+  // Keep theme-color in sync with route
   useEffect(() => {
-    // Only restore theme when not on splash screen
-    if (location !== '/splash' && splashShown) {
-      const targetColor = '#126987';
-      
-      const restoreTheme = () => {
-        const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-        if (themeColorMeta) {
-          themeColorMeta.setAttribute('content', targetColor);
-        }
-        const iosStatusMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
-        if (iosStatusMeta) {
-          iosStatusMeta.setAttribute('content', 'black-translucent');
-        }
-      };
-      
-      // Apply immediately and with delays for iOS
-      restoreTheme();
-      setTimeout(restoreTheme, 100);
-      setTimeout(restoreTheme, 300);
-    }
-  }, [location, splashShown]);
+    restoreThemeForCurrentScreen();
+  }, [location]);
 
   // Prevent flash during initialization
   if (!isInitialized) {

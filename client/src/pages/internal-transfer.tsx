@@ -5,7 +5,7 @@ import { z } from "zod";
 import { useLocation } from "wouter";
 import { ChevronLeft, ArrowUpDown, Check, AlertCircle, X } from "lucide-react";
 import { UserDataManager } from "../utils/userDataManager";
-import { generateReference } from "../utils/transferUtils";
+import { generateReference, syncBalanceToServer } from "../utils/transferUtils";
 import { getUserCurrency, formatCurrency, type Currency } from "../utils/currencyUtils";
 import { sendTransferNotification } from "../utils/notifications";
 
@@ -203,21 +203,9 @@ export default function InternalTransfer() {
     const fromNewBalance = (parseFloat(fromAccount.balance) - transferAmount).toFixed(2);
     const toNewBalance = (parseFloat(toAccount.balance) + transferAmount).toFixed(2);
     
-    // Update source account balance
-    fetch(`/api/accounts/${fromAccount.id}/balance`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ balance: fromNewBalance })
-    }).then(() => console.log('💰 Source account balance updated in database')).catch(console.error);
-    
-    // Update destination account balance
-    fetch(`/api/accounts/${toAccount.id}/balance`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ balance: toNewBalance })
-    }).then(() => console.log('💰 Destination account balance updated in database')).catch(console.error);
+    // Sync balances to server (with offline queue if needed)
+    syncBalanceToServer(String(fromAccount.id), fromNewBalance);
+    syncBalanceToServer(String(toAccount.id), toNewBalance);
 
     // ✅ INTERNAL TRANSFER COMPLETED SUCCESSFULLY - NOW SEND EMAIL CONFIRMATION
     console.log('🔵 INTERNAL TRANSFER COMPLETED - Starting email confirmation process');

@@ -72,34 +72,9 @@ export default function Splash() {
       clearTimeout(finalTimer);
       document.body.classList.remove('splash-fullscreen');
       document.documentElement.style.removeProperty('--status-bar-color');
-      
-      // Comprehensive theme color restoration for iOS 26+
-      const restoreNonSplashTheme = () => {
-        // Update theme-color meta tag
-        const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-        if (themeColorMeta) {
-          themeColorMeta.setAttribute('content', '#126987');
-        }
-        
-        // Update iOS status bar style for proper tinting
-        const iosStatusMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
-        if (iosStatusMeta) {
-          iosStatusMeta.setAttribute('content', 'black-translucent');
-        }
-        
-        // Force iOS to recognize the color change
-        document.body.style.backgroundColor = '#126987';
-        requestAnimationFrame(() => {
-          document.body.style.backgroundColor = '';
-        });
-      };
-      
-      // Apply immediately and with delays for iOS PWA
-      restoreNonSplashTheme();
-      setTimeout(restoreNonSplashTheme, 50);
-      setTimeout(restoreNonSplashTheme, 150);
-      setTimeout(restoreNonSplashTheme, 300);
-      setTimeout(restoreNonSplashTheme, 500);
+      // Restore theme-color for main app
+      const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+      if (themeColorMeta) themeColorMeta.setAttribute('content', '#126987');
     };
   }, [navigate]);
 

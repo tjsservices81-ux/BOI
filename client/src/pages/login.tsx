@@ -68,29 +68,9 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   
   useEffect(() => {
-    // Force immediate status bar and background color reset for login screen
-    const resetTheme = () => {
-      const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-      if (themeColorMeta) {
-        themeColorMeta.setAttribute('content', '#126987');
-      }
-      const iosStatusMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
-      if (iosStatusMeta) {
-        iosStatusMeta.setAttribute('content', 'black-translucent');
-      }
-      document.body.style.backgroundColor = '#126987';
-      document.documentElement.style.backgroundColor = '#126987';
-    };
-
-    resetTheme();
-    // Multiple attempts to ensure iOS 26+ captures the change
-    setTimeout(resetTheme, 100);
-    setTimeout(resetTheme, 500);
-    
-    return () => {
-      document.body.style.backgroundColor = '';
-      document.documentElement.style.backgroundColor = '';
-    };
+    // Ensure theme-color is set for main app screens
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+    if (themeColorMeta) themeColorMeta.setAttribute('content', '#126987');
   }, []);
 
   const locationHook = useLocation();
