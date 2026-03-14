@@ -1089,14 +1089,7 @@ input, textarea, select {
   z-index: 10002 !important;
 }
 
-/* Force hide any bottom navigation when admin panel is active */
-.admin-panel ~ * .bottom-navigation,
-.admin-panel ~ .bottom-navigation,
-body:has(.admin-panel) .bottom-navigation {
-  display: none !important;
-  visibility: hidden !important;
-  opacity: 0 !important;
-}
+/* Bottom navigation is naturally covered by admin-panel's z-index (9999+) */
 
 /* Prevent any delayed icon loading in lists */
 .list-item svg, .menu-item svg, .option-item svg {

@@ -2,11 +2,11 @@
  * Bank of Ireland Mobile PWA Service Worker
  * Handles caching, offline functionality, and prevents blank screens
  * 
- * VERSION: 4.6.2 - Fix iOS 26 status bar, remove Liquid Glass, offline balance sync cleanup
+ * VERSION: 4.6.3 - Fix bottom nav missing after swiping back from Customer Panel
  * BUILD: {{BUILD_TIMESTAMP}}
  */
 
-const SW_VERSION = '4.6.2';
+const SW_VERSION = '4.6.3';
 const BUILD_TIMESTAMP = Date.now();
 const CACHE_NAME = `boi-mobile-v${SW_VERSION}-${BUILD_TIMESTAMP}`;
 const FALLBACK_CACHE = `boi-fallback-v${SW_VERSION}`;
