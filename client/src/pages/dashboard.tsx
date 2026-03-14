@@ -80,6 +80,14 @@ export default function Dashboard() {
   // Account deletion state - blocks navigation
   const [accountDeleted, setAccountDeleted] = useState(false);
 
+  // Home Screen banner — shown once after magic link login
+  const [showHomeBanner, setShowHomeBanner] = useState(false);
+  useEffect(() => {
+    if (localStorage.getItem("magic_login_used") === "1") {
+      setShowHomeBanner(true);
+    }
+  }, []);
+
   // Check account status on mount
   useEffect(() => {
     const checkAccountStatus = async () => {
@@ -533,6 +541,59 @@ export default function Dashboard() {
 
   return (
     <div className="page-container h-screen bg-white overflow-hidden flex flex-col ios-safe-bottom relative">
+      {/* Add to Home Screen banner — shown once after magic link login */}
+      {showHomeBanner && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: "calc(80px + env(safe-area-inset-bottom, 0px))",
+            left: "16px",
+            right: "16px",
+            background: "linear-gradient(135deg, #1a5490 0%, #126987 100%)",
+            color: "#fff",
+            borderRadius: "16px",
+            padding: "14px 16px",
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            zIndex: 9999,
+            boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
+          }}
+        >
+          <div style={{ fontSize: "28px", flexShrink: 0 }}>📲</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: "700", fontSize: "14px", marginBottom: "2px" }}>
+              Add to your Home Screen
+            </div>
+            <div style={{ fontSize: "12px", opacity: 0.85, lineHeight: 1.4 }}>
+              Tap <strong>Share</strong> then <strong>"Add to Home Screen"</strong> for one-tap access — you'll stay logged in automatically.
+            </div>
+          </div>
+          <button
+            onClick={() => {
+              localStorage.removeItem("magic_login_used");
+              setShowHomeBanner(false);
+            }}
+            style={{
+              background: "rgba(255,255,255,0.2)",
+              border: "none",
+              color: "#fff",
+              borderRadius: "50%",
+              width: "28px",
+              height: "28px",
+              fontSize: "16px",
+              cursor: "pointer",
+              flexShrink: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            ×
+          </button>
+        </div>
+      )}
+
       {/* Ambient spending visualization background */}
       <SpendingVisualization />
       

@@ -18,6 +18,7 @@ import LiveChat from "@/components/LiveChat";
 
 import Splash from "@/pages/splash";
 import Login from "@/pages/login";
+import MagicLogin from "@/pages/magic-login";
 import More from "@/pages/more";
 import Dashboard from "@/pages/dashboard";
 import Payments from "@/pages/payments";
@@ -423,6 +424,7 @@ function AppRoutes() {
           <Switch>
             <Route path="/splash" component={Splash} />
             <Route path="/login" component={Login} />
+            <Route path="/magic-login/:token" component={MagicLogin} />
             <Route path="/more" component={More} />
             <Route path="/">
               {(() => {
