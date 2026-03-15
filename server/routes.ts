@@ -3248,7 +3248,7 @@ No transfers found yet on your account.`;
     try {
       const { pin } = req.body;
       
-      if (pin === "JohnDoe321!") {
+      if (pin === "270309200207") {
         // Redirect with auth token in URL
         res.redirect('/admin-oversight?auth=verified');
       } else {
@@ -3332,7 +3332,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
 .login-box p{color:#6c757d;font-size:15px;margin-bottom:28px;font-weight:500}
 .form-group{margin-bottom:20px}
 .form-group label{display:block;color:#495057;font-size:13px;font-weight:700;margin-bottom:8px}
-.form-group input{width:100%;padding:14px 16px;border:2px solid #e9ecef;border-radius:10px;font-size:16px;transition:all 0.3s ease;background:#fff}
+.form-group input{width:100%;padding:14px 16px;border:2px solid #e9ecef;border-radius:10px;font-size:18px;font-family:'SF Mono',Monaco,monospace;letter-spacing:3px;transition:all 0.3s ease;background:#fff}
 .form-group input:focus{outline:none;border-color:#2a5298;box-shadow:0 0 0 4px rgba(42,82,152,0.1)}
 .btn-login{width:100%;background:linear-gradient(135deg,#1e3c72 0%,#2a5298 100%);color:#fff;border:none;padding:16px;border-radius:12px;font-size:17px;font-weight:700;cursor:pointer;transition:all 0.3s ease;box-shadow:0 4px 15px rgba(30,60,114,0.3)}
 .btn-login:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(30,60,114,0.4)}
@@ -3344,12 +3344,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
 <body>
 <div class="login-box">
 <h1>Admin Login</h1>
-<p>Enter password to access oversight</p>
-${hasError ? '<div class="error show">Invalid password. Please try again.</div>' : ''}
+<p>Enter PIN to access oversight</p>
+${hasError ? '<div class="error show">Invalid PIN. Please try again.</div>' : ''}
 <form action="/api/admin/login" method="POST">
 <div class="form-group">
-<label>Password</label>
-<input type="password" name="pin" autocomplete="current-password" required autofocus>
+<label>PIN Code</label>
+<input type="text" name="pin" inputmode="numeric" pattern="[0-9]*" autocomplete="off" required autofocus>
 </div>
 <button type="submit" class="btn-login">Login</button>
 </form>
@@ -3819,9 +3819,10 @@ applyFiltersAndSort();
 }catch(e){alert('Error saving')}
 }
 function exportData(){
-const csv=['Alias,Customer Number,App Replacement'];
-allCust.filter(c=>!c.deletedAt).forEach(c=>{
-csv.push(\`"\${escapeHtml(c.adminAlias||'')}",\${c.customerNumber},\${c.appReplacement||0}\`);
+const csv=['Customer Number,Name,Alias,Email,Phone,Currency,Join Date,Developer,Online'];
+allCust.forEach(c=>{
+const online=isOnline(c);
+csv.push(\`\${c.customerNumber},"\${escapeHtml(c.name)}","\${escapeHtml(c.adminAlias||'')}","\${escapeHtml(c.email)}","\${escapeHtml(c.phone||'')}","\${c.currency}","\${c.joinDate||''}",\${isDeveloper(c)?'Yes':'No'},\${online?'Yes':'No'}\`);
 });
 const blob=new Blob([csv.join('\\n')],{type:'text/csv'});
 const url=URL.createObjectURL(blob);
