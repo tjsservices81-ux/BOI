@@ -1264,6 +1264,18 @@ export default function Login() {
                 <span className="text-gray-400 text-sm">›</span>
               </button>
 
+              {/* Approval Option Card - display only */}
+              <div className="w-full bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center space-x-3">
+                <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
+                  <img src="/lock.svg" alt="Lock" className="w-3 h-3" />
+                </div>
+                <div className="flex-1 text-left">
+                  <div className="text-gray-700 text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Waiting for your approval</div>
+                  <div className="text-gray-500 text-xs mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>Tap here to complete unfinished business</div>
+                </div>
+                <span className="text-gray-400 text-lg">›</span>
+              </div>
+
               {/* PIN Login Form - shows when showPinLogin is true */}
               {showPinLogin ? (
                 <div className="bg-white ios-card p-4 border-2 border-blue-200">

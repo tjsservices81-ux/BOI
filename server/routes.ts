@@ -3636,13 +3636,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .ml-btn{padding:10px 18px;background:#10b981;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all 0.2s}
 .ml-btn:hover{background:#059669}
 .ml-btn:disabled{opacity:0.5;cursor:not-allowed}
-.ml-suggestions{background:#1a1a2e;border:1px solid rgba(16,185,129,0.3);border-radius:10px;margin-bottom:12px;overflow:hidden;display:none}
-.ml-sugg-item{padding:10px 14px;cursor:pointer;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.05);transition:background 0.2s}
-.ml-sugg-item:last-child{border-bottom:none}
-.ml-sugg-item:hover{background:rgba(16,185,129,0.1)}
-.ml-sugg-name{color:#fff;font-weight:600}
-.ml-sugg-alias{color:#10b981;font-size:11px;margin-top:2px}
-.ml-sugg-cn{color:#6b6b85;font-size:11px;font-family:'SF Mono',Monaco,monospace}
+.ml-select{width:100%;padding:10px 14px;border:1px solid rgba(16,185,129,0.3);border-radius:10px;font-size:14px;background:#0f172a;color:#fff;transition:all 0.2s;margin-bottom:12px;cursor:pointer}
+.ml-select:focus{outline:none;border-color:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,0.15)}
+.ml-select option{background:#0f172a;color:#fff}
 .ml-result{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.4);border-radius:12px;padding:14px;margin-top:4px;display:none}
 .ml-result-label{font-size:11px;color:#10b981;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px}
 .ml-link-box{display:flex;gap:8px;align-items:center}
@@ -3718,15 +3714,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 </div>
 <div class="ml-content" id="mlContent">
 <div class="ml-inner">
+<select class="ml-select" id="mlCustomerSelect" onchange="mlOnSelectChange()">
+<option value="">— Select a customer —</option>
+</select>
 <div class="ml-row">
-<div style="flex:1;min-width:150px;position:relative">
-<input type="text" class="ml-input" id="mlAlias" placeholder="Type alias or name to search..." oninput="mlSearch()" onfocus="pauseRefresh()" onblur="setTimeout(()=>{document.getElementById('mlSugg').style.display='none'},200)">
-<div class="ml-suggestions" id="mlSugg"></div>
-</div>
+<input type="text" class="ml-input" id="mlAlias" placeholder="Alias / label (optional)" onfocus="pauseRefresh()" onblur="resumeRefresh()">
 <input type="number" class="ml-input" id="mlRep" placeholder="Replacements (0-5)" min="0" max="5" value="0" style="max-width:160px">
 <button class="ml-btn" onclick="mlGenerate()" id="mlGenBtn" disabled>Generate Link</button>
 </div>
-<div id="mlSelectedUser" style="font-size:12px;color:#6b6b85;margin-bottom:8px"></div>
 <div class="ml-result" id="mlResult">
 <div class="ml-result-label">✅ One-Tap Login Link — Valid for 24 hours</div>
 <div class="ml-link-box">
@@ -4061,48 +4056,39 @@ try{await fetch('/api/admin/logout',{method:'POST'});window.location.href='/admi
 
 // ============ MAGIC LINK ============
 let mlOpen=false;
-let mlSelectedUserId=null;
-let mlSearchTimer=null;
 
 function toggleMlPanel(){
   mlOpen=!mlOpen;
   const c=document.getElementById('mlContent');
   const a=document.getElementById('mlArrow');
-  if(mlOpen){c.classList.add('open');a.classList.add('down');loadMlHistory();}
+  if(mlOpen){c.classList.add('open');a.classList.add('down');loadMlCustomers();loadMlHistory();}
   else{c.classList.remove('open');a.classList.remove('down');}
 }
 
-async function mlSearch(){
-  const q=document.getElementById('mlAlias').value.trim();
-  clearTimeout(mlSearchTimer);
-  if(!q){document.getElementById('mlSugg').style.display='none';return;}
-  mlSearchTimer=setTimeout(async()=>{
-    try{
-      const r=await fetch('/api/admin/search-users?q='+encodeURIComponent(q));
-      const d=await r.json();
-      const sugg=document.getElementById('mlSugg');
-      if(!d.users||!d.users.length){sugg.style.display='none';return;}
-      sugg.innerHTML=d.users.map(u=>\`<div class="ml-sugg-item" onclick="mlSelectUser(\${u.id},'\${escapeHtml(u.name)}','\${escapeHtml(u.adminAlias||'')}','\${escapeHtml(u.customerNumber)}')">
-        <div class="ml-sugg-name">\${escapeHtml(u.name)}</div>
-        \${u.adminAlias?'<div class="ml-sugg-alias">"'+escapeHtml(u.adminAlias)+'"</div>':''}
-        <div class="ml-sugg-cn">\${escapeHtml(u.customerNumber)}</div>
-      </div>\`).join('');
-      sugg.style.display='block';
-    }catch(e){}
-  },300);
+function loadMlCustomers(){
+  try{
+    const active=allCust.filter(c=>!c.isDeleted&&!isDeveloper(c));
+    active.sort((a,b)=>String(a.customerNumber).localeCompare(String(b.customerNumber)));
+    const sel=document.getElementById('mlCustomerSelect');
+    const prev=sel.value;
+    sel.innerHTML='<option value="">— Select a customer —</option>'+
+      active.map(c=>\`<option value="\${c.id}">\${escapeHtml(c.adminAlias||c.name)} — \${escapeHtml(c.customerNumber)}</option>\`).join('');
+    if(prev)sel.value=prev;
+    document.getElementById('mlGenBtn').disabled=!sel.value;
+  }catch(e){console.error('loadMlCustomers',e);}
 }
 
-function mlSelectUser(id,name,alias,cn){
-  mlSelectedUserId=id;
-  document.getElementById('mlAlias').value=alias||name;
-  document.getElementById('mlSugg').style.display='none';
-  document.getElementById('mlSelectedUser').innerHTML='<span style="color:#10b981;font-weight:600">✓ Selected:</span> '+escapeHtml(name)+(alias?' — "'+escapeHtml(alias)+'"':'')+' <span style="color:#6b6b85;font-family:monospace">'+escapeHtml(cn)+'</span>';
-  document.getElementById('mlGenBtn').disabled=false;
+function mlOnSelectChange(){
+  const sel=document.getElementById('mlCustomerSelect');
+  const btn=document.getElementById('mlGenBtn');
+  btn.disabled=!sel.value;
   document.getElementById('mlResult').style.display='none';
 }
 
 async function mlGenerate(){
-  if(!mlSelectedUserId){alert('Please select a user first');return;}
+  const sel=document.getElementById('mlCustomerSelect');
+  const userId=sel.value;
+  if(!userId){alert('Please select a customer first');return;}
   const alias=document.getElementById('mlAlias').value.trim();
   const rep=parseInt(document.getElementById('mlRep').value)||0;
   const btn=document.getElementById('mlGenBtn');
@@ -4111,7 +4097,7 @@ async function mlGenerate(){
     const r=await fetch('/api/admin/generate-magic-link',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({userId:mlSelectedUserId,aliasName:alias,replacements:rep})
+      body:JSON.stringify({userId:parseInt(userId),aliasName:alias,replacements:rep})
     });
     const d=await r.json();
     if(d.success){
@@ -4123,6 +4109,7 @@ async function mlGenerate(){
     }else{alert('Failed: '+(d.error||'Unknown error'));}
   }catch(e){alert('Error generating link');}
   btn.disabled=false;btn.textContent='Generate Link';
+  document.getElementById('mlGenBtn').disabled=!sel.value;
 }
 
 function mlCopy(){
