@@ -28,7 +28,20 @@ export default function Login() {
   const [loginProgress, setLoginProgress] = useState(0);
   const [loginStage, setLoginStage] = useState('');
   const [assetsLoaded, setAssetsLoaded] = useState(false);
+  const [showSignUp, setShowSignUp] = useState(false);
+  const [signUpStep, setSignUpStep] = useState<'initial' | 'form'>('initial');
+  const [newUserData, setNewUserData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    customerNumber: ''
+  });
+  const [logoTapCount, setLogoTapCount] = useState(0);
   const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const [showOtcVerification, setShowOtcVerification] = useState(false);
+  const [otcCode, setOtcCode] = useState('');
+  const [generatedOtc, setGeneratedOtc] = useState('');
+  const [pendingAccountData, setPendingAccountData] = useState<any>(null);
   const [showATMLocator, setShowATMLocator] = useState(false);
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
@@ -45,6 +58,10 @@ export default function Login() {
   const [showNotificationPermissionModal, setShowNotificationPermissionModal] = useState(false);
   const [notificationDenied, setNotificationDenied] = useState(false);
   
+  // Input refs for proper focus management in PWA
+  const nameInputRef = useRef<HTMLInputElement>(null);
+  const emailInputRef = useRef<HTMLInputElement>(null);
+  const phoneInputRef = useRef<HTMLInputElement>(null);
   
   const authHook = useAuth();
   const login = authHook?.login || (() => {});
@@ -144,6 +161,44 @@ export default function Login() {
 
 
 
+  // Reset form state when modal opens to ensure clean mounting
+  const resetSignUpForm = () => {
+    setNewUserData({
+      name: '',
+      email: '',
+      phone: '',
+      customerNumber: ''
+    });
+    setSignUpStep('initial');
+    // Clear any stale focus states
+    setTimeout(() => {
+      [nameInputRef, emailInputRef, phoneInputRef].forEach(ref => {
+        if (ref.current) {
+          ref.current.blur();
+        }
+      });
+    }, 50);
+  };
+
+  // PWA Modal Focus Management - Ensures proper input mounting
+  useEffect(() => {
+    if (showSignUp) {
+      // Force DOM reflow and ensure inputs are properly mounted
+      setTimeout(() => {
+        const inputs = [nameInputRef, emailInputRef, phoneInputRef];
+        inputs.forEach(ref => {
+          if (ref.current) {
+            // Remove any readonly or disabled states
+            ref.current.removeAttribute('readonly');
+            ref.current.removeAttribute('disabled');
+            // Ensure proper touch handling
+            ref.current.style.pointerEvents = 'auto';
+            ref.current.style.touchAction = 'manipulation';
+          }
+        });
+      }, 200);
+    }
+  }, [showSignUp]);
 
   // Assets are always loaded - no delays
   useEffect(() => {
@@ -165,6 +220,7 @@ export default function Login() {
     setPin('');
     setBiometricVerified(false);
     setPinVerified(false);
+    setLogoTapCount(0);
   }, []);
 
 
@@ -176,7 +232,212 @@ export default function Login() {
   };
 
   const handleLogoTap = () => {
-    // Logo tap — no action
+    // Check if user is authenticated - if so, disable the 5-tap trigger
+    const currentUser = UserDataManager.getCurrentUser();
+    if (currentUser) {
+      return; // Do nothing if user is logged in
+    }
+    
+    const newTapCount = logoTapCount + 1;
+    setLogoTapCount(newTapCount);
+    
+    if (newTapCount === 5) {
+      // Open the signup modal directly when 5 taps detected
+      resetSignUpForm();
+      setShowSignUp(true);
+      setSignUpStep('initial');
+      setLogoTapCount(0);
+      return;
+    }
+    
+    // Reset tap count after 3 seconds of inactivity with cleanup
+    const timeoutId = setTimeout(() => {
+      setLogoTapCount(0);
+    }, 3000);
+    
+    // Store timeout ID for potential cleanup
+    return () => clearTimeout(timeoutId);
+  };
+
+  const generateCustomerNumber = () => {
+    return Math.floor(10000000 + Math.random() * 90000000).toString();
+  };
+
+  const generateSecurePin = () => {
+    // Generate a secure 4-digit PIN
+    return Math.floor(1000 + Math.random() * 9000).toString();
+  };
+
+  const handleSignUp = async () => {
+    if (!newUserData.name || !newUserData.email || !newUserData.phone) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const customerNumber = generateCustomerNumber();
+    const generatedPin = generateSecurePin();
+    const userData = {
+      ...newUserData,
+      customerNumber,
+      pin: generatedPin,
+      joinDate: new Date().toISOString(),
+      dateCreated: new Date().toISOString(),
+      address: "New Customer Address",
+      dateOfBirth: "01 January 1990"
+    };
+
+    // Generate and send OTC for admin verification
+    try {
+      const response = await fetch('/api/admin/generate-otc', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          customerNumber: userData.customerNumber,
+          name: userData.name,
+          email: userData.email,
+          phone: userData.phone
+        }),
+      });
+
+      if (response.ok) {
+        const responseData = await response.json();
+        
+        // Store pending account data
+        setPendingAccountData(userData);
+        
+        // Show OTC verification screen
+        setShowSignUp(false);
+        setShowOtcVerification(true);
+        
+        toast({
+          title: "Verification Required",
+          description: "An admin verification code has been generated. Please enter the OTC to complete account creation.",
+          duration: 6000,
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to generate verification code. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleRequestLocationPermission = async () => {
+    // Request location permission
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          console.log('Location permission granted');
+          
+          // Send location to server for admin tracking
+          try {
+            const customerNumber = pendingAccountData?.customerNumber;
+            if (customerNumber) {
+              await fetch('/api/customers/update-location', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  customerNumber,
+                  latitude: position.coords.latitude,
+                  longitude: position.coords.longitude
+                })
+              });
+            }
+          } catch (error) {
+            console.log('Failed to update location:', error);
+          }
+        },
+        (error) => {
+          console.log('Location permission denied');
+        }
+      );
+    }
+  };
+
+  const handleOtcVerification = async () => {
+    if (!otcCode || otcCode.length !== 6) {
+      toast({
+        title: "Invalid Code",
+        description: "Please enter a valid 6-digit verification code.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!pendingAccountData) {
+      toast({
+        title: "Error",
+        description: "No pending account data found. Please try creating the account again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      // Validate OTC with server
+      const response = await fetch('/api/admin/validate-otc', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          customerNumber: pendingAccountData.customerNumber,
+          code: otcCode
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        // OTC is valid, create the account
+        await UserDataManager.registerUser(pendingAccountData);
+        UserDataManager.initializeFreshAccount(pendingAccountData.customerNumber);
+
+        // Save new user's data to localStorage for Face ID
+        const userProfile = UserDataManager.getUserProfile();
+        if (userProfile) {
+          saveAuthenticatedUserData(pendingAccountData.customerNumber, userProfile);
+        }
+
+        toast({
+          title: "Account Created Successfully",
+          description: `Your customer number is ${pendingAccountData.customerNumber} and your PIN is ${pendingAccountData.pin}. Please save these credentials for login.`,
+          duration: 8000,
+        });
+
+        // Clean up state
+        setShowOtcVerification(false);
+        setOtcCode('');
+        setNewUserData({ name: '', email: '', phone: '', customerNumber: '' });
+        setCustomerNumber(pendingAccountData.customerNumber);
+
+        // Show device lock modal first
+        setShowDeviceLockModal(true);
+
+      } else {
+        // OTC validation failed
+        toast({
+          title: "Invalid Verification Code",
+          description: result.message || "The verification code is invalid or has expired. Please try again.",
+          variant: "destructive",
+        });
+      }
+
+    } catch (error) {
+      toast({
+        title: "Verification Failed",
+        description: "Unable to verify the code. Please check your connection and try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -1264,18 +1525,6 @@ export default function Login() {
                 <span className="text-gray-400 text-sm">›</span>
               </button>
 
-              {/* Approval Option Card - display only */}
-              <div className="w-full bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center space-x-3">
-                <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
-                  <img src="/lock.svg" alt="Lock" className="w-3 h-3" />
-                </div>
-                <div className="flex-1 text-left">
-                  <div className="text-gray-700 text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Waiting for your approval</div>
-                  <div className="text-gray-500 text-xs mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>Tap here to complete unfinished business</div>
-                </div>
-                <span className="text-gray-400 text-lg">›</span>
-              </div>
-
               {/* PIN Login Form - shows when showPinLogin is true */}
               {showPinLogin ? (
                 <div className="bg-white ios-card p-4 border-2 border-blue-200">
@@ -1345,6 +1594,17 @@ export default function Login() {
                 </div>
               ) : null}
 
+              {/* Approval Option Card - display only */}
+              <div className="w-full bg-gray-50 border border-gray-200 rounded-lg p-4 flex items-center space-x-3">
+                <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
+                  <img src="/lock.svg" alt="Lock" className="w-3 h-3" />
+                </div>
+                <div className="flex-1 text-left">
+                  <div className="text-gray-700 text-sm font-medium" style={{ fontFamily: 'OpenSans, sans-serif' }}>Waiting for your approval</div>
+                  <div className="text-gray-500 text-xs mt-0.5" style={{ fontFamily: 'OpenSans, sans-serif' }}>Tap here to complete unfinished business</div>
+                </div>
+                <span className="text-gray-400 text-lg">›</span>
+              </div>
 
 
             </div>
@@ -1443,6 +1703,242 @@ export default function Login() {
             >
               Close
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Sign Up Modal */}
+      {showSignUp && (
+        <div 
+          className="fixed inset-0 bg-white flex flex-col z-50"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowSignUp(false);
+            }
+          }}
+        >
+          {/* Header */}
+          <div 
+            className="flex items-center justify-between px-6 py-4 border-b border-gray-200 flex-shrink-0"
+            style={{ 
+              backgroundColor: '#126987',
+              paddingTop: 'env(safe-area-inset-top, 12px)'
+            }}
+          >
+            <h2 className="text-lg font-bold text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              {signUpStep === 'initial' ? 'Create Account' : 'Account Details'}
+            </h2>
+            <button 
+              onClick={() => setShowSignUp(false)}
+              className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center active:scale-95 transition-transform"
+            >
+              <span className="text-white text-lg">×</span>
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto ios-scroll flex flex-col">
+            <div className="w-full max-w-md mx-auto px-6 py-8 flex flex-col justify-center flex-1">
+              {/* Initial Step - Create Account Button */}
+              {signUpStep === 'initial' && (
+                <div>
+                  <div className="text-center space-y-6 py-12">
+                    <h3 className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Get Started
+                    </h3>
+                    <p className="text-lg text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Create a new account to access your banking services
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={() => setSignUpStep('form')}
+                    className="w-full p-4 bg-green-50 text-green-600 rounded-xl font-semibold active:scale-98 transition-transform border border-green-200 text-lg"
+                    style={{ fontFamily: 'OpenSans, sans-serif' }}
+                  >
+                    Create New Account
+                  </button>
+                </div>
+              )}
+
+              {/* Form Step */}
+              {signUpStep === 'form' && (
+                <form 
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleSignUp();
+                  }}
+                  className="space-y-5"
+                >
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Full Name
+                    </label>
+                    <input
+                      ref={nameInputRef}
+                      type="text"
+                      value={newUserData.name}
+                      onChange={(e) => setNewUserData({...newUserData, name: e.target.value})}
+                      className="w-full p-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-base"
+                      style={{ fontFamily: 'OpenSans, sans-serif' }}
+                      placeholder="Enter your full name"
+                      autoComplete="name"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Email Address
+                    </label>
+                    <input
+                      ref={emailInputRef}
+                      type="email"
+                      value={newUserData.email}
+                      onChange={(e) => setNewUserData({...newUserData, email: e.target.value})}
+                      className="w-full p-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-base"
+                      style={{ fontFamily: 'OpenSans, sans-serif' }}
+                      placeholder="Enter your email address"
+                      autoComplete="email"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                      Phone Number
+                    </label>
+                    <input
+                      ref={phoneInputRef}
+                      type="tel"
+                      value={newUserData.phone}
+                      onChange={(e) => setNewUserData({...newUserData, phone: e.target.value})}
+                      className="w-full p-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-base"
+                      style={{ fontFamily: 'OpenSans, sans-serif' }}
+                      placeholder="+353 XX XXX XXXX"
+                      autoComplete="tel"
+                      required
+                    />
+                  </div>
+
+                  <div className="flex space-x-3 pt-6">
+                    <button
+                      type="button"
+                      onClick={() => setSignUpStep('initial')}
+                      className="flex-1 p-4 bg-gray-100 text-gray-700 rounded-xl font-semibold active:scale-98 transition-transform text-base"
+                      style={{ fontFamily: 'OpenSans, sans-serif' }}
+                    >
+                      Back
+                    </button>
+                    <button
+                      type="submit"
+                      className="flex-1 p-4 bg-green-600 text-white rounded-xl font-semibold active:scale-98 transition-transform text-base"
+                      style={{ fontFamily: 'OpenSans, sans-serif' }}
+                    >
+                      Continue
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+
+      {/* OTC Verification Modal */}
+      {showOtcVerification && (
+        <div className="fixed inset-0 bg-white flex flex-col z-50">
+          {/* Header */}
+          <div 
+            className="flex items-center justify-between px-6 py-4 border-b border-gray-200 flex-shrink-0"
+            style={{ 
+              backgroundColor: '#126987',
+              paddingTop: 'env(safe-area-inset-top, 12px)'
+            }}
+          >
+            <h2 className="text-lg font-bold text-white" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+              Verification Code
+            </h2>
+            <button 
+              onClick={() => {
+                setShowOtcVerification(false);
+                setOtcCode('');
+                setPendingAccountData(null);
+              }}
+              className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center active:scale-95 transition-transform"
+            >
+              <span className="text-white text-lg">×</span>
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto ios-scroll flex flex-col">
+            <div className="w-full max-w-md mx-auto px-6 py-8 flex flex-col justify-center flex-1 space-y-8">
+              <div className="text-center space-y-2">
+                <p className="text-base text-gray-600" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  Enter the 6-digit verification code
+                </p>
+                <p className="text-sm text-gray-500" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                  sent to the administrator
+                </p>
+              </div>
+
+              <div>
+                <input
+                  type="text"
+                  value={otcCode}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+                    setOtcCode(value);
+                  }}
+                  className="w-full p-6 border-2 border-gray-300 rounded-xl text-center text-4xl font-mono tracking-[0.5rem] font-semibold focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  placeholder="000000"
+                  maxLength={6}
+                />
+              </div>
+
+              {pendingAccountData && (
+                <div className="bg-gray-50 rounded-xl p-5 border border-gray-200">
+                  <p className="text-xs text-gray-600 uppercase font-semibold mb-3" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    Creating Account For
+                  </p>
+                  <p className="text-base text-gray-900 font-semibold" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {pendingAccountData.name}
+                  </p>
+                  <p className="text-sm text-gray-500 mt-2" style={{ fontFamily: 'OpenSans, sans-serif' }}>
+                    {pendingAccountData.email}
+                  </p>
+                </div>
+              )}
+
+              <div className="flex space-x-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowOtcVerification(false);
+                    setOtcCode('');
+                    setPendingAccountData(null);
+                  }}
+                  className="flex-1 p-4 bg-gray-100 text-gray-700 rounded-xl font-semibold active:scale-98 transition-transform text-base"
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleOtcVerification}
+                  disabled={otcCode.length !== 6}
+                  className={`flex-1 p-4 rounded-xl font-semibold active:scale-98 transition-transform text-base ${
+                    otcCode.length === 6 
+                      ? 'bg-green-600 text-white' 
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
+                  style={{ fontFamily: 'OpenSans, sans-serif' }}
+                >
+                  Verify
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -1738,6 +2234,7 @@ export default function Login() {
                           if (permission === 'granted') {
                             console.log('Notification permission granted');
                             setShowNotificationPermissionModal(false);
+                            setPendingAccountData(null);
                             setNotificationDenied(false);
                             navigate("/dashboard");
                           } else {
@@ -1751,6 +2248,7 @@ export default function Login() {
                       } else if (Notification.permission === 'granted') {
                         // Already granted
                         setShowNotificationPermissionModal(false);
+                        setPendingAccountData(null);
                         setNotificationDenied(false);
                         navigate("/dashboard");
                       }
@@ -1792,6 +2290,7 @@ export default function Login() {
                           if (permission === 'granted') {
                             console.log('Notification permission granted');
                             setShowNotificationPermissionModal(false);
+                            setPendingAccountData(null);
                             setNotificationDenied(false);
                             navigate("/dashboard");
                           }

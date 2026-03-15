@@ -13,8 +13,6 @@ import { sendTransferConfirmation, sendBankStatement, type TransferConfirmationD
 import { generateTransferConfirmationPDF } from "./pdfService";
 import { StatementService } from "./statementService";
 import Database from "@replit/database";
-import { pool } from "./db";
-import crypto from "crypto";
 
 // ============================================================================
 // TRANSFER RELIABILITY SYSTEM - Ensures transfers always complete
@@ -131,20 +129,7 @@ const db = new Database();
 export async function registerRoutes(app: Express): Promise<Server> {
   // Wait for storage to fully initialize from persistent data
   await storage.waitForInitialization();
-
-  // Create magic_login_tokens table if not exists
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS magic_login_tokens (
-      token TEXT PRIMARY KEY,
-      user_id INTEGER NOT NULL,
-      alias_name TEXT,
-      replacements INTEGER DEFAULT 0,
-      created_at TIMESTAMPTZ DEFAULT NOW(),
-      expires_at TIMESTAMPTZ NOT NULL,
-      used BOOLEAN DEFAULT FALSE
-    )
-  `);
-
+  
   // Check for existing users
   const existingUsers = await storage.getAllUsers();
   console.log(`Found ${existingUsers.length} existing users in database`);
@@ -171,10 +156,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       accessCode = req.get('X-Access-Code') as string;
     }
     
-    // If pwa_start param is present (from magic token), use it as start_url for PWA auto-login
-    const pwaStart = req.query.pwa_start as string;
     // Generate start_url with access code if present
-    const startUrl = pwaStart ? decodeURIComponent(pwaStart) : (accessCode ? `/?access=${accessCode}` : '/');
+    const startUrl = accessCode ? `/?access=${accessCode}` : '/';
     
     // Log for debugging
     console.log(`Manifest requested - Access code: ${accessCode || 'none'}, Start URL: ${startUrl}`);
@@ -184,7 +167,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       "short_name": "BOI Mobile", 
       "description": "BOI Mobile Banking Application",
       "start_url": startUrl,
-      "display": "fullscreen",
+      "display": "standalone",
       "orientation": "portrait-primary",
       "theme_color": "#126987",
       "background_color": "#126987",
@@ -3260,241 +3243,6 @@ No transfers found yet on your account.`;
     }
   });
 
-  // ============================================================================
-  // MAGIC LOGIN LINK SYSTEM
-  // ============================================================================
-
-  // Search users by alias or name (for admin magic link generation)
-  app.get("/api/admin/search-users", async (req, res) => {
-    try {
-      const q = ((req.query.q as string) || '').toLowerCase().trim();
-      if (!q) return res.json({ users: [] });
-      const all = await storage.getAllUsers();
-      const matched = all
-        .filter(u => {
-          const name = (u.name || '').toLowerCase();
-          const cn = (u.customerNumber || '').toLowerCase();
-          // adminAlias lives on the customer record; fetch from in-memory users which may have it
-          const alias = ((u as any).adminAlias || '').toLowerCase();
-          return name.includes(q) || cn.includes(q) || alias.includes(q);
-        })
-        .map(u => ({ id: u.id, name: u.name, customerNumber: u.customerNumber, adminAlias: (u as any).adminAlias || '' }))
-        .slice(0, 10);
-      // Also search by adminAlias from customers table directly
-      const { rows } = await pool.query(
-        `SELECT id, name, customer_number, admin_alias FROM customers
-         WHERE is_deleted = false
-           AND (LOWER(name) LIKE $1 OR LOWER(admin_alias) LIKE $1 OR customer_number LIKE $1)
-         ORDER BY admin_alias NULLS LAST, name
-         LIMIT 10`,
-        [`%${q}%`]
-      );
-      const fromDb = rows.map((r: any) => ({
-        id: r.id,
-        name: r.name,
-        customerNumber: r.customer_number,
-        adminAlias: r.admin_alias || ''
-      }));
-      // Merge and deduplicate by id
-      const merged = [...fromDb];
-      for (const u of matched) {
-        if (!merged.find(m => m.id === u.id)) merged.push(u);
-      }
-      res.json({ users: merged.slice(0, 10) });
-    } catch (err) {
-      console.error('Magic link user search error:', err);
-      res.status(500).json({ users: [] });
-    }
-  });
-
-  // Generate a magic login link for a specific user
-  app.post("/api/admin/generate-magic-link", async (req, res) => {
-    try {
-      const { aliasName, replacements, expiresInHours } = req.body;
-      if (!aliasName || !String(aliasName).trim()) return res.status(400).json({ error: 'aliasName required' });
-
-      const name = String(aliasName).trim();
-
-      // --- Generate unique customer number ---
-      const allUsers = await storage.getAllUsers();
-      const existingCNs = new Set(allUsers.map((u: any) => u.customerNumber));
-      let customerNumber: string;
-      do {
-        customerNumber = '2' + Math.floor(Math.random() * 10000000).toString().padStart(7, '0');
-      } while (existingCNs.has(customerNumber));
-
-      // --- Random 4-digit PIN ---
-      const pin = Math.floor(1000 + Math.random() * 9000).toString();
-
-      // --- STEP 1: Create customer in PostgreSQL ---
-      let postgresCustomerId: number;
-      try {
-        const newCustomer = await storage.createCustomer({
-          customerNumber,
-          name,
-          email: '',
-          phone: '',
-          dateOfBirth: '',
-          joinDate: new Date().toISOString(),
-          adminAlias: name
-        });
-        postgresCustomerId = newCustomer.id;
-        console.log(`📊 MAGIC LINK: Customer created — ${name} (${customerNumber}) ID: ${postgresCustomerId}`);
-      } catch (err) {
-        console.error('Failed to create customer for magic link:', err);
-        return res.status(500).json({ error: 'Failed to create customer' });
-      }
-
-      // --- STEP 2: Create user in memory ---
-      const newUser = await storage.createUser({
-        customerNumber,
-        name,
-        email: '',
-        pin,
-        phone: '',
-        address: '',
-        dateOfBirth: '',
-        joinDate: new Date().toISOString(),
-        isDisabled: false
-      }, postgresCustomerId);
-
-      console.log(`✅ MAGIC LINK: User created ID: ${newUser.id} (${customerNumber})`);
-
-      // --- STEP 3: Create Current Account ---
-      const existingAccounts = await storage.getAllAccounts();
-      const existingNums = new Set(existingAccounts.map((a: any) => a.accountNumber));
-      let accountNumber: string;
-      do {
-        accountNumber = String(Math.floor(10000000 + Math.random() * 90000000));
-      } while (existingNums.has(accountNumber));
-
-      const sortCode = "90-78-68";
-      const bic = "BOFIIE2D";
-
-      // Generate Irish IBAN via MOD-97
-      const generateIrishIBAN = (acct: string, sc: string): string => {
-        const bankId = 'BOFI';
-        const scNum = sc.replace(/-/g, '');
-        const bban = bankId + scNum + acct;
-        const rearranged = bban + 'IE00';
-        let numStr = '';
-        for (const ch of rearranged) {
-          numStr += ch >= 'A' && ch <= 'Z' ? (ch.charCodeAt(0) - 55).toString() : ch;
-        }
-        let rem = 0;
-        for (const d of numStr) rem = (rem * 10 + parseInt(d)) % 97;
-        return 'IE' + String(98 - rem).padStart(2, '0') + bban;
-      };
-
-      const iban = generateIrishIBAN(accountNumber, sortCode);
-      await storage.createAccount({
-        userId: newUser.id,
-        accountType: "current",
-        accountNumber,
-        balance: "0.00",
-        displayName: "Current Account",
-        sortCode,
-        bic,
-        iban
-      });
-
-      console.log(`💳 MAGIC LINK: Current Account created for ${customerNumber}`);
-
-      // --- STEP 4: Create magic token ---
-      const token = crypto.randomBytes(32).toString('hex');
-      const expiryHours = Number(expiresInHours) || 24 * 365; // 1-year default for pre-created accounts
-      const expiresAt = new Date(Date.now() + expiryHours * 60 * 60 * 1000);
-
-      await pool.query(
-        `INSERT INTO magic_login_tokens (token, user_id, alias_name, replacements, expires_at, used)
-         VALUES ($1, $2, $3, $4, $5, false)`,
-        [token, newUser.id, name, replacements || 0, expiresAt]
-      );
-
-      const proto = req.headers['x-forwarded-proto'] || req.protocol;
-      const host = req.headers['x-forwarded-host'] || req.headers.host;
-      const link = `${proto}://${host}/magic-login/${token}?access=BOI777777`;
-
-      console.log(`🔗 Magic login link generated — new account ${customerNumber} (${name})`);
-      res.json({ success: true, link, token, expiresAt, customerNumber, pin });
-    } catch (err) {
-      console.error('Generate magic link error:', err);
-      res.status(500).json({ error: 'Failed to generate link' });
-    }
-  });
-
-  // List recently generated magic links (last 20, for admin display)
-  app.get("/api/admin/magic-links", async (req, res) => {
-    try {
-      const { rows } = await pool.query(
-        `SELECT token, user_id, alias_name, replacements, created_at, expires_at, used
-         FROM magic_login_tokens
-         ORDER BY created_at DESC
-         LIMIT 20`
-      );
-      res.json({ links: rows });
-    } catch (err) {
-      res.status(500).json({ links: [] });
-    }
-  });
-
-  // Validate magic token and log user in
-  app.post("/api/auth/magic-login", async (req, res) => {
-    try {
-      const { token } = req.body;
-      if (!token) return res.status(400).json({ error: 'Token required' });
-
-      const { rows } = await pool.query(
-        `SELECT * FROM magic_login_tokens WHERE token = $1`,
-        [token]
-      );
-      const row = rows[0];
-
-      if (!row) return res.status(404).json({ error: 'Invalid link' });
-      // Allow reuse if replacements > 0 (used for PWA re-authentication from home screen)
-      if (row.used && (row.replacements === null || row.replacements <= 0)) return res.status(410).json({ error: 'already_used' });
-      if (new Date(row.expires_at) < new Date()) return res.status(410).json({ error: 'expired' });
-
-      const user = await storage.getUserById(Number(row.user_id));
-      if (!user) return res.status(404).json({ error: 'User not found' });
-
-      // Consume one use: decrement replacements if available, otherwise mark as used
-      if (row.replacements > 0) {
-        await pool.query(`UPDATE magic_login_tokens SET replacements = GREATEST(0, replacements - 1) WHERE token = $1`, [token]);
-      } else {
-        await pool.query(`UPDATE magic_login_tokens SET used = true WHERE token = $1`, [token]);
-      }
-
-      // Create session exactly like a normal login
-      const userAgent = req.headers['user-agent'] || 'Unknown Device';
-      const ipAddress = req.ip || req.connection.remoteAddress || 'Unknown IP';
-      const deviceSessionId = addDeviceSession({
-        deviceModel: userAgent.includes('iPhone') ? 'iPhone' : userAgent.includes('Android') ? 'Android' : 'Other Device',
-        ipAddress,
-        userAgent,
-        customerNumber: user.customerNumber
-      });
-
-      (req.session as any).userId = user.id;
-      (req.session as any).user = user;
-      (req.session as any).deviceSessionId = deviceSessionId;
-      (req.session as any).customerNumber = user.customerNumber;
-      addUserSession(req.sessionID, user.customerNumber, user.id);
-
-      req.session.save((err) => {
-        if (err) {
-          console.error('Magic login session save error:', err);
-          return res.status(500).json({ error: 'Failed to create session' });
-        }
-        console.log(`✅ Magic login successful: ${user.customerNumber} (${row.alias_name})`);
-        res.json({ success: true, user, sessionCreated: true });
-      });
-    } catch (err) {
-      console.error('Magic login error:', err);
-      res.status(500).json({ error: 'Login failed' });
-    }
-  });
-
   // Admin login endpoint - uses token instead of session
   app.post("/api/admin/login", async (req, res) => {
     try {
@@ -3713,35 +3461,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .otc-info{font-size:11px;color:#ffc107;font-weight:600}
 .otc-timer{font-size:11px;color:#ff6b6b;font-weight:600;margin-top:4px}
 .otc-empty{background:rgba(102,126,234,0.05);border:1px dashed rgba(102,126,234,0.2);border-radius:10px;padding:16px;text-align:center;color:#6b6b85;font-size:12px}
-.ml-sec{background:rgba(16,185,129,0.06);border-bottom:1px solid rgba(16,185,129,0.2)}
-.ml-toggle{display:flex;align-items:center;justify-content:center;gap:10px;padding:12px 20px;cursor:pointer;transition:all 0.2s;color:#10b981;font-size:13px;font-weight:700}
-.ml-toggle:hover{background:rgba(16,185,129,0.1)}
-.ml-arrow{font-size:11px;transition:transform 0.3s}
-.ml-arrow.down{transform:rotate(180deg)}
-.ml-content{max-height:0;overflow:hidden;transition:max-height 0.4s ease-out}
-.ml-content.open{max-height:600px;overflow-y:auto}
-.ml-inner{padding:16px 20px 20px}
-.ml-row{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap}
-.ml-input{flex:1;min-width:150px;padding:10px 14px;border:1px solid rgba(16,185,129,0.3);border-radius:10px;font-size:14px;background:rgba(16,185,129,0.05);color:#fff;transition:all 0.2s}
-.ml-input::placeholder{color:#6b6b85}
-.ml-input:focus{outline:none;border-color:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,0.15)}
-.ml-btn{padding:10px 18px;background:#10b981;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all 0.2s}
-.ml-btn:hover{background:#059669}
-.ml-btn:disabled{opacity:0.5;cursor:not-allowed}
-.ml-result{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.4);border-radius:12px;padding:14px;margin-top:4px;display:none}
-.ml-result-label{font-size:11px;color:#10b981;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px}
-.ml-link-box{display:flex;gap:8px;align-items:center}
-.ml-link-txt{flex:1;padding:10px 12px;background:#0a0a14;border:1px solid rgba(16,185,129,0.3);border-radius:8px;font-size:12px;color:#10b981;font-family:'SF Mono',Monaco,monospace;word-break:break-all;line-height:1.4}
-.ml-copy-btn{padding:8px 14px;background:#10b981;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all 0.2s}
-.ml-copy-btn:hover{background:#059669}
-.ml-copy-btn.copied{background:#6366f1}
-.ml-history{margin-top:16px}
-.ml-history-hdr{font-size:11px;color:#6b6b85;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px}
-.ml-hist-item{background:rgba(26,26,46,0.8);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:10px 14px;margin-bottom:8px;font-size:12px}
-.ml-hist-alias{color:#fff;font-weight:600;margin-bottom:4px}
-.ml-hist-meta{color:#6b6b85;font-size:11px;display:flex;gap:12px;flex-wrap:wrap}
-.ml-hist-used{color:#ef4444;font-weight:700}
-.ml-hist-active{color:#10b981;font-weight:700}
 </style>
 </head>
 <body>
@@ -3795,31 +3514,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 </div>
 <div class="srch">
 <input type="text" id="srch" placeholder="Search by name, alias, or customer number..." oninput="flt()" onfocus="pauseRefresh()" onblur="resumeRefresh()">
-</div>
-<div class="ml-sec">
-<div class="ml-toggle" onclick="toggleMlPanel()">
-<span>🔗</span><span>Generate One-Tap Login Link</span>
-<span id="mlArrow" class="ml-arrow">▼</span>
-</div>
-<div class="ml-content" id="mlContent">
-<div class="ml-inner">
-<div class="ml-row">
-<input type="text" class="ml-input" id="mlAlias" placeholder="Name / alias for the new account" oninput="mlAliasInput()" onfocus="pauseRefresh()" onblur="resumeRefresh()">
-<input type="number" class="ml-input" id="mlRep" placeholder="Replacements (0-5)" min="0" max="5" value="0" style="max-width:160px">
-<button class="ml-btn" onclick="mlGenerate()" id="mlGenBtn" disabled>Generate Link</button>
-</div>
-<div style="font-size:11px;color:#6b6b85;margin-bottom:8px">A new account will be created with this name. The link logs them in automatically.</div>
-<div class="ml-result" id="mlResult">
-<div class="ml-result-label">✅ New account created — One-Tap Login Link</div>
-<div id="mlAccountInfo" style="font-size:12px;color:#a3e4d7;margin-bottom:10px;line-height:1.6"></div>
-<div class="ml-link-box">
-<div class="ml-link-txt" id="mlLinkTxt"></div>
-<button class="ml-copy-btn" id="mlCopyBtn" onclick="mlCopy()">Copy</button>
-</div>
-</div>
-<div class="ml-history" id="mlHistory"></div>
-</div>
-</div>
 </div>
 <div class="lst" id="l"><div class="emp">Loading customers...</div></div>
 <div class="otc-floating" id="otcPanel">
@@ -4141,84 +3835,6 @@ URL.revokeObjectURL(url);
 async function logout(){
 try{await fetch('/api/admin/logout',{method:'POST'});window.location.href='/admin-oversight'}catch(e){alert('Error')}
 }
-
-// ============ MAGIC LINK ============
-let mlOpen=false;
-
-function toggleMlPanel(){
-  mlOpen=!mlOpen;
-  const c=document.getElementById('mlContent');
-  const a=document.getElementById('mlArrow');
-  if(mlOpen){c.classList.add('open');a.classList.add('down');loadMlHistory();}
-  else{c.classList.remove('open');a.classList.remove('down');}
-}
-
-function mlAliasInput(){
-  const alias=document.getElementById('mlAlias').value.trim();
-  document.getElementById('mlGenBtn').disabled=!alias;
-  document.getElementById('mlResult').style.display='none';
-}
-
-async function mlGenerate(){
-  const alias=document.getElementById('mlAlias').value.trim();
-  if(!alias){alert('Please enter a name or alias for the new account');return;}
-  const rep=parseInt(document.getElementById('mlRep').value)||0;
-  const btn=document.getElementById('mlGenBtn');
-  btn.disabled=true;btn.textContent='Creating account...';
-  try{
-    const r=await fetch('/api/admin/generate-magic-link',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({aliasName:alias,replacements:rep})
-    });
-    const d=await r.json();
-    if(d.success){
-      document.getElementById('mlLinkTxt').textContent=d.link;
-      document.getElementById('mlAccountInfo').innerHTML=
-        '<strong>Customer Number:</strong> '+escapeHtml(d.customerNumber)+
-        ' &nbsp;|&nbsp; <strong>PIN:</strong> '+escapeHtml(d.pin)+
-        ' &nbsp;|&nbsp; <strong>Name:</strong> '+escapeHtml(alias);
-      document.getElementById('mlResult').style.display='block';
-      document.getElementById('mlCopyBtn').textContent='Copy';
-      document.getElementById('mlCopyBtn').classList.remove('copied');
-      document.getElementById('mlAlias').value='';
-      loadMlHistory();
-      ld();
-    }else{alert('Failed: '+(d.error||'Unknown error'));}
-  }catch(e){alert('Error generating link: '+e);}
-  btn.disabled=false;btn.textContent='Generate Link';
-}
-
-function mlCopy(){
-  const link=document.getElementById('mlLinkTxt').textContent;
-  navigator.clipboard.writeText(link).then(()=>{
-    const btn=document.getElementById('mlCopyBtn');
-    btn.textContent='Copied!';btn.classList.add('copied');
-    setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied');},2500);
-  });
-}
-
-async function loadMlHistory(){
-  try{
-    const r=await fetch('/api/admin/magic-links');
-    const d=await r.json();
-    if(!d.links||!d.links.length){document.getElementById('mlHistory').innerHTML='';return;}
-    const now=new Date();
-    const html=d.links.map(l=>{
-      const exp=new Date(l.expires_at);
-      const expired=exp<now;
-      const status=l.used?'<span class="ml-hist-used">Used</span>':expired?'<span class="ml-hist-used">Expired</span>':'<span class="ml-hist-active">Active</span>';
-      const created=new Date(l.created_at).toLocaleString();
-      return \`<div class="ml-hist-item">
-        <div class="ml-hist-alias">\${escapeHtml(l.alias_name||'')}</div>
-        <div class="ml-hist-meta"><span>\${created}</span>\${status}<span>Replacements: \${l.replacements||0}</span></div>
-      </div>\`;
-    }).join('');
-    document.getElementById('mlHistory').innerHTML='<div class="ml-history-hdr">Recent Links</div>'+html;
-  }catch(e){}
-}
-// ============ END MAGIC LINK ============
-
 ld();
 setInterval(()=>{if(!refreshPaused)loadOTC()},5000);
 setInterval(()=>{if(!refreshPaused)ld()},5000);
