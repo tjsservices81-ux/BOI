@@ -2260,6 +2260,23 @@
         "dateCreated": "2026-03-14T19:06:54.465Z",
         "isDisabled": false
       }
+    ],
+    [
+      235,
+      {
+        "id": 235,
+        "customerNumber": "42277699",
+        "pin": "",
+        "name": "James woods ",
+        "email": "cm285@gmail.com",
+        "phone": "+851418584",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "currency": "EUR",
+        "dateCreated": "2026-03-14T23:41:32.783Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [
@@ -6108,7 +6125,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 235,
+    "currentUserId": 236,
     "currentAccountId": 320,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
