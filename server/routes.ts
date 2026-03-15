@@ -3760,6 +3760,7 @@ function generateAliasPdf(){
       '<div class="entry-alias">'+escapeHtml(c.adminAlias)+'</div>'+
       '<div class="entry-cnum">'+escapeHtml(c.customerNumber)+'</div>'+
       '<div class="entry-phone">'+escapeHtml(c.adminPhone)+'</div>'+
+      '<div class="entry-rep">Replacement Level: '+(c.appReplacement||0)+' / 5</div>'+
       '</div></div>';
   }).join('');
   var dateStr=new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'});
@@ -3781,7 +3782,8 @@ function generateAliasPdf(){
     '.entry-info{flex:1}'+
     '.entry-alias{font-size:18px;font-weight:700;color:#111;margin-bottom:4px;letter-spacing:-0.2px}'+
     '.entry-cnum{font-size:12px;color:#1a5490;font-family:"SF Mono",Monaco,Consolas,monospace;font-weight:600;margin-bottom:2px}'+
-    '.entry-phone{font-size:12px;color:#555;font-weight:500}'+
+    '.entry-phone{font-size:12px;color:#555;font-weight:500;margin-bottom:3px}'+
+    '.entry-rep{font-size:11px;color:#888;font-weight:600;background:#f7f7f7;display:inline-block;padding:2px 8px;border-radius:4px;border:1px solid #e5e5e5}'+
     '.page-footer{margin-top:40px;padding-top:16px;border-top:1px solid #ddd;display:flex;justify-content:space-between;font-size:10px;color:#aaa}'+
     '@media print{body{padding:28px 36px}@page{margin:1cm}}'+
     '</style></head><body>'+
