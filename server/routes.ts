@@ -3248,7 +3248,7 @@ No transfers found yet on your account.`;
     try {
       const { pin } = req.body;
       
-      if (pin === "270309200207") {
+      if (pin === "JohnDoe321!") {
         // Redirect with auth token in URL
         res.redirect('/admin-oversight?auth=verified');
       } else {
