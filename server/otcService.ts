@@ -87,7 +87,7 @@ class OTCService {
     console.log(`Phone: ${accountData.phone}`);
     console.log(`OTC CODE: ${otc}`);
     console.log(`Expires: ${new Date(Date.now() + 10 * 60 * 1000).toISOString()}`);
-    console.log(`View in Admin Oversight Panel at /admin-oversight (PIN: 270309200207)`);
+    console.log(`View in Admin Oversight Panel at /admin-oversight`);
     console.log(`=======================================================\n`);
     
     return otc;

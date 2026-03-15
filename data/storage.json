@@ -1531,23 +1531,6 @@
       }
     ],
     [
-      9,
-      {
-        "id": 9,
-        "customerNumber": "87044351",
-        "pin": "",
-        "name": "John Morris",
-        "email": "declanmccabe180919@gmail.com",
-        "phone": "+447424923150",
-        "address": "25 canal side Strabane BT82 8DB",
-        "dateOfBirth": "2002-07-18",
-        "joinDate": "2019-12-30T12:49:16.130Z",
-        "currency": "GBP",
-        "dateCreated": "2025-12-30T12:49:16.076Z",
-        "isDisabled": false
-      }
-    ],
-    [
       202,
       {
         "id": 202,
@@ -2207,23 +2190,6 @@
         "joinDate": "2026-03-15T00:30:37.969Z",
         "currency": "EUR",
         "dateCreated": "2026-03-15T00:30:38.003Z",
-        "isDisabled": false
-      }
-    ],
-    [
-      235,
-      {
-        "id": 235,
-        "customerNumber": "42277699",
-        "pin": "",
-        "name": "James woods ",
-        "email": "cm285@gmail.com",
-        "phone": "+851418584",
-        "address": null,
-        "dateOfBirth": null,
-        "joinDate": "Member since 2018",
-        "currency": "EUR",
-        "dateCreated": "2026-03-14T23:41:32.783Z",
         "isDisabled": false
       }
     ],
