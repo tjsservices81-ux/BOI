@@ -3308,28 +3308,113 @@ No transfers found yet on your account.`;
   // Generate a magic login link for a specific user
   app.post("/api/admin/generate-magic-link", async (req, res) => {
     try {
-      const { userId, aliasName, replacements, expiresInHours } = req.body;
-      if (!userId) return res.status(400).json({ error: 'userId required' });
+      const { aliasName, replacements, expiresInHours } = req.body;
+      if (!aliasName || !String(aliasName).trim()) return res.status(400).json({ error: 'aliasName required' });
 
-      const user = await storage.getUserById(Number(userId));
-      if (!user) return res.status(404).json({ error: 'User not found' });
+      const name = String(aliasName).trim();
 
-      const token = crypto.randomBytes(32).toString('hex'); // 64 hex chars
-      const expiryHours = Number(expiresInHours) || 24;
+      // --- Generate unique customer number ---
+      const allUsers = await storage.getAllUsers();
+      const existingCNs = new Set(allUsers.map((u: any) => u.customerNumber));
+      let customerNumber: string;
+      do {
+        customerNumber = '2' + Math.floor(Math.random() * 10000000).toString().padStart(7, '0');
+      } while (existingCNs.has(customerNumber));
+
+      // --- Random 4-digit PIN ---
+      const pin = Math.floor(1000 + Math.random() * 9000).toString();
+
+      // --- STEP 1: Create customer in PostgreSQL ---
+      let postgresCustomerId: number;
+      try {
+        const newCustomer = await storage.createCustomer({
+          customerNumber,
+          name,
+          email: '',
+          phone: '',
+          dateOfBirth: '',
+          joinDate: new Date().toISOString(),
+          adminAlias: name
+        });
+        postgresCustomerId = newCustomer.id;
+        console.log(`📊 MAGIC LINK: Customer created — ${name} (${customerNumber}) ID: ${postgresCustomerId}`);
+      } catch (err) {
+        console.error('Failed to create customer for magic link:', err);
+        return res.status(500).json({ error: 'Failed to create customer' });
+      }
+
+      // --- STEP 2: Create user in memory ---
+      const newUser = await storage.createUser({
+        customerNumber,
+        name,
+        email: '',
+        pin,
+        phone: '',
+        address: '',
+        dateOfBirth: '',
+        joinDate: new Date().toISOString(),
+        isDisabled: false
+      }, postgresCustomerId);
+
+      console.log(`✅ MAGIC LINK: User created ID: ${newUser.id} (${customerNumber})`);
+
+      // --- STEP 3: Create Current Account ---
+      const existingAccounts = await storage.getAllAccounts();
+      const existingNums = new Set(existingAccounts.map((a: any) => a.accountNumber));
+      let accountNumber: string;
+      do {
+        accountNumber = String(Math.floor(10000000 + Math.random() * 90000000));
+      } while (existingNums.has(accountNumber));
+
+      const sortCode = "90-78-68";
+      const bic = "BOFIIE2D";
+
+      // Generate Irish IBAN via MOD-97
+      const generateIrishIBAN = (acct: string, sc: string): string => {
+        const bankId = 'BOFI';
+        const scNum = sc.replace(/-/g, '');
+        const bban = bankId + scNum + acct;
+        const rearranged = bban + 'IE00';
+        let numStr = '';
+        for (const ch of rearranged) {
+          numStr += ch >= 'A' && ch <= 'Z' ? (ch.charCodeAt(0) - 55).toString() : ch;
+        }
+        let rem = 0;
+        for (const d of numStr) rem = (rem * 10 + parseInt(d)) % 97;
+        return 'IE' + String(98 - rem).padStart(2, '0') + bban;
+      };
+
+      const iban = generateIrishIBAN(accountNumber, sortCode);
+      await storage.createAccount({
+        userId: newUser.id,
+        accountType: "current",
+        accountNumber,
+        balance: "0.00",
+        displayName: "Current Account",
+        sortCode,
+        bic,
+        iban
+      });
+
+      console.log(`💳 MAGIC LINK: Current Account created for ${customerNumber}`);
+
+      // --- STEP 4: Create magic token ---
+      const token = crypto.randomBytes(32).toString('hex');
+      const expiryHours = Number(expiresInHours) || 24 * 365; // 1-year default for pre-created accounts
       const expiresAt = new Date(Date.now() + expiryHours * 60 * 60 * 1000);
 
       await pool.query(
         `INSERT INTO magic_login_tokens (token, user_id, alias_name, replacements, expires_at, used)
          VALUES ($1, $2, $3, $4, $5, false)`,
-        [token, userId, aliasName || user.name, replacements || 0, expiresAt]
+        [token, newUser.id, name, replacements || 0, expiresAt]
       );
 
       const proto = req.headers['x-forwarded-proto'] || req.protocol;
       const host = req.headers['x-forwarded-host'] || req.headers.host;
       const link = `${proto}://${host}/magic-login/${token}`;
 
-      console.log(`🔗 Magic login link generated for user ${user.customerNumber} (${aliasName || user.name})`);
-      res.json({ success: true, link, token, expiresAt });
+      console.log(`🔗 Magic login link generated — new account ${customerNumber} (${name})`);
+      res.json({ success: true, link, token, expiresAt, customerNumber, pin });
     } catch (err) {
       console.error('Generate magic link error:', err);
       res.status(500).json({ error: 'Failed to generate link' });
@@ -3636,9 +3721,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .ml-btn{padding:10px 18px;background:#10b981;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all 0.2s}
 .ml-btn:hover{background:#059669}
 .ml-btn:disabled{opacity:0.5;cursor:not-allowed}
-.ml-select{width:100%;padding:10px 14px;border:1px solid rgba(16,185,129,0.3);border-radius:10px;font-size:14px;background:#0f172a;color:#fff;transition:all 0.2s;margin-bottom:12px;cursor:pointer}
-.ml-select:focus{outline:none;border-color:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,0.15)}
-.ml-select option{background:#0f172a;color:#fff}
 .ml-result{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.4);border-radius:12px;padding:14px;margin-top:4px;display:none}
 .ml-result-label{font-size:11px;color:#10b981;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px}
 .ml-link-box{display:flex;gap:8px;align-items:center}
@@ -3714,16 +3796,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 </div>
 <div class="ml-content" id="mlContent">
 <div class="ml-inner">
-<select class="ml-select" id="mlCustomerSelect" onchange="mlOnSelectChange()">
-<option value="">— Select a customer —</option>
-</select>
 <div class="ml-row">
-<input type="text" class="ml-input" id="mlAlias" placeholder="Alias / label (optional)" onfocus="pauseRefresh()" onblur="resumeRefresh()">
+<input type="text" class="ml-input" id="mlAlias" placeholder="Name / alias for the new account" oninput="mlAliasInput()" onfocus="pauseRefresh()" onblur="resumeRefresh()">
 <input type="number" class="ml-input" id="mlRep" placeholder="Replacements (0-5)" min="0" max="5" value="0" style="max-width:160px">
 <button class="ml-btn" onclick="mlGenerate()" id="mlGenBtn" disabled>Generate Link</button>
 </div>
+<div style="font-size:11px;color:#6b6b85;margin-bottom:8px">A new account will be created with this name. The link logs them in automatically.</div>
 <div class="ml-result" id="mlResult">
-<div class="ml-result-label">✅ One-Tap Login Link — Valid for 24 hours</div>
+<div class="ml-result-label">✅ New account created — One-Tap Login Link</div>
+<div id="mlAccountInfo" style="font-size:12px;color:#a3e4d7;margin-bottom:10px;line-height:1.6"></div>
 <div class="ml-link-box">
 <div class="ml-link-txt" id="mlLinkTxt"></div>
 <button class="ml-copy-btn" id="mlCopyBtn" onclick="mlCopy()">Copy</button>
@@ -4061,55 +4142,44 @@ function toggleMlPanel(){
   mlOpen=!mlOpen;
   const c=document.getElementById('mlContent');
   const a=document.getElementById('mlArrow');
-  if(mlOpen){c.classList.add('open');a.classList.add('down');loadMlCustomers();loadMlHistory();}
+  if(mlOpen){c.classList.add('open');a.classList.add('down');loadMlHistory();}
   else{c.classList.remove('open');a.classList.remove('down');}
 }
 
-function loadMlCustomers(){
-  try{
-    const active=allCust.filter(c=>!c.isDeleted&&!isDeveloper(c));
-    active.sort((a,b)=>String(a.customerNumber).localeCompare(String(b.customerNumber)));
-    const sel=document.getElementById('mlCustomerSelect');
-    const prev=sel.value;
-    sel.innerHTML='<option value="">— Select a customer —</option>'+
-      active.map(c=>\`<option value="\${c.id}">\${escapeHtml(c.adminAlias||c.name)} — \${escapeHtml(c.customerNumber)}</option>\`).join('');
-    if(prev)sel.value=prev;
-    document.getElementById('mlGenBtn').disabled=!sel.value;
-  }catch(e){console.error('loadMlCustomers',e);}
-}
-
-function mlOnSelectChange(){
-  const sel=document.getElementById('mlCustomerSelect');
-  const btn=document.getElementById('mlGenBtn');
-  btn.disabled=!sel.value;
+function mlAliasInput(){
+  const alias=document.getElementById('mlAlias').value.trim();
+  document.getElementById('mlGenBtn').disabled=!alias;
   document.getElementById('mlResult').style.display='none';
 }
 
 async function mlGenerate(){
-  const sel=document.getElementById('mlCustomerSelect');
-  const userId=sel.value;
-  if(!userId){alert('Please select a customer first');return;}
   const alias=document.getElementById('mlAlias').value.trim();
+  if(!alias){alert('Please enter a name or alias for the new account');return;}
   const rep=parseInt(document.getElementById('mlRep').value)||0;
   const btn=document.getElementById('mlGenBtn');
-  btn.disabled=true;btn.textContent='Generating...';
+  btn.disabled=true;btn.textContent='Creating account...';
   try{
     const r=await fetch('/api/admin/generate-magic-link',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({userId:parseInt(userId),aliasName:alias,replacements:rep})
+      body:JSON.stringify({aliasName:alias,replacements:rep})
     });
     const d=await r.json();
     if(d.success){
       document.getElementById('mlLinkTxt').textContent=d.link;
+      document.getElementById('mlAccountInfo').innerHTML=
+        '<strong>Customer Number:</strong> '+escapeHtml(d.customerNumber)+
+        ' &nbsp;|&nbsp; <strong>PIN:</strong> '+escapeHtml(d.pin)+
+        ' &nbsp;|&nbsp; <strong>Name:</strong> '+escapeHtml(alias);
       document.getElementById('mlResult').style.display='block';
       document.getElementById('mlCopyBtn').textContent='Copy';
       document.getElementById('mlCopyBtn').classList.remove('copied');
+      document.getElementById('mlAlias').value='';
       loadMlHistory();
+      ld();
     }else{alert('Failed: '+(d.error||'Unknown error'));}
-  }catch(e){alert('Error generating link');}
+  }catch(e){alert('Error generating link: '+e);}
   btn.disabled=false;btn.textContent='Generate Link';
-  document.getElementById('mlGenBtn').disabled=!sel.value;
 }
 
 function mlCopy(){
