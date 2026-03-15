@@ -2,11 +2,11 @@
  * Bank of Ireland Mobile PWA Service Worker
  * Handles caching, offline functionality, and prevents blank screens
  * 
- * VERSION: 4.6.5 - Add Generate Customer List PDF to admin oversight
+ * VERSION: 4.6.3 - Fix bottom nav missing after swiping back from Customer Panel
  * BUILD: {{BUILD_TIMESTAMP}}
  */
 
-const SW_VERSION = '4.6.7';
+const SW_VERSION = '4.6.3';
 const BUILD_TIMESTAMP = Date.now();
 const CACHE_NAME = `boi-mobile-v${SW_VERSION}-${BUILD_TIMESTAMP}`;
 const FALLBACK_CACHE = `boi-fallback-v${SW_VERSION}`;
