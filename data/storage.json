@@ -2294,6 +2294,23 @@
         "isDisabled": false,
         "currency": "EUR"
       }
+    ],
+    [
+      237,
+      {
+        "id": 237,
+        "customerNumber": "27646450",
+        "pin": "4718",
+        "name": "Joe",
+        "email": "",
+        "phone": null,
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "2026-03-15T00:39:04.688Z",
+        "dateCreated": "2026-03-15T00:39:04.773Z",
+        "isDisabled": false,
+        "currency": "EUR"
+      }
     ]
   ],
   "accounts": [
@@ -8414,6 +8431,20 @@
         "balance": "17550.00",
         "displayName": "Current Account"
       }
+    ],
+    [
+      536,
+      {
+        "id": 536,
+        "userId": 236,
+        "accountType": "current",
+        "accountNumber": "47151654",
+        "sortCode": "90-78-68",
+        "bic": "BOFIIE2D",
+        "iban": "IE62BOFI90786847151654",
+        "balance": "0.00",
+        "displayName": "Current Account"
+      }
     ]
   ],
   "transactions": [],
@@ -8424,8 +8455,8 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 237,
-    "currentAccountId": 536,
+    "currentUserId": 238,
+    "currentAccountId": 537,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
     "currentScheduledPaymentId": 1,

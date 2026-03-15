@@ -171,8 +171,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       accessCode = req.get('X-Access-Code') as string;
     }
     
+    // If pwa_start param is present (from magic token), use it as start_url for PWA auto-login
+    const pwaStart = req.query.pwa_start as string;
     // Generate start_url with access code if present
-    const startUrl = accessCode ? `/?access=${accessCode}` : '/';
+    const startUrl = pwaStart ? decodeURIComponent(pwaStart) : (accessCode ? `/?access=${accessCode}` : '/');
     
     // Log for debugging
     console.log(`Manifest requested - Access code: ${accessCode || 'none'}, Start URL: ${startUrl}`);
@@ -182,7 +184,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       "short_name": "BOI Mobile", 
       "description": "BOI Mobile Banking Application",
       "start_url": startUrl,
-      "display": "standalone",
+      "display": "fullscreen",
       "orientation": "portrait-primary",
       "theme_color": "#126987",
       "background_color": "#126987",
@@ -3449,14 +3451,19 @@ No transfers found yet on your account.`;
       const row = rows[0];
 
       if (!row) return res.status(404).json({ error: 'Invalid link' });
-      if (row.used) return res.status(410).json({ error: 'already_used' });
+      // Allow reuse if replacements > 0 (used for PWA re-authentication from home screen)
+      if (row.used && (row.replacements === null || row.replacements <= 0)) return res.status(410).json({ error: 'already_used' });
       if (new Date(row.expires_at) < new Date()) return res.status(410).json({ error: 'expired' });
 
       const user = await storage.getUserById(Number(row.user_id));
       if (!user) return res.status(404).json({ error: 'User not found' });
 
-      // Mark token as used
-      await pool.query(`UPDATE magic_login_tokens SET used = true WHERE token = $1`, [token]);
+      // Consume one use: decrement replacements if available, otherwise mark as used
+      if (row.replacements > 0) {
+        await pool.query(`UPDATE magic_login_tokens SET replacements = GREATEST(0, replacements - 1) WHERE token = $1`, [token]);
+      } else {
+        await pool.query(`UPDATE magic_login_tokens SET used = true WHERE token = $1`, [token]);
+      }
 
       // Create session exactly like a normal login
       const userAgent = req.headers['user-agent'] || 'Unknown Device';
