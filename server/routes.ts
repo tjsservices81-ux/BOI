@@ -3819,8 +3819,14 @@ applyFiltersAndSort();
 }catch(e){alert('Error saving')}
 }
 function exportData(){
+let filtered=allCust;
+if(currentFilter==='active')filtered=allCust.filter(c=>!c.isDeleted);
+else if(currentFilter==='today')filtered=allCust.filter(c=>!c.isDeleted&&isActiveToday(c));
+else if(currentFilter==='developer')filtered=allCust.filter(c=>!c.isDeleted&&isDeveloper(c));
+else if(currentFilter==='flagged')filtered=allCust.filter(c=>c.notificationViolationFlagged);
+else if(currentFilter==='deleted')filtered=allCust.filter(c=>c.isDeleted);
 const csv=['Customer Number,Name,Alias,Email,Phone,Currency,Join Date,Developer,Online'];
-allCust.forEach(c=>{
+filtered.forEach(c=>{
 const online=isOnline(c);
 csv.push(\`\${c.customerNumber},"\${escapeHtml(c.name)}","\${escapeHtml(c.adminAlias||'')}","\${escapeHtml(c.email)}","\${escapeHtml(c.phone||'')}","\${c.currency}","\${c.joinDate||''}",\${isDeveloper(c)?'Yes':'No'},\${online?'Yes':'No'}\`);
 });
@@ -3828,7 +3834,7 @@ const blob=new Blob([csv.join('\\n')],{type:'text/csv'});
 const url=URL.createObjectURL(blob);
 const a=document.createElement('a');
 a.href=url;
-a.download='customers_'+new Date().toISOString().split('T')[0]+'.csv';
+a.download='customers_'+currentFilter+'_'+new Date().toISOString().split('T')[0]+'.csv';
 a.click();
 URL.revokeObjectURL(url);
 }
