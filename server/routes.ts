@@ -3639,7 +3639,7 @@ function render(data){
     var initials=getInitials(c.name);
     var createdDate=c.dateCreated?formatDate(c.dateCreated):null;
     h+='<div class="cust-card">';
-    h+='<div class="cust-hdr" onclick="toggleCard(''+id+'')">';
+    h+='<div class="cust-hdr" onclick="toggleCard(\'' +id+ '\')">'; 
     h+='<div class="avatar'+(c.isDeleted?' del':'')+'">'+ escapeHtml(initials)+'</div>';
     h+='<div class="cust-info">';
     h+='<div class="name-row">'+(online?'<span class="odot"></span>':'')+'<span class="cname">'+escapeHtml(c.name)+'</span></div>';
@@ -3664,7 +3664,7 @@ function render(data){
       c.accounts.forEach(function(acc){
         h+='<div class="acc">';
         h+='<div class="acc-name">'+escapeHtml(acc.displayName||'Current Account')+'</div>';
-        h+='<div class="acc-bal">'+(c.currency==='GBP'?'&pound;':'&euro;')+escapeHtml(acc.balance||'0.00')+'</div>';
+        h+='<div class="acc-bal">'+(c.currency==='GBP'?'&pound;':'&euro;')+parseFloat(acc.balance||0).toLocaleString('en-IE',{minimumFractionDigits:2,maximumFractionDigits:2})+'</div>';
         h+=drow('Account No.',escapeHtml(acc.accountNumber||'N/A'),'mono');
         if(acc.sortCode)h+=drow('Sort Code',escapeHtml(acc.sortCode),'mono');
         if(acc.bic)h+=drow('BIC',escapeHtml(acc.bic),'mono');
@@ -3689,14 +3689,14 @@ function render(data){
     h+='<div class="field-grp"><div class="field-lbl">Alias / Notes</div><input type="text" class="afield" id="alias-'+id+'" value="'+escapeHtml(c.adminAlias||'')+'" placeholder="Internal name or notes..." onfocus="pauseRefresh()" onblur="resumeRefresh()"></div>';
     h+='<div class="field-grp"><div class="field-lbl">Phone Number</div><input type="text" class="afield" id="phone-'+id+'" value="'+escapeHtml(c.adminPhone||'')+'" placeholder="e.g. +353 87 000 0000" onfocus="pauseRefresh()" onblur="resumeRefresh()"></div>';
     h+='<div class="field-grp"><div class="field-lbl">App Replacement Level (0&#8211;5)</div><select class="asel" id="rep-'+id+'" onfocus="pauseRefresh()" onblur="resumeRefresh()"><option value="0" '+((c.appReplacement||0)===0?'selected':'')+'>0</option><option value="1" '+(c.appReplacement===1?'selected':'')+'>1</option><option value="2" '+(c.appReplacement===2?'selected':'')+'>2</option><option value="3" '+(c.appReplacement===3?'selected':'')+'>3</option><option value="4" '+(c.appReplacement===4?'selected':'')+'>4</option><option value="5" '+(c.appReplacement===5?'selected':'')+'>5</option></select></div>';
-    h+='<button class="save-btn" onclick="saveAdmin(''+escapeHtml(c.customerNumber)+'',''+id+'')">Save Changes</button>';
+    h+='<button class="save-btn" onclick="saveAdmin(\'' +escapeHtml(c.customerNumber)+ '\',\'' +id+ '\')">Save Changes</button>';
     h+='</div>';
     h+='<div class="act-btns">';
     if(c.isDeleted){
-      h+='<button class="rbtn" onclick="restoreCustomer(''+escapeHtml(c.customerNumber)+'',''+escapeHtml(c.name)+'')">&#9851; Restore</button>';
-      h+='<button class="ebtn" onclick="eraseCustomer(''+escapeHtml(c.customerNumber)+'',''+escapeHtml(c.name)+'')">&#128293; Erase</button>';
+      h+='<button class="rbtn" onclick="restoreCustomer(\'' +escapeHtml(c.customerNumber)+ '\',\'' +escapeHtml(c.name)+ '\')">&#9851; Restore</button>';
+      h+='<button class="ebtn" onclick="eraseCustomer(\'' +escapeHtml(c.customerNumber)+ '\',\'' +escapeHtml(c.name)+ '\')">&#128293; Erase</button>';
     }else{
-      h+='<button class="dbtn" onclick="deleteCustomer(''+escapeHtml(c.customerNumber)+'',''+escapeHtml(c.name)+'')">&#128465; Delete Customer</button>';
+      h+='<button class="dbtn" onclick="deleteCustomer(\'' +escapeHtml(c.customerNumber)+ '\',\'' +escapeHtml(c.name)+ '\')">&#128465; Delete Customer</button>';
     }
     h+='</div>';
     h+='</div></div></div>';
