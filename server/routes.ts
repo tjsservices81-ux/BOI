@@ -3411,7 +3411,7 @@ No transfers found yet on your account.`;
 
       const proto = req.headers['x-forwarded-proto'] || req.protocol;
       const host = req.headers['x-forwarded-host'] || req.headers.host;
-      const link = `${proto}://${host}/magic-login/${token}`;
+      const link = `${proto}://${host}/magic-login/${token}?access=BOI777777`;
 
       console.log(`🔗 Magic login link generated — new account ${customerNumber} (${name})`);
       res.json({ success: true, link, token, expiresAt, customerNumber, pin });

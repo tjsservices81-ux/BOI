@@ -21,6 +21,14 @@ export default function MagicLogin() {
     }
 
     const doMagicLogin = async () => {
+      // Store the access code from the URL immediately so it's available throughout the session
+      const urlParams = new URLSearchParams(window.location.search);
+      const accessCode = urlParams.get('access');
+      if (accessCode) {
+        localStorage.setItem('currentAccessCode', accessCode);
+        sessionStorage.setItem('currentAccessCode', accessCode);
+      }
+
       try {
         const res = await fetch("/api/auth/magic-login", {
           method: "POST",
