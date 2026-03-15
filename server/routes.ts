@@ -3484,8 +3484,11 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .s-amber .stat-val{color:var(--amber)}
 .stats-section{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:14px}
 .stats-sec-t{font-size:10px;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:10px}
-.export-btn{width:100%;background:var(--primary);color:#fff;border:none;padding:13px;border-radius:11px;font-size:13px;font-weight:700;cursor:pointer;transition:background 0.15s}
+.export-btn{width:100%;background:var(--primary);color:#fff;border:none;padding:13px;border-radius:11px;font-size:13px;font-weight:700;cursor:pointer;transition:background 0.15s;margin-bottom:8px}
 .export-btn:active{background:var(--primary-l)}
+.export-btn:last-child{margin-bottom:0}
+.pdf-btn{width:100%;background:rgba(239,68,68,0.12);color:var(--red);border:1px solid rgba(239,68,68,0.3);padding:13px;border-radius:11px;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.15s}
+.pdf-btn:active{background:var(--red);color:#fff}
 .pause-ind{position:fixed;top:calc(62px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);background:rgba(245,158,11,0.95);color:#000;padding:5px 14px;border-radius:20px;font-size:11px;font-weight:700;z-index:200;display:none;white-space:nowrap;pointer-events:none}
 </style>
 </head>
@@ -3554,6 +3557,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
     <div class="stats-section">
       <div class="stats-sec-t">Export</div>
       <button class="export-btn" onclick="exportData()">&#128229; Download Customer CSV</button>
+      <button class="pdf-btn" onclick="generateAliasPdf()">&#128196; Generate Customer List PDF</button>
     </div>
   </div>
 </div>
@@ -3744,6 +3748,56 @@ function exportData(){
   var blob=new Blob([csv.join('\n')],{type:'text/csv'});
   var url=URL.createObjectURL(blob);
   var a=document.createElement('a');a.href=url;a.download='customers_'+new Date().toISOString().split('T')[0]+'.csv';a.click();URL.revokeObjectURL(url);
+}
+function generateAliasPdf(){
+  var eligible=allCust.filter(function(c){return!c.isDeleted&&c.adminAlias&&c.adminAlias.trim()&&c.adminPhone&&c.adminPhone.trim()});
+  if(!eligible.length){alert('No customers found with both an alias and phone number saved.');return}
+  eligible.sort(function(a,b){return parseInt(a.customerNumber)-parseInt(b.customerNumber)});
+  var rows=eligible.map(function(c,idx){
+    return '<div class="entry">'+
+      '<div class="entry-num">'+(idx+1)+'</div>'+
+      '<div class="entry-info">'+
+      '<div class="entry-alias">'+escapeHtml(c.adminAlias)+'</div>'+
+      '<div class="entry-cnum">'+escapeHtml(c.customerNumber)+'</div>'+
+      '<div class="entry-phone">'+escapeHtml(c.adminPhone)+'</div>'+
+      '</div></div>';
+  }).join('');
+  var dateStr=new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'});
+  var shortDate=new Date().toLocaleDateString('en-GB');
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>BOI Customers</title><style>'+
+    '*{margin:0;padding:0;box-sizing:border-box}'+
+    'body{font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;background:#fff;color:#111;padding:48px 56px}'+
+    '.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:36px;padding-bottom:24px;border-bottom:3px solid #1a5490}'+
+    '.logo-block{}'+
+    '.logo{font-size:32px;font-weight:900;color:#1a5490;letter-spacing:-1.5px;line-height:1}'+
+    '.logo-sub{font-size:11px;color:#666;font-weight:500;margin-top:4px;letter-spacing:0.3px}'+
+    '.title-block{text-align:right}'+
+    '.doc-title{font-size:24px;font-weight:800;color:#1a5490;margin-bottom:6px}'+
+    '.doc-date{font-size:12px;color:#777;font-weight:400}'+
+    '.summary{font-size:12px;color:#444;margin-bottom:28px;padding:11px 16px;background:#f0f4fa;border-radius:6px;border-left:3px solid #1a5490}'+
+    '.entry{display:flex;align-items:flex-start;gap:16px;padding:14px 0;border-bottom:1px solid #efefef}'+
+    '.entry:last-child{border-bottom:none}'+
+    '.entry-num{font-size:11px;color:#aaa;font-weight:700;min-width:26px;padding-top:3px;text-align:right}'+
+    '.entry-info{flex:1}'+
+    '.entry-alias{font-size:18px;font-weight:700;color:#111;margin-bottom:4px;letter-spacing:-0.2px}'+
+    '.entry-cnum{font-size:12px;color:#1a5490;font-family:"SF Mono",Monaco,Consolas,monospace;font-weight:600;margin-bottom:2px}'+
+    '.entry-phone{font-size:12px;color:#555;font-weight:500}'+
+    '.page-footer{margin-top:40px;padding-top:16px;border-top:1px solid #ddd;display:flex;justify-content:space-between;font-size:10px;color:#aaa}'+
+    '@media print{body{padding:28px 36px}@page{margin:1cm}}'+
+    '</style></head><body>'+
+    '<div class="page-header">'+
+    '<div class="logo-block"><div class="logo">BOI</div><div class="logo-sub">Bank of Ireland</div></div>'+
+    '<div class="title-block"><div class="doc-title">BOI Customers</div><div class="doc-date">Generated '+dateStr+'</div></div>'+
+    '</div>'+
+    '<div class="summary">'+eligible.length+' customer'+(eligible.length!==1?'s':'')+' &mdash; showing all accounts with alias and contact number on record</div>'+
+    rows+
+    '<div class="page-footer"><span>Bank of Ireland &mdash; Internal Use Only</span><span>Confidential</span><span>'+shortDate+'</span></div>'+
+    '</body></html>';
+  var w=window.open('','_blank');
+  if(!w){alert('Please allow pop-ups to generate the PDF.');return}
+  w.document.write(html);
+  w.document.close();
+  setTimeout(function(){w.print()},600);
 }
 async function logout(){try{await fetch('/api/admin/logout',{method:'POST'});window.location.href='/admin-oversight'}catch(e){alert('Error')}}
 ld();
