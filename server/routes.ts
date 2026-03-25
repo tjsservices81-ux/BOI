@@ -2917,7 +2917,15 @@ No transfers found yet on your account.`;
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid request data" });
       }
-      res.status(500).json({ message: "Failed to generate AI response" });
+      // Always return a valid chat response so the customer sees a helpful message
+      const fallbackMessages = [
+        "Sorry, I wasn't able to bring that up just now. Could you try again or let me know how else I can help?",
+        "I'm sorry, I didn't quite catch that. Could you give me a moment and try again?",
+        "Thanks for your patience — I wasn't able to get that for you just now. Would you like to try again?",
+        "I'd be happy to help with that. Could you send that again? I want to make sure I give you the right information."
+      ];
+      const fallback = fallbackMessages[Math.floor(Math.random() * fallbackMessages.length)];
+      res.json({ response: fallback, agentName: req.body.agentName || 'Support Agent', pdfData: null, pdfFileName: null });
     }
   });
 

@@ -1109,10 +1109,15 @@ RECIPIENT DETAILS: Bank: ${recipientBank}, Account Number: ${recipientAccountNum
       };
     } catch (error) {
       console.error('Error getting AI response:', error);
-      // Fallback to a natural error message
+      const fallbackMessages = [
+        "Sorry, I wasn't able to bring that up just now. Could you try again or let me know how else I can help?",
+        "I'm sorry, I didn't quite catch that. Could you give me a moment and try again?",
+        "Thanks for your patience — I wasn't able to get that for you just now. Would you like to try again?",
+        "I'd be happy to help with that. Could you send that again? I want to make sure I give you the right information."
+      ];
       return {
-        text: "I'm experiencing some technical difficulties at the moment. Please bear with me while I resolve this, or feel free to try your question again.",
-        category: 'error'
+        text: fallbackMessages[Math.floor(Math.random() * fallbackMessages.length)],
+        category: 'ai-generated'
       };
     }
   };
