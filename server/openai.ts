@@ -2,7 +2,7 @@ import OpenAI from "openai";
 import { getPersonality, type PersonalityProfile } from "./personalities";
 
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY, timeout: 8000, maxRetries: 0 });
 
 // Intelligent fallback responses when OpenAI is unavailable
 const FALLBACK_RESPONSES: { triggers: string[]; responses: string[] }[] = [
