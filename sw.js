@@ -6,7 +6,7 @@
  * BUILD: {{BUILD_TIMESTAMP}}
  */
 
-const SW_VERSION = '4.6.3';
+const SW_VERSION = '4.6.4';
 const BUILD_TIMESTAMP = Date.now();
 const CACHE_NAME = `boi-mobile-v${SW_VERSION}-${BUILD_TIMESTAMP}`;
 const FALLBACK_CACHE = `boi-fallback-v${SW_VERSION}`;

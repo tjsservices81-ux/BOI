@@ -201,10 +201,9 @@
     </style>
     
     <script>
-      const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-      if (themeColorMeta) {
-        themeColorMeta.setAttribute('content', '#000DFF');
-      }
+      // Keep body background blue during load for the splash screen visual
+      // but do NOT change theme-color — on iOS 26 Liquid Glass the status bar
+      // reads theme-color and gets stuck on the blue if we change it here
       document.body.style.backgroundColor = '#000DFF';
       document.documentElement.style.backgroundColor = '#000DFF';
 

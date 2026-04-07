@@ -346,12 +346,12 @@ function AppRoutes() {
 
 
 
-  // Theme restoration helper - keeps theme-color in sync with current screen
+  // Theme restoration helper - always keep theme-color as the app colour
+  // The splash screen background is already blue via CSS, theme-color must stay
+  // #126987 so the iOS 26 Liquid Glass status bar never gets stuck on blue
   const restoreThemeForCurrentScreen = () => {
-    const isSplash = location === '/splash';
-    const targetColor = isSplash ? '#000DFF' : '#126987';
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-    if (themeColorMeta) themeColorMeta.setAttribute('content', targetColor);
+    if (themeColorMeta) themeColorMeta.setAttribute('content', '#126987');
   };
 
 
