@@ -2379,6 +2379,40 @@
         "dateCreated": "2026-04-09T16:00:15.191Z",
         "isDisabled": false
       }
+    ],
+    [
+      309,
+      {
+        "id": 309,
+        "customerNumber": "73348166",
+        "pin": "",
+        "name": "Tyler Heaps",
+        "email": "tylerheaps1831@icloud.com",
+        "phone": "+447853061753",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "currency": "EUR",
+        "dateCreated": "2026-04-09T20:32:40.742Z",
+        "isDisabled": false
+      }
+    ],
+    [
+      310,
+      {
+        "id": 310,
+        "customerNumber": "22721140",
+        "pin": "",
+        "name": "John ward",
+        "email": "johnward2@gmail.com",
+        "phone": "‪+44 7454 109385‬",
+        "address": null,
+        "dateOfBirth": null,
+        "joinDate": "Member since 2018",
+        "currency": "EUR",
+        "dateCreated": "2026-04-09T20:37:07.203Z",
+        "isDisabled": false
+      }
     ]
   ],
   "accounts": [
@@ -6227,7 +6261,7 @@
   "chatResponses": [],
   "chatSessions": [],
   "counters": {
-    "currentUserId": 309,
+    "currentUserId": 311,
     "currentAccountId": 320,
     "currentTransactionId": 1,
     "currentPayeeId": 1,
