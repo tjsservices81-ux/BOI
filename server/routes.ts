@@ -2801,8 +2801,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         if (transferTransactions.length > 0) {
           const lastTransfer = transferTransactions[0];
-          const transferDate = new Date(lastTransfer.timestamp).toLocaleDateString('en-GB');
-          const transferTime = new Date(lastTransfer.timestamp).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+          const transferDate = new Date(lastTransfer.timestamp).toLocaleDateString('en-GB', { timeZone: 'Europe/Dublin' });
+          const transferTime = new Date(lastTransfer.timestamp).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Dublin' });
           const transferAmount = parseFloat(lastTransfer.amount.replace('-', ''));
           
           // Extract recipient name from description
